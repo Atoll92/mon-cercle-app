@@ -23,23 +23,26 @@ function App() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Add a redirect effect to handle authentication state
-  useEffect(() => {
-    if (!loading) {
-      // Only run after initial auth check is complete
-      console.log('App auth state:', { hasSession: !!session, currentPath: location.pathname });
-      
-      // Redirect logic
-      if (session) {
-        // If user is logged in and on auth pages, redirect to dashboard
-        if (['/login', '/signup', '/password-reset'].includes(location.pathname)) {
-          console.log('User is authenticated but on auth page, redirecting to dashboard');
-          navigate('/', { replace: true });
-        }
+ // Update redirect effect
+ useEffect(() => {
+  if (!loading) {
+    if (session) {
+      // Redirect logged-in users from auth pages to /dashboard
+      if (['/login', '/signup', '/password-reset'].includes(location.pathname)) {
+        console.log('User authenticated, redirecting from auth page to /dashboard');
+        navigate('/dashboard', { replace: true }); // <-- CHANGE HERE
       }
+      // Optional: Redirect logged-in users from landing page '/' to '/dashboard'
+      // else if (location.pathname === '/') {
+      //    console.log('User authenticated, redirecting from / to /dashboard');
+      //    navigate('/dashboard', { replace: true });
+      // }
     }
-  }, [loading, session, location.pathname, navigate]);
-
+    // Optional: If user is logged OUT and tries to access a protected path
+    // that isn't handled by ProtectedRoute (e.g., direct load before ProtectedRoute checks),
+    // you might redirect them to login, but ProtectedRoute should handle this.
+  }
+}, [loading, session, location.pathname, navigate]);
   if (loading) {
     // Show loading indicator during initial auth check
     return (
@@ -60,7 +63,7 @@ function App() {
 
         {/* Protected Routes */}
         <Route element={<ProtectedRoute />}>
-          <Route path="/" element={<DashboardPage />} />
+          <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/profile/:userId" element={<ProfilePage />} />
           <Route path="/profile/edit" element={<EditProfilePage />} />
           <Route path="/admin" element={<NetworkAdminPage />} />

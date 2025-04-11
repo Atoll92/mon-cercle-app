@@ -199,7 +199,7 @@ function EditProfilePage() {
       
       // Redirect after a short delay
       setTimeout(() => {
-        navigate('/');
+        navigate('/dashboard');
       }, 2000);
       
     } catch (error) {
@@ -235,7 +235,7 @@ function EditProfilePage() {
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
           <IconButton 
             sx={{ mr: 2 }} 
-            onClick={() => navigate('/')}
+            onClick={() => navigate('/dashboard')}
             aria-label="Back to dashboard"
           >
             <ArrowBackIcon />
@@ -372,7 +372,7 @@ function EditProfilePage() {
             <Button
               variant="outlined"
               color="inherit"
-              onClick={() => navigate('/')}
+              onClick={() => navigate('/dashboard')}
               disabled={saving}
               startIcon={<CancelIcon />}
             >

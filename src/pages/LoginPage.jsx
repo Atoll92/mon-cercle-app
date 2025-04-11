@@ -62,8 +62,8 @@ function LoginPage() {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
       // AuthProvider's onAuthStateChange will handle setting session state
-      navigate('/'); // Redirect to dashboard after successful login
-    } catch (error) {
+      navigate('/dashboard', { replace: true }); // <-- CHANGE HERE (Redirect to /dashboard)
+      //     } catch (error) {
       setError(error.message || "Failed to log in");
       console.error("Login error:", error);
     } finally {
