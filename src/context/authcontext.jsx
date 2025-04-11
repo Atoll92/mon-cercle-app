@@ -22,139 +22,133 @@ export const AuthProvider = ({ children }) => {
   const [authError, setAuthError] = useState(null);
 
   // Create or update user profile
-  const ensureProfile = async (userId, email) => {
-    try {
-      console.log('Checking for existing profile...');
+  // const ensureProfile = async (userId, email) => {
+  //   try {
+  //     console.log('Checking for existing profile...');
       
-      // First check if the profile exists
-      const { data: existingProfile, error: fetchError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .maybeSingle();
+  //     // First check if the profile exists
+  //     const { data: existingProfile, error: fetchError } = await supabase
+  //       .from('profiles')
+  //       .select('*')
+  //       .eq('id', userId)
+  //       .maybeSingle();
       
-      if (fetchError && fetchError.code !== 'PGRST116') {
-        console.error('Error checking profile:', fetchError);
-        return;
-      }
+  //     if (fetchError && fetchError.code !== 'PGRST116') {
+  //       console.error('Error checking profile:', fetchError);
+  //       return;
+  //     }
       
-      if (existingProfile) {
-        console.log('Existing profile found:', existingProfile.id);
-        return;
-      }
+  //     if (existingProfile) {
+  //       console.log('Existing profile found:', existingProfile.id);
+  //       return;
+  //     }
       
-      console.log('Profile not found, creating a new one');
+  //     console.log('Profile not found, creating a new one');
       
-      // Create a new network for the user
-      const { data: network, error: networkError } = await supabase
-        .from('networks')
-        .insert([{ 
-          name: 'My Network',
-          description: 'Personal network created at signup'
-        }])
-        .select()
-        .single();
+  //     // Create a new network for the user
+  //     const { data: network, error: networkError } = await supabase
+  //       .from('networks')
+  //       .insert([{ 
+  //         name: 'My Network',
+  //         description: 'Personal network created at signup'
+  //       }])
+  //       .select()
+  //       .single();
       
-      if (networkError) {
-        console.error('Error creating network:', networkError);
-        return;
-      }
+  //     if (networkError) {
+  //       console.error('Error creating network:', networkError);
+  //       return;
+  //     }
       
-      console.log('Network created:', network.id);
+  //     console.log('Network created:', network.id);
       
-      // Create a profile with the new network
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .insert([{ 
-          id: userId,
-          network_id: network.id,  // Assign the new network
-          role: 'admin',           // Make user admin of their own network
-          full_name: '',
-          contact_email: email,
-          updated_at: new Date()
-        }]);
+  //     // Create a profile with the new network
+  //     const { data: profile, error: profileError } = await supabase
+  //       .from('profiles')
+  //       .insert([{ 
+  //         id: userId,
+  //         network_id: network.id,  // Assign the new network
+  //         role: 'admin',           // Make user admin of their own network
+  //         full_name: '',
+  //         contact_email: email,
+  //         updated_at: new Date()
+  //       }]);
       
-      if (profileError) {
-        console.error('Error creating profile:', profileError);
-        return;
-      }
+  //     if (profileError) {
+  //       console.error('Error creating profile:', profileError);
+  //       return;
+  //     }
       
-      console.log('Profile created successfully');
+  //     console.log('Profile created successfully');
       
-    } catch (error) {
-      console.error('Exception in profile creation:', error);
-    }
-  };
+  //   } catch (error) {
+  //     console.error('Exception in profile creation:', error);
+  //   }
+  // };
 
   useEffect(() => {
     console.log('AuthProvider initializing');
+    setLoading(true); // Explicitly set loading true at start
     
     // Get the initial session
-    const getInitialSession = async () => {
-      try {
-        console.log('Fetching initial session');
-        const { data, error } = await supabase.auth.getSession();
-        
-        if (error) {
-          console.error('Error getting session:', error);
-          throw error;
-        }
-        
-        console.log('Session data received:', { 
-          hasSession: !!data.session,
-          user: data.session?.user ? { 
-            id: data.session.user.id,
-            email: data.session.user.email 
-          } : null
-        });
-        
-        setSession(data.session);
-        setUser(data.session?.user || null);
-        
-        // If user is logged in, ensure they have a profile
-        if (data.session?.user) {
-          await ensureProfile(data.session.user.id, data.session.user.email);
-        }
-      } catch (error) {
-        console.error('Error getting initial session:', error);
+    // --- Get Initial Session ---
+    supabase.auth.getSession().then(({ data, error }) => {
+      if (error) {
+        console.error('AuthProvider: Error getting initial session:', error);
         setAuthError(error.message);
-      } finally {
-        console.log('Initial auth loading complete');
-        setLoading(false);
+        setSession(null);
+        setUser(null);
+      } else {
+        console.log('AuthProvider: Initial session received.', { hasSession: !!data.session });
+        setSession(data.session);
+        setUser(data.session?.user ?? null);
+        // --- ensureProfile could potentially be called HERE if needed AFTER session is set ---
+        // --- but ideally it's handled elsewhere (DB trigger) ---
+        // if (data.session?.user) {
+        //   ensureProfile(data.session.user.id, data.session.user.email); // Still adds delay here
+        // }
       }
-    };
+      // **** CRITICAL: Set loading false ONLY after initial check is done ****
+      console.log('AuthProvider: Initial loading complete.');
+      setLoading(false);
 
-    getInitialSession();
+    }).catch(error => {
+        // Catch potential errors in the promise chain itself
+         console.error('AuthProvider: CATCH - Error during getSession promise:', error);
+         setAuthError(error.message);
+         setSession(null);
+         setUser(null);
+         setLoading(false); // Ensure loading stops even on catch
+    });
+
 
     // Set up the auth state listener
-    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, newSession) => {
-      console.log(`Auth state changed: ${event}`, { 
-        hasNewSession: !!newSession,
-        userId: newSession?.user?.id 
-      });
-      
-      setSession(newSession);
-      setUser(newSession?.user || null);
-      
-      // Handle specific auth events
-      if (event === 'SIGNED_IN') {
-        // Create profile and assign to network if needed
-        if (newSession?.user) {
-          await ensureProfile(newSession.user.id, newSession.user.email);
-        }
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      async (event, newSession) => {
+        console.log(`AuthProvider: Auth state changed - ${event}`, { hasNewSession: !!newSession });
+        setSession(newSession);
+        setUser(newSession?.user ?? null);
+
+        // --- Handle ensureProfile separately if needed, not blocking loading state ---
+        // if (event === 'SIGNED_IN' && newSession?.user) {
+        //   console.log('AuthProvider: User signed in, ensuring profile (async)...');
+        //   ensureProfile(newSession.user.id, newSession.user.email); // Run async, don't await here
+        // }
+
+        // **** REMOVED: setLoading(false) from here ****
+        // The loading state should only reflect the *initial* check.
+        // Subsequent updates just change session/user.
       }
-      
-      setLoading(false);
-    });
+    );
 
     // Clean up the subscription
     return () => {
-      console.log('Cleaning up auth listener');
-      if (authListener && authListener.subscription) {
+      console.log('AuthProvider: Cleaning up auth listener.');
+      if (authListener?.subscription) {
         authListener.subscription.unsubscribe();
       }
     };
-  }, []);
+  }, []); // Empty dependency array is correct here
 
   // Authentication functions
   const signUp = async (email, password) => {
@@ -232,11 +226,10 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Log state changes
   useEffect(() => {
-    console.log('Auth state updated:', { 
-      loading, 
-      hasUser: !!user, 
+    console.log('AuthProvider: State updated ->', {
+      loading,
+      hasUser: !!user,
       hasSession: !!session,
       hasError: !!authError
     });
