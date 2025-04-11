@@ -277,7 +277,7 @@ function NetworkAdminPage() {
       <div className="admin-error">
         <h2>Oops! Something went wrong</h2>
         <p>{error}</p>
-        <button onClick={() => navigate('/')}>Back to Dashboard</button>
+        <button onClick={() => navigate('/dashboard')}>Back to Dashboard</button>
       </div>
     );
   }
@@ -287,7 +287,7 @@ function NetworkAdminPage() {
       <div className="admin-unauthorized">
         <h2>Access Denied</h2>
         <p>You don't have permission to access the admin panel.</p>
-        <button onClick={() => navigate('/')}>Back to Dashboard</button>
+        <button onClick={() => navigate('/dashboard')}>Back to Dashboard</button>
       </div>
     );
   }
@@ -295,7 +295,7 @@ function NetworkAdminPage() {
   return (
     <div className="admin-container">
       <div className="admin-header">
-        <Link to="/" className="back-link">← Back to Dashboard</Link>
+        <Link to="/dashboard" className="back-link">← Back to Dashboard</Link>
         <h1>Network Admin Panel</h1>
       </div>
       
