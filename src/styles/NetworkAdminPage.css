@@ -1,0 +1,300 @@
+/* src/styles/NetworkAdminPage.css */
+.admin-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  }
+  
+  .admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #eaeaea;
+  }
+  
+  .admin-header h1 {
+    margin: 0;
+    color: #333;
+    text-align: center;
+    flex: 1;
+  }
+  
+  .back-link {
+    color: #1976d2;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s ease;
+  }
+  
+  .back-link:hover {
+    color: #1565c0;
+    text-decoration: underline;
+  }
+  
+  .admin-message {
+    background-color: #e8f5e9;
+    color: #388e3c;
+    padding: 12px 16px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+    border-left: 4px solid #388e3c;
+  }
+  
+  .admin-error-message {
+    background-color: #ffebee;
+    color: #d32f2f;
+    padding: 12px 16px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+    border-left: 4px solid #d32f2f;
+  }
+  
+  .admin-content {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+  }
+  
+  .admin-section {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    padding: 25px;
+  }
+  
+  .admin-section h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: #333;
+    font-size: 20px;
+    border-bottom: 1px solid #eaeaea;
+    padding-bottom: 10px;
+  }
+  
+  .form-group {
+    margin-bottom: 20px;
+  }
+  
+  .form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #333;
+  }
+  
+  .form-group input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+    transition: border-color 0.2s ease;
+  }
+  
+  .form-group input:focus {
+    border-color: #1976d2;
+    outline: none;
+  }
+  
+  .invite-input-group {
+    display: flex;
+    gap: 10px;
+  }
+  
+  .invite-input-group input {
+    flex: 1;
+  }
+  
+  .update-network-btn,
+  .invite-btn {
+    background-color: #1976d2;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    font-size: 16px;
+  }
+  
+  .update-network-btn:hover,
+  .invite-btn:hover {
+    background-color: #1565c0;
+  }
+  
+  .update-network-btn:disabled,
+  .invite-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+  
+  .members-table-container {
+    overflow-x: auto;
+  }
+  
+  .members-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .members-table th,
+  .members-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #eaeaea;
+  }
+  
+  .members-table th {
+    background-color: #f5f5f5;
+    font-weight: 500;
+    color: #555;
+  }
+  
+  .members-table tr:hover {
+    background-color: #f9f9f9;
+  }
+  
+  .members-table tr.current-user-row {
+    background-color: #e3f2fd;
+  }
+  
+  .member-name-cell {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .member-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+  
+  .member-avatar-placeholder {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: #e0e0e0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: #757575;
+  }
+  
+  .role-tag {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    text-transform: uppercase;
+  }
+  
+  .admin-role {
+    background-color: #ff9800;
+    color: white;
+  }
+  
+  .member-role {
+    background-color: #e0e0e0;
+    color: #757575;
+  }
+  
+  .member-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+  }
+  
+  .toggle-admin-btn,
+  .remove-member-btn {
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .toggle-admin-btn {
+    background-color: #1976d2;
+    color: white;
+    border: none;
+  }
+  
+  .toggle-admin-btn:hover {
+    background-color: #1565c0;
+  }
+  
+  .remove-member-btn {
+    background-color: transparent;
+    border: 1px solid #d32f2f;
+    color: #d32f2f;
+  }
+  
+  .remove-member-btn:hover {
+    background-color: #d32f2f;
+    color: white;
+  }
+  
+  .no-members {
+    color: #757575;
+    font-style: italic;
+  }
+  
+  .admin-loading,
+  .admin-error,
+  .admin-unauthorized {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 300px;
+    text-align: center;
+  }
+  
+  .spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(0, 0, 0, 0.1);
+    border-radius: 50%;
+    border-top-color: #1976d2;
+    animation: spin 1s ease-in-out infinite;
+    margin-bottom: 15px;
+  }
+  
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  
+  .admin-error button,
+  .admin-unauthorized button {
+    background-color: #1976d2;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 15px;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .invite-input-group {
+      flex-direction: column;
+    }
+    
+    .member-actions {
+      flex-direction: column;
+    }
+    
+    .toggle-admin-btn,
+    .remove-member-btn {
+      width: 100%;
+    }
+  }

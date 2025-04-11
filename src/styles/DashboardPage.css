@@ -1,0 +1,232 @@
+/* src/styles/DashboardPage.css */
+.dashboard-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  }
+  
+  .dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #eaeaea;
+  }
+  
+  .dashboard-header h1 {
+    margin: 0;
+    color: #333;
+  }
+  
+  .user-controls {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+  
+  .logout-btn {
+    background-color: transparent;
+    border: 1px solid #d32f2f;
+    color: #d32f2f;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .logout-btn:hover {
+    background-color: #d32f2f;
+    color: white;
+  }
+  
+  .dashboard-content {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+  }
+  
+  .user-profile-card,
+  .create-network-card,
+  .network-members-card,
+  .admin-controls-card {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    padding: 20px;
+    height: 100%;
+  }
+  
+  .profile-details {
+    margin-top: 15px;
+  }
+  
+  .profile-details p {
+    margin: 8px 0;
+  }
+  
+  .edit-profile-btn,
+  .create-network-btn,
+  .admin-panel-btn,
+  .view-profile-btn {
+    display: inline-block;
+    background-color: #1976d2;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    text-decoration: none;
+    margin-top: 15px;
+    text-align: center;
+    transition: background-color 0.2s ease;
+  }
+  
+  .edit-profile-btn:hover,
+  .create-network-btn:hover,
+  .admin-panel-btn:hover,
+  .view-profile-btn:hover {
+    background-color: #1565c0;
+  }
+  
+  .create-network-btn {
+    background-color: #4caf50;
+  }
+  
+  .create-network-btn:hover {
+    background-color: #388e3c;
+  }
+  
+  .members-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 15px;
+  }
+  
+  .member-item {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    border-radius: 6px;
+    background-color: #f9f9f9;
+    gap: 15px;
+  }
+  
+  .member-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #e0e0e0;
+  }
+  
+  .member-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  .avatar-placeholder {
+    font-size: 20px;
+    font-weight: bold;
+    color: #757575;
+  }
+  
+  .member-info {
+    flex: 1;
+  }
+  
+  .member-name {
+    font-weight: bold;
+    margin: 0;
+  }
+  
+  .member-email {
+    color: #757575;
+    margin: 5px 0 0 0;
+    font-size: 14px;
+  }
+  
+  .admin-badge {
+    display: inline-block;
+    font-size: 12px;
+    background-color: #ff9800;
+    color: white;
+    padding: 3px 8px;
+    border-radius: 12px;
+    margin-left: 10px;
+  }
+  
+  .view-profile-btn {
+    font-size: 13px;
+    padding: 6px 12px;
+    margin-top: 0;
+  }
+  
+  .dashboard-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 300px;
+  }
+  
+  .spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(0, 0, 0, 0.1);
+    border-radius: 50%;
+    border-top-color: #1976d2;
+    animation: spin 1s ease-in-out infinite;
+    margin-bottom: 15px;
+  }
+  
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  
+  .dashboard-error {
+    text-align: center;
+    color: #d32f2f;
+    padding: 30px;
+  }
+  
+  .dashboard-error button {
+    background-color: #1976d2;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 15px;
+  }
+  
+  .not-logged-in {
+    text-align: center;
+    padding: 50px 0;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .dashboard-content {
+      grid-template-columns: 1fr;
+    }
+    
+    .dashboard-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    
+    .user-controls {
+      width: 100%;
+      justify-content: space-between;
+    }
+  }
