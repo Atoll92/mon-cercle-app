@@ -62,7 +62,7 @@ function ProfilePage() {
       <div className="profile-error">
         <h2>Oops! Something went wrong</h2>
         <p>{error}</p>
-        <button onClick={() => navigate('/')}>Back to Dashboard</button>
+        <button onClick={() => navigate('/dashboard')}>Back to Dashboard</button>
       </div>
     );
   }
@@ -72,7 +72,7 @@ function ProfilePage() {
       <div className="profile-not-found">
         <h2>Profile Not Found</h2>
         <p>The user you're looking for doesn't exist or you don't have permission to view their profile.</p>
-        <button onClick={() => navigate('/')}>Back to Dashboard</button>
+        <button onClick={() => navigate('/dashboard')}>Back to Dashboard</button>
       </div>
     );
   }
