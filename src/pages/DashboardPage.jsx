@@ -111,6 +111,7 @@ function DashboardPage() {
 
         console.log('Profile loaded successfully:', data);
         setProfile(data);
+        setLoadingProfile(false);
         setRetryCount(0); // Reset retry count on success
 
         // Once profile is fetched, fetch members of the same network
