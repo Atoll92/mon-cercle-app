@@ -70,11 +70,11 @@ function LandingPage() {
       features: [
         {
           title: 'Réseaux Fermés',
-          description: 'Créez des réseaux privés, sur invitation, pour votre syndicat, organisation ou membres de groupe.'
+          description: 'Créez des réseaux privés, sur invitation, pour votre association, organisation professionnelle ou tout autre groupe.'
         },
         {
           title: 'Portfolios des Membres',
-          description: 'Permettez aux membres de présenter facilement leur travail, compétences et profils professionnels.'
+          description: 'Permettez aux membres de présenter facilement leur travail, compétences et profils professionnels, sans contenus tiers, sans pub, sans tracking.'
         },
         {
           title: 'Sécurisé et Privé',
