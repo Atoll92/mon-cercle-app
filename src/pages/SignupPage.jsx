@@ -259,6 +259,23 @@ function SignupPage() {
       } else {
         // Regular signup without invitation - still create a profile
         const profileCreated = await ensureProfile(data.user.id, email);
+
+        // create the profile here
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert([
+            {
+              id: data.user.id,
+              contact_email: email,
+              role: 'member', // Default role
+              updated_at: new Date(),
+            },
+          ]);
+        if (profileError) {
+          console.error('Error creating profile:', profileError);
+          setError('Failed to create profile. Please try again.');
+          return;
+        }
         
         if (!profileCreated) {
           console.error('Error creating basic profile');
