@@ -224,39 +224,21 @@ function SignupPage() {
   
       if (signUpError) throw signUpError;
   
+      if (!data?.user?.id) {
+        throw new Error("No user ID returned from signup process");
+      }
+  
       // 2. Process invitation if present
       if (inviteToken && networkId && invitationId && !invitationError) {
         try {
-          // Make sure there's a delay to allow Supabase to create the profile
-          // This is crucial - the profile might not be ready immediately
+          // Make sure there's a delay to allow Supabase to create any default records
           await new Promise(resolve => setTimeout(resolve, 1000));
           
-          // Update the user's profile with the network_id when they sign up
-          const { error: profileError } = await supabase
-            .from('profiles')
-            .update({ 
-              network_id: networkId,
-              contact_email: email,
-              role: 'member'
-            })
-            .eq('id', data.user.id);
-            
-          if (profileError) {
-            console.error('Error updating profile with network:', profileError);
-            // Try a different approach if update fails - insert instead of update
-            const { error: insertError } = await supabase
-              .from('profiles')
-              .insert([{ 
-                id: data.user.id,
-                network_id: networkId,
-                contact_email: email,
-                role: 'member'
-              }]);
-              
-            if (insertError) {
-              console.error('Error inserting profile:', insertError);
-              throw insertError;
-            }
+          // Use the ensureProfile function instead of manual update/insert
+          const profileCreated = await ensureProfile(data.user.id, email, networkId);
+          
+          if (!profileCreated) {
+            throw new Error("Failed to create or update profile with network information");
           }
           
           // Update invitation status
@@ -269,14 +251,21 @@ function SignupPage() {
             console.error('Error updating invitation status:', inviteError);
           }
           
-          setMessage('Signup successful! You have been added to ' + networkName + '. Please check your email to confirm your account.');
+          setMessage(`Signup successful! You have been added to ${networkName}. Please check your email to confirm your account.`);
         } catch (inviteError) {
           console.error('Error processing invitation:', inviteError);
           setMessage('Signup successful, but there was an issue with the invitation. Please check your email to confirm your account.');
         }
       } else {
-        // Regular signup without invitation
-        setMessage('Signup successful! Please check your email to confirm your account.');
+        // Regular signup without invitation - still create a profile
+        const profileCreated = await ensureProfile(data.user.id, email);
+        
+        if (!profileCreated) {
+          console.error('Error creating basic profile');
+          setMessage('Signup successful! Please check your email to confirm your account, then complete your profile setup.');
+        } else {
+          setMessage('Signup successful! Please check your email to confirm your account.');
+        }
       }
   
       // Clear form on success
