@@ -28,6 +28,7 @@ import {
   LockOutlined as LockIcon 
 } from '@mui/icons-material';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
+import ThreeJSBackground from '../components/ThreeJSBackground';
 
 // You can customize this theme or import from a separate theme file
 const theme = createTheme({
@@ -80,6 +81,7 @@ function LoginPage() {
 
   return (
     <ThemeProvider theme={theme}>
+      <ThreeJSBackground/>
       <Container maxWidth="sm">
         <Box
           sx={{
@@ -87,6 +89,7 @@ function LoginPage() {
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
+            zIndex:9
           }}
         >
           <Card 

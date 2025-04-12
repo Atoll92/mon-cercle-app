@@ -29,6 +29,7 @@ import {
   GroupAdd as GroupAddIcon, // Added for invitation icon
 } from '@mui/icons-material';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
+import ThreeJSBackground from '../components/ThreeJSBackground';
 
 // Reuse or import the same theme as LoginPage
 const theme = createTheme({
@@ -332,6 +333,7 @@ function SignupPage() {
 
   return (
     <ThemeProvider theme={theme}>
+      <ThreeJSBackground/>
       <Container maxWidth="sm">
         <Box
           sx={{
@@ -339,6 +341,7 @@ function SignupPage() {
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
+            zIndex:9
           }}
         >
           <Card
@@ -347,6 +350,7 @@ function SignupPage() {
               width: '100%',
               borderRadius: 2,
               overflow: 'hidden', // Match login style
+              zIndex:9
             }}
           >
             {/* --- Card Header --- */}
