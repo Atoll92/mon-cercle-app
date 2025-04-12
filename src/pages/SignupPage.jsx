@@ -1,7 +1,7 @@
 // src/pages/SignupPage.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseclient'; // Adjust path if needed
-import { Link as RouterLink, useNavigate } from 'react-router-dom'; // Use alias
+import { Link as RouterLink, useNavigate, useLocation } from 'react-router-dom'; // Added useLocation
 import {
   Alert,
   Box,
@@ -19,12 +19,14 @@ import {
   Stack,
   TextField,
   Typography,
+  Chip, // Added for showing invitation info
 } from '@mui/material';
 import {
   Visibility,
   VisibilityOff,
   Email as EmailIcon,
   LockOutlined as LockIcon,
+  GroupAdd as GroupAddIcon, // Added for invitation icon
 } from '@mui/icons-material';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 
@@ -50,6 +52,85 @@ function SignupPage() {
   const [error, setError] = useState(null);
   const [message, setMessage] = useState(''); // For success message
   const navigate = useNavigate();
+  const location = useLocation(); // Added to access URL params
+
+  // Invitation data states
+  const [inviteToken, setInviteToken] = useState(null);
+  const [networkName, setNetworkName] = useState('');
+  const [invitationId, setInvitationId] = useState(null);
+  const [networkId, setNetworkId] = useState(null);
+  const [invitationLoading, setInvitationLoading] = useState(false);
+  const [invitationError, setInvitationError] = useState(null);
+
+  // Extract invite token from URL when component mounts
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const invite = searchParams.get('invite');
+    
+    if (invite) {
+      setInviteToken(invite);
+      // Fetch network info based on the invite token
+      fetchNetworkInfo(invite);
+    }
+  }, [location]);
+
+  // Fetch network info based on the invite token
+  const fetchNetworkInfo = async (token) => {
+    if (!token) return;
+    
+    setInvitationLoading(true);
+    setInvitationError(null);
+    
+    try {
+      // Decode the token
+      const decoded = atob(token);
+      const parts = decoded.split(':');
+      
+      // Check if token has a valid format
+      if (parts.length !== 3 || parts[0] !== 'invite') {
+        throw new Error('Invalid invitation format');
+      }
+      
+      const invId = parts[1];
+      const netId = parts[2];
+      
+      setInvitationId(invId);
+      setNetworkId(netId);
+      
+      // Fetch network name
+      const { data: network, error } = await supabase
+        .from('networks')
+        .select('name')
+        .eq('id', netId)
+        .single();
+        
+      if (error) throw error;
+      
+      if (network) {
+        setNetworkName(network.name);
+        
+        // Optionally, also check if the invitation is still valid
+        const { data: invitation, error: inviteError } = await supabase
+          .from('invitations')
+          .select('status')
+          .eq('id', invId)
+          .single();
+          
+        if (inviteError) throw inviteError;
+        
+        if (invitation && invitation.status !== 'pending') {
+          throw new Error(`This invitation has already been ${invitation.status}.`);
+        }
+      } else {
+        throw new Error('Network not found');
+      }
+    } catch (error) {
+      console.error('Error processing invitation:', error);
+      setInvitationError(error.message || 'Invalid or expired invitation');
+    } finally {
+      setInvitationLoading(false);
+    }
+  };
 
   const handleClickShowPassword = () => {
     setShowPassword(!showPassword);
@@ -74,25 +155,60 @@ function SignupPage() {
     setLoading(true);
 
     try {
+      // 1. Create the auth account
       const { data, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
-        // Add options here if needed, like redirect URLs or user metadata
-        // options: {
-        //   emailRedirectTo: `${window.location.origin}/welcome` // Example redirect after confirmation
-        // }
       });
 
       if (signUpError) throw signUpError;
 
-      // Only set message on successful sign-up request
-      setMessage('Signup successful! Please check your email to confirm your account.');
-      setEmail(''); // Clear form on success
+      // 2. Process invitation if present
+      if (inviteToken && networkId && invitationId && !invitationError) {
+        try {
+          // Update the user's profile with the network_id when they sign up
+          const { error: profileError } = await supabase
+            .from('profiles')
+            .update({ 
+              network_id: networkId,
+              contact_email: email,
+              role: 'member' // Default role for invited users
+            })
+            .eq('id', data.user.id);
+            
+          if (profileError) {
+            console.error('Error updating profile with network:', profileError);
+          }
+          
+          // Update invitation status
+          const { error: inviteError } = await supabase
+            .from('invitations')
+            .update({ status: 'accepted' })
+            .eq('id', invitationId);
+            
+          if (inviteError) {
+            console.error('Error updating invitation status:', inviteError);
+          }
+          
+          setMessage('Signup successful! You have been added to ' + networkName + '. Please check your email to confirm your account.');
+        } catch (inviteError) {
+          console.error('Error processing invitation:', inviteError);
+          setMessage('Signup successful, but there was an issue with the invitation. Please check your email to confirm your account.');
+        }
+      } else {
+        // Regular signup without invitation
+        setMessage('Signup successful! Please check your email to confirm your account.');
+      }
+
+      // Clear form on success
+      setEmail(''); 
       setPassword('');
       setConfirmPassword('');
 
-      // Don't navigate immediately; user needs to confirm email.
-      // Consider showing the message prominently.
+      // Wait a bit before redirecting to login
+      setTimeout(() => {
+        navigate('/login');
+      }, 3000);
 
     } catch (error) {
       setError(error.message || "Failed to sign up");
@@ -139,6 +255,43 @@ function SignupPage() {
 
             {/* --- Card Content / Form --- */}
             <CardContent sx={{ p: 4 }}>
+              {/* Invitation Info Banner */}
+              {invitationLoading ? (
+                <Box sx={{ display: 'flex', justifyContent: 'center', my: 2 }}>
+                  <CircularProgress size={24} />
+                  <Typography variant="body2" sx={{ ml: 2 }}>
+                    Loading invitation details...
+                  </Typography>
+                </Box>
+              ) : invitationError ? (
+                <Alert severity="error" sx={{ mb: 3 }}>
+                  {invitationError}
+                </Alert>
+              ) : networkName && (
+                <Box 
+                  sx={{ 
+                    p: 2, 
+                    mb: 3, 
+                    border: '1px solid rgba(25, 118, 210, 0.3)', 
+                    borderRadius: 1,
+                    backgroundColor: 'rgba(25, 118, 210, 0.08)'
+                  }}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                    <GroupAddIcon color="primary" sx={{ mr: 1 }} />
+                    <Typography variant="subtitle1">
+                      Network Invitation
+                    </Typography>
+                  </Box>
+                  <Typography variant="body2">
+                    You're signing up to join: <Chip label={networkName} size="small" sx={{ fontWeight: 'bold' }} />
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ mt: 1, fontSize: '0.85rem' }}>
+                    Your account will be automatically added to this network when you register.
+                  </Typography>
+                </Box>
+              )}
+
               {error && (
                 <Alert
                   severity="error"
@@ -247,7 +400,7 @@ function SignupPage() {
                     fullWidth
                     variant="contained"
                     size="large"
-                    disabled={loading}
+                    disabled={loading || (inviteToken && (invitationLoading || invitationError))}
                     sx={{
                       mt: 2, // Margin top consistent with login
                       py: 1.2, // Padding vertical consistent with login
