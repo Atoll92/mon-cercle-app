@@ -80,7 +80,7 @@ function ProfilePage() {
   return (
     <div className="profile-container">
       <div className="profile-header">
-        <Link to="/" className="back-link">← Back to Dashboard</Link>
+        <Link to="/dashboard" className="back-link">← Back to Dashboard</Link>
         <h1>
           {isOwnProfile ? 'Your Profile' : `${profile.full_name || 'User'}'s Profile`}
         </h1>
