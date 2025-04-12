@@ -118,9 +118,8 @@ function LandingPage() {
       flexGrow: 1,
       position: 'relative',
       minHeight: '100vh', // Ensure full viewport height
-      overflow: 'hidden' , // Prevent any overflow
-      backgroundColor: '#526170' ,
-      zIndex: -2//
+      overflow: 'hidden', // Prevent any overflow
+      backgroundColor: '#001428'
     }}>
       {/* Three.js Background Animation */}
       <ThreeJSBackground />
@@ -129,62 +128,65 @@ function LandingPage() {
       <Box sx={{ position: 'relative', zIndex: 1 }}>
         {/* --- Navigation AppBar --- */}
         <AppBar 
-          position="static" 
+          position="relative" // Changed from static to relative for better stacking context
           color="transparent" 
           elevation={0} 
           sx={{ 
             borderBottom: (theme) => `1px solid ${theme.palette.divider}`,
             backdropFilter: 'blur(5px)', // Add blur effect
-            backgroundColor: 'rgba(255, 255, 255, 0.7)' // Semi-transparent background
+            backgroundColor: 'rgba(255, 255, 255, 0.7)', // Semi-transparent background
+            zIndex: 10 // Ensure higher than background
           }}
         >
-          <Toolbar sx={{ flexWrap: 'wrap' }}>
-            <Typography variant="h6" color="inherit" noWrap sx={{ flexGrow: 1 }}>
-              {/* You can add a logo here instead of text */}
-              {t.appName}
-            </Typography>
-            <nav style={{ display: 'flex', alignItems: 'center' }}>
-              {/* Language selector */}
-              <FormControl size="small" sx={{ minWidth: 120, mr: 2 }}>
-                <Select
-                  value={language}
-                  onChange={handleLanguageChange}
-                  displayEmpty
-                  size="small"
-                  startAdornment={<LanguageIcon fontSize="small" sx={{ mr: 1 }} />}
+          <div className="toolbar-wrapper" style={{ position: 'relative', zIndex: 50 }}> {/* Added wrapper with high z-index */}
+            <Toolbar sx={{ flexWrap: 'wrap' }}>
+              <Typography variant="h6" color="inherit" noWrap sx={{ flexGrow: 1 }}>
+                {/* You can add a logo here instead of text */}
+                {t.appName}
+              </Typography>
+              <nav style={{ display: 'flex', alignItems: 'center' }}>
+                {/* Language selector */}
+                <FormControl size="small" sx={{ minWidth: 120, mr: 2 }}>
+                  <Select
+                    value={language}
+                    onChange={handleLanguageChange}
+                    displayEmpty
+                    size="small"
+                    startAdornment={<LanguageIcon fontSize="small" sx={{ mr: 1 }} />}
+                  >
+                    <MenuItem value="en">English</MenuItem>
+                    <MenuItem value="fr">Français</MenuItem>
+                  </Select>
+                </FormControl>
+                
+                {/* Navigation links */}
+                <Link
+                  variant="button"
+                  color="text.primary"
+                  href="#features" // Link to features section ID
+                  sx={{ my: 1, mx: 1.5 }}
                 >
-                  <MenuItem value="en">English</MenuItem>
-                  <MenuItem value="fr">Français</MenuItem>
-                </Select>
-              </FormControl>
-              
-              {/* Navigation links */}
-              <Link
-                variant="button"
-                color="text.primary"
-                href="#features" // Link to features section ID
-                sx={{ my: 1, mx: 1.5 }}
-              >
-                {t.navFeatures}
-              </Link>
+                  {t.navFeatures}
+                </Link>
+                <Button
+                  component={RouterLink}
+                  to="/login"
+                  variant="outlined"
+                  sx={{ my: 1, mx: 1.5 }}
+                >
+                  {t.navLogin}
+                </Button>
+              </nav>
               <Button
                 component={RouterLink}
-                to="/login"
-                variant="outlined"
+                to="/signup"
+                variant="contained"
                 sx={{ my: 1, mx: 1.5 }}
               >
-                {t.navLogin}
+                {t.navSignUp}
               </Button>
-            </nav>
-            <Button
-              component={RouterLink}
-              to="/signup"
-              variant="contained"
-              sx={{ my: 1, mx: 1.5 }}
-            >
-              {t.navSignUp}
-            </Button>
-          </Toolbar>
+            </Toolbar>
+          </div>
         </AppBar>
 
         {/* --- Hero Section --- */}
@@ -195,10 +197,11 @@ function LandingPage() {
           sx={{ 
             pt: 8, 
             pb: 6,
+            position: 'relative',
+            zIndex: 2, // Reduced from 6 to ensure proper stacking
             // Add a subtle text shadow to improve readability over the animation
             '& h1, & h5': {
               textShadow: '0 0 10px rgba(255, 255, 255, 0.8)',
-              // color: white,
             }
           }}
         >
@@ -256,7 +259,9 @@ function LandingPage() {
             py: 8,
             backgroundColor: 'rgba(255, 255, 255, 0.8)',
             borderRadius: 2,
-            backdropFilter: 'blur(10px)'
+            backdropFilter: 'blur(10px)',
+            position: 'relative',
+            zIndex: 2 // Reduced from 6 to ensure proper stacking
           }} 
           maxWidth="lg"
         >
@@ -302,7 +307,9 @@ function LandingPage() {
             mt: 8,
             py: [3, 6], // Padding top/bottom responsive
             backgroundColor: 'rgba(255, 255, 255, 0.7)',
-            backdropFilter: 'blur(5px)'
+            backdropFilter: 'blur(5px)',
+            position: 'relative',
+            zIndex: 2 // Reduced from 6 to ensure proper stacking
           }}
         >
           <Grid container spacing={2} alignItems="center" justifyContent="center">

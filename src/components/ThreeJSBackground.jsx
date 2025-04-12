@@ -17,29 +17,38 @@ const ThreeJSBackground = () => {
     const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
     camera.position.z = 5;
     
-    // Create a renderer
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    // Create a renderer with better performance settings
+    const renderer = new THREE.WebGLRenderer({ 
+      antialias: true, 
+      alpha: true,
+      powerPreference: 'high-performance' // Prioritize performance
+    });
     renderer.setSize(width, height);
     renderer.setClearColor(0x000000, 0); // Transparent background
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Limit pixel ratio for better performance
     
     // Append the renderer to the DOM
     const currentRef = mountRef.current;
     currentRef.appendChild(renderer.domElement);
     
-    // Add window resize handler
+    // Add window resize handler with throttling
+    let resizeTimeout;
     const handleResize = () => {
-      const width = window.innerWidth;
-      const height = window.innerHeight;
-      renderer.setSize(width, height);
-      camera.aspect = width / height;
-      camera.updateProjectionMatrix();
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(() => {
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+        renderer.setSize(width, height);
+        camera.aspect = width / height;
+        camera.updateProjectionMatrix();
+      }, 200); // Throttle resize events
     };
     
     window.addEventListener('resize', handleResize);
     
-    // Create particles for a network-like animation
+    // Create particles for a network-like animation (reduced count for performance)
     const particlesGeometry = new THREE.BufferGeometry();
-    const particlesCount = 500;
+    const particlesCount = 400; // Reduced from 700
     
     // Create arrays to store particle positions and colors
     const posArray = new Float32Array(particlesCount * 3);
@@ -66,25 +75,26 @@ const ThreeJSBackground = () => {
     const particlesMaterial = new THREE.PointsMaterial({
       size: 0.05,
       transparent: true,
-      opacity: 0.8,
+      opacity: 0.9,
       vertexColors: true,
-      blending: THREE.AdditiveBlending
+      blending: THREE.AdditiveBlending,
+      sizeAttenuation: true
     });
     
     // Create points mesh
     const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
     scene.add(particlesMesh);
     
-    // Create lines between some particles to create a network effect
+    // Create lines between some particles (reduced for performance)
     const lineMaterial = new THREE.LineBasicMaterial({
-      color: 0x4b5bff,
+      color: 0x6ba5ff,
       transparent: true,
-      opacity: 0.2
+      opacity: 0.6
     });
     
     // Create lines connecting nearby particles
     const lineConnections = [];
-    const maxConnections = 200; // Limit number of connections for performance
+    const maxConnections = 50; // Reduced from 100 for performance
     const maxDistance = 3; // Maximum distance for a connection
     
     for (let i = 0; i < maxConnections; i++) {
@@ -123,8 +133,22 @@ const ThreeJSBackground = () => {
       }
     }
     
-    // Animation loop
-    const animate = () => {
+    // Animation loop with frame rate control
+    let lastTime = 0;
+    const targetFPS = 30; // Target 30 FPS to reduce load
+    const frameInterval = 1000 / targetFPS;
+    
+    const animate = (currentTime) => {
+      // Request next frame first to avoid missing frames
+      const animationId = requestAnimationFrame(animate);
+      
+      // Control frame rate
+      const deltaTime = currentTime - lastTime;
+      if (deltaTime < frameInterval) return;
+      
+      // Update last time, adjusting for the overflow time
+      lastTime = currentTime - (deltaTime % frameInterval);
+      
       // Rotate the entire particle system slowly
       particlesMesh.rotation.x += 0.0005;
       particlesMesh.rotation.y += 0.0008;
@@ -137,17 +161,15 @@ const ThreeJSBackground = () => {
       
       // Render the scene
       renderer.render(scene, camera);
-      
-      // Request animation frame
-      requestAnimationFrame(animate);
     };
     
     // Start animation
-    animate();
+    let animationId = requestAnimationFrame(animate);
     
     // Clean up on component unmount
     return () => {
       window.removeEventListener('resize', handleResize);
+      cancelAnimationFrame(animationId);
       
       // Dispose of resources
       particlesGeometry.dispose();
@@ -175,7 +197,7 @@ const ThreeJSBackground = () => {
         left: 0,
         width: '100%',
         height: '100%',
-        zIndex: -1, // Place it behind content
+        zIndex: 0, // Changed from -10 to 0 to make it visible but behind content
         pointerEvents: 'none' // Allow clicks to pass through to elements behind
       }}
     />
