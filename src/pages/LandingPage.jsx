@@ -14,6 +14,7 @@ import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import FormControl from '@mui/material/FormControl';
 import LanguageIcon from '@mui/icons-material/Language';
+import EuFlag from '../assets/eu_flag.jpg';
 
 import ThreeJSBackground from '../components/ThreeJSBackground';
 
@@ -117,7 +118,9 @@ function LandingPage() {
       flexGrow: 1,
       position: 'relative',
       minHeight: '100vh', // Ensure full viewport height
-      overflow: 'hidden'  // Prevent any overflow
+      overflow: 'hidden' , // Prevent any overflow
+      backgroundColor: '#526170' ,
+      zIndex: -2//
     }}>
       {/* Three.js Background Animation */}
       <ThreeJSBackground />
@@ -194,7 +197,8 @@ function LandingPage() {
             pb: 6,
             // Add a subtle text shadow to improve readability over the animation
             '& h1, & h5': {
-              textShadow: '0 0 10px rgba(255, 255, 255, 0.8)'
+              textShadow: '0 0 10px rgba(255, 255, 255, 0.8)',
+              // color: white,
             }
           }}
         >
@@ -202,7 +206,7 @@ function LandingPage() {
             component="h1"
             variant="h2"
             align="center"
-            color="text.primary"
+            color="white"
             gutterBottom
           >
             {t.heroTitle}
@@ -289,8 +293,8 @@ function LandingPage() {
         </Container>
         {/* --- End Features Section --- */}
 
-        {/* --- Footer --- */}
-        <Container
+         {/* --- Footer --- */}
+         <Container
           maxWidth="md"
           component="footer"
           sx={{
@@ -301,21 +305,36 @@ function LandingPage() {
             backdropFilter: 'blur(5px)'
           }}
         >
-          <Typography variant="body2" color="text.secondary" align="center">
-            {'© '}
-            <Link color="inherit" href="#"> {/* Optional: Link to your main site */}
-              {t.appName}
-            </Link>{' '}
-            {new Date().getFullYear()}
-            {'.'}
-          </Typography>
-          {/* Optional: Add links to Privacy Policy, Terms of Service */}
-          <Stack direction="row" justifyContent="center" spacing={2} sx={{ mt: 1 }}>
-            <Link component={RouterLink} to="/privacy" variant="body2" color="text.secondary">{t.privacy}</Link>
-            <Link component={RouterLink} to="/terms" variant="body2" color="text.secondary">{t.terms}</Link>
-          </Stack>
+          <Grid container spacing={2} alignItems="center" justifyContent="center">
+            <Grid item xs={12} sm="auto">
+              <Box 
+                component="img"
+                src={EuFlag}
+                alt="European Union Flag"
+                sx={{ 
+                  height: 40,
+                  display: 'block',
+                  mx: 'auto'
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} sm="auto">
+              <Typography variant="body2" color="text.secondary" align="center">
+                {'© '}
+                <Link color="inherit" href="#"> {/* Optional: Link to your main site */}
+                  {t.appName}
+                </Link>{' '}
+                {new Date().getFullYear()}
+                {'.'}
+              </Typography>
+              {/* Optional: Add links to Privacy Policy, Terms of Service */}
+              <Stack direction="row" justifyContent="center" spacing={2} sx={{ mt: 1 }}>
+                <Link component={RouterLink} to="/privacy" variant="body2" color="text.secondary">{t.privacy}</Link>
+                <Link component={RouterLink} to="/terms" variant="body2" color="text.secondary">{t.terms}</Link>
+              </Stack>
+            </Grid>
+          </Grid>
         </Container>
-        {/* --- End Footer --- */}
       </Box>
     </Box>
   );
