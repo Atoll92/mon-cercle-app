@@ -272,17 +272,13 @@ const DemoPage = () => {
                     bgcolor: '#f0f4f8'
                   }}
                 >
-                  <Box 
-                    component="img"
-                    src="/api/placeholder/500/300"
-                    alt="Dashboard Preview"
-                    sx={{ 
-                      maxWidth: '100%',
-                      maxHeight: '400px',
-                      boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-                      borderRadius: 1
-                    }}
-                  />
+                    <Box 
+                component="img"
+                src={mockDashboard}
+                alt="Dashboard Controls"
+                sx={{ width: '100%', borderRadius: 1 }}
+              />
+                  
                 </Paper>
               </Grid>
             </Grid>
@@ -709,7 +705,7 @@ const DemoPage = () => {
                       <ListItem>
                         <ListItemAvatar>
                           <Avatar>
-                            <PersonAddIcon />
+                            <VerifiedUser />
                           </Avatar>
                         </ListItemAvatar>
                         <ListItemText 
@@ -786,16 +782,11 @@ const DemoPage = () => {
                   </Typography>
                   
                   <Box 
-                    component="img"
-                    src="/api/placeholder/500/350"
-                    alt="Admin Dashboard"
-                    sx={{ 
-                      maxWidth: '100%',
-                      borderRadius: 1,
-                      boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-                      mb: 3
-                    }}
-                  />
+                component="img"
+                src={mockAdmin}
+                alt="Admin Controls"
+                sx={{ width: '100%', borderRadius: 1 }}
+              />
                   
                   <Typography variant="body2" sx={{ maxWidth: '90%', textAlign: 'center' }}>
                     The admin panel gives you complete control over your network settings,
