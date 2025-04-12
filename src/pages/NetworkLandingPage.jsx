@@ -30,13 +30,37 @@ import {
   AdminPanelSettings as AdminIcon,
   ContentCopy as ContentCopyIcon,
   Groups as GroupsIcon,
-  Info as InfoIcon
+  Info as InfoIcon,
+  Event as EventIcon,
 } from '@mui/icons-material';
+import { Calendar, dateFnsLocalizer } from 'react-big-calendar';
+import format from 'date-fns/format';
+import parse from 'date-fns/parse';
+import startOfWeek from 'date-fns/startOfWeek';
+import getDay from 'date-fns/getDay';
+import enUS from 'date-fns/locale/en-US';
+import 'react-big-calendar/lib/css/react-big-calendar.css';
+
+
+
+const locales = {
+    'en-US': enUS,
+  };
+  
+  const localizer = dateFnsLocalizer({
+    format,
+    parse,
+    startOfWeek,
+    getDay,
+    locales,
+  });
+  
 
 function NetworkLandingPage() {
   const { networkId } = useParams();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [events, setEvents] = useState([]);
   
   const [network, setNetwork] = useState(null);
   const [networkMembers, setNetworkMembers] = useState([]);
@@ -73,6 +97,16 @@ function NetworkLandingPage() {
         // Fetch network members
         const members = await fetchNetworkMembers(networkId);
         setNetworkMembers(members || []);
+
+           // Fetch network events
+           const { data: eventsData, error: eventsError } = await supabase
+           .from('network_events')
+           .select('*')
+           .eq('network_id', networkId)
+           .order('date', { ascending: true });
+ 
+         if (eventsError) console.error('Error fetching events:', eventsError);
+         setEvents(eventsData || []);
         
         // If user is logged in, get their profile to check if they're part of this network
         if (user) {
@@ -92,6 +126,8 @@ function NetworkLandingPage() {
       } finally {
         setLoading(false);
       }
+
+      
     };
     
     fetchData();
@@ -254,8 +290,9 @@ function NetworkLandingPage() {
           textColor="primary"
           variant="fullWidth"
         >
-          <Tab icon={<GroupsIcon />} label="Members" />
-          <Tab icon={<InfoIcon />} label="About" />
+           <Tab icon={<GroupsIcon />} label="Members" />
+  <Tab icon={<EventIcon />} label="Events" />
+  <Tab icon={<InfoIcon />} label="About" />
         </Tabs>
       </Box>
       
@@ -359,8 +396,76 @@ function NetworkLandingPage() {
           )}
         </Paper>
       )}
+
+{activeTab === 1 && (
+    <Paper sx={{ p: 3 }}>
+      <Typography variant="h5" component="h2" gutterBottom>
+        Events Calendar
+      </Typography>
+      <Divider sx={{ mb: 3 }} />
+      <Box sx={{ height: 600 }}>
+        <Calendar
+          localizer={localizer}
+          events={events.map(event => ({
+            title: event.title,
+            start: new Date(event.date),
+            end: new Date(event.date),
+            allDay: true,
+            resource: event,
+          }))}
+          startAccessor="start"
+          endAccessor="end"
+          style={{ height: 500 }}
+          components={{
+            event: ({ event }) => (
+              <div style={{ 
+                background: '#2196f3', 
+                color: 'white',
+                padding: '2px 5px',
+                borderRadius: '4px',
+                margin: '2px',
+                fontSize: '0.8rem'
+              }}>
+                {event.title}
+              </div>
+            )
+          }}
+        />
+      </Box>
       
-      {activeTab === 1 && (
+      {/* Event Details Section */}
+      <Box sx={{ mt: 4 }}>
+        <Typography variant="h6" gutterBottom>
+          Upcoming Events
+        </Typography>
+        <Grid container spacing={3}>
+          {events
+            .filter(event => new Date(event.date) > new Date())
+            .map(event => (
+              <Grid item xs={12} sm={6} md={4} key={event.id}>
+                <Card>
+                  <CardContent>
+                    <Typography variant="subtitle1" gutterBottom>
+                      {event.title}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {new Date(event.date).toLocaleDateString()} • {event.location}
+                    </Typography>
+                    {event.description && (
+                      <Typography variant="body2" sx={{ mt: 1 }}>
+                        {event.description}
+                      </Typography>
+                    )}
+                  </CardContent>
+                </Card>
+              </Grid>
+            ))}
+        </Grid>
+      </Box>
+    </Paper>
+  )}
+      
+      {activeTab === 2 && (
         <Paper sx={{ p: 3 }}>
           <Typography variant="h5" component="h2" gutterBottom>
             About This Network
