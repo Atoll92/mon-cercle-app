@@ -133,13 +133,13 @@ function NetworkAdminPage() {
       setError(null);
       setMessage('');
       
-      // Check if user already exists in profiles
+      // Check if user already exists
       const { data: existingUser, error: userError } = await supabase
         .from('profiles')
-        .select('id, network_id, contact_email')
+        .select('id, network_id, contact_email, full_name')
         .eq('contact_email', inviteEmail)
         .maybeSingle();
-        
+          
       if (userError && userError.code !== 'PGRST116') {
         throw userError;
       }
@@ -156,10 +156,29 @@ function NetworkAdminPage() {
           .from('profiles')
           .update({ network_id: network.id })
           .eq('id', existingUser.id);
-          
+            
         if (updateError) throw updateError;
         
-        setMessage(`User ${inviteEmail} added to your network!`);
+        // Send email notification using the Supabase Edge Function
+        try {
+          const { data: emailData, error: emailError } = await supabase.functions.invoke('network-invite', {
+            body: {
+              toEmail: existingUser.contact_email,
+              networkName: network.name,
+              inviterName: profile.full_name || 'Network Admin',
+              type: 'existing_user'
+            }
+          });
+            
+          if (emailError) {
+            console.error('Error sending email:', emailError);
+          }
+        } catch (emailError) {
+          console.error('Failed to send email notification:', emailError);
+          // Continue anyway, since the user was added to the network
+        }
+        
+        setMessage(`User ${inviteEmail} added to your network! Email notification sent.`);
         
         // Refresh member list
         const { data: updatedMembers, error: membersError } = await supabase
@@ -167,25 +186,51 @@ function NetworkAdminPage() {
           .select('*')
           .eq('network_id', network.id)
           .order('full_name', { ascending: true });
-          
+            
         if (membersError) throw membersError;
         setMembers(updatedMembers || []);
       } else {
-        // User doesn't exist - create an invitation
-        const { error: inviteError } = await supabase
+        // User doesn't exist - create an invitation record
+        const { data: invitation, error: inviteError } = await supabase
           .from('invitations')
           .insert([{ 
             email: inviteEmail, 
             network_id: network.id, 
             invited_by: user.id,
             status: 'pending',
-            role: 'member' // Default role
-          }]);
-          
+            role: 'member' // Default role for new users
+          }])
+          .select()
+          .single();
+            
         if (inviteError) throw inviteError;
         
-        // Here you would normally send an email, but for now we'll just update the UI
-        setMessage(`Invitation recorded for ${inviteEmail}. They'll be added to your network when they sign up.`);
+        // Generate a unique token or use the invitation ID
+        const inviteToken = btoa(`invite:${invitation.id}:${network.id}`);
+        const inviteLink = `${window.location.origin}/signup?invite=${inviteToken}`;
+        
+        // Send invitation email using the Supabase Edge Function
+        try {
+          const { data: emailData, error: emailError } = await supabase.functions.invoke('network-invite', {
+            body: {
+              toEmail: inviteEmail,
+              networkName: network.name,
+              inviterName: profile.full_name || 'Network Admin',
+              inviteLink: inviteLink,
+              type: 'new_user'
+            }
+          });
+            
+          if (emailError) {
+            console.error('Error sending email:', emailError);
+            throw new Error('Failed to send invitation email. Please try again.');
+          }
+        } catch (emailError) {
+          console.error('Failed to send invitation email:', emailError);
+          throw new Error('Failed to send invitation email. Please try again.');
+        }
+        
+        setMessage(`Invitation sent to ${inviteEmail}!`);
       }
       
       // Clear input
@@ -193,7 +238,7 @@ function NetworkAdminPage() {
       
     } catch (error) {
       console.error('Error inviting user:', error);
-      setError('Failed to send invitation. Please try again.');
+      setError(error.message || 'Failed to send invitation. Please try again.');
     } finally {
       setInviting(false);
     }
