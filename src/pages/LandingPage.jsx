@@ -138,8 +138,439 @@ function LandingPage() {
       ],
       privacy: 'Politique de Confidentialité',
       terms: 'Conditions d\'Utilisation'
+    },
+    es: {
+      appName: 'Mon Cercle App',
+      navFeatures: 'Características',
+      navLogin: 'Iniciar Sesión',
+      navSignUp: 'Registrarse',
+      heroTitle: 'Tu Centro de Redes Privadas',
+      heroSubtitle: 'Crea y gestiona fácilmente redes cerradas para que tus miembros se conecten, compartan portafolios y muestren información de contacto de forma segura.',
+      getStarted: 'Empezar',
+      viewDemo: 'Ver Demo',
+      featuresTitle: '¿Por Qué Elegir Üni?',
+      features: [
+        {
+          title: 'Redes Cerradas',
+          description: 'Crea redes privadas exclusivas por invitación para tu sindicato, organización o grupo de miembros.'
+        },
+        {
+          title: 'Portafolios de Miembros',
+          description: 'Permite que los miembros muestren su trabajo, habilidades y perfiles profesionales fácilmente.'
+        },
+        {
+          title: 'Seguro y Privado',
+          description: 'Controla el acceso y mantén los datos de tu red seguros dentro de tu grupo definido.'
+        },
+        {
+          title: 'Controles Administrativos',
+          description: 'Gestiona miembros, roles y configuraciones de red con herramientas administrativas simples.'
+        },
+        {
+          title: 'Cero Rastreo por Diseño',
+          description: 'Tus datos permanecen privados sin análisis ni tecnologías de seguimiento - respetamos completamente tu privacidad.'
+        },
+        {
+          title: 'Coordinación de Eventos',
+          description: 'Organiza reuniones, eventos y encuentros con funciones integradas de programación y confirmación.'
+        },
+        {
+          title: 'Soporte Humano 24/7',
+          description: 'Accede a asistencia humana real cualquier día de la semana con nuestro equipo de soporte dedicado.'
+        },
+        {
+          title: 'Solución White-Label',
+          description: 'Personaliza la plataforma con tu propia marca para una experiencia unificada para tus miembros.'
+        }
+      ],
+      privacy: 'Política de Privacidad',
+      terms: 'Términos de Servicio'
+    },
+    de: {
+      appName: 'Mon Cercle App',
+      navFeatures: 'Funktionen',
+      navLogin: 'Anmelden',
+      navSignUp: 'Registrieren',
+      heroTitle: 'Ihr Privates Netzwerk-Zentrum',
+      heroSubtitle: 'Erstellen und verwalten Sie geschlossene Netzwerke, in denen sich Mitglieder sicher verbinden, Portfolios teilen und Kontaktinformationen austauschen können.',
+      getStarted: 'Loslegen',
+      viewDemo: 'Demo Ansehen',
+      featuresTitle: 'Warum Üni Wählen?',
+      features: [
+        {
+          title: 'Geschlossene Netzwerke',
+          description: 'Erstellen Sie private, einladungsbasierte Netzwerke für Gewerkschaften, Organisationen oder Mitgliedergruppen.'
+        },
+        {
+          title: 'Mitglieder-Portfolios',
+          description: 'Mitglieder können ihre Arbeiten, Fähigkeiten und beruflichen Profile einfach präsentieren.'
+        },
+        {
+          title: 'Sicher & Privat',
+          description: 'Behalten Sie die Kontrolle über den Zugriff und schützen Sie die Daten Ihres Netzwerks innerhalb Ihrer Gruppe.'
+        },
+        {
+          title: 'Admin-Steuerung',
+          description: 'Verwalten Sie Mitglieder, Rollen und Netzwerkeinstellungen mit einfachen Administrationswerkzeugen.'
+        },
+        {
+          title: 'Kein Tracking durch Design',
+          description: 'Ihre Daten bleiben privat - keine Analysen oder Tracking-Technologien. Wir respektieren Ihre Privatsphäre vollständig.'
+        },
+        {
+          title: 'Veranstaltungsplanung',
+          description: 'Organisieren Sie mühelos Treffen, Events und Versammlungen mit integrierter Terminplanung und RSVP-Funktionen.'
+        },
+        {
+          title: '24/7 Menschlicher Support',
+          description: 'Täglich erreichbarer Support durch unser engagiertes Team - jederzeit bereit zu helfen.'
+        },
+        {
+          title: 'White-Label-Lösung',
+          description: 'Passen Sie die Plattform mit Ihrem Branding an für eine nahtlose Erfahrung Ihrer Mitglieder.'
+        }
+      ],
+      privacy: 'Datenschutzrichtlinie',
+      terms: 'Nutzungsbedingungen'
     }
-  };
+      ,
+    it: {
+    appName: 'Mon Cercle App',
+    navFeatures: 'Caratteristiche',
+    navLogin: 'Accedi',
+    navSignUp: 'Registrati',
+    heroTitle: 'Il Tuo Hub di Reti Private',
+    heroSubtitle: 'Crea e gestisci facilmente reti chiuse per consentire ai membri di connettersi, condividere portfolio e visualizzare informazioni di contatto in modo sicuro.',
+    getStarted: 'Inizia Ora',
+    viewDemo: 'Vedi Demo',
+    featuresTitle: 'Perché Scegliere Üni?',
+    features: [
+      {
+        title: 'Reti Chiuse',
+        description: 'Crea reti private ad invito per sindacati, organizzazioni o gruppi di membri'
+      },
+      {
+        title: 'Portfolio Membri',
+        description: 'Mostra lavoro, competenze e profili professionali senza contenuti di terzi'
+      },
+      {
+        title: 'Sicuro e Privato',
+        description: 'Controllo degli accessi e protezione dei dati all\'interno del gruppo definito'
+      },
+      {
+        title: 'Controlli Admin',
+        description: 'Gestione membri, ruoli e impostazioni della rete con strumenti semplici'
+      },
+      {
+        title: 'Zero Tracciamento',
+        description: 'Nessuna analisi o tecnologia di tracciamento - privacy totale garantita'
+      },
+      {
+        title: 'Organizzazione Eventi',
+        description: 'Pianifica incontri ed eventi con funzioni integrate di programmazione'
+      },
+      {
+        title: 'Supporto Umano 24/7',
+        description: 'Assistenza reale ogni giorno con il nostro team dedicato'
+      },
+      {
+        title: 'Soluzione White-Label',
+        description: 'Personalizza la piattaforma con il tuo branding aziendale'
+      }
+    ],
+    privacy: 'Privacy Policy',
+    terms: 'Termini di Servizio'
+  },
+  pt: {
+    appName: 'Mon Cercle App',
+    navFeatures: 'Recursos',
+    navLogin: 'Entrar',
+    navSignUp: 'Inscrever-se',
+    heroTitle: 'Seu Hub de Rede Privada',
+    heroSubtitle: 'Crie e gerencie redes fechadas para membros se conectarem, compartilharem portfólios e informações de contato com segurança.',
+    getStarted: 'Começar',
+    viewDemo: 'Ver Demonstração',
+    featuresTitle: 'Por Que Escolher Üni?',
+    features: [
+      {
+        title: 'Redes Fechadas',
+        description: 'Crie redes privadas por convite para sindicatos ou organizações'
+      },
+      {
+        title: 'Portfólios',
+        description: 'Exiba trabalhos, habilidades e perfis profissionais dos membros'
+      },
+      {
+        title: 'Seguro e Privado',
+        description: 'Controle de acesso e proteção de dados dentro do grupo'
+      },
+      {
+        title: 'Controles Admin',
+        description: 'Gerencie membros e configurações com ferramentas simples'
+      },
+      {
+        title: 'Sem Rastreamento',
+        description: 'Nenhuma análise ou tecnologia de tracking - privacidade total'
+      },
+      {
+        title: 'Eventos',
+        description: 'Organize reuniões e eventos com agendamento integrado'
+      },
+      {
+        title: 'Suporte 24/7',
+        description: 'Assistência humana real disponível todos os dias'
+      },
+      {
+        title: 'White-Label',
+        description: 'Personalize com sua marca para experiência consistente'
+      }
+    ],
+    privacy: 'Política de Privacidade',
+    terms: 'Termos de Serviço'
+  },
+  ar: {
+    appName: 'مون سيركل',
+    navFeatures: 'الميزات',
+    navLogin: 'تسجيل الدخول',
+    navSignUp: 'التسجيل',
+    heroTitle: 'مركز الشبكات الخاصة الخاص بك',
+    heroSubtitle: 'أنشئ وشبكات مغلقة لإتاحة التواصل الآمن بين الأعضاء ومشاركة الأعمال وعرض معلومات الاتصال.',
+    getStarted: 'ابدأ الآن',
+    viewDemo: 'عرض التجربة',
+    featuresTitle: 'لماذا تختار يوني؟',
+    features: [
+      {
+        title: 'شبكات مغلقة',
+        description: 'شبكات خاصة بالدعوة فقط للنقابات أو المنظمات'
+      },
+      {
+        title: 'ملفات الأعضاء',
+        description: 'عرض الأعمال والمهارات والملفات المهنية بدون محتوى تابع لجهات خارجية'
+      },
+      {
+        title: 'آمن وخاص',
+        description: 'تحكم كامل في الوصول وحماية البيانات داخل المجموعة'
+      },
+      {
+        title: 'إعدادات الأدمن',
+        description: 'إدارة الأعضاء والإعدادات بأدوات بسيطة'
+      },
+      {
+        title: 'بدون تتبع',
+        description: 'لا تحليلات أو تقنيات تتبع - خصوصية كاملة'
+      },
+      {
+        title: 'تنظيم الفعاليات',
+        description: 'خطط للاجتماعات والأحداث مع أدوات متكاملة'
+      },
+      {
+        title: 'دعم بشري 24/7',
+        description: 'مساعدة حقيقية متاحة كل أيام الأسبوع'
+      },
+      {
+        title: 'تخصيص كامل',
+        description: 'اطبع شبكتك بعلامتك التجارية الخاصة'
+      }
+    ],
+    privacy: 'سياسة الخصوصية',
+    terms: 'شروط الخدمة'
+  },
+  nl: {
+    appName: 'Mon Cercle App',
+    navFeatures: 'Functies',
+    navLogin: 'Inloggen',
+    navSignUp: 'Aanmelden',
+    heroTitle: 'Uw Privé Netwerk Hub',
+    heroSubtitle: 'Maak en beheer gesloten netwerken zodat leden veilig kunnen verbinden, portfolio\'s delen en contactgegevens tonen.',
+    getStarted: 'Start Nu',
+    viewDemo: 'Demo Bekijken',
+    featuresTitle: 'Waarom Üni Kiezen?',
+    features: [
+      {
+        title: 'Gesloten Netwerken',
+        description: 'Privé uitnodigingsnetwerken voor vakbonden/organisaties'
+      },
+      {
+        title: 'Ledenportfolio\'s',
+        description: 'Toon werk, vaardigheden en profielen zonder externe content'
+      },
+      {
+        title: 'Veilig & Privé',
+        description: 'Toegangscontrole en databescherming binnen de groep'
+      },
+      {
+        title: 'Admin Tools',
+        description: 'Leden en netwerkinstellingen eenvoudig beheren'
+      },
+      {
+        title: 'Geen Tracking',
+        description: 'Geen analyses of tracking - volledige privacy'
+      },
+      {
+        title: 'Evenementen',
+        description: 'Plan bijeenkomsten met geïntegreerde tools'
+      },
+      {
+        title: '24/7 Support',
+        description: 'Echte menselijke hulp elke dag beschikbaar'
+      },
+      {
+        title: 'White-Label',
+        description: 'Aanpassen met uw eigen huisstijl'
+      }
+    ],
+    privacy: 'Privacybeleid',
+    terms: 'Servicevoorwaarden'
+  },
+  el: {
+    appName: 'Mon Cercle',
+    navFeatures: 'Χαρακτηριστικά',
+    navLogin: 'Σύνδεση',
+    navSignUp: 'Εγγραφή',
+    heroTitle: 'Κέντρο Ιδιωτικών Δικτύων',
+    heroSubtitle: 'Δημιουργήστε κλειστά δίκτυα για ασφαλή σύνδεση μελών, κοινή χρήση portfolio και επαφών.',
+    getStarted: 'Ξεκινήστε Τώρα',
+    viewDemo: 'Προβολή Demo',
+    featuresTitle: 'Γιατί να Επιλέξετε το Üni;',
+    features: [
+      {
+        title: 'Κλειστά Δίκτυα',
+        description: 'Ιδιωτικά δίκτυα με πρόσκληση για συνδικάτα/οργανώσεις'
+      },
+      {
+        title: 'Portfolio Μελών',
+        description: 'Προβολή εργασιών, δεξιοτήτων και επαγγελματικών προφίλ'
+      },
+      {
+        title: 'Ασφαλής & Ιδιωτικό',
+        description: 'Έλεγχος πρόσβασης και προστασία δεδομένων'
+      },
+      {
+        title: 'Διαχείριση',
+        description: 'Διαχείριση μελών και ρυθμίσεων με απλά εργαλεία'
+      },
+      {
+        title: 'Χωρίς Παρακολούθηση',
+        description: 'Ούτε ανάλυση ούτε τεχνολογίες tracking'
+      },
+      {
+        title: 'Διοργάνωση Εκδηλώσεων',
+        description: 'Προγραμματισμός συναντήσεων και events'
+      },
+      {
+        title: '24/7 Υποστήριξη',
+        description: 'Πραγματική βοήθεια από ανθρώπους κάθε μέρα'
+      },
+      {
+        title: 'White-Label',
+        description: 'Προσαρμογή με το branding σας'
+      }
+    ],
+    privacy: 'Πολιτική Απορρήτου',
+    terms: 'Όροι Χρήσης'
+  },
+  pl: {
+    appName: 'Mon Cercle',
+    navFeatures: 'Funkcje',
+    navLogin: 'Zaloguj',
+    navSignUp: 'Zarejestruj',
+    heroTitle: 'Twoje Centrum Sieci Prywatnych',
+    heroSubtitle: 'Twórz zamknięte sieci dla bezpiecznego kontaktu członków, udostępniania portfolio i informacji kontaktowych.',
+    getStarted: 'Rozpocznij',
+    viewDemo: 'Zobacz Demo',
+    featuresTitle: 'Dlaczego Üni?',
+    features: [
+      {
+        title: 'Sieci Zamknięte',
+        description: 'Prywatne sieci tylko z zaproszeniami dla związków/organizacji'
+      },
+      {
+        title: 'Portfolio Członków',
+        description: 'Pokazuj prace, umiejętności i profile zawodowe'
+      },
+      {
+        title: 'Bezpieczne i Prywatne',
+        description: 'Kontrola dostępu i ochrona danych w grupie'
+      },
+      {
+        title: 'Panel Admina',
+        description: 'Zarządzaj członkami i ustawieniami sieci'
+      },
+      {
+        title: 'Brak Śledzenia',
+        description: 'Zero analityki i technologii śledzących'
+      },
+      {
+        title: 'Organizacja Wydarzeń',
+        description: 'Planuj spotkania zintegrowanym kalendarzem'
+      },
+      {
+        title: 'Wsparcie 24/7',
+        description: 'Prawdziwa pomoc dostępna każdego dnia'
+      },
+      {
+        title: 'White-Label',
+        description: 'Dostosuj platformę do swojej marki'
+      }
+    ],
+    privacy: 'Polityka Prywatności',
+    terms: 'Warunki Użytkowania'
+  },
+  zh: {
+    appName: 'ÜNI 圈子',
+    navFeatures: '功能',
+    navLogin: '登录',
+    navSignUp: '注册',
+    heroTitle: '您的私人网络中心',
+    heroSubtitle: '创建和管理封闭网络，让成员安全连接、共享作品集并显示联系信息。',
+    getStarted: '立即开始',
+    viewDemo: '查看演示',
+    featuresTitle: '为什么选择ÜNI？',
+    features: [
+      {
+        title: '封闭网络',
+        description: '为工会/组织创建仅限邀请的私人网络'
+      },
+      {
+        title: '成员作品集',
+        description: '展示作品、技能和专业档案'
+      },
+      {
+        title: '安全私密',
+        description: '访问控制和组内数据保护'
+      },
+      {
+        title: '管理控制',
+        description: '使用简单工具管理成员和设置'
+      },
+      {
+        title: '无追踪设计',
+        description: '没有分析或跟踪技术 - 完全隐私'
+      },
+      {
+        title: '活动组织',
+        description: '使用集成工具计划会议和活动'
+      },
+      {
+        title: '24/7 人工支持',
+        description: '每天提供真人协助'
+      },
+      {
+        title: '白标解决方案',
+        description: '使用您的品牌自定义平台'
+      }
+    ],
+    privacy: '隐私政策',
+    terms: '服务条款'
+  }
+};
+
+// Update language selector in AppBar:
+
+
+// ... rest of the component remains unchanged
+  
+
 
   // Get current language content
   const t = content[language];
@@ -215,17 +646,26 @@ function LandingPage() {
               <nav style={{ display: 'flex', alignItems: 'center' }}>
                 {/* Language selector */}
                 <FormControl size="small" sx={{ minWidth: 120, mr: 2 }}>
-                  <Select
-                    value={language}
-                    onChange={handleLanguageChange}
-                    displayEmpty
-                    size="small"
-                    startAdornment={<LanguageIcon fontSize="small" sx={{ mr: 1 }} />}
-                  >
-                    <MenuItem value="en">English</MenuItem>
-                    <MenuItem value="fr">Français</MenuItem>
-                  </Select>
-                </FormControl>
+                <Select
+                  value={language}
+                  onChange={handleLanguageChange}
+                  displayEmpty
+                  size="small"
+                  startAdornment={<LanguageIcon fontSize="small" sx={{ mr: 1 }} />}
+                >
+                  <MenuItem value="en">English</MenuItem>
+                  <MenuItem value="fr">Français</MenuItem>
+                  <MenuItem value="es">Español</MenuItem>
+                  <MenuItem value="de">Deutsch</MenuItem>
+                  <MenuItem value="it">Italiano</MenuItem>
+                  <MenuItem value="pt">Português</MenuItem>
+                  <MenuItem value="ar">العربية</MenuItem>
+                  <MenuItem value="nl">Nederlands</MenuItem>
+                  <MenuItem value="el">Ελληνικά</MenuItem>
+                  <MenuItem value="pl">Polski</MenuItem>
+                  <MenuItem value="zh">中文</MenuItem>
+                </Select>
+              </FormControl>
                 
                 {/* Navigation links */}
                 <Link
