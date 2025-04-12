@@ -43,6 +43,69 @@ function LandingPage() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
+  const slidingAnimation = {
+    '@keyframes slide': {
+      '0%': { transform: 'translateX(0)' },
+      '100%': { transform: 'translateX(-50%)' }
+    },
+    animation: 'slide 20s linear infinite',
+    '&:hover': {
+      animationPlayState: 'paused'
+    }
+  };
+
+  const clients = [
+    {
+      name: "Colas",
+      logo: "https://doublegeste.com/dg1/Clients/Colas_logo_vector.webp",
+      style: { filter: 'invert() brightness(0)' }
+    },
+    {
+      name: "Armani",
+      logo: "https://doublegeste.com/dg1/Clients/Armani-Logo.wine.svg",
+      style: { transform: 'scale(1.6)' }
+    },
+    {
+      name: "Nike",
+      logo: "https://doublegeste.com/dg1/Clients/Nike%2C_Inc.-Nike-White-Logo.wine.svg",
+      style: { filter: 'invert(100%)' }
+    },
+    {
+      name: "La Fémis",
+      logo: "https://doublegeste.com/dg1/Clients/800px-La_F%C3%A9mis_logo.svg.webp"
+    },
+    {
+      name: "Beaux Arts",
+      logo: "https://doublegeste.com/dg1/Clients/800px-Logo_Beaux_Arts.webp"
+    },
+    {
+      name: "EDF",
+      logo: "https://doublegeste.com/dg1/Clients/edf-logo-2.webp",
+      style: { filter: 'brightness(0) grayscale(200%)' }
+    },
+    {
+      name: "Air France",
+      logo: "https://doublegeste.com/dg1/Clients/PikPng.com_air-france-logo-png_3594396.webp"
+    },
+    {
+      name: "Panzani",
+      logo: "https://doublegeste.com/dg1/Clients/panzani_noir.webp"
+    },
+    {
+      name: "L'Oréal",
+      logo: "https://doublegeste.com/dg1/Clients/LOreal_logo.svg"
+    },
+    {
+      name: "Le Fooding",
+      logo: "https://doublegeste.com/dg1/Clients/lefooding-com-logos-idwUqLDSKp.svg"
+    },
+    {
+      name: "GPS",
+      logo: "https://doublegeste.com/dg1/Clients/logo_GPS.svg"
+    },
+    // Add remaining clients...
+  ];
+
   // --- Text content for different languages ---
   const content = {
     en: {
@@ -232,8 +295,8 @@ function LandingPage() {
       ],
       privacy: 'Datenschutzrichtlinie',
       terms: 'Nutzungsbedingungen'
-    }
-      ,
+    },
+    
     it: {
     appName: 'Mon Cercle App',
     navFeatures: 'Caratteristiche',
@@ -911,6 +974,76 @@ function LandingPage() {
       </Grid>
     ))}
   </Grid>
+</Container>
+
+<Container 
+  sx={{ 
+    py: 4,
+    overflow: 'hidden',
+    position: 'relative',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backdropFilter: 'blur(8px)',
+    my: 6
+  }}
+>
+  <Typography
+    variant="h4"
+    align="center"
+    gutterBottom
+    sx={{
+      color: 'white',
+      mb: 4,
+      fontWeight: 500,
+      textShadow: '0 2px 4px rgba(0,0,0,0.2)'
+    }}
+  >
+    {t.trustTitle}
+  </Typography>
+  
+  <Box sx={{ 
+    display: 'flex',
+    width: 'fit-content',
+    ...slidingAnimation
+  }}>
+    {/* Double the array for seamless looping */}
+    {[...clients, ...clients].map((client, index) => (
+      <a 
+        key={index} 
+        href={client.website} 
+        target="_blank" 
+        rel="noopener noreferrer"
+        style={{ textDecoration: 'none' }}
+      >
+        <Box
+          sx={{
+            px: 4,
+            display: 'flex',
+            alignItems: 'center',
+            transition: 'all 0.3s ease',
+            '&:hover': {
+              transform: 'scale(1.05)'
+            }
+          }}
+        >
+          <img 
+            src={client.logoUrl} 
+            alt={client.name}
+            style={{
+              height: 40,
+              maxWidth: 180,
+              filter: 'grayscale(100%)',
+              opacity: 0.8,
+              transition: 'all 0.3s ease',
+              '&:hover': {
+                filter: 'grayscale(0%)',
+                opacity: 1
+              }
+            }}
+          />
+        </Box>
+      </a>
+    ))}
+  </Box>
 </Container>
         {/* --- End Features Section --- */}
 
