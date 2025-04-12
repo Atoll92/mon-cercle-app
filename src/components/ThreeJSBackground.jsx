@@ -48,7 +48,7 @@ const ThreeJSBackground = () => {
     
     // Create particles for a network-like animation (reduced count for performance)
     const particlesGeometry = new THREE.BufferGeometry();
-    const particlesCount = 400; // Reduced from 700
+    const particlesCount = 900; // Reduced from 700
     
     // Create arrays to store particle positions and colors
     const posArray = new Float32Array(particlesCount * 3);
@@ -94,7 +94,7 @@ const ThreeJSBackground = () => {
     
     // Create lines connecting nearby particles
     const lineConnections = [];
-    const maxConnections = 50; // Reduced from 100 for performance
+    const maxConnections = 1000; // Reduced from 100 for performance
     const maxDistance = 3; // Maximum distance for a connection
     
     for (let i = 0; i < maxConnections; i++) {
