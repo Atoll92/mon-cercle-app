@@ -71,6 +71,8 @@ function NetworkLandingPage() {
   const [copied, setCopied] = useState(false);
   const [showShareLink, setShowShareLink] = useState(false);
   const [shareableLink, setShareableLink] = useState('');
+  const [calendarDate, setCalendarDate] = useState(new Date());
+const [calendarView, setCalendarView] = useState('month');
   
   useEffect(() => {
     const fetchData = async () => {
@@ -404,33 +406,37 @@ function NetworkLandingPage() {
       </Typography>
       <Divider sx={{ mb: 3 }} />
       <Box sx={{ height: 600 }}>
-        <Calendar
-          localizer={localizer}
-          events={events.map(event => ({
-            title: event.title,
-            start: new Date(event.date),
-            end: new Date(event.date),
-            allDay: true,
-            resource: event,
-          }))}
-          startAccessor="start"
-          endAccessor="end"
-          style={{ height: 500 }}
-          components={{
-            event: ({ event }) => (
-              <div style={{ 
-                background: '#2196f3', 
-                color: 'white',
-                padding: '2px 5px',
-                borderRadius: '4px',
-                margin: '2px',
-                fontSize: '0.8rem'
-              }}>
-                {event.title}
-              </div>
-            )
-          }}
-        />
+      <Calendar
+  localizer={localizer}
+  events={events.map(event => ({
+    title: event.title,
+    start: new Date(event.date),
+    end: new Date(event.date),
+    allDay: true,
+    resource: event,
+  }))}
+  date={calendarDate}
+  view={calendarView}
+  onView={setCalendarView}
+  onNavigate={setCalendarDate}
+  startAccessor="start"
+  endAccessor="end"
+  style={{ height: 500 }}
+  components={{
+    event: ({ event }) => (
+      <div style={{ 
+        background: '#2196f3', 
+        color: 'white',
+        padding: '2px 5px',
+        borderRadius: '4px',
+        margin: '2px',
+        fontSize: '0.8rem'
+      }}>
+        {event.title}
+      </div>
+    )
+  }}
+/>
       </Box>
       
       {/* Event Details Section */}
