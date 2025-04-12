@@ -15,6 +15,7 @@ import Select from '@mui/material/Select';
 import FormControl from '@mui/material/FormControl';
 import LanguageIcon from '@mui/icons-material/Language';
 import EuFlag from '../assets/eu_flag.jpg';
+import Logo from '../assets/logo.svg';
 
 import ThreeJSBackground from '../components/ThreeJSBackground';
 
@@ -23,6 +24,8 @@ import PeopleIcon from '@mui/icons-material/People'; // For closed networks
 import AccountBoxIcon from '@mui/icons-material/AccountBox'; // For portfolios
 import LockIcon from '@mui/icons-material/Lock'; // For privacy/security
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings'; // For admin controls
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import EventIcon from '@mui/icons-material/Event'; // For event organization
 
 // --- Component Definition ---
 function LandingPage() {
@@ -56,6 +59,14 @@ function LandingPage() {
         {
           title: 'Admin Controls',
           description: 'Manage members, roles, and network settings with simple administrative tools.'
+        },
+        {
+          title: 'Zero Tracking by Design',
+          description: 'Your data stays private with no analytics or tracking technologies - we respect your privacy completely.'
+        },
+        {
+          title: 'Event Coordination',
+          description: 'Seamlessly organize meetings, events, and gatherings with integrated scheduling and RSVP features.'
         }
       ],
       privacy: 'Privacy Policy',
@@ -86,6 +97,14 @@ function LandingPage() {
         {
           title: 'Contrôles Administratifs',
           description: 'Gérez les membres, les rôles et les paramètres du réseau avec des outils administratifs simples.'
+        },
+        {
+          title: 'Zéro Pistage par Conception',
+          description: 'Vos données restent privées sans aucune analyse ni technologie de suivi - nous respectons totalement votre vie privée.'
+        },
+        {
+          title: 'Coordination d\'Événements',
+          description: 'Organisez facilement des réunions, événements et rassemblements avec des fonctionnalités intégrées de planification et de confirmation de présence.'
         }
       ],
       privacy: 'Politique de Confidentialité',
@@ -103,7 +122,9 @@ function LandingPage() {
       <PeopleIcon fontSize="large" color="primary" />,
       <AccountBoxIcon fontSize="large" color="primary" />,
       <LockIcon fontSize="large" color="primary" />,
-      <AdminPanelSettingsIcon fontSize="large" color="primary" />
+      <AdminPanelSettingsIcon fontSize="large" color="primary" />,
+      <VisibilityOffIcon fontSize="large" color="primary" />,
+      <EventIcon fontSize="large" color="primary" />
     ][index]
   }));
 
@@ -142,6 +163,18 @@ function LandingPage() {
             <Toolbar sx={{ flexWrap: 'wrap' }}>
               <Typography variant="h6" color="inherit" noWrap sx={{ flexGrow: 1 }}>
                 {/* You can add a logo here instead of text */}
+                <Box 
+                component="img"
+                src={Logo}
+                alt="Dots Logo"
+                sx={{ 
+                  height: 60,
+                  display: 'block',
+                  // mx: 'auto',
+           
+                  padding: '10px'
+                }}
+              />
                 {t.appName}
               </Typography>
               <nav style={{ display: 'flex', alignItems: 'center' }}>
@@ -221,10 +254,12 @@ function LandingPage() {
             component="p" 
             sx={{ 
               mb: 4,
-              backgroundColor: 'rgba(255, 255, 255, 0.7)',
               p: 2,
-              borderRadius: 1,
-              backdropFilter: 'blur(5px)'
+              borderRadius: '2rem',
+              backdropFilter: 'blur(5px)',
+              border: 'solid 1px',
+              padding: '10px 50px',
+              color:'white'
             }}
           >
             {t.heroSubtitle}
@@ -257,20 +292,23 @@ function LandingPage() {
           id="features" 
           sx={{ 
             py: 8,
-            backgroundColor: 'rgba(255, 255, 255, 0.8)',
+            // backgroundColor: 'rgba(255, 255, 255, 0.8)',
             borderRadius: 2,
+            border: 'solid white 1px',
+            padding: '50px',
             backdropFilter: 'blur(10px)',
             position: 'relative',
             zIndex: 2 // Reduced from 6 to ensure proper stacking
+            
           }} 
           maxWidth="lg"
         >
-          <Typography component="h2" variant="h4" align="center" color="text.primary" gutterBottom>
+          <Typography component="h2" variant="h4" align="center" color="white" gutterBottom>
             {t.featuresTitle}
           </Typography>
           <Grid container spacing={4} sx={{ mt: 4 }} justifyContent="center">
             {features.map((feature) => (
-              <Grid item key={feature.title} xs={12} sm={6} md={3}> {/* Adjust grid sizing as needed */}
+              <Grid item key={feature.title} xs={12} sm={6} md={4}> {/* Changed from md={3} to md={4} for 3 items per row */}
                 <Box 
                   textAlign="center"
                   sx={{
