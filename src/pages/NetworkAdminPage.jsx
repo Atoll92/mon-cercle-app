@@ -3,7 +3,41 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/authcontext';
 import { supabase } from '../supabaseclient';
-import '@/styles/NetworkAdminPage.css';
+import {
+  Container,
+  Box,
+  Typography,
+  Button,
+  Paper,
+  TextField,
+  CircularProgress,
+  Grid,
+  Card,
+  CardContent,
+  Alert,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Avatar,
+  Chip,
+  Divider,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle
+} from '@mui/material';
+import {
+  ArrowBack as ArrowBackIcon,
+  PersonAdd as PersonAddIcon,
+  Save as SaveIcon,
+  AdminPanelSettings as AdminIcon,
+  PersonRemove as PersonRemoveIcon
+} from '@mui/icons-material';
+
 function NetworkAdminPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -19,6 +53,11 @@ function NetworkAdminPage() {
   const [updating, setUpdating] = useState(false);
   const [error, setError] = useState(null);
   const [message, setMessage] = useState('');
+  
+  // Dialog state
+  const [openDialog, setOpenDialog] = useState(false);
+  const [dialogAction, setDialogAction] = useState(null);
+  const [dialogMember, setDialogMember] = useState(null);
   
   useEffect(() => {
     const fetchData = async () => {
@@ -94,10 +133,10 @@ function NetworkAdminPage() {
       setError(null);
       setMessage('');
       
-      // Check if user already exists
+      // Check if user already exists in profiles
       const { data: existingUser, error: userError } = await supabase
         .from('profiles')
-        .select('id, network_id')
+        .select('id, network_id, contact_email')
         .eq('contact_email', inviteEmail)
         .maybeSingle();
         
@@ -106,12 +145,13 @@ function NetworkAdminPage() {
       }
       
       if (existingUser) {
+        // User exists
         if (existingUser.network_id === network.id) {
           setMessage('This user is already in your network.');
           return;
         }
         
-        // User exists but is not in network - update their network_id
+        // Update their network_id to join this network
         const { error: updateError } = await supabase
           .from('profiles')
           .update({ network_id: network.id })
@@ -119,8 +159,6 @@ function NetworkAdminPage() {
           
         if (updateError) throw updateError;
         
-        // Send email notification (would require a server-side function)
-        // For now, just set a success message
         setMessage(`User ${inviteEmail} added to your network!`);
         
         // Refresh member list
@@ -134,15 +172,20 @@ function NetworkAdminPage() {
         setMembers(updatedMembers || []);
       } else {
         // User doesn't exist - create an invitation
-        // This would require a separate invitations table and email sending
-        // For now, just set a message about the invitation
-        setMessage(`Invitation sent to ${inviteEmail}!`);
+        const { error: inviteError } = await supabase
+          .from('invitations')
+          .insert([{ 
+            email: inviteEmail, 
+            network_id: network.id, 
+            invited_by: user.id,
+            status: 'pending',
+            role: 'member' // Default role
+          }]);
+          
+        if (inviteError) throw inviteError;
         
-        // In a real implementation:
-        // 1. Create record in invitations table with network_id and email
-        // 2. Generate unique invitation token
-        // 3. Send email with signup link + token
-        // 4. When user signs up with that token, add them to the network
+        // Here you would normally send an email, but for now we'll just update the UI
+        setMessage(`Invitation recorded for ${inviteEmail}. They'll be added to your network when they sign up.`);
       }
       
       // Clear input
@@ -187,14 +230,38 @@ function NetworkAdminPage() {
     }
   };
   
+  // Open confirmation dialog
+  const confirmAction = (action, member) => {
+    setDialogAction(action);
+    setDialogMember(member);
+    setOpenDialog(true);
+  };
+  
+  // Dialog close without action
+  const handleDialogClose = () => {
+    setOpenDialog(false);
+    setDialogAction(null);
+    setDialogMember(null);
+  };
+  
+  // Execute confirmed action
+  const handleConfirmedAction = async () => {
+    setOpenDialog(false);
+    
+    if (dialogAction === 'remove') {
+      await handleRemoveMember(dialogMember.id);
+    } else if (dialogAction === 'toggleAdmin') {
+      await handleToggleAdmin(dialogMember.id, dialogMember.role);
+    }
+    
+    setDialogAction(null);
+    setDialogMember(null);
+  };
+  
   const handleRemoveMember = async (memberId) => {
     // Don't allow removing yourself
     if (memberId === user.id) {
       setError('You cannot remove yourself from the network.');
-      return;
-    }
-    
-    if (!confirm('Are you sure you want to remove this member from your network?')) {
       return;
     }
     
@@ -228,13 +295,6 @@ function NetworkAdminPage() {
     }
     
     const newRole = currentRole === 'admin' ? 'member' : 'admin';
-    const confirmMessage = currentRole === 'admin' 
-      ? 'Remove admin privileges from this user?' 
-      : 'Grant admin privileges to this user?';
-      
-    if (!confirm(confirmMessage)) {
-      return;
-    }
     
     try {
       setError(null);
@@ -265,166 +325,324 @@ function NetworkAdminPage() {
   
   if (loading) {
     return (
-      <div className="admin-loading">
-        <div className="spinner"></div>
-        <p>Loading admin panel...</p>
-      </div>
+      <Box 
+        sx={{ 
+          display: 'flex', 
+          flexDirection: 'column',
+          alignItems: 'center', 
+          justifyContent: 'center', 
+          height: '100vh' 
+        }}
+      >
+        <CircularProgress size={40} />
+        <Typography variant="body1" sx={{ mt: 2 }}>
+          Loading admin panel...
+        </Typography>
+      </Box>
+    );
+  }
+  
+  if (error && (error.includes('privileges') || error.includes('not part'))) {
+    return (
+      <Container maxWidth="sm" sx={{ mt: 8 }}>
+        <Paper sx={{ p: 3, textAlign: 'center' }}>
+          <Typography variant="h5" component="h1" gutterBottom>
+            Access Denied
+          </Typography>
+          <Typography variant="body1" paragraph>
+            {error}
+          </Typography>
+          <Button 
+            variant="contained" 
+            onClick={() => navigate('/dashboard')}
+          >
+            Back to Dashboard
+          </Button>
+        </Paper>
+      </Container>
     );
   }
   
   if (error) {
     return (
-      <div className="admin-error">
-        <h2>Oops! Something went wrong</h2>
-        <p>{error}</p>
-        <button onClick={() => navigate('/dashboard')}>Back to Dashboard</button>
-      </div>
+      <Container maxWidth="sm" sx={{ mt: 8 }}>
+        <Alert severity="error" sx={{ mb: 3 }}>
+          {error}
+        </Alert>
+        <Box sx={{ textAlign: 'center', mt: 3 }}>
+          <Button 
+            variant="contained" 
+            onClick={() => navigate('/dashboard')}
+          >
+            Back to Dashboard
+          </Button>
+        </Box>
+      </Container>
     );
   }
   
   if (!profile || profile.role !== 'admin') {
     return (
-      <div className="admin-unauthorized">
-        <h2>Access Denied</h2>
-        <p>You don't have permission to access the admin panel.</p>
-        <button onClick={() => navigate('/dashboard')}>Back to Dashboard</button>
-      </div>
+      <Container maxWidth="sm" sx={{ mt: 8 }}>
+        <Paper sx={{ p: 3, textAlign: 'center' }}>
+          <Typography variant="h5" component="h1" gutterBottom>
+            Access Denied
+          </Typography>
+          <Typography variant="body1" paragraph>
+            You don't have permission to access the admin panel.
+          </Typography>
+          <Button 
+            variant="contained" 
+            onClick={() => navigate('/dashboard')}
+          >
+            Back to Dashboard
+          </Button>
+        </Paper>
+      </Container>
     );
   }
   
   return (
-    <div className="admin-container">
-      <div className="admin-header">
-        <Link to="/dashboard" className="back-link">← Back to Dashboard</Link>
-        <h1>Network Admin Panel</h1>
-      </div>
+    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+      <Paper sx={{ p: 3, mb: 3 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <Button
+            component={Link}
+            to="/dashboard"
+            startIcon={<ArrowBackIcon />}
+            sx={{ mr: 2 }}
+          >
+            Back to Dashboard
+          </Button>
+          <Typography variant="h4" component="h1">
+            Network Admin Panel
+          </Typography>
+        </Box>
+      </Paper>
       
-      {message && <div className="admin-message">{message}</div>}
-      {error && <div className="admin-error-message">{error}</div>}
+      {message && (
+        <Alert 
+          severity="success" 
+          sx={{ mb: 3 }}
+          onClose={() => setMessage('')}
+        >
+          {message}
+        </Alert>
+      )}
       
-      <div className="admin-content">
-        <div className="admin-section">
-          <h2>Network Settings</h2>
-          <form onSubmit={handleUpdateNetwork} className="network-form">
-            <div className="form-group">
-              <label htmlFor="networkName">Network Name</label>
-              <input
-                id="networkName"
-                type="text"
-                value={networkName}
-                onChange={(e) => setNetworkName(e.target.value)}
-                placeholder="Enter network name"
-                required
-              />
-            </div>
-            <button 
-              type="submit" 
-              className="update-network-btn"
-              disabled={updating}
-            >
-              {updating ? 'Updating...' : 'Update Network'}
-            </button>
-          </form>
-        </div>
-        
-        <div className="admin-section">
-          <h2>Invite Members</h2>
-          <form onSubmit={handleInvite} className="invite-form">
-            <div className="form-group">
-              <label htmlFor="inviteEmail">Email Address</label>
-              <div className="invite-input-group">
-                <input
-                  id="inviteEmail"
-                  type="email"
-                  value={inviteEmail}
-                  onChange={(e) => setInviteEmail(e.target.value)}
-                  placeholder="Enter email to invite"
-                  required
-                />
-                <button 
+      {error && (
+        <Alert 
+          severity="error" 
+          sx={{ mb: 3 }}
+          onClose={() => setError(null)}
+        >
+          {error}
+        </Alert>
+      )}
+      
+      <Grid container spacing={3}>
+        <Grid item xs={12} md={6}>
+          <Card sx={{ mb: 3 }}>
+            <CardContent>
+              <Typography variant="h5" component="h2" gutterBottom>
+                Network Settings
+              </Typography>
+              <Divider sx={{ mb: 3 }} />
+              
+              <form onSubmit={handleUpdateNetwork}>
+                <Box sx={{ mb: 3 }}>
+                  <TextField
+                    fullWidth
+                    label="Network Name"
+                    id="networkName"
+                    value={networkName}
+                    onChange={(e) => setNetworkName(e.target.value)}
+                    placeholder="Enter network name"
+                    required
+                    variant="outlined"
+                  />
+                </Box>
+                <Button 
                   type="submit" 
-                  className="invite-btn"
-                  disabled={inviting}
+                  variant="contained"
+                  color="primary"
+                  startIcon={<SaveIcon />}
+                  disabled={updating}
                 >
-                  {inviting ? 'Sending...' : 'Send Invite'}
-                </button>
-              </div>
-            </div>
-          </form>
-        </div>
+                  {updating ? 'Updating...' : 'Update Network'}
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent>
+              <Typography variant="h5" component="h2" gutterBottom>
+                Invite Members
+              </Typography>
+              <Divider sx={{ mb: 3 }} />
+              
+              <form onSubmit={handleInvite}>
+                <Box sx={{ display: 'flex', gap: 2 }}>
+                  <TextField
+                    fullWidth
+                    label="Email Address"
+                    id="inviteEmail"
+                    type="email"
+                    value={inviteEmail}
+                    onChange={(e) => setInviteEmail(e.target.value)}
+                    placeholder="Enter email to invite"
+                    required
+                    variant="outlined"
+                  />
+                  <Button 
+                    type="submit" 
+                    variant="contained"
+                    color="primary"
+                    startIcon={<PersonAddIcon />}
+                    disabled={inviting}
+                    sx={{ whiteSpace: 'nowrap' }}
+                  >
+                    {inviting ? 'Sending...' : 'Send Invite'}
+                  </Button>
+                </Box>
+              </form>
+            </CardContent>
+          </Card>
+        </Grid>
         
-        <div className="admin-section">
-          <h2>Network Members ({members.length})</h2>
-          {members.length > 0 ? (
-            <div className="members-table-container">
-              <table className="members-table">
-                <thead>
-                  <tr>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Role</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {members.map(member => (
-                    <tr key={member.id} className={member.id === user.id ? 'current-user-row' : ''}>
-                      <td>
-                        <div className="member-name-cell">
-                          {member.profile_picture_url ? (
-                            <img 
-                              src={member.profile_picture_url} 
-                              alt="" 
-                              className="member-avatar"
+        <Grid item xs={12} md={6}>
+          <Card>
+            <CardContent>
+              <Typography variant="h5" component="h2" gutterBottom>
+                Network Members ({members.length})
+              </Typography>
+              <Divider sx={{ mb: 3 }} />
+              
+              {members.length > 0 ? (
+                <TableContainer>
+                  <Table aria-label="members table">
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Name</TableCell>
+                        <TableCell>Role</TableCell>
+                        <TableCell>Actions</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {members.map(member => (
+                        <TableRow 
+                          key={member.id}
+                          sx={member.id === user.id ? { 
+                            backgroundColor: 'rgba(25, 118, 210, 0.08)' 
+                          } : {}}
+                        >
+                          <TableCell>
+                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                              <Avatar 
+                                src={member.profile_picture_url}
+                                sx={{ mr: 2, width: 32, height: 32 }}
+                              >
+                                {member.full_name ? member.full_name.charAt(0).toUpperCase() : '?'}
+                              </Avatar>
+                              <Box>
+                                <Typography variant="body1">
+                                  {member.full_name || 'Unnamed User'}
+                                  {member.id === user.id && ' (You)'}
+                                </Typography>
+                                <Typography variant="body2" color="text.secondary">
+                                  {member.contact_email}
+                                </Typography>
+                              </Box>
+                            </Box>
+                          </TableCell>
+                          <TableCell>
+                            <Chip 
+                              label={member.role || 'member'} 
+                              color={member.role === 'admin' ? 'primary' : 'default'}
+                              size="small"
                             />
-                          ) : (
-                            <div className="member-avatar-placeholder">
-                              {member.full_name ? member.full_name.charAt(0).toUpperCase() : '?'}
-                            </div>
-                          )}
-                          <Link to={`/profile/${member.id}`}>
-                            {member.full_name || 'Unnamed User'}
-                            {member.id === user.id && ' (You)'}
-                          </Link>
-                        </div>
-                      </td>
-                      <td>{member.contact_email}</td>
-                      <td>
-                        <span className={`role-tag ${member.role === 'admin' ? 'admin-role' : 'member-role'}`}>
-                          {member.role || 'member'}
-                        </span>
-                      </td>
-                      <td>
-                        <div className="member-actions">
-                          {member.id !== user.id && (
-                            <>
-                              <button 
-                                onClick={() => handleToggleAdmin(member.id, member.role)}
-                                className="toggle-admin-btn"
+                          </TableCell>
+                          <TableCell>
+                            <Box sx={{ display: 'flex', gap: 1 }}>
+                              <Button
+                                variant="outlined"
+                                size="small"
+                                component={Link}
+                                to={`/profile/${member.id}`}
                               >
-                                {member.role === 'admin' ? 'Remove Admin' : 'Make Admin'}
-                              </button>
-                              <button 
-                                onClick={() => handleRemoveMember(member.id)}
-                                className="remove-member-btn"
-                              >
-                                Remove
-                              </button>
-                            </>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <p className="no-members">No members found in your network.</p>
-          )}
-        </div>
-      </div>
-    </div>
+                                View
+                              </Button>
+                              
+                              {member.id !== user.id && (
+                                <>
+                                  <Button 
+                                    size="small"
+                                    variant="outlined"
+                                    color={member.role === 'admin' ? 'warning' : 'info'}
+                                    startIcon={<AdminIcon />}
+                                    onClick={() => confirmAction('toggleAdmin', member)}
+                                  >
+                                    {member.role === 'admin' ? 'Remove Admin' : 'Make Admin'}
+                                  </Button>
+                                  <Button 
+                                    size="small"
+                                    variant="outlined"
+                                    color="error"
+                                    startIcon={<PersonRemoveIcon />}
+                                    onClick={() => confirmAction('remove', member)}
+                                  >
+                                    Remove
+                                  </Button>
+                                </>
+                              )}
+                            </Box>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              ) : (
+                <Typography align="center" sx={{ py: 3 }}>
+                  No members found in your network.
+                </Typography>
+              )}
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
+      
+      {/* Confirmation Dialog */}
+      <Dialog
+        open={openDialog}
+        onClose={handleDialogClose}
+      >
+        <DialogTitle>
+          {dialogAction === 'remove' ? 'Remove Member' : 
+           dialogAction === 'toggleAdmin' && dialogMember?.role === 'admin' ? 'Remove Admin Privileges' : 
+           'Grant Admin Privileges'}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            {dialogAction === 'remove' ? 
+              `Are you sure you want to remove ${dialogMember?.full_name || 'this user'} from your network?` : 
+              dialogAction === 'toggleAdmin' && dialogMember?.role === 'admin' ? 
+                `Are you sure you want to remove admin privileges from ${dialogMember?.full_name || 'this user'}?` : 
+                `Are you sure you want to grant admin privileges to ${dialogMember?.full_name || 'this user'}?`
+            }
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleDialogClose} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={handleConfirmedAction} color="primary" autoFocus>
+            Confirm
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Container>
   );
 }
 

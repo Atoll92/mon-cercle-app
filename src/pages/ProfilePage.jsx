@@ -172,8 +172,8 @@ function ProfilePage() {
           
           {/* Additional sections could be added here */}
           
-          {/* For future: Portfolio projects section */}
-          {/* <div className="profile-section">
+          {/* For future: Portfolio projects section 
+          {/**/} <div className="profile-section">
             <h3>Portfolio Projects</h3>
             <div className="section-content">
               {profile.projects && profile.projects.length > 0 ? (
@@ -184,7 +184,7 @@ function ProfilePage() {
                 <p className="empty-section">No projects shared yet.</p>
               )}
             </div>
-          </div> */}
+          </div> 
         </div>
       </div>
     </div>
