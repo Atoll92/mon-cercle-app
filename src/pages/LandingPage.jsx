@@ -15,6 +15,8 @@ import Select from '@mui/material/Select';
 import FormControl from '@mui/material/FormControl';
 import LanguageIcon from '@mui/icons-material/Language';
 
+import ThreeJSBackground from '../components/ThreeJSBackground';
+
 // Import Icons (example icons, choose ones that fit best)
 import PeopleIcon from '@mui/icons-material/People'; // For closed networks
 import AccountBoxIcon from '@mui/icons-material/AccountBox'; // For portfolios
@@ -111,132 +113,210 @@ function LandingPage() {
 
   // --- JSX Structure ---
   return (
-    <Box sx={{ flexGrow: 1 }}>
-      {/* --- Navigation AppBar --- */}
-      <AppBar position="static" color="default" elevation={0} sx={{ borderBottom: (theme) => `1px solid ${theme.palette.divider}` }}>
-        <Toolbar sx={{ flexWrap: 'wrap' }}>
-          <Typography variant="h6" color="inherit" noWrap sx={{ flexGrow: 1 }}>
-             {/* You can add a logo here instead of text */}
-             {t.appName}
-          </Typography>
-          <nav style={{ display: 'flex', alignItems: 'center' }}>
-            {/* Language selector */}
-            <FormControl size="small" sx={{ minWidth: 120, mr: 2 }}>
-              <Select
-                value={language}
-                onChange={handleLanguageChange}
-                displayEmpty
-                size="small"
-                startAdornment={<LanguageIcon fontSize="small" sx={{ mr: 1 }} />}
+    <Box sx={{ 
+      flexGrow: 1,
+      position: 'relative',
+      minHeight: '100vh', // Ensure full viewport height
+      overflow: 'hidden'  // Prevent any overflow
+    }}>
+      {/* Three.js Background Animation */}
+      <ThreeJSBackground />
+      
+      {/* Content positioned above the background */}
+      <Box sx={{ position: 'relative', zIndex: 1 }}>
+        {/* --- Navigation AppBar --- */}
+        <AppBar 
+          position="static" 
+          color="transparent" 
+          elevation={0} 
+          sx={{ 
+            borderBottom: (theme) => `1px solid ${theme.palette.divider}`,
+            backdropFilter: 'blur(5px)', // Add blur effect
+            backgroundColor: 'rgba(255, 255, 255, 0.7)' // Semi-transparent background
+          }}
+        >
+          <Toolbar sx={{ flexWrap: 'wrap' }}>
+            <Typography variant="h6" color="inherit" noWrap sx={{ flexGrow: 1 }}>
+              {/* You can add a logo here instead of text */}
+              {t.appName}
+            </Typography>
+            <nav style={{ display: 'flex', alignItems: 'center' }}>
+              {/* Language selector */}
+              <FormControl size="small" sx={{ minWidth: 120, mr: 2 }}>
+                <Select
+                  value={language}
+                  onChange={handleLanguageChange}
+                  displayEmpty
+                  size="small"
+                  startAdornment={<LanguageIcon fontSize="small" sx={{ mr: 1 }} />}
+                >
+                  <MenuItem value="en">English</MenuItem>
+                  <MenuItem value="fr">Français</MenuItem>
+                </Select>
+              </FormControl>
+              
+              {/* Navigation links */}
+              <Link
+                variant="button"
+                color="text.primary"
+                href="#features" // Link to features section ID
+                sx={{ my: 1, mx: 1.5 }}
               >
-                <MenuItem value="en">English</MenuItem>
-                <MenuItem value="fr">Français</MenuItem>
-              </Select>
-            </FormControl>
-            
-            {/* Navigation links */}
-            <Link
-              variant="button"
-              color="text.primary"
-              href="#features" // Link to features section ID
-              sx={{ my: 1, mx: 1.5 }}
-            >
-              {t.navFeatures}
-            </Link>
+                {t.navFeatures}
+              </Link>
+              <Button
+                component={RouterLink}
+                to="/login"
+                variant="outlined"
+                sx={{ my: 1, mx: 1.5 }}
+              >
+                {t.navLogin}
+              </Button>
+            </nav>
             <Button
               component={RouterLink}
-              to="/login"
-              variant="outlined"
+              to="/signup"
+              variant="contained"
               sx={{ my: 1, mx: 1.5 }}
             >
-              {t.navLogin}
+              {t.navSignUp}
             </Button>
-          </nav>
-          <Button
-            component={RouterLink}
-            to="/signup"
-            variant="contained"
-            sx={{ my: 1, mx: 1.5 }}
+          </Toolbar>
+        </AppBar>
+
+        {/* --- Hero Section --- */}
+        <Container 
+          disableGutters 
+          maxWidth="md" 
+          component="main" 
+          sx={{ 
+            pt: 8, 
+            pb: 6,
+            // Add a subtle text shadow to improve readability over the animation
+            '& h1, & h5': {
+              textShadow: '0 0 10px rgba(255, 255, 255, 0.8)'
+            }
+          }}
+        >
+          <Typography
+            component="h1"
+            variant="h2"
+            align="center"
+            color="text.primary"
+            gutterBottom
           >
-            {t.navSignUp}
-          </Button>
-        </Toolbar>
-      </AppBar>
+            {t.heroTitle}
+          </Typography>
+          <Typography 
+            variant="h5" 
+            align="center" 
+            color="text.secondary" 
+            component="p" 
+            sx={{ 
+              mb: 4,
+              backgroundColor: 'rgba(255, 255, 255, 0.7)',
+              p: 2,
+              borderRadius: 1,
+              backdropFilter: 'blur(5px)'
+            }}
+          >
+            {t.heroSubtitle}
+          </Typography>
+          <Stack
+            sx={{ pt: 2 }}
+            direction={{ xs: 'column', sm: 'row' }} // Stack vertically on small screens
+            spacing={2}
+            justifyContent="center"
+          >
+            <Button 
+              component={RouterLink} 
+              to="/signup" 
+              variant="contained" 
+              size="large"
+              sx={{
+                boxShadow: '0 4px 14px 0 rgba(0, 0, 0, 0.2)',
+                '&:hover': {
+                  boxShadow: '0 6px 20px rgba(0, 0, 0, 0.3)'
+                }
+              }}
+            >
+              {t.getStarted}
+            </Button>
+          </Stack>
+        </Container>
 
-      {/* --- Hero Section --- */}
-      <Container disableGutters maxWidth="md" component="main" sx={{ pt: 8, pb: 6 }}>
-        <Typography
-          component="h1"
-          variant="h2"
-          align="center"
-          color="text.primary"
-          gutterBottom
+        {/* --- Features Section --- */}
+        <Container 
+          id="features" 
+          sx={{ 
+            py: 8,
+            backgroundColor: 'rgba(255, 255, 255, 0.8)',
+            borderRadius: 2,
+            backdropFilter: 'blur(10px)'
+          }} 
+          maxWidth="lg"
         >
-          {t.heroTitle}
-        </Typography>
-        <Typography variant="h5" align="center" color="text.secondary" component="p" sx={{ mb: 4 }}>
-          {t.heroSubtitle}
-        </Typography>
-        <Stack
-          sx={{ pt: 2 }}
-          direction={{ xs: 'column', sm: 'row' }} // Stack vertically on small screens
-          spacing={2}
-          justifyContent="center"
-        >
-          <Button component={RouterLink} to="/signup" variant="contained" size="large">
-            {t.getStarted}
-          </Button>
-        </Stack>
-      </Container>
-
-      {/* --- Features Section --- */}
-      <Container id="features" sx={{ py: 8 }} maxWidth="lg">
-        <Typography component="h2" variant="h4" align="center" color="text.primary" gutterBottom>
+          <Typography component="h2" variant="h4" align="center" color="text.primary" gutterBottom>
             {t.featuresTitle}
-        </Typography>
-        <Grid container spacing={4} sx={{ mt: 4 }} justifyContent="center">
-          {features.map((feature) => (
-            <Grid item key={feature.title} xs={12} sm={6} md={3}> {/* Adjust grid sizing as needed */}
-              <Box textAlign="center">
-                {feature.icon}
-                <Typography variant="h6" component="h3" gutterBottom sx={{mt: 2}}>
-                  {feature.title}
-                </Typography>
-                <Typography variant="body1" color="text.secondary">
-                  {feature.description}
-                </Typography>
-              </Box>
-            </Grid>
-          ))}
-        </Grid>
-      </Container>
-      {/* --- End Features Section --- */}
+          </Typography>
+          <Grid container spacing={4} sx={{ mt: 4 }} justifyContent="center">
+            {features.map((feature) => (
+              <Grid item key={feature.title} xs={12} sm={6} md={3}> {/* Adjust grid sizing as needed */}
+                <Box 
+                  textAlign="center"
+                  sx={{
+                    p: 3,
+                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                    borderRadius: 2,
+                    transition: 'transform 0.3s, box-shadow 0.3s',
+                    '&:hover': {
+                      transform: 'translateY(-5px)',
+                      boxShadow: '0 10px 20px rgba(0, 0, 0, 0.1)'
+                    }
+                  }}
+                >
+                  {feature.icon}
+                  <Typography variant="h6" component="h3" gutterBottom sx={{mt: 2}}>
+                    {feature.title}
+                  </Typography>
+                  <Typography variant="body1" color="text.secondary">
+                    {feature.description}
+                  </Typography>
+                </Box>
+              </Grid>
+            ))}
+          </Grid>
+        </Container>
+        {/* --- End Features Section --- */}
 
-      {/* --- Footer --- */}
-      <Container
-        maxWidth="md"
-        component="footer"
-        sx={{
-          borderTop: (theme) => `1px solid ${theme.palette.divider}`,
-          mt: 8,
-          py: [3, 6], // Padding top/bottom responsive
-        }}
-      >
-        <Typography variant="body2" color="text.secondary" align="center">
-          {'© '}
-          <Link color="inherit" href="#"> {/* Optional: Link to your main site */}
-            {t.appName}
-          </Link>{' '}
-          {new Date().getFullYear()}
-          {'.'}
-        </Typography>
-        {/* Optional: Add links to Privacy Policy, Terms of Service */}
-         <Stack direction="row" justifyContent="center" spacing={2} sx={{ mt: 1 }}>
+        {/* --- Footer --- */}
+        <Container
+          maxWidth="md"
+          component="footer"
+          sx={{
+            borderTop: (theme) => `1px solid ${theme.palette.divider}`,
+            mt: 8,
+            py: [3, 6], // Padding top/bottom responsive
+            backgroundColor: 'rgba(255, 255, 255, 0.7)',
+            backdropFilter: 'blur(5px)'
+          }}
+        >
+          <Typography variant="body2" color="text.secondary" align="center">
+            {'© '}
+            <Link color="inherit" href="#"> {/* Optional: Link to your main site */}
+              {t.appName}
+            </Link>{' '}
+            {new Date().getFullYear()}
+            {'.'}
+          </Typography>
+          {/* Optional: Add links to Privacy Policy, Terms of Service */}
+          <Stack direction="row" justifyContent="center" spacing={2} sx={{ mt: 1 }}>
             <Link component={RouterLink} to="/privacy" variant="body2" color="text.secondary">{t.privacy}</Link>
             <Link component={RouterLink} to="/terms" variant="body2" color="text.secondary">{t.terms}</Link>
-         </Stack>
-      </Container>
-      {/* --- End Footer --- */}
+          </Stack>
+        </Container>
+        {/* --- End Footer --- */}
+      </Box>
     </Box>
   );
 }
