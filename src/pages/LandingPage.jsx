@@ -54,6 +54,9 @@ function LandingPage() {
     }
   };
 
+
+  
+
   const clients = [
     {
       name: "Colas",
@@ -106,6 +109,28 @@ function LandingPage() {
     // Add remaining clients...
   ];
 
+  // Add DGLogo component
+const DGLogo = () => (
+  <svg 
+    viewBox="0 0 92 68"
+    style={{
+      width: '40px',
+      height: '30px',
+      marginRight: '8px',
+      // filter: 'invert(100%)',
+      opacity: 1,
+      color: '#0c3f9c'
+    }}
+  >
+    <g id="Layer_1-2" data-name="Layer 1">
+      <path 
+        d="M48.79,23.73,48,22.44a308.41,308.41,0,0,1,43.64-7.81,1,1,0,0,0-.34,0c-1.81.13-3.63.23-5.44.42-3.75.39-7.51.77-11.26,1.26-4.3.56-8.6,1.16-12.87,1.88-4.8.82-9.57,1.79-14.35,2.7a.53.53,0,0,1-.64-.24A86.49,86.49,0,0,0,31.31,3.89a25.37,25.37,0,0,0-5-3.39A3.85,3.85,0,0,0,24.6,0a.76.76,0,0,0-.83.72,4,4,0,0,0,0,1.09,18.66,18.66,0,0,0,1.38,4.12c1.67,3.77,3.4,7.52,5.05,11.3,1,2.34,2,4.73,3,7.14l-.4.12a112.53,112.53,0,0,0-17,6.28,46.44,46.44,0,0,0-9.14,5.59,19.85,19.85,0,0,0-5.29,6.1,11.18,11.18,0,0,0-1.34,6.7,16.18,16.18,0,0,0,1.61,5.21A21.54,21.54,0,0,0,8.35,62.2a34.48,34.48,0,0,0,13.36,6,8.46,8.46,0,0,0,2.05.13,5.08,5.08,0,0,0,1.48-.12,21.23,21.23,0,0,0,4.94-1.42A59.12,59.12,0,0,0,47,54.51a30.57,30.57,0,0,0,5.63-8.07A17.56,17.56,0,0,0,54.33,40a19.22,19.22,0,0,0-1-6.89A42.9,42.9,0,0,0,48.79,23.73ZM36.45,39.79a27.63,27.63,0,0,1-2.13,9.52,52.88,52.88,0,0,1-5.11,9.49c-1.11,1.67-2.25,3.31-3.38,5a10,10,0,0,1-2.39,2.47h0a3.84,3.84,0,0,1-3.63.49,26.35,26.35,0,0,1-6.1-3.21A15.45,15.45,0,0,1,8.6,57.68a13.76,13.76,0,0,1-1.34-6.53,17,17,0,0,1,4.45-10.7,34.35,34.35,0,0,1,7.86-6.61,74,74,0,0,1,12.7-6.3l1.82-.71c.5,1.84,1,3.61,1.46,5.4A28.35,28.35,0,0,1,36.45,39.79ZM48,22.44c-.08.1-13.74,4.33-13.89,4.36a21.28,21.28,0,0,1-.79-2.38s13-3.29,13.75-3.57"
+        fill="currentColor"
+      />
+    </g>
+  </svg>
+);
+
   // --- Text content for different languages ---
   const content = {
     en: {
@@ -116,7 +141,10 @@ function LandingPage() {
       heroTitle: 'Your Private Network Hub',
       heroSubtitle: 'Easily create and manage closed networks for your members to connect, share portfolios, and display contact information securely.',
       getStarted: 'Get Started',
+      trustTitle: "They Trust Us",
       viewDemo: 'View Demo',
+      poweredBy: "Powered by Double Geste",
+
       featuresTitle: 'Why Choose Üni?',
       features: [
         {
@@ -163,7 +191,10 @@ function LandingPage() {
       heroTitle: 'Votre Plateforme de Réseau Privé',
       heroSubtitle: 'Créez et gérez facilement des réseaux fermés pour permettre à vos membres de se connecter, partager leurs portfolios et afficher leurs coordonnées en toute sécurité.',
       getStarted: 'Commencer',
+      trustTitle: "Ils nous font confiance",
       viewDemo: 'Voir la Démo',
+      poweredBy: "Propulsé par Double Geste",
+
       featuresTitle: 'Pourquoi Choisir Mon Cercle?',
       features: [
         {
@@ -976,72 +1007,59 @@ function LandingPage() {
   </Grid>
 </Container>
 
-<Container 
-  sx={{ 
-    py: 4,
-    overflow: 'hidden',
-    position: 'relative',
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    backdropFilter: 'blur(8px)',
-    my: 6
-  }}
->
-  <Typography
-    variant="h4"
-    align="center"
-    gutterBottom
-    sx={{
-      color: 'white',
-      mb: 4,
-      fontWeight: 500,
-      textShadow: '0 2px 4px rgba(0,0,0,0.2)'
-    }}
-  >
+<Container sx={{ 
+  py: 8,
+  position: 'relative',
+  overflow: 'hidden',
+  backgroundColor: 'rgba(0, 0, 0, 0.3)',
+  backdropFilter: 'blur(10px)',
+  my: 8
+}}>
+  <Typography variant="h3" align="center" gutterBottom sx={{ 
+    color: 'white',
+    mb: 6,
+    fontWeight: 500,
+    textTransform: 'uppercase',
+    letterSpacing: 4
+  }}>
     {t.trustTitle}
   </Typography>
-  
-  <Box sx={{ 
+
+  <Box sx={{
     display: 'flex',
-    width: 'fit-content',
-    ...slidingAnimation
+    animation: 'slide 40s linear infinite',
+    '@keyframes slide': {
+      '0%': { transform: 'translateX(0)' },
+      '100%': { transform: 'translateX(-50%)' }
+    },
+    '&:hover': {
+      animationPlayState: 'paused'
+    }
   }}>
-    {/* Double the array for seamless looping */}
     {[...clients, ...clients].map((client, index) => (
-      <a 
-        key={index} 
-        href={client.website} 
-        target="_blank" 
-        rel="noopener noreferrer"
-        style={{ textDecoration: 'none' }}
-      >
-        <Box
-          sx={{
-            px: 4,
-            display: 'flex',
-            alignItems: 'center',
-            transition: 'all 0.3s ease',
-            '&:hover': {
-              transform: 'scale(1.05)'
-            }
+      <Box key={index} sx={{ 
+        px: 4,
+        display: 'flex',
+        alignItems: 'center',
+        height: 80,
+        filter: 'invert(100%)',
+        '&:hover': {
+          transform: 'scale(1.1)',
+          filter: 'invert(100%) brightness(1.2)'
+        },
+        transition: 'all 0.3s ease'
+      }}>
+        <img 
+          src={client.logo} 
+          alt={client.name}
+          style={{ 
+            height: '100%', 
+            width: 'auto', 
+            maxWidth: 200,
+            ...client.style 
           }}
-        >
-          <img 
-            src={client.logoUrl} 
-            alt={client.name}
-            style={{
-              height: 40,
-              maxWidth: 180,
-              filter: 'grayscale(100%)',
-              opacity: 0.8,
-              transition: 'all 0.3s ease',
-              '&:hover': {
-                filter: 'grayscale(0%)',
-                opacity: 1
-              }
-            }}
-          />
-        </Box>
-      </a>
+        />
+      </Box>
     ))}
   </Box>
 </Container>
@@ -1061,42 +1079,66 @@ function LandingPage() {
             zIndex: 2
           }}
         >
-          <Grid container spacing={3} alignItems="center" justifyContent="center">
-            <Grid item xs={12} sm="auto">
-              <Box 
-                component="img"
-                src={EuFlag}
-                alt="European Union Flag"
-                sx={{ 
-                  height: 40,
-                  display: 'block',
-                  mx: 'auto'
-                }}
-              />
-            </Grid>
-            <Grid item xs={12} sm="auto">
-              <Typography variant="body2" color="text.secondary" align="center">
-                {'© '}
-                <Link color="inherit" href="#">
-                  {t.appName}
-                </Link>{' '}
-                {new Date().getFullYear()}
-              </Typography>
-              <Stack 
-                direction={{ xs: 'column', sm: 'row' }} 
-                justifyContent="center" 
-                spacing={{ xs: 1, sm: 2 }} 
-                sx={{ mt: 1 }}
-              >
-                <Link component={RouterLink} to="/privacy" variant="body2" color="text.secondary">
-                  {t.privacy}
-                </Link>
-                <Link component={RouterLink} to="/terms" variant="body2" color="text.secondary">
-                  {t.terms}
-                </Link>
-              </Stack>
-            </Grid>
-          </Grid>
+<Grid container spacing={3} alignItems="center" justifyContent="center">
+  <Grid item xs={12} sm="auto">
+    <Box 
+      component="img"
+      src={EuFlag}
+      alt="European Union Flag"
+      sx={{ 
+        height: 40,
+        display: 'block',
+        mx: 'auto'
+      }}
+    />
+  </Grid>
+  
+  {/* Add Double Geste logo */}
+  <Grid item xs={12} sm="auto">
+    <Box sx={{ 
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 1,
+      color: 'text.secondary',
+      '&:hover': {
+        color: 'text.primary'
+      },
+      transition: 'color 0.3s ease'
+    }}>
+      <DGLogo sx={{ 
+      
+      color: '#0c3f9c'
+    }}/>
+      <Typography variant="h5">
+        {t.poweredBy}
+      </Typography>
+    </Box>
+  </Grid>
+
+  <Grid item xs={12} sm="auto">
+    <Typography variant="body2" color="text.secondary" align="center">
+      {'© '}
+      <Link color="inherit" href="#">
+        {t.appName}
+      </Link>{' '}
+      {new Date().getFullYear()}
+    </Typography>
+    <Stack 
+      direction={{ xs: 'column', sm: 'row' }} 
+      justifyContent="center" 
+      spacing={{ xs: 1, sm: 2 }} 
+      sx={{ mt: 1 }}
+    >
+      <Link component={RouterLink} to="/privacy" variant="body2" color="text.secondary">
+        {t.privacy}
+      </Link>
+      <Link component={RouterLink} to="/terms" variant="body2" color="text.secondary">
+        {t.terms}
+      </Link>
+    </Stack>
+  </Grid>
+</Grid>
         </Container>
       </Box>
     </Box>
@@ -1104,3 +1146,8 @@ function LandingPage() {
 }
 
 export default LandingPage;
+
+
+
+
+
