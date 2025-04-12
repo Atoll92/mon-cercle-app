@@ -134,8 +134,6 @@ function SignupPage() {
     }
   };
   
-
-
   // Fetch network info based on the invite token
   const fetchNetworkInfo = async (token) => {
     if (!token) return;
@@ -144,17 +142,28 @@ function SignupPage() {
     setInvitationError(null);
     
     try {
-      // Decode the token
-      const decoded = atob(token);
+      // Decode the token - use try/catch for decoding to handle potential errors
+      let decoded;
+      try {
+        decoded = atob(token);
+      } catch (decodeError) {
+        console.error('Failed to decode token:', decodeError);
+        throw new Error('Invalid invitation format: Could not decode token');
+      }
+      
       const parts = decoded.split(':');
       
       // Check if token has a valid format
       if (parts.length !== 3 || parts[0] !== 'invite') {
-        throw new Error('Invalid invitation format');
+        throw new Error('Invalid invitation format: Incorrect structure');
       }
       
       const invId = parts[1];
       const netId = parts[2];
+      
+      if (!invId || !netId) {
+        throw new Error('Invalid invitation: Missing required data');
+      }
       
       setInvitationId(invId);
       setNetworkId(netId);
@@ -166,22 +175,38 @@ function SignupPage() {
         .eq('id', netId)
         .single();
         
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching network:', error);
+        throw new Error(`Network error: ${error.message}`);
+      }
       
       if (network) {
         setNetworkName(network.name);
         
-        // Optionally, also check if the invitation is still valid
+        // Also check if the invitation is still valid
         const { data: invitation, error: inviteError } = await supabase
           .from('invitations')
-          .select('status')
+          .select('status, expires_at')
           .eq('id', invId)
           .single();
           
-        if (inviteError) throw inviteError;
+        if (inviteError) {
+          console.error('Error fetching invitation:', inviteError);
+          throw new Error(`Invitation error: ${inviteError.message}`);
+        }
         
-        if (invitation && invitation.status !== 'pending') {
+        if (!invitation) {
+          throw new Error('Invitation not found');
+        }
+        
+        // Check invitation status
+        if (invitation.status !== 'pending') {
           throw new Error(`This invitation has already been ${invitation.status}.`);
+        }
+        
+        // Check if invitation has expired (if expires_at is set)
+        if (invitation.expires_at && new Date(invitation.expires_at) < new Date()) {
+          throw new Error('This invitation has expired.');
         }
       } else {
         throw new Error('Network not found');
@@ -220,6 +245,7 @@ function SignupPage() {
       const { data, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
+        // Add site URL to ensure correct redirect in production
         options: {
           emailRedirectTo: `${window.location.origin}/auth/callback`
         }
@@ -262,26 +288,24 @@ function SignupPage() {
       } else {
         // Regular signup without invitation - still create a profile
         const profileCreated = await ensureProfile(data.user.id, email);
-
-        // create the profile here
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert([
-            {
-              id: data.user.id,
-              contact_email: email,
-              role: 'member', // Default role
-              updated_at: new Date(),
-            },
-          ]);
-        if (profileError) {
-          console.error('Error creating profile:', profileError);
-          setError('Failed to create profile. Please try again.');
-          return;
-        }
         
         if (!profileCreated) {
-          console.error('Error creating basic profile');
+          // Create the profile here (fallback)
+          const { error: profileError } = await supabase
+            .from('profiles')
+            .insert([
+              {
+                id: data.user.id,
+                contact_email: email,
+                role: 'member', // Default role
+                updated_at: new Date(),
+              },
+            ]);
+          if (profileError) {
+            console.error('Error creating profile:', profileError);
+            setError('Failed to create profile. Please try again.');
+            return;
+          }
           setMessage('Signup successful! Please check your email to confirm your account, then complete your profile setup.');
         } else {
           setMessage('Signup successful! Please check your email to confirm your account.');
