@@ -4,6 +4,8 @@ import { Link as RouterLink } from 'react-router-dom'; // Use alias to avoid nam
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
 import Container from '@mui/material/Container';
 import Grid from '@mui/material/Grid';
 import Link from '@mui/material/Link'; // MUI Link component
@@ -14,12 +16,17 @@ import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import FormControl from '@mui/material/FormControl';
 import LanguageIcon from '@mui/icons-material/Language';
+import Divider from '@mui/material/Divider';
+import Paper from '@mui/material/Paper';
+import useMediaQuery from '@mui/material/useMediaQuery';
+import { useTheme } from '@mui/material/styles';
+
 import EuFlag from '../assets/eu_flag.jpg';
 import Logo from '../assets/logo.svg';
 
 import ThreeJSBackground from '../components/ThreeJSBackground';
 
-// Import Icons (example icons, choose ones that fit best)
+// Import Icons
 import PeopleIcon from '@mui/icons-material/People'; // For closed networks
 import AccountBoxIcon from '@mui/icons-material/AccountBox'; // For portfolios
 import LockIcon from '@mui/icons-material/Lock'; // For privacy/security
@@ -31,6 +38,8 @@ import EventIcon from '@mui/icons-material/Event'; // For event organization
 function LandingPage() {
   // Language state
   const [language, setLanguage] = useState('en');
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   // --- Text content for different languages ---
   const content = {
@@ -42,7 +51,8 @@ function LandingPage() {
       heroTitle: 'Your Private Network Hub',
       heroSubtitle: 'Easily create and manage closed networks for your members to connect, share portfolios, and display contact information securely.',
       getStarted: 'Get Started',
-      featuresTitle: 'Why Choose Mon Cercle?',
+      viewDemo: 'View Demo',
+      featuresTitle: 'Why Choose Üni?',
       features: [
         {
           title: 'Closed Networks',
@@ -80,6 +90,7 @@ function LandingPage() {
       heroTitle: 'Votre Plateforme de Réseau Privé',
       heroSubtitle: 'Créez et gérez facilement des réseaux fermés pour permettre à vos membres de se connecter, partager leurs portfolios et afficher leurs coordonnées en toute sécurité.',
       getStarted: 'Commencer',
+      viewDemo: 'Voir la Démo',
       featuresTitle: 'Pourquoi Choisir Mon Cercle?',
       features: [
         {
@@ -116,17 +127,14 @@ function LandingPage() {
   const t = content[language];
 
   // Features with icons
-  const features = t.features.map((feature, index) => ({
-    ...feature,
-    icon: [
-      <PeopleIcon fontSize="large" color="primary" />,
-      <AccountBoxIcon fontSize="large" color="primary" />,
-      <LockIcon fontSize="large" color="primary" />,
-      <AdminPanelSettingsIcon fontSize="large" color="primary" />,
-      <VisibilityOffIcon fontSize="large" color="primary" />,
-      <EventIcon fontSize="large" color="primary" />
-    ][index]
-  }));
+  const featureIcons = [
+    <PeopleIcon fontSize="medium" color="primary" />,
+    <AccountBoxIcon fontSize="medium" color="primary" />,
+    <LockIcon fontSize="medium" color="primary" />,
+    <AdminPanelSettingsIcon fontSize="medium" color="primary" />,
+    <VisibilityOffIcon fontSize="medium" color="primary" />,
+    <EventIcon fontSize="medium" color="primary" />
+  ];
 
   // Handle language change
   const handleLanguageChange = (event) => {
@@ -138,8 +146,8 @@ function LandingPage() {
     <Box sx={{ 
       flexGrow: 1,
       position: 'relative',
-      minHeight: '100vh', // Ensure full viewport height
-      overflow: 'hidden', // Prevent any overflow
+      minHeight: '100vh',
+      overflow: 'hidden',
       backgroundColor: '#001428'
     }}>
       {/* Three.js Background Animation */}
@@ -149,33 +157,40 @@ function LandingPage() {
       <Box sx={{ position: 'relative', zIndex: 1 }}>
         {/* --- Navigation AppBar --- */}
         <AppBar 
-          position="relative" // Changed from static to relative for better stacking context
+          position="relative"
           color="transparent" 
           elevation={0} 
           sx={{ 
             borderBottom: (theme) => `1px solid ${theme.palette.divider}`,
-            backdropFilter: 'blur(5px)', // Add blur effect
-            backgroundColor: 'rgba(255, 255, 255, 0.7)', // Semi-transparent background
-            zIndex: 10 // Ensure higher than background
+            backdropFilter: 'blur(8px)',
+            backgroundColor: 'rgba(255, 255, 255, 0.8)',
+            zIndex: 10
           }}
         >
-          <div className="toolbar-wrapper" style={{ position: 'relative', zIndex: 50 }}> {/* Added wrapper with high z-index */}
+          <div className="toolbar-wrapper" style={{ position: 'relative', zIndex: 50 }}>
             <Toolbar sx={{ flexWrap: 'wrap' }}>
-              <Typography variant="h6" color="inherit" noWrap sx={{ flexGrow: 1 }}>
-                {/* You can add a logo here instead of text */}
+              <Typography variant="h6" color="inherit" noWrap sx={{ flexGrow: 1, display: 'flex', alignItems: 'center' }}>
                 <Box 
-                component="img"
-                src={Logo}
-                alt="Dots Logo"
-                sx={{ 
-                  height: 60,
-                  display: 'block',
-                  // mx: 'auto',
-           
-                  padding: '10px'
-                }}
-              />
-                {t.appName}
+                  component="img"
+                  src={Logo}
+                  alt="Mon Cercle Logo"
+                  sx={{ 
+                    height: 60,
+                    display: 'inline-block',
+                    padding: '10px'
+                  }}
+                />
+                <Typography 
+                  variant="h5" 
+                  component="span" 
+                  sx={{ 
+                    fontWeight: 'bold',
+                    color: '#1976d2',
+                    ml: 1,
+                  }}
+                >
+                  ÜNI
+                </Typography>
               </Typography>
               <nav style={{ display: 'flex', alignItems: 'center' }}>
                 {/* Language selector */}
@@ -196,8 +211,8 @@ function LandingPage() {
                 <Link
                   variant="button"
                   color="text.primary"
-                  href="#features" // Link to features section ID
-                  sx={{ my: 1, mx: 1.5 }}
+                  href="#features"
+                  sx={{ my: 1, mx: 1.5, display: { xs: 'none', md: 'block' } }}
                 >
                   {t.navFeatures}
                 </Link>
@@ -228,11 +243,10 @@ function LandingPage() {
           maxWidth="md" 
           component="main" 
           sx={{ 
-            pt: 8, 
-            pb: 6,
+            pt: { xs: 6, md: 8 }, 
+            pb: { xs: 4, md: 6 },
             position: 'relative',
-            zIndex: 2, // Reduced from 6 to ensure proper stacking
-            // Add a subtle text shadow to improve readability over the animation
+            zIndex: 2,
             '& h1, & h5': {
               textShadow: '0 0 10px rgba(255, 255, 255, 0.8)',
             }
@@ -244,29 +258,43 @@ function LandingPage() {
             align="center"
             color="white"
             gutterBottom
+            sx={{
+              fontSize: { xs: '2.5rem', md: '3.5rem' },
+              fontWeight: 700,
+              mb: 3
+            }}
           >
             {t.heroTitle}
           </Typography>
-          <Typography 
-            variant="h5" 
-            align="center" 
-            color="text.secondary" 
-            component="p" 
-            sx={{ 
+          <Paper
+            elevation={3}
+            sx={{
+              p: { xs: 2, md: 3 },
               mb: 4,
-              p: 2,
-              borderRadius: '2rem',
-              backdropFilter: 'blur(5px)',
-              border: 'solid 1px',
-              padding: '10px 50px',
-              color:'white'
+              borderRadius: '1rem',
+              backdropFilter: 'blur(10px)',
+              backgroundColor: 'rgba(255, 255, 255, 0.9)',
+              maxWidth: '90%',
+              mx: 'auto'
             }}
           >
-            {t.heroSubtitle}
-          </Typography>
+            <Typography 
+              variant="h5" 
+              align="center" 
+              color="text.primary" 
+              component="p" 
+              sx={{ 
+                fontSize: { xs: '1.1rem', md: '1.3rem' },
+                lineHeight: 1.6,
+                fontWeight: 'bold'
+              }}
+            >
+              {t.heroSubtitle}
+            </Typography>
+          </Paper>
           <Stack
             sx={{ pt: 2 }}
-            direction={{ xs: 'column', sm: 'row' }} // Stack vertically on small screens
+            direction={{ xs: 'column', sm: 'row' }}
             spacing={2}
             justifyContent="center"
           >
@@ -276,81 +304,171 @@ function LandingPage() {
               variant="contained" 
               size="large"
               sx={{
+                px: 4,
+                py: 1.5,
+                borderRadius: '2rem',
                 boxShadow: '0 4px 14px 0 rgba(0, 0, 0, 0.2)',
                 '&:hover': {
-                  boxShadow: '0 6px 20px rgba(0, 0, 0, 0.3)'
-                }
+                  boxShadow: '0 6px 20px rgba(0, 0, 0, 0.3)',
+                  transform: 'translateY(-2px)'
+                },
+                transition: 'all 0.2s ease-in-out'
               }}
             >
               {t.getStarted}
             </Button>
+            <Button 
+              variant="outlined" 
+              size="large"
+              color="secondary"
+              component={RouterLink}
+              to="/demo"
+              sx={{
+                px: 4,
+                py: 1.5,
+                borderRadius: '2rem',
+                borderColor: 'white',
+                color: 'white',
+                backdropFilter: 'blur(5px)',
+                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                '&:hover': {
+                  backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                  transform: 'translateY(-2px)'
+                },
+                transition: 'all 0.2s ease-in-out'
+              }}
+            >
+              {t.viewDemo}
+            </Button>
           </Stack>
         </Container>
 
-        {/* --- Features Section --- */}
-        <Container 
-          id="features" 
-          sx={{ 
-            py: 8,
-            // backgroundColor: 'rgba(255, 255, 255, 0.8)',
+<Container
+  id="features"
+  sx={{
+    py: { xs: 4, md: 6 },
+    borderRadius: 2,
+    border: 'solid white 1px',
+    backdropFilter: 'blur(10px)',
+    position: 'relative',
+    zIndex: 2,
+    maxWidth: '95%' // Consider using standard MUI maxWidths like 'lg' or 'xl' if '95%' isn't essential
+  }}
+  maxWidth="lg" // Using 'lg' here is good practice
+>
+  <Typography
+    component="h2"
+    variant="h3"
+    align="center"
+    color="white"
+    gutterBottom
+    sx={{
+      mb: 4,
+      fontWeight: 700,
+      textShadow: '0 2px 10px rgba(0, 0, 0, 0.3)'
+    }}
+  >
+    {t.featuresTitle}
+  </Typography>
+
+  {/* Features grid - This setup IS responsive */}
+  <Grid
+    container
+    spacing={{ xs: 2, sm: 3, md: 4 }}
+    // columns prop is often unnecessary if using standard 12 columns, but fine here.
+    // columns={{ xs: 12, sm: 12, md: 12 }} 
+    justifyContent="center"
+    alignItems="stretch" // Added: Ensures cards in the same row stretch to the same height if needed
+  >
+    {t.features.map((feature, index) => (
+      <Grid
+        item
+        key={feature.title}
+        xs={12} // Full width on extra-small screens
+        sm={6}  // Half width on small screens and up
+        md={4}  // One-third width on medium screens and up
+      >
+        <Card
+          sx={{
+            height: '100%', // Makes card fill the Grid item height (works with alignItems="stretch" on container)
+            display: 'flex',
+            flexDirection: 'column', // Changed from column to row to match icon/text layout
+            // alignItems: 'center', // Align items vertically if needed within the row
             borderRadius: 2,
-            border: 'solid white 1px',
-            padding: '50px',
-            backdropFilter: 'blur(10px)',
-            position: 'relative',
-            zIndex: 2 // Reduced from 6 to ensure proper stacking
-            
-          }} 
-          maxWidth="lg"
+            // maxWidth: '45%',
+            // width: '100%', // Correct: Card fills its Grid item horizontally
+            overflow: 'hidden',
+            boxShadow: '0 4px 8px rgba(0, 0, 0, 0.08)',
+            transition: 'all 0.2s ease-in-out',
+            textAlign: 'center',
+            '&:hover': {
+              transform: 'translateY(-4px)',
+              boxShadow: '0 8px 16px rgba(0, 0, 0, 0.12)'
+            },
+            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+            // maxHeight: '140px' // Consider removing maxHeight if height: '100%' and alignItems="stretch" work better
+          }}
         >
-          <Typography component="h2" variant="h4" align="center" color="white" gutterBottom>
-            {t.featuresTitle}
-          </Typography>
-          <Grid container spacing={4} sx={{ mt: 4 }} justifyContent="center">
-            {features.map((feature) => (
-              <Grid item key={feature.title} xs={12} sm={6} md={4}> {/* Changed from md={3} to md={4} for 3 items per row */}
-                <Box 
-                  textAlign="center"
-                  sx={{
-                    p: 3,
-                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                    borderRadius: 2,
-                    transition: 'transform 0.3s, box-shadow 0.3s',
-                    '&:hover': {
-                      transform: 'translateY(-5px)',
-                      boxShadow: '0 10px 20px rgba(0, 0, 0, 0.1)'
-                    }
-                  }}
-                >
-                  {feature.icon}
-                  <Typography variant="h6" component="h3" gutterBottom sx={{mt: 2}}>
-                    {feature.title}
-                  </Typography>
-                  <Typography variant="body1" color="text.secondary">
-                    {feature.description}
-                  </Typography>
-                </Box>
-              </Grid>
-            ))}
-          </Grid>
-        </Container>
+          {/* Icon part */}
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              backgroundColor: 'rgba(25, 118, 210, 0.05)',
+              p: 2,
+              // height: '100%', // No longer needed if Card is flex row
+              minWidth: '80px' // Keeps icon area consistent
+            }}
+          >
+            {featureIcons[index]}
+          </Box>
+          {/* Content part */}
+          <CardContent sx={{ p: 2, flex: 1 /* Allows content to take remaining space */ }}>
+            <Typography
+              variant="h6"
+              component="h3"
+              gutterBottom
+              sx={{
+                fontWeight: 600,
+                fontSize: '1rem'
+              }}
+            >
+              {feature.title}
+            </Typography>
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{
+                fontSize: '0.875rem',
+                lineHeight: 1.5
+              }}
+            >
+              {feature.description}
+            </Typography>
+          </CardContent>
+        </Card>
+      </Grid>
+    ))}
+  </Grid>
+</Container>
         {/* --- End Features Section --- */}
 
-         {/* --- Footer --- */}
-         <Container
+        {/* --- Footer --- */}
+        <Container
           maxWidth="md"
           component="footer"
           sx={{
             borderTop: (theme) => `1px solid ${theme.palette.divider}`,
             mt: 8,
-            py: [3, 6], // Padding top/bottom responsive
-            backgroundColor: 'rgba(255, 255, 255, 0.7)',
-            backdropFilter: 'blur(5px)',
+            py: [3, 6],
+            backgroundColor: 'rgba(255, 255, 255, 0.8)',
+            backdropFilter: 'blur(8px)',
             position: 'relative',
-            zIndex: 2 // Reduced from 6 to ensure proper stacking
+            zIndex: 2
           }}
         >
-          <Grid container spacing={2} alignItems="center" justifyContent="center">
+          <Grid container spacing={3} alignItems="center" justifyContent="center">
             <Grid item xs={12} sm="auto">
               <Box 
                 component="img"
@@ -366,16 +484,23 @@ function LandingPage() {
             <Grid item xs={12} sm="auto">
               <Typography variant="body2" color="text.secondary" align="center">
                 {'© '}
-                <Link color="inherit" href="#"> {/* Optional: Link to your main site */}
+                <Link color="inherit" href="#">
                   {t.appName}
                 </Link>{' '}
                 {new Date().getFullYear()}
-                {'.'}
               </Typography>
-              {/* Optional: Add links to Privacy Policy, Terms of Service */}
-              <Stack direction="row" justifyContent="center" spacing={2} sx={{ mt: 1 }}>
-                <Link component={RouterLink} to="/privacy" variant="body2" color="text.secondary">{t.privacy}</Link>
-                <Link component={RouterLink} to="/terms" variant="body2" color="text.secondary">{t.terms}</Link>
+              <Stack 
+                direction={{ xs: 'column', sm: 'row' }} 
+                justifyContent="center" 
+                spacing={{ xs: 1, sm: 2 }} 
+                sx={{ mt: 1 }}
+              >
+                <Link component={RouterLink} to="/privacy" variant="body2" color="text.secondary">
+                  {t.privacy}
+                </Link>
+                <Link component={RouterLink} to="/terms" variant="body2" color="text.secondary">
+                  {t.terms}
+                </Link>
               </Stack>
             </Grid>
           </Grid>
