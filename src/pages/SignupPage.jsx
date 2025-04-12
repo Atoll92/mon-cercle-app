@@ -74,6 +74,9 @@ function SignupPage() {
     }
   }, [location]);
 
+  
+  
+
   // Fetch network info based on the invite token
   const fetchNetworkInfo = async (token) => {
     if (!token) return;
@@ -142,42 +145,59 @@ function SignupPage() {
 
   const handleSignup = async (event) => {
     event.preventDefault();
-    setError(null); // Clear previous errors/messages
+    setError(null);
     setMessage('');
-
-    // --- Password Confirmation Check ---
+  
+    // Password Confirmation Check
     if (password !== confirmPassword) {
       setError("Passwords do not match.");
-      return; // Stop submission
+      return;
     }
-    // --- Optional: Add more password strength checks here ---
-
+  
     setLoading(true);
-
+  
     try {
       // 1. Create the auth account
       const { data, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
       });
-
+  
       if (signUpError) throw signUpError;
-
+  
       // 2. Process invitation if present
       if (inviteToken && networkId && invitationId && !invitationError) {
         try {
+          // Make sure there's a delay to allow Supabase to create the profile
+          // This is crucial - the profile might not be ready immediately
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          
           // Update the user's profile with the network_id when they sign up
           const { error: profileError } = await supabase
             .from('profiles')
             .update({ 
               network_id: networkId,
               contact_email: email,
-              role: 'member' // Default role for invited users
+              role: 'member'
             })
             .eq('id', data.user.id);
             
           if (profileError) {
             console.error('Error updating profile with network:', profileError);
+            // Try a different approach if update fails - insert instead of update
+            const { error: insertError } = await supabase
+              .from('profiles')
+              .insert([{ 
+                id: data.user.id,
+                network_id: networkId,
+                contact_email: email,
+                role: 'member'
+              }]);
+              
+            if (insertError) {
+              console.error('Error inserting profile:', insertError);
+              throw insertError;
+            }
           }
           
           // Update invitation status
@@ -199,17 +219,17 @@ function SignupPage() {
         // Regular signup without invitation
         setMessage('Signup successful! Please check your email to confirm your account.');
       }
-
+  
       // Clear form on success
       setEmail(''); 
       setPassword('');
       setConfirmPassword('');
-
+  
       // Wait a bit before redirecting to login
       setTimeout(() => {
         navigate('/login');
       }, 3000);
-
+  
     } catch (error) {
       setError(error.message || "Failed to sign up");
       console.error("Signup error:", error);

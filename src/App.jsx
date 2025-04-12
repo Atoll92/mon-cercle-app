@@ -24,26 +24,22 @@ function App() {
   const navigate = useNavigate();
   const location = useLocation();
 
- // Update redirect effect
- useEffect(() => {
-  if (!loading) {
-    if (session) {
-      // Redirect logged-in users from auth pages to /dashboard
-      if (['/login', '/signup', '/password-reset'].includes(location.pathname)) {
-        console.log('User authenticated, redirecting from auth page to /dashboard');
-        navigate('/dashboard', { replace: true }); // <-- CHANGE HERE
+  useEffect(() => {
+    if (!loading) {
+      if (session) {
+        // Get the current URL to check for invitation parameters
+        const searchParams = new URLSearchParams(location.search);
+        const hasInvite = searchParams.get('invite');
+        
+        // Redirect logged-in users from auth pages to /dashboard, but make exception for signup with invite
+        if (['/login', '/password-reset'].includes(location.pathname) || 
+            (location.pathname === '/signup' && !hasInvite)) {
+          console.log('User authenticated, redirecting from auth page to /dashboard');
+          navigate('/dashboard', { replace: true });
+        }
       }
-      // Optional: Redirect logged-in users from landing page '/' to '/dashboard'
-      // else if (location.pathname === '/') {
-      //    console.log('User authenticated, redirecting from / to /dashboard');
-      //    navigate('/dashboard', { replace: true });
-      // }
     }
-    // Optional: If user is logged OUT and tries to access a protected path
-    // that isn't handled by ProtectedRoute (e.g., direct load before ProtectedRoute checks),
-    // you might redirect them to login, but ProtectedRoute should handle this.
-  }
-}, [loading, session, location.pathname, navigate]);
+  }, [loading, session, location.pathname, location.search, navigate]);
   if (loading) {
     // Show loading indicator during initial auth check
     return (
