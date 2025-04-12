@@ -17,6 +17,7 @@ import LandingPage from './pages/LandingPage';
 
 // Import Protected Route Component
 import ProtectedRoute from './components/ProtectedRoute';
+import NetworkLandingPage from './pages/NetworkLandingPage';
 
 function App() {
   const { loading, session } = useAuth();
@@ -68,6 +69,9 @@ function App() {
           <Route path="/profile/edit" element={<EditProfilePage />} />
           <Route path="/admin" element={<NetworkAdminPage />} />
         </Route>
+
+        {/* Networks routes */}
+        <Route path="/network/:networkId" element={<NetworkLandingPage />} />
 
         {/* Catch-all Route for 404 Not Found */}
         <Route path="*" element={<NotFoundPage />} />

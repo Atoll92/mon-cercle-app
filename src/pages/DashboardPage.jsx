@@ -24,8 +24,11 @@ import {
   Edit as EditIcon,
   Add as AddIcon,
   AdminPanelSettings as AdminIcon,
-  Logout as LogoutIcon 
+  Logout as LogoutIcon, 
+  ArrowBack,
+  ArrowForward
 } from '@mui/icons-material';
+import { fetchNetworkMembers } from '../api/networks';
 
 function DashboardPage() {
   const { user, session } = useAuth();
@@ -116,7 +119,10 @@ function DashboardPage() {
 
         // Once profile is fetched, fetch members of the same network
         if (data?.network_id) {
-          fetchNetworkMembers(data.network_id);
+          fetchNetworkMembers(data.network_id).then(members => {
+            setNetworkMembers(members);
+            setLoadingMembers(false);
+          });
         } else {
           setLoadingMembers(false);
         }
@@ -126,28 +132,6 @@ function DashboardPage() {
         setLoadingProfile(false);
       }
     };
-
-    const fetchNetworkMembers = async (networkId) => {
-        setLoadingMembers(true);
-        try {
-          console.log('Fetching network members for network:', networkId);
-          const { data, error } = await supabase
-            .from('profiles')
-            .select('id, full_name, contact_email, role, profile_picture_url')
-            .eq('network_id', networkId);
-      
-          if (error) throw error;
-          console.log(`Found ${data?.length || 0} network members`);
-          setNetworkMembers(data || []);
-        } catch (error) {
-          console.error("Error fetching network members:", error);
-          setError("Failed to load network members. Please try again later.");
-          setNetworkMembers([]);
-        } finally {
-          setLoadingMembers(false); // This line should set loadingMembers to false
-          console.log("Members loading complete, loadingMembers set to false");
-        }
-      };
     
     if (user) {
       fetchProfile();
@@ -460,6 +444,17 @@ function DashboardPage() {
                     startIcon={<AdminIcon />}
                   >
                     Go to Network Admin Panel
+                  </Button>
+                  <br />
+                  <Button
+                    variant="outlined" 
+                    color="primary" 
+                    component={Link}
+                    to={`/network/${profile.network_id}`}
+                    endIcon={<ArrowForward />}
+                    sx={{ mt: 2 }}
+                  >
+                    Go to Network Landing Page
                   </Button>
                 </CardContent>
               </Card>
