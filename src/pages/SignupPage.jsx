@@ -134,14 +134,7 @@ function SignupPage() {
     }
   };
   
-  // Then modify your handleSignup to use this function:
-  // Replace the profile update section with:
-  const profileCreated = await ensureProfile(data.user.id, email, networkId);
-  if (!profileCreated) {
-    setError("Your account was created but there was an issue setting up your profile. Please login and complete your profile setup.");
-  } else {
-    // Update invitation status...
-  }
+
 
   // Fetch network info based on the invite token
   const fetchNetworkInfo = async (token) => {
