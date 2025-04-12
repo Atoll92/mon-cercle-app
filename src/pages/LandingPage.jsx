@@ -33,6 +33,8 @@ import LockIcon from '@mui/icons-material/Lock'; // For privacy/security
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings'; // For admin controls
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import EventIcon from '@mui/icons-material/Event'; // For event organization
+import SupportAgentIcon from '@mui/icons-material/SupportAgent'; // For human assistance
+import BrushIcon from '@mui/icons-material/Brush'; // For white-label options
 
 // --- Component Definition ---
 function LandingPage() {
@@ -77,6 +79,14 @@ function LandingPage() {
         {
           title: 'Event Coordination',
           description: 'Seamlessly organize meetings, events, and gatherings with integrated scheduling and RSVP features.'
+        },
+        {
+          title: '24/7 Human Support',
+          description: 'Access real human assistance any day of the week with our dedicated support team ready to help.'
+        },
+        {
+          title: 'White-Label Solution',
+          description: 'Customize the platform with your own branding to create a seamless experience for your members.'
         }
       ],
       privacy: 'Privacy Policy',
@@ -116,6 +126,14 @@ function LandingPage() {
         {
           title: 'Coordination d\'Événements',
           description: 'Organisez facilement des réunions, événements et rassemblements avec des fonctionnalités intégrées de planification et de confirmation de présence.'
+        },
+        {
+          title: 'Assistance Humaine 7j/7',
+          description: 'Accédez à une assistance par de vrais humains tous les jours de la semaine avec notre équipe de support dédiée prête à vous aider.'
+        },
+        {
+          title: 'Solution Marque Blanche',
+          description: 'Personnalisez la plateforme avec votre propre identité visuelle pour créer une expérience sur mesure pour vos membres.'
         }
       ],
       privacy: 'Politique de Confidentialité',
@@ -133,7 +151,9 @@ function LandingPage() {
     <LockIcon fontSize="medium" color="primary" />,
     <AdminPanelSettingsIcon fontSize="medium" color="primary" />,
     <VisibilityOffIcon fontSize="medium" color="primary" />,
-    <EventIcon fontSize="medium" color="primary" />
+    <EventIcon fontSize="medium" color="primary" />,
+    <SupportAgentIcon fontSize="medium" color="primary" />,
+    <BrushIcon fontSize="medium" color="primary" />
   ];
 
   // Handle language change
