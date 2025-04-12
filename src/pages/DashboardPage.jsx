@@ -445,7 +445,13 @@ function DashboardPage() {
                   >
                     Go to Network Admin Panel
                   </Button>
-                  <br />
+                </CardContent>
+              </Card>
+            )}
+
+            {profile.network_id && (
+              <Card sx={{ mt: 3 }}>
+                <CardContent>
                   <Button
                     variant="outlined" 
                     color="primary" 
@@ -459,6 +465,8 @@ function DashboardPage() {
                 </CardContent>
               </Card>
             )}
+            <br />
+                  
           </Grid>
         </Grid>
       ) : (
