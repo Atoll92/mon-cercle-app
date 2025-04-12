@@ -31,8 +31,8 @@ import {
 import { fetchNetworkMembers } from '../api/networks';
 
 function DashboardPage() {
-  const { user, session } = useAuth();
-  const navigate = useNavigate();
+  const { user, session, signOut } = useAuth();
+    const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
   const [networkMembers, setNetworkMembers] = useState([]);
   const [loadingProfile, setLoadingProfile] = useState(true);
@@ -141,16 +141,36 @@ function DashboardPage() {
     }
   }, [user, retryCount, navigate]);
 
-  const handleLogout = async () => {
-    try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-      // AuthProvider's onAuthStateChange will handle state update
-    } catch (error) {
-      console.error("Error logging out:", error);
-      alert("Failed to log out. Please try again.");
+  // Update the handleLogout function in your DashboardPage.jsx
+// Update the handleLogout function in your DashboardPage.jsx
+const handleLogout = async () => {
+  try {
+    console.log("Attempting to log out...");
+    // Force clear local storage first to ensure clean state
+    localStorage.removeItem('supabase.auth.token');
+    
+    // Then call the signOut method from context
+    const { error } = await signOut();
+    
+    if (error) {
+      console.error("Logout error from context:", error);
+      // If context signOut fails, try direct supabase logout as fallback
+      await supabase.auth.signOut();
     }
-  };
+    
+    // Force navigation regardless of outcome
+    navigate('/login', { replace: true });
+    
+    // Optional: force page reload to clear any remaining state
+    window.location.reload();
+  } catch (error) {
+    console.error("Logout error:", error);
+    alert(`Failed to log out: ${error.message}`);
+    
+    // Even if everything fails, force redirect to login
+    navigate('/login', { replace: true });
+  }
+};
 
   const handleCreateNetwork = async () => {
     try {

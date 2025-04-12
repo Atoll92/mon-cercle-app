@@ -185,13 +185,24 @@ export const AuthProvider = ({ children }) => {
     try {
       setAuthError(null);
       console.log('Signing out user');
+      
+      // Don't check for session first, just try to sign out
       const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-      console.log('Sign out successful');
-      return { error: null };
+      
+      // Clear user and session state regardless of success/failure
+      setSession(null);
+      setUser(null);
+      
+      // Return any error that might have occurred
+      return { error };
     } catch (error) {
       console.error('Sign out error:', error);
       setAuthError(error.message);
+      
+      // Clear user and session state even if there's an error
+      setSession(null);
+      setUser(null);
+      
       return { error };
     }
   };
