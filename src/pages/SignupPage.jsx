@@ -75,7 +75,73 @@ function SignupPage() {
   }, [location]);
 
   
+  const ensureProfile = async (userId, email, networkId = null) => {
+    try {
+      // Check if profile already exists
+      const { data: existingProfile, error: checkError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .maybeSingle();
   
+      if (checkError && checkError.code !== 'PGRST116') {
+        console.error('Error checking profile:', checkError);
+        return false;
+      }
+  
+      // If profile exists and we need to update network_id
+      if (existingProfile) {
+        if (networkId) {
+          const { error: updateError } = await supabase
+            .from('profiles')
+            .update({ 
+              network_id: networkId,
+              contact_email: email,
+              updated_at: new Date()
+            })
+            .eq('id', userId);
+  
+          if (updateError) {
+            console.error('Error updating profile:', updateError);
+            return false;
+          }
+        }
+        return true;
+      }
+  
+      // Profile doesn't exist, create it
+      const profileData = {
+        id: userId,
+        contact_email: email,
+        role: networkId ? 'member' : null,
+        network_id: networkId,
+        updated_at: new Date()
+      };
+  
+      const { error: createError } = await supabase
+        .from('profiles')
+        .insert([profileData]);
+  
+      if (createError) {
+        console.error('Error creating profile:', createError);
+        return false;
+      }
+  
+      return true;
+    } catch (error) {
+      console.error('Profile creation error:', error);
+      return false;
+    }
+  };
+  
+  // Then modify your handleSignup to use this function:
+  // Replace the profile update section with:
+  const profileCreated = await ensureProfile(data.user.id, email, networkId);
+  if (!profileCreated) {
+    setError("Your account was created but there was an issue setting up your profile. Please login and complete your profile setup.");
+  } else {
+    // Update invitation status...
+  }
 
   // Fetch network info based on the invite token
   const fetchNetworkInfo = async (token) => {
