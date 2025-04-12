@@ -18,6 +18,7 @@ import LandingPage from './pages/LandingPage';
 // Import Protected Route Component
 import ProtectedRoute from './components/ProtectedRoute';
 import NetworkLandingPage from './pages/NetworkLandingPage';
+import DemoPage from './pages/DemoPage';
 
 function App() {
   const { loading, session } = useAuth();
@@ -57,6 +58,8 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/password-reset" element={<PasswordResetPage />} />
+        <Route path="/demo" element={<DemoPage />} />
+
 
         {/* Protected Routes */}
         <Route element={<ProtectedRoute />}>
