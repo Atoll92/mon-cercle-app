@@ -98,6 +98,7 @@ function LoginPage() {
               width: '100%', 
               borderRadius: 2,
               overflow: 'hidden',
+              zIndex:9
             }}
           >
             <Box 
