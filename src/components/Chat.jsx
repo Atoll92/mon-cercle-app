@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../supabaseclient';
 import { useAuth } from '../context/authcontext';
 import {
@@ -23,6 +23,12 @@ const Chat = ({ networkId }) => {
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const messageEndRef = useRef(null);
+
+  // Auto-scroll to the bottom when messages change
+  useEffect(() => {
+    messageEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
 
   useEffect(() => {
     const fetchMessages = async () => {
@@ -33,6 +39,7 @@ const Chat = ({ networkId }) => {
             id,
             content,
             created_at,
+            user_id,
             profiles:user_id (id, full_name, profile_picture_url)
           `)
           .eq('network_id', networkId)
@@ -58,8 +65,27 @@ const Chat = ({ networkId }) => {
         schema: 'public',
         table: 'messages',
         filter: `network_id=eq.${networkId}`
-      }, (payload) => {
-        setMessages(prev => [...prev, payload.new]);
+      }, async (payload) => {
+        // When a new message is inserted, fetch the complete message with user profile
+        try {
+          const { data, error } = await supabase
+            .from('messages')
+            .select(`
+              id,
+              content,
+              created_at,
+              user_id,
+              profiles:user_id (id, full_name, profile_picture_url)
+            `)
+            .eq('id', payload.new.id)
+            .single();
+
+          if (error) throw error;
+          
+          setMessages(prev => [...prev, data]);
+        } catch (error) {
+          console.error('Error fetching new message details:', error);
+        }
       })
       .subscribe();
 
@@ -71,19 +97,50 @@ const Chat = ({ networkId }) => {
   const handleSend = async () => {
     if (!newMessage.trim()) return;
 
+    // Prepare optimistic UI update with pending message
+    const pendingMessage = {
+      id: 'pending-' + Date.now(),
+      content: newMessage.trim(),
+      created_at: new Date().toISOString(),
+      user_id: user.id,
+      profiles: {
+        id: user.id,
+        full_name: user.user_metadata?.full_name || 'You',
+        profile_picture_url: user.user_metadata?.avatar_url
+      },
+      pending: true
+    };
+
+    // Add the pending message to the UI immediately
+    setMessages(prev => [...prev, pendingMessage]);
+    setNewMessage('');
+
     try {
-      const { error } = await supabase
+      // Send the message to the database
+      const { data, error } = await supabase
         .from('messages')
         .insert({
           network_id: networkId,
           user_id: user.id,
-          content: newMessage.trim()
-        });
+          content: pendingMessage.content
+        })
+        .select();
 
       if (error) throw error;
-      setNewMessage('');
+
+      // The real-time subscription will handle adding the confirmed message
+      // But we can also update our pending message to remove the pending state
+      setMessages(prev => 
+        prev.map(msg => 
+          msg.id === pendingMessage.id 
+            ? { ...msg, pending: false, id: data[0].id } 
+            : msg
+        )
+      );
     } catch (error) {
       console.error('Error sending message:', error);
+      // Remove the pending message if it failed
+      setMessages(prev => prev.filter(msg => msg.id !== pendingMessage.id));
       setError('Failed to send message');
     }
   };
@@ -106,17 +163,25 @@ const Chat = ({ networkId }) => {
 
   return (
     <Paper sx={{ height: '70vh', display: 'flex', flexDirection: 'column' }}>
-      <List sx={{ flexGrow: 1, overflow: 'auto' }}>
+      <List sx={{ flexGrow: 1, overflow: 'auto', p: 0 }}>
         {messages.map(message => (
-          <ListItem key={message.id}>
+          <ListItem 
+            key={message.id}
+            sx={{
+              opacity: message.pending ? 0.7 : 1,
+              backgroundColor: message.user_id === user.id ? 'rgba(0, 0, 255, 0.05)' : 'transparent'
+            }}
+          >
             <ListItemAvatar>
               <Avatar 
-                src={message.profiles.profile_picture_url}
-                alt={message.profiles.full_name}
-              />
+                src={message.profiles?.profile_picture_url}
+                alt={message.profiles?.full_name}
+              >
+                {!message.profiles?.profile_picture_url && message.profiles?.full_name?.[0]}
+              </Avatar>
             </ListItemAvatar>
             <ListItemText
-              primary={message.profiles.full_name || 'Anonymous'}
+              primary={message.profiles?.full_name || 'Anonymous'}
               secondary={
                 <>
                   <Typography
@@ -131,14 +196,17 @@ const Chat = ({ networkId }) => {
                     component="span"
                     variant="caption"
                     color="text.secondary"
+                    sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
                   >
                     {new Date(message.created_at).toLocaleTimeString()}
+                    {message.pending && ' (sending...)'}
                   </Typography>
                 </>
               }
             />
           </ListItem>
         ))}
+        <div ref={messageEndRef} />
       </List>
       <Divider />
       <Box sx={{ p: 2, display: 'flex', gap: 1 }}>
@@ -148,7 +216,9 @@ const Chat = ({ networkId }) => {
           placeholder="Type a message..."
           value={newMessage}
           onChange={(e) => setNewMessage(e.target.value)}
-          onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+          onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
+          multiline
+          maxRows={3}
         />
         <IconButton 
           color="primary" 
