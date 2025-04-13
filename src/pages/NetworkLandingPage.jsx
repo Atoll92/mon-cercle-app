@@ -5,6 +5,8 @@ import { useAuth } from '../context/authcontext';
 import { supabase } from '../supabaseclient';
 import { fetchNetworkMembers } from '../api/networks';
 import ArticleIcon from '@mui/icons-material/Article';
+import ChatIcon from '@mui/icons-material/Chat';
+import Chat from '../components/Chat';
 
 import {
   Container,
@@ -307,6 +309,7 @@ setNetworkNews(newsData || []);
            <Tab icon={<GroupsIcon />} label="Members" />
   <Tab icon={<EventIcon />} label="Events" />
   <Tab icon={<ArticleIcon />} label="News" />
+<Tab icon={<ChatIcon />} label="Chat" />
   <Tab icon={<InfoIcon />} label="About" />
         </Tabs>
       </Box>
@@ -599,6 +602,22 @@ setNetworkNews(newsData || []);
       <Typography variant="body1" color="text.secondary">
         No news posts available
       </Typography>
+    )}
+  </Paper>
+)}
+
+{activeTab === 4 && (
+  <Paper sx={{ p: 3, mt: 2 }}>
+    <Typography variant="h5" gutterBottom>
+      Network Chat
+    </Typography>
+    <Divider sx={{ mb: 2 }} />
+    {isUserMember ? (
+      <Chat networkId={networkId} />
+    ) : (
+      <Alert severity="info">
+        You must be a member of this network to participate in the chat
+      </Alert>
     )}
   </Paper>
 )}
