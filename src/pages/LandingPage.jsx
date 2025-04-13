@@ -141,12 +141,13 @@ const DGLogo = () => (
       navFeatures: 'Features',
       navLogin: 'Login',
       navSignUp: 'Sign Up',
-      heroTitle: 'Your Private Network Hub',
       heroSubtitle: 'Easily create and manage closed networks for your members to connect, share portfolios, and display contact information securely.',
       getStarted: 'Get Started',
       trustTitle: "They Trust Us",
       viewDemo: 'View Demo',
       poweredBy: "Powered by Double Geste",
+      heroTitle: 'Your', // Fixed part
+    animatedPhrases: ["private network", "organization's hub", "community directory", "space to share"],
 
       featuresTitle: 'Why Choose Cliq?',
       features: [
@@ -191,12 +192,13 @@ const DGLogo = () => (
       navFeatures: 'Fonctionnalités',
       navLogin: 'Connexion',
       navSignUp: 'S\'inscrire',
-      heroTitle: 'Votre Plateforme de Réseau Privé',
       heroSubtitle: 'Créez et gérez facilement des réseaux fermés pour permettre à vos membres de se connecter, partager leurs portfolios et afficher leurs coordonnées en toute sécurité.',
       getStarted: 'Commencer',
       trustTitle: "Ils nous font confiance",
       viewDemo: 'Voir la Démo',
       poweredBy: "Propulsé par Double Geste",
+      heroTitle: 'Votre', // Fixed part
+    animatedPhrases: ["réseau privé", "plateforme d'organisation", "annuaire communautaire", "espace de partage"],
 
       featuresTitle: 'Pourquoi Choisir Cliq?',
       features: [
@@ -241,11 +243,12 @@ const DGLogo = () => (
       navFeatures: 'Características',
       navLogin: 'Iniciar Sesión',
       navSignUp: 'Registrarse',
-      heroTitle: 'Tu Centro de Redes Privadas',
       heroSubtitle: 'Crea y gestiona fácilmente redes cerradas para que tus miembros se conecten, compartan portafolios y muestren información de contacto de forma segura.',
       getStarted: 'Empezar',
       viewDemo: 'Ver Demo',
       featuresTitle: '¿Por Qué Elegir Üni?',
+      heroTitle: 'Tu', // Fixed part
+      animatedPhrases: ["red privada", "centro organizativo", "directorio comunitario", "espacio para compartir"],
       features: [
         {
           title: 'Redes Cerradas',
@@ -288,11 +291,12 @@ const DGLogo = () => (
       navFeatures: 'Funktionen',
       navLogin: 'Anmelden',
       navSignUp: 'Registrieren',
-      heroTitle: 'Ihr Privates Netzwerk-Zentrum',
       heroSubtitle: 'Erstellen und verwalten Sie geschlossene Netzwerke, in denen sich Mitglieder sicher verbinden, Portfolios teilen und Kontaktinformationen austauschen können.',
       getStarted: 'Loslegen',
       viewDemo: 'Demo Ansehen',
       featuresTitle: 'Warum Üni Wählen?',
+      heroTitle: 'Ihr', // Fixed part
+    animatedPhrases: ["privates Netzwerk", "Organisations-Hub", "Gemeinschaftsverzeichnis", "Raum zum Teilen"],
       features: [
         {
           title: 'Geschlossene Netzwerke',
@@ -336,11 +340,12 @@ const DGLogo = () => (
     navFeatures: 'Caratteristiche',
     navLogin: 'Accedi',
     navSignUp: 'Registrati',
-    heroTitle: 'Il Tuo Hub di Reti Private',
     heroSubtitle: 'Crea e gestisci facilmente reti chiuse per consentire ai membri di connettersi, condividere portfolio e visualizzare informazioni di contatto in modo sicuro.',
     getStarted: 'Inizia Ora',
     viewDemo: 'Vedi Demo',
     featuresTitle: 'Perché Scegliere Üni?',
+    heroTitle: 'Il Tuo', // Fixed part
+    animatedPhrases: ["network privato", "hub organizzativo", "directory della comunità", "spazio per condividere"],
     features: [
       {
         title: 'Reti Chiuse',
@@ -383,11 +388,12 @@ const DGLogo = () => (
     navFeatures: 'Recursos',
     navLogin: 'Entrar',
     navSignUp: 'Inscrever-se',
-    heroTitle: 'Seu Hub de Rede Privada',
     heroSubtitle: 'Crie e gerencie redes fechadas para membros se conectarem, compartilharem portfólios e informações de contato com segurança.',
     getStarted: 'Começar',
     viewDemo: 'Ver Demonstração',
-    featuresTitle: 'Por Que Escolher Üni?',
+    featuresTitle: 'Por Que Escolher Cliq?',
+    heroTitle: 'Seu', // Fixed part
+    animatedPhrases: ["rede privada", "hub organizacional", "diretório comunitário", "espaço para compartilhar"],
     features: [
       {
         title: 'Redes Fechadas',
@@ -430,11 +436,12 @@ const DGLogo = () => (
     navFeatures: 'الميزات',
     navLogin: 'تسجيل الدخول',
     navSignUp: 'التسجيل',
-    heroTitle: 'مركز الشبكات الخاصة الخاص بك',
     heroSubtitle: 'أنشئ وشبكات مغلقة لإتاحة التواصل الآمن بين الأعضاء ومشاركة الأعمال وعرض معلومات الاتصال.',
     getStarted: 'ابدأ الآن',
     viewDemo: 'عرض التجربة',
     featuresTitle: 'لماذا تختار يوني؟',
+    heroTitle: 'مركز', // Fixed part - using original Arabic term that means "Your Center"
+    animatedPhrases: ["الشبكات الخاصة", "التنظيم الخاص بك", "دليل المجتمع", "مساحة المشاركة"],
     features: [
       {
         title: 'شبكات مغلقة',
@@ -477,11 +484,12 @@ const DGLogo = () => (
     navFeatures: 'Functies',
     navLogin: 'Inloggen',
     navSignUp: 'Aanmelden',
-    heroTitle: 'Uw Privé Netwerk Hub',
     heroSubtitle: 'Maak en beheer gesloten netwerken zodat leden veilig kunnen verbinden, portfolio\'s delen en contactgegevens tonen.',
     getStarted: 'Start Nu',
     viewDemo: 'Demo Bekijken',
-    featuresTitle: 'Waarom Üni Kiezen?',
+    featuresTitle: 'Waarom Cliq Kiezen?',
+    heroTitle: 'Uw', // Fixed part
+    animatedPhrases: ["privé netwerk", "organisatiehub", "gemeenschapsindex", "ruimte om te delen"],
     features: [
       {
         title: 'Gesloten Netwerken',
@@ -524,11 +532,12 @@ const DGLogo = () => (
     navFeatures: 'Χαρακτηριστικά',
     navLogin: 'Σύνδεση',
     navSignUp: 'Εγγραφή',
-    heroTitle: 'Κέντρο Ιδιωτικών Δικτύων',
     heroSubtitle: 'Δημιουργήστε κλειστά δίκτυα για ασφαλή σύνδεση μελών, κοινή χρήση portfolio και επαφών.',
     getStarted: 'Ξεκινήστε Τώρα',
     viewDemo: 'Προβολή Demo',
     featuresTitle: 'Γιατί να Επιλέξετε το Üni;',
+    heroTitle: 'Το', // Fixed part
+    animatedPhrases: ["ιδιωτικό σας δίκτυο", "κέντρο οργάνωσης", "κατάλογος κοινότητας", "χώρος κοινής χρήσης"],
     features: [
       {
         title: 'Κλειστά Δίκτυα',
@@ -571,11 +580,12 @@ const DGLogo = () => (
     navFeatures: 'Funkcje',
     navLogin: 'Zaloguj',
     navSignUp: 'Zarejestruj',
-    heroTitle: 'Twoje Centrum Sieci Prywatnych',
     heroSubtitle: 'Twórz zamknięte sieci dla bezpiecznego kontaktu członków, udostępniania portfolio i informacji kontaktowych.',
     getStarted: 'Rozpocznij',
     viewDemo: 'Zobacz Demo',
     featuresTitle: 'Dlaczego Üni?',
+    heroTitle: 'Twoje', // Fixed part
+    animatedPhrases: ["sieć prywatna", "centrum organizacji", "katalog społeczności", "przestrzeń do udostępniania"],
     features: [
       {
         title: 'Sieci Zamknięte',
@@ -618,10 +628,11 @@ const DGLogo = () => (
     navFeatures: '功能',
     navLogin: '登录',
     navSignUp: '注册',
-    heroTitle: '您的私人网络中心',
     heroSubtitle: '创建和管理封闭网络，让成员安全连接、共享作品集并显示联系信息。',
     getStarted: '立即开始',
     viewDemo: '查看演示',
+    heroTitle: '您的', // Fixed part
+    animatedPhrases: ["私人网络", "组织中心", "社区目录", "共享空间"],
     featuresTitle: '为什么选择ÜNI？',
     features: [
       {
@@ -845,8 +856,8 @@ const DGLogo = () => (
           mr: { xs: 0, sm: 2 }
         }}
       >
-        Your
-      </Typography>
+    {t.heroTitle}
+    </Typography>
       
       {/* Animated Text Container */}
       <Box
@@ -857,7 +868,7 @@ const DGLogo = () => (
         }}
       >
         <TextCycler
-          phrases={["private network", "organization's hub", "community directory", "space to share"]}
+          phrases={t.animatedPhrases}
           interval={3000}
         />
       </Box>
