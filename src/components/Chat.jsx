@@ -90,7 +90,7 @@ const Chat = ({ networkId }) => {
       }, async (payload) => {
         console.log('Received new message via Realtime:', payload);
         
-        // Fetch the complete message with user profile
+        // Fetch the complete message with user profile to ensure we have all data
         try {
           const { data, error } = await supabase
             .from('messages')
@@ -99,6 +99,7 @@ const Chat = ({ networkId }) => {
               content,
               created_at,
               user_id,
+              network_id,
               profiles:user_id (id, full_name, profile_picture_url)
             `)
             .eq('id', payload.new.id)
@@ -106,19 +107,22 @@ const Chat = ({ networkId }) => {
 
           if (error) throw error;
           
-          // Add the new message only if it doesn't already exist
-          setMessages(prev => {
-            if (prev.some(msg => msg.id === data.id)) {
-              return prev;
-            }
-            
-            // Remove any pending version of this message if it's from the current user
-            const filteredMessages = prev.filter(msg => 
-              !(msg.pending && msg.user_id === user.id && msg.content === data.content)
-            );
-            
-            return [...filteredMessages, data];
-          });
+          // Only add if the message belongs to the current network
+          if (data.network_id === networkId) {
+            // Add the new message only if it doesn't already exist
+            setMessages(prev => {
+              if (prev.some(msg => msg.id === data.id)) {
+                return prev;
+              }
+              
+              // Remove any pending version of this message if it's from the current user
+              const filteredMessages = prev.filter(msg => 
+                !(msg.pending && msg.user_id === user.id && msg.content === data.content)
+              );
+              
+              return [...filteredMessages, data];
+            });
+          }
         } catch (error) {
           console.error('Error fetching new message details:', error);
         }
@@ -185,18 +189,20 @@ const Chat = ({ networkId }) => {
 
     try {
       // Send the message to the database
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('messages')
         .insert({
           network_id: networkId,
           user_id: user.id,
           content: pendingMessage.content
-        });
+        })
+        .select('id')
+        .single();
 
       if (error) throw error;
       
+      console.log('Message sent successfully with ID:', data.id);
       // The realtime subscription will handle adding the confirmed message
-      // We don't need to update our state here as the postgres_changes event will do it
     } catch (error) {
       console.error('Error sending message:', error);
       // Remove the pending message if it failed
@@ -295,7 +301,7 @@ const Chat = ({ networkId }) => {
                       color="text.secondary"
                       sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
                     >
-                      {new Date(message.created_at).toLocaleTimeString()}
+                      {new Date(message.created_at).toLocaleDateString()} {new Date(message.created_at).toLocaleTimeString()}
                       {message.pending && ' (sending...)'}
                     </Typography>
                   </>
