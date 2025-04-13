@@ -796,7 +796,7 @@ setNewsPosts(newsData || []);
         </Card>
       </TabPanel>
 
-      <TabPanel value={activeTab} index={2}>
+      <TabPanel value={activeTab} index={3}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
           <Typography variant="h5">Network Events</Typography>
           <Button
@@ -849,7 +849,7 @@ setNewsPosts(newsData || []);
         </Grid>
       </TabPanel>
 
-      <TabPanel value={activeTab} index={3}>
+      <TabPanel value={activeTab} index={2}>
   <Card sx={{ p: 3, mb: 3 }}>
     <Typography variant="h5" gutterBottom>
       Create News Post
