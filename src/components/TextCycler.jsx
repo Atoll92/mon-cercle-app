@@ -66,7 +66,7 @@ const TextCycler = ({ phrases, interval = 3000 }) => {
           whiteSpace: 'nowrap',
           lineHeight: 1,
           //accent colored text
-          color:'rgba(25, 118, 210)'
+          color:'rgb(25, 118, 210)'
         }}
       >
         {phrases[currentIndex]}
