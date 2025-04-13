@@ -487,7 +487,7 @@ setNetworkNews(newsData || []);
     </Paper>
   )}
       
-      {activeTab === 2 && (
+      {activeTab === 4 && (
         <Paper sx={{ p: 3 }}>
           <Typography variant="h5" component="h2" gutterBottom>
             About This Network
@@ -568,7 +568,7 @@ setNetworkNews(newsData || []);
         </Paper>
       )}
 
-{activeTab === 3 && (
+{activeTab === 2 && (
   <Paper sx={{ p: 3 }}>
     <Typography variant="h5" gutterBottom>
       Network News
@@ -606,7 +606,7 @@ setNetworkNews(newsData || []);
   </Paper>
 )}
 
-{activeTab === 4 && (
+{activeTab === 3 && (
   <Paper sx={{ p: 3, mt: 2 }}>
     <Typography variant="h5" gutterBottom>
       Network Chat

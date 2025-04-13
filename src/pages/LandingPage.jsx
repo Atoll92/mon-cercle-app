@@ -137,7 +137,7 @@ const DGLogo = () => (
   // --- Text content for different languages ---
   const content = {
     en: {
-      appName: 'Mon Cercle App',
+      appName: 'Cliq App',
       navFeatures: 'Features',
       navLogin: 'Login',
       navSignUp: 'Sign Up',
@@ -148,7 +148,7 @@ const DGLogo = () => (
       viewDemo: 'View Demo',
       poweredBy: "Powered by Double Geste",
 
-      featuresTitle: 'Why Choose Üni?',
+      featuresTitle: 'Why Choose Cliq?',
       features: [
         {
           title: 'Closed Networks',
@@ -187,7 +187,7 @@ const DGLogo = () => (
       terms: 'Terms of Service'
     },
     fr: {
-      appName: 'Mon Cercle',
+      appName: 'Cliq',
       navFeatures: 'Fonctionnalités',
       navLogin: 'Connexion',
       navSignUp: 'S\'inscrire',
@@ -198,7 +198,7 @@ const DGLogo = () => (
       viewDemo: 'Voir la Démo',
       poweredBy: "Propulsé par Double Geste",
 
-      featuresTitle: 'Pourquoi Choisir Mon Cercle?',
+      featuresTitle: 'Pourquoi Choisir Cliq?',
       features: [
         {
           title: 'Réseaux Fermés',
@@ -722,7 +722,7 @@ const DGLogo = () => (
               <Typography variant="h6" color="inherit" noWrap sx={{ flexGrow: 1, display: 'flex', alignItems: 'center' }}>
                 <Box 
                   component="img"
-                  src={MicroLogo}
+                  src={Logo}
                   alt="Mon Cercle Logo"
                   sx={{ 
                     height: 60,
@@ -739,7 +739,7 @@ const DGLogo = () => (
                     ml: 1,
                   }}
                 >
-                  ÜNI
+                  CLIQ
                 </Typography>
               </Typography>
               <nav style={{ display: 'flex', alignItems: 'center' }}>
