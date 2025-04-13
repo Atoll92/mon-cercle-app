@@ -262,8 +262,10 @@ setNewsPosts(newsData || []);
         if (inviteError) throw inviteError;
         
         const inviteToken = btoa(`invite:${invitation.id}:${network.id}`);
-        const inviteLink = `${window.location.origin}/signup?invite=${inviteToken}`;
-        
+        const baseUrl = process.env.NODE_ENV === 'production' 
+        ? 'https://mon-cercle-app.vercel.app' 
+        : window.location.origin;
+      const inviteLink = `${baseUrl}/signup?invite=${inviteToken}`;        
         try {
           await supabase.functions.invoke('network-invite', {
             body: {

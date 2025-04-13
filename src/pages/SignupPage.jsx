@@ -184,17 +184,17 @@ function SignupPage() {
       if (network) {
         setNetworkName(network.name);
         
-        // Also check if the invitation is still valid
-        // const { data: invitation, error: inviteError } = await supabase
-        //   .from('invitations')
-        //   .select('status, expires_at')
-        //   .eq('id', invId)
-        //   .single();
+        // Check if the invitation is still valid
+        const { data: invitation, error: inviteError } = await supabase
+          .from('invitations')
+          .select('status, expires_at')
+          .eq('id', invId)
+          .single();
           
-        // if (inviteError) {
-        //   console.error('Error fetching invitation:', inviteError);
-        //   throw new Error(`Invitation error: ${inviteError.message}`);
-        // }
+        if (inviteError) {
+          console.error('Error fetching invitation:', inviteError);
+          throw new Error(`Invitation error: ${inviteError.message}`);
+        }
         
         if (!invitation) {
           throw new Error('Invitation not found');
@@ -206,9 +206,9 @@ function SignupPage() {
         }
         
         // Check if invitation has expired (if expires_at is set)
-        // if (invitation.expires_at && new Date(invitation.expires_at) < new Date()) {
-        //   throw new Error('This invitation has expired.');
-        // }
+        if (invitation.expires_at && new Date(invitation.expires_at) < new Date()) {
+          throw new Error('This invitation has expired.');
+        }
       } else {
         throw new Error('Network not found');
       }
