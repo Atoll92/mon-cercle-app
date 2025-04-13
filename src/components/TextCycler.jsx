@@ -54,7 +54,7 @@ const TextCycler = ({ phrases, interval = 3000 }) => {
         height: '100%',
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'flex-start',
+        justifyContent: { xs: 'center', sm: 'flex-start', md: 'flex-start' },
         animation: isAnimating ? `${fadeOut} 0.5s forwards` : `${fadeIn} 0.5s forwards`
       }}
     >
@@ -66,7 +66,11 @@ const TextCycler = ({ phrases, interval = 3000 }) => {
           whiteSpace: 'nowrap',
           lineHeight: 1,
           //accent colored text
-          color:'rgb(25, 118, 210)'
+          // color:'rgb(25, 118, 210)'
+          // gradient text
+          background: 'linear-gradient(173deg, rgb(25, 118, 210) 20%, rgb(131, 193, 255) 100%)',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
         }}
       >
         {phrases[currentIndex]}

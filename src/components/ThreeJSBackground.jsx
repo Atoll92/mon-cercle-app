@@ -64,9 +64,9 @@ const ThreeJSBackground = () => {
     
     const bloomPass = new UnrealBloomPass(
       new THREE.Vector2(width, height),
-      0.3,    // strength
-      0.35,   // radius
-      0.98    // threshold
+      0.5,    // strength
+      0.95,   // radius
+      0.97    // threshold
     );
     composer.addPass(bloomPass);
 
@@ -85,7 +85,11 @@ const ThreeJSBackground = () => {
       const geometries = [
         new THREE.BoxGeometry(0.08, 0.08, 0.08),
         new THREE.TetrahedronGeometry(0.05),
-        new THREE.DodecahedronGeometry(0.05)
+        new THREE.DodecahedronGeometry(0.05),
+        new THREE.IcosahedronGeometry(0.05),
+        new THREE.OctahedronGeometry(0.05),
+        new THREE.ConeGeometry(0.05, 0.1, 4),
+        new THREE.CylinderGeometry(0.05, 0.05, 0.1, 5)
       ];
       
       for (let i = 0; i < count; i++) {
@@ -156,7 +160,7 @@ const ThreeJSBackground = () => {
             const length = 1;
             
             // Create a cylinder
-            const geometry = new THREE.CylinderGeometry(0.002, 0.002, length, 8);
+            const geometry = new THREE.CylinderGeometry(0.002, 0.002, length, 3);
             const material = new THREE.MeshPhongMaterial({
               color: objectsColor,
               specular: 0xffffff,
@@ -216,6 +220,9 @@ const ThreeJSBackground = () => {
     let lastTime = 0;
     const targetFPS = 60;
     const frameInterval = 1000 / targetFPS;
+
+    let curRotationX = 0;
+    let curRotationY = 0;
     
     const animate = (currentTime) => {
       const animationId = requestAnimationFrame(animate);
@@ -236,10 +243,20 @@ const ThreeJSBackground = () => {
         frameCount = 0;
         lastFpsUpdateTime = currentTime;
       }
+
+      // get the current scroll position
+      const scrollY = window.scrollY || document.documentElement.scrollTop;
       
       // Rotate the entire mainGroup (containing both shapes and lines)
-      mainGroup.rotation.x += 0.0005;
-      mainGroup.rotation.y += 0.0008;
+      // mainGroup.rotation.x = scrollY * 0.0003;
+      // mainGroup.rotation.y = scrollY * 0.0003;
+      // mainGroup.rotation.x += 0.0005;
+      // mainGroup.rotation.y += 0.0008;
+      curRotationX += 0.0005;
+      curRotationY += 0.0008;
+      mainGroup.rotation.x = curRotationX + scrollY * 0.0003;
+      mainGroup.rotation.y = curRotationY + scrollY * 0.0002;
+      mainGroup.rotation.z = scrollY * 0.0001;
       
       // Update individual shapes with their own rotation
       shapes.forEach(shape => {

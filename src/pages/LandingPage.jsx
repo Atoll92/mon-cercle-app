@@ -857,7 +857,7 @@ const DGLogo = () => (
         }}
       >
         <TextCycler
-          phrases={["Private Network Hub", "Communal Directory", "Associations' Hub", "Community Center", "Collaboration Space"]}
+          phrases={["private network", "organization's hub", "community directory", "space to share"]}
           interval={3000}
         />
       </Box>
