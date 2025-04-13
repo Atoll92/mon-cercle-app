@@ -137,7 +137,7 @@ const DGLogo = () => (
   // --- Text content for different languages ---
   const content = {
     en: {
-      appName: 'Cliq App',
+      appName: 'ALVEO App',
       navFeatures: 'Features',
       navLogin: 'Login',
       navSignUp: 'Sign Up',
@@ -149,7 +149,7 @@ const DGLogo = () => (
       heroTitle: 'Your', // Fixed part
     animatedPhrases: ["private network", "organization's hub", "community directory", "space to share"],
 
-      featuresTitle: 'Why Choose Cliq?',
+      featuresTitle: 'Why Choose ALVEO?',
       features: [
         {
           title: 'Closed Networks',
@@ -188,7 +188,7 @@ const DGLogo = () => (
       terms: 'Terms of Service'
     },
     fr: {
-      appName: 'Cliq',
+      appName: 'ALVEO',
       navFeatures: 'Fonctionnalités',
       navLogin: 'Connexion',
       navSignUp: 'S\'inscrire',
@@ -200,7 +200,7 @@ const DGLogo = () => (
       heroTitle: 'Votre', // Fixed part
     animatedPhrases: ["réseau privé", "plateforme d'organisation", "annuaire communautaire", "espace de partage"],
 
-      featuresTitle: 'Pourquoi Choisir Cliq?',
+      featuresTitle: 'Pourquoi Choisir ALVEO?',
       features: [
         {
           title: 'Réseaux Fermés',
@@ -391,7 +391,7 @@ const DGLogo = () => (
     heroSubtitle: 'Crie e gerencie redes fechadas para membros se conectarem, compartilharem portfólios e informações de contato com segurança.',
     getStarted: 'Começar',
     viewDemo: 'Ver Demonstração',
-    featuresTitle: 'Por Que Escolher Cliq?',
+    featuresTitle: 'Por Que Escolher ALVEO?',
     heroTitle: 'Seu', // Fixed part
     animatedPhrases: ["rede privada", "hub organizacional", "diretório comunitário", "espaço para compartilhar"],
     features: [
@@ -487,7 +487,7 @@ const DGLogo = () => (
     heroSubtitle: 'Maak en beheer gesloten netwerken zodat leden veilig kunnen verbinden, portfolio\'s delen en contactgegevens tonen.',
     getStarted: 'Start Nu',
     viewDemo: 'Demo Bekijken',
-    featuresTitle: 'Waarom Cliq Kiezen?',
+    featuresTitle: 'Waarom ALVEO Kiezen?',
     heroTitle: 'Uw', // Fixed part
     animatedPhrases: ["privé netwerk", "organisatiehub", "gemeenschapsindex", "ruimte om te delen"],
     features: [
@@ -750,7 +750,7 @@ const DGLogo = () => (
                     ml: 1,
                   }}
                 >
-                  CLIQ
+                  ALVEO
                 </Typography>
               </Typography>
               <nav style={{ display: 'flex', alignItems: 'center' }}>
@@ -952,6 +952,7 @@ const DGLogo = () => (
     borderRadius: 2,
     border: 'solid white 1px',
     backdropFilter: 'blur(10px)',
+    backgroundColor: 'rgb(24 118 210 / 22%);',
     position: 'relative',
     zIndex: 2,
     maxWidth: '95%' // Consider using standard MUI maxWidths like 'lg' or 'xl' if '95%' isn't essential
@@ -1061,7 +1062,7 @@ const DGLogo = () => (
   py: 8,
   position: 'relative',
   overflow: 'hidden',
-  backgroundColor: 'rgba(0, 0, 0, 0.3)',
+  backgroundColor: 'rgb(24 118 210 / 22%);',
   backdropFilter: 'blur(10px)',
   my: 8
 }}>
@@ -1123,10 +1124,11 @@ const DGLogo = () => (
             borderTop: (theme) => `1px solid ${theme.palette.divider}`,
             mt: 8,
             py: [3, 6],
-            backgroundColor: 'rgba(255, 255, 255, 0.8)',
+            backgroundColor: 'rgb(24 118 210 / 22%);',
             backdropFilter: 'blur(8px)',
             position: 'relative',
-            zIndex: 2
+            zIndex: 2,
+            color: 'white'
           }}
         >
 <Grid container spacing={3} alignItems="center" justifyContent="center">
@@ -1150,7 +1152,7 @@ const DGLogo = () => (
       alignItems: 'center',
       justifyContent: 'center',
       gap: 1,
-      color: 'text.secondary',
+      color: '#0c3f9c',
       '&:hover': {
         color: 'text.primary'
       },
@@ -1167,7 +1169,7 @@ const DGLogo = () => (
   </Grid>
 
   <Grid item xs={12} sm="auto">
-    <Typography variant="body2" color="text.secondary" align="center">
+    <Typography variant="body2" color="#0c3f9c" align="center">
       {'© '}
       <Link color="inherit" href="#">
         {t.appName}
@@ -1180,10 +1182,10 @@ const DGLogo = () => (
       spacing={{ xs: 1, sm: 2 }} 
       sx={{ mt: 1 }}
     >
-      <Link component={RouterLink} to="/privacy" variant="body2" color="text.secondary">
+      <Link component={RouterLink} to="/privacy" variant="body2" color="#0c3f9c">
         {t.privacy}
       </Link>
-      <Link component={RouterLink} to="/terms" variant="body2" color="text.secondary">
+      <Link component={RouterLink} to="/terms" variant="body2" color="#0c3f9c">
         {t.terms}
       </Link>
     </Stack>
