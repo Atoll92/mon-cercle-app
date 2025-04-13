@@ -693,7 +693,9 @@ const DGLogo = () => (
       position: 'relative',
       minHeight: '100vh',
       overflow: 'hidden',
-      backgroundColor: '#001428'
+            backgroundColor: '#f3f3f3'
+
+      // backgroundColor: '#001428'
     }}>
       {/* Three.js Background Animation */}
       <ThreeJSBackground />
@@ -810,12 +812,13 @@ const DGLogo = () => (
             component="h1"
             variant="h2"
             align="center"
-            color="white"
             gutterBottom
             sx={{
               fontSize: { xs: '2.5rem', md: '3.5rem' },
               fontWeight: 700,
-              mb: 3
+              mb: 3,
+              color: 'rgb(4, 13, 22)',
+
             }}
           >
             {t.heroTitle}
@@ -835,12 +838,13 @@ const DGLogo = () => (
             <Typography 
               variant="h5" 
               align="center" 
-              color="text.primary" 
               component="p" 
               sx={{ 
                 fontSize: { xs: '1.1rem', md: '1.3rem' },
                 lineHeight: 1.6,
-                fontWeight: 'bold'
+                fontWeight: 'bold',
+                color: 'rgb(4, 13, 22)',
+
               }}
             >
               {t.heroSubtitle}
@@ -874,7 +878,6 @@ const DGLogo = () => (
             <Button 
               variant="outlined" 
               size="large"
-              color="secondary"
               component={RouterLink}
               to="/demo"
               sx={{
@@ -882,7 +885,7 @@ const DGLogo = () => (
                 py: 1.5,
                 borderRadius: '2rem',
                 borderColor: 'white',
-                color: 'white',
+                color: ' rgba(0, 0, 0, 0.3)',
                 backdropFilter: 'blur(5px)',
                 backgroundColor: 'rgba(255, 255, 255, 0.1)',
                 '&:hover': {
@@ -985,7 +988,9 @@ const DGLogo = () => (
               gutterBottom
               sx={{
                 fontWeight: 600,
-                fontSize: '1rem'
+                fontSize: '1rem',
+                // color: 'rgb(4, 13, 22)',
+
               }}
             >
               {feature.title}
