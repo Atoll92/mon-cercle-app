@@ -4,6 +4,8 @@ import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/authcontext';
 import { supabase } from '../supabaseclient';
 import { fetchNetworkMembers } from '../api/networks';
+import ArticleIcon from '@mui/icons-material/Article';
+
 import {
   Container,
   Box,
@@ -73,6 +75,7 @@ function NetworkLandingPage() {
   const [shareableLink, setShareableLink] = useState('');
   const [calendarDate, setCalendarDate] = useState(new Date());
 const [calendarView, setCalendarView] = useState('month');
+const [networkNews, setNetworkNews] = useState([]);
   
   useEffect(() => {
     const fetchData = async () => {
@@ -109,6 +112,15 @@ const [calendarView, setCalendarView] = useState('month');
  
          if (eventsError) console.error('Error fetching events:', eventsError);
          setEvents(eventsData || []);
+
+         const { data: newsData, error: newsError } = await supabase
+  .from('network_news')
+  .select('*')
+  .eq('network_id', networkId)
+  .order('created_at', { ascending: false });
+
+if (newsError) console.error('News error:', newsError);
+setNetworkNews(newsData || []);
         
         // If user is logged in, get their profile to check if they're part of this network
         if (user) {
@@ -294,6 +306,7 @@ const [calendarView, setCalendarView] = useState('month');
         >
            <Tab icon={<GroupsIcon />} label="Members" />
   <Tab icon={<EventIcon />} label="Events" />
+  <Tab icon={<ArticleIcon />} label="News" />
   <Tab icon={<InfoIcon />} label="About" />
         </Tabs>
       </Box>
@@ -551,6 +564,44 @@ const [calendarView, setCalendarView] = useState('month');
           </Grid>
         </Paper>
       )}
+
+{activeTab === 3 && (
+  <Paper sx={{ p: 3 }}>
+    <Typography variant="h5" gutterBottom>
+      Network News
+    </Typography>
+    <Divider sx={{ mb: 3 }} />
+    {networkNews.map(post => (
+      <Card key={post.id} sx={{ mb: 3 }}>
+        <CardContent>
+          <Typography variant="h6" gutterBottom>
+            {post.title}
+          </Typography>
+          <Typography variant="caption" color="text.secondary">
+            Posted by {networkMembers.find(m => m.id === post.created_by)?.full_name || 'Admin'} • 
+            {new Date(post.created_at).toLocaleDateString()}
+          </Typography>
+          <Divider sx={{ my: 2 }} />
+          <div 
+            className="tiptap-output"
+            dangerouslySetInnerHTML={{ __html: post.content }}
+            style={{
+              '& ul': { listStyleType: 'disc', pl: 2 },
+              '& ol': { listStyleType: 'decimal', pl: 2 },
+              '& h1': { fontSize: '2em' },
+              '& h2': { fontSize: '1.5em' }
+            }}
+          />
+        </CardContent>
+      </Card>
+    ))}
+    {networkNews.length === 0 && (
+      <Typography variant="body1" color="text.secondary">
+        No news posts available
+      </Typography>
+    )}
+  </Paper>
+)}
       
       {!isUserMember && user && (
         <Paper sx={{ p: 3, mt: 3, backgroundColor: 'primary.light', color: 'primary.contrastText' }}>

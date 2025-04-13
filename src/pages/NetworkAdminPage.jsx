@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/authcontext';
 import { supabase } from '../supabaseclient';
+import { useEditor, EditorContent } from '@tiptap/react'
+import StarterKit from '@tiptap/starter-kit'
 import {
   Container,
   Box,
@@ -43,6 +45,7 @@ import {
   Edit as EditIcon,
   Delete as DeleteIcon
 } from '@mui/icons-material';
+import ArticleIcon from '@mui/icons-material/Article';
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -90,6 +93,18 @@ function NetworkAdminPage() {
     description: '',
     capacity: ''
   });
+  const [newsPosts, setNewsPosts] = useState([]);
+const [newsTitle, setNewsTitle] = useState('');
+const [editorContent, setEditorContent] = useState('');
+
+// Initialize Tiptap editor
+const editor = useEditor({
+  extensions: [StarterKit],
+  content: '<p>Start writing your news post...</p>',
+  onUpdate: ({ editor }) => {
+    setEditorContent(editor.getHTML())
+  },
+})
 
   useEffect(() => {
     const fetchData = async () => {
@@ -139,6 +154,16 @@ function NetworkAdminPage() {
           
         if (membersError) throw membersError;
         setMembers(membersData || []);
+
+        const { data: newsData, error: newsError } = await supabase
+  .from('network_news')
+  .select('*')
+  .eq('network_id', profileData.network_id)
+  .order('created_at', { ascending: false });
+
+if (newsError) console.error('News error:', newsError);
+setNewsPosts(newsData || []);
+
 
         // Get events
         const { data: eventsData, error: eventsError } = await supabase
@@ -381,6 +406,58 @@ function NetworkAdminPage() {
     }
   };
 
+  const handleNewsSubmit = async () => {
+    if (!newsTitle.trim() || !editorContent) {
+      setError('Please fill in both title and content');
+      return;
+    }
+  
+    try {
+      setUpdating(true);
+      
+      const { data, error } = await supabase
+        .from('network_news')
+        .insert([{
+          title: newsTitle,
+          content: editorContent,
+          network_id: network.id,
+          created_by: user.id
+        }])
+        .select();
+  
+      if (error) throw error;
+      
+      setNewsPosts([data[0], ...newsPosts]);
+      setNewsTitle('');
+      editor.commands.clearContent();
+      setMessage('News post published successfully!');
+  
+    } catch (error) {
+      console.error('News error:', error);
+      setError('Failed to publish news post');
+    } finally {
+      setUpdating(false);
+    }
+  };
+  
+  const handleDeleteNews = async (postId) => {
+    try {
+      const { error } = await supabase
+        .from('network_news')
+        .delete()
+        .eq('id', postId);
+  
+      if (error) throw error;
+      
+      setNewsPosts(newsPosts.filter(post => post.id !== postId));
+      setMessage('News post deleted successfully');
+  
+    } catch (error) {
+      console.error('Delete error:', error);
+      setError('Failed to delete news post');
+    }
+  };
+
   // Event management functions
   const handleOpenEventDialog = (mode, event = null) => {
     setEventDialogMode(mode);
@@ -518,6 +595,7 @@ function NetworkAdminPage() {
         >
           <Tab label="Network Settings" icon={<AdminIcon />} />
           <Tab label="Members" icon={<PersonAddIcon />} />
+          <Tab label="News" icon={<ArticleIcon />} />
           <Tab label="Events" icon={<EventIcon />} />
         </Tabs>
       </Paper>
@@ -767,6 +845,80 @@ function NetworkAdminPage() {
         </Grid>
       </TabPanel>
 
+      <TabPanel value={activeTab} index={3}>
+  <Card sx={{ p: 3, mb: 3 }}>
+    <Typography variant="h5" gutterBottom>
+      Create News Post
+    </Typography>
+    <TextField
+      fullWidth
+      label="Post Title"
+      value={newsTitle}
+      onChange={(e) => setNewsTitle(e.target.value)}
+      sx={{ mb: 2 }}
+    />
+    <Paper sx={{ 
+      p: 2, 
+      border: '1px solid #ddd',
+      minHeight: '300px',
+      '& .tiptap': {
+        minHeight: '250px',
+        padding: '8px',
+        '&:focus-visible': {
+          outline: 'none'
+        }
+      }
+    }}>
+      <EditorContent editor={editor} />
+    </Paper>
+    <Box sx={{ mt: 2, display: 'flex', gap: 2 }}>
+      <Button
+        variant="contained"
+        onClick={handleNewsSubmit}
+        startIcon={<SaveIcon />}
+      >
+        Publish Post
+      </Button>
+      <Button
+        variant="outlined"
+        onClick={() => editor.commands.clearContent()}
+      >
+        Clear
+      </Button>
+    </Box>
+  </Card>
+
+  <Typography variant="h5" gutterBottom>
+    Previous Posts
+  </Typography>
+  {newsPosts.map(post => (
+    <Card key={post.id} sx={{ mb: 2 }}>
+      <CardContent>
+        <Typography variant="h6">{post.title}</Typography>
+        <Typography variant="caption" color="text.secondary">
+          Posted by {members.find(m => m.id === post.created_by)?.full_name || 'Admin'} • 
+          {new Date(post.created_at).toLocaleDateString()}
+        </Typography>
+        <Divider sx={{ my: 2 }} />
+        <div 
+          className="tiptap-output"
+          dangerouslySetInnerHTML={{ __html: post.content }}
+        />
+      </CardContent>
+      <CardActions>
+        <Button 
+          size="small" 
+          color="error"
+          onClick={() => handleDeleteNews(post.id)}
+          startIcon={<DeleteIcon />}
+        >
+          Delete
+        </Button>
+      </CardActions>
+    </Card>
+  ))}
+</TabPanel>
+
       {/* Event Dialog */}
       <Dialog open={openEventDialog} onClose={() => setOpenEventDialog(false)} maxWidth="sm" fullWidth>
         <DialogTitle>
@@ -859,3 +1011,4 @@ function NetworkAdminPage() {
 }
 
 export default NetworkAdminPage;
+
