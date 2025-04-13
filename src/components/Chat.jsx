@@ -13,9 +13,11 @@ import {
   CircularProgress,
   Paper,
   Divider,
-  Typography
+  Typography,
+  Badge
 } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
+import PersonIcon from '@mui/icons-material/Person';
 
 const Chat = ({ networkId }) => {
   const { user } = useAuth();
@@ -23,6 +25,7 @@ const Chat = ({ networkId }) => {
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [activeUsers, setActiveUsers] = useState({});
   const messageEndRef = useRef(null);
   const channelRef = useRef(null);
 
@@ -31,17 +34,11 @@ const Chat = ({ networkId }) => {
     messageEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Debug logging function
-  const logDebug = (message, data) => {
-    console.log(`[CHAT DEBUG] ${message}`, data);
-  };
-
   useEffect(() => {
-    logDebug('Setting up chat with networkId:', networkId);
+    console.log('Initializing chat for network:', networkId);
     
     const fetchMessages = async () => {
       try {
-        logDebug('Fetching initial messages for network:', networkId);
         const { data, error } = await supabase
           .from('messages')
           .select(`
@@ -55,7 +52,6 @@ const Chat = ({ networkId }) => {
           .order('created_at', { ascending: true });
 
         if (error) throw error;
-        logDebug('Initial messages loaded:', data.length);
         setMessages(data);
         setLoading(false);
       } catch (error) {
@@ -72,21 +68,29 @@ const Chat = ({ networkId }) => {
       supabase.removeChannel(channelRef.current);
     }
 
-    // Set up real-time subscription with a more specific channel name
-    const channelName = `chat-${networkId}-${Date.now()}`;
-    logDebug('Setting up real-time subscription with channel:', channelName);
+    // Create a proper channel name for this specific chat
+    const channelName = `room:${networkId}`;
     
-    channelRef.current = supabase
-      .channel(channelName)
+    // Set up Realtime channel with Presence
+    channelRef.current = supabase.channel(channelName, {
+      config: {
+        presence: {
+          key: user.id,
+        },
+      },
+    });
+
+    // Set up Postgres Changes listener for new messages
+    channelRef.current
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',
         table: 'messages',
         filter: `network_id=eq.${networkId}`
       }, async (payload) => {
-        logDebug('Received real-time message:', payload);
+        console.log('Received new message via Realtime:', payload);
         
-        // When a new message is inserted, fetch the complete message with user profile
+        // Fetch the complete message with user profile
         try {
           const { data, error } = await supabase
             .from('messages')
@@ -102,56 +106,68 @@ const Chat = ({ networkId }) => {
 
           if (error) throw error;
           
-          logDebug('Fetched complete message data:', data);
-          
-          // Check if this message is already in our state (to avoid duplicates)
+          // Add the new message only if it doesn't already exist
           setMessages(prev => {
-            // If we already have this message, don't add it again
             if (prev.some(msg => msg.id === data.id)) {
-              logDebug('Message already exists in state, skipping:', data.id);
               return prev;
             }
             
-            // Check for and remove any pending version of this message
-            const pendingId = `pending-${data.id}`;
-            const hasPendingVersion = prev.some(msg => msg.id === pendingId);
+            // Remove any pending version of this message if it's from the current user
+            const filteredMessages = prev.filter(msg => 
+              !(msg.pending && msg.user_id === user.id && msg.content === data.content)
+            );
             
-            if (hasPendingVersion) {
-              logDebug('Replacing pending message with confirmed message:', data.id);
-              return prev
-                .filter(msg => msg.id !== pendingId)
-                .concat(data);
-            }
-            
-            // Otherwise, just add the new message
-            logDebug('Adding new message to state:', data.id);
-            return [...prev, data];
+            return [...filteredMessages, data];
           });
         } catch (error) {
           console.error('Error fetching new message details:', error);
         }
-      })
-      .subscribe((status) => {
-        logDebug('Subscription status:', status);
       });
 
+    // Set up Presence handlers
+    channelRef.current
+      .on('presence', { event: 'sync' }, () => {
+        const newState = channelRef.current.presenceState();
+        console.log('Presence sync:', newState);
+        setActiveUsers(newState);
+      })
+      .on('presence', { event: 'join' }, ({ key, newPresences }) => {
+        console.log('User joined:', key, newPresences);
+      })
+      .on('presence', { event: 'leave' }, ({ key, leftPresences }) => {
+        console.log('User left:', key, leftPresences);
+      });
+
+    // Subscribe to the channel and track user presence
+    channelRef.current.subscribe(async (status) => {
+      console.log('Subscription status:', status);
+      if (status === 'SUBSCRIBED') {
+        // Broadcast user presence with some profile data
+        const userProfile = {
+          user_id: user.id,
+          full_name: user.user_metadata?.full_name || 'Anonymous',
+          avatar_url: user.user_metadata?.avatar_url,
+          online_at: new Date().toISOString(),
+        };
+        
+        await channelRef.current.track(userProfile);
+      }
+    });
+
     return () => {
-      logDebug('Cleaning up subscription for networkId:', networkId);
+      console.log('Cleaning up Realtime subscription');
       if (channelRef.current) {
         supabase.removeChannel(channelRef.current);
       }
     };
-  }, [networkId]);
+  }, [networkId, user]);
 
   const handleSend = async () => {
     if (!newMessage.trim()) return;
-
-    logDebug('Sending new message');
     
     // Prepare optimistic UI update with pending message
-    const tempId = Date.now().toString();
     const pendingMessage = {
-      id: `pending-${tempId}`,
+      id: `pending-${Date.now()}`,
       content: newMessage.trim(),
       created_at: new Date().toISOString(),
       user_id: user.id,
@@ -168,35 +184,19 @@ const Chat = ({ networkId }) => {
     setNewMessage('');
 
     try {
-      logDebug('Inserting message into database');
       // Send the message to the database
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('messages')
         .insert({
           network_id: networkId,
           user_id: user.id,
           content: pendingMessage.content
-        })
-        .select();
+        });
 
       if (error) throw error;
-
-      logDebug('Message sent successfully, data:', data);
       
-      // Update our pending message to be the confirmed message
-      setMessages(prev => 
-        prev.map(msg => 
-          msg.id === pendingMessage.id 
-            ? { 
-                ...msg, 
-                pending: false, 
-                id: data[0].id,
-                // Ensure we have the exact timestamp from the server
-                created_at: data[0].created_at
-              } 
-            : msg
-        )
-      );
+      // The realtime subscription will handle adding the confirmed message
+      // We don't need to update our state here as the postgres_changes event will do it
     } catch (error) {
       console.error('Error sending message:', error);
       // Remove the pending message if it failed
@@ -204,6 +204,9 @@ const Chat = ({ networkId }) => {
       setError('Failed to send message');
     }
   };
+
+  // Count unique active users
+  const activeUserCount = Object.keys(activeUsers).length;
 
   if (loading) {
     return (
@@ -223,9 +226,25 @@ const Chat = ({ networkId }) => {
 
   return (
     <Paper sx={{ height: '70vh', display: 'flex', flexDirection: 'column' }}>
-      <Typography variant="h6" sx={{ p: 2, borderBottom: '1px solid rgba(0,0,0,0.12)' }}>
-        Chat ({messages.length} messages)
-      </Typography>
+      <Box sx={{ 
+        p: 2, 
+        borderBottom: '1px solid rgba(0,0,0,0.12)', 
+        display: 'flex', 
+        justifyContent: 'space-between',
+        alignItems: 'center'
+      }}>
+        <Typography variant="h6">
+          Chat ({messages.length} messages)
+        </Typography>
+        <Badge 
+          badgeContent={activeUserCount} 
+          color="primary"
+          max={99}
+          sx={{ '& .MuiBadge-badge': { fontSize: '0.8rem' } }}
+        >
+          <PersonIcon color="action" />
+        </Badge>
+      </Box>
       
       <List sx={{ flexGrow: 1, overflow: 'auto', p: 0 }}>
         {messages.length === 0 ? (
