@@ -24,15 +24,24 @@ const Chat = ({ networkId }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const messageEndRef = useRef(null);
+  const channelRef = useRef(null);
 
   // Auto-scroll to the bottom when messages change
   useEffect(() => {
     messageEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  // Debug logging function
+  const logDebug = (message, data) => {
+    console.log(`[CHAT DEBUG] ${message}`, data);
+  };
+
   useEffect(() => {
+    logDebug('Setting up chat with networkId:', networkId);
+    
     const fetchMessages = async () => {
       try {
+        logDebug('Fetching initial messages for network:', networkId);
         const { data, error } = await supabase
           .from('messages')
           .select(`
@@ -46,6 +55,7 @@ const Chat = ({ networkId }) => {
           .order('created_at', { ascending: true });
 
         if (error) throw error;
+        logDebug('Initial messages loaded:', data.length);
         setMessages(data);
         setLoading(false);
       } catch (error) {
@@ -57,15 +67,25 @@ const Chat = ({ networkId }) => {
 
     fetchMessages();
 
-    // Set up real-time subscription
-    const channel = supabase
-      .channel('messages')
+    // Clean up any existing subscription
+    if (channelRef.current) {
+      supabase.removeChannel(channelRef.current);
+    }
+
+    // Set up real-time subscription with a more specific channel name
+    const channelName = `chat-${networkId}-${Date.now()}`;
+    logDebug('Setting up real-time subscription with channel:', channelName);
+    
+    channelRef.current = supabase
+      .channel(channelName)
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',
         table: 'messages',
         filter: `network_id=eq.${networkId}`
       }, async (payload) => {
+        logDebug('Received real-time message:', payload);
+        
         // When a new message is inserted, fetch the complete message with user profile
         try {
           const { data, error } = await supabase
@@ -82,24 +102,56 @@ const Chat = ({ networkId }) => {
 
           if (error) throw error;
           
-          setMessages(prev => [...prev, data]);
+          logDebug('Fetched complete message data:', data);
+          
+          // Check if this message is already in our state (to avoid duplicates)
+          setMessages(prev => {
+            // If we already have this message, don't add it again
+            if (prev.some(msg => msg.id === data.id)) {
+              logDebug('Message already exists in state, skipping:', data.id);
+              return prev;
+            }
+            
+            // Check for and remove any pending version of this message
+            const pendingId = `pending-${data.id}`;
+            const hasPendingVersion = prev.some(msg => msg.id === pendingId);
+            
+            if (hasPendingVersion) {
+              logDebug('Replacing pending message with confirmed message:', data.id);
+              return prev
+                .filter(msg => msg.id !== pendingId)
+                .concat(data);
+            }
+            
+            // Otherwise, just add the new message
+            logDebug('Adding new message to state:', data.id);
+            return [...prev, data];
+          });
         } catch (error) {
           console.error('Error fetching new message details:', error);
         }
       })
-      .subscribe();
+      .subscribe((status) => {
+        logDebug('Subscription status:', status);
+      });
 
     return () => {
-      supabase.removeChannel(channel);
+      logDebug('Cleaning up subscription for networkId:', networkId);
+      if (channelRef.current) {
+        supabase.removeChannel(channelRef.current);
+      }
     };
   }, [networkId]);
 
   const handleSend = async () => {
     if (!newMessage.trim()) return;
 
+    logDebug('Sending new message');
+    
     // Prepare optimistic UI update with pending message
+    const tempId = Date.now().toString();
     const pendingMessage = {
-      id: 'pending-' + Date.now(),
+      id: `pending-${tempId}`,
       content: newMessage.trim(),
       created_at: new Date().toISOString(),
       user_id: user.id,
@@ -116,6 +168,7 @@ const Chat = ({ networkId }) => {
     setNewMessage('');
 
     try {
+      logDebug('Inserting message into database');
       // Send the message to the database
       const { data, error } = await supabase
         .from('messages')
@@ -128,12 +181,19 @@ const Chat = ({ networkId }) => {
 
       if (error) throw error;
 
-      // The real-time subscription will handle adding the confirmed message
-      // But we can also update our pending message to remove the pending state
+      logDebug('Message sent successfully, data:', data);
+      
+      // Update our pending message to be the confirmed message
       setMessages(prev => 
         prev.map(msg => 
           msg.id === pendingMessage.id 
-            ? { ...msg, pending: false, id: data[0].id } 
+            ? { 
+                ...msg, 
+                pending: false, 
+                id: data[0].id,
+                // Ensure we have the exact timestamp from the server
+                created_at: data[0].created_at
+              } 
             : msg
         )
       );
@@ -163,49 +223,68 @@ const Chat = ({ networkId }) => {
 
   return (
     <Paper sx={{ height: '70vh', display: 'flex', flexDirection: 'column' }}>
+      <Typography variant="h6" sx={{ p: 2, borderBottom: '1px solid rgba(0,0,0,0.12)' }}>
+        Chat ({messages.length} messages)
+      </Typography>
+      
       <List sx={{ flexGrow: 1, overflow: 'auto', p: 0 }}>
-        {messages.map(message => (
-          <ListItem 
-            key={message.id}
-            sx={{
-              opacity: message.pending ? 0.7 : 1,
-              backgroundColor: message.user_id === user.id ? 'rgba(0, 0, 255, 0.05)' : 'transparent'
-            }}
-          >
-            <ListItemAvatar>
-              <Avatar 
-                src={message.profiles?.profile_picture_url}
-                alt={message.profiles?.full_name}
-              >
-                {!message.profiles?.profile_picture_url && message.profiles?.full_name?.[0]}
-              </Avatar>
-            </ListItemAvatar>
-            <ListItemText
-              primary={message.profiles?.full_name || 'Anonymous'}
-              secondary={
-                <>
-                  <Typography
-                    component="span"
-                    variant="body2"
-                    color="text.primary"
-                  >
-                    {message.content}
+        {messages.length === 0 ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+            <Typography color="text.secondary">No messages yet. Start the conversation!</Typography>
+          </Box>
+        ) : (
+          messages.map(message => (
+            <ListItem 
+              key={message.id}
+              sx={{
+                opacity: message.pending ? 0.7 : 1,
+                backgroundColor: message.user_id === user.id ? 'rgba(0, 0, 255, 0.05)' : 'transparent'
+              }}
+            >
+              <ListItemAvatar>
+                <Avatar 
+                  src={message.profiles?.profile_picture_url}
+                  alt={message.profiles?.full_name}
+                >
+                  {!message.profiles?.profile_picture_url && message.profiles?.full_name?.[0]}
+                </Avatar>
+              </ListItemAvatar>
+              <ListItemText
+                primary={
+                  <Typography variant="subtitle2">
+                    {message.profiles?.full_name || 'Anonymous'}
+                    {message.user_id === user.id && ' (You)'}
                   </Typography>
-                  <br />
-                  <Typography
-                    component="span"
-                    variant="caption"
-                    color="text.secondary"
-                    sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
-                  >
-                    {new Date(message.created_at).toLocaleTimeString()}
-                    {message.pending && ' (sending...)'}
-                  </Typography>
-                </>
-              }
-            />
-          </ListItem>
-        ))}
+                }
+                secondary={
+                  <>
+                    <Typography
+                      component="span"
+                      variant="body2"
+                      color="text.primary"
+                      sx={{ 
+                        display: 'block',
+                        wordBreak: 'break-word', 
+                        whiteSpace: 'pre-wrap'
+                      }}
+                    >
+                      {message.content}
+                    </Typography>
+                    <Typography
+                      component="span"
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
+                    >
+                      {new Date(message.created_at).toLocaleTimeString()}
+                      {message.pending && ' (sending...)'}
+                    </Typography>
+                  </>
+                }
+              />
+            </ListItem>
+          ))
+        )}
         <div ref={messageEndRef} />
       </List>
       <Divider />
@@ -216,7 +295,12 @@ const Chat = ({ networkId }) => {
           placeholder="Type a message..."
           value={newMessage}
           onChange={(e) => setNewMessage(e.target.value)}
-          onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
+          onKeyPress={(e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault();
+              handleSend();
+            }
+          }}
           multiline
           maxRows={3}
         />
