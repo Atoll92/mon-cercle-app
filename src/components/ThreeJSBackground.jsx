@@ -89,7 +89,7 @@ const ThreeJSBackground = () => {
         new THREE.IcosahedronGeometry(0.05),
         new THREE.OctahedronGeometry(0.05),
         new THREE.ConeGeometry(0.05, 0.1, 4),
-        new THREE.CylinderGeometry(0.05, 0.05, 0.1, 5)
+        new THREE.CylinderGeometry(0.05, 0.05, 0.05, 5)
       ];
       
       for (let i = 0; i < count; i++) {
@@ -351,7 +351,7 @@ const ThreeJSBackground = () => {
           pointerEvents: 'none'
         }}
       />
-      <div style={{
+      {/* <div style={{
         position: 'fixed',
         top: '10px',
         right: '10px',
@@ -363,7 +363,7 @@ const ThreeJSBackground = () => {
         zIndex: 100
       }}>
         FPS: {fps}
-      </div>
+      </div> */}
     </>
   );
 };
