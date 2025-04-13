@@ -69,3 +69,22 @@
     border-radius: 3px;
   }
 }
+
+/* Add to your existing CSS */
+.MuiList-root {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0,0,0,0.2) transparent;
+}
+
+.MuiList-root::-webkit-scrollbar {
+  width: 6px;
+}
+
+.MuiList-root::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.MuiList-root::-webkit-scrollbar-thumb {
+  background-color: rgba(0,0,0,0.2);
+  border-radius: 3px;
+}
