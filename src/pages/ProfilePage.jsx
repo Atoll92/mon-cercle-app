@@ -34,7 +34,18 @@ function ProfilePage() {
           
         if (error) throw error;
         
-        setProfile(data);
+        // Fetch portfolio items for this profile
+        const { data: portfolioItems, error: portfolioError } = await supabase
+          .from('portfolio_items')
+          .select('*')
+          .eq('profile_id', userId);
+          
+        if (portfolioError) throw portfolioError;
+        
+        setProfile({
+          ...data,
+          projects: portfolioItems || [] // Add portfolio items to the profile object
+        });
       } catch (error) {
         console.error('Error fetching profile:', error);
         setError('Failed to load profile. The user may not exist or you may not have permission to view their profile.');
@@ -170,21 +181,35 @@ function ProfilePage() {
             </div>
           </div>
           
-          {/* Additional sections could be added here */}
-          
-          {/* For future: Portfolio projects section 
-          {/**/} <div className="profile-section">
+          <div className="profile-section">
             <h3>Portfolio Projects</h3>
             <div className="section-content">
               {profile.projects && profile.projects.length > 0 ? (
                 <div className="projects-list">
-                  Projects would go here
+                  {profile.projects.map(project => (
+                    <div key={project.id} className="project-card">
+                      {project.image_url && (
+                        <div className="project-image">
+                          <img src={project.image_url} alt={project.title} />
+                        </div>
+                      )}
+                      <div className="project-details">
+                        <h4>{project.title}</h4>
+                        <p>{project.description}</p>
+                        {project.url && (
+                          <a href={project.url} target="_blank" rel="noopener noreferrer" className="project-link">
+                            View Project
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               ) : (
                 <p className="empty-section">No projects shared yet.</p>
               )}
             </div>
-          </div> 
+          </div>
         </div>
       </div>
     </div>

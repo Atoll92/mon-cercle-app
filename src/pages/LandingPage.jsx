@@ -20,6 +20,8 @@ import Divider from '@mui/material/Divider';
 import Paper from '@mui/material/Paper';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTheme } from '@mui/material/styles';
+import MicroLogo from '../assets/micro.svg';
+
 
 import EuFlag from '../assets/eu_flag.jpg';
 import Logo from '../assets/logo.svg';
@@ -693,9 +695,9 @@ const DGLogo = () => (
       position: 'relative',
       minHeight: '100vh',
       overflow: 'hidden',
-            backgroundColor: '#f3f3f3'
+            // backgroundColor: '#f3f3f3'
 
-      // backgroundColor: '#001428'
+      backgroundColor: '#001428'
     }}>
       {/* Three.js Background Animation */}
       <ThreeJSBackground />
@@ -719,7 +721,7 @@ const DGLogo = () => (
               <Typography variant="h6" color="inherit" noWrap sx={{ flexGrow: 1, display: 'flex', alignItems: 'center' }}>
                 <Box 
                   component="img"
-                  src={Logo}
+                  src={MicroLogo}
                   alt="Mon Cercle Logo"
                   sx={{ 
                     height: 60,
@@ -812,12 +814,13 @@ const DGLogo = () => (
             component="h1"
             variant="h2"
             align="center"
+            color="white"
             gutterBottom
             sx={{
               fontSize: { xs: '2.5rem', md: '3.5rem' },
               fontWeight: 700,
               mb: 3,
-              color: 'rgb(4, 13, 22)',
+              // color: 'rgb(4, 13, 22)',
 
             }}
           >
@@ -843,7 +846,7 @@ const DGLogo = () => (
                 fontSize: { xs: '1.1rem', md: '1.3rem' },
                 lineHeight: 1.6,
                 fontWeight: 'bold',
-                color: 'rgb(4, 13, 22)',
+                color: 'rgb(244, 244, 244)',
 
               }}
             >
