@@ -802,8 +802,8 @@ const DGLogo = () => (
   disableGutters
   component="main"
   sx={{
-    pt: { xs: 6, sm: 8, md: 10 },
-    pb: { xs: 4, sm: 5, md: 6 },
+    pt: { xs: 6, sm: 10, md: 20 },
+    pb: { xs: 4, sm: 5, md: 12 },
     position: 'relative',
     zIndex: 2,
     '& h1, & h5': {
@@ -818,7 +818,7 @@ const DGLogo = () => (
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'left',
-      mb: { xs: 3, md: 4 },
+      mb: { xs: 3, md: 6 },
       px: 2
     }}
   >
@@ -836,7 +836,7 @@ const DGLogo = () => (
         component="span"
         variant="h1"
         sx={{
-          fontSize: { xs: '2.5rem', sm: '3.5rem', md: '4.5rem', lg: '6rem' },
+          fontSize: { xs: '1.5rem', sm: '2.5rem', md: '4.5rem', lg: '6rem' },
           fontWeight: 800,
           color: 'rgb(4, 13, 22)',
           lineHeight: 1,
@@ -874,7 +874,7 @@ const DGLogo = () => (
       lineHeight: 1.6,
       fontWeight: 'medium',
       color: 'rgb(4, 13, 22)',
-      mb: { xs: 4, md: 5 },
+      mb: { xs: 4, md: 12 },
       // mx: 'auto',
       maxWidth: '90%',
       px: 2
