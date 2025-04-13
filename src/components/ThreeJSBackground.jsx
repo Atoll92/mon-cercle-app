@@ -83,9 +83,9 @@ const ThreeJSBackground = () => {
       
       // Prepare geometries
       const geometries = [
-        new THREE.BoxGeometry(0.1, 0.1, 0.1),
-        new THREE.TetrahedronGeometry(0.06),
-        new THREE.DodecahedronGeometry(0.06)
+        new THREE.BoxGeometry(0.08, 0.08, 0.08),
+        new THREE.TetrahedronGeometry(0.05),
+        new THREE.DodecahedronGeometry(0.05)
       ];
       
       for (let i = 0; i < count; i++) {
@@ -134,14 +134,8 @@ const ThreeJSBackground = () => {
     // Create lines between some shapes
     const createConnections = (shapes, maxConnections) => {
       const connections = [];
-      const lineMaterial = new THREE.LineBasicMaterial({
-        color: 0x6ba5ff,
-        transparent: true,
-        opacity: 0.6,
-        linewidth: 50
-      });
       
-      const maxDistance = 2.5; // Maximum distance for a connection
+      const maxDistance = 2.2; // Maximum distance for a connection
       
       for (let i = 0; i < maxConnections; i++) {
         const index1 = Math.floor(Math.random() * shapes.length);
@@ -162,7 +156,7 @@ const ThreeJSBackground = () => {
             const length = 1;
             
             // Create a cylinder
-            const geometry = new THREE.CylinderGeometry(0.005, 0.005, length, 8);
+            const geometry = new THREE.CylinderGeometry(0.002, 0.002, length, 8);
             const material = new THREE.MeshPhongMaterial({
               color: objectsColor,
               specular: 0xffffff,
@@ -192,7 +186,7 @@ const ThreeJSBackground = () => {
     };
     
     // Create shapes and connections
-    const shapes = createShapes(500); // was 450
+    const shapes = createShapes(600); // was 450
     const connections = createConnections(shapes, 50000);
     
     // Add window resize handler with throttling
@@ -340,7 +334,7 @@ const ThreeJSBackground = () => {
           pointerEvents: 'none'
         }}
       />
-      {/* <div style={{
+      <div style={{
         position: 'fixed',
         top: '10px',
         right: '10px',
@@ -352,7 +346,7 @@ const ThreeJSBackground = () => {
         zIndex: 100
       }}>
         FPS: {fps}
-      </div> */}
+      </div>
     </>
   );
 };
