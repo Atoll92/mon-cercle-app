@@ -3,6 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/authcontext';
 import { supabase } from '../supabaseclient';
+import AddIcon from '@mui/icons-material/Add';
+import DeleteIcon from '@mui/icons-material/Delete';
 import {
   Box,
   Button,
@@ -41,6 +43,8 @@ function EditProfilePage() {
   const [skills, setSkills] = useState('');
   const [avatar, setAvatar] = useState(null);
   const [avatarUrl, setAvatarUrl] = useState('');
+  const [portfolioItems, setPortfolioItems] = useState([]);
+const [initialPortfolioItems, setInitialPortfolioItems] = useState([]);
   
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -51,6 +55,22 @@ function EditProfilePage() {
   useEffect(() => {
     const getProfile = async () => {
       if (!user) return;
+
+      try {
+        const { data: portfolioData, error: portfolioError } = await supabase
+          .from('portfolio_items')
+          .select('*')
+          .eq('profile_id', user.id);
+  
+        if (portfolioError) throw portfolioError;
+        
+        setPortfolioItems(portfolioData || []);
+        setInitialPortfolioItems(portfolioData || []);
+      } catch (error) {
+        console.error('Error loading portfolio items:', error);
+        setError('Failed to load portfolio items');
+      }
+    
       
       try {
         setLoading(true);
@@ -91,9 +111,47 @@ function EditProfilePage() {
         setLoading(false);
       }
     };
+
+    
+
+    
     
     getProfile();
   }, [user]);
+
+  const handleAddPortfolioItem = () => {
+    setPortfolioItems([...portfolioItems, {
+      title: '',
+      description: '',
+      url: '',
+      imageFile: null,
+      imageUrl: ''
+    }]);
+  };
+  
+  const handlePortfolioItemChange = (index, field, value) => {
+    const updatedItems = [...portfolioItems];
+    updatedItems[index] = { ...updatedItems[index], [field]: value };
+    setPortfolioItems(updatedItems);
+  };
+  
+  const handlePortfolioImageChange = async (index, file) => {
+    if (!file) return;
+    
+    const updatedItems = [...portfolioItems];
+    updatedItems[index] = {
+      ...updatedItems[index],
+      imageFile: file,
+      imageUrl: URL.createObjectURL(file)
+    };
+    setPortfolioItems(updatedItems);
+  };
+  
+  const handlePortfolioItemRemove = (index) => {
+    const updatedItems = portfolioItems.filter((_, i) => i !== index);
+    setPortfolioItems(updatedItems);
+  };
+  
   
   const handleAvatarChange = (e) => {
     if (!e.target.files || e.target.files.length === 0) {
@@ -133,6 +191,56 @@ function EditProfilePage() {
   
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Process portfolio items
+    // Delete removed items
+    const currentIds = portfolioItems.map(item => item.id).filter(Boolean);
+    const deletedItems = initialPortfolioItems.filter(item => !currentIds.includes(item.id));
+    
+    for (const item of deletedItems) {
+      const { error } = await supabase
+        .from('portfolio_items')
+        .delete()
+        .eq('id', item.id);
+      if (error) throw error;
+    }
+
+    // Upsert portfolio items
+    for (const [index, item] of portfolioItems.entries()) {
+      let imageUrl = item.image_url;
+      
+      // Upload new image
+      if (item.imageFile) {
+        const fileExt = item.imageFile.name.split('.').pop();
+        const fileName = `${user.id}-${Date.now()}-${index}.${fileExt}`;
+        const filePath = `portfolios/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('profiles')
+          .upload(filePath, item.imageFile);
+
+        if (uploadError) throw uploadError;
+
+        const { data: urlData } = supabase.storage
+          .from('profiles')
+          .getPublicUrl(filePath);
+        
+        imageUrl = urlData.publicUrl;
+      }
+
+      const { error } = await supabase
+        .from('portfolio_items')
+        .upsert({
+          id: item.id || undefined,
+          profile_id: user.id,
+          title: item.title,
+          description: item.description,
+          url: item.url,
+          image_url: imageUrl
+        });
+
+      if (error) throw error;
+    }
     
     try {
       setSaving(true);
@@ -367,6 +475,93 @@ function EditProfilePage() {
           </Grid>
           
           <Divider sx={{ my: 4 }} />
+          <Grid item xs={12}>
+  <Typography variant="h6" gutterBottom>
+    Portfolio Items
+  </Typography>
+  
+  {portfolioItems.map((item, index) => (
+    <Paper key={item.id || index} sx={{ p: 2, mb: 2, border: '1px solid #eee' }}>
+      <Grid container spacing={2}>
+        <Grid item xs={12} sm={4}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <input
+              accept="image/*"
+              type="file"
+              onChange={(e) => handlePortfolioImageChange(index, e.target.files[0])}
+              id={`portfolio-image-${index}`}
+              hidden
+            />
+            <label htmlFor={`portfolio-image-${index}`}>
+              <Button
+                variant="outlined"
+                component="span"
+                startIcon={<UploadIcon />}
+                fullWidth
+              >
+                Upload Image
+              </Button>
+            </label>
+            {item.imageUrl && (
+              <img
+                src={item.imageUrl}
+                alt="Preview"
+                style={{ maxWidth: '100%', borderRadius: '4px' }}
+              />
+            )}
+          </Box>
+        </Grid>
+        
+        <Grid item xs={12} sm={8}>
+          <Stack spacing={2}>
+            <TextField
+              fullWidth
+              label="Title"
+              value={item.title}
+              onChange={(e) => handlePortfolioItemChange(index, 'title', e.target.value)}
+              required
+            />
+            <TextField
+              fullWidth
+              label="Description"
+              value={item.description}
+              onChange={(e) => handlePortfolioItemChange(index, 'description', e.target.value)}
+              multiline
+              rows={3}
+            />
+            <TextField
+              fullWidth
+              label="Project URL"
+              value={item.url}
+              onChange={(e) => handlePortfolioItemChange(index, 'url', e.target.value)}
+              placeholder="https://example.com"
+            />
+          </Stack>
+        </Grid>
+        
+        <Grid item xs={12}>
+          <Button
+            variant="outlined"
+            color="error"
+            startIcon={<DeleteIcon />}
+            onClick={() => handlePortfolioItemRemove(index)}
+          >
+            Remove Item
+          </Button>
+        </Grid>
+      </Grid>
+    </Paper>
+  ))}
+  
+  <Button
+    variant="contained"
+    onClick={handleAddPortfolioItem}
+    startIcon={<AddIcon />}
+    sx={{ mt: 2 }}
+  >
+    Add Portfolio Item
+  </Button>
+</Grid>
           
           <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
             <Button
@@ -396,3 +591,4 @@ function EditProfilePage() {
 }
 
 export default EditProfilePage;
+
