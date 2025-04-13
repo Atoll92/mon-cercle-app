@@ -7,6 +7,8 @@ import { fetchNetworkMembers } from '../api/networks';
 import ArticleIcon from '@mui/icons-material/Article';
 import ChatIcon from '@mui/icons-material/Chat';
 import Chat from '../components/Chat';
+import TimelineIcon from '@mui/icons-material/Timeline';
+
 
 import {
   Container,
@@ -78,6 +80,7 @@ function NetworkLandingPage() {
   const [calendarDate, setCalendarDate] = useState(new Date());
 const [calendarView, setCalendarView] = useState('month');
 const [networkNews, setNetworkNews] = useState([]);
+const [socialWallItems, setSocialWallItems] = useState([]);
   
   useEffect(() => {
     const fetchData = async () => {
@@ -136,6 +139,45 @@ setNetworkNews(newsData || []);
             setUserProfile(profileData);
           }
         }
+
+        const portfolioItems = [];
+for (const member of members) {
+  const { data: memberPortfolio, error: portfolioError } = await supabase
+    .from('portfolio_items')
+    .select('*')
+    .eq('profile_id', member.id)
+    .order('created_at', { ascending: false })
+    .limit(5);
+    
+  if (!portfolioError && memberPortfolio) {
+    // Add member information to each portfolio item
+    const portfolioWithMember = memberPortfolio.map(item => ({
+      ...item,
+      memberName: member.full_name,
+      memberAvatar: member.profile_picture_url,
+      memberId: member.id,
+      itemType: 'portfolio'
+    }));
+    portfolioItems.push(...portfolioWithMember);
+  }
+}
+
+const combinedFeed = [
+  ...newsData.map(item => ({
+    ...item,
+    itemType: 'news',
+    createdAt: item.created_at
+  })),
+  ...portfolioItems.map(item => ({
+    ...item,
+    createdAt: item.created_at || new Date().toISOString()
+  }))
+];
+
+// Sort by creation date
+combinedFeed.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+setSocialWallItems(combinedFeed);
+
       } catch (error) {
         console.error('Error fetching network data:', error);
         setError('Failed to load network information. It may not exist or you may not have permission to view it.');
@@ -310,9 +352,142 @@ setNetworkNews(newsData || []);
   <Tab icon={<EventIcon />} label="Events" />
   <Tab icon={<ArticleIcon />} label="News" />
 <Tab icon={<ChatIcon />} label="Chat" />
+<Tab icon={<TimelineIcon />} label="Social Wall" />
+
   <Tab icon={<InfoIcon />} label="About" />
         </Tabs>
       </Box>
+
+      {activeTab === 4 && (
+  <Paper sx={{ p: 3 }}>
+    <Typography variant="h5" component="h2" gutterBottom>
+      Network Social Wall
+    </Typography>
+    <Divider sx={{ mb: 3 }} />
+    
+    {socialWallItems.length === 0 ? (
+      <Box sx={{ textAlign: 'center', py: 4 }}>
+        <Typography variant="body1" color="text.secondary">
+          No activity to display yet.
+        </Typography>
+      </Box>
+    ) : (
+      <Box sx={{ mt: 2 }}>
+        {socialWallItems.map((item, index) => (
+          <Card key={`${item.itemType}-${item.id}`} sx={{ mb: 3, overflow: 'visible' }}>
+            <CardContent>
+              {/* Header with user info and timestamp */}
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                <Avatar 
+                  src={item.itemType === 'portfolio' ? item.memberAvatar : 
+                       networkMembers.find(m => m.id === item.created_by)?.profile_picture_url} 
+                  sx={{ mr: 2, width: 48, height: 48 }}
+                >
+                  {item.itemType === 'portfolio' ? 
+                    (item.memberName ? item.memberName.charAt(0).toUpperCase() : 'U') : 
+                    (networkMembers.find(m => m.id === item.created_by)?.full_name?.charAt(0).toUpperCase() || 'U')}
+                </Avatar>
+                <Box>
+                  <Typography variant="subtitle1">
+                    {item.itemType === 'portfolio' ? 
+                      item.memberName : 
+                      networkMembers.find(m => m.id === item.created_by)?.full_name || 'Network Admin'}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {new Date(item.createdAt).toLocaleString()} • 
+                    <Chip 
+                      size="small" 
+                      label={item.itemType === 'portfolio' ? 'Portfolio Project' : 'Network News'} 
+                      sx={{ ml: 1 }}
+                      color={item.itemType === 'portfolio' ? 'secondary' : 'primary'}
+                    />
+                  </Typography>
+                </Box>
+              </Box>
+              
+              {/* Content based on item type */}
+              {item.itemType === 'portfolio' ? (
+                // Portfolio item display
+                <Box>
+                  <Typography variant="h6" gutterBottom>
+                    {item.title}
+                  </Typography>
+                  
+                  {item.image_url && (
+                    <Box sx={{ 
+                      mb: 2,
+                      display: 'flex',
+                      justifyContent: 'center',
+                      overflow: 'hidden',
+                      borderRadius: 1,
+                      maxHeight: 300
+                    }}>
+                      <img 
+                        src={item.image_url} 
+                        alt={item.title}
+                        style={{ 
+                          maxWidth: '100%',
+                          objectFit: 'cover'
+                        }}
+                      />
+                    </Box>
+                  )}
+                  
+                  <Typography variant="body1" paragraph>
+                    {item.description}
+                  </Typography>
+                  
+                  {item.url && (
+                    <Button 
+                      variant="outlined" 
+                      href={item.url} 
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      sx={{ mt: 1 }}
+                    >
+                      View Project
+                    </Button>
+                  )}
+                </Box>
+              ) : (
+                // News item display
+                <Box>
+                  <Typography variant="h6" gutterBottom>
+                    {item.title}
+                  </Typography>
+                  
+                  <div 
+                    className="tiptap-output"
+                    dangerouslySetInnerHTML={{ __html: item.content }}
+                    style={{
+                      '& ul': { listStyleType: 'disc', pl: 2 },
+                      '& ol': { listStyleType: 'decimal', pl: 2 },
+                      '& h1': { fontSize: '2em' },
+                      '& h2': { fontSize: '1.5em' }
+                    }}
+                  />
+                </Box>
+              )}
+            </CardContent>
+            
+            <CardActions sx={{ px: 2, pb: 2 }}>
+              <Button 
+                size="small" 
+                component={Link}
+                to={item.itemType === 'portfolio' ? 
+                  `/profile/${item.memberId}` : 
+                  `/news/${item.id}`}
+              >
+                {item.itemType === 'portfolio' ? 'View Profile' : 'Read Full Post'}
+              </Button>
+            </CardActions>
+          </Card>
+        ))}
+      </Box>
+    )}
+  </Paper>
+)}
+
       
       {activeTab === 0 && (
         <Paper sx={{ p: 3 }}>
@@ -487,7 +662,7 @@ setNetworkNews(newsData || []);
     </Paper>
   )}
       
-      {activeTab === 4 && (
+      {activeTab === 5 && (
         <Paper sx={{ p: 3 }}>
           <Typography variant="h5" component="h2" gutterBottom>
             About This Network
