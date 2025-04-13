@@ -37,6 +37,7 @@ import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import EventIcon from '@mui/icons-material/Event'; // For event organization
 import SupportAgentIcon from '@mui/icons-material/SupportAgent'; // For human assistance
 import BrushIcon from '@mui/icons-material/Brush'; // For white-label options
+import TextCycler from '../components/TextCycler';
 
 // --- Component Definition ---
 function LandingPage() {
@@ -697,7 +698,7 @@ const DGLogo = () => (
       overflow: 'hidden',
             // backgroundColor: '#f3f3f3'
 
-      backgroundColor: '#001428'
+      backgroundColor: '#eef4f9'
     }}>
       {/* Three.js Background Animation */}
       <ThreeJSBackground />
@@ -796,63 +797,93 @@ const DGLogo = () => (
         </AppBar>
 
         {/* --- Hero Section --- */}
-        <Container 
-          disableGutters 
-          maxWidth="md" 
-          component="main" 
-          sx={{ 
-            pt: { xs: 6, md: 8 }, 
-            pb: { xs: 4, md: 6 },
-            position: 'relative',
-            zIndex: 2,
-            '& h1, & h5': {
-              textShadow: '0 0 10px rgba(255, 255, 255, 0.8)',
-            }
-          }}
-        >
-          <Typography
-            component="h1"
-            variant="h2"
-            align="center"
-            color="white"
-            gutterBottom
-            sx={{
-              fontSize: { xs: '2.5rem', md: '3.5rem' },
-              fontWeight: 700,
-              mb: 3,
-              // color: 'rgb(4, 13, 22)',
+        {/* Hero Container */}
+<Container
+  disableGutters
+  component="main"
+  sx={{
+    pt: { xs: 6, sm: 8, md: 10 },
+    pb: { xs: 4, sm: 5, md: 6 },
+    position: 'relative',
+    zIndex: 2,
+    '& h1, & h5': {
+      textShadow: '0 0 10px rgba(255, 255, 255, 0.8)',
+    },
+    overflow: 'hidden'
+  }}
+>
+  {/* Title Section with Animation */}
+  <Box
+    sx={{
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'left',
+      mb: { xs: 3, md: 4 },
+      px: 2
+    }}
+  >
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: { xs: 'column', sm: 'row' },
+        alignItems: 'center',
+        justifyContent: 'left',
+        width: '100%'
+      }}
+    >
+      {/* Fixed "Your" text */}
+      <Typography
+        component="span"
+        variant="h1"
+        sx={{
+          fontSize: { xs: '2.5rem', sm: '3.5rem', md: '4.5rem', lg: '6rem' },
+          fontWeight: 800,
+          color: 'rgb(4, 13, 22)',
+          lineHeight: 1,
+          textAlign: { xs: 'center', sm: 'right' },
+          mb: { xs: 1, sm: 0 },
+          mr: { xs: 0, sm: 2 }
+        }}
+      >
+        Your
+      </Typography>
+      
+      {/* Animated Text Container */}
+      <Box
+        sx={{
+          position: 'relative',
+          height: { xs: '3rem', sm: '4rem', md: '5rem', lg: '6.5rem' },
+          width: { xs: '260px', sm: '300px', md: '400px', lg: '500px' },
+        }}
+      >
+        <TextCycler
+          phrases={["Private Network Hub", "Communal Directory", "Associations' Hub", "Community Center", "Collaboration Space"]}
+          interval={3000}
+        />
+      </Box>
+    </Box>
+  </Box>
+  
+  {/* Hero Subtitle */}
+  <Typography
+    variant="h5"
+    align="left"
+    component="p"
+    sx={{
+      fontSize: { xs: '1rem', sm: '1.1rem', md: '1.3rem' },
+      lineHeight: 1.6,
+      fontWeight: 'medium',
+      color: 'rgb(4, 13, 22)',
+      mb: { xs: 4, md: 5 },
+      // mx: 'auto',
+      maxWidth: '90%',
+      px: 2
+    }}
+  >
+    {t.heroSubtitle}
+  </Typography>
 
-            }}
-          >
-            {t.heroTitle}
-          </Typography>
-          <Paper
-            elevation={3}
-            sx={{
-              p: { xs: 2, md: 3 },
-              mb: 4,
-              borderRadius: '1rem',
-              backdropFilter: 'blur(10px)',
-              backgroundColor: 'rgba(255, 255, 255, 0.9)',
-              maxWidth: '90%',
-              mx: 'auto'
-            }}
-          >
-            <Typography 
-              variant="h5" 
-              align="center" 
-              component="p" 
-              sx={{ 
-                fontSize: { xs: '1.1rem', md: '1.3rem' },
-                lineHeight: 1.6,
-                fontWeight: 'bold',
-                color: 'rgb(244, 244, 244)',
 
-              }}
-            >
-              {t.heroSubtitle}
-            </Typography>
-          </Paper>
           <Stack
             sx={{ pt: 2 }}
             direction={{ xs: 'column', sm: 'row' }}

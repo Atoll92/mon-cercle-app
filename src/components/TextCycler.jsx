@@ -63,7 +63,6 @@ const TextCycler = ({ phrases, interval = 3000 }) => {
         sx={{
           fontSize: { xs: '1.5rem', sm: '2.5rem', md: '4.5rem', lg: '6rem' },
           fontWeight: 800,
-          color: 'rgb(4, 13, 22)',
           whiteSpace: 'nowrap',
           lineHeight: 1,
           //accent colored text
