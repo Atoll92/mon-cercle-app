@@ -851,12 +851,10 @@ const DGLogo = () => (
           fontWeight: 800,
           color: 'rgb(4, 13, 22)',
           lineHeight: 1,
-          textAlign: { xs: 'center', sm: 'right' },
-          mb: { xs: 1, sm: 0 },
-          mr: { xs: 0, sm: 2 }
+          textAlign: { xs: 'center', sm: 'right' }
         }}
       >
-    {t.heroTitle}
+    {t.heroTitle}&nbsp;
     </Typography>
       
       {/* Animated Text Container */}
