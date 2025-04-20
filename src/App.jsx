@@ -15,6 +15,9 @@ import NetworkAdminPage from './pages/NetworkAdminPage';
 import NotFoundPage from './pages/NotFoundPage';
 import LandingPage from './pages/LandingPage';
 
+//import components/context
+import ThemeProvider from './components/ThemeProvider';
+
 // Import Protected Route Component
 import ProtectedRoute from './components/ProtectedRoute';
 import NetworkLandingPage from './pages/NetworkLandingPage';
@@ -51,6 +54,7 @@ function App() {
   }
 
   return (
+    <ThemeProvider>
     <div className="App">
       <Routes>
         {/* Public Routes */}
@@ -76,6 +80,7 @@ function App() {
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </div>
+    </ThemeProvider>
   );
 }
 

@@ -33,19 +33,21 @@ import {
   DialogTitle,
   IconButton,
   Tabs,
-  Tab
+  Tab,
+  Slider
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
   PersonAdd as PersonAddIcon,
   Save as SaveIcon,
- 
   AdminPanelSettings as AdminIcon,
   PersonRemove as PersonRemoveIcon,
   Event as EventIcon,
   Add as AddIcon,
   Edit as EditIcon,
-  Delete as DeleteIcon
+  Delete as DeleteIcon,
+  Palette as PaletteIcon,
+  Check as CheckIcon
 } from '@mui/icons-material';
 import ArticleIcon from '@mui/icons-material/Article';
 
@@ -96,17 +98,33 @@ function NetworkAdminPage() {
     capacity: ''
   });
   const [newsPosts, setNewsPosts] = useState([]);
-const [newsTitle, setNewsTitle] = useState('');
-const [editorContent, setEditorContent] = useState('');
+  const [newsTitle, setNewsTitle] = useState('');
+  const [editorContent, setEditorContent] = useState('');
 
-// Initialize Tiptap editor
-const editor = useEditor({
-  extensions: [StarterKit],
-  content: '<p>Start writing your news post...</p>',
-  onUpdate: ({ editor }) => {
-    setEditorContent(editor.getHTML())
-  },
-})
+  // Theme state
+  const [themeSettings, setThemeSettings] = useState({
+    backgroundColor: '#ffffff',
+    customizing: false
+  });
+
+  // Color presets for theme selection
+  const colorPresets = [
+    { name: 'White', value: '#ffffff' },
+    { name: 'Light Blue', value: '#f0f8ff' },
+    { name: 'Light Green', value: '#f0fff0' },
+    { name: 'Light Pink', value: '#fff0f5' },
+    { name: 'Light Yellow', value: '#fffacd' },
+    { name: 'Light Gray', value: '#f5f5f5' }
+  ];
+
+  // Initialize Tiptap editor
+  const editor = useEditor({
+    extensions: [StarterKit],
+    content: '<p>Start writing your news post...</p>',
+    onUpdate: ({ editor }) => {
+      setEditorContent(editor.getHTML())
+    },
+  });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -147,6 +165,14 @@ const editor = useEditor({
         setNetwork(networkData);
         setNetworkName(networkData.name);
         
+        // Set theme settings if available
+        if (networkData.theme_bg_color) {
+          setThemeSettings({
+            ...themeSettings,
+            backgroundColor: networkData.theme_bg_color
+          });
+        }
+        
         // Get members
         const { data: membersData, error: membersError } = await supabase
           .from('profiles')
@@ -158,14 +184,13 @@ const editor = useEditor({
         setMembers(membersData || []);
 
         const { data: newsData, error: newsError } = await supabase
-  .from('network_news')
-  .select('*')
-  .eq('network_id', profileData.network_id)
-  .order('created_at', { ascending: false });
+          .from('network_news')
+          .select('*')
+          .eq('network_id', profileData.network_id)
+          .order('created_at', { ascending: false });
 
-if (newsError) console.error('News error:', newsError);
-setNewsPosts(newsData || []);
-
+        if (newsError) console.error('News error:', newsError);
+        setNewsPosts(newsData || []);
 
         // Get events
         const { data: eventsData, error: eventsError } = await supabase
@@ -320,6 +345,38 @@ setNewsPosts(newsData || []);
     } catch (error) {
       console.error('Error updating network:', error);
       setError('Failed to update network. Please try again.');
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  // Save theme settings
+  const handleSaveTheme = async () => {
+    try {
+      setUpdating(true);
+      setError(null);
+      setMessage('');
+
+      const { error } = await supabase
+        .from('networks')
+        .update({ theme_bg_color: themeSettings.backgroundColor })
+        .eq('id', network.id);
+
+      if (error) throw error;
+
+      setNetwork({
+        ...network,
+        theme_bg_color: themeSettings.backgroundColor
+      });
+
+      setMessage('Theme settings updated successfully!');
+      setThemeSettings({
+        ...themeSettings,
+        customizing: false
+      });
+    } catch (error) {
+      console.error('Error updating theme:', error);
+      setError('Failed to update theme settings. Please try again.');
     } finally {
       setUpdating(false);
     }
@@ -551,6 +608,23 @@ setNewsPosts(newsData || []);
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
 
+  // Helper function to determine if a color is dark
+  const isColorDark = (hexColor) => {
+    // Remove the # if it exists
+    hexColor = hexColor.replace('#', '');
+    
+    // Convert to RGB
+    const r = parseInt(hexColor.substr(0, 2), 16);
+    const g = parseInt(hexColor.substr(2, 2), 16);
+    const b = parseInt(hexColor.substr(4, 2), 16);
+    
+    // Calculate brightness (standard formula)
+    const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+    
+    // Return true if dark
+    return brightness < 128;
+  };
+
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
@@ -601,6 +675,7 @@ setNewsPosts(newsData || []);
           <Tab label="Members" icon={<PersonAddIcon />} />
           <Tab label="News" icon={<ArticleIcon />} />
           <Tab label="Events" icon={<EventIcon />} />
+          <Tab label="Theme" icon={<PaletteIcon />} />
         </Tabs>
       </Paper>
 
@@ -796,6 +871,80 @@ setNewsPosts(newsData || []);
         </Card>
       </TabPanel>
 
+      <TabPanel value={activeTab} index={2}>
+        <Card sx={{ p: 3, mb: 3 }}>
+          <Typography variant="h5" gutterBottom>
+            Create News Post
+          </Typography>
+          <TextField
+            fullWidth
+            label="Post Title"
+            value={newsTitle}
+            onChange={(e) => setNewsTitle(e.target.value)}
+            sx={{ mb: 2 }}
+          />
+          <Paper sx={{ 
+            p: 2, 
+            border: '1px solid #ddd',
+            minHeight: '300px',
+            '& .tiptap': {
+              minHeight: '250px',
+              padding: '8px',
+              '&:focus-visible': {
+                outline: 'none'
+              }
+            }
+          }}>
+            <EditorContent editor={editor} />
+          </Paper>
+          <Box sx={{ mt: 2, display: 'flex', gap: 2 }}>
+            <Button
+              variant="contained"
+              onClick={handleNewsSubmit}
+              startIcon={<SaveIcon />}
+            >
+              Publish Post
+            </Button>
+            <Button
+              variant="outlined"
+              onClick={() => editor.commands.clearContent()}
+            >
+              Clear
+            </Button>
+          </Box>
+        </Card>
+
+        <Typography variant="h5" gutterBottom>
+          Previous Posts
+        </Typography>
+        {newsPosts.map(post => (
+          <Card key={post.id} sx={{ mb: 2 }}>
+            <CardContent>
+              <Typography variant="h6">{post.title}</Typography>
+              <Typography variant="caption" color="text.secondary">
+                Posted by {members.find(m => m.id === post.created_by)?.full_name || 'Admin'} • 
+                {new Date(post.created_at).toLocaleDateString()}
+              </Typography>
+              <Divider sx={{ my: 2 }} />
+              <div 
+                className="tiptap-output"
+                dangerouslySetInnerHTML={{ __html: post.content }}
+              />
+            </CardContent>
+            <CardActions>
+              <Button 
+                size="small" 
+                color="error"
+                onClick={() => handleDeleteNews(post.id)}
+                startIcon={<DeleteIcon />}
+              >
+                Delete
+              </Button>
+            </CardActions>
+          </Card>
+        ))}
+      </TabPanel>
+
       <TabPanel value={activeTab} index={3}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
           <Typography variant="h5">Network Events</Typography>
@@ -849,79 +998,102 @@ setNewsPosts(newsData || []);
         </Grid>
       </TabPanel>
 
-      <TabPanel value={activeTab} index={2}>
-  <Card sx={{ p: 3, mb: 3 }}>
-    <Typography variant="h5" gutterBottom>
-      Create News Post
-    </Typography>
-    <TextField
-      fullWidth
-      label="Post Title"
-      value={newsTitle}
-      onChange={(e) => setNewsTitle(e.target.value)}
-      sx={{ mb: 2 }}
-    />
-    <Paper sx={{ 
-      p: 2, 
-      border: '1px solid #ddd',
-      minHeight: '300px',
-      '& .tiptap': {
-        minHeight: '250px',
-        padding: '8px',
-        '&:focus-visible': {
-          outline: 'none'
-        }
-      }
-    }}>
-      <EditorContent editor={editor} />
-    </Paper>
-    <Box sx={{ mt: 2, display: 'flex', gap: 2 }}>
-      <Button
-        variant="contained"
-        onClick={handleNewsSubmit}
-        startIcon={<SaveIcon />}
-      >
-        Publish Post
-      </Button>
-      <Button
-        variant="outlined"
-        onClick={() => editor.commands.clearContent()}
-      >
-        Clear
-      </Button>
-    </Box>
-  </Card>
+      <TabPanel value={activeTab} index={4}>
+        <Card>
+          <CardContent>
+            <Typography variant="h5" component="h2" gutterBottom>
+              Network Theme Settings
+            </Typography>
+            <Divider sx={{ mb: 3 }} />
+            
+            <Box sx={{ mb: 4 }}>
+              <Typography variant="subtitle1" gutterBottom>
+                Current Background Color
+              </Typography>
+              <Box 
+                sx={{ 
+                  width: '100%', 
+                  height: 100, 
+                  backgroundColor: themeSettings.backgroundColor,
+                  border: '1px solid #ddd',
+                  borderRadius: 1,
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  color: isColorDark(themeSettings.backgroundColor) ? '#ffffff' : '#000000'
+                }}
+              >
+                <Typography variant="body1">
+                  {themeSettings.backgroundColor}
+                </Typography>
+              </Box>
+            </Box>
 
-  <Typography variant="h5" gutterBottom>
-    Previous Posts
-  </Typography>
-  {newsPosts.map(post => (
-    <Card key={post.id} sx={{ mb: 2 }}>
-      <CardContent>
-        <Typography variant="h6">{post.title}</Typography>
-        <Typography variant="caption" color="text.secondary">
-          Posted by {members.find(m => m.id === post.created_by)?.full_name || 'Admin'} • 
-          {new Date(post.created_at).toLocaleDateString()}
-        </Typography>
-        <Divider sx={{ my: 2 }} />
-        <div 
-          className="tiptap-output"
-          dangerouslySetInnerHTML={{ __html: post.content }}
-        />
-      </CardContent>
-      <CardActions>
-        <Button 
-          size="small" 
-          color="error"
-          onClick={() => handleDeleteNews(post.id)}
-          startIcon={<DeleteIcon />}
-        >
-          Delete
-        </Button>
-      </CardActions>
-    </Card>
-  ))}
-</TabPanel>
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="subtitle1" gutterBottom>
+                Select a Preset Color
+              </Typography>
+              <Grid container spacing={2}>
+                {colorPresets.map((color) => (
+                  <Grid item key={color.value}>
+                    <Box
+                      onClick={() => setThemeSettings({...themeSettings, backgroundColor: color.value})}
+                      sx={{
+                        width: 60,
+                        height: 60,
+                        backgroundColor: color.value,
+                        border: themeSettings.backgroundColor === color.value 
+                          ? '3px solid #1976d2' 
+                          : '1px solid #ddd',
+                        borderRadius: 1,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center'
+                      }}
+                    >
+                      {themeSettings.backgroundColor === color.value && (
+                        <CheckIcon sx={{ color: isColorDark(color.value) ? '#ffffff' : '#000000' }} />
+                      )}
+                    </Box>
+                    <Typography variant="caption" align="center" display="block" sx={{ mt: 1 }}>
+                      {color.name}
+                    </Typography>
+                  </Grid>
+                ))}
+              </Grid>
+            </Box>
+
+            <Box sx={{ mb: 4 }}>
+              <Typography variant="subtitle1" gutterBottom>
+                Custom Color
+              </Typography>
+              <TextField
+                fullWidth
+                label="Hex Color Code"
+                placeholder="#RRGGBB"
+                value={themeSettings.backgroundColor}
+                onChange={(e) => setThemeSettings({...themeSettings, backgroundColor: e.target.value})}
+                sx={{ mb: 2 }}
+                inputProps={{
+                  pattern: "#[0-9A-Fa-f]{6}",
+                  maxLength: 7
+                }}
+              />
+            </Box>
+            
+            <Button
+              variant="contained"
+              color="primary"
+              startIcon={<SaveIcon />}
+              onClick={handleSaveTheme}
+              disabled={updating}
+            >
+              {updating ? 'Saving...' : 'Save Theme Settings'}
+            </Button>
+          </CardContent>
+        </Card>
+      </TabPanel>
 
       {/* Event Dialog */}
       <Dialog open={openEventDialog} onClose={() => setOpenEventDialog(false)} maxWidth="sm" fullWidth>
@@ -1015,4 +1187,3 @@ setNewsPosts(newsData || []);
 }
 
 export default NetworkAdminPage;
-
