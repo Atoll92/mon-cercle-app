@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/authcontext';
 import { supabase } from '../supabaseclient';
+import NetworkLogoHeader from '../components/NetworkLogoHeader';
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import {
@@ -47,7 +48,8 @@ import {
   Edit as EditIcon,
   Delete as DeleteIcon,
   Palette as PaletteIcon,
-  Check as CheckIcon
+  Check as CheckIcon,
+  Image as ImageIcon
 } from '@mui/icons-material';
 import ArticleIcon from '@mui/icons-material/Article';
 
@@ -106,6 +108,11 @@ function NetworkAdminPage() {
     backgroundColor: '#ffffff',
     customizing: false
   });
+  
+  // Logo state
+  const [logoFile, setLogoFile] = useState(null);
+  const [logoPreview, setLogoPreview] = useState(null);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
 
   // Color presets for theme selection
   const colorPresets = [
@@ -171,6 +178,11 @@ function NetworkAdminPage() {
             ...themeSettings,
             backgroundColor: networkData.theme_bg_color
           });
+        }
+        
+        // Set logo preview if available
+        if (networkData.logo_url) {
+          setLogoPreview(networkData.logo_url);
         }
         
         // Get members
@@ -379,6 +391,140 @@ function NetworkAdminPage() {
       setError('Failed to update theme settings. Please try again.');
     } finally {
       setUpdating(false);
+    }
+  };
+
+  // Handle logo file selection
+  const handleLogoChange = (event) => {
+    if (!event.target.files || event.target.files.length === 0) {
+      setLogoFile(null);
+      return;
+    }
+    
+    const file = event.target.files[0];
+    
+    // Check file type
+    if (!file.type.startsWith('image/')) {
+      setError('Please select an image file (PNG, JPG, GIF).');
+      return;
+    }
+    
+    // Check file size (5MB max)
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Logo file must be less than 5MB.');
+      return;
+    }
+    
+    setLogoFile(file);
+    
+    // Create a preview
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setLogoPreview(e.target.result);
+    };
+    reader.readAsDataURL(file);
+  };
+  
+  // Upload and save logo
+  const handleSaveLogo = async () => {
+    if (!logoFile) {
+      setError('Please select a logo image first.');
+      return;
+    }
+    
+    try {
+      setUploadingLogo(true);
+      setError(null);
+      setMessage('');
+      
+      // Create a unique file path in the 'networks' bucket
+      const filePath = `${network.id}/${Date.now()}-${logoFile.name}`;
+      
+      // Upload the file to storage
+      const { error: uploadError } = await supabase.storage
+        .from('networks')
+        .upload(filePath, logoFile, {
+          cacheControl: '3600',
+          upsert: true
+        });
+        
+      if (uploadError) throw uploadError;
+      
+      // Get the public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('networks')
+        .getPublicUrl(filePath);
+      
+      // Update the network record with the logo URL
+      const { error: updateError } = await supabase
+        .from('networks')
+        .update({ logo_url: publicUrl })
+        .eq('id', network.id);
+        
+      if (updateError) throw updateError;
+      
+      // Update local state
+      setNetwork({
+        ...network,
+        logo_url: publicUrl
+      });
+      
+      setMessage('Network logo updated successfully!');
+      setLogoFile(null);
+      
+    } catch (error) {
+      console.error('Error uploading logo:', error);
+      setError('Failed to upload logo. Please try again.');
+    } finally {
+      setUploadingLogo(false);
+    }
+  };
+  
+  // Remove logo
+  const handleRemoveLogo = async () => {
+    if (!network.logo_url) return;
+    
+    try {
+      setUploadingLogo(true);
+      setError(null);
+      setMessage('');
+      
+      // Extract the file path from the URL
+      const urlParts = network.logo_url.split('/');
+      const filePath = urlParts.slice(urlParts.indexOf('networks') + 1).join('/');
+      
+      // Delete the file from storage
+      const { error: deleteError } = await supabase.storage
+        .from('networks')
+        .remove([filePath]);
+      
+      // Don't throw an error if the file doesn't exist (it might have been deleted already)
+      if (deleteError && deleteError.message !== 'The resource was not found') {
+        console.warn('Error deleting logo file:', deleteError);
+      }
+      
+      // Update the network record to remove the logo URL
+      const { error: updateError } = await supabase
+        .from('networks')
+        .update({ logo_url: null })
+        .eq('id', network.id);
+        
+      if (updateError) throw updateError;
+      
+      // Update local state
+      setNetwork({
+        ...network,
+        logo_url: null
+      });
+      
+      setLogoPreview(null);
+      setMessage('Network logo removed successfully!');
+      
+    } catch (error) {
+      console.error('Error removing logo:', error);
+      setError('Failed to remove logo. Please try again.');
+    } finally {
+      setUploadingLogo(false);
     }
   };
 
@@ -635,6 +781,7 @@ function NetworkAdminPage() {
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+      <NetworkLogoHeader/>
       <Paper sx={{ p: 3, mb: 3 }}>
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
           <Button
@@ -675,7 +822,7 @@ function NetworkAdminPage() {
           <Tab label="Members" icon={<PersonAddIcon />} />
           <Tab label="News" icon={<ArticleIcon />} />
           <Tab label="Events" icon={<EventIcon />} />
-          <Tab label="Theme" icon={<PaletteIcon />} />
+          <Tab label="Theme & Branding" icon={<PaletteIcon />} />
         </Tabs>
       </Paper>
 
@@ -999,100 +1146,219 @@ function NetworkAdminPage() {
       </TabPanel>
 
       <TabPanel value={activeTab} index={4}>
-        <Card>
-          <CardContent>
-            <Typography variant="h5" component="h2" gutterBottom>
-              Network Theme Settings
-            </Typography>
-            <Divider sx={{ mb: 3 }} />
-            
-            <Box sx={{ mb: 4 }}>
-              <Typography variant="subtitle1" gutterBottom>
-                Current Background Color
-              </Typography>
-              <Box 
-                sx={{ 
-                  width: '100%', 
-                  height: 100, 
-                  backgroundColor: themeSettings.backgroundColor,
-                  border: '1px solid #ddd',
-                  borderRadius: 1,
-                  display: 'flex',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  color: isColorDark(themeSettings.backgroundColor) ? '#ffffff' : '#000000'
-                }}
-              >
-                <Typography variant="body1">
-                  {themeSettings.backgroundColor}
+        <Grid container spacing={3}>
+          <Grid item xs={12} md={6}>
+            <Card>
+              <CardContent>
+                <Typography variant="h5" component="h2" gutterBottom>
+                  Background Color
                 </Typography>
-              </Box>
-            </Box>
+                <Divider sx={{ mb: 3 }} />
+                
+                <Box sx={{ mb: 4 }}>
+                  <Typography variant="subtitle1" gutterBottom>
+                    Current Background Color
+                  </Typography>
+                  <Box 
+                    sx={{ 
+                      width: '100%', 
+                      height: 100, 
+                      backgroundColor: themeSettings.backgroundColor,
+                      border: '1px solid #ddd',
+                      borderRadius: 1,
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      color: isColorDark(themeSettings.backgroundColor) ? '#ffffff' : '#000000'
+                    }}
+                  >
+                    <Typography variant="body1">
+                      {themeSettings.backgroundColor}
+                    </Typography>
+                  </Box>
+                </Box>
 
-            <Box sx={{ mb: 3 }}>
-              <Typography variant="subtitle1" gutterBottom>
-                Select a Preset Color
-              </Typography>
-              <Grid container spacing={2}>
-                {colorPresets.map((color) => (
-                  <Grid item key={color.value}>
-                    <Box
-                      onClick={() => setThemeSettings({...themeSettings, backgroundColor: color.value})}
-                      sx={{
-                        width: 60,
-                        height: 60,
-                        backgroundColor: color.value,
-                        border: themeSettings.backgroundColor === color.value 
-                          ? '3px solid #1976d2' 
-                          : '1px solid #ddd',
-                        borderRadius: 1,
-                        cursor: 'pointer',
+                <Box sx={{ mb: 3 }}>
+                  <Typography variant="subtitle1" gutterBottom>
+                    Select a Preset Color
+                  </Typography>
+                  <Grid container spacing={2}>
+                    {colorPresets.map((color) => (
+                      <Grid item key={color.value}>
+                        <Box
+                          onClick={() => setThemeSettings({...themeSettings, backgroundColor: color.value})}
+                          sx={{
+                            width: 60,
+                            height: 60,
+                            backgroundColor: color.value,
+                            border: themeSettings.backgroundColor === color.value 
+                              ? '3px solid #1976d2' 
+                              : '1px solid #ddd',
+                            borderRadius: 1,
+                            cursor: 'pointer',
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center'
+                          }}
+                        >
+                          {themeSettings.backgroundColor === color.value && (
+                            <CheckIcon sx={{ color: isColorDark(color.value) ? '#ffffff' : '#000000' }} />
+                          )}
+                        </Box>
+                        <Typography variant="caption" align="center" display="block" sx={{ mt: 1 }}>
+                          {color.name}
+                        </Typography>
+                      </Grid>
+                    ))}
+                  </Grid>
+                </Box>
+
+                <Box sx={{ mb: 4 }}>
+                  <Typography variant="subtitle1" gutterBottom>
+                    Custom Color
+                  </Typography>
+                  <TextField
+                    fullWidth
+                    label="Hex Color Code"
+                    placeholder="#RRGGBB"
+                    value={themeSettings.backgroundColor}
+                    onChange={(e) => setThemeSettings({...themeSettings, backgroundColor: e.target.value})}
+                    sx={{ mb: 2 }}
+                    inputProps={{
+                      pattern: "#[0-9A-Fa-f]{6}",
+                      maxLength: 7
+                    }}
+                  />
+                </Box>
+                
+                <Button
+                  variant="contained"
+                  color="primary"
+                  startIcon={<SaveIcon />}
+                  onClick={handleSaveTheme}
+                  disabled={updating}
+                >
+                  {updating ? 'Saving...' : 'Save Background Color'}
+                </Button>
+              </CardContent>
+            </Card>
+          </Grid>
+          
+          <Grid item xs={12} md={6}>
+            <Card>
+              <CardContent>
+                <Typography variant="h5" component="h2" gutterBottom>
+                  Network Logo
+                </Typography>
+                <Divider sx={{ mb: 3 }} />
+                
+                <Box sx={{ mb: 4 }}>
+                  <Typography variant="subtitle1" gutterBottom>
+                    Current Logo
+                  </Typography>
+                  
+                  {logoPreview ? (
+                    <Box 
+                      sx={{ 
+                        width: '100%',
+                        height: 200,
                         display: 'flex',
                         justifyContent: 'center',
-                        alignItems: 'center'
+                        alignItems: 'center',
+                        border: '1px solid #ddd',
+                        borderRadius: 1,
+                        padding: 2,
+                        mb: 2
                       }}
                     >
-                      {themeSettings.backgroundColor === color.value && (
-                        <CheckIcon sx={{ color: isColorDark(color.value) ? '#ffffff' : '#000000' }} />
-                      )}
+                      <img 
+                        src={logoPreview} 
+                        alt="Network Logo" 
+                        style={{ 
+                          maxWidth: '100%', 
+                          maxHeight: '100%', 
+                          objectFit: 'contain' 
+                        }} 
+                      />
                     </Box>
-                    <Typography variant="caption" align="center" display="block" sx={{ mt: 1 }}>
-                      {color.name}
+                  ) : (
+                    <Box 
+                      sx={{ 
+                        width: '100%',
+                        height: 200,
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        border: '1px dashed #aaa',
+                        borderRadius: 1,
+                        backgroundColor: '#f9f9f9',
+                        mb: 2
+                      }}
+                    >
+                      <Typography variant="body2" color="text.secondary">
+                        No logo uploaded
+                      </Typography>
+                    </Box>
+                  )}
+                  
+                  <input
+                    accept="image/*"
+                    id="logo-upload"
+                    type="file"
+                    onChange={handleLogoChange}
+                    style={{ display: 'none' }}
+                  />
+                  
+                  <Box sx={{ display: 'flex', gap: 2 }}>
+                  <label htmlFor="logo-upload">
+                    <Button
+                      variant="contained"
+                      component="span"
+                      startIcon={<AddIcon />}
+                    >
+                      Select New Logo
+                    </Button>
+                  </label>
+                    
+                    {logoPreview && (
+                      <Button
+                        variant="outlined"
+                        color="error"
+                        onClick={handleRemoveLogo}
+                        disabled={uploadingLogo}
+                      >
+                        Remove Logo
+                      </Button>
+                    )}
+                  </Box>
+                </Box>
+                
+                {logoFile && (
+                  <Box sx={{ mt: 3 }}>
+                    <Typography variant="subtitle2" gutterBottom>
+                      Selected file: {logoFile.name}
                     </Typography>
-                  </Grid>
-                ))}
-              </Grid>
-            </Box>
-
-            <Box sx={{ mb: 4 }}>
-              <Typography variant="subtitle1" gutterBottom>
-                Custom Color
-              </Typography>
-              <TextField
-                fullWidth
-                label="Hex Color Code"
-                placeholder="#RRGGBB"
-                value={themeSettings.backgroundColor}
-                onChange={(e) => setThemeSettings({...themeSettings, backgroundColor: e.target.value})}
-                sx={{ mb: 2 }}
-                inputProps={{
-                  pattern: "#[0-9A-Fa-f]{6}",
-                  maxLength: 7
-                }}
-              />
-            </Box>
-            
-            <Button
-              variant="contained"
-              color="primary"
-              startIcon={<SaveIcon />}
-              onClick={handleSaveTheme}
-              disabled={updating}
-            >
-              {updating ? 'Saving...' : 'Save Theme Settings'}
-            </Button>
-          </CardContent>
-        </Card>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      startIcon={<SaveIcon />}
+                      onClick={handleSaveLogo}
+                      disabled={uploadingLogo}
+                      sx={{ mt: 1 }}
+                    >
+                      {uploadingLogo ? 'Uploading...' : 'Upload Logo'}
+                    </Button>
+                  </Box>
+                )}
+                
+                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 2 }}>
+                  Recommended logo size: 250x250 pixels. Max file size: 5MB.
+                  Supported formats: PNG, JPG, GIF.
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
       </TabPanel>
 
       {/* Event Dialog */}

@@ -3,6 +3,7 @@ import React, { useEffect } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from './context/authcontext';
 import { CircularProgress, Box } from '@mui/material';
+import NetworkLogoHeader from './components/NetworkLogoHeader';
 
 // Import Pages
 import LoginPage from './pages/LoginPage';
@@ -56,6 +57,8 @@ function App() {
   return (
     <ThemeProvider>
     <div className="App">
+      {window.location.pathname !== "/" && <NetworkLogoHeader/>}
+
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<LandingPage/>}/>
@@ -67,6 +70,7 @@ function App() {
 
         {/* Protected Routes */}
         <Route element={<ProtectedRoute />}>
+
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/profile/:userId" element={<ProfilePage />} />
           <Route path="/profile/edit" element={<EditProfilePage />} />

@@ -11,6 +11,7 @@ export const ThemeProvider = ({ children }) => {
   const { session, user } = useAuth();
   const [theme, setTheme] = useState({
     backgroundColor: '#ffffff', // Default white background
+    logoUrl: null,
     loaded: false
   });
 
@@ -41,21 +42,18 @@ export const ThemeProvider = ({ children }) => {
         // Load network theme settings
         const { data: network, error: networkError } = await supabase
           .from('networks')
-          .select('theme_bg_color')
+          .select('theme_bg_color, logo_url')
           .eq('id', profile.network_id)
           .single();
 
         if (networkError) throw networkError;
 
         // Apply theme if available
-        if (network.theme_bg_color) {
-          setTheme({
-            backgroundColor: network.theme_bg_color,
-            loaded: true
-          });
-        } else {
-          setTheme(prev => ({ ...prev, loaded: true }));
-        }
+        setTheme({
+          backgroundColor: network.theme_bg_color || '#ffffff',
+          logoUrl: network.logo_url || null,
+          loaded: true
+        });
       } catch (error) {
         console.error('Error loading theme:', error);
         setTheme(prev => ({ ...prev, loaded: true }));
