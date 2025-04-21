@@ -185,22 +185,24 @@ function ProfilePage() {
             <h3>Portfolio Projects</h3>
             <div className="section-content">
               {profile.projects && profile.projects.length > 0 ? (
-                <div className="projects-list">
+                <div className="projects-grid">
                   {profile.projects.map(project => (
                     <div key={project.id} className="project-card">
-                      {project.image_url && (
-                        <div className="project-image">
-                          <img src={project.image_url} alt={project.title} />
-                        </div>
-                      )}
-                      <div className="project-details">
-                        <h4>{project.title}</h4>
-                        <p>{project.description}</p>
-                        {project.url && (
-                          <a href={project.url} target="_blank" rel="noopener noreferrer" className="project-link">
-                            View Project
-                          </a>
+                      <div className="project-card-inner">
+                        {project.image_url && (
+                          <div className="project-thumbnail">
+                            <img src={project.image_url} alt={project.title} />
+                          </div>
                         )}
+                        <div className="project-info">
+                          <h4 className="project-title">{project.title}</h4>
+                          <p className="project-description">{project.description}</p>
+                          {project.url && (
+                            <a href={project.url} target="_blank" rel="noopener noreferrer" className="view-project-btn">
+                              View Project
+                            </a>
+                          )}
+                        </div>
                       </div>
                     </div>
                   ))}
