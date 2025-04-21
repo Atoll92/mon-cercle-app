@@ -340,8 +340,8 @@ setSocialWallItems(combinedFeed);
         )}
       </Paper>
       
-      <Box sx={{ width: '100%', mb: 3 }}>
-        <Tabs
+      <Paper sx={{ width: '100%', mb: 3, backgroundColor: 'white' }}>
+                <Tabs
           value={activeTab}
           onChange={handleTabChange}
           indicatorColor="primary"
@@ -356,7 +356,7 @@ setSocialWallItems(combinedFeed);
 
   <Tab icon={<InfoIcon />} label="About" />
         </Tabs>
-      </Box>
+      </Paper>
 
       {activeTab === 4 && (
   <Paper sx={{ p: 3 }}>
