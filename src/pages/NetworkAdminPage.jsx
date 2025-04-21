@@ -781,7 +781,6 @@ function NetworkAdminPage() {
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-      <NetworkLogoHeader/>
       <Paper sx={{ p: 3, mb: 3 }}>
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
           <Button
