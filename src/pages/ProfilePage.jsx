@@ -3,7 +3,18 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/authcontext';
 import { supabase } from '../supabaseclient';
+import EventParticipation from '../components/EventParticipation';
 import '../styles/ProfilePage.css';
+import {
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Typography,
+  Box,
+  Divider
+} from '@mui/material';
 
 function ProfilePage() {
   const { userId } = useParams();
@@ -14,6 +25,9 @@ function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isOwnProfile, setIsOwnProfile] = useState(false);
+  const [upcomingEvents, setUpcomingEvents] = useState([]);
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [showEventDialog, setShowEventDialog] = useState(false);
   
   useEffect(() => {
     const fetchProfile = async () => {
@@ -42,6 +56,40 @@ function ProfilePage() {
           
         if (portfolioError) throw portfolioError;
         
+        // Fetch event participations for this profile
+        const { data: participations, error: participationsError } = await supabase
+          .from('event_participations')
+          .select(`
+            status,
+            events:event_id (*)
+          `)
+          .eq('profile_id', userId);
+        
+        if (participationsError) throw participationsError;
+        
+        // Get only upcoming events the user is attending
+        const now = new Date();
+        const attending = [];
+        
+        if (participations) {
+          participations.forEach(participation => {
+            if (
+              participation.status === 'attending' && 
+              participation.events && 
+              new Date(participation.events.date) > now
+            ) {
+              attending.push({
+                ...participation.events,
+                participationStatus: participation.status
+              });
+            }
+          });
+          
+          // Sort by date (closest first)
+          attending.sort((a, b) => new Date(a.date) - new Date(b.date));
+          setUpcomingEvents(attending);
+        }
+        
         setProfile({
           ...data,
           projects: portfolioItems || [] // Add portfolio items to the profile object
@@ -58,6 +106,21 @@ function ProfilePage() {
       fetchProfile();
     }
   }, [userId, user]);
+  
+  const handleEventClick = (event) => {
+    setSelectedEvent(event);
+    setShowEventDialog(true);
+  };
+  
+  const closeEventDialog = () => {
+    setShowEventDialog(false);
+    setSelectedEvent(null);
+  };
+  
+  const formatEventDate = (dateString) => {
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    return new Date(dateString).toLocaleDateString(undefined, options);
+  };
   
   if (loading) {
     return (
@@ -152,6 +215,26 @@ function ProfilePage() {
               </div>
             </div>
           </div>
+          
+          {/* Upcoming Events Section */}
+          {upcomingEvents.length > 0 && (
+            <div className="profile-upcoming-events">
+              <h3>Upcoming Events</h3>
+              <ul className="events-list">
+                {upcomingEvents.map(event => (
+                  <li key={event.id} className="event-item" onClick={() => handleEventClick(event)}>
+                    <div className="event-date">
+                      {new Date(event.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                    </div>
+                    <div className="event-details">
+                      <h4>{event.title}</h4>
+                      <p>{event.location}</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
         
         <div className="profile-details">
@@ -214,6 +297,74 @@ function ProfilePage() {
           </div>
         </div>
       </div>
+      
+      {/* Event Details Dialog */}
+      <Dialog
+        open={showEventDialog}
+        onClose={closeEventDialog}
+        maxWidth="sm"
+        fullWidth
+      >
+        {selectedEvent && (
+          <>
+            <DialogTitle>
+              {selectedEvent.title}
+            </DialogTitle>
+            <DialogContent dividers>
+              <Box sx={{ mb: 3 }}>
+                <Typography variant="subtitle1" gutterBottom>
+                  <strong>Date:</strong> {formatEventDate(selectedEvent.date)}
+                </Typography>
+                <Typography variant="subtitle1" gutterBottom>
+                  <strong>Location:</strong> {selectedEvent.location}
+                </Typography>
+                {selectedEvent.capacity && (
+                  <Typography variant="subtitle1" gutterBottom>
+                    <strong>Capacity:</strong> {selectedEvent.capacity}
+                  </Typography>
+                )}
+              </Box>
+              
+              {selectedEvent.description && (
+                <Box sx={{ mb: 3 }}>
+                  <Typography variant="h6" gutterBottom>
+                    Description
+                  </Typography>
+                  <Typography variant="body1" paragraph>
+                    {selectedEvent.description}
+                  </Typography>
+                </Box>
+              )}
+              
+              {isOwnProfile && (
+                <Box sx={{ mt: 3 }}>
+                  <Typography variant="h6" gutterBottom>
+                    Your RSVP
+                  </Typography>
+                  <EventParticipation 
+                    event={selectedEvent}
+                    showParticipants={true}
+                  />
+                </Box>
+              )}
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={closeEventDialog}>
+                Close
+              </Button>
+              {selectedEvent.network_id && (
+                <Button 
+                  component={Link}
+                  to={`/network/${selectedEvent.network_id}`}
+                  color="primary"
+                >
+                  View Network
+                </Button>
+              )}
+            </DialogActions>
+          </>
+        )}
+      </Dialog>
     </div>
   );
 }

@@ -49,7 +49,11 @@ import {
   Delete as DeleteIcon,
   Palette as PaletteIcon,
   Check as CheckIcon,
-  Image as ImageIcon
+  Image as ImageIcon,
+  CheckCircle as CheckCircleIcon,
+  Cancel as CancelIcon,
+  HelpOutline as MaybeIcon,
+  People as PeopleIcon
 } from '@mui/icons-material';
 import ArticleIcon from '@mui/icons-material/Article';
 
@@ -66,6 +70,157 @@ function TabPanel(props) {
     >
       {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
     </div>
+  );
+}
+
+function EventParticipationStats({ eventId }) {
+  const [participants, setParticipants] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({
+    attending: 0,
+    maybe: 0,
+    declined: 0,
+    total: 0
+  });
+
+  useEffect(() => {
+    const fetchParticipants = async () => {
+      setLoading(true);
+      try {
+        // Fetch event participations with user profiles
+        const { data, error } = await supabase
+          .from('event_participations')
+          .select(`
+            status,
+            profiles:profile_id (
+              id,
+              full_name,
+              profile_picture_url,
+              contact_email
+            )
+          `)
+          .eq('event_id', eventId);
+          
+        if (error) throw error;
+        
+        // Calculate stats
+        const newStats = {
+          attending: 0,
+          maybe: 0,
+          declined: 0,
+          total: data ? data.length : 0
+        };
+        
+        if (data) {
+          data.forEach(participant => {
+            if (participant.status) {
+              newStats[participant.status]++;
+            }
+          });
+          
+          setParticipants(data);
+          setStats(newStats);
+        }
+      } catch (error) {
+        console.error('Error fetching participants:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    if (eventId) {
+      fetchParticipants();
+    }
+  }, [eventId]);
+
+  if (loading) {
+    return <CircularProgress size={20} />;
+  }
+
+  return (
+    <Box sx={{ mt: 2 }}>
+      <Typography variant="subtitle2" gutterBottom>
+        Participation Stats:
+      </Typography>
+      <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+        <Chip 
+          icon={<CheckCircleIcon fontSize="small" />}
+          label={`${stats.attending} attending`}
+          color="success"
+          size="small"
+          variant="outlined"
+        />
+        <Chip 
+          icon={<MaybeIcon fontSize="small" />}
+          label={`${stats.maybe} maybe`}
+          color="warning"
+          size="small"
+          variant="outlined"
+        />
+        <Chip 
+          icon={<CancelIcon fontSize="small" />}
+          label={`${stats.declined} declined`}
+          color="error"
+          size="small"
+          variant="outlined"
+        />
+        <Chip 
+          icon={<PeopleIcon fontSize="small" />}
+          label={`${stats.total} responses`}
+          size="small"
+        />
+      </Box>
+      
+      {stats.total > 0 && (
+        <Box sx={{ mt: 2 }}>
+          <Typography variant="subtitle2" gutterBottom>
+            Participants:
+          </Typography>
+          <Box sx={{ maxHeight: '200px', overflowY: 'auto', border: '1px solid #eee', borderRadius: 1, p: 1 }}>
+            {participants.map(participant => (
+              <Box 
+                key={participant.profiles.id} 
+                sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  mb: 1,
+                  pb: 1,
+                  borderBottom: '1px solid #f0f0f0',
+                  '&:last-child': {
+                    mb: 0,
+                    pb: 0,
+                    borderBottom: 'none'
+                  }
+                }}
+              >
+                <Avatar 
+                  src={participant.profiles.profile_picture_url} 
+                  sx={{ width: 30, height: 30, mr: 1 }}
+                >
+                  {participant.profiles.full_name ? participant.profiles.full_name.charAt(0).toUpperCase() : '?'}
+                </Avatar>
+                <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+                  <Typography variant="body2" noWrap>
+                    {participant.profiles.full_name || 'Unnamed User'}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary" noWrap>
+                    {participant.profiles.contact_email}
+                  </Typography>
+                </Box>
+                <Chip 
+                  size="small"
+                  label={participant.status}
+                  color={
+                    participant.status === 'attending' ? 'success' :
+                    participant.status === 'maybe' ? 'warning' : 'error'
+                  }
+                />
+              </Box>
+            ))}
+          </Box>
+        </Box>
+      )}
+    </Box>
   );
 }
 
@@ -577,6 +732,61 @@ function NetworkAdminPage() {
     } catch (error) {
       console.error('Error removing member:', error);
       setError('Failed to remove member. Please try again.');
+    }
+  };
+
+  const exportParticipantsList = async (eventId) => {
+    try {
+      // Fetch event details
+      const { data: eventData, error: eventError } = await supabase
+        .from('network_events')
+        .select('*')
+        .eq('id', eventId)
+        .single();
+        
+      if (eventError) throw eventError;
+      
+      // Fetch participants
+      const { data: participants, error: participantsError } = await supabase
+        .from('event_participations')
+        .select(`
+          status,
+          profiles:profile_id (
+            id,
+            full_name,
+            contact_email,
+            role
+          )
+        `)
+        .eq('event_id', eventId);
+        
+      if (participantsError) throw participantsError;
+      
+      // Convert to CSV format
+      let csvContent = "Name,Email,Status,Role\n";
+      
+      participants.forEach(participant => {
+        const profile = participant.profiles;
+        csvContent += `"${profile.full_name || 'Unnamed User'}","${profile.contact_email}","${participant.status}","${profile.role || 'member'}"\n`;
+      });
+      
+      // Create downloadable link
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      
+      link.setAttribute('href', url);
+      link.setAttribute('download', `participants-${eventData.title.replace(/\s+/g, '-')}.csv`);
+      link.style.visibility = 'hidden';
+      
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      setMessage('Participants list exported successfully!');
+    } catch (error) {
+      console.error('Error exporting participants:', error);
+      setError('Failed to export participants list');
     }
   };
 
@@ -1092,57 +1302,60 @@ function NetworkAdminPage() {
       </TabPanel>
 
       <TabPanel value={activeTab} index={3}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
-          <Typography variant="h5">Network Events</Typography>
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={() => handleOpenEventDialog('create')}
-          >
-            New Event
-          </Button>
-        </Box>
+  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
+    <Typography variant="h5">Network Events</Typography>
+    <Button
+      variant="contained"
+      startIcon={<AddIcon />}
+      onClick={() => handleOpenEventDialog('create')}
+    >
+      New Event
+    </Button>
+  </Box>
 
-        <Grid container spacing={3}>
-          {events.map(event => (
-            <Grid item xs={12} md={6} lg={4} key={event.id}>
-              <Card>
-                <CardContent>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <Typography variant="h6" component="div">
-                      {event.title}
-                    </Typography>
-                    <Box>
-                      <IconButton onClick={() => handleOpenEventDialog('edit', event)}>
-                        <EditIcon fontSize="small" />
-                      </IconButton>
-                      <IconButton onClick={() => handleDeleteEvent(event.id)}>
-                        <DeleteIcon fontSize="small" color="error" />
-                      </IconButton>
-                    </Box>
-                  </Box>
-                  <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                    {formatEventDate(event.date)}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {event.location}
-                  </Typography>
-                  {event.description && (
-                    <Typography variant="body2" sx={{ mt: 2 }}>
-                      {event.description}
-                    </Typography>
-                  )}
-                  {event.capacity && (
-                    <Typography variant="caption" display="block" sx={{ mt: 1 }}>
-                      Capacity: {event.capacity}
-                    </Typography>
-                  )}
-                </CardContent>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
-      </TabPanel>
+  <Grid container spacing={3}>
+    {events.map(event => (
+      <Grid item xs={12} md={6} lg={4} key={event.id}>
+        <Card>
+          <CardContent>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+              <Typography variant="h6" component="div">
+                {event.title}
+              </Typography>
+              <Box>
+                <IconButton onClick={() => handleOpenEventDialog('edit', event)}>
+                  <EditIcon fontSize="small" />
+                </IconButton>
+                <IconButton onClick={() => handleDeleteEvent(event.id)}>
+                  <DeleteIcon fontSize="small" color="error" />
+                </IconButton>
+              </Box>
+            </Box>
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+              {formatEventDate(event.date)}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              {event.location}
+            </Typography>
+            {event.description && (
+              <Typography variant="body2" sx={{ mt: 2 }}>
+                {event.description}
+              </Typography>
+            )}
+            {event.capacity && (
+              <Typography variant="caption" display="block" sx={{ mt: 1 }}>
+                Capacity: {event.capacity}
+              </Typography>
+            )}
+            
+            {/* Add Event Participation Stats component */}
+            <EventParticipationStats eventId={event.id} />
+          </CardContent>
+        </Card>
+      </Grid>
+    ))}
+  </Grid>
+</TabPanel>
 
       <TabPanel value={activeTab} index={4}>
         <Grid container spacing={3}>
@@ -1417,6 +1630,16 @@ function NetworkAdminPage() {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenEventDialog(false)}>Cancel</Button>
+          {eventDialogMode === 'edit' && (
+            <Button 
+              onClick={() => exportParticipantsList(selectedEvent.id)}
+              variant="outlined"
+              color="secondary"
+              startIcon={<PeopleIcon />}
+            >
+              Export Participants
+            </Button>
+          )}
           <Button onClick={handleEventSubmit} variant="contained" disabled={updating}>
             {updating ? <CircularProgress size={24} /> : 'Save Event'}
           </Button>
