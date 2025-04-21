@@ -465,33 +465,6 @@ const WikiEditPage = () => {
         .replace(/-+/g, '-')
         .replace(/^-|-$/g, '');
       
-      // Use RLS bypass function if available
-      // First, try using a stored procedure or RPC if available
-      try {
-        const { data, error } = await supabase.rpc('create_wiki_category', { 
-          p_network_id: networkId,
-          p_name: newCategoryName.trim(),
-          p_slug: categorySlug
-        });
-        
-        if (!error && data) {
-          // Add to list of categories
-          const newCategory = data;
-          setAllCategories([...allCategories, newCategory]);
-          
-          // Select the new category
-          setSelectedCategories([...selectedCategories, newCategory.id]);
-          
-          // Reset and close dialog
-          setNewCategoryName('');
-          setShowNewCategoryDialog(false);
-          setCreatingCategory(false);
-          return;
-        }
-      } catch (rpcError) {
-        console.log('RPC not available, falling back to direct insert');
-      }
-      
       // If RPC not available, try direct insert with auth
       const { data: newCategory, error } = await supabase
         .from('wiki_categories')
@@ -503,11 +476,20 @@ const WikiEditPage = () => {
         })
         .select()
         .single();
-        
+
+      //if we hit a 23505 error, it means the category already exists
+      if (error && error.code === '23505') {
+        console.error('Category already exists:', error);
+        setError('Category slug already exists. Please choose a different name.');
+        setCreatingCategory(false);
+        return;
+      }
+
+      // If we hit a different error, log it and inform the user
       if (error) {
         // If still getting RLS error, inform the user
         console.error('Category creation error:', error);
-        throw new Error('Permission denied. You may not have rights to create categories.');
+        throw new Error('Permission denied. You may not have rights to create categories. Error message ' + error.message + '. Details: ' + error.details);
       }
       
       // Add to list of categories
@@ -528,7 +510,7 @@ const WikiEditPage = () => {
   };
 
   const handleCategoryChange = (event) => {
-    setSelectedCategories(event.target.value);
+    setSelectedCategories(event.target.value.filter((id) => id));
   };
 
   if (loading) {
