@@ -51,6 +51,7 @@ import startOfWeek from 'date-fns/startOfWeek';
 import getDay from 'date-fns/getDay';
 import enUS from 'date-fns/locale/en-US';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
+import MenuBookIcon from '@mui/icons-material/MenuBook';
 
 const locales = {
   'en-US': enUS,
@@ -391,21 +392,71 @@ function NetworkLandingPage() {
       </Paper>
       
       <Paper sx={{ width: '100%', mb: 3, backgroundColor: 'white' }}>
-        <Tabs
-          value={activeTab}
-          onChange={handleTabChange}
-          indicatorColor="primary"
-          textColor="primary"
-          variant="fullWidth"
+  <Tabs
+    value={activeTab}
+    onChange={handleTabChange}
+    indicatorColor="primary"
+    textColor="primary"
+    variant="fullWidth"
+  >
+    <Tab icon={<GroupsIcon />} label="Members" />
+    <Tab icon={<EventIcon />} label="Events" />
+    <Tab icon={<ArticleIcon />} label="News" />
+    <Tab icon={<ChatIcon />} label="Chat" />
+    <Tab icon={<TimelineIcon />} label="Social Wall" />
+    <Tab icon={<MenuBookIcon />} label="Wiki" /> {/* Add this new tab */}
+    <Tab icon={<InfoIcon />} label="About" />
+  </Tabs>
+</Paper>
+
+{activeTab === 5 && ( // Adjust this index if you placed the Wiki tab at a different position
+  <Paper sx={{ p: 3 }}>
+    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+      <Typography variant="h5" component="h2" gutterBottom>
+        Network Wiki
+      </Typography>
+      
+      <Button
+        variant="contained"
+        color="primary"
+        component={Link}
+        to={`/network/${networkId}/wiki`}
+      >
+        Go to Wiki
+      </Button>
+    </Box>
+    
+    <Divider sx={{ mb: 3 }} />
+    
+    <Box sx={{ textAlign: 'center', py: 3 }}>
+      <Typography variant="body1" paragraph>
+        The network wiki is a collaborative knowledge base where members can share information,
+        documentation, and resources related to this network.
+      </Typography>
+      
+      <Button
+        variant="contained"
+        color="primary"
+        component={Link}
+        to={`/network/${networkId}/wiki`}
+        sx={{ mt: 2 }}
+      >
+        Browse Wiki Pages
+      </Button>
+      
+      {isUserMember && (
+        <Button
+          variant="outlined"
+          component={Link}
+          to={`/network/${networkId}/wiki/new`}
+          sx={{ mt: 2, ml: 2 }}
         >
-          <Tab icon={<GroupsIcon />} label="Members" />
-          <Tab icon={<EventIcon />} label="Events" />
-          <Tab icon={<ArticleIcon />} label="News" />
-          <Tab icon={<ChatIcon />} label="Chat" />
-          <Tab icon={<TimelineIcon />} label="Social Wall" />
-          <Tab icon={<InfoIcon />} label="About" />
-        </Tabs>
-      </Paper>
+          Create New Page
+        </Button>
+      )}
+    </Box>
+  </Paper>
+)}
 
       {activeTab === 4 && (
         <Paper sx={{ p: 3 }}>
@@ -832,7 +883,7 @@ function NetworkLandingPage() {
         </Paper>
       )}
       
-      {activeTab === 5 && (
+      {activeTab === 6 && (
         <Paper sx={{ p: 3 }}>
           <Typography variant="h5" component="h2" gutterBottom>
             About This Network

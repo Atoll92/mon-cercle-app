@@ -1,10 +1,13 @@
-// src/App.jsx - Updated version with network name fetching
+// src/App.jsx - Updated version with wiki protected routes
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from './context/authcontext';
 import { CircularProgress, Box } from '@mui/material';
 import NetworkLogoHeader from './components/NetworkLogoHeader';
 import { supabase } from './supabaseclient';
+import WikiListPage from './pages/WikiListPage';
+import WikiPage from './pages/WikiPage';
+import WikiEditPage from './pages/WikiEditPage';
 
 // Import Pages
 import LoginPage from './pages/LoginPage';
@@ -80,20 +83,38 @@ function App() {
   }, [user]);
 
   useEffect(() => {
-    if (!loading) {
-      if (session) {
-        // Get the current URL to check for invitation parameters
-        const searchParams = new URLSearchParams(location.search);
-        const hasInvite = searchParams.get('invite');
-        // Redirect logged-in users from auth pages to /dashboard, but make exception for signup with invite
-        if (['/login', '/password-reset'].includes(location.pathname) ||
+    // Handle any redirects after login
+    if (!loading && session) {
+      // Get the current URL to check for parameters
+      const searchParams = new URLSearchParams(location.search);
+      const hasInvite = searchParams.get('invite');
+      const returnTo = searchParams.get('returnTo') || sessionStorage.getItem('returnTo');
+      
+      // If we have a returnTo, navigate there and remove it from session storage
+      if (returnTo) {
+        sessionStorage.removeItem('returnTo');
+        navigate(returnTo, { replace: true });
+        return;
+      }
+      
+      // Otherwise handle standard auth page redirects
+      if (['/login', '/password-reset'].includes(location.pathname) ||
          (location.pathname === '/signup' && !hasInvite)) {
         console.log('User authenticated, redirecting from auth page to /dashboard');
         navigate('/dashboard', { replace: true });
-         }
-       }
-     }
+      }
+    }
   }, [loading, session, location.pathname, location.search, navigate]);
+
+  // Save returnTo to session storage when redirecting to login
+  useEffect(() => {
+    if (!loading && !session) {
+      // Check if we're on a protected wiki edit page
+      if (location.pathname.includes('/wiki/edit/') || location.pathname.includes('/wiki/new')) {
+        sessionStorage.setItem('returnTo', location.pathname);
+      }
+    }
+  }, [location.pathname, session, loading]);
 
   if (loading) {
     // Show loading indicator during initial auth check
@@ -118,15 +139,29 @@ function App() {
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/password-reset" element={<PasswordResetPage />} />
           <Route path="/demo" element={<DemoPage />} />
-          {/* Protected Routes */}
+          
+          {/* Public Wiki routes */}
+          <Route path="/network/:networkId/wiki" element={<WikiListPage />} />
+          <Route path="/network/:networkId/wiki/category/:categorySlug" element={<WikiListPage />} />
+          <Route path="/network/:networkId/wiki/:pageSlug" element={<WikiPage />} />
+          
+          {/* Protected Wiki routes - need to be inside ProtectedRoute */}
+          <Route element={<ProtectedRoute />}>
+            <Route path="/network/:networkId/wiki/new" element={<WikiEditPage />} />
+            <Route path="/network/:networkId/wiki/edit/:pageSlug" element={<WikiEditPage />} />
+          </Route>
+          
+          {/* Other Protected Routes */}
           <Route element={<ProtectedRoute />}>
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/profile/:userId" element={<ProfilePage />} />
             <Route path="/profile/edit" element={<EditProfilePage />} />
             <Route path="/admin" element={<NetworkAdminPage />} />
           </Route>
+          
           {/* Networks routes */}
           <Route path="/network/:networkId" element={<NetworkLandingPage />} />
+          
           {/* Catch-all Route for 404 Not Found */}
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
