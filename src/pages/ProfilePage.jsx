@@ -218,23 +218,37 @@ function ProfilePage() {
           
           {/* Upcoming Events Section */}
           {upcomingEvents.length > 0 && (
-            <div className="profile-upcoming-events">
-              <h3>Upcoming Events</h3>
-              <ul className="events-list">
-                {upcomingEvents.map(event => (
-                  <li key={event.id} className="event-item" onClick={() => handleEventClick(event)}>
-                    <div className="event-date">
-                      {new Date(event.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                    </div>
-                    <div className="event-details">
-                      <h4>{event.title}</h4>
-                      <p>{event.location}</p>
-                    </div>
-                  </li>
-                ))}
-              </ul>
+  <div className="profile-upcoming-events">
+    <h3>Upcoming Events</h3>
+    <ul className="events-list">
+      {upcomingEvents.map(event => (
+        <li key={event.id} className="event-item" onClick={() => handleEventClick(event)}>
+         {event.cover_image_url ? (
+  <div className="event-image">
+    <img 
+      src={event.cover_image_url} 
+      alt={event.title}
+      style={{ 
+        width: '100%', 
+        height: '100%', 
+        objectFit: 'contain' 
+      }} 
+    />
+  </div>
+) : (
+            <div className="event-date">
+              {new Date(event.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
             </div>
           )}
+          <div className="event-details">
+            <h4>{event.title}</h4>
+            <p>{event.location}</p>
+          </div>
+        </li>
+      ))}
+    </ul>
+  </div>
+)}
         </div>
         
         <div className="profile-details">
@@ -300,71 +314,90 @@ function ProfilePage() {
       
       {/* Event Details Dialog */}
       <Dialog
-        open={showEventDialog}
-        onClose={closeEventDialog}
-        maxWidth="sm"
-        fullWidth
-      >
-        {selectedEvent && (
-          <>
-            <DialogTitle>
-              {selectedEvent.title}
-            </DialogTitle>
-            <DialogContent dividers>
-              <Box sx={{ mb: 3 }}>
-                <Typography variant="subtitle1" gutterBottom>
-                  <strong>Date:</strong> {formatEventDate(selectedEvent.date)}
-                </Typography>
-                <Typography variant="subtitle1" gutterBottom>
-                  <strong>Location:</strong> {selectedEvent.location}
-                </Typography>
-                {selectedEvent.capacity && (
-                  <Typography variant="subtitle1" gutterBottom>
-                    <strong>Capacity:</strong> {selectedEvent.capacity}
-                  </Typography>
-                )}
-              </Box>
-              
-              {selectedEvent.description && (
-                <Box sx={{ mb: 3 }}>
-                  <Typography variant="h6" gutterBottom>
-                    Description
-                  </Typography>
-                  <Typography variant="body1" paragraph>
-                    {selectedEvent.description}
-                  </Typography>
-                </Box>
-              )}
-              
-              {isOwnProfile && (
-                <Box sx={{ mt: 3 }}>
-                  <Typography variant="h6" gutterBottom>
-                    Your RSVP
-                  </Typography>
-                  <EventParticipation 
-                    event={selectedEvent}
-                    showParticipants={true}
-                  />
-                </Box>
-              )}
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={closeEventDialog}>
-                Close
-              </Button>
-              {selectedEvent.network_id && (
-                <Button 
-                  component={Link}
-                  to={`/network/${selectedEvent.network_id}`}
-                  color="primary"
-                >
-                  View Network
-                </Button>
-              )}
-            </DialogActions>
-          </>
+  open={showEventDialog}
+  onClose={closeEventDialog}
+  maxWidth="md"
+  fullWidth
+>
+  {selectedEvent && (
+    <>
+      <DialogTitle>
+        {selectedEvent.title}
+      </DialogTitle>
+      <DialogContent dividers>
+        {selectedEvent.cover_image_url && (
+          <Box sx={{ 
+            width: '100%', 
+            height: 300, 
+            mb: 3,
+            borderRadius: 1,
+            overflow: 'hidden'
+          }}>
+            <img 
+              src={selectedEvent.cover_image_url} 
+              alt={selectedEvent.title}
+              style={{ 
+                width: '100%', 
+                height: '100%', 
+                objectFit: 'cover' 
+              }} 
+            />
+          </Box>
         )}
-      </Dialog>
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="subtitle1" gutterBottom>
+            <strong>Date:</strong> {formatEventDate(selectedEvent.date)}
+          </Typography>
+          <Typography variant="subtitle1" gutterBottom>
+            <strong>Location:</strong> {selectedEvent.location}
+          </Typography>
+          {selectedEvent.capacity && (
+            <Typography variant="subtitle1" gutterBottom>
+              <strong>Capacity:</strong> {selectedEvent.capacity}
+            </Typography>
+          )}
+        </Box>
+        
+        {selectedEvent.description && (
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="h6" gutterBottom>
+              Description
+            </Typography>
+            <Typography variant="body1" paragraph>
+              {selectedEvent.description}
+            </Typography>
+          </Box>
+        )}
+        
+        {isOwnProfile && (
+          <Box sx={{ mt: 3 }}>
+            <Typography variant="h6" gutterBottom>
+              Your RSVP
+            </Typography>
+            <EventParticipation 
+              event={selectedEvent}
+              showParticipants={true}
+            />
+          </Box>
+        )}
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={closeEventDialog}>
+          Close
+        </Button>
+        {selectedEvent.network_id && (
+          <Button 
+            component={Link}
+            to={`/network/${selectedEvent.network_id}`}
+            color="primary"
+          >
+            View Network
+          </Button>
+        )}
+      </DialogActions>
+    </>
+  )}
+</Dialog>
     </div>
   );
 }

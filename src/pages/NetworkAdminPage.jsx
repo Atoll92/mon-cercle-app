@@ -254,6 +254,9 @@ function NetworkAdminPage() {
     description: '',
     capacity: ''
   });
+  const [eventImageFile, setEventImageFile] = useState(null);
+const [eventImagePreview, setEventImagePreview] = useState(null);
+const [uploadingEventImage, setUploadingEventImage] = useState(false);
   const [newsPosts, setNewsPosts] = useState([]);
   const [newsTitle, setNewsTitle] = useState('');
   const [editorContent, setEditorContent] = useState('');
@@ -879,6 +882,8 @@ function NetworkAdminPage() {
   const handleOpenEventDialog = (mode, event = null) => {
     setEventDialogMode(mode);
     setSelectedEvent(event);
+    setEventImageFile(null);
+    
     if (mode === 'edit' && event) {
       setEventForm({
         title: event.title,
@@ -887,6 +892,13 @@ function NetworkAdminPage() {
         description: event.description || '',
         capacity: event.capacity || ''
       });
+      
+      // Set image preview if the event has one
+      if (event.cover_image_url) {
+        setEventImagePreview(event.cover_image_url);
+      } else {
+        setEventImagePreview(null);
+      }
     } else {
       setEventForm({
         title: '',
@@ -895,7 +907,9 @@ function NetworkAdminPage() {
         description: '',
         capacity: ''
       });
+      setEventImagePreview(null);
     }
+    
     setOpenEventDialog(true);
   };
 
@@ -904,9 +918,11 @@ function NetworkAdminPage() {
       setError('Please fill in all required fields (Title, Date, Location)');
       return;
     }
-
+  
     try {
       setUpdating(true);
+      
+      // Prepare event data
       const eventData = {
         title: eventForm.title,
         date: new Date(eventForm.date).toISOString(),
@@ -916,26 +932,74 @@ function NetworkAdminPage() {
         network_id: network.id,
         created_by: user.id
       };
-
+  
+      // Add image if available (for edit mode)
+      if (selectedEvent?.cover_image_url && !eventImageFile) {
+        eventData.cover_image_url = selectedEvent.cover_image_url;
+      }
+  
       if (eventDialogMode === 'create') {
+        // First create the event to get the ID
         const { data, error } = await supabase
           .from('network_events')
           .insert([eventData])
           .select();
+          
         if (error) throw error;
+        
+        // If we have an image, upload it and update the event
+        if (eventImageFile) {
+          try {
+            const imageUrl = await uploadEventImage(data[0].id);
+            
+            // Update the event with the image URL
+            const { error: updateError } = await supabase
+              .from('network_events')
+              .update({ cover_image_url: imageUrl })
+              .eq('id', data[0].id);
+              
+            if (updateError) throw updateError;
+            
+            // Update the local data
+            data[0].cover_image_url = imageUrl;
+          } catch (imageError) {
+            console.error('Error with image upload:', imageError);
+            // Continue anyway, the event is created
+          }
+        }
+        
         setEvents([...events, data[0]]);
         setMessage('Event created successfully!');
       } else {
+        // For edit mode
+        // If we have a new image, upload it
+        if (eventImageFile) {
+          try {
+            const imageUrl = await uploadEventImage(selectedEvent.id);
+            eventData.cover_image_url = imageUrl;
+          } catch (imageError) {
+            console.error('Error with image upload:', imageError);
+            // Continue anyway with the update
+          }
+        }
+        
         const { data, error } = await supabase
           .from('network_events')
           .update(eventData)
           .eq('id', selectedEvent.id)
           .select();
+          
         if (error) throw error;
+        
         setEvents(events.map(e => e.id === selectedEvent.id ? data[0] : e));
         setMessage('Event updated successfully!');
       }
+      
       setOpenEventDialog(false);
+      
+      // Reset image state
+      setEventImageFile(null);
+      setEventImagePreview(null);
     } catch (error) {
       console.error('Event error:', error);
       setError(`Failed to ${eventDialogMode} event. Please try again.`);
@@ -943,6 +1007,7 @@ function NetworkAdminPage() {
       setUpdating(false);
     }
   };
+  
 
   const handleDeleteEvent = async (eventId) => {
     try {
@@ -962,6 +1027,71 @@ function NetworkAdminPage() {
   const formatEventDate = (dateString) => {
     const options = { year: 'numeric', month: 'long', day: 'numeric' };
     return new Date(dateString).toLocaleDateString(undefined, options);
+  };
+
+  const handleEventImageChange = (event) => {
+    if (!event.target.files || event.target.files.length === 0) {
+      setEventImageFile(null);
+      setEventImagePreview(null);
+      return;
+    }
+    
+    const file = event.target.files[0];
+    
+    // Check file type
+    if (!file.type.startsWith('image/')) {
+      setError('Please select an image file (PNG, JPG, GIF).');
+      return;
+    }
+    
+    // Check file size (5MB max)
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Image file must be less than 5MB.');
+      return;
+    }
+    
+    setEventImageFile(file);
+    
+    // Create a preview
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setEventImagePreview(e.target.result);
+    };
+    reader.readAsDataURL(file);
+  };
+  
+  // Add this function to upload the image
+  const uploadEventImage = async (eventId) => {
+    if (!eventImageFile) return null;
+    
+    try {
+      setUploadingEventImage(true);
+      
+      // Create a unique file path in the events bucket
+      const filePath = `${eventId}/${Date.now()}-${eventImageFile.name}`;
+      
+      // Upload the file to storage
+      const { error: uploadError } = await supabase.storage
+        .from('events')
+        .upload(filePath, eventImageFile, {
+          cacheControl: '3600',
+          upsert: true
+        });
+        
+      if (uploadError) throw uploadError;
+      
+      // Get the public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('events')
+        .getPublicUrl(filePath);
+      
+      return publicUrl;
+    } catch (error) {
+      console.error('Error uploading event image:', error);
+      throw error;
+    } finally {
+      setUploadingEventImage(false);
+    }
   };
 
   // Helper function to determine if a color is dark
@@ -1314,47 +1444,64 @@ function NetworkAdminPage() {
   </Box>
 
   <Grid container spacing={3}>
-    {events.map(event => (
-      <Grid item xs={12} md={6} lg={4} key={event.id}>
-        <Card>
-          <CardContent>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-              <Typography variant="h6" component="div">
-                {event.title}
-              </Typography>
-              <Box>
-                <IconButton onClick={() => handleOpenEventDialog('edit', event)}>
-                  <EditIcon fontSize="small" />
-                </IconButton>
-                <IconButton onClick={() => handleDeleteEvent(event.id)}>
-                  <DeleteIcon fontSize="small" color="error" />
-                </IconButton>
-              </Box>
+  {events.map(event => (
+    <Grid item xs={12} md={6} lg={4} key={event.id}>
+      <Card>
+        {event.cover_image_url && (
+          <Box sx={{ 
+            height: 140, 
+            overflow: 'hidden',
+            position: 'relative'
+          }}>
+            <img
+              src={event.cover_image_url}
+              alt={event.title}
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover'
+              }}
+            />
+          </Box>
+        )}
+        <CardContent>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+            <Typography variant="h6" component="div">
+              {event.title}
+            </Typography>
+            <Box>
+              <IconButton onClick={() => handleOpenEventDialog('edit', event)}>
+                <EditIcon fontSize="small" />
+              </IconButton>
+              <IconButton onClick={() => handleDeleteEvent(event.id)}>
+                <DeleteIcon fontSize="small" color="error" />
+              </IconButton>
             </Box>
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-              {formatEventDate(event.date)}
+          </Box>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+            {formatEventDate(event.date)}
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            {event.location}
+          </Typography>
+          {event.description && (
+            <Typography variant="body2" sx={{ mt: 2 }}>
+              {event.description}
             </Typography>
-            <Typography variant="body2" color="text.secondary">
-              {event.location}
+          )}
+          {event.capacity && (
+            <Typography variant="caption" display="block" sx={{ mt: 1 }}>
+              Capacity: {event.capacity}
             </Typography>
-            {event.description && (
-              <Typography variant="body2" sx={{ mt: 2 }}>
-                {event.description}
-              </Typography>
-            )}
-            {event.capacity && (
-              <Typography variant="caption" display="block" sx={{ mt: 1 }}>
-                Capacity: {event.capacity}
-              </Typography>
-            )}
-            
-            {/* Add Event Participation Stats component */}
-            <EventParticipationStats eventId={event.id} />
-          </CardContent>
-        </Card>
-      </Grid>
-    ))}
-  </Grid>
+          )}
+          
+          {/* Add Event Participation Stats component */}
+          <EventParticipationStats eventId={event.id} />
+        </CardContent>
+      </Card>
+    </Grid>
+  ))}
+</Grid>
 </TabPanel>
 
       <TabPanel value={activeTab} index={4}>
@@ -1574,77 +1721,166 @@ function NetworkAdminPage() {
       </TabPanel>
 
       {/* Event Dialog */}
-      <Dialog open={openEventDialog} onClose={() => setOpenEventDialog(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>
-          {eventDialogMode === 'create' ? 'Create New Event' : 'Edit Event'}
-        </DialogTitle>
-        <DialogContent>
-          <TextField
-            autoFocus
-            margin="dense"
-            label="Event Title"
-            fullWidth
-            required
-            value={eventForm.title}
-            onChange={(e) => setEventForm({ ...eventForm, title: e.target.value })}
-            sx={{ mb: 2 }}
-          />
-          <TextField
-            margin="dense"
-            label="Date"
-            type="date"
-            fullWidth
-            required
-            InputLabelProps={{ shrink: true }}
-            value={eventForm.date}
-            onChange={(e) => setEventForm({ ...eventForm, date: e.target.value })}
-            sx={{ mb: 2 }}
-          />
-          <TextField
-            margin="dense"
-            label="Location"
-            fullWidth
-            required
-            value={eventForm.location}
-            onChange={(e) => setEventForm({ ...eventForm, location: e.target.value })}
-            sx={{ mb: 2 }}
-          />
-          <TextField
-            margin="dense"
-            label="Description"
-            fullWidth
-            multiline
-            rows={4}
-            value={eventForm.description}
-            onChange={(e) => setEventForm({ ...eventForm, description: e.target.value })}
-            sx={{ mb: 2 }}
-          />
-          <TextField
-            margin="dense"
-            label="Capacity (optional)"
-            type="number"
-            fullWidth
-            value={eventForm.capacity}
-            onChange={(e) => setEventForm({ ...eventForm, capacity: e.target.value })}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenEventDialog(false)}>Cancel</Button>
-          {eventDialogMode === 'edit' && (
-            <Button 
-              onClick={() => exportParticipantsList(selectedEvent.id)}
-              variant="outlined"
-              color="secondary"
-              startIcon={<PeopleIcon />}
+      <Dialog open={openEventDialog} onClose={() => setOpenEventDialog(false)} maxWidth="md" fullWidth>
+  <DialogTitle>
+    {eventDialogMode === 'create' ? 'Create New Event' : 'Edit Event'}
+  </DialogTitle>
+  <DialogContent>
+    <Grid container spacing={3} sx={{ mt: 1 }}>
+      <Grid item xs={12} md={6}>
+        <TextField
+          autoFocus={!eventImagePreview}
+          margin="dense"
+          label="Event Title"
+          fullWidth
+          required
+          value={eventForm.title}
+          onChange={(e) => setEventForm({ ...eventForm, title: e.target.value })}
+          sx={{ mb: 2 }}
+        />
+        <TextField
+          margin="dense"
+          label="Date"
+          type="date"
+          fullWidth
+          required
+          InputLabelProps={{ shrink: true }}
+          value={eventForm.date}
+          onChange={(e) => setEventForm({ ...eventForm, date: e.target.value })}
+          sx={{ mb: 2 }}
+        />
+        <TextField
+          margin="dense"
+          label="Location"
+          fullWidth
+          required
+          value={eventForm.location}
+          onChange={(e) => setEventForm({ ...eventForm, location: e.target.value })}
+          sx={{ mb: 2 }}
+        />
+        <TextField
+          margin="dense"
+          label="Capacity (optional)"
+          type="number"
+          fullWidth
+          value={eventForm.capacity}
+          onChange={(e) => setEventForm({ ...eventForm, capacity: e.target.value })}
+          sx={{ mb: 2 }}
+        />
+      </Grid>
+      
+      <Grid item xs={12} md={6}>
+        <Typography variant="subtitle1" gutterBottom>
+          Event Cover Image
+        </Typography>
+        
+        <Box sx={{ 
+          width: '100%', 
+          height: 200, 
+          border: '1px dashed #ccc',
+          borderRadius: 1,
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          mb: 2,
+          position: 'relative',
+          overflow: 'hidden',
+          backgroundColor: '#f8f8f8'
+        }}>
+          {eventImagePreview ? (
+            <img 
+              src={eventImagePreview} 
+              alt="Event cover preview" 
+              style={{ 
+                width: '100%', 
+                height: '100%', 
+                objectFit: 'cover' 
+              }} 
+            />
+          ) : (
+            <Box sx={{ textAlign: 'center', p: 2 }}>
+              <ImageIcon sx={{ fontSize: 40, color: '#ccc', mb: 1 }} />
+              <Typography variant="body2" color="text.secondary">
+                No cover image selected
+              </Typography>
+            </Box>
+          )}
+        </Box>
+        
+        <input
+          accept="image/*"
+          id="event-cover-upload"
+          type="file"
+          onChange={handleEventImageChange}
+          style={{ display: 'none' }}
+        />
+        
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          <label htmlFor="event-cover-upload">
+            <Button
+              variant="contained"
+              component="span"
+              startIcon={<ImageIcon />}
+              size="small"
             >
-              Export Participants
+              {eventImagePreview ? 'Change Image' : 'Add Cover Image'}
+            </Button>
+          </label>
+          
+          {eventImagePreview && (
+            <Button
+              variant="outlined"
+              color="error"
+              size="small"
+              onClick={() => {
+                setEventImageFile(null);
+                setEventImagePreview(null);
+              }}
+            >
+              Remove Image
             </Button>
           )}
-          <Button onClick={handleEventSubmit} variant="contained" disabled={updating}>
-            {updating ? <CircularProgress size={24} /> : 'Save Event'}
-          </Button>
-        </DialogActions>
-      </Dialog>
+        </Box>
+        
+        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
+          Recommended size: 1200x600 pixels. Max: 5MB.
+        </Typography>
+      </Grid>
+      
+      <Grid item xs={12}>
+        <TextField
+          margin="dense"
+          label="Description"
+          fullWidth
+          multiline
+          rows={4}
+          value={eventForm.description}
+          onChange={(e) => setEventForm({ ...eventForm, description: e.target.value })}
+        />
+      </Grid>
+    </Grid>
+  </DialogContent>
+  <DialogActions>
+    <Button onClick={() => setOpenEventDialog(false)}>Cancel</Button>
+    {eventDialogMode === 'edit' && (
+      <Button 
+        onClick={() => exportParticipantsList(selectedEvent.id)}
+        variant="outlined"
+        color="secondary"
+        startIcon={<PeopleIcon />}
+      >
+        Export Participants
+      </Button>
+    )}
+    <Button 
+      onClick={handleEventSubmit} 
+      variant="contained" 
+      disabled={updating || uploadingEventImage}
+    >
+      {(updating || uploadingEventImage) ? <CircularProgress size={24} /> : 'Save Event'}
+    </Button>
+  </DialogActions>
+</Dialog>
 
       {/* Confirmation Dialog */}
       <Dialog open={openDialog} onClose={handleDialogClose}>

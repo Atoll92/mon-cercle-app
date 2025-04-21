@@ -27,6 +27,7 @@ import {
   Alert,
   Tabs,
   Tab,
+  Tooltip,
   TextField,
   IconButton,
   Dialog,
@@ -626,52 +627,120 @@ function NetworkLandingPage() {
           <Divider sx={{ mb: 3 }} />
           <Box sx={{ height: 600 }}>
           <Calendar
-            localizer={localizer}
-            events={events.map(event => {
-              // Find if user is participating in this event
-              const participation = userParticipations.find(p => p.event_id === event.id);
-              let eventColor = '#2196f3'; // Default blue
-              
-              // Color coding based on participation status
-              if (participation) {
-                if (participation.status === 'attending') eventColor = '#4caf50'; // Green
-                else if (participation.status === 'maybe') eventColor = '#ff9800'; // Orange
-                else if (participation.status === 'declined') eventColor = '#f44336'; // Red
-              }
-              
-              return {
-                title: event.title,
-                start: new Date(event.date),
-                end: new Date(event.date),
-                allDay: true,
-                resource: event,
-                color: eventColor
-              };
-            })}
-            date={calendarDate}
-            view={calendarView}
-            onView={setCalendarView}
-            onNavigate={setCalendarDate}
-            startAccessor="start"
-            endAccessor="end"
-            style={{ height: 500 }}
-            onSelectEvent={handleEventSelect}
-            components={{
-              event: ({ event }) => (
-                <div style={{ 
-                  background: event.color, 
-                  color: 'white',
-                  padding: '2px 5px',
-                  borderRadius: '4px',
-                  margin: '2px',
-                  fontSize: '0.8rem',
-                  cursor: 'pointer'
-                }}>
-                  {event.title}
-                </div>
-              )
+  localizer={localizer}
+  events={events.map(event => {
+    // Find if user is participating in this event
+    const participation = userParticipations.find(p => p.event_id === event.id);
+    let eventColor = '#2196f3'; // Default blue
+    
+    // Color coding based on participation status
+    if (participation) {
+      if (participation.status === 'attending') eventColor = '#4caf50'; // Green
+      else if (participation.status === 'maybe') eventColor = '#ff9800'; // Orange
+      else if (participation.status === 'declined') eventColor = '#f44336'; // Red
+    }
+    
+    return {
+      title: event.title,
+      start: new Date(event.date),
+      end: new Date(event.date),
+      allDay: true,
+      resource: event,
+      color: eventColor,
+      coverImage: event.cover_image_url // Pass cover image to event object
+    };
+  })}
+  date={calendarDate}
+  view={calendarView}
+  onView={setCalendarView}
+  onNavigate={setCalendarDate}
+  startAccessor="start"
+  endAccessor="end"
+  style={{ height: 500 }}
+  onSelectEvent={handleEventSelect}
+  components={{
+    event: ({ event }) => (
+      <div 
+        style={{ 
+          background: event.color,
+          color: 'white',
+          padding: 0,
+          borderRadius: '4px',
+          margin: '2px',
+          fontSize: '0.8rem',
+          cursor: 'pointer',
+          overflow: 'hidden',
+          display: 'flex',
+          alignItems: 'center',
+          height: '100%',
+          width: '100%',
+          position: 'relative'
+        }}
+      >
+        {event.coverImage && (
+          <div 
+            style={{
+              width: '28px',
+              height: '28px',
+              marginRight: '4px',
+              backgroundImage: `url(${event.coverImage})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              borderRadius: '3px',
+              flexShrink: 0
             }}
           />
+        )}
+        <div 
+          style={{
+            padding: '2px 5px',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+            flexGrow: 1
+          }}
+        >
+          {event.title}
+        </div>
+        <Tooltip 
+        title={
+          <Box sx={{ p: 1 }}>
+            <Typography variant="subtitle2">{event.title}</Typography>
+            <Typography variant="body2">{new Date(event.start).toLocaleDateString()}</Typography>
+            {event.resource.cover_image_url && (
+              <Box sx={{ mt: 1, width: 200, height: 100, overflow: 'hidden', borderRadius: 1 }}>
+                <img 
+                  src={event.resource.cover_image_url} 
+                  alt={event.title}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                />
+              </Box>
+            )}
+          </Box>
+        }
+        arrow
+        placement="top"
+      >
+      
+      </Tooltip>
+      </div>
+      
+    ),
+    
+    // Optional: Customize the month event to show larger images for multi-day views
+    eventWrapper: ({ event, children }) => {
+      // Only customize month view and if there's a cover image
+      if (calendarView === 'month' && event.coverImage) {
+        return (
+          <div style={{ height: '100%', position: 'relative' }}>
+            {children}
+          </div>
+        );
+      }
+      return children;
+    }
+  }}
+/>
           </Box>
           
           {/* Event Details Section */}
@@ -680,62 +749,85 @@ function NetworkLandingPage() {
               Upcoming Events
             </Typography>
             <Grid container spacing={3}>
-              {events
-                .filter(event => new Date(event.date) > new Date())
-                .map(event => {
-                  // Find user participation for this event
-                  const participation = userParticipations.find(p => p.event_id === event.id);
-                  
-                  return (
-                    <Grid item xs={12} sm={6} md={4} key={event.id}>
-                      <Card sx={{ 
-                        position: 'relative',
-                        borderTop: participation ? 
-                          `4px solid ${
-                            participation.status === 'attending' ? '#4caf50' : 
-                            participation.status === 'maybe' ? '#ff9800' : '#f44336'
-                          }` : 'none',
-                      }}>
-                        <CardContent>
-                          <Typography variant="subtitle1" gutterBottom>
-                            {event.title}
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            {new Date(event.date).toLocaleDateString()} • {event.location}
-                          </Typography>
-                          {event.description && (
-                            <Typography variant="body2" sx={{ mt: 1, mb: 2 }}>
-                              {event.description}
-                            </Typography>
-                          )}
-                          
-                          {/* RSVP Component */}
-                          {user && (
-                            <Box sx={{ mt: 2 }}>
-                              <EventParticipation 
-                                event={event} 
-                                size="small"
-                                onStatusChange={(status) => handleParticipationChange(event.id, status)}
-                              />
-                            </Box>
-                          )}
-                        </CardContent>
-                        <CardActions>
-                          <Button 
-                            size="small" 
-                            onClick={() => {
-                              setSelectedEvent(event);
-                              setShowEventDialog(true);
-                            }}
-                          >
-                            View Details
-                          </Button>
-                        </CardActions>
-                      </Card>
-                    </Grid>
-                  );
-                })}
-            </Grid>
+  {events
+    .filter(event => new Date(event.date) > new Date())
+    .map(event => {
+      // Find user participation for this event
+      const participation = userParticipations.find(p => p.event_id === event.id);
+      
+      return (
+        <Grid item xs={12} sm={6} md={4} key={event.id}>
+          <Card sx={{ 
+            position: 'relative',
+            borderTop: participation ? 
+              `4px solid ${
+                participation.status === 'attending' ? '#4caf50' : 
+                participation.status === 'maybe' ? '#ff9800' : '#f44336'
+              }` : 'none',
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'column'
+          }}>
+            {/* Add cover image */}
+            {event.cover_image_url && (
+              <Box sx={{ 
+                height: 140, 
+                overflow: 'hidden',
+                position: 'relative'
+              }}>
+                <img
+                  src={event.cover_image_url}
+                  alt={event.title}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover'
+                  }}
+                />
+              </Box>
+            )}
+            <CardContent sx={{ flexGrow: 1 }}>
+              <Typography variant="subtitle1" gutterBottom>
+                {event.title}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {new Date(event.date).toLocaleDateString()} • {event.location}
+              </Typography>
+              {event.description && (
+                <Typography variant="body2" sx={{ mt: 1, mb: 2 }}>
+                  {event.description.length > 100 
+                    ? `${event.description.substring(0, 100)}...` 
+                    : event.description}
+                </Typography>
+              )}
+              
+              {/* RSVP Component */}
+              {user && (
+                <Box sx={{ mt: 2 }}>
+                  <EventParticipation 
+                    event={event} 
+                    size="small"
+                    onStatusChange={(status) => handleParticipationChange(event.id, status)}
+                  />
+                </Box>
+              )}
+            </CardContent>
+            <CardActions>
+              <Button 
+                size="small" 
+                onClick={() => {
+                  setSelectedEvent(event);
+                  setShowEventDialog(true);
+                }}
+              >
+                View Details
+              </Button>
+            </CardActions>
+          </Card>
+        </Grid>
+      );
+    })}
+</Grid>
           </Box>
         </Paper>
       )}
@@ -877,68 +969,87 @@ function NetworkLandingPage() {
       
       {/* Event Details Dialog */}
       <Dialog
-        open={showEventDialog}
-        onClose={closeEventDialog}
-        maxWidth="sm"
-        fullWidth
-      >
-        {selectedEvent && (
-          <>
-            <DialogTitle>
-              {selectedEvent.title}
-            </DialogTitle>
-            <DialogContent dividers>
-              <Box sx={{ mb: 3 }}>
-                <Typography variant="subtitle1" gutterBottom>
-                  <strong>Date:</strong> {new Date(selectedEvent.date).toLocaleDateString('en-US', { 
-                    weekday: 'long', 
-                    year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric' 
-                  })}
-                </Typography>
-                <Typography variant="subtitle1" gutterBottom>
-                  <strong>Location:</strong> {selectedEvent.location}
-                </Typography>
-                {selectedEvent.capacity && (
-                  <Typography variant="subtitle1" gutterBottom>
-                    <strong>Capacity:</strong> {selectedEvent.capacity}
-                  </Typography>
-                )}
-              </Box>
-              
-              {selectedEvent.description && (
-                <Box sx={{ mb: 3 }}>
-                  <Typography variant="h6" gutterBottom>
-                    Description
-                  </Typography>
-                  <Typography variant="body1" paragraph>
-                    {selectedEvent.description}
-                  </Typography>
-                </Box>
-              )}
-              
-              {user && (
-                <Box sx={{ mt: 3 }}>
-                  <Typography variant="h6" gutterBottom>
-                    Your RSVP
-                  </Typography>
-                  <EventParticipation 
-                    event={selectedEvent}
-                    showParticipants={true}
-                    onStatusChange={(status) => handleParticipationChange(selectedEvent.id, status)}
-                  />
-                </Box>
-              )}
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={closeEventDialog}>
-                Close
-              </Button>
-            </DialogActions>
-          </>
+  open={showEventDialog}
+  onClose={closeEventDialog}
+  maxWidth="md"
+  fullWidth
+>
+  {selectedEvent && (
+    <>
+      <DialogTitle>
+        {selectedEvent.title}
+      </DialogTitle>
+      <DialogContent dividers>
+        {selectedEvent.cover_image_url && (
+          <Box sx={{ 
+            width: '100%', 
+            height: 300, 
+            mb: 3,
+            borderRadius: 1,
+            overflow: 'hidden'
+          }}>
+            <img 
+              src={selectedEvent.cover_image_url} 
+              alt={selectedEvent.title}
+              style={{ 
+                width: '100%', 
+                height: '100%', 
+                objectFit: 'cover' 
+              }} 
+            />
+          </Box>
         )}
-      </Dialog>
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="subtitle1" gutterBottom>
+            <strong>Date:</strong> {new Date(selectedEvent.date).toLocaleDateString('en-US', { 
+              weekday: 'long', 
+              year: 'numeric', 
+              month: 'long', 
+              day: 'numeric' 
+            })}
+          </Typography>
+          <Typography variant="subtitle1" gutterBottom>
+            <strong>Location:</strong> {selectedEvent.location}
+          </Typography>
+          {selectedEvent.capacity && (
+            <Typography variant="subtitle1" gutterBottom>
+              <strong>Capacity:</strong> {selectedEvent.capacity}
+            </Typography>
+          )}
+        </Box>
+        
+        {selectedEvent.description && (
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="h6" gutterBottom>
+              Description
+            </Typography>
+            <Typography variant="body1" paragraph>
+              {selectedEvent.description}
+            </Typography>
+          </Box>
+        )}
+        
+        {user && (
+          <Box sx={{ mt: 3 }}>
+            <Typography variant="h6" gutterBottom>
+              Your RSVP
+            </Typography>
+            <EventParticipation 
+              event={selectedEvent}
+              showParticipants={true}
+              onStatusChange={(status) => handleParticipationChange(selectedEvent.id, status)}
+            />
+          </Box>
+        )}
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={closeEventDialog}>
+          Close
+        </Button>
+      </DialogActions>
+    </>
+  )}
+</Dialog>
       
       {!isUserMember && user && (
         <Paper sx={{ p: 3, mt: 3, backgroundColor: 'primary.light', color: 'primary.contrastText' }}>
