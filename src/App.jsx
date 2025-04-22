@@ -25,6 +25,8 @@ import ThemeProvider from './components/ThemeProvider';
 import ProtectedRoute from './components/ProtectedRoute';
 import NetworkLandingPage from './pages/NetworkLandingPage';
 import DemoPage from './pages/DemoPage';
+import DirectMessagesPage from './pages/DirectMessagesPage';
+import { DirectMessagesProvider } from './context/directMessagesContext';
 
 function App() {
   const { loading, session, user } = useAuth();
@@ -127,6 +129,7 @@ function App() {
 
   return (
     <ThemeProvider>
+    <DirectMessagesProvider>
       <div className="App">
         {/* Pass the network name to the header */}
         {window.location.pathname !== "/" && (
@@ -150,6 +153,13 @@ function App() {
             <Route path="/network/:networkId/wiki/new" element={<WikiEditPage />} />
             <Route path="/network/:networkId/wiki/edit/:pageSlug" element={<WikiEditPage />} />
           </Route>
+
+            {/* Protected Direct Messages Routes */}
+            <Route element={<ProtectedRoute />}>
+            <Route path="/messages" element={<DirectMessagesPage />} />
+            <Route path="/messages/:userId" element={<DirectMessagesPage />} />
+          </Route>
+          
           
           {/* Other Protected Routes */}
           <Route element={<ProtectedRoute />}>
@@ -166,6 +176,7 @@ function App() {
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </div>
+      </DirectMessagesProvider>
     </ThemeProvider>
   );
 }

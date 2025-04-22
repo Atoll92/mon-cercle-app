@@ -15,6 +15,7 @@ import {
   Box,
   Divider
 } from '@mui/material';
+import MailIcon from '@mui/icons-material/Mail';
 
 function ProfilePage() {
   const { userId } = useParams();
@@ -163,6 +164,17 @@ function ProfilePage() {
             Edit Profile
           </Link>
         )}
+        {!isOwnProfile && (
+  <Button
+    component={Link}
+    to={`/messages/${profile.id}`}
+    variant="outlined"
+    startIcon={<MailIcon />}
+    sx={{ ml: 2 }}
+  >
+    Message
+  </Button>
+)}
       </div>
       
       <div className="profile-content">

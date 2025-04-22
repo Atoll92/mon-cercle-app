@@ -52,6 +52,7 @@ import getDay from 'date-fns/getDay';
 import enUS from 'date-fns/locale/en-US';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
+import MailIcon from '@mui/icons-material/Mail';
 
 const locales = {
   'en-US': enUS,
@@ -661,6 +662,17 @@ function NetworkLandingPage() {
                       >
                         View Profile
                       </Button>
+                      {member.id !== user?.id && (
+  <Button
+    variant="text"
+    component={Link}
+    to={`/messages/${member.id}`}
+    size="small"
+    startIcon={<MailIcon fontSize="small" />}
+  >
+    Message
+  </Button>
+)}
                     </CardActions>
                   </Card>
                 </Grid>

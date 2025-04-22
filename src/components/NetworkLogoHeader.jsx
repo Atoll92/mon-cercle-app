@@ -1,14 +1,18 @@
-// src/components/NetworkLogoHeader.jsx - Enhanced version
+// src/components/NetworkLogoHeader.jsx - Using context properly
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Skeleton } from '@mui/material';
+import { Box, Typography, Skeleton, IconButton } from '@mui/material';
 import { useTheme } from './ThemeProvider';
 import { useAuth } from '../context/authcontext';
 import { supabase } from '../supabaseclient';
 import { Link } from 'react-router-dom';
+import Badge from '@mui/material/Badge';
+import MailIcon from '@mui/icons-material/Mail';
+import { useDirectMessages } from '../context/directMessagesContext';
 
 const NetworkLogoHeader = ({ networkName: propNetworkName }) => {
   const { theme } = useTheme();
   const { user } = useAuth();
+  const { unreadTotal } = useDirectMessages();
   const [networkInfo, setNetworkInfo] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -19,7 +23,6 @@ const NetworkLogoHeader = ({ networkName: propNetworkName }) => {
       
       try {
         setLoading(true);
-        
         // Get user's profile
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
@@ -60,47 +63,55 @@ const NetworkLogoHeader = ({ networkName: propNetworkName }) => {
       sx={{
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'center',
+        justifyContent: 'space-between',
         padding: 2,
         backgroundColor: 'white',
         borderBottom: '1px solid #eee',
         boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
       }}
     >
-      {displayedLogoUrl ? (
-        <Link to={networkId ? `/network/${networkId}` : '/dashboard'}>
-          <img
-            src={displayedLogoUrl}
-            alt={displayedNetworkName || "Network Logo"}
-            style={{
-              maxHeight: '60px',
-              maxWidth: '200px',
-              objectFit: 'contain',
-              marginRight: displayedNetworkName ? '16px' : 0
+      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+        {displayedLogoUrl ? (
+          <Link to={networkId ? `/network/${networkId}` : '/dashboard'}>
+            <img
+              src={displayedLogoUrl}
+              alt={displayedNetworkName || "Network Logo"}
+              style={{
+                maxHeight: '60px',
+                maxWidth: '200px',
+                objectFit: 'contain',
+                marginRight: displayedNetworkName ? '16px' : 0
+              }}
+            />
+          </Link>
+        ) : null}
+        
+        {loading ? (
+          <Skeleton width={150} height={40} />
+        ) : displayedNetworkName ? (
+          <Typography
+            variant="h6"
+            component={networkId ? Link : 'div'}
+            to={networkId ? `/network/${networkId}` : undefined}
+            sx={{
+              fontWeight: displayedLogoUrl ? 700 : 900,
+              color: '#333',
+              textDecoration: 'none',
+              '&:hover': {
+                textDecoration: networkId ? 'underline' : 'none',
+              }
             }}
-          />
-        </Link>
-      ) : null}
+          >
+            {displayedNetworkName}
+          </Typography>
+        ) : null}
+      </Box>
       
-      {loading ? (
-        <Skeleton width={150} height={40} />
-      ) : displayedNetworkName ? (
-        <Typography
-          variant="h6"
-          component={networkId ? Link : 'div'}
-          to={networkId ? `/network/${networkId}` : undefined}
-          sx={{
-            fontWeight: displayedLogoUrl ? 700 : 900,
-            color: '#333',
-            textDecoration: 'none',
-            '&:hover': {
-              textDecoration: networkId ? 'underline' : 'none',
-            }
-          }}
-        >
-          {displayedNetworkName}
-        </Typography>
-      ) : null}
+      <IconButton component={Link} to="/messages" color="inherit">
+        <Badge badgeContent={unreadTotal} color="error">
+          <MailIcon />
+        </Badge>
+      </IconButton>
     </Box>
   );
 };
