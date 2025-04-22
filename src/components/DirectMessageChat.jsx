@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/authcontext';
 import { useDirectMessages } from '../context/directMessagesContext';
-import { getConversationMessages, sendDirectMessage, markMessagesAsRead } from '../api/directmessages';
+import { getConversationMessages, sendDirectMessage, markMessagesAsRead } from '../api/directMessages';
 import { supabase } from '../supabaseclient';
 import {
   Box,

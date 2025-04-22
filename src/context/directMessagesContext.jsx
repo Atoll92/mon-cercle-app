@@ -1,7 +1,7 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { useAuth } from './authcontext';
 import { supabase } from '../supabaseclient';
-import { getUserConversations } from '../api/directmessages';
+import { getUserConversations } from '../api/directMessages';
 
 const DirectMessagesContext = createContext(null);
 

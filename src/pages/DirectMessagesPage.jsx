@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/authcontext';
 import { useDirectMessages } from '../context/directMessagesContext';
-import { getUserForMessaging, getOrCreateConversation } from '../api/directmessages';
+import { getUserForMessaging, getOrCreateConversation } from '../api/directMessages';
 import DirectMessagesList from '../components/DirectMessagesList';
 import DirectMessageChat from '../components/DirectMessageChat';
 import {
