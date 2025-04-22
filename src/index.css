@@ -1273,3 +1273,100 @@ input, textarea, select, button {
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
+
+.rbc-calendar {
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  background-color: white;
+}
+
+/* Improve the appearance of month cells */
+.rbc-month-view {
+  border-radius: 8px;
+  border: none;
+  overflow: hidden;
+}
+
+/* Modern day cells */
+.rbc-day-bg {
+  transition: background-color 0.2s;
+}
+
+.rbc-day-bg:hover {
+  background-color: rgba(0,0,0,0.03);
+}
+
+/* Today styling */
+.rbc-today {
+  background-color: rgba(33, 150, 243, 0.08);
+}
+
+/* Event styling */
+.rbc-event {
+  border: none !important;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+
+.rbc-event:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 5px rgba(0,0,0,0.2);
+}
+
+/* Header styling */
+.rbc-header {
+  padding: 12px 3px;
+  font-weight: 500;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+/* Improve off-range day appearance */
+.rbc-off-range-bg {
+  background-color: #fafafa;
+}
+
+/* Better event time appearance */
+.rbc-event-content {
+  font-size: 0.85rem;
+  padding: 2px 3px;
+  display: flex;
+  align-items: center;
+}
+
+/* Week view improvements */
+.rbc-time-view {
+  border-radius: 8px;
+  border: none;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.rbc-time-header {
+  border-bottom: 1px solid #f0f0f0;
+}
+
+/* Day view improvements */
+.rbc-time-column {
+  background-color: white;
+}
+
+.rbc-timeslot-group {
+  border-bottom: 1px solid #f5f5f5;
+}
+
+/* Improve agenda styling */
+.rbc-agenda-view table.rbc-agenda-table {
+  border: none;
+  border-spacing: 0;
+  border-collapse: separate;
+}
+
+.rbc-agenda-view table.rbc-agenda-table tbody > tr > td {
+  padding: 12px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+/* More modern label styling */
+.rbc-label {
+  padding: 8px 5px;
+}

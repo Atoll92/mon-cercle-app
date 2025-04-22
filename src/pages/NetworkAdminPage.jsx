@@ -1223,7 +1223,7 @@ const [uploadingEventImage, setUploadingEventImage] = useState(false);
                       disabled={inviting}
                       sx={{ whiteSpace: 'nowrap' }}
                     >
-                      {inviting ? 'Sending...' : 'Send Invite'}
+                      {inviting ? 'Sending...' : 'Invite'}
                     </Button>
                   </Box>
                 </form>

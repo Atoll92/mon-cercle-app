@@ -54,6 +54,10 @@ import 'react-big-calendar/lib/css/react-big-calendar.css';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import MailIcon from '@mui/icons-material/Mail';
 
+import {
+  ArrowForward as ArrowForwardIcon
+} from '@mui/icons-material';
+
 const locales = {
   'en-US': enUS,
 };
@@ -689,7 +693,8 @@ function NetworkLandingPage() {
           </Typography>
           <Divider sx={{ mb: 3 }} />
           <Box sx={{ height: 600 }}>
-          <Calendar
+         {/* Replace your existing Calendar component with this enhanced version */}
+<Calendar
   localizer={localizer}
   events={events.map(event => {
     // Find if user is participating in this event
@@ -710,7 +715,7 @@ function NetworkLandingPage() {
       allDay: true,
       resource: event,
       color: eventColor,
-      coverImage: event.cover_image_url // Pass cover image to event object
+      coverImage: event.cover_image_url
     };
   })}
   date={calendarDate}
@@ -721,88 +726,243 @@ function NetworkLandingPage() {
   endAccessor="end"
   style={{ height: 500 }}
   onSelectEvent={handleEventSelect}
+  eventPropGetter={(event) => ({
+    style: {
+      backgroundColor: event.color,
+      borderRadius: '8px',
+      border: 'none',
+      boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+      color: 'white'
+    }
+  })}
   components={{
     event: ({ event }) => (
-      <div 
-        style={{ 
-          background: event.color,
-          color: 'white',
-          padding: 0,
-          borderRadius: '4px',
-          margin: '2px',
-          fontSize: '0.8rem',
-          cursor: 'pointer',
-          overflow: 'hidden',
+      <Box
+        sx={{
           display: 'flex',
           alignItems: 'center',
           height: '100%',
           width: '100%',
-          position: 'relative'
+          overflow: 'hidden',
+          padding: '2px'
         }}
       >
         {event.coverImage && (
-          <div 
-            style={{
+          <Box
+            sx={{
               width: '28px',
               height: '28px',
               marginRight: '4px',
-              backgroundImage: `url(${event.coverImage})`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              borderRadius: '3px',
-              flexShrink: 0
+              flexShrink: 0,
+              borderRadius: '4px',
+              overflow: 'hidden'
             }}
-          />
+          >
+            <img
+              src={event.coverImage}
+              alt=""
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover'
+              }}
+            />
+          </Box>
         )}
-        <div 
-          style={{
-            padding: '2px 5px',
+        <Typography
+          variant="caption"
+          sx={{
             overflow: 'hidden',
             textOverflow: 'ellipsis',
             whiteSpace: 'nowrap',
-            flexGrow: 1
+            fontWeight: 'medium'
           }}
         >
           {event.title}
-        </div>
-        <Tooltip 
+        </Typography>
+      </Box>
+    ),
+    
+    // Custom tooltip for events
+    eventWrapper: ({ event, children }) => (
+      <Tooltip
         title={
-          <Box sx={{ p: 1 }}>
-            <Typography variant="subtitle2">{event.title}</Typography>
-            <Typography variant="body2">{new Date(event.start).toLocaleDateString()}</Typography>
-            {event.resource.cover_image_url && (
-              <Box sx={{ mt: 1, width: 200, height: 100, overflow: 'hidden', borderRadius: 1 }}>
-                <img 
-                  src={event.resource.cover_image_url} 
+          <Box sx={{ p: 1, maxWidth: 300 }}>
+            <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1 }}>
+              {event.title}
+            </Typography>
+            
+            <Typography variant="body2" sx={{ mb: 1 }}>
+              {new Date(event.start).toLocaleDateString('en-US', {
+                weekday: 'short',
+                month: 'short',
+                day: 'numeric'
+              })}
+            </Typography>
+            
+            {event.resource.location && (
+              <Typography variant="body2" sx={{ mb: 1, color: 'white' }}>
+                📍 {event.resource.location}
+              </Typography>
+            )}
+            
+            {event.coverImage && (
+              <Box 
+                sx={{ 
+                  mt: 1, 
+                  width: '100%', 
+                  height: 120, 
+                  borderRadius: 2,
+                  overflow: 'hidden',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                }}
+              >
+                <img
+                  src={event.coverImage}
                   alt={event.title}
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                 />
               </Box>
+            )}
+            
+            {event.resource.description && (
+              <Typography 
+                variant="body2" 
+                sx={{ 
+                  mt: 1,
+                  color: 'white',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  display: '-webkit-box',
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: 'vertical'
+                }}
+              >
+                {event.resource.description}
+              </Typography>
             )}
           </Box>
         }
         arrow
         placement="top"
+        enterDelay={300}
+        leaveDelay={100}
       >
-      
+        <div style={{ height: '100%' }}>
+          {children}
+        </div>
       </Tooltip>
-      </div>
-      
     ),
     
-    // Optional: Customize the month event to show larger images for multi-day views
-    eventWrapper: ({ event, children }) => {
-      // Only customize month view and if there's a cover image
-      if (calendarView === 'month' && event.coverImage) {
-        return (
-          <div style={{ height: '100%', position: 'relative' }}>
-            {children}
-          </div>
-        );
-      }
-      return children;
+    // Enhance the appearance of month cells
+    dateCellWrapper: props => {
+      const { children, value } = props;
+      const isToday = new Date().toDateString() === value.toDateString();
+      
+      return (
+        <div
+          style={{
+            position: 'relative',
+            height: '100%',
+            borderRadius: '8px',
+            backgroundColor: isToday ? 'rgba(33, 150, 243, 0.1)' : 'transparent'
+          }}
+        >
+          {children}
+        </div>
+      );
+    },
+    
+    // Custom day header for the month view
+    dayHeader: ({ date, label }) => {
+      const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+      
+      return (
+        <Typography 
+          variant="caption" 
+          component="span"
+          sx={{ 
+            fontWeight: 500,
+            color: isWeekend ? 'text.secondary' : 'text.primary',
+            textTransform: 'uppercase',
+            fontSize: '0.75rem',
+            padding: '4px 0'
+          }}
+        >
+          {label}
+        </Typography>
+      );
+    },
+    
+    // Custom toolbar with a more modern appearance
+    toolbar: (toolbarProps) => {
+      const navigate = (action) => {
+        toolbarProps.onNavigate(action);
+      };
+      
+      return (
+        <Box 
+          sx={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center',
+            p: 1,
+            mb: 2
+          }}
+        >
+          <Box>
+            <Button
+              variant="outlined"
+              size="small"
+              onClick={() => navigate('TODAY')}
+              sx={{ mr: 1 }}
+            >
+              Today
+            </Button>
+            <IconButton onClick={() => navigate('PREV')} size="small">
+              <ArrowBackIcon fontSize="small" />
+            </IconButton>
+            <IconButton onClick={() => navigate('NEXT')} size="small">
+              <ArrowForwardIcon />
+            </IconButton>
+          </Box>
+          
+          <Typography variant="h6" sx={{ fontWeight: 500 }}>
+            {toolbarProps.label}
+          </Typography>
+          
+          <Box>
+            <Button
+              variant={toolbarProps.view === 'month' ? 'contained' : 'outlined'}
+              size="small"
+              onClick={() => toolbarProps.onView('month')}
+              sx={{ mr: 1 }}
+            >
+              Month
+            </Button>
+            <Button
+              variant={toolbarProps.view === 'week' ? 'contained' : 'outlined'}
+              size="small"
+              onClick={() => toolbarProps.onView('week')}
+              sx={{ mr: 1 }}
+            >
+              Week
+            </Button>
+            <Button
+              variant={toolbarProps.view === 'day' ? 'contained' : 'outlined'}
+              size="small"
+              onClick={() => toolbarProps.onView('day')}
+            >
+              Day
+            </Button>
+          </Box>
+        </Box>
+      );
     }
   }}
+  popup
+  selectable
+  views={['month', 'week', 'day']}
 />
           </Box>
           
