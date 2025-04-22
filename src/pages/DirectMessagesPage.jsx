@@ -339,8 +339,7 @@ function DirectMessagesPage() {
     }}>
       {/* Sidebar with conversation list */}
       <Box 
-        sx={{ 
-          // width: isTablet ? '30%' : '25%',
+        sx={{
           width: `max(250px, ${isTablet ? '30%' : '25%'})`,
           minWidth: `max(250px, ${isTablet ? '30%' : '25%'})`,
           borderRight: 1, 

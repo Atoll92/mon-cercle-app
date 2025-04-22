@@ -57,15 +57,6 @@ function DirectMessagesList({ onSelectConversation }) {
     setAnchorEl(null);
     setSelectedConversation(null);
   };
-
-  // Determine online status in a stable way
-//   const getIsOnline = (partnerId) => {
-//     if (!partnerId) return tru;
-    
-//     // Use a deterministic approach based on user ID to keep the status consistent
-//     // In a real app, you would implement actual presence detection
-//     return partnerId.charCodeAt(0) % 3 === 0;
-//   };
   
   // Format timestamp for last message
   const formatTime = (timestamp) => {
@@ -228,7 +219,7 @@ function DirectMessagesList({ onSelectConversation }) {
             {filteredConversations.map((conversation) => {
               const partner = conversation.partner || {};
               const lastMessage = conversation.last_message;
-            //   const isOnline = getIsOnline(partner.id); // Stable online status
+              const isOnline = Math.random() > 0.7; // Simulated online status
               
               return (
                 <React.Fragment key={conversation.id}>
@@ -248,7 +239,11 @@ function DirectMessagesList({ onSelectConversation }) {
                       <Badge
                         overlap="circular"
                         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-                    
+                        badgeContent={
+                          isOnline ? 
+                            <StatusOnlineIcon sx={{ fontSize: 10, color: 'success.main' }} /> : 
+                            null
+                        }
                       >
                         <Badge
                           overlap="circular"
@@ -297,25 +292,21 @@ function DirectMessagesList({ onSelectConversation }) {
                         <Typography
                           variant="body2"
                           sx={{
+                            // display: 'inline',
+                            textWrap: 'nowrap',
                             fontWeight: conversation.unread_count > 0 ? 500 : 400,
                             color: conversation.unread_count > 0 ? 'text.primary' : 'text.secondary',
                             overflow: 'hidden',
                             textOverflow: 'ellipsis',
-                            display: '-webkit-box',
-                            WebkitLineClamp: 2,
+                            WebkitLineClamp: 1,
                             WebkitBoxOrient: 'vertical',
                             fontSize: '0.875rem',
-                            lineHeight: 1.4
+                            lineHeight: 1.4,
                           }}
                         >
                           {lastMessage ? (
                             lastMessage.sender_id === user?.id ? (
-                              <Box component="span" sx={{ display: 'flex', alignItems: 'center' }}>
-                                <Typography variant="caption" sx={{ mr: 0.5, color: 'inherit' }}>
-                                  You:
-                                </Typography>
-                                {lastMessage.content}
-                              </Box>
+                                  `You: ${lastMessage.content}`
                             ) : (
                               lastMessage.content
                             )
