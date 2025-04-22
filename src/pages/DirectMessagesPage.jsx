@@ -426,14 +426,14 @@ function DirectMessagesPage() {
             </Alert>
           )}
           
-          {initLoading && (
+          {/* {initLoading && (
             <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
               <CircularProgress size={24} />
               <Typography variant="body2" sx={{ ml: 2 }}>
                 Initializing conversation...
               </Typography>
             </Box>
-          )}
+          )} */}
         </Container>
       )}
       

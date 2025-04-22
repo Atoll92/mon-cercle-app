@@ -26,7 +26,8 @@ import {
 
 function DirectMessageChat({ conversationId, partner, onBack }) {
   const { user } = useAuth();
-  const { updateConversationWithMessage, markConversationAsRead } = useDirectMessages();
+  const { updateConversationWithMessage, markConversationAsRead, refreshConversations } = useDirectMessages();
+
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
@@ -118,7 +119,7 @@ function DirectMessageChat({ conversationId, partner, onBack }) {
       supabase.removeChannel(channel);
       channelRef.current = null;
     };
-  }, [conversationId, user?.id, markConversationAsRead, updateConversationWithMessage]);
+  }, [conversationId, user?.id, markConversationAsRead, updateConversationWithMessage, ]);
   
   // Fetch messages when conversation changes
   useEffect(() => {
@@ -141,10 +142,22 @@ function DirectMessageChat({ conversationId, partner, onBack }) {
         setMessages(fetchedMessages);
         lastFetchedConversationId.current = conversationId;
         
-        // Mark messages as read
+        // Mark messages as read and trigger a context refresh to update the badge
         if (user?.id) {
-          await markMessagesAsRead(conversationId, user.id);
-          markConversationAsRead(conversationId);
+          console.log('Marking messages as read for conversation:', conversationId);
+          const { success } = await markMessagesAsRead(conversationId, user.id);
+          if (success) {
+            console.log('Successfully marked messages as read');
+            markConversationAsRead(conversationId);
+            
+            // Explicitly refresh all conversations to update unread counts globally
+            if (typeof refreshConversations === 'function') {
+              setTimeout(() => {
+                console.log('Refreshing all conversations to update badge');
+                refreshConversations();
+              }, 300);
+            }
+          }
         }
       } catch (err) {
         console.error('Error fetching messages:', err);
@@ -156,7 +169,39 @@ function DirectMessageChat({ conversationId, partner, onBack }) {
     };
     
     fetchMessages();
-  }, [conversationId, user?.id, markConversationAsRead]);
+    
+    // Set up an interval to mark messages as read periodically while viewing
+    const markReadInterval = setInterval(() => {
+      if (user?.id && conversationId && messageContainerRef.current) {
+        // Only mark as read if the user is actually viewing the messages (e.g., window is in focus)
+        if (document.hasFocus()) {
+          console.log('Periodic check: marking messages as read');
+          markMessagesAsRead(conversationId, user.id)
+            .then(({ success }) => {
+              if (success) {
+                markConversationAsRead(conversationId);
+                if (typeof refreshConversations === 'function') {
+                  refreshConversations();
+                }
+              }
+            })
+            .catch(err => console.error('Error in periodic mark read:', err));
+        }
+      }
+    }, 5000); // Check every 5 seconds
+  
+    return () => {
+      clearInterval(markReadInterval);
+    };
+  }, [conversationId, user?.id, markConversationAsRead, refreshConversations]);
+
+  // When calling refreshConversations
+if (refreshConversations) {
+  setTimeout(() => {
+    console.log('Refreshing all conversations to update badge');
+    refreshConversations();
+  }, 300);
+}
   
   // Scroll to bottom when messages change
   useEffect(() => {

@@ -1,21 +1,58 @@
-// src/components/NetworkLogoHeader.jsx - Using context properly
-import React, { useState, useEffect } from 'react';
-import { Box, Typography, Skeleton, IconButton } from '@mui/material';
+import React, { useState, useEffect, memo } from 'react';
+import { Box, Typography, Skeleton, IconButton, Badge } from '@mui/material';
 import { useTheme } from './ThemeProvider';
 import { useAuth } from '../context/authcontext';
 import { supabase } from '../supabaseclient';
 import { Link } from 'react-router-dom';
-import Badge from '@mui/material/Badge';
 import MailIcon from '@mui/icons-material/Mail';
 import { useDirectMessages } from '../context/directMessagesContext';
+
+// Separate MessageBadge component to focus on unread notifications
+const MessageBadge = memo(() => {
+  const { unreadTotal, refreshConversations } = useDirectMessages();
+  
+  // Refresh conversations when the component mounts to ensure we have the latest count
+  useEffect(() => {
+    refreshConversations();
+    
+    // Set up a polling interval to periodically check for new messages
+    const intervalId = setInterval(() => {
+      refreshConversations();
+    }, 30000); // Check every 30 seconds
+    
+    return () => clearInterval(intervalId);
+  }, [refreshConversations]);
+  
+  console.log('Rendering MessageBadge with unread count:', unreadTotal);
+  
+  return (
+    <IconButton component={Link} to="/messages" color="inherit" aria-label={`${unreadTotal} unread messages`}>
+      <Badge 
+        badgeContent={unreadTotal} 
+        color="error"
+        max={99}
+        overlap="circular"
+        sx={{
+          '& .MuiBadge-badge': {
+            fontSize: '0.7rem',
+            height: '20px',
+            minWidth: '20px',
+            fontWeight: 'bold'
+          }
+        }}
+      >
+        <MailIcon />
+      </Badge>
+    </IconButton>
+  );
+});
 
 const NetworkLogoHeader = ({ networkName: propNetworkName }) => {
   const { theme } = useTheme();
   const { user } = useAuth();
-  const { unreadTotal } = useDirectMessages();
   const [networkInfo, setNetworkInfo] = useState(null);
   const [loading, setLoading] = useState(false);
-
+  
   // If no networkName is provided as a prop, fetch it
   useEffect(() => {
     const fetchNetworkInfo = async () => {
@@ -51,13 +88,13 @@ const NetworkLogoHeader = ({ networkName: propNetworkName }) => {
     
     fetchNetworkInfo();
   }, [user, propNetworkName]);
-
+  
   if (!user) return null;
   
   const displayedNetworkName = propNetworkName || networkInfo?.name;
   const displayedLogoUrl = theme?.logoUrl || networkInfo?.logo_url;
   const networkId = networkInfo?.id;
-
+  
   return (
     <Box
       sx={{
@@ -107,11 +144,8 @@ const NetworkLogoHeader = ({ networkName: propNetworkName }) => {
         ) : null}
       </Box>
       
-      <IconButton component={Link} to="/messages" color="inherit">
-        <Badge badgeContent={unreadTotal} color="error">
-          <MailIcon />
-        </Badge>
-      </IconButton>
+      {/* Use the separate MessageBadge component */}
+      <MessageBadge />
     </Box>
   );
 };
