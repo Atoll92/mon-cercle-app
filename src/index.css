@@ -1370,3 +1370,7 @@ input, textarea, select, button {
 .rbc-label {
   padding: 8px 5px;
 }
+
+.mapboxgl-control-container {
+  display:none;
+}
