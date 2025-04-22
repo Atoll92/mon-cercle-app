@@ -787,12 +787,12 @@ function NetworkLandingPage() {
     eventWrapper: ({ event, children }) => (
       <Tooltip
         title={
-          <Box sx={{ p: 1, maxWidth: 300 }}>
-            <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1 }}>
+          <Box sx={{ p: 1, maxWidth: 300, bgcolor: 'white', color: 'text.primary', borderRadius: 1 }}>
+            <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1, color: 'text.primary' }}>
               {event.title}
             </Typography>
             
-            <Typography variant="body2" sx={{ mb: 1 }}>
+            <Typography variant="body2" sx={{ mb: 1, color: 'text.secondary' }}>
               {new Date(event.start).toLocaleDateString('en-US', {
                 weekday: 'short',
                 month: 'short',
@@ -801,7 +801,7 @@ function NetworkLandingPage() {
             </Typography>
             
             {event.resource.location && (
-              <Typography variant="body2" sx={{ mb: 1, color: 'white' }}>
+              <Typography variant="body2" sx={{ mb: 1, color: 'text.secondary' }}>
                 📍 {event.resource.location}
               </Typography>
             )}
@@ -830,7 +830,7 @@ function NetworkLandingPage() {
                 variant="body2" 
                 sx={{ 
                   mt: 1,
-                  color: 'white',
+                  color: 'text.secondary',
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
                   display: '-webkit-box',
@@ -847,6 +847,19 @@ function NetworkLandingPage() {
         placement="top"
         enterDelay={300}
         leaveDelay={100}
+        PopperProps={{
+          sx: {
+            '& .MuiTooltip-tooltip': {
+              bgcolor: 'white',
+              color: 'text.primary',
+              boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+              p: 0
+            },
+            '& .MuiTooltip-arrow': {
+              color: 'white'
+            }
+          }
+        }}
       >
         <div style={{ height: '100%' }}>
           {children}

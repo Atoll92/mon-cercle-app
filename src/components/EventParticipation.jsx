@@ -47,6 +47,7 @@ const STATUS_LABELS = {
 function EventParticipation({ event, showParticipants = false, onStatusChange = null, size = "medium" }) {
   const { user } = useAuth();
   const [participationStatus, setParticipationStatus] = useState(null);
+  const [participationId, setParticipationId] = useState(null); // Store the participation record ID
   const [isLoading, setIsLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
   const [participants, setParticipants] = useState([]);
@@ -57,23 +58,29 @@ function EventParticipation({ event, showParticipants = false, onStatusChange = 
     declined: 0,
     total: 0
   });
+  const [error, setError] = useState(null);
 
   // Fetch current user's participation status and participants count
   useEffect(() => {
     const fetchParticipationData = async () => {
       setIsLoading(true);
+      setError(null);
       
       if (user) {
         // Get current user's participation status
         const { data: userParticipation, error: participationError } = await supabase
           .from('event_participations')
-          .select('status')
+          .select('id, status')
           .eq('event_id', event.id)
           .eq('profile_id', user.id)
           .maybeSingle();
           
-        if (!participationError && userParticipation) {
+        if (participationError) {
+          console.error('Error fetching user participation:', participationError);
+          setError('Error fetching participation status');
+        } else if (userParticipation) {
           setParticipationStatus(userParticipation.status);
+          setParticipationId(userParticipation.id); // Save the ID for updates
         }
       }
       
@@ -83,7 +90,9 @@ function EventParticipation({ event, showParticipants = false, onStatusChange = 
         .select('status')
         .eq('event_id', event.id);
       
-      if (!countError && allParticipations) {
+      if (countError) {
+        console.error('Error fetching participation counts:', countError);
+      } else if (allParticipations) {
         // Calculate counts manually
         const counts = {
           attending: 0,
@@ -104,26 +113,34 @@ function EventParticipation({ event, showParticipants = false, onStatusChange = 
       setIsLoading(false);
     };
     
-    fetchParticipationData();
-  }, [event.id, user]);
+    if (event?.id) {
+      fetchParticipationData();
+    }
+  }, [event?.id, user]);
 
   // Update participation status
   const updateStatus = async (newStatus) => {
-    if (!user) return;
+    if (!user || !event?.id) return;
     
     setIsUpdating(true);
+    setError(null);
     
     try {
       // If the new status is the same as current status, toggle it off (delete the record)
       if (newStatus === participationStatus) {
-        const { error } = await supabase
-          .from('event_participations')
-          .delete()
-          .eq('event_id', event.id)
-          .eq('profile_id', user.id);
+        // We need the ID to delete it correctly
+        if (participationId) {
+          const { error } = await supabase
+            .from('event_participations')
+            .delete()
+            .eq('id', participationId);
+            
+          if (error) {
+            throw error;
+          }
           
-        if (!error) {
           setParticipationStatus(null);
+          setParticipationId(null);
           
           // Update counts
           setParticipantCounts({
@@ -138,34 +155,56 @@ function EventParticipation({ event, showParticipants = false, onStatusChange = 
         // If there was a previous status, decrement that count
         const previousStatus = participationStatus;
         
-        // Insert or update the participation record
-        const { error } = await supabase
-          .from('event_participations')
-          .upsert({
-            event_id: event.id,
-            profile_id: user.id,
-            status: newStatus,
-            updated_at: new Date().toISOString()
-          });
-          
-        if (!error) {
-          setParticipationStatus(newStatus);
-          
-          // Update counts
-          const newCounts = { ...participantCounts };
-          if (previousStatus) {
-            newCounts[previousStatus] = Math.max(0, newCounts[previousStatus] - 1);
-          } else {
-            newCounts.total += 1;
-          }
-          newCounts[newStatus] = (newCounts[newStatus] || 0) + 1;
-          setParticipantCounts(newCounts);
-          
-          if (onStatusChange) onStatusChange(newStatus);
+        let result;
+        
+        if (participationId) {
+          // Update existing record
+          result = await supabase
+            .from('event_participations')
+            .update({ 
+              status: newStatus,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', participationId);
+        } else {
+          // Insert new record
+          result = await supabase
+            .from('event_participations')
+            .insert({
+              event_id: event.id,
+              profile_id: user.id,
+              status: newStatus,
+              updated_at: new Date().toISOString()
+            })
+            .select();
         }
+        
+        if (result.error) {
+          throw result.error;
+        }
+        
+        // If we did an insert and got back an ID, save it
+        if (!participationId && result.data && result.data[0]?.id) {
+          setParticipationId(result.data[0].id);
+        }
+        
+        setParticipationStatus(newStatus);
+        
+        // Update counts
+        const newCounts = { ...participantCounts };
+        if (previousStatus) {
+          newCounts[previousStatus] = Math.max(0, newCounts[previousStatus] - 1);
+        } else {
+          newCounts.total += 1;
+        }
+        newCounts[newStatus] = (newCounts[newStatus] || 0) + 1;
+        setParticipantCounts(newCounts);
+        
+        if (onStatusChange) onStatusChange(newStatus);
       }
     } catch (error) {
       console.error('Error updating participation status:', error);
+      setError('Failed to update RSVP status');
     } finally {
       setIsUpdating(false);
     }
@@ -186,7 +225,12 @@ function EventParticipation({ event, showParticipants = false, onStatusChange = 
         `)
         .eq('event_id', event.id);
         
-      if (!error && data) {
+      if (error) {
+        console.error('Error loading participants:', error);
+        return;
+      }
+      
+      if (data) {
         setParticipants(data);
       }
     } catch (error) {
@@ -236,6 +280,13 @@ function EventParticipation({ event, showParticipants = false, onStatusChange = 
   return (
     <>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        {/* Error message if any */}
+        {error && (
+          <Typography color="error" variant="caption" sx={{ mb: 1 }}>
+            {error}
+          </Typography>
+        )}
+        
         {/* RSVP Buttons */}
         <ButtonGroup size={size} variant="outlined" disabled={isUpdating}>
           <Tooltip title="I'm attending">
