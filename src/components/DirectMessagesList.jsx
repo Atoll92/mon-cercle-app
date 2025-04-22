@@ -292,7 +292,6 @@ function DirectMessagesList({ onSelectConversation }) {
                         <Typography
                           variant="body2"
                           sx={{
-                            display: 'inline',
                             fontWeight: conversation.unread_count > 0 ? 500 : 400,
                             color: conversation.unread_count > 0 ? 'text.primary' : 'text.secondary',
                             overflow: 'hidden',
