@@ -1,99 +1,85 @@
-// src/components/AddressSuggestions.jsx
-import React, { useState, useEffect, useRef } from 'react';
-import {
-  TextField,
-  Autocomplete,
-  CircularProgress,
-  Box,
-  Typography,
-  ListItem,
-  ListItemText
-} from '@mui/material';
-import LocationOnIcon from '@mui/icons-material/LocationOn';
-import debounce from 'lodash/debounce';
-import mapboxgl from 'mapbox-gl';
+// src/components/EventsMap.jsx
+import React, { useEffect, useRef, useState } from 'react';
+import { Box, Typography, Paper, CircularProgress } from '@mui/material';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
-// Tell mapbox to skip using workers for Vite compatibility
-// This is only needed for development - in production this should work fine
-mapboxgl.setRTLTextPlugin(
-  'https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-rtl-text/v0.2.3/mapbox-gl-rtl-text.js',
-  null,
-  true // Lazy load the plugin
-);
-
+// Use the provided token and custom style
 const MAPBOX_TOKEN = 'pk.eyJ1IjoiZGdjb2Jvc3MiLCJhIjoiY2xzY2JkNTdqMGJzbDJrbzF2Zm84aWxwZCJ9.b9GP9FrGHsVquJf7ubWfKQ';
+const MAPBOX_STYLE = 'mapbox://styles/dgcoboss/cm51343rf009u01s943jx2mz2';
 
-export default function AddressSuggestions({ value, onChange, label = "Location", placeholder = "Enter an address", required = false, fullWidth = true, autoFocus = false }) {
-  const [inputValue, setInputValue] = useState('');
-  const [options, setOptions] = useState([]);
-  const [loading, setLoading] = useState(false);
-  
-  // Map references
-  const mapRef = useRef(null);
+export default function EventsMap({ events, onEventSelect }) {
   const mapContainerRef = useRef(null);
-  const markerRef = useRef(null);
+  const mapRef = useRef(null);
+  const markersRef = useRef([]);
+  const [loading, setLoading] = useState(true);
+  const [mapError, setMapError] = useState(null);
   
-  // Set Mapbox token
   useEffect(() => {
-    mapboxgl.accessToken = MAPBOX_TOKEN;
-  }, []);
-  
-  // Initialize or update map when coordinates change
-  useEffect(() => {
-    if (!value || !value.center) return;
-    
-    const coordinates = {
-      lng: value.center[0],
-      lat: value.center[1]
-    };
-    
-    // If map doesn't exist yet, create it
-    if (!mapRef.current && mapContainerRef.current) {
+    const loadMapbox = async () => {
       try {
+        // Dynamically import mapbox-gl
+        const mapboxgl = (await import('mapbox-gl')).default;
+        mapboxgl.accessToken = MAPBOX_TOKEN;
+        
+        if (!mapContainerRef.current) return;
+        
+        // Initialize map with custom style
         mapRef.current = new mapboxgl.Map({
           container: mapContainerRef.current,
-          style: 'mapbox://styles/mapbox/streets-v11',
-          center: [coordinates.lng, coordinates.lat],
-          zoom: 14,
-          transformRequest: (url, resourceType) => {
-            if (resourceType === 'Source' && url.startsWith('http')) {
-              return {
-                url: url,
-                headers: {
-                  'Cache-Control': 'no-cache' // Avoid caching issues during development
-                }
-              };
+          style: MAPBOX_STYLE, // Use the custom style
+          center: [0, 20], // Default center (will pan to events)
+          zoom: 1
+        });
+        
+        // Add navigation controls
+        mapRef.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
+        
+        // Add geolocate control
+        const geolocate = new mapboxgl.GeolocateControl({
+          positionOptions: {
+            enableHighAccuracy: true
+          },
+          trackUserLocation: true,
+          showUserHeading: true
+        });
+        mapRef.current.addControl(geolocate, 'top-right');
+        
+        // Set up event listeners
+        mapRef.current.on('load', () => {
+          setLoading(false);
+          // Try to geolocate user
+          setTimeout(() => {
+            if (mapRef.current) {
+              geolocate.trigger();
             }
+          }, 1000);
+        });
+        
+        // Add resize observer to ensure map fits its container
+        const resizeObserver = new ResizeObserver(() => {
+          if (mapRef.current) {
+            mapRef.current.resize();
           }
         });
         
-        // Add marker
-        markerRef.current = new mapboxgl.Marker({ draggable: true })
-          .setLngLat([coordinates.lng, coordinates.lat])
-          .addTo(mapRef.current);
+        if (mapContainerRef.current) {
+          resizeObserver.observe(mapContainerRef.current);
+        }
         
-        // When marker is dragged, update coordinates
-        markerRef.current.on('dragend', () => {
-          const lngLat = markerRef.current.getLngLat();
-          const updatedValue = {
-            ...value,
-            center: [lngLat.lng, lngLat.lat]
-          };
-          onChange(updatedValue);
-        });
+        return () => {
+          if (mapContainerRef.current) {
+            resizeObserver.unobserve(mapContainerRef.current);
+          }
+        };
       } catch (error) {
-        console.error('Error initializing Mapbox map:', error);
+        console.error('Error loading map:', error);
+        setMapError('Failed to load map. Please try again later.');
+        setLoading(false);
       }
-    } else if (mapRef.current && markerRef.current) {
-      // Just update existing map and marker
-      mapRef.current.setCenter([coordinates.lng, coordinates.lat]);
-      markerRef.current.setLngLat([coordinates.lng, coordinates.lat]);
-    }
-  }, [value, onChange]);
-  
-  // Clean up map when component unmounts
-  useEffect(() => {
+    };
+    
+    loadMapbox();
+    
     return () => {
       if (mapRef.current) {
         mapRef.current.remove();
@@ -102,151 +88,164 @@ export default function AddressSuggestions({ value, onChange, label = "Location"
     };
   }, []);
   
-  // This function fetches address suggestions from Mapbox API
-  const fetchSuggestions = async (searchText) => {
-    if (searchText.length < 3) {
-      setOptions([]);
-      return;
-    }
-    
-    setLoading(true);
-    
-    try {
-      const endpoint = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(searchText)}.json`;
-      const url = `${endpoint}?access_token=${MAPBOX_TOKEN}&autocomplete=true&types=address,place,locality,neighborhood`;
+  // Add event markers whenever events change
+  useEffect(() => {
+    const addEventMarkers = async () => {
+      if (!mapRef.current || !events || events.length === 0) return;
       
-      const response = await fetch(url);
-      const data = await response.json();
-      
-      if (data && data.features) {
-        const suggestions = data.features.map(feature => ({
-          place_name: feature.place_name,
-          center: feature.center, // [longitude, latitude]
-          id: feature.id,
-          text: feature.text,
-          place_type: feature.place_type[0]
-        }));
+      try {
+        // Remove existing markers
+        markersRef.current.forEach(marker => marker.remove());
+        markersRef.current = [];
         
-        setOptions(suggestions);
+        const mapboxgl = (await import('mapbox-gl')).default;
+        const eventsWithCoordinates = events.filter(event => 
+          event.coordinates && 
+          event.coordinates.longitude && 
+          event.coordinates.latitude
+        );
+        
+        if (eventsWithCoordinates.length === 0) return;
+        
+        // Create bounds to fit all markers
+        const bounds = new mapboxgl.LngLatBounds();
+        
+        // Add markers for each event with coordinates
+        eventsWithCoordinates.forEach(event => {
+          const { longitude, latitude } = event.coordinates;
+          
+          // Create marker element
+          const el = document.createElement('div');
+          el.className = 'event-marker';
+          el.style.width = '25px';
+          el.style.height = '25px';
+          el.style.backgroundSize = 'cover';
+          el.style.borderRadius = '50%';
+          el.style.border = '3px solid white';
+          el.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
+          
+          // Use event cover image if available, otherwise use colored marker
+          if (event.cover_image_url) {
+            el.style.backgroundImage = `url(${event.cover_image_url})`;
+          } else {
+            el.style.backgroundColor = '#1976d2';
+          }
+          
+          // Create popup
+          const popup = new mapboxgl.Popup({ offset: 25 })
+            .setHTML(`
+              <div style="padding: 8px; max-width: 200px;">
+                <h4 style="margin: 0 0 8px 0;">${event.title}</h4>
+                <p style="margin: 4px 0; font-size: 12px; color: #555;">
+                  ${new Date(event.date).toLocaleDateString()}
+                </p>
+                <p style="margin: 4px 0; font-size: 12px; color: #555;">
+                  ${event.location}
+                </p>
+                ${event.description ? 
+                  `<p style="margin: 8px 0 0 0; font-size: 12px; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">
+                    ${event.description}
+                  </p>` : ''
+                }
+                <button style="margin-top: 8px; padding: 4px 8px; background: #1976d2; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">
+                  View Details
+                </button>
+              </div>
+            `);
+          
+          // Add click event to popup button
+          popup.on('open', () => {
+            setTimeout(() => {
+              const button = document.querySelector('.mapboxgl-popup-content button');
+              if (button) {
+                button.addEventListener('click', () => {
+                  if (onEventSelect) {
+                    onEventSelect(event);
+                  }
+                });
+              }
+            }, 100);
+          });
+          
+          // Create and add marker
+          const marker = new mapboxgl.Marker(el)
+            .setLngLat([longitude, latitude])
+            .setPopup(popup)
+            .addTo(mapRef.current);
+          
+          // Store reference to marker for later removal
+          markersRef.current.push(marker);
+          
+          // Add coordinates to bounds
+          bounds.extend([longitude, latitude]);
+        });
+        
+        // Fit map to bounds with padding
+        if (!bounds.isEmpty()) {
+          mapRef.current.fitBounds(bounds, {
+            padding: 70,
+            maxZoom: 15
+          });
+        }
+      } catch (error) {
+        console.error('Error adding markers:', error);
       }
-    } catch (error) {
-      console.error('Error fetching address suggestions:', error);
-      setOptions([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-  
-  // Debounce the API calls to prevent too many requests
-  const debouncedFetchSuggestions = useRef(
-    debounce((text) => {
-      fetchSuggestions(text);
-    }, 300)
-  ).current;
-  
-  useEffect(() => {
-    if (inputValue.length > 2) {
-      debouncedFetchSuggestions(inputValue);
-    }
-    
-    return () => {
-      debouncedFetchSuggestions.cancel();
     };
-  }, [inputValue, debouncedFetchSuggestions]);
-
-  // Initialize inputValue from the value prop if it's a string
-  useEffect(() => {
-    if (typeof value === 'string' && value) {
-      setInputValue(value);
-    } else if (value && value.place_name) {
-      setInputValue(value.place_name);
+    
+    if (!loading && mapRef.current) {
+      addEventMarkers();
     }
-  }, [value]);
+  }, [events, loading, onEventSelect]);
   
   return (
-    <>
-      <Autocomplete
-        id="mapbox-address-autocomplete"
-        fullWidth={fullWidth}
-        filterOptions={(x) => x} // Don't filter options, we're using the API
-        options={options}
-        autoComplete
-        includeInputInList
-        freeSolo
-        loading={loading}
-        loadingText="Searching addresses..."
-        noOptionsText="No addresses found"
-        value={value}
-        inputValue={inputValue}
-        onChange={(event, newValue) => {
-          if (newValue && typeof newValue === 'object') {
-            onChange(newValue);
-          } else if (typeof newValue === 'string') {
-            onChange({ place_name: newValue });
-          } else {
-            onChange(null);
-          }
-        }}
-        onInputChange={(event, newInputValue) => {
-          setInputValue(newInputValue);
-        }}
-        getOptionLabel={(option) => {
-          if (typeof option === 'string') return option;
-          return option?.place_name || '';
-        }}
-        renderInput={(params) => (
-          <TextField
-            {...params}
-            label={label}
-            placeholder={placeholder}
-            required={required}
-            autoFocus={autoFocus}
-            margin="dense"
-            InputProps={{
-              ...params.InputProps,
-              endAdornment: (
-                <React.Fragment>
-                  {loading ? <CircularProgress color="inherit" size={20} /> : null}
-                  {params.InputProps.endAdornment}
-                </React.Fragment>
-              ),
-            }}
-          />
-        )}
-        renderOption={(props, option) => {
-          // Fix for the key prop warning - extract key from props and pass it directly
-          const { key, ...otherProps } = props;
-          return (
-            <ListItem key={key} {...otherProps} dense>
-              <LocationOnIcon style={{ marginRight: 10, color: '#757575' }} fontSize="small" />
-              <ListItemText
-                primary={option.text}
-                secondary={
-                  <Typography variant="body2" color="text.secondary">
-                    {option.place_name.replace(`${option.text}, `, '')}
-                  </Typography>
-                }
-              />
-            </ListItem>
-          );
-        }}
-      />
-      
-      {/* Map display when coordinates are available */}
-      {value && value.center && (
-        <Box sx={{ mt: 2, mb: 2 }}>
-          <div
-            ref={mapContainerRef}
-            style={{
-              width: '100%',
-              height: '200px',
-              borderRadius: '4px',
-              overflow: 'hidden',
-              border: '1px solid #ddd'
-            }}
-          />
+    <Box sx={{ position: 'relative', width: '100%', height: '350px', borderRadius: 1, overflow: 'hidden' }}>
+      {loading && (
+        <Box sx={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: 'rgba(255, 255, 255, 0.8)',
+          zIndex: 10
+        }}>
+          <CircularProgress size={40} />
         </Box>
       )}
-    </>
+      
+      {mapError && (
+        <Paper sx={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          padding: 2,
+          maxWidth: '80%',
+          textAlign: 'center',
+          zIndex: 5
+        }}>
+          <Typography color="error">{mapError}</Typography>
+        </Paper>
+      )}
+      
+      <div ref={mapContainerRef} style={{ width: '100%', height: '100%' }} />
+      
+      <Box sx={{
+        position: 'absolute',
+        bottom: 8,
+        left: 8,
+        backgroundColor: 'rgba(255, 255, 255, 0.7)',
+        padding: '4px 8px',
+        borderRadius: 1,
+        fontSize: '0.75rem',
+        color: 'text.secondary',
+        zIndex: 5
+      }}>
+        {events.filter(event => event.coordinates && event.coordinates.longitude).length} / {events.length} events on map
+      </Box>
+    </Box>
   );
 }

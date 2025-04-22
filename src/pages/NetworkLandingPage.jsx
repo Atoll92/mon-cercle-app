@@ -838,15 +838,123 @@ function NetworkLandingPage() {
       />
     </Box>
     
-    {/* Rest of your events section content remains the same */}
     <Box sx={{ mt: 4 }}>
-      <Typography variant="h6" gutterBottom>
-        Upcoming Events
+  <Typography variant="h6" gutterBottom>
+    Upcoming Events
+  </Typography>
+  <Grid container spacing={3}>
+    {events
+      .filter(event => new Date(event.date) > new Date())
+      .map(event => {
+        // Find user participation for this event
+        const participation = userParticipations.find(p => p.event_id === event.id);
+        
+        return (
+          <Grid item xs={12} sm={6} md={4} key={event.id}>
+            <Card sx={{ 
+              position: 'relative',
+              borderTop: participation ? 
+                `4px solid ${
+                  participation.status === 'attending' ? '#4caf50' : 
+                  participation.status === 'maybe' ? '#ff9800' : '#f44336'
+                }` : 'none',
+              height: '100%',
+              display: 'flex',
+              flexDirection: 'column'
+            }}>
+              {/* Add cover image */}
+              {event.cover_image_url && (
+                <Box sx={{ 
+                  height: 140, 
+                  overflow: 'hidden',
+                  position: 'relative'
+                }}>
+                  <img
+                    src={event.cover_image_url}
+                    alt={event.title}
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover'
+                    }}
+                  />
+                </Box>
+              )}
+              <CardContent sx={{ flexGrow: 1 }}>
+                <Typography variant="subtitle1" gutterBottom>
+                  {event.title}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {new Date(event.date).toLocaleDateString()} • {event.location}
+                </Typography>
+                {event.description && (
+                  <Typography variant="body2" sx={{ mt: 1, mb: 2 }}>
+                    {event.description.length > 100 
+                      ? `${event.description.substring(0, 100)}...` 
+                      : event.description}
+                  </Typography>
+                )}
+                
+                {/* Location coordinates indicator */}
+                {event.coordinates && event.coordinates.latitude && (
+                  <Chip 
+                    icon={<LocationOnIcon fontSize="small" />}
+                    label="Has location"
+                    size="small"
+                    color="primary"
+                    variant="outlined"
+                    sx={{ mt: 1, mb: 1 }}
+                  />
+                )}
+                
+                {/* RSVP Component */}
+                {user && (
+                  <Box sx={{ mt: 2 }}>
+                    <EventParticipation 
+                      event={event} 
+                      size="small"
+                      onStatusChange={(status) => handleParticipationChange(event.id, status)}
+                    />
+                  </Box>
+                )}
+              </CardContent>
+              <CardActions>
+                <Button 
+                  size="small" 
+                  onClick={() => {
+                    setSelectedEvent(event);
+                    setShowEventDialog(true);
+                  }}
+                >
+                  View Details
+                </Button>
+              </CardActions>
+            </Card>
+          </Grid>
+        );
+      })}
+  </Grid>
+  
+  {events.filter(event => new Date(event.date) > new Date()).length === 0 && (
+    <Box sx={{ textAlign: 'center', py: 3 }}>
+      <Typography variant="body1" color="text.secondary">
+        No upcoming events scheduled
       </Typography>
-      <Grid container spacing={3}>
-        {/* Existing event cards code... */}
-      </Grid>
+      {isUserAdmin && (
+        <Button
+          variant="contained"
+          color="primary"
+          component={Link}
+          to="/admin"
+          startIcon={<EventIcon />}
+          sx={{ mt: 2 }}
+        >
+          Create Event
+        </Button>
+      )}
     </Box>
+  )}
+</Box>
   </Paper>
 )}
       
