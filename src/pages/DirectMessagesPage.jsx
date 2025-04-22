@@ -19,15 +19,19 @@ import {
   Alert,
   Fab,
   Drawer,
-  AppBar,
-  Toolbar
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import {
   ArrowBack as ArrowBackIcon,
   Forum as ForumIcon,
   Add as AddIcon,
-  Close as CloseIcon
+  Close as CloseIcon,
+  PersonAdd as PersonAddIcon
 } from '@mui/icons-material';
 
 function DirectMessagesPage() {
@@ -52,11 +56,21 @@ function DirectMessagesPage() {
   const [initLoading, setInitLoading] = useState(false);
   const [initError, setInitError] = useState(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [newChatDialogOpen, setNewChatDialogOpen] = useState(false);
+  const [newChatUserId, setNewChatUserId] = useState('');
   
   // Use a ref to track if initialization has been attempted
   const initAttemptedRef = useRef(false);
   // Ref to track the latest userId to prevent re-initialization on the same ID
   const lastUserIdRef = useRef(null);
+
+  // Debug logging for state
+  console.log("Current state:", {
+    selectedConversationId,
+    partnerState: partner ? `${partner.id} (${partner.full_name})` : 'none',
+    conversationsCount: conversations.length,
+    conversationsLoading
+  });
   
   // If userId is provided, start or get conversation with that user
   useEffect(() => {
@@ -160,9 +174,29 @@ function DirectMessagesPage() {
       }
     };
   }, [userId, user, conversations, addConversation, setActiveConversation]);
+
+  // This effect sets the default conversation if none is selected
+  useEffect(() => {
+    // If we don't have a selected conversation but have some in the list, select the first one
+    if (!selectedConversationId && !conversationsLoading && conversations.length > 0 && !isMobile) {
+      const firstConversation = conversations[0];
+      setSelectedConversationId(firstConversation.id);
+      setActiveConversation(firstConversation.id);
+      setPartner(firstConversation.partner);
+      console.log('Auto-selecting first conversation:', firstConversation.id);
+    }
+  }, [conversations, selectedConversationId, conversationsLoading, setActiveConversation, isMobile]);
   
   // Select a conversation from the list
   const handleSelectConversation = (conversationId) => {
+    // Safety check
+    if (!conversationId) {
+      console.error('Attempted to select conversation with null ID');
+      return;
+    }
+    
+    console.log('Selecting conversation:', conversationId);
+    
     const conversation = conversations.find(c => c.id === conversationId);
     
     if (!conversation) {
@@ -170,9 +204,21 @@ function DirectMessagesPage() {
       return;
     }
     
+    // Properly set both the selected ID and the partner from the same conversation object
+    // to ensure they stay in sync
+    console.log('Found conversation to select:', conversation);
     setSelectedConversationId(conversationId);
     setActiveConversation(conversationId);
-    setPartner(conversation.partner);
+    
+    // Make sure we have the partner data
+    if (!conversation.partner) {
+      console.error('Selected conversation has no partner data:', conversation);
+    } else {
+      // Set the partner explicitly from the conversation
+      setPartner(conversation.partner);
+      console.log('Setting partner to:', conversation.partner);
+    }
+    
     setShowChat(true);
     setDrawerOpen(false);
     
@@ -193,9 +239,18 @@ function DirectMessagesPage() {
   
   // Handle new conversation button
   const handleNewConversation = () => {
-    // This would open a modal or navigate to a page to select a user
-    // For now, let's just navigate to the dashboard
-    navigate('/dashboard');
+    setNewChatDialogOpen(true);
+  };
+
+  const handleStartNewChat = async () => {
+    if (!newChatUserId.trim()) {
+      return;
+    }
+
+    // Close dialog and navigate to start the conversation
+    setNewChatDialogOpen(false);
+    setNewChatUserId('');
+    navigate(`/messages/${newChatUserId.trim()}`);
   };
   
   // Responsive layout setup
@@ -205,25 +260,31 @@ function DirectMessagesPage() {
       {showChat ? (
         // Chat view for mobile
         <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-          <AppBar position="static" color="default" elevation={0}>
-            <Toolbar>
-              <IconButton edge="start" onClick={handleBackToList} sx={{ mr: 1 }}>
-                <ArrowBackIcon />
-              </IconButton>
-              <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-                Messages
-              </Typography>
-              <IconButton edge="end" onClick={toggleDrawer}>
-                <ForumIcon />
-              </IconButton>
-            </Toolbar>
-          </AppBar>
+          <Box sx={{ p: 1, borderBottom: 1, borderColor: 'divider', display: 'flex', alignItems: 'center' }}>
+            <IconButton edge="start" onClick={handleBackToList} sx={{ mr: 1 }}>
+              <ArrowBackIcon />
+            </IconButton>
+            <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+              {partner ? partner.full_name : 'Messages'}
+            </Typography>
+            <IconButton edge="end" onClick={toggleDrawer}>
+              <ForumIcon />
+            </IconButton>
+          </Box>
           <Box sx={{ flexGrow: 1, overflow: 'hidden' }}>
-            <DirectMessageChat 
-              conversationId={selectedConversationId}
-              partner={partner}
-              onBack={handleBackToList}
-            />
+            {selectedConversationId && partner ? (
+              <DirectMessageChat 
+                conversationId={selectedConversationId}
+                partner={partner}
+                onBack={handleBackToList}
+              />
+            ) : (
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                <Typography variant="body1" color="text.secondary">
+                  Select a conversation to start messaging
+                </Typography>
+              </Box>
+            )}
           </Box>
           
           {/* Drawer for conversation list on mobile */}
@@ -249,27 +310,20 @@ function DirectMessagesPage() {
       ) : (
         // Conversation list view for mobile
         <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-          <AppBar position="static" color="default" elevation={0}>
-            <Toolbar>
-              <IconButton edge="start" component={Link} to="/dashboard" sx={{ mr: 1 }}>
-                <ArrowBackIcon />
-              </IconButton>
-              <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-                Messages
-              </Typography>
-            </Toolbar>
-          </AppBar>
+          <Box sx={{ p: 1, borderBottom: 1, borderColor: 'divider', display: 'flex', alignItems: 'center' }}>
+            <IconButton edge="start" component={Link} to="/dashboard" sx={{ mr: 1 }}>
+              <ArrowBackIcon />
+            </IconButton>
+            <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+              Messages
+            </Typography>
+            <IconButton edge="end" onClick={handleNewConversation}>
+              <AddIcon />
+            </IconButton>
+          </Box>
           <Box sx={{ flexGrow: 1, overflow: 'hidden' }}>
             <DirectMessagesList onSelectConversation={handleSelectConversation} />
           </Box>
-          <Fab 
-            color="primary" 
-            aria-label="new message" 
-            onClick={handleNewConversation}
-            sx={{ position: 'absolute', bottom: 16, right: 16 }}
-          >
-            <AddIcon />
-          </Fab>
         </Box>
       )}
     </>
@@ -307,11 +361,36 @@ function DirectMessagesPage() {
         
         {/* Main chat area */}
         <Grid item xs={12} sm={isTablet ? 8 : 9} sx={{ height: '100%' }}>
-          <DirectMessageChat 
-            conversationId={selectedConversationId}
-            partner={partner}
-            onBack={handleBackToList}
-          />
+          {selectedConversationId && partner ? (
+            <DirectMessageChat 
+              key={selectedConversationId} // Add key to ensure re-mounting when changing conversations
+              conversationId={selectedConversationId}
+              partner={partner}
+              onBack={handleBackToList}
+            />
+          ) : (
+            <Box 
+              sx={{ 
+                display: 'flex', 
+                flexDirection: 'column', 
+                alignItems: 'center', 
+                justifyContent: 'center', 
+                height: '100%', 
+                p: 3
+              }}
+            >
+              <Typography variant="h6" sx={{ mb: 2 }}>
+                Select a conversation or start a new one
+              </Typography>
+              <Button
+                variant="contained"
+                startIcon={<PersonAddIcon />}
+                onClick={handleNewConversation}
+              >
+                New Conversation
+              </Button>
+            </Box>
+          )}
         </Grid>
       </Grid>
     </Paper>
@@ -365,6 +444,29 @@ function DirectMessagesPage() {
           {renderDesktopLayout()}
         </Container>
       )}
+
+      {/* New Chat Dialog */}
+      <Dialog open={newChatDialogOpen} onClose={() => setNewChatDialogOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Start New Conversation</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="User ID"
+            fullWidth
+            variant="outlined"
+            value={newChatUserId}
+            onChange={(e) => setNewChatUserId(e.target.value)}
+            helperText="Enter the ID of the user you want to message"
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setNewChatDialogOpen(false)}>Cancel</Button>
+          <Button onClick={handleStartNewChat} variant="contained" color="primary">
+            Start Chat
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

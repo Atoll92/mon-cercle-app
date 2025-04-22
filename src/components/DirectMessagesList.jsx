@@ -57,6 +57,15 @@ function DirectMessagesList({ onSelectConversation }) {
     setAnchorEl(null);
     setSelectedConversation(null);
   };
+
+  // Determine online status in a stable way
+//   const getIsOnline = (partnerId) => {
+//     if (!partnerId) return tru;
+    
+//     // Use a deterministic approach based on user ID to keep the status consistent
+//     // In a real app, you would implement actual presence detection
+//     return partnerId.charCodeAt(0) % 3 === 0;
+//   };
   
   // Format timestamp for last message
   const formatTime = (timestamp) => {
@@ -219,7 +228,7 @@ function DirectMessagesList({ onSelectConversation }) {
             {filteredConversations.map((conversation) => {
               const partner = conversation.partner || {};
               const lastMessage = conversation.last_message;
-              const isOnline = Math.random() > 0.7; // Simulated online status
+            //   const isOnline = getIsOnline(partner.id); // Stable online status
               
               return (
                 <React.Fragment key={conversation.id}>
@@ -239,11 +248,7 @@ function DirectMessagesList({ onSelectConversation }) {
                       <Badge
                         overlap="circular"
                         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-                        badgeContent={
-                          isOnline ? 
-                            <StatusOnlineIcon sx={{ fontSize: 10, color: 'success.main' }} /> : 
-                            null
-                        }
+                    
                       >
                         <Badge
                           overlap="circular"

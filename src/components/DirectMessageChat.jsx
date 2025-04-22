@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '../context/authcontext';
 import { useDirectMessages } from '../context/directMessagesContext';
 import { getConversationMessages, sendDirectMessage, markMessagesAsRead } from '../api/directMessages';
@@ -36,10 +36,28 @@ function DirectMessageChat({ conversationId, partner, onBack }) {
   const messagesEndRef = useRef(null);
   const messageContainerRef = useRef(null);
   const lastMessageDateRef = useRef(null);
+  const channelRef = useRef(null);
+  const fetchingRef = useRef(false);
+  const lastFetchedConversationId = useRef(null);
+  
+  // Set a stable online status based on the partner's ID
+  useEffect(() => {
+    if (!partner || !partner.id) return;
+    
+    // Use a deterministic approach based on user ID
+    const isOnline = partner.id.charCodeAt(0) % 2 === 0;
+    setPartnerStatus(isOnline ? 'online' : 'offline');
+  }, [partner]);
   
   // Subscription for real-time messages
   useEffect(() => {
     if (!conversationId) return;
+    
+    // Clean up previous subscription
+    if (channelRef.current) {
+      supabase.removeChannel(channelRef.current);
+      channelRef.current = null;
+    }
     
     const channel = supabase.channel(`conversation-${conversationId}`);
     
@@ -94,39 +112,46 @@ function DirectMessageChat({ conversationId, partner, onBack }) {
       })
       .subscribe();
       
+    channelRef.current = channel;
+      
     return () => {
       supabase.removeChannel(channel);
+      channelRef.current = null;
     };
-  }, [conversationId, user?.id, markConversationAsRead, updateConversationWithMessage, markMessagesAsRead]);
+  }, [conversationId, user?.id, markConversationAsRead, updateConversationWithMessage]);
   
   // Fetch messages when conversation changes
   useEffect(() => {
+    // Skip if no conversation ID or already fetching or same conversation
+    if (!conversationId || fetchingRef.current || conversationId === lastFetchedConversationId.current) {
+      return;
+    }
+    
     const fetchMessages = async () => {
-      if (!conversationId) return;
-      
       try {
+        fetchingRef.current = true;
         setLoading(true);
         setError(null);
         
+        console.log(`Fetching messages for conversation: ${conversationId}`);
         const { messages: fetchedMessages, error } = await getConversationMessages(conversationId);
         
         if (error) throw error;
         
         setMessages(fetchedMessages);
+        lastFetchedConversationId.current = conversationId;
         
         // Mark messages as read
         if (user?.id) {
           await markMessagesAsRead(conversationId, user.id);
           markConversationAsRead(conversationId);
         }
-
-        // Simulate partner status (this would be replaced with actual presence logic)
-        setPartnerStatus(Math.random() > 0.5 ? 'online' : 'offline');
       } catch (err) {
         console.error('Error fetching messages:', err);
         setError('Failed to load messages');
       } finally {
         setLoading(false);
+        fetchingRef.current = false;
       }
     };
     
