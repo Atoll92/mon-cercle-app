@@ -331,68 +331,82 @@ function DirectMessagesPage() {
   
   // Desktop/tablet responsive layout
   const renderDesktopLayout = () => (
-    <Paper sx={{ overflow: 'hidden', height: '80vh', display: 'flex' }}>
-      <Grid container sx={{ height: '100%' }}>
-        {/* Sidebar with conversation list - always visible on desktop */}
-        <Grid 
-          item 
-          xs={12} 
-          sm={isTablet ? 4 : 3} 
-          sx={{ 
-            borderRight: 1, 
-            borderColor: 'divider',
-            height: '100%',
-            display: 'flex',
-            flexDirection: 'column'
-          }}
-        >
-          <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider', display: 'flex', alignItems: 'center' }}>
-            <Typography variant="h6" sx={{ flexGrow: 1 }}>
-              Conversations
+    <Paper sx={{ 
+      overflow: 'hidden', 
+      height: '80vh', 
+      display: 'flex', 
+      width: '100%' 
+    }}>
+      {/* Sidebar with conversation list */}
+      <Box 
+        sx={{ 
+          // width: isTablet ? '30%' : '25%',
+          width: `max(250px, ${isTablet ? '30%' : '25%'})`,
+          minWidth: `max(250px, ${isTablet ? '30%' : '25%'})`,
+          borderRight: 1, 
+          borderColor: 'divider',
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column'
+        }}
+      >
+        <Box sx={{ 
+          p: 2, 
+          borderBottom: 1, 
+          borderColor: 'divider', 
+          display: 'flex', 
+          alignItems: 'center' 
+        }}>
+          <Typography variant="h6" sx={{ flexGrow: 1 }}>
+            Conversations
+          </Typography>
+          <IconButton size="small" onClick={handleNewConversation}>
+            <AddIcon />
+          </IconButton>
+        </Box>
+        <Box sx={{ flexGrow: 1, overflow: 'auto' }}>
+          <DirectMessagesList onSelectConversation={handleSelectConversation} />
+        </Box>
+      </Box>
+      
+      {/* Main chat area */}
+      <Box sx={{ 
+        flexGrow: 1, 
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column'
+      }}>
+        {selectedConversationId && partner ? (
+          <DirectMessageChat 
+            key={selectedConversationId}
+            conversationId={selectedConversationId}
+            partner={partner}
+            onBack={handleBackToList}
+          />
+        ) : (
+          <Box 
+            sx={{ 
+              display: 'flex', 
+              flexDirection: 'column', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              height: '100%', 
+              p: 3
+            }}
+          >
+            <Typography variant="h6" sx={{ mb: 2 }}>
+              Select a conversation or start a new one
             </Typography>
-            <IconButton size="small" onClick={handleNewConversation}>
-              <AddIcon />
-            </IconButton>
-          </Box>
-          <Box sx={{ flexGrow: 1, overflow: 'hidden' }}>
-            <DirectMessagesList onSelectConversation={handleSelectConversation} />
-          </Box>
-        </Grid>
-        
-        {/* Main chat area */}
-        <Grid item xs={12} sm={isTablet ? 8 : 9} sx={{ height: '100%' }}>
-          {selectedConversationId && partner ? (
-            <DirectMessageChat 
-              key={selectedConversationId} // Add key to ensure re-mounting when changing conversations
-              conversationId={selectedConversationId}
-              partner={partner}
-              onBack={handleBackToList}
-            />
-          ) : (
-            <Box 
-              sx={{ 
-                display: 'flex', 
-                flexDirection: 'column', 
-                alignItems: 'center', 
-                justifyContent: 'center', 
-                height: '100%', 
-                p: 3
-              }}
+            <Button
+              variant="contained"
+              startIcon={<PersonAddIcon />}
+              onClick={handleNewConversation}
             >
-              <Typography variant="h6" sx={{ mb: 2 }}>
-                Select a conversation or start a new one
-              </Typography>
-              <Button
-                variant="contained"
-                startIcon={<PersonAddIcon />}
-                onClick={handleNewConversation}
-              >
-                New Conversation
-              </Button>
-            </Box>
-          )}
-        </Grid>
-      </Grid>
+              New Conversation
+            </Button>
+          </Box>
+        )}
+      </Box>
     </Paper>
   );
   
