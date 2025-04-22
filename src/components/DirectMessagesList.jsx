@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDirectMessages } from '../context/directMessagesContext';
 import { useAuth } from '../context/authcontext';
 import {
@@ -14,17 +14,104 @@ import {
   TextField,
   InputAdornment,
   IconButton,
-  CircularProgress
+  CircularProgress,
+  Button,
+  Paper,
+  Menu,
+  MenuItem,
+  ListItemIcon,
+  ListItemButton
 } from '@mui/material';
 import {
   Search as SearchIcon,
-  Message as MessageIcon
+  Message as MessageIcon,
+  MoreVert as MoreVertIcon,
+  Delete as DeleteIcon,
+  PersonAdd as PersonAddIcon,
+  FilterList as FilterListIcon,
+  CircleOutlined as StatusOfflineIcon,
+  Circle as StatusOnlineIcon,
+  Archive as ArchiveIcon
 } from '@mui/icons-material';
 
 function DirectMessagesList({ onSelectConversation }) {
-  const { conversations, loading, error } = useDirectMessages();
+  const { conversations, loading, error, refreshConversations } = useDirectMessages();
   const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [selectedConversation, setSelectedConversation] = useState(null);
+  const [quickFilter, setQuickFilter] = useState('all'); // all, unread, recent
+  
+  useEffect(() => {
+    // Refresh conversations when component mounts
+    refreshConversations();
+  }, [refreshConversations]);
+  
+  const handleMenuClick = (event, conversation) => {
+    event.stopPropagation();
+    setAnchorEl(event.currentTarget);
+    setSelectedConversation(conversation);
+  };
+  
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+    setSelectedConversation(null);
+  };
+  
+  // Format timestamp for last message
+  const formatTime = (timestamp) => {
+    if (!timestamp) return '';
+    
+    const date = new Date(timestamp);
+    const now = new Date();
+    const yesterday = new Date(now);
+    yesterday.setDate(yesterday.getDate() - 1);
+    
+    const isToday = date.toDateString() === now.toDateString();
+    const isYesterday = date.toDateString() === yesterday.toDateString();
+    
+    if (isToday) {
+      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    } else if (isYesterday) {
+      return 'Yesterday';
+    } else if (now.getFullYear() === date.getFullYear()) {
+      return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+    } else {
+      return date.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+  };
+
+  // Apply filters to conversations
+  const getFilteredConversations = () => {
+    // First filter by search term
+    let filtered = conversations.filter(conversation => {
+      const partnerName = conversation.partner?.full_name || '';
+      const lastMessageContent = conversation.last_message?.content || '';
+      
+      return partnerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+             lastMessageContent.toLowerCase().includes(searchTerm.toLowerCase());
+    });
+    
+    // Then apply quick filters
+    if (quickFilter === 'unread') {
+      filtered = filtered.filter(c => c.unread_count > 0);
+    } else if (quickFilter === 'recent') {
+      // Sort by most recent first (already happens by default, but being explicit)
+      filtered.sort((a, b) => {
+        const aTime = a.last_message?.created_at || a.last_message_at;
+        const bTime = b.last_message?.created_at || b.last_message_at;
+        return new Date(bTime) - new Date(aTime);
+      });
+    }
+    
+    return filtered;
+  };
+  
+  const filteredConversations = getFilteredConversations();
+  
+  const handleFilterChange = (filter) => {
+    setQuickFilter(filter);
+  };
   
   if (loading) {
     return (
@@ -38,39 +125,25 @@ function DirectMessagesList({ onSelectConversation }) {
     return (
       <Box sx={{ p: 2, color: 'error.main' }}>
         <Typography variant="body2">{error}</Typography>
+        <Button 
+          variant="outlined" 
+          size="small" 
+          onClick={refreshConversations}
+          sx={{ mt: 1 }}
+        >
+          Retry
+        </Button>
       </Box>
     );
   }
   
-  // Format timestamp for last message
-  const formatTime = (timestamp) => {
-    if (!timestamp) return '';
-    
-    const date = new Date(timestamp);
-    const now = new Date();
-    const isToday = date.getDate() === now.getDate() && 
-                    date.getMonth() === now.getMonth() && 
-                    date.getFullYear() === now.getFullYear();
-                    
-    if (isToday) {
-      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    }
-    
-    return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
-  };
-  
-  // Filter conversations by search term
-  const filteredConversations = conversations.filter(conversation => {
-    const partnerName = conversation.partner?.full_name || '';
-    return partnerName.toLowerCase().includes(searchTerm.toLowerCase());
-  });
-  
   return (
-    <Box sx={{ width: '100%', bgcolor: 'background.paper' }}>
+    <Box sx={{ width: '100%', bgcolor: 'background.paper', display: 'flex', flexDirection: 'column', height: '100%' }}>
+      {/* Search and filter bar */}
       <Box sx={{ p: 2, pb: 1 }}>
         <TextField
           fullWidth
-          placeholder="Search conversations"
+          placeholder="Search messages"
           variant="outlined"
           size="small"
           value={searchTerm}
@@ -82,99 +155,201 @@ function DirectMessagesList({ onSelectConversation }) {
               </InputAdornment>
             ),
           }}
+          sx={{ mb: 1 }}
         />
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+          <Button 
+            variant={quickFilter === 'all' ? "contained" : "text"} 
+            size="small"
+            onClick={() => handleFilterChange('all')}
+            sx={{ minWidth: 0, px: 1 }}
+          >
+            All
+          </Button>
+          <Button 
+            variant={quickFilter === 'unread' ? "contained" : "text"} 
+            size="small"
+            onClick={() => handleFilterChange('unread')}
+            sx={{ minWidth: 0, px: 1 }}
+          >
+            Unread
+          </Button>
+          <Button 
+            variant={quickFilter === 'recent' ? "contained" : "text"}
+            size="small"
+            onClick={() => handleFilterChange('recent')}
+            sx={{ minWidth: 0, px: 1 }}
+          >
+            Recent
+          </Button>
+          <IconButton size="small">
+            <FilterListIcon fontSize="small" />
+          </IconButton>
+        </Box>
       </Box>
       
-      {filteredConversations.length === 0 ? (
-        <Box sx={{ p: 3, textAlign: 'center' }}>
-          <MessageIcon sx={{ fontSize: 40, color: 'text.secondary', mb: 1 }} />
-          <Typography variant="body2" color="text.secondary">
-            No conversations yet
-          </Typography>
-        </Box>
-      ) : (
-        <List sx={{ width: '100%', bgcolor: 'background.paper', pt: 0 }}>
-          {filteredConversations.map((conversation) => {
-            const partner = conversation.partner || {};
-            const lastMessage = conversation.last_message;
-            
-            return (
-              <React.Fragment key={conversation.id}>
-                <ListItem 
-                  alignItems="flex-start" 
-                  button
-                  onClick={() => onSelectConversation(conversation.id)}
-                  sx={{ 
-                    backgroundColor: conversation.unread_count > 0 ? 'rgba(25, 118, 210, 0.08)' : 'transparent',
-                    '&:hover': {
-                      backgroundColor: 'rgba(0, 0, 0, 0.04)',
-                    }
-                  }}
-                >
-                  <ListItemAvatar>
-                    <Badge
-                      overlap="circular"
-                      badgeContent={conversation.unread_count > 0 ? conversation.unread_count : 0}
-                      color="primary"
-                      invisible={conversation.unread_count === 0}
-                    >
-                      <Avatar 
-                        alt={partner.full_name} 
-                        src={partner.profile_picture_url}
-                        sx={{ width: 40, height: 40 }}
+      <Divider />
+      
+      {/* Conversation list */}
+      <Box sx={{ flexGrow: 1, overflow: 'auto' }}>
+        {filteredConversations.length === 0 ? (
+          <Box sx={{ p: 3, textAlign: 'center' }}>
+            <MessageIcon sx={{ fontSize: 40, color: 'text.secondary', mb: 1 }} />
+            <Typography variant="body2" color="text.secondary">
+              {searchTerm || quickFilter !== 'all' ? 
+                'No conversations match your filters' : 
+                'No conversations yet'}
+            </Typography>
+            {(searchTerm || quickFilter !== 'all') && (
+              <Button 
+                variant="text" 
+                size="small" 
+                onClick={() => {
+                  setSearchTerm('');
+                  setQuickFilter('all');
+                }}
+                sx={{ mt: 1 }}
+              >
+                Clear filters
+              </Button>
+            )}
+          </Box>
+        ) : (
+          <List sx={{ width: '100%', bgcolor: 'background.paper', pt: 0 }}>
+            {filteredConversations.map((conversation) => {
+              const partner = conversation.partner || {};
+              const lastMessage = conversation.last_message;
+              const isOnline = Math.random() > 0.7; // Simulated online status
+              
+              return (
+                <React.Fragment key={conversation.id}>
+                  <ListItemButton 
+                    alignItems="flex-start" 
+                    onClick={() => onSelectConversation(conversation.id)}
+                    sx={{ 
+                      py: 1.5,
+                      px: 2,
+                      backgroundColor: conversation.unread_count > 0 ? 'rgba(25, 118, 210, 0.08)' : 'transparent',
+                      '&:hover': {
+                        backgroundColor: 'rgba(0, 0, 0, 0.04)',
+                      }
+                    }}
+                  >
+                    <ListItemAvatar>
+                      <Badge
+                        overlap="circular"
+                        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                        badgeContent={
+                          isOnline ? 
+                            <StatusOnlineIcon sx={{ fontSize: 10, color: 'success.main' }} /> : 
+                            null
+                        }
                       >
-                        {partner.full_name ? partner.full_name.charAt(0).toUpperCase() : 'U'}
-                      </Avatar>
-                    </Badge>
-                  </ListItemAvatar>
-                  <ListItemText
-                    primary={
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <Typography
-                          variant="subtitle2"
-                          fontWeight={conversation.unread_count > 0 ? 600 : 400}
+                        <Badge
+                          overlap="circular"
+                          badgeContent={conversation.unread_count > 0 ? conversation.unread_count : 0}
+                          color="primary"
+                          invisible={conversation.unread_count === 0}
                         >
-                          {partner.full_name || 'Unknown User'}
-                        </Typography>
-                        {lastMessage && (
-                          <Typography variant="caption" color="text.secondary">
-                            {formatTime(lastMessage.created_at)}
+                          <Avatar 
+                            alt={partner.full_name} 
+                            src={partner.profile_picture_url}
+                            sx={{ width: 48, height: 48 }}
+                          >
+                            {partner.full_name ? partner.full_name.charAt(0).toUpperCase() : 'U'}
+                          </Avatar>
+                        </Badge>
+                      </Badge>
+                    </ListItemAvatar>
+                    <ListItemText
+                      primary={
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
+                          <Typography
+                            variant="subtitle2"
+                            fontWeight={conversation.unread_count > 0 ? 600 : 400}
+                            noWrap
+                            sx={{ maxWidth: 'calc(100% - 40px)' }}
+                          >
+                            {partner.full_name || 'Unknown User'}
                           </Typography>
-                        )}
-                      </Box>
-                    }
-                    secondary={
-                      <Typography
-                        variant="body2"
-                        sx={{
-                          fontWeight: conversation.unread_count > 0 ? 500 : 400,
-                          color: conversation.unread_count > 0 ? 'text.primary' : 'text.secondary',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          display: '-webkit-box',
-                          WebkitLineClamp: 1,
-                          WebkitBoxOrient: 'vertical',
-                        }}
-                      >
-                        {lastMessage ? (
-                          lastMessage.sender_id === user?.id ? (
-                            <span>You: {lastMessage.content}</span>
+                          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                            {lastMessage && (
+                              <Typography variant="caption" color="text.secondary">
+                                {formatTime(lastMessage.created_at)}
+                              </Typography>
+                            )}
+                            <IconButton 
+                              size="small" 
+                              onClick={(e) => handleMenuClick(e, conversation)}
+                              sx={{ ml: 0.5, p: 0.5 }}
+                            >
+                              <MoreVertIcon fontSize="small" />
+                            </IconButton>
+                          </Box>
+                        </Box>
+                      }
+                      secondary={
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            display: 'inline',
+                            fontWeight: conversation.unread_count > 0 ? 500 : 400,
+                            color: conversation.unread_count > 0 ? 'text.primary' : 'text.secondary',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            display: '-webkit-box',
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: 'vertical',
+                            fontSize: '0.875rem',
+                            lineHeight: 1.4
+                          }}
+                        >
+                          {lastMessage ? (
+                            lastMessage.sender_id === user?.id ? (
+                              <Box component="span" sx={{ display: 'flex', alignItems: 'center' }}>
+                                <Typography variant="caption" sx={{ mr: 0.5, color: 'inherit' }}>
+                                  You:
+                                </Typography>
+                                {lastMessage.content}
+                              </Box>
+                            ) : (
+                              lastMessage.content
+                            )
                           ) : (
-                            lastMessage.content
-                          )
-                        ) : (
-                          <span>No messages yet</span>
-                        )}
-                      </Typography>
-                    }
-                  />
-                </ListItem>
-                <Divider component="li" />
-              </React.Fragment>
-            );
-          })}
-        </List>
-      )}
+                            <span>Start a conversation</span>
+                          )}
+                        </Typography>
+                      }
+                      primaryTypographyProps={{ noWrap: true }}
+                    />
+                  </ListItemButton>
+                  <Divider component="li" variant="inset" />
+                </React.Fragment>
+              );
+            })}
+          </List>
+        )}
+      </Box>
+      
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleMenuClose}
+        onClick={handleMenuClose}
+      >
+        <MenuItem>
+          <ListItemIcon>
+            <ArchiveIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Archive</ListItemText>
+        </MenuItem>
+        <MenuItem>
+          <ListItemIcon>
+            <DeleteIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Delete</ListItemText>
+        </MenuItem>
+      </Menu>
     </Box>
   );
 }

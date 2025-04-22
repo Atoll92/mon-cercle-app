@@ -16,12 +16,18 @@ import {
   useMediaQuery,
   IconButton,
   CircularProgress,
-  Alert
+  Alert,
+  Fab,
+  Drawer,
+  AppBar,
+  Toolbar
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import {
   ArrowBack as ArrowBackIcon,
-  Forum as ForumIcon
+  Forum as ForumIcon,
+  Add as AddIcon,
+  Close as CloseIcon
 } from '@mui/icons-material';
 
 function DirectMessagesPage() {
@@ -30,6 +36,7 @@ function DirectMessagesPage() {
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isTablet = useMediaQuery(theme.breakpoints.down('md'));
   
   const { 
     conversations, 
@@ -44,6 +51,7 @@ function DirectMessagesPage() {
   const [showChat, setShowChat] = useState(!isMobile);
   const [initLoading, setInitLoading] = useState(false);
   const [initError, setInitError] = useState(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   
   // Use a ref to track if initialization has been attempted
   const initAttemptedRef = useRef(false);
@@ -166,6 +174,7 @@ function DirectMessagesPage() {
     setActiveConversation(conversationId);
     setPartner(conversation.partner);
     setShowChat(true);
+    setDrawerOpen(false);
     
     // Update URL if needed (optional)
     if (userId) {
@@ -177,76 +186,186 @@ function DirectMessagesPage() {
   const handleBackToList = () => {
     setShowChat(false);
   };
+
+  const toggleDrawer = () => {
+    setDrawerOpen(!drawerOpen);
+  };
   
-  return (
-    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-      <Paper sx={{ p: 2, mb: 3, display: 'flex', alignItems: 'center' }}>
-        <Button
-          component={Link}
-          to="/dashboard"
-          startIcon={<ArrowBackIcon />}
-          sx={{ mr: 2 }}
-        >
-          Dashboard
-        </Button>
-        <Typography variant="h5" component="h1">
-          Messages
-        </Typography>
-      </Paper>
-      
-      {initError && (
-        <Alert severity="error" sx={{ mb: 3 }}>
-          {initError}
-        </Alert>
-      )}
-      
-      {initLoading && (
-        <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
-          <CircularProgress size={24} />
-          <Typography variant="body2" sx={{ ml: 2 }}>
-            Initializing conversation...
-          </Typography>
+  // Handle new conversation button
+  const handleNewConversation = () => {
+    // This would open a modal or navigate to a page to select a user
+    // For now, let's just navigate to the dashboard
+    navigate('/dashboard');
+  };
+  
+  // Responsive layout setup
+  const renderMobileLayout = () => (
+    <>
+      {/* Mobile layout with sliding views */}
+      {showChat ? (
+        // Chat view for mobile
+        <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+          <AppBar position="static" color="default" elevation={0}>
+            <Toolbar>
+              <IconButton edge="start" onClick={handleBackToList} sx={{ mr: 1 }}>
+                <ArrowBackIcon />
+              </IconButton>
+              <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+                Messages
+              </Typography>
+              <IconButton edge="end" onClick={toggleDrawer}>
+                <ForumIcon />
+              </IconButton>
+            </Toolbar>
+          </AppBar>
+          <Box sx={{ flexGrow: 1, overflow: 'hidden' }}>
+            <DirectMessageChat 
+              conversationId={selectedConversationId}
+              partner={partner}
+              onBack={handleBackToList}
+            />
+          </Box>
+          
+          {/* Drawer for conversation list on mobile */}
+          <Drawer
+            anchor="right"
+            open={drawerOpen}
+            onClose={() => setDrawerOpen(false)}
+            PaperProps={{ sx: { width: '80%', maxWidth: 360 } }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', p: 2, borderBottom: 1, borderColor: 'divider' }}>
+              <Typography variant="h6" sx={{ flexGrow: 1 }}>
+                Conversations
+              </Typography>
+              <IconButton onClick={() => setDrawerOpen(false)}>
+                <CloseIcon />
+              </IconButton>
+            </Box>
+            <Box sx={{ height: 'calc(100% - 64px)', overflow: 'hidden' }}>
+              <DirectMessagesList onSelectConversation={handleSelectConversation} />
+            </Box>
+          </Drawer>
+        </Box>
+      ) : (
+        // Conversation list view for mobile
+        <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+          <AppBar position="static" color="default" elevation={0}>
+            <Toolbar>
+              <IconButton edge="start" component={Link} to="/dashboard" sx={{ mr: 1 }}>
+                <ArrowBackIcon />
+              </IconButton>
+              <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+                Messages
+              </Typography>
+            </Toolbar>
+          </AppBar>
+          <Box sx={{ flexGrow: 1, overflow: 'hidden' }}>
+            <DirectMessagesList onSelectConversation={handleSelectConversation} />
+          </Box>
+          <Fab 
+            color="primary" 
+            aria-label="new message" 
+            onClick={handleNewConversation}
+            sx={{ position: 'absolute', bottom: 16, right: 16 }}
+          >
+            <AddIcon />
+          </Fab>
         </Box>
       )}
-      
-      <Paper sx={{ overflow: 'hidden' }}>
-        <Grid container sx={{ height: '70vh' }}>
-          {/* Conversations List - Show only on desktop or when not viewing a chat on mobile */}
-          {(!isMobile || !showChat) && (
-            <Grid item xs={12} sm={4} sx={{ 
-              borderRight: { sm: 1 },
-              borderColor: { sm: 'divider' },
-              height: '100%'
-            }}>
-              <Box sx={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                p: 2,
-                borderBottom: 1,
-                borderColor: 'divider'
-              }}>
-                <ForumIcon sx={{ mr: 1 }} />
-                <Typography variant="h6">
-                  Conversations
-                </Typography>
-              </Box>
-              <DirectMessagesList onSelectConversation={handleSelectConversation} />
-            </Grid>
+    </>
+  );
+  
+  // Desktop/tablet responsive layout
+  const renderDesktopLayout = () => (
+    <Paper sx={{ overflow: 'hidden', height: '80vh', display: 'flex' }}>
+      <Grid container sx={{ height: '100%' }}>
+        {/* Sidebar with conversation list - always visible on desktop */}
+        <Grid 
+          item 
+          xs={12} 
+          sm={isTablet ? 4 : 3} 
+          sx={{ 
+            borderRight: 1, 
+            borderColor: 'divider',
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'column'
+          }}
+        >
+          <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider', display: 'flex', alignItems: 'center' }}>
+            <Typography variant="h6" sx={{ flexGrow: 1 }}>
+              Conversations
+            </Typography>
+            <IconButton size="small" onClick={handleNewConversation}>
+              <AddIcon />
+            </IconButton>
+          </Box>
+          <Box sx={{ flexGrow: 1, overflow: 'hidden' }}>
+            <DirectMessagesList onSelectConversation={handleSelectConversation} />
+          </Box>
+        </Grid>
+        
+        {/* Main chat area */}
+        <Grid item xs={12} sm={isTablet ? 8 : 9} sx={{ height: '100%' }}>
+          <DirectMessageChat 
+            conversationId={selectedConversationId}
+            partner={partner}
+            onBack={handleBackToList}
+          />
+        </Grid>
+      </Grid>
+    </Paper>
+  );
+  
+  return (
+    <Box sx={{ 
+      height: isMobile ? 'calc(100vh - 56px)' : undefined,  
+      display: 'flex', 
+      flexDirection: 'column',
+      bgcolor: '#f5f7f9'
+    }}>
+      {!isMobile && (
+        <Container maxWidth="xl" sx={{ mt: 4, mb: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+            <Button
+              component={Link}
+              to="/dashboard"
+              startIcon={<ArrowBackIcon />}
+              sx={{ mr: 2 }}
+              variant="text"
+            >
+              Dashboard
+            </Button>
+            <Typography variant="h5" component="h1">
+              Messages
+            </Typography>
+          </Box>
+          
+          {initError && (
+            <Alert severity="error" sx={{ mb: 3 }}>
+              {initError}
+            </Alert>
           )}
           
-          {/* Chat Window - Show only on desktop or when viewing a chat on mobile */}
-          {(!isMobile || showChat) && (
-            <Grid item xs={12} sm={8} sx={{ height: '100%', position: 'relative' }}>
-              <DirectMessageChat 
-                conversationId={selectedConversationId}
-                partner={partner}
-                onBack={handleBackToList}
-              />
-            </Grid>
+          {initLoading && (
+            <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
+              <CircularProgress size={24} />
+              <Typography variant="body2" sx={{ ml: 2 }}>
+                Initializing conversation...
+              </Typography>
+            </Box>
           )}
-        </Grid>
-      </Paper>
-    </Container>
+        </Container>
+      )}
+      
+      {isMobile ? (
+        renderMobileLayout()
+      ) : (
+        <Container maxWidth="xl" sx={{ mb: 4, flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+          {renderDesktopLayout()}
+        </Container>
+      )}
+    </Box>
   );
 }
 

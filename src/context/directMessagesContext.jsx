@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect, useContext } from 'react';
+import React, { createContext, useState, useEffect, useRef, useCallback, useContext } from 'react';
 import { useAuth } from './authcontext';
 import { supabase } from '../supabaseclient';
 import { getUserConversations } from '../api/directMessages';
@@ -21,8 +21,26 @@ export const DirectMessagesProvider = ({ children }) => {
   const [unreadTotal, setUnreadTotal] = useState(0);
   const [activeConversationId, setActiveConversationId] = useState(null);
   
-  // Fetch user's conversations
-  const fetchConversations = async () => {
+  // Use refs to prevent infinite loops
+  const fetchingRef = useRef(false);
+  const lastFetchRef = useRef(0);
+  const channelRef = useRef(null);
+  
+  // Memoized fetch function to prevent recreation on each render
+  const fetchConversations = useCallback(async (force = false) => {
+    // Prevent redundant fetches happening too close together
+    const now = Date.now();
+    if (!force && fetchingRef.current) {
+      console.log('Already fetching conversations, skipping redundant fetch');
+      return;
+    }
+    
+    // Don't fetch too frequently (throttle to once per second unless forced)
+    if (!force && now - lastFetchRef.current < 1000) {
+      console.log('Fetch throttled, too soon since last fetch');
+      return;
+    }
+    
     if (!user) {
       setConversations([]);
       setUnreadTotal(0);
@@ -31,12 +49,22 @@ export const DirectMessagesProvider = ({ children }) => {
     }
     
     try {
-      setLoading(true);
+      // Set fetching flag to true
+      fetchingRef.current = true;
+      lastFetchRef.current = now;
+      
+      if (loading) {
+        setLoading(true);
+      }
       setError(null);
+      
+      console.log('Fetching conversations for user:', user.id);
       
       const { conversations, error } = await getUserConversations(user.id);
       
       if (error) throw error;
+      
+      console.log(`Found ${conversations.length} conversations for user`);
       
       setConversations(conversations);
       
@@ -47,20 +75,28 @@ export const DirectMessagesProvider = ({ children }) => {
       console.error('Error fetching conversations:', err);
       setError('Failed to load your conversations');
     } finally {
+      fetchingRef.current = false;
       setLoading(false);
     }
-  };
+  }, [user, loading]);
   
   // Initial fetch and setup subscriptions
   useEffect(() => {
-    fetchConversations();
+    // Clean up previous subscription
+    if (channelRef.current) {
+      supabase.removeChannel(channelRef.current);
+      channelRef.current = null;
+    }
     
-    // Set up real-time subscription for new messages
+    fetchConversations(true);
+    
+    // Only set up realtime subscription if user is logged in
     if (user) {
-      // Listen for any new direct messages
-      const messagesChannel = supabase.channel('public:direct_messages');
+      // Set up a single channel with multiple subscriptions
+      const channel = supabase.channel('direct-messages-updates');
       
-      messagesChannel
+      // Listen for new direct messages
+      channel
         .on('postgres_changes', 
           { 
             event: 'INSERT', 
@@ -68,17 +104,23 @@ export const DirectMessagesProvider = ({ children }) => {
             table: 'direct_messages'
           }, 
           (payload) => {
-            console.log('New message received:', payload);
-            // Refresh conversations to update last message and unread count
-            fetchConversations();
+            console.log('New direct message:', payload);
+            
+            // Check if this message belongs to one of our conversations
+            if (conversations.some(c => c.id === payload.new.conversation_id)) {
+              // Instead of immediate fetch, we'll wait a bit and only do it if no other
+              // fetches have happened in the meantime
+              const fetchTimeout = setTimeout(() => {
+                if (Date.now() - lastFetchRef.current >= 1000) {
+                  fetchConversations();
+                }
+              }, 1000);
+              
+              return () => clearTimeout(fetchTimeout);
+            }
           }
         )
-        .subscribe();
-        
-      // Listen for new conversations
-      const conversationsChannel = supabase.channel('public:direct_conversations');
-      
-      conversationsChannel
+        // Listen for new conversations
         .on('postgres_changes', 
           { 
             event: 'INSERT', 
@@ -87,27 +129,33 @@ export const DirectMessagesProvider = ({ children }) => {
           }, 
           (payload) => {
             console.log('New conversation created:', payload);
-            // Refresh conversations
-            fetchConversations();
+            
+            // Check if user is part of this conversation
+            if (payload.new.participants && payload.new.participants.includes(user.id)) {
+              fetchConversations();
+            }
           }
         )
         .subscribe();
         
+      channelRef.current = channel;
+      
       return () => {
-        supabase.removeChannel(messagesChannel);
-        supabase.removeChannel(conversationsChannel);
+        // Cleanup subscription when component unmounts or user changes
+        supabase.removeChannel(channel);
+        channelRef.current = null;
       };
     }
-  }, [user]);
+  }, [user, fetchConversations]);
   
   // Get active conversation
-  const getActiveConversation = () => {
+  const getActiveConversation = useCallback(() => {
     if (!activeConversationId) return null;
     return conversations.find(conv => conv.id === activeConversationId) || null;
-  };
+  }, [activeConversationId, conversations]);
   
   // Update conversations list with a new message
-  const updateConversationWithMessage = (conversationId, message) => {
+  const updateConversationWithMessage = useCallback((conversationId, message) => {
     setConversations(prevConversations => {
       // Check if the conversation exists
       const existingConvIndex = prevConversations.findIndex(conv => conv.id === conversationId);
@@ -132,17 +180,17 @@ export const DirectMessagesProvider = ({ children }) => {
     });
     
     // Recalculate total unread
-    setTimeout(() => calculateUnreadTotal(), 0);
-  };
+    calculateUnreadTotal();
+  }, [user]);
   
   // Calculate total unread messages
-  const calculateUnreadTotal = () => {
+  const calculateUnreadTotal = useCallback(() => {
     const total = conversations.reduce((sum, conv) => sum + (conv.unread_count || 0), 0);
     setUnreadTotal(total);
-  };
+  }, [conversations]);
   
   // Add a new conversation to the list
-  const addConversation = (conversation) => {
+  const addConversation = useCallback((conversation) => {
     // Don't add if it's null or undefined
     if (!conversation) return;
     
@@ -161,11 +209,11 @@ export const DirectMessagesProvider = ({ children }) => {
     });
     
     // Recalculate unread total
-    setTimeout(() => calculateUnreadTotal(), 0);
-  };
+    calculateUnreadTotal();
+  }, [calculateUnreadTotal]);
   
   // Mark conversation as read
-  const markConversationAsRead = (conversationId) => {
+  const markConversationAsRead = useCallback((conversationId) => {
     setConversations(prevConversations => 
       prevConversations.map(conv => {
         if (conv.id === conversationId) {
@@ -179,28 +227,49 @@ export const DirectMessagesProvider = ({ children }) => {
     );
     
     // Recalculate total unread
-    setTimeout(() => calculateUnreadTotal(), 0);
-  };
+    calculateUnreadTotal();
+  }, [calculateUnreadTotal]);
   
-  // Refresh conversations manually
-  const refreshConversations = () => {
-    fetchConversations();
-  };
+  // Manual refresh function with debounce
+  const refreshConversations = useCallback(() => {
+    // Only refresh if it's been at least 1 second since the last fetch
+    const now = Date.now();
+    if (now - lastFetchRef.current < 1000) {
+      console.log('Refresh throttled, too soon since last fetch');
+      return;
+    }
+    
+    fetchConversations(true);
+  }, [fetchConversations]);
+  
+  // Memoized context value to prevent unnecessary renders
+  const contextValue = React.useMemo(() => ({
+    conversations,
+    loading,
+    error,
+    unreadTotal,
+    activeConversationId,
+    activeConversation: getActiveConversation(),
+    setActiveConversation: setActiveConversationId,
+    updateConversationWithMessage,
+    addConversation,
+    markConversationAsRead,
+    refreshConversations
+  }), [
+    conversations, 
+    loading, 
+    error, 
+    unreadTotal, 
+    activeConversationId, 
+    getActiveConversation,
+    updateConversationWithMessage,
+    addConversation,
+    markConversationAsRead,
+    refreshConversations
+  ]);
   
   return (
-    <DirectMessagesContext.Provider value={{
-      conversations,
-      loading,
-      error,
-      unreadTotal,
-      activeConversationId,
-      activeConversation: getActiveConversation(),
-      setActiveConversation: setActiveConversationId,
-      updateConversationWithMessage,
-      addConversation,
-      markConversationAsRead,
-      refreshConversations
-    }}>
+    <DirectMessagesContext.Provider value={contextValue}>
       {children}
     </DirectMessagesContext.Provider>
   );
