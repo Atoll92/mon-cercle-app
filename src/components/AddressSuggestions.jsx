@@ -1,251 +1,175 @@
-// src/components/EventsMap.jsx
-import React, { useEffect, useRef, useState } from 'react';
-import { Box, Typography, Paper, CircularProgress } from '@mui/material';
-import 'mapbox-gl/dist/mapbox-gl.css';
+// src/components/AddressSuggestions.jsx
+import React, { useState, useEffect, useRef } from 'react';
+import {
+  TextField,
+  Autocomplete,
+  CircularProgress,
+  Box,
+  Typography,
+  ListItem,
+  ListItemText
+} from '@mui/material';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
+import debounce from 'lodash/debounce';
+import EventsMap from './EventsMap'; // Import the fixed EventsMap component
 
-// Use the provided token and custom style
 const MAPBOX_TOKEN = 'pk.eyJ1IjoiZGdjb2Jvc3MiLCJhIjoiY2xzY2JkNTdqMGJzbDJrbzF2Zm84aWxwZCJ9.b9GP9FrGHsVquJf7ubWfKQ';
-const MAPBOX_STYLE = 'mapbox://styles/dgcoboss/cm51343rf009u01s943jx2mz2';
 
-export default function EventsMap({ events, onEventSelect }) {
-  const mapContainerRef = useRef(null);
-  const mapRef = useRef(null);
-  const markersRef = useRef([]);
-  const [loading, setLoading] = useState(true);
-  const [mapError, setMapError] = useState(null);
+export default function AddressSuggestions({ value, onChange, label = "Location", placeholder = "Enter an address", required = false, fullWidth = true, autoFocus = false }) {
+  const [inputValue, setInputValue] = useState('');
+  const [options, setOptions] = useState([]);
+  const [loading, setLoading] = useState(false);
+  
+  // This function fetches address suggestions from Mapbox API
+  const fetchSuggestions = async (searchText) => {
+    if (searchText.length < 3) {
+      setOptions([]);
+      return;
+    }
+    
+    setLoading(true);
+    
+    try {
+      const endpoint = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(searchText)}.json`;
+      const url = `${endpoint}?access_token=${MAPBOX_TOKEN}&autocomplete=true&types=address,place,locality,neighborhood`;
+      
+      const response = await fetch(url);
+      const data = await response.json();
+      
+      if (data && data.features) {
+        const suggestions = data.features.map(feature => ({
+          place_name: feature.place_name,
+          center: feature.center, // [longitude, latitude]
+          id: feature.id,
+          text: feature.text,
+          place_type: feature.place_type[0]
+        }));
+        
+        setOptions(suggestions);
+      }
+    } catch (error) {
+      console.error('Error fetching address suggestions:', error);
+      setOptions([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  // Debounce the API calls to prevent too many requests
+  const debouncedFetchSuggestions = useRef(
+    debounce((text) => {
+      fetchSuggestions(text);
+    }, 300)
+  ).current;
   
   useEffect(() => {
-    const loadMapbox = async () => {
-      try {
-        // Dynamically import mapbox-gl
-        const mapboxgl = (await import('mapbox-gl')).default;
-        mapboxgl.accessToken = MAPBOX_TOKEN;
-        
-        if (!mapContainerRef.current) return;
-        
-        // Initialize map with custom style
-        mapRef.current = new mapboxgl.Map({
-          container: mapContainerRef.current,
-          style: MAPBOX_STYLE, // Use the custom style
-          center: [0, 20], // Default center (will pan to events)
-          zoom: 1
-        });
-        
-        // Add navigation controls
-        mapRef.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
-        
-        // Add geolocate control
-        const geolocate = new mapboxgl.GeolocateControl({
-          positionOptions: {
-            enableHighAccuracy: true
-          },
-          trackUserLocation: true,
-          showUserHeading: true
-        });
-        mapRef.current.addControl(geolocate, 'top-right');
-        
-        // Set up event listeners
-        mapRef.current.on('load', () => {
-          setLoading(false);
-          // Try to geolocate user
-          setTimeout(() => {
-            if (mapRef.current) {
-              geolocate.trigger();
-            }
-          }, 1000);
-        });
-        
-        // Add resize observer to ensure map fits its container
-        const resizeObserver = new ResizeObserver(() => {
-          if (mapRef.current) {
-            mapRef.current.resize();
-          }
-        });
-        
-        if (mapContainerRef.current) {
-          resizeObserver.observe(mapContainerRef.current);
-        }
-        
-        return () => {
-          if (mapContainerRef.current) {
-            resizeObserver.unobserve(mapContainerRef.current);
-          }
-        };
-      } catch (error) {
-        console.error('Error loading map:', error);
-        setMapError('Failed to load map. Please try again later.');
-        setLoading(false);
-      }
-    };
-    
-    loadMapbox();
+    if (inputValue.length > 2) {
+      debouncedFetchSuggestions(inputValue);
+    }
     
     return () => {
-      if (mapRef.current) {
-        mapRef.current.remove();
-        mapRef.current = null;
-      }
+      debouncedFetchSuggestions.cancel();
     };
-  }, []);
-  
-  // Add event markers whenever events change
+  }, [inputValue, debouncedFetchSuggestions]);
+
+  // Initialize inputValue from the value prop if it's a string
   useEffect(() => {
-    const addEventMarkers = async () => {
-      if (!mapRef.current || !events || events.length === 0) return;
-      
-      try {
-        // Remove existing markers
-        markersRef.current.forEach(marker => marker.remove());
-        markersRef.current = [];
-        
-        const mapboxgl = (await import('mapbox-gl')).default;
-        const eventsWithCoordinates = events.filter(event => 
-          event.coordinates && 
-          event.coordinates.longitude && 
-          event.coordinates.latitude
-        );
-        
-        if (eventsWithCoordinates.length === 0) return;
-        
-        // Create bounds to fit all markers
-        const bounds = new mapboxgl.LngLatBounds();
-        
-        // Add markers for each event with coordinates
-        eventsWithCoordinates.forEach(event => {
-          const { longitude, latitude } = event.coordinates;
-          
-          // Create marker element
-          const el = document.createElement('div');
-          el.className = 'event-marker';
-          el.style.width = '25px';
-          el.style.height = '25px';
-          el.style.backgroundSize = 'cover';
-          el.style.borderRadius = '50%';
-          el.style.border = '3px solid white';
-          el.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
-          
-          // Use event cover image if available, otherwise use colored marker
-          if (event.cover_image_url) {
-            el.style.backgroundImage = `url(${event.cover_image_url})`;
-          } else {
-            el.style.backgroundColor = '#1976d2';
-          }
-          
-          // Create popup
-          const popup = new mapboxgl.Popup({ offset: 25 })
-            .setHTML(`
-              <div style="padding: 8px; max-width: 200px;">
-                <h4 style="margin: 0 0 8px 0;">${event.title}</h4>
-                <p style="margin: 4px 0; font-size: 12px; color: #555;">
-                  ${new Date(event.date).toLocaleDateString()}
-                </p>
-                <p style="margin: 4px 0; font-size: 12px; color: #555;">
-                  ${event.location}
-                </p>
-                ${event.description ? 
-                  `<p style="margin: 8px 0 0 0; font-size: 12px; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">
-                    ${event.description}
-                  </p>` : ''
-                }
-                <button style="margin-top: 8px; padding: 4px 8px; background: #1976d2; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">
-                  View Details
-                </button>
-              </div>
-            `);
-          
-          // Add click event to popup button
-          popup.on('open', () => {
-            setTimeout(() => {
-              const button = document.querySelector('.mapboxgl-popup-content button');
-              if (button) {
-                button.addEventListener('click', () => {
-                  if (onEventSelect) {
-                    onEventSelect(event);
-                  }
-                });
-              }
-            }, 100);
-          });
-          
-          // Create and add marker
-          const marker = new mapboxgl.Marker(el)
-            .setLngLat([longitude, latitude])
-            .setPopup(popup)
-            .addTo(mapRef.current);
-          
-          // Store reference to marker for later removal
-          markersRef.current.push(marker);
-          
-          // Add coordinates to bounds
-          bounds.extend([longitude, latitude]);
-        });
-        
-        // Fit map to bounds with padding
-        if (!bounds.isEmpty()) {
-          mapRef.current.fitBounds(bounds, {
-            padding: 70,
-            maxZoom: 15
-          });
-        }
-      } catch (error) {
-        console.error('Error adding markers:', error);
-      }
-    };
-    
-    if (!loading && mapRef.current) {
-      addEventMarkers();
+    if (typeof value === 'string' && value) {
+      setInputValue(value);
+    } else if (value && value.place_name) {
+      setInputValue(value.place_name);
     }
-  }, [events, loading, onEventSelect]);
+  }, [value]);
+
+  // Calculate initialCoordinates for the map if value has center
+  const getInitialCoordinates = () => {
+    if (value && value.center && value.center.length === 2) {
+      return {
+        longitude: value.center[0],
+        latitude: value.center[1]
+      };
+    }
+    return null;
+  };
   
   return (
-    <Box sx={{ position: 'relative', width: '100%', height: '350px', borderRadius: 1, overflow: 'hidden' }}>
-      {loading && (
-        <Box sx={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          backgroundColor: 'rgba(255, 255, 255, 0.8)',
-          zIndex: 10
-        }}>
-          <CircularProgress size={40} />
+    <>
+      <Autocomplete
+        id="mapbox-address-autocomplete"
+        fullWidth={fullWidth}
+        filterOptions={(x) => x} // Don't filter options, we're using the API
+        options={options}
+        autoComplete
+        includeInputInList
+        freeSolo
+        loading={loading}
+        loadingText="Searching addresses..."
+        noOptionsText="No addresses found"
+        value={value}
+        inputValue={inputValue}
+        onChange={(event, newValue) => {
+          if (newValue && typeof newValue === 'object') {
+            onChange(newValue);
+          } else if (typeof newValue === 'string') {
+            onChange({ place_name: newValue });
+          } else {
+            onChange(null);
+          }
+        }}
+        onInputChange={(event, newInputValue) => {
+          setInputValue(newInputValue);
+        }}
+        getOptionLabel={(option) => {
+          if (typeof option === 'string') return option;
+          return option?.place_name || '';
+        }}
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            label={label}
+            placeholder={placeholder}
+            required={required}
+            autoFocus={autoFocus}
+            margin="dense"
+            InputProps={{
+              ...params.InputProps,
+              endAdornment: (
+                <React.Fragment>
+                  {loading ? <CircularProgress color="inherit" size={20} /> : null}
+                  {params.InputProps.endAdornment}
+                </React.Fragment>
+              ),
+            }}
+          />
+        )}
+        renderOption={(props, option) => {
+          // Fix for the key prop warning - extract key from props and pass it directly
+          const { key, ...otherProps } = props;
+          return (
+            <ListItem key={key} {...otherProps} dense>
+              <LocationOnIcon style={{ marginRight: 10, color: '#757575' }} fontSize="small" />
+              <ListItemText
+                primary={option.text}
+                secondary={
+                  <Typography variant="body2" color="text.secondary">
+                    {option.place_name.replace(`${option.text}, `, '')}
+                  </Typography>
+                }
+              />
+            </ListItem>
+          );
+        }}
+      />
+      
+      {/* Map display when coordinates are available */}
+      {value && value.center && (
+        <Box sx={{ mt: 2, mb: 2 }}>
+          <EventsMap 
+            initialCoordinates={getInitialCoordinates()}
+            // We don't pass events array here
+          />
         </Box>
       )}
-      
-      {mapError && (
-        <Paper sx={{
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          padding: 2,
-          maxWidth: '80%',
-          textAlign: 'center',
-          zIndex: 5
-        }}>
-          <Typography color="error">{mapError}</Typography>
-        </Paper>
-      )}
-      
-      <div ref={mapContainerRef} style={{ width: '100%', height: '100%' }} />
-      
-      <Box sx={{
-        position: 'absolute',
-        bottom: 8,
-        left: 8,
-        backgroundColor: 'rgba(255, 255, 255, 0.7)',
-        padding: '4px 8px',
-        borderRadius: 1,
-        fontSize: '0.75rem',
-        color: 'text.secondary',
-        zIndex: 5
-      }}>
-        {events.filter(event => event.coordinates && event.coordinates.longitude).length} / {events.length} events on map
-      </Box>
-    </Box>
+    </>
   );
 }

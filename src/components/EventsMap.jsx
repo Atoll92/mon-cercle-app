@@ -3,9 +3,11 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Box, Typography, Paper, CircularProgress } from '@mui/material';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
+// Use the provided token and custom style
 const MAPBOX_TOKEN = 'pk.eyJ1IjoiZGdjb2Jvc3MiLCJhIjoiY2xzY2JkNTdqMGJzbDJrbzF2Zm84aWxwZCJ9.b9GP9FrGHsVquJf7ubWfKQ';
+const MAPBOX_STYLE = 'mapbox://styles/dgcoboss/cm51343rf009u01s943jx2mz2';
 
-export default function EventsMap({ events, onEventSelect }) {
+export default function EventsMap({ events = [], onEventSelect, initialCoordinates = null }) {
   const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
   const markersRef = useRef([]);
@@ -21,12 +23,14 @@ export default function EventsMap({ events, onEventSelect }) {
         
         if (!mapContainerRef.current) return;
         
-        // Initialize map
+        // Initialize map with custom style
         mapRef.current = new mapboxgl.Map({
           container: mapContainerRef.current,
-          style: 'mapbox://styles/mapbox/streets-v11',
-          center: [0, 20], // Default center (will pan to events)
-          zoom: 1
+          style: MAPBOX_STYLE, // Use the custom style
+          center: initialCoordinates 
+            ? [initialCoordinates.longitude, initialCoordinates.latitude] 
+            : [0, 20], // Use initialCoordinates if provided, otherwise default
+          zoom: initialCoordinates ? 10 : 1 // Zoom in if we have initialCoordinates
         });
         
         // Add navigation controls
@@ -45,12 +49,24 @@ export default function EventsMap({ events, onEventSelect }) {
         // Set up event listeners
         mapRef.current.on('load', () => {
           setLoading(false);
-          // Try to geolocate user
-          setTimeout(() => {
-            if (mapRef.current) {
-              geolocate.trigger();
-            }
-          }, 1000);
+          
+          // If we have initialCoordinates, add a single marker
+          if (initialCoordinates && initialCoordinates.latitude && initialCoordinates.longitude) {
+            const mapboxgl = require('mapbox-gl');
+            const marker = new mapboxgl.Marker({ draggable: false })
+              .setLngLat([initialCoordinates.longitude, initialCoordinates.latitude])
+              .addTo(mapRef.current);
+            
+            markersRef.current.push(marker);
+          } 
+          // Otherwise try to geolocate user if we don't have specific coordinates
+          else if (!initialCoordinates) {
+            setTimeout(() => {
+              if (mapRef.current) {
+                geolocate.trigger();
+              }
+            }, 1000);
+          }
         });
         
         // Add resize observer to ensure map fits its container
@@ -84,11 +100,12 @@ export default function EventsMap({ events, onEventSelect }) {
         mapRef.current = null;
       }
     };
-  }, []);
+  }, [initialCoordinates]);
   
   // Add event markers whenever events change
   useEffect(() => {
     const addEventMarkers = async () => {
+      // If there are no events or events is undefined, we'll skip this part
       if (!mapRef.current || !events || events.length === 0) return;
       
       try {
@@ -98,7 +115,7 @@ export default function EventsMap({ events, onEventSelect }) {
         
         const mapboxgl = (await import('mapbox-gl')).default;
         const eventsWithCoordinates = events.filter(event => 
-          event.coordinates && 
+          event?.coordinates && 
           event.coordinates.longitude && 
           event.coordinates.latitude
         );
@@ -231,19 +248,21 @@ export default function EventsMap({ events, onEventSelect }) {
       
       <div ref={mapContainerRef} style={{ width: '100%', height: '100%' }} />
       
-      <Box sx={{
-        position: 'absolute',
-        bottom: 8,
-        left: 8,
-        backgroundColor: 'rgba(255, 255, 255, 0.7)',
-        padding: '4px 8px',
-        borderRadius: 1,
-        fontSize: '0.75rem',
-        color: 'text.secondary',
-        zIndex: 5
-      }}>
-        {events.filter(event => event.coordinates && event.coordinates.longitude).length} / {events.length} events on map
-      </Box>
+      {events && events.length > 0 && (
+        <Box sx={{
+          position: 'absolute',
+          bottom: 8,
+          left: 8,
+          backgroundColor: 'rgba(255, 255, 255, 0.7)',
+          padding: '4px 8px',
+          borderRadius: 1,
+          fontSize: '0.75rem',
+          color: 'text.secondary',
+          zIndex: 5
+        }}>
+          {events.filter(event => event?.coordinates && event.coordinates.longitude).length} / {events.length} events on map
+        </Box>
+      )}
     </Box>
   );
 }
