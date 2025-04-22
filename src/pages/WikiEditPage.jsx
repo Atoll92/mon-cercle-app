@@ -465,7 +465,7 @@ const WikiEditPage = () => {
         .replace(/-+/g, '-')
         .replace(/^-|-$/g, '');
       
-      // If RPC not available, try direct insert with auth
+      // If RPC not available, try direct insert with auth 
       const { data: newCategory, error } = await supabase
         .from('wiki_categories')
         .insert({
