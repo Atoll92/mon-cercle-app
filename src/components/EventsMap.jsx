@@ -5,7 +5,7 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 
 // Use the provided token and custom style
 const MAPBOX_TOKEN = 'pk.eyJ1IjoiZGdjb2Jvc3MiLCJhIjoiY2xzY2JkNTdqMGJzbDJrbzF2Zm84aWxwZCJ9.b9GP9FrGHsVquJf7ubWfKQ';
-const MAPBOX_STYLE = 'mapbox://styles/dgcoboss/cm51343rf009u01s943jx2mz2';
+const MAPBOX_STYLE = 'mapbox://styles/dgcoboss/cm9tb8i5b00hn01sb556wered';
 
 export default function EventsMap({ events = [], onEventSelect, initialCoordinates = null }) {
   const mapContainerRef = useRef(null);
