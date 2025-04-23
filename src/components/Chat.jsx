@@ -14,10 +14,12 @@ import {
   Paper,
   Divider,
   Typography,
-  Badge
+  Badge,
+  alpha
 } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import PersonIcon from '@mui/icons-material/Person';
+import backgroundImage from '../assets/backiee-277128-landscape.jpg';
 
 const Chat = ({ networkId }) => {
   const { user } = useAuth();
@@ -216,8 +218,19 @@ const Chat = ({ networkId }) => {
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
-        <CircularProgress />
+      <Box 
+        sx={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          p: 3,
+          background: `url(${backgroundImage}) no-repeat center center`,
+          backgroundSize: 'cover',
+          height: '70vh',
+          borderRadius: 2,
+          alignItems: 'center'
+        }}
+      >
+        <CircularProgress sx={{ color: 'white' }} />
       </Box>
     );
   }
@@ -231,15 +244,48 @@ const Chat = ({ networkId }) => {
   }
 
   return (
-    <Paper sx={{ height: '70vh', display: 'flex', flexDirection: 'column' }}>
-      <Box sx={{ 
-        p: 2, 
-        borderBottom: '1px solid rgba(0,0,0,0.12)', 
+    <Paper 
+      sx={{ 
+        height: '70vh', 
         display: 'flex', 
-        justifyContent: 'space-between',
-        alignItems: 'center'
-      }}>
-        <Typography variant="h6">
+        flexDirection: 'column',
+        overflow: 'hidden',
+        borderRadius: 2,
+        boxShadow: 8,
+        backgroundImage: `url(${backgroundImage})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        position: 'relative'
+      }}
+    >
+      {/* Semi-transparent overlay for better text readability */}
+      <Box 
+        sx={{ 
+          position: 'absolute', 
+          top: 0, 
+          left: 0, 
+          right: 0, 
+          bottom: 0, 
+          backgroundColor: 'rgba(0, 0, 0, 0.4)',
+          zIndex: 0
+        }} 
+      />
+      
+      {/* Header */}
+      <Box 
+        sx={{ 
+          p: 2, 
+          borderBottom: '1px solid rgba(255,255,255,0.2)', 
+          display: 'flex', 
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          bgcolor: 'rgba(0, 0, 0, 0.5)',
+          backdropFilter: 'blur(5px)',
+          zIndex: 1,
+          position: 'relative'
+        }}
+      >
+        <Typography variant="h6" sx={{ color: 'white', fontWeight: 500 }}>
           Chat ({messages.length} messages)
         </Typography>
         <Badge 
@@ -248,14 +294,35 @@ const Chat = ({ networkId }) => {
           max={99}
           sx={{ '& .MuiBadge-badge': { fontSize: '0.8rem' } }}
         >
-          <PersonIcon color="action" />
+          <PersonIcon sx={{ color: 'white' }} />
         </Badge>
       </Box>
       
-      <List sx={{ flexGrow: 1, overflow: 'auto', p: 0 }}>
+      {/* Messages List */}
+      <List 
+        sx={{ 
+          flexGrow: 1, 
+          overflow: 'auto', 
+          p: 2,
+          zIndex: 1,
+          position: 'relative'
+        }}
+      >
         {messages.length === 0 ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
-            <Typography color="text.secondary">No messages yet. Start the conversation!</Typography>
+          <Box sx={{ 
+            display: 'flex', 
+            justifyContent: 'center', 
+            alignItems: 'center', 
+            height: '100%',
+            color: 'white'
+          }}>
+            <Typography sx={{ 
+              color: 'white', 
+              textShadow: '1px 1px 2px rgba(0,0,0,0.8)',
+              fontWeight: 500
+            }}>
+              No messages yet. Start the conversation!
+            </Typography>
           </Box>
         ) : (
           messages.map(message => (
@@ -263,20 +330,37 @@ const Chat = ({ networkId }) => {
               key={message.id}
               sx={{
                 opacity: message.pending ? 0.7 : 1,
-                backgroundColor: message.user_id === user.id ? 'rgba(0, 0, 255, 0.05)' : 'transparent'
+                backgroundColor: message.user_id === user.id 
+                  ? alpha('#1976d2', 0.6) 
+                  : alpha('#333', 0.5),
+                borderRadius: 2,
+                mb: 1.5,
+                backdropFilter: 'blur(8px)',
+                boxShadow: '0 2px 5px rgba(0,0,0,0.2)',
+                transform: message.user_id === user.id 
+                  ? 'translateX(5%)' 
+                  : 'translateX(-5%)',
+                maxWidth: '85%',
+                marginLeft: message.user_id === user.id ? 'auto' : 2,
+                marginRight: message.user_id === user.id ? 2 : 'auto',
+                transition: 'all 0.2s ease'
               }}
             >
               <ListItemAvatar>
                 <Avatar 
                   src={message.profiles?.profile_picture_url}
                   alt={message.profiles?.full_name}
+                  sx={{ 
+                    border: '2px solid white',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                  }}
                 >
                   {!message.profiles?.profile_picture_url && message.profiles?.full_name?.[0]}
                 </Avatar>
               </ListItemAvatar>
               <ListItemText
                 primary={
-                  <Typography variant="subtitle2">
+                  <Typography variant="subtitle2" sx={{ color: 'white', fontWeight: 500 }}>
                     {message.profiles?.full_name || 'Anonymous'}
                     {message.user_id === user.id && ' (You)'}
                   </Typography>
@@ -286,11 +370,12 @@ const Chat = ({ networkId }) => {
                     <Typography
                       component="span"
                       variant="body2"
-                      color="text.primary"
                       sx={{ 
                         display: 'block',
                         wordBreak: 'break-word', 
-                        whiteSpace: 'pre-wrap'
+                        whiteSpace: 'pre-wrap',
+                        color: 'rgba(255, 255, 255, 0.9)',
+                        py: 0.5
                       }}
                     >
                       {message.content}
@@ -298,8 +383,13 @@ const Chat = ({ networkId }) => {
                     <Typography
                       component="span"
                       variant="caption"
-                      color="text.secondary"
-                      sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
+                      sx={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: 0.5,
+                        color: 'rgba(255, 255, 255, 0.7)',
+                        fontSize: '0.7rem'
+                      }}
                     >
                       {new Date(message.created_at).toLocaleDateString()} {new Date(message.created_at).toLocaleTimeString()}
                       {message.pending && ' (sending...)'}
@@ -312,8 +402,20 @@ const Chat = ({ networkId }) => {
         )}
         <div ref={messageEndRef} />
       </List>
-      <Divider />
-      <Box sx={{ p: 2, display: 'flex', gap: 1 }}>
+      
+      {/* Message Input */}
+      <Box 
+        sx={{ 
+          p: 2, 
+          display: 'flex', 
+          gap: 1, 
+          bgcolor: 'rgba(0, 0, 0, 0.6)',
+          backdropFilter: 'blur(10px)',
+          borderTop: '1px solid rgba(255,255,255,0.1)',
+          zIndex: 1,
+          position: 'relative'
+        }}
+      >
         <TextField
           fullWidth
           variant="outlined"
@@ -328,11 +430,42 @@ const Chat = ({ networkId }) => {
           }}
           multiline
           maxRows={3}
+          sx={{
+            '& .MuiOutlinedInput-root': {
+              backgroundColor: 'rgba(255, 255, 255, 0.1)',
+              color: 'white',
+              borderRadius: 2,
+              '&:hover .MuiOutlinedInput-notchedOutline': {
+                borderColor: 'rgba(255, 255, 255, 0.5)',
+              },
+              '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                borderColor: 'primary.main',
+              },
+              '& .MuiOutlinedInput-notchedOutline': {
+                borderColor: 'rgba(255, 255, 255, 0.3)',
+              }
+            },
+            '& .MuiInputBase-input::placeholder': {
+              color: 'rgba(255, 255, 255, 0.7)',
+              opacity: 1
+            }
+          }}
         />
         <IconButton 
           color="primary" 
           onClick={handleSend}
           disabled={!newMessage.trim()}
+          sx={{ 
+            bgcolor: 'primary.main', 
+            color: 'white',
+            '&:hover': {
+              bgcolor: 'primary.dark'
+            },
+            '&.Mui-disabled': {
+              bgcolor: 'rgba(255, 255, 255, 0.2)',
+              color: 'rgba(255, 255, 255, 0.4)'
+            }
+          }}
         >
           <SendIcon />
         </IconButton>
