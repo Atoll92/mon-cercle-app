@@ -45,6 +45,8 @@ import {
   Info as InfoIcon,
   Event as EventIcon,
   LocationOn as LocationOnIcon,
+  Brightness4 as Brightness4Icon,
+  Brightness7 as Brightness7Icon
 } from '@mui/icons-material';
 import { Calendar, dateFnsLocalizer } from 'react-big-calendar';
 import format from 'date-fns/format';
@@ -55,6 +57,9 @@ import enUS from 'date-fns/locale/en-US';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import MailIcon from '@mui/icons-material/Mail';
+
+import MemberDetailsModal from '../components/MembersDetailModal';
+import MembersTab from '../components/MembersTab';
 
 import {
   ArrowForward as ArrowForwardIcon
@@ -94,6 +99,9 @@ function NetworkLandingPage() {
   const [showEventDialog, setShowEventDialog] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [userParticipations, setUserParticipations] = useState([]);
+  const [selectedMember, setSelectedMember] = useState(null);
+const [showMemberModal, setShowMemberModal] = useState(false);
+const [membersTabDarkMode, setMembersTabDarkMode] = useState(false);
   
   useEffect(() => {
     const fetchData = async () => {
@@ -237,6 +245,11 @@ function NetworkLandingPage() {
   const closeEventDialog = () => {
     setShowEventDialog(false);
     setSelectedEvent(null);
+  };
+
+  const handleMemberSelect = (member) => {
+    setSelectedMember(member);
+    setShowMemberModal(true);
   };
   
   const handleParticipationChange = (eventId, newStatus) => {
@@ -577,116 +590,30 @@ function NetworkLandingPage() {
       )}
       
       {activeTab === 0 && (
-        <Paper sx={{ p: 3 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-            <Typography variant="h5" component="h2">
-              Network Members ({networkMembers.length})
-            </Typography>
-            
-            {isUserAdmin && (
-              <Button
-                variant="contained"
-                color="primary"
-                startIcon={<PersonAddIcon />}
-                component={Link}
-                to="/admin"
-              >
-                Invite Members
-              </Button>
-            )}
-          </Box>
-          
-          <Divider sx={{ mb: 3 }} />
-          
-          {networkMembers.length === 0 ? (
-            <Typography align="center" variant="body1" sx={{ py: 4 }}>
-              No members found in this network.
-            </Typography>
-          ) : (
-            <Grid container spacing={3}>
-              {networkMembers.map(member => (
-                <Grid item xs={12} sm={6} md={4} key={member.id}>
-                  <Card sx={{ 
-                    height: '100%',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
-                    '&:hover': {
-                      transform: 'translateY(-5px)',
-                      boxShadow: 3
-                    }
-                  }}>
-                    <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                      <Avatar
-                        src={member.profile_picture_url}
-                        sx={{ width: 80, height: 80, mb: 2 }}
-                      >
-                        {member.full_name ? member.full_name.charAt(0).toUpperCase() : '?'}
-                      </Avatar>
-                      
-                      <Typography variant="h6" component="h3" align="center" gutterBottom>
-                        {member.full_name || 'Unnamed User'}
-                        {member.id === user?.id && ' (You)'}
-                      </Typography>
-                      
-                      <Box sx={{ mt: 1, mb: 2, display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: 1 }}>
-                        <Chip 
-                          label={member.role === 'admin' ? 'Admin' : 'Member'} 
-                          color={member.role === 'admin' ? 'primary' : 'default'}
-                          size="small"
-                        />
-                        
-                        {member.skills && member.skills.length > 0 && (
-                          <Chip
-                            label={`${member.skills.length} skills`}
-                            size="small"
-                            color="secondary"
-                          />
-                        )}
-                      </Box>
-                      
-                      {member.bio && (
-                        <Typography variant="body2" color="text.secondary" align="center" sx={{ 
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          display: '-webkit-box',
-                          WebkitLineClamp: 2,
-                          WebkitBoxOrient: 'vertical',
-                          mb: 2
-                        }}>
-                          {member.bio}
-                        </Typography>
-                      )}
-                    </CardContent>
-                    
-                    <CardActions sx={{ justifyContent: 'center', pb: 2 }}>
-                      <Button
-                        variant="outlined"
-                        component={Link}
-                        to={`/profile/${member.id}`}
-                        size="small"
-                      >
-                        View Profile
-                      </Button>
-                      {member.id !== user?.id && (
-  <Button
-    variant="text"
-    component={Link}
-    to={`/messages/${member.id}`}
-    size="small"
-    startIcon={<MailIcon fontSize="small" />}
-  >
-    Message
-  </Button>
+  <Paper sx={{ p: 3 }}>
+    <MembersTab 
+      networkMembers={networkMembers}
+      user={user}
+      isUserAdmin={isUserAdmin}
+      networkId={networkId}
+      loading={loading}
+      darkMode={membersTabDarkMode}
+      onMemberSelect={handleMemberSelect}
+    />
+    
+   
+    
+    {/* Member details modal */}
+    <MemberDetailsModal
+      open={showMemberModal}
+      onClose={() => setShowMemberModal(false)}
+      member={selectedMember}
+      portfolioItems={[]} // You could fetch the member's portfolio items here
+      isCurrentUser={selectedMember?.id === user?.id}
+      darkMode={membersTabDarkMode}
+    />
+  </Paper>
 )}
-                    </CardActions>
-                  </Card>
-                </Grid>
-              ))}
-            </Grid>
-          )}
-        </Paper>
-      )}
 
 {activeTab === 1 && (
   <Paper sx={{ p: 3 }}>
