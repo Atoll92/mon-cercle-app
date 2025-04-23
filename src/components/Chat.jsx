@@ -15,10 +15,14 @@ import {
   Divider,
   Typography,
   Badge,
-  alpha
+  alpha,
+  Switch,
+  FormControlLabel
 } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import PersonIcon from '@mui/icons-material/Person';
+import Brightness4Icon from '@mui/icons-material/Brightness4';
+import Brightness7Icon from '@mui/icons-material/Brightness7';
 import backgroundImage from '../assets/backiee-277128-landscape.jpg';
 
 const Chat = ({ networkId }) => {
@@ -30,6 +34,7 @@ const Chat = ({ networkId }) => {
   const [activeUsers, setActiveUsers] = useState({});
   const messageEndRef = useRef(null);
   const channelRef = useRef(null);
+  const [darkMode, setDarkMode] = useState(true);
 
   // Auto-scroll to the bottom when messages change
   useEffect(() => {
@@ -215,6 +220,11 @@ const Chat = ({ networkId }) => {
 
   // Count unique active users
   const activeUserCount = Object.keys(activeUsers).length;
+  
+  // Toggle dark/light mode handler
+  const handleModeToggle = () => {
+    setDarkMode(!darkMode);
+  };
 
   if (loading) {
     return (
@@ -230,7 +240,7 @@ const Chat = ({ networkId }) => {
           alignItems: 'center'
         }}
       >
-        <CircularProgress sx={{ color: 'white' }} />
+        <CircularProgress sx={{ color: darkMode ? 'white' : 'primary.main' }} />
       </Box>
     );
   }
@@ -252,50 +262,87 @@ const Chat = ({ networkId }) => {
         overflow: 'hidden',
         borderRadius: 2,
         boxShadow: 8,
-        backgroundImage: `url(${backgroundImage})`,
+        backgroundImage: darkMode ? `url(${backgroundImage})` : 'none',
+        backgroundColor: darkMode ? 'transparent' : '#f5f7fa',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         position: 'relative'
       }}
     >
-      {/* Semi-transparent overlay for better text readability */}
-      <Box 
-        sx={{ 
-          position: 'absolute', 
-          top: 0, 
-          left: 0, 
-          right: 0, 
-          bottom: 0, 
-          backgroundColor: 'rgba(0, 0, 0, 0.4)',
-          zIndex: 0
-        }} 
-      />
+      {/* Semi-transparent overlay for better text readability (only in dark mode) */}
+      {darkMode && (
+        <Box 
+          sx={{ 
+            position: 'absolute', 
+            top: 0, 
+            left: 0, 
+            right: 0, 
+            bottom: 0, 
+            backgroundColor: 'rgba(0, 0, 0, 0.4)',
+            zIndex: 0
+          }} 
+        />
+      )}
       
       {/* Header */}
       <Box 
         sx={{ 
           p: 2, 
-          borderBottom: '1px solid rgba(255,255,255,0.2)', 
+          borderBottom: darkMode 
+            ? '1px solid rgba(255,255,255,0.2)'
+            : '1px solid rgba(0,0,0,0.1)', 
           display: 'flex', 
           justifyContent: 'space-between',
           alignItems: 'center',
-          bgcolor: 'rgba(0, 0, 0, 0.5)',
+          bgcolor: darkMode
+            ? 'rgba(0, 0, 0, 0.5)'
+            : 'rgba(255, 255, 255, 0.8)',
           backdropFilter: 'blur(5px)',
           zIndex: 1,
           position: 'relative'
         }}
       >
-        <Typography variant="h6" sx={{ color: 'white', fontWeight: 500 }}>
+        <Typography 
+          variant="h6" 
+          sx={{ 
+            color: darkMode ? 'white' : 'text.primary', 
+            fontWeight: 500 
+          }}
+        >
           Chat ({messages.length} messages)
         </Typography>
-        <Badge 
-          badgeContent={activeUserCount} 
-          color="primary"
-          max={99}
-          sx={{ '& .MuiBadge-badge': { fontSize: '0.8rem' } }}
-        >
-          <PersonIcon sx={{ color: 'white' }} />
-        </Badge>
+        
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          {/* Mode toggle */}
+          <FormControlLabel
+            control={
+              <Switch
+                checked={darkMode}
+                onChange={handleModeToggle}
+                icon={<Brightness7Icon fontSize="small" />}
+                checkedIcon={<Brightness4Icon fontSize="small" />}
+                sx={{
+                  '& .MuiSwitch-switchBase': {
+                    color: darkMode ? '#f1f1f1' : '#333'
+                  },
+                  '& .MuiSwitch-track': {
+                    backgroundColor: darkMode ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'
+                  }
+                }}
+              />
+            }
+            label=""
+          />
+          
+          <Badge 
+            badgeContent={activeUserCount} 
+            color="primary"
+            max={99}
+            sx={{ '& .MuiBadge-badge': { fontSize: '0.8rem' } }}
+          >
+            <PersonIcon sx={{ color: darkMode ? 'white' : 'text.secondary' }} />
+          </Badge>
+        </Box>
       </Box>
       
       {/* Messages List */}
@@ -305,7 +352,8 @@ const Chat = ({ networkId }) => {
           overflow: 'auto', 
           p: 2,
           zIndex: 1,
-          position: 'relative'
+          position: 'relative',
+          backgroundColor: darkMode ? 'transparent' : 'rgba(255,255,255,0.3)'
         }}
       >
         {messages.length === 0 ? (
@@ -313,12 +361,11 @@ const Chat = ({ networkId }) => {
             display: 'flex', 
             justifyContent: 'center', 
             alignItems: 'center', 
-            height: '100%',
-            color: 'white'
+            height: '100%'
           }}>
             <Typography sx={{ 
-              color: 'white', 
-              textShadow: '1px 1px 2px rgba(0,0,0,0.8)',
+              color: darkMode ? 'white' : 'text.secondary', 
+              textShadow: darkMode ? '1px 1px 2px rgba(0,0,0,0.8)' : 'none',
               fontWeight: 500
             }}>
               No messages yet. Start the conversation!
@@ -330,20 +377,29 @@ const Chat = ({ networkId }) => {
               key={message.id}
               sx={{
                 opacity: message.pending ? 0.7 : 1,
-                backgroundColor: message.user_id === user.id 
-                  ? alpha('#1976d2', 0.6) 
-                  : alpha('#333', 0.5),
+                backgroundColor: darkMode
+                  ? (message.user_id === user.id 
+                    ? alpha('#1976d2', 0.6) 
+                    : alpha('#333', 0.5))
+                  : (message.user_id === user.id 
+                    ? alpha('#e3f2fd', 0.9) 
+                    : alpha('#fff', 0.85)),
                 borderRadius: 2,
                 mb: 1.5,
                 backdropFilter: 'blur(8px)',
-                boxShadow: '0 2px 5px rgba(0,0,0,0.2)',
+                boxShadow: darkMode
+                  ? '0 2px 5px rgba(0,0,0,0.2)'
+                  : '0 2px 5px rgba(0,0,0,0.05)',
                 transform: message.user_id === user.id 
                   ? 'translateX(5%)' 
                   : 'translateX(-5%)',
                 maxWidth: '85%',
                 marginLeft: message.user_id === user.id ? 'auto' : 2,
                 marginRight: message.user_id === user.id ? 2 : 'auto',
-                transition: 'all 0.2s ease'
+                transition: 'all 0.2s ease',
+                border: darkMode 
+                  ? 'none' 
+                  : `1px solid ${message.user_id === user.id ? '#bbdefb' : '#e0e0e0'}`
               }}
             >
               <ListItemAvatar>
@@ -351,7 +407,9 @@ const Chat = ({ networkId }) => {
                   src={message.profiles?.profile_picture_url}
                   alt={message.profiles?.full_name}
                   sx={{ 
-                    border: '2px solid white',
+                    border: darkMode
+                      ? '2px solid white'
+                      : '2px solid #e0e0e0',
                     boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
                   }}
                 >
@@ -360,7 +418,15 @@ const Chat = ({ networkId }) => {
               </ListItemAvatar>
               <ListItemText
                 primary={
-                  <Typography variant="subtitle2" sx={{ color: 'white', fontWeight: 500 }}>
+                  <Typography 
+                    variant="subtitle2" 
+                    sx={{ 
+                      color: darkMode 
+                        ? 'white' 
+                        : (message.user_id === user.id ? '#1565c0' : '#424242'),
+                      fontWeight: 500 
+                    }}
+                  >
                     {message.profiles?.full_name || 'Anonymous'}
                     {message.user_id === user.id && ' (You)'}
                   </Typography>
@@ -374,7 +440,9 @@ const Chat = ({ networkId }) => {
                         display: 'block',
                         wordBreak: 'break-word', 
                         whiteSpace: 'pre-wrap',
-                        color: 'rgba(255, 255, 255, 0.9)',
+                        color: darkMode 
+                          ? 'rgba(255, 255, 255, 0.9)'
+                          : 'text.primary',
                         py: 0.5
                       }}
                     >
@@ -387,7 +455,9 @@ const Chat = ({ networkId }) => {
                         display: 'flex', 
                         alignItems: 'center', 
                         gap: 0.5,
-                        color: 'rgba(255, 255, 255, 0.7)',
+                        color: darkMode 
+                          ? 'rgba(255, 255, 255, 0.7)'
+                          : 'text.secondary',
                         fontSize: '0.7rem'
                       }}
                     >
@@ -409,9 +479,13 @@ const Chat = ({ networkId }) => {
           p: 2, 
           display: 'flex', 
           gap: 1, 
-          bgcolor: 'rgba(0, 0, 0, 0.6)',
+          bgcolor: darkMode 
+            ? 'rgba(0, 0, 0, 0.6)'
+            : 'rgba(245, 245, 245, 0.9)',
           backdropFilter: 'blur(10px)',
-          borderTop: '1px solid rgba(255,255,255,0.1)',
+          borderTop: darkMode
+            ? '1px solid rgba(255,255,255,0.1)'
+            : '1px solid rgba(0,0,0,0.08)',
           zIndex: 1,
           position: 'relative'
         }}
@@ -432,21 +506,29 @@ const Chat = ({ networkId }) => {
           maxRows={3}
           sx={{
             '& .MuiOutlinedInput-root': {
-              backgroundColor: 'rgba(255, 255, 255, 0.1)',
-              color: 'white',
+              backgroundColor: darkMode 
+                ? 'rgba(255, 255, 255, 0.1)'
+                : 'rgba(255, 255, 255, 0.8)',
+              color: darkMode ? 'white' : 'text.primary',
               borderRadius: 2,
               '&:hover .MuiOutlinedInput-notchedOutline': {
-                borderColor: 'rgba(255, 255, 255, 0.5)',
+                borderColor: darkMode 
+                  ? 'rgba(255, 255, 255, 0.5)'
+                  : 'rgba(0, 0, 0, 0.23)',
               },
               '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
                 borderColor: 'primary.main',
               },
               '& .MuiOutlinedInput-notchedOutline': {
-                borderColor: 'rgba(255, 255, 255, 0.3)',
+                borderColor: darkMode 
+                  ? 'rgba(255, 255, 255, 0.3)'
+                  : 'rgba(0, 0, 0, 0.15)',
               }
             },
             '& .MuiInputBase-input::placeholder': {
-              color: 'rgba(255, 255, 255, 0.7)',
+              color: darkMode 
+                ? 'rgba(255, 255, 255, 0.7)'
+                : 'rgba(0, 0, 0, 0.5)',
               opacity: 1
             }
           }}
@@ -462,8 +544,12 @@ const Chat = ({ networkId }) => {
               bgcolor: 'primary.dark'
             },
             '&.Mui-disabled': {
-              bgcolor: 'rgba(255, 255, 255, 0.2)',
-              color: 'rgba(255, 255, 255, 0.4)'
+              bgcolor: darkMode
+                ? 'rgba(255, 255, 255, 0.2)'
+                : 'rgba(0, 0, 0, 0.1)',
+              color: darkMode
+                ? 'rgba(255, 255, 255, 0.4)'
+                : 'rgba(0, 0, 0, 0.3)'
             }
           }}
         >
