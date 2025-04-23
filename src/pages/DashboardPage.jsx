@@ -17,7 +17,17 @@ import {
   CardContent,
   CardActions,
   Grid,
-  Chip
+  Chip,
+  IconButton,
+  Stack,
+  Tooltip,
+  LinearProgress,
+  CardMedia,
+  CardHeader,
+  Fade,
+  Tab,
+  Tabs,
+  Badge
 } from '@mui/material';
 import { 
   Person as PersonIcon, 
@@ -25,20 +35,34 @@ import {
   Add as AddIcon,
   AdminPanelSettings as AdminIcon,
   Logout as LogoutIcon, 
-  ArrowBack,
-  ArrowForward
+  ArrowForward as ArrowForwardIcon,
+  Dashboard as DashboardIcon,
+  Groups as GroupsIcon,
+  Mail as MailIcon,
+  Event as EventIcon,
+  Article as ArticleIcon,
+  MenuBook as MenuBookIcon,
+  Refresh as RefreshIcon,
+  NetworkWifi as NetworkIcon,
+  LocationOn as LocationOnIcon,
+  CreateNewFolder as CreateNewFolderIcon,
+  InsertInvitation as InvitationIcon,
+  PersonAdd as PersonAddIcon
 } from '@mui/icons-material';
 import { fetchNetworkMembers } from '../api/networks';
 
 function DashboardPage() {
   const { user, session, signOut } = useAuth();
-    const navigate = useNavigate();
+  const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
   const [networkMembers, setNetworkMembers] = useState([]);
   const [loadingProfile, setLoadingProfile] = useState(true);
   const [loadingMembers, setLoadingMembers] = useState(true);
   const [error, setError] = useState(null);
   const [retryCount, setRetryCount] = useState(0);
+  const [activeTab, setActiveTab] = useState(0);
+  const [recentEvents, setRecentEvents] = useState([]);
+  const [loadingEvents, setLoadingEvents] = useState(true);
 
   console.log("Component render cycle. States:", { 
     loadingProfile, 
@@ -123,8 +147,12 @@ function DashboardPage() {
             setNetworkMembers(members);
             setLoadingMembers(false);
           });
+          
+          // Fetch upcoming events for the network
+          fetchUpcomingEvents(data.network_id);
         } else {
           setLoadingMembers(false);
+          setLoadingEvents(false);
         }
       } catch (error) {
         console.error("Error fetching profile:", error);
@@ -133,44 +161,66 @@ function DashboardPage() {
       }
     };
     
+    const fetchUpcomingEvents = async (networkId) => {
+      try {
+        setLoadingEvents(true);
+        const now = new Date().toISOString();
+        
+        const { data, error } = await supabase
+          .from('network_events')
+          .select('*')
+          .eq('network_id', networkId)
+          .gte('date', now)
+          .order('date', { ascending: true })
+          .limit(3);
+          
+        if (error) throw error;
+        
+        setRecentEvents(data || []);
+      } catch (err) {
+        console.error("Error fetching events:", err);
+      } finally {
+        setLoadingEvents(false);
+      }
+    };
+    
     if (user) {
       fetchProfile();
     } else {
       setLoadingProfile(false);
       setLoadingMembers(false);
+      setLoadingEvents(false);
     }
   }, [user, retryCount, navigate]);
 
-  // Update the handleLogout function in your DashboardPage.jsx
-// Update the handleLogout function in your DashboardPage.jsx
-const handleLogout = async () => {
-  try {
-    console.log("Attempting to log out...");
-    // Force clear local storage first to ensure clean state
-    localStorage.removeItem('supabase.auth.token');
-    
-    // Then call the signOut method from context
-    const { error } = await signOut();
-    
-    if (error) {
-      console.error("Logout error from context:", error);
-      // If context signOut fails, try direct supabase logout as fallback
-      await supabase.auth.signOut();
+  const handleLogout = async () => {
+    try {
+      console.log("Attempting to log out...");
+      // Force clear local storage first to ensure clean state
+      localStorage.removeItem('supabase.auth.token');
+      
+      // Then call the signOut method from context
+      const { error } = await signOut();
+      
+      if (error) {
+        console.error("Logout error from context:", error);
+        // If context signOut fails, try direct supabase logout as fallback
+        await supabase.auth.signOut();
+      }
+      
+      // Force navigation regardless of outcome
+      navigate('/login', { replace: true });
+      
+      // Optional: force page reload to clear any remaining state
+      window.location.reload();
+    } catch (error) {
+      console.error("Logout error:", error);
+      alert(`Failed to log out: ${error.message}`);
+      
+      // Even if everything fails, force redirect to login
+      navigate('/login', { replace: true });
     }
-    
-    // Force navigation regardless of outcome
-    navigate('/login', { replace: true });
-    
-    // Optional: force page reload to clear any remaining state
-    window.location.reload();
-  } catch (error) {
-    console.error("Logout error:", error);
-    alert(`Failed to log out: ${error.message}`);
-    
-    // Even if everything fails, force redirect to login
-    navigate('/login', { replace: true });
-  }
-};
+  };
 
   const handleCreateNetwork = async () => {
     try {
@@ -205,6 +255,10 @@ const handleLogout = async () => {
     window.location.reload();
   };
 
+  const handleTabChange = (event, newValue) => {
+    setActiveTab(newValue);
+  };
+
   if (loadingProfile) {
     return (
       <Box 
@@ -216,7 +270,7 @@ const handleLogout = async () => {
           height: '100vh' 
         }}
       >
-        <CircularProgress size={40} />
+        <CircularProgress size={40} color="primary" />
         <Typography variant="body1" sx={{ mt: 2 }}>
           Loading your dashboard...
         </Typography>
@@ -227,15 +281,28 @@ const handleLogout = async () => {
   if (error && error.includes("Redirecting")) {
     return (
       <Container maxWidth="sm" sx={{ mt: 8 }}>
-        <Alert 
-          severity="info" 
-          sx={{ mb: 3 }}
+        <Paper 
+          elevation={3}
+          sx={{ 
+            p: 4, 
+            borderRadius: 2,
+            textAlign: 'center',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
+          }}
         >
-          Please complete your profile setup to continue.
-        </Alert>
-        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
-          <CircularProgress size={30} />
-        </Box>
+          <Typography variant="h5" component="h1" gutterBottom>
+            Profile Setup Required
+          </Typography>
+          <Alert 
+            severity="info" 
+            sx={{ mb: 3 }}
+          >
+            Please complete your profile setup to continue.
+          </Alert>
+          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
+            <CircularProgress size={30} />
+          </Box>
+        </Paper>
       </Container>
     );
   }
@@ -243,20 +310,32 @@ const handleLogout = async () => {
   if (error) {
     return (
       <Container maxWidth="sm" sx={{ mt: 8 }}>
-        <Alert 
-          severity="error" 
-          sx={{ mb: 3 }}
+        <Paper 
+          elevation={3}
+          sx={{ 
+            p: 4, 
+            borderRadius: 2,
+            textAlign: 'center',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
+          }}
         >
-          {error}
-        </Alert>
-        <Box sx={{ textAlign: 'center', mt: 3 }}>
+          <Typography variant="h5" component="h1" gutterBottom>
+            Something Went Wrong
+          </Typography>
+          <Alert 
+            severity="error" 
+            sx={{ mb: 3 }}
+          >
+            {error}
+          </Alert>
           <Button 
             variant="contained" 
             onClick={handleRefresh}
+            startIcon={<RefreshIcon />}
           >
             Refresh Page
           </Button>
-        </Box>
+        </Paper>
       </Container>
     );
   }
@@ -264,7 +343,15 @@ const handleLogout = async () => {
   if (!profile) {
     return (
       <Container maxWidth="sm" sx={{ mt: 8 }}>
-        <Paper sx={{ p: 3, textAlign: 'center' }}>
+        <Paper 
+          elevation={3}
+          sx={{ 
+            p: 4, 
+            borderRadius: 2,
+            textAlign: 'center',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
+          }}
+        >
           <Typography variant="h5" component="h1" gutterBottom>
             Profile Setup in Progress
           </Typography>
@@ -275,6 +362,7 @@ const handleLogout = async () => {
           <Button 
             variant="contained" 
             onClick={() => navigate('/profile/edit')}
+            startIcon={<EditIcon />}
             sx={{ mt: 2 }}
           >
             Go to Profile Setup
@@ -285,218 +373,693 @@ const handleLogout = async () => {
   }
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-      <Paper sx={{ p: 3, mb: 3 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Typography variant="h4" component="h1">
-            Dashboard
-          </Typography>
+    <Container maxWidth="lg" sx={{ py: 4 }}>
+      {/* Header Card */}
+      <Paper 
+        elevation={3} 
+        sx={{ 
+          borderRadius: 2,
+          overflow: 'hidden',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+          mb: 3
+        }}
+      >
+        {/* Blue header banner */}
+        <Box 
+          sx={{ 
+            p: 3, 
+            background: 'linear-gradient(120deg, #2196f3, #3f51b5)', 
+            color: 'white',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between'
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <DashboardIcon sx={{ mr: 2, fontSize: 32 }} />
+            <Typography variant="h4" component="h1" fontWeight="500">
+              Dashboard
+            </Typography>
+          </Box>
+          
           <Button 
-            variant="outlined" 
+            variant="contained" 
             color="error" 
             onClick={handleLogout}
             startIcon={<LogoutIcon />}
+            sx={{ 
+              bgcolor: 'rgba(255,255,255,0.15)', 
+              '&:hover': { 
+                bgcolor: 'rgba(255,255,255,0.25)'
+              },
+              color: 'white'
+            }}
           >
             Logout
           </Button>
         </Box>
+
+        {/* Tabs Navigation */}
+        <Tabs
+          value={activeTab}
+          onChange={handleTabChange}
+          variant="fullWidth"
+          sx={{ 
+            borderBottom: 1, 
+            borderColor: 'divider'
+          }}
+        >
+          <Tab 
+            label="Overview" 
+            icon={<DashboardIcon />} 
+            iconPosition="start"
+          />
+          <Tab 
+            label="Network" 
+            icon={<GroupsIcon />} 
+            iconPosition="start"
+            disabled={!profile.network_id}
+          />
+        </Tabs>
       </Paper>
 
       {session && profile ? (
-        <Grid container spacing={3}>
-          <Grid item xs={12} md={4}>
-            <Card>
-              <CardContent>
-                <Typography variant="h5" component="h2" gutterBottom>
-                  Your Profile
-                </Typography>
-                <Divider sx={{ mb: 2 }} />
-                
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                  <Avatar 
-                    sx={{ width: 60, height: 60, mr: 2 }}
-                    src={profile.profile_picture_url} 
+        <Box>
+          {/* Overview Tab */}
+          {activeTab === 0 && (
+            <Grid container spacing={3}>
+              {/* Left Column */}
+              <Grid item xs={12} md={4}>
+                <Card sx={{ 
+                  borderRadius: 2, 
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column'
+                }}>
+                  <CardMedia
+                    sx={{ 
+                      height: 120, 
+                      bgcolor: 'primary.main',
+                      display: 'flex',
+                      alignItems: 'flex-end',
+                      justifyContent: 'center',
+                      position: 'relative'
+                    }}
                   >
-                    {profile.full_name ? profile.full_name.charAt(0).toUpperCase() : <PersonIcon />}
-                  </Avatar>
-                  <Box>
-                    <Typography variant="h6">
-                      {profile.full_name || user?.email || 'Not set'}
-                    </Typography>
-                    <Chip 
-                      label={profile.role || 'Member'} 
-                      color={profile.role === 'admin' ? 'primary' : 'default'} 
-                      size="small" 
-                    />
-                  </Box>
-                </Box>
-                
-                <Box sx={{ ml: 1, mb: 2 }}>
-                  <Typography variant="body2" color="text.secondary" gutterBottom>
-                    <strong>Email:</strong> {user?.email}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary" gutterBottom>
-                    <strong>Network ID:</strong> {profile.network_id ? profile.network_id.substring(0, 8) + '...' : 'Not assigned'}
-                  </Typography>
-                </Box>
-              </CardContent>
-              <CardActions>
-                <Button 
-                  size="small" 
-                  startIcon={<EditIcon />}
-                  component={Link} 
-                  to="/profile/edit"
-                >
-                  Edit Profile
-                </Button>
-              </CardActions>
-            </Card>
-          </Grid>
-
-          <Grid item xs={12} md={8}>
-            {!profile.network_id ? (
-              <Card>
-                <CardContent>
-                  <Typography variant="h5" component="h2" gutterBottom>
-                    Network
-                  </Typography>
-                  <Divider sx={{ mb: 2 }} />
-                  <Typography paragraph>
-                    You're not part of any network yet.
-                  </Typography>
-                  <Button 
-                    variant="contained" 
-                    color="primary" 
-                    startIcon={<AddIcon />}
-                    onClick={handleCreateNetwork}
-                  >
-                    Create My Network
-                  </Button>
-                  <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-                    Or wait for an invitation from a network admin.
-                  </Typography>
-                </CardContent>
-              </Card>
-            ) : (
-              <Card>
-                <CardContent>
-                  <Typography variant="h5" component="h2" gutterBottom>
-                    Network Members
-                  </Typography>
-                  <Divider sx={{ mb: 2 }} />
+                    <Avatar 
+                      sx={{ 
+                        width: 100, 
+                        height: 100, 
+                        border: '4px solid white',
+                        boxShadow: '0 4px 10px rgba(0,0,0,0.2)',
+                        position: 'absolute',
+                        bottom: '-40px',
+                        bgcolor: 'grey.200'
+                      }}
+                      src={profile.profile_picture_url} 
+                    >
+                      {profile.full_name ? profile.full_name.charAt(0).toUpperCase() : <PersonIcon fontSize="large" />}
+                    </Avatar>
+                  </CardMedia>
                   
-                  {(loadingMembers && networkMembers.length === 0) ? (
-                    <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
-                        <CircularProgress size={30} />
+                  <CardContent sx={{ pt: 6, pb: 2 }}>
+                    <Box sx={{ textAlign: 'center', mb: 2 }}>
+                      <Typography variant="h5" component="h2" gutterBottom>
+                        {profile.full_name || user?.email?.split('@')[0] || 'Not set'}
+                      </Typography>
+                      
+                      <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1 }}>
+                        <Chip 
+                          label={profile.role === 'admin' ? 'Admin' : 'Member'} 
+                          color={profile.role === 'admin' ? 'primary' : 'default'} 
+                          size="small" 
+                        />
+                        
+                        {profile.network_id && (
+                          <Chip 
+                            icon={<NetworkIcon fontSize="small" />}
+                            label="Connected" 
+                            color="success" 
+                            size="small" 
+                            variant="outlined"
+                          />
+                        )}
+                      </Box>
                     </Box>
-                    ) : networkMembers.length > 0 ? (
-                    <Box>
-                      {networkMembers.map(member => (
-                        <Paper 
-                          key={member.id} 
-                          elevation={1} 
-                          sx={{ 
-                            p: 2, 
-                            mb: 2, 
-                            display: 'flex', 
+                    
+                    <Divider sx={{ mb: 2 }} />
+                    
+                    <Typography variant="body2" color="text.secondary" gutterBottom>
+                      <strong>Email:</strong> {user?.email}
+                    </Typography>
+                    
+                    {profile.contact_email && (
+                      <Typography variant="body2" color="text.secondary" gutterBottom>
+                        <strong>Contact:</strong> {profile.contact_email}
+                      </Typography>
+                    )}
+                    
+                    {profile.network_id && (
+                      <Typography variant="body2" color="text.secondary" gutterBottom>
+                        <strong>Network ID:</strong> {profile.network_id.substring(0, 8) + '...'}
+                      </Typography>
+                    )}
+                    
+                    {profile.bio && (
+                      <Box sx={{ mt: 2 }}>
+                        <Typography variant="subtitle2" gutterBottom>
+                          Bio:
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {profile.bio.length > 120 ? profile.bio.substring(0, 120) + '...' : profile.bio}
+                        </Typography>
+                      </Box>
+                    )}
+                    
+                    {profile.skills && profile.skills.length > 0 && (
+                      <Box sx={{ mt: 2 }}>
+                        <Typography variant="subtitle2" gutterBottom>
+                          Skills:
+                        </Typography>
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                          {profile.skills.slice(0, 5).map((skill, index) => (
+                            <Chip 
+                              key={index} 
+                              label={skill} 
+                              size="small" 
+                              sx={{ 
+                                bgcolor: 'rgba(63, 81, 181, 0.1)',
+                                fontWeight: 400
+                              }}
+                            />
+                          ))}
+                          {profile.skills.length > 5 && (
+                            <Chip 
+                              label={`+${profile.skills.length - 5}`} 
+                              size="small" 
+                              color="primary"
+                            />
+                          )}
+                        </Box>
+                      </Box>
+                    )}
+                  </CardContent>
+                  
+                  <Box sx={{ flexGrow: 1 }} />
+                  
+                  <CardActions sx={{ p: 2, pt: 0, justifyContent: 'space-between' }}>
+                    <Button 
+                      size="small" 
+                      startIcon={<EditIcon />}
+                      component={Link} 
+                      to="/profile/edit"
+                      variant="outlined"
+                    >
+                      Edit Profile
+                    </Button>
+                    
+                    <Button 
+                      size="small" 
+                      startIcon={<PersonIcon />}
+                      component={Link} 
+                      to={`/profile/${user.id}`}
+                      variant="outlined"
+                      color="secondary"
+                    >
+                      View Public Profile
+                    </Button>
+                  </CardActions>
+                </Card>
+              </Grid>
+
+              {/* Right Column */}
+              <Grid item xs={12} md={8}>
+                <Stack spacing={3}>
+                  {/* Network Status Card */}
+                  <Card sx={{ 
+                    borderRadius: 2, 
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                  }}>
+                    <CardHeader
+                      title="Network Status"
+                      titleTypographyProps={{ variant: 'h6' }}
+                      avatar={<NetworkIcon color="primary" />}
+                    />
+                    
+                    <Divider />
+                    
+                    <CardContent>
+                      {!profile.network_id ? (
+                        <Box sx={{ textAlign: 'center', py: 3 }}>
+                          <Typography variant="h6" sx={{ mb: 1, color: 'text.secondary' }}>
+                            You're not part of any network yet
+                          </Typography>
+                          
+                          <Typography paragraph color="text.secondary">
+                            Create your own network or wait for an invitation from a network admin.
+                          </Typography>
+                          
+                          <Button 
+                            variant="contained" 
+                            color="primary" 
+                            startIcon={<CreateNewFolderIcon />}
+                            onClick={handleCreateNetwork}
+                            size="large"
+                            sx={{ mt: 1 }}
+                          >
+                            Create My Network
+                          </Button>
+                          
+                          <Box sx={{ mt: 3, display: 'flex', justifyContent: 'center' }}>
+                            <Chip
+                              icon={<InvitationIcon fontSize="small" />}
+                              label="Waiting for Invitations" 
+                              variant="outlined"
+                              color="primary"
+                            />
+                          </Box>
+                        </Box>
+                      ) : (
+                        <Box>
+                          <Box sx={{ 
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            mb: 2
+                          }}>
+                            <Typography variant="h6">
+                              {profile?.networks?.name || 'My Network'}
+                            </Typography>
+                            
+                            <Button
+                              variant="contained" 
+                              color="primary" 
+                              component={Link}
+                              to={`/network/${profile.network_id}`}
+                              endIcon={<ArrowForwardIcon />}
+                              size="small"
+                            >
+                              Go to Network
+                            </Button>
+                          </Box>
+                          
+                          <Grid container spacing={2} sx={{ mb: 2 }}>
+                            <Grid item xs={6} sm={3}>
+                              <Paper sx={{ 
+                                p: 2, 
+                                textAlign: 'center',
+                                bgcolor: 'rgba(33, 150, 243, 0.1)',
+                                borderRadius: 2
+                              }}>
+                                <Typography variant="h5" fontWeight="500" color="primary.main">
+                                  {networkMembers.length}
+                                </Typography>
+                                <Typography variant="body2" color="text.secondary">
+                                  Members
+                                </Typography>
+                              </Paper>
+                            </Grid>
+                            
+                            <Grid item xs={6} sm={3}>
+                              <Paper sx={{ 
+                                p: 2, 
+                                textAlign: 'center',
+                                bgcolor: 'rgba(76, 175, 80, 0.1)',
+                                borderRadius: 2
+                              }}>
+                                <Typography variant="h5" fontWeight="500" color="success.main">
+                                  {recentEvents.length}
+                                </Typography>
+                                <Typography variant="body2" color="text.secondary">
+                                  Upcoming Events
+                                </Typography>
+                              </Paper>
+                            </Grid>
+                            
+                            <Grid item xs={6} sm={3}>
+                              <Paper sx={{ 
+                                p: 2, 
+                                textAlign: 'center',
+                                bgcolor: 'rgba(244, 67, 54, 0.1)',
+                                borderRadius: 2
+                              }}>
+                                <Typography variant="h5" fontWeight="500" color="error.main">
+                                  {networkMembers.filter(m => m.role === 'admin').length}
+                                </Typography>
+                                <Typography variant="body2" color="text.secondary">
+                                  Admins
+                                </Typography>
+                              </Paper>
+                            </Grid>
+                            
+                            <Grid item xs={6} sm={3}>
+                              <Paper sx={{ 
+                                p: 2, 
+                                textAlign: 'center',
+                                bgcolor: 'rgba(156, 39, 176, 0.1)',
+                                borderRadius: 2
+                              }}>
+                                <Typography variant="h5" fontWeight="500" sx={{ color: 'secondary.main' }}>
+                                  {profile.role === 'admin' ? 'Admin' : 'Member'}
+                                </Typography>
+                                <Typography variant="body2" color="text.secondary">
+                                  Your Role
+                                </Typography>
+                              </Paper>
+                            </Grid>
+                          </Grid>
+                          
+                          <Box sx={{ display: 'flex', gap: 1, mt: 3 }}>
+                            <Button
+                              variant="outlined"
+                              component={Link}
+                              to={`/network/${profile.network_id}`}
+                              startIcon={<GroupsIcon />}
+                              size="small"
+                            >
+                              Members
+                            </Button>
+                            
+                            <Button
+                              variant="outlined"
+                              component={Link}
+                              to={`/network/${profile.network_id}`}
+                              startIcon={<EventIcon />}
+                              size="small"
+                            >
+                              Events
+                            </Button>
+                            
+                            <Button
+                              variant="outlined"
+                              component={Link}
+                              to={`/network/${profile.network_id}`}
+                              startIcon={<ArticleIcon />}
+                              size="small"
+                            >
+                              News
+                            </Button>
+                            
+                            <Button
+                              variant="outlined"
+                              component={Link}
+                              to={`/network/${profile.network_id}`}
+                              startIcon={<MenuBookIcon />}
+                              size="small"
+                            >
+                              Wiki
+                            </Button>
+                          </Box>
+                        </Box>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  {/* Admin Controls Card */}
+                  {profile.role === 'admin' && profile.network_id && (
+                    <Card sx={{ 
+                      borderRadius: 2, 
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                    }}>
+                      <CardHeader
+                        title="Admin Controls"
+                        titleTypographyProps={{ variant: 'h6' }}
+                        avatar={<AdminIcon color="secondary" />}
+                        sx={{ bgcolor: 'rgba(156, 39, 176, 0.05)' }}
+                      />
+                      
+                      <CardContent>
+                        <Typography paragraph>
+                          As an admin, you can manage your network settings, members, and events.
+                        </Typography>
+                        
+                        <Button 
+                          variant="contained" 
+                          color="secondary" 
+                          component={Link} 
+                          to="/admin"
+                          startIcon={<AdminIcon />}
+                          sx={{ mr: 2 }}
+                        >
+                          Admin Panel
+                        </Button>
+                        
+                        <Button 
+                          variant="outlined" 
+                          color="secondary" 
+                          component={Link} 
+                          to="/admin"
+                          startIcon={<PersonAddIcon />}
+                        >
+                          Invite Members
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  )}
+                  
+                  {/* Upcoming Events Card */}
+                  {profile.network_id && recentEvents.length > 0 && (
+                    <Card sx={{ 
+                      borderRadius: 2, 
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                    }}>
+                      <CardHeader
+                        title="Upcoming Events"
+                        titleTypographyProps={{ variant: 'h6' }}
+                        avatar={<EventIcon color="primary" />}
+                      />
+                      
+                      <Divider />
+                      
+                      {loadingEvents ? (
+                        <Box sx={{ p: 3, textAlign: 'center' }}>
+                          <CircularProgress size={30} />
+                        </Box>
+                      ) : (
+                        <CardContent>
+                          <Stack spacing={2}>
+                            {recentEvents.map(event => (
+                              <Paper
+                                key={event.id}
+                                variant="outlined"
+                                sx={{ 
+                                  p: 2, 
+                                  borderRadius: 2,
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: 2
+                                }}
+                              >
+                                <Box sx={{ 
+                                  width: 60, 
+                                  height: 60, 
+                                  bgcolor: event.cover_image_url ? 'transparent' : 'primary.light',
+                                  borderRadius: 2,
+                                  display: 'flex',
+                                  flexDirection: 'column',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  color: 'white',
+                                  overflow: 'hidden'
+                                }}>
+                                  {event.cover_image_url ? (
+                                    <img 
+                                      src={event.cover_image_url} 
+                                      alt={event.title}
+                                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                    />
+                                  ) : (
+                                    <>
+                                      <Typography variant="caption" fontWeight="bold">
+                                        {new Date(event.date).toLocaleDateString('en-US', { month: 'short' })}
+                                      </Typography>
+                                      <Typography variant="subtitle1" fontWeight="bold">
+                                        {new Date(event.date).getDate()}
+                                      </Typography>
+                                    </>
+                                  )}
+                                </Box>
+                                
+                                <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+                                  <Typography variant="subtitle1" noWrap>
+                                    {event.title}
+                                  </Typography>
+                                  
+                                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                    <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center' }}>
+                                      <EventIcon fontSize="inherit" sx={{ mr: 0.5 }} />
+                                      {new Date(event.date).toLocaleDateString()}
+                                    </Typography>
+                                    
+                                    <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center' }}>
+                                      <LocationOnIcon fontSize="inherit" sx={{ mr: 0.5 }} />
+                                      {event.location}
+                                    </Typography>
+                                  </Box>
+                                </Box>
+                                
+                                <Button
+                                  variant="outlined"
+                                  size="small"
+                                  component={Link}
+                                  to={`/network/${profile.network_id}`}
+                                >
+                                  Details
+                                </Button>
+                              </Paper>
+                            ))}
+                          </Stack>
+                          
+                          <Box sx={{ textAlign: 'center', mt: 2 }}>
+                            <Button
+                              component={Link}
+                              to={`/network/${profile.network_id}`}
+                              endIcon={<ArrowForwardIcon />}
+                            >
+                              View All Events
+                            </Button>
+                          </Box>
+                        </CardContent>
+                      )}
+                    </Card>
+                  )}
+                </Stack>
+              </Grid>
+            </Grid>
+          )}
+          
+          {/* Network Tab */}
+          {activeTab === 1 && profile.network_id && (
+            <Card sx={{ 
+              borderRadius: 2, 
+              boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+            }}>
+              <CardHeader
+                title="Network Members"
+                titleTypographyProps={{ variant: 'h6' }}
+                avatar={<GroupsIcon color="primary" />}
+                action={
+                  <Button 
+                    component={Link}
+                    to={`/network/${profile.network_id}`}
+                    endIcon={<ArrowForwardIcon />}
+                    size="small"
+                  >
+                    Network Page
+                  </Button>
+                }
+              />
+              
+              <Divider />
+              
+              <CardContent>
+                {(loadingMembers && networkMembers.length === 0) ? (
+                  <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
+                    <CircularProgress size={30} />
+                  </Box>
+                ) : networkMembers.length > 0 ? (
+                  <Grid container spacing={2}>
+                    {networkMembers.map(member => (
+                      <Grid item xs={12} sm={6} md={4} key={member.id}>
+                        <Paper
+                          elevation={1}
+                          sx={{
+                            p: 2,
+                            borderRadius: 2,
+                            display: 'flex',
                             alignItems: 'center',
-                            backgroundColor: member.id === user.id ? 'rgba(25, 118, 210, 0.08)' : 'inherit'
+                            bgcolor: member.id === user.id ? 'rgba(33, 150, 243, 0.05)' : 'inherit',
+                            border: member.id === user.id ? '1px solid rgba(33, 150, 243, 0.2)' : '1px solid transparent',
+                            transition: 'all 0.2s ease',
+                            '&:hover': {
+                              boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
+                              transform: 'translateY(-2px)'
+                            }
                           }}
                         >
-                          <Avatar 
-                            sx={{ mr: 2 }} 
+                          <Avatar
+                            sx={{ mr: 2, width: 50, height: 50 }}
                             src={member.profile_picture_url}
                           >
                             {member.full_name ? member.full_name.charAt(0).toUpperCase() : '?'}
                           </Avatar>
-                          <Box sx={{ flexGrow: 1 }}>
-                            <Typography variant="subtitle1">
+                          
+                          <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+                            <Typography variant="subtitle1" noWrap>
                               {member.full_name || 'Unnamed User'}
                               {member.id === user.id && ' (You)'}
                             </Typography>
-                            <Typography variant="body2" color="text.secondary">
-                              {member.contact_email || member.id}
-                            </Typography>
+                            
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              {member.role === 'admin' && (
+                                <Chip
+                                  label="Admin"
+                                  color="primary"
+                                  size="small"
+                                  sx={{ height: 20 }}
+                                />
+                              )}
+                              
+                              <Typography variant="caption" color="text.secondary" noWrap>
+                                {member.contact_email || member.id.substring(0, 8) + '...'}
+                              </Typography>
+                            </Box>
                           </Box>
-                          {member.role === 'admin' && (
-                            <Chip 
-                              label="Admin" 
-                              color="primary" 
-                              size="small" 
-                              sx={{ mr: 1 }}
-                            />
-                          )}
-                          <Button 
-                            variant="outlined" 
-                            size="small"
-                            component={Link} 
-                            to={`/profile/${member.id}`}
-                          >
-                            View Profile
-                          </Button>
+                          
+                          <Stack direction="row" spacing={1}>
+                            <Tooltip title="View Profile">
+                              <IconButton
+                                size="small"
+                                component={Link}
+                                to={`/profile/${member.id}`}
+                                color="primary"
+                              >
+                                <PersonIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                            
+                            {member.id !== user.id && (
+                              <Tooltip title="Message">
+                                <IconButton
+                                  size="small"
+                                  component={Link}
+                                  to={`/messages/${member.id}`}
+                                  color="primary"
+                                >
+                                  <MailIcon fontSize="small" />
+                                </IconButton>
+                              </Tooltip>
+                            )}
+                          </Stack>
                         </Paper>
-                      ))}
-                    </Box>
-                  ) : (
-                    <Typography>
-                      No other members found in your network.
-                    </Typography>
-                  )}
-                </CardContent>
-              </Card>
-            )}
-
-            {profile.role === 'admin' && profile.network_id && (
-              <Card sx={{ mt: 3 }}>
-                <CardContent>
-                  <Typography variant="h5" component="h2" gutterBottom>
-                    Admin Controls
-                  </Typography>
-                  <Divider sx={{ mb: 2 }} />
-                  <Typography paragraph>
-                    As an admin, you can manage your network settings and members.
-                  </Typography>
-                  <Button 
-                    variant="contained" 
-                    color="secondary" 
-                    component={Link} 
-                    to="/admin"
-                    startIcon={<AdminIcon />}
-                  >
-                    Go to Network Admin Panel
-                  </Button>
-                </CardContent>
-              </Card>
-            )}
-
-            {profile.network_id && (
-              <Card sx={{ mt: 3 }}>
-                <CardContent>
-                  <Button
-                    variant="outlined" 
-                    color="primary" 
-                    component={Link}
-                    to={`/network/${profile.network_id}`}
-                    endIcon={<ArrowForward />}
-                    sx={{ mt: 2 }}
-                  >
-                    Go to Network Landing Page
-                  </Button>
-                </CardContent>
-              </Card>
-            )}
-            <br />
-                  
-          </Grid>
-        </Grid>
+                      </Grid>
+                    ))}
+                  </Grid>
+                ) : (
+                  <Alert severity="info">
+                    No other members found in your network.
+                  </Alert>
+                )}
+              </CardContent>
+            </Card>
+          )}
+        </Box>
       ) : (
-        <Paper sx={{ p: 4, textAlign: 'center' }}>
+        <Paper 
+          sx={{ 
+            p: 4, 
+            borderRadius: 2,
+            textAlign: 'center',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
+          }}
+        >
           <Typography paragraph>
             You're not logged in or your session has expired.
           </Typography>
           <Button 
             variant="contained" 
             onClick={() => navigate('/login')}
+            startIcon={<ArrowForwardIcon />}
           >
             Go to Login
           </Button>

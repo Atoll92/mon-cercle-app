@@ -4,7 +4,6 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/authcontext';
 import { supabase } from '../supabaseclient';
 import EventParticipation from '../components/EventParticipation';
-import '../styles/ProfilePage.css';
 import {
   Button,
   Dialog,
@@ -13,9 +12,43 @@ import {
   DialogActions,
   Typography,
   Box,
-  Divider
+  Divider,
+  Container,
+  Paper,
+  Avatar,
+  Grid,
+  Card,
+  CardContent,
+  CardMedia,
+  CardActions,
+  Chip,
+  CircularProgress,
+  Tabs,
+  Tab,
+  IconButton,
+  Stack,
+  alpha,
+  Alert,
+  Tooltip
 } from '@mui/material';
-import MailIcon from '@mui/icons-material/Mail';
+import {
+  ArrowBack as ArrowBackIcon,
+  Edit as EditIcon,
+  Mail as MailIcon,
+  LinkedIn as LinkedInIcon,
+  Language as LanguageIcon,
+  Event as EventIcon,
+  Place as PlaceIcon,
+  Groups as GroupsIcon,
+  PersonOutline as PersonOutlineIcon,
+  Launch as LaunchIcon,
+  LocationOn as LocationOnIcon,
+  CalendarMonth as CalendarMonthIcon,
+  MoreHoriz as MoreHorizIcon,
+  Description as DescriptionIcon,
+  Badge as Badge,
+
+} from '@mui/icons-material';
 
 function ProfilePage() {
   const { userId } = useParams();
@@ -29,6 +62,7 @@ function ProfilePage() {
   const [upcomingEvents, setUpcomingEvents] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [showEventDialog, setShowEventDialog] = useState(false);
+  const [activeTab, setActiveTab] = useState(0);
   
   useEffect(() => {
     const fetchProfile = async () => {
@@ -122,295 +156,960 @@ function ProfilePage() {
     const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
-  
+
+  const handleTabChange = (event, newValue) => {
+    setActiveTab(newValue);
+  };
+
   if (loading) {
     return (
-      <div className="profile-loading">
-        <div className="spinner"></div>
-        <p>Loading profile...</p>
-      </div>
+      <Box 
+        sx={{ 
+          display: 'flex', 
+          flexDirection: 'column',
+          alignItems: 'center', 
+          justifyContent: 'center', 
+          height: '50vh' 
+        }}
+      >
+        <CircularProgress size={40} color="primary" />
+        <Typography variant="body1" sx={{ mt: 2 }}>
+          Loading profile...
+        </Typography>
+      </Box>
     );
   }
   
   if (error) {
     return (
-      <div className="profile-error">
-        <h2>Oops! Something went wrong</h2>
-        <p>{error}</p>
-        <button onClick={() => navigate('/dashboard')}>Back to Dashboard</button>
-      </div>
+      <Container maxWidth="md" sx={{ py: 4 }}>
+        <Paper elevation={3} sx={{ p: 4, borderRadius: 2, textAlign: 'center' }}>
+          <Typography variant="h5" color="error" gutterBottom>
+            Oops! Something went wrong
+          </Typography>
+          <Typography variant="body1" paragraph>
+            {error}
+          </Typography>
+          <Button 
+            variant="contained" 
+            startIcon={<ArrowBackIcon />}
+            onClick={() => navigate('/dashboard')}
+          >
+            Back to Dashboard
+          </Button>
+        </Paper>
+      </Container>
     );
   }
   
   if (!profile) {
     return (
-      <div className="profile-not-found">
-        <h2>Profile Not Found</h2>
-        <p>The user you're looking for doesn't exist or you don't have permission to view their profile.</p>
-        <button onClick={() => navigate('/dashboard')}>Back to Dashboard</button>
-      </div>
+      <Container maxWidth="md" sx={{ py: 4 }}>
+        <Paper elevation={3} sx={{ p: 4, borderRadius: 2, textAlign: 'center' }}>
+          <Typography variant="h5" gutterBottom>
+            Profile Not Found
+          </Typography>
+          <Typography variant="body1" paragraph>
+            The user you're looking for doesn't exist or you don't have permission to view their profile.
+          </Typography>
+          <Button 
+            variant="contained" 
+            startIcon={<ArrowBackIcon />}
+            onClick={() => navigate('/dashboard')}
+          >
+            Back to Dashboard
+          </Button>
+        </Paper>
+      </Container>
     );
   }
   
   return (
-    <div className="profile-container">
-      <div className="profile-header">
-        <Link to="/dashboard" className="back-link">← Back to Dashboard</Link>
-        <h1>
-          {isOwnProfile ? 'Your Profile' : `${profile.full_name || 'User'}'s Profile`}
-        </h1>
-        {isOwnProfile && (
-          <Link to="/profile/edit" className="edit-profile-btn">
-            Edit Profile
-          </Link>
-        )}
-        {!isOwnProfile && (
-  <Button
-    component={Link}
-    to={`/messages/${profile.id}`}
-    variant="outlined"
-    startIcon={<MailIcon />}
-    sx={{ ml: 2 }}
-  >
-    Message
-  </Button>
-)}
-      </div>
-      
-      <div className="profile-content">
-        <div className="profile-sidebar">
-          <div className="profile-avatar">
-            {profile.profile_picture_url ? (
-              <img src={profile.profile_picture_url} alt={profile.full_name} />
-            ) : (
-              <div className="avatar-placeholder">
-                {profile.full_name ? profile.full_name.charAt(0).toUpperCase() : '?'}
-              </div>
+    <Container maxWidth="lg" sx={{ py: 4 }}>
+      {/* Header Card */}
+      <Paper 
+        elevation={3} 
+        sx={{ 
+          borderRadius: 2,
+          overflow: 'hidden',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+          mb: 3
+        }}
+      >
+        {/* Blue header banner */}
+        <Box 
+          sx={{ 
+            p: 3, 
+            background: 'linear-gradient(120deg, #2196f3, #3f51b5)', 
+            color: 'white',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 2
+          }}
+        >
+          <IconButton 
+            component={Link} 
+            to="/dashboard"
+            sx={{ 
+              mr: 1,
+              color: 'white',
+              bgcolor: 'rgba(255,255,255,0.15)',
+              '&:hover': {
+                bgcolor: 'rgba(255,255,255,0.25)'
+              }
+            }}
+          >
+            <ArrowBackIcon />
+          </IconButton>
+          <Typography variant="h4" component="h1" fontWeight="500">
+            {isOwnProfile ? 'Your Profile' : `${profile.full_name || 'User'}'s Profile`}
+          </Typography>
+          
+          <Box sx={{ ml: 'auto', display: 'flex', gap: 1 }}>
+            {isOwnProfile && (
+              <Button
+                component={Link}
+                to="/profile/edit"
+                variant="contained"
+                startIcon={<EditIcon />}
+                sx={{ 
+                  bgcolor: 'white', 
+                  color: 'primary.main',
+                  '&:hover': {
+                    bgcolor: 'rgba(255,255,255,0.9)'
+                  }
+                }}
+              >
+                Edit Profile
+              </Button>
             )}
-          </div>
-          
-          <div className="profile-info-card">
-            <h2>{profile.full_name || 'Unnamed User'}</h2>
-            {profile.role === 'admin' && <span className="role-badge">Network Admin</span>}
             
-            <div className="contact-info">
-              <div className="info-item">
-                <span className="info-label">Email:</span>
-                <a href={`mailto:${profile.contact_email}`} className="info-value">
-                  {profile.contact_email}
-                </a>
-              </div>
-              
-              {profile.portfolio_url && (
-                <div className="info-item">
-                  <span className="info-label">Portfolio:</span>
-                  <a href={profile.portfolio_url} target="_blank" rel="noopener noreferrer" className="info-value">
-                    {profile.portfolio_url.replace(/^https?:\/\/(www\.)?/, '')}
-                  </a>
-                </div>
-              )}
-              
-              {profile.linkedin_url && (
-                <div className="info-item">
-                  <span className="info-label">LinkedIn:</span>
-                  <a href={profile.linkedin_url} target="_blank" rel="noopener noreferrer" className="info-value">
-                    {profile.linkedin_url.replace(/^https?:\/\/(www\.)?linkedin\.com\/in\//, '')}
-                  </a>
-                </div>
-              )}
-              
-              <div className="info-item">
-                <span className="info-label">Network:</span>
-                <span className="info-value">
-                  {profile.networks?.name || 'No Network'}
-                </span>
-              </div>
-            </div>
-          </div>
-          
-          {/* Upcoming Events Section */}
-          {upcomingEvents.length > 0 && (
-  <div className="profile-upcoming-events">
-    <h3>Upcoming Events</h3>
-    <ul className="events-list">
-      {upcomingEvents.map(event => (
-        <li key={event.id} className="event-item" onClick={() => handleEventClick(event)}>
-         {event.cover_image_url ? (
-  <div className="event-image">
-    <img 
-      src={event.cover_image_url} 
-      alt={event.title}
-      style={{ 
-        width: '100%', 
-        height: '100%', 
-        objectFit: 'contain' 
-      }} 
-    />
-  </div>
-) : (
-            <div className="event-date">
-              {new Date(event.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-            </div>
-          )}
-          <div className="event-details">
-            <h4>{event.title}</h4>
-            <p>{event.location}</p>
-          </div>
-        </li>
-      ))}
-    </ul>
-  </div>
-)}
-        </div>
+            {!isOwnProfile && (
+              <Button
+                component={Link}
+                to={`/messages/${profile.id}`}
+                variant="contained"
+                startIcon={<MailIcon />}
+                sx={{ 
+                  bgcolor: 'white', 
+                  color: 'primary.main',
+                  '&:hover': {
+                    bgcolor: 'rgba(255,255,255,0.9)'
+                  }
+                }}
+              >
+                Message
+              </Button>
+            )}
+          </Box>
+        </Box>
         
-        <div className="profile-details">
-          <div className="profile-section">
-            <h3>About</h3>
-            <div className="section-content">
-              {profile.bio ? (
-                <p>{profile.bio}</p>
-              ) : (
-                <p className="empty-section">No bio provided.</p>
-              )}
-            </div>
-          </div>
-          
-          <div className="profile-section">
-            <h3>Skills</h3>
-            <div className="section-content">
-              {profile.skills && profile.skills.length > 0 ? (
-                <div className="skills-list">
-                  {profile.skills.map((skill, index) => (
-                    <span key={index} className="skill-tag">{skill}</span>
-                  ))}
-                </div>
-              ) : (
-                <p className="empty-section">No skills listed.</p>
-              )}
-            </div>
-          </div>
-          
-          <div className="profile-section">
-            <h3>Portfolio Projects</h3>
-            <div className="section-content">
-              {profile.projects && profile.projects.length > 0 ? (
-                <div className="projects-grid">
-                  {profile.projects.map(project => (
-                    <div key={project.id} className="project-card">
-                      <div className="project-card-inner">
-                        {project.image_url && (
-                          <div className="project-thumbnail">
-                            <img src={project.image_url} alt={project.title} />
-                          </div>
+        {/* Tabs Navigation */}
+        <Tabs
+          value={activeTab}
+          onChange={handleTabChange}
+          variant="fullWidth"
+          sx={{ 
+            borderBottom: 1, 
+            borderColor: 'divider'
+          }}
+        >
+          <Tab 
+            label="Overview" 
+            icon={<PersonOutlineIcon />} 
+            iconPosition="start"
+          />
+          <Tab 
+            label="Portfolio" 
+            icon={<LanguageIcon />} 
+            iconPosition="start"
+          />
+          {upcomingEvents.length > 0 && (
+            <Tab 
+              label="Events" 
+              icon={<EventIcon />} 
+              iconPosition="start"
+            />
+          )}
+        </Tabs>
+        
+        {/* Profile Content */}
+        <Box sx={{ p: 0 }}>
+          {/* Overview Tab */}
+          {activeTab === 0 && (
+            <Grid container>
+              {/* Left Sidebar */}
+              <Grid item xs={12} md={4} sx={{ borderRight: { md: 1 }, borderColor: 'divider' }}>
+                <Box sx={{ p: 3, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                  <Avatar
+                    src={profile.profile_picture_url}
+                    sx={{
+                      width: 180,
+                      height: 180,
+                      border: '3px solid #e0e0e0',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                      mb: 3
+                    }}
+                  >
+                    {profile.full_name ? (
+                      <Typography variant="h2" color="primary">
+                        {profile.full_name.charAt(0).toUpperCase()}
+                      </Typography>
+                    ) : (
+                      <PersonOutlineIcon sx={{ fontSize: 80 }} />
+                    )}
+                  </Avatar>
+                  
+                  <Typography variant="h5" align="center" gutterBottom fontWeight="500">
+                    {profile.full_name || 'Unnamed User'}
+                  </Typography>
+                  
+                  <Stack direction="row" spacing={1} mb={2}>
+                    {profile.role === 'admin' && (
+                      <Chip 
+                        label="Network Admin" 
+                        color="primary" 
+                        size="small"
+                      />
+                    )}
+                    {profile.networks?.name && (
+                      <Chip 
+                        label={profile.networks.name}
+                        icon={<GroupsIcon fontSize="small" />}
+                        size="small"
+                        variant="outlined"
+                      />
+                    )}
+                  </Stack>
+                  
+                  <Paper
+                    elevation={0}
+                    variant="outlined"
+                    sx={{
+                      p: 2,
+                      borderRadius: 2,
+                      width: '100%',
+                      mb: 3
+                    }}
+                  >
+                    <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                      Contact Information
+                    </Typography>
+                    
+                    <Stack spacing={2} mt={1}>
+                      {profile.contact_email && (
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <MailIcon fontSize="small" color="action" />
+                          <Typography 
+                            variant="body2" 
+                            component="a" 
+                            href={`mailto:${profile.contact_email}`}
+                            sx={{ textDecoration: 'none', color: 'primary.main' }}
+                          >
+                            {profile.contact_email}
+                          </Typography>
+                        </Box>
+                      )}
+                      
+                      {profile.portfolio_url && (
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <LanguageIcon fontSize="small" color="action" />
+                          <Tooltip title={profile.portfolio_url}>
+                            <Typography 
+                              variant="body2" 
+                              component="a" 
+                              href={profile.portfolio_url} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              sx={{ 
+                                textDecoration: 'none', 
+                                color: 'primary.main',
+                                maxWidth: '200px',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap',
+                                display: 'block'
+                              }}
+                            >
+                              {profile.portfolio_url.replace(/^https?:\/\/(www\.)?/, '')}
+                            </Typography>
+                          </Tooltip>
+                        </Box>
+                      )}
+                      
+                      {profile.linkedin_url && (
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <LinkedInIcon fontSize="small" color="action" />
+                          <Typography 
+                            variant="body2" 
+                            component="a" 
+                            href={profile.linkedin_url} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            sx={{ textDecoration: 'none', color: 'primary.main' }}
+                          >
+                            LinkedIn
+                          </Typography>
+                        </Box>
+                      )}
+                    </Stack>
+                  </Paper>
+                  
+                  {/* Upcoming Events Preview */}
+                  {upcomingEvents.length > 0 && (
+                    <Paper
+                      elevation={0}
+                      variant="outlined"
+                      sx={{
+                        p: 2,
+                        borderRadius: 2,
+                        width: '100%'
+                      }}
+                    >
+                      <Box sx={{ 
+                        display: 'flex', 
+                        justifyContent: 'space-between', 
+                        alignItems: 'center',
+                        mb: 1.5
+                      }}>
+                        <Typography variant="subtitle2" color="text.secondary">
+                          Upcoming Events ({upcomingEvents.length})
+                        </Typography>
+                        
+                        {upcomingEvents.length > 2 && (
+                          <Button 
+                            size="small" 
+                            endIcon={<MoreHorizIcon />} 
+                            onClick={() => setActiveTab(2)}
+                          >
+                            See All
+                          </Button>
                         )}
-                        <div className="project-info">
-                          <h4 className="project-title">{project.title}</h4>
-                          <p className="project-description">{project.description}</p>
-                          {project.url && (
-                            <a href={project.url} target="_blank" rel="noopener noreferrer" className="view-project-btn">
-                              View Project
-                            </a>
+                      </Box>
+                      
+                      <Stack spacing={1.5}>
+                        {upcomingEvents.slice(0, 2).map(event => (
+                          <Card 
+                            key={event.id} 
+                            variant="outlined"
+                            sx={{ 
+                              cursor: 'pointer',
+                              transition: 'all 0.2s ease',
+                              '&:hover': {
+                                boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                              }
+                            }}
+                            onClick={() => handleEventClick(event)}
+                          >
+                            <Box sx={{ display: 'flex', alignItems: 'center', p: 1 }}>
+                              {event.cover_image_url ? (
+                                <Box 
+                                  sx={{ 
+                                    width: 50, 
+                                    height: 50, 
+                                    borderRadius: 1,
+                                    overflow: 'hidden',
+                                    mr: 1.5
+                                  }}
+                                >
+                                  <img 
+                                    src={event.cover_image_url} 
+                                    alt={event.title}
+                                    style={{ 
+                                      width: '100%', 
+                                      height: '100%', 
+                                      objectFit: 'cover' 
+                                    }} 
+                                  />
+                                </Box>
+                              ) : (
+                                <Box 
+                                  sx={{ 
+                                    width: 50, 
+                                    height: 50, 
+                                    borderRadius: 1,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    bgcolor: 'primary.light',
+                                    color: 'white',
+                                    mr: 1.5
+                                  }}
+                                >
+                                  <CalendarMonthIcon />
+                                </Box>
+                              )}
+                              
+                              <Box sx={{ minWidth: 0 }}>
+                                <Typography 
+                                  variant="body2" 
+                                  fontWeight="500" 
+                                  noWrap
+                                >
+                                  {event.title}
+                                </Typography>
+                                
+                                <Typography 
+                                  variant="caption" 
+                                  color="text.secondary" 
+                                  sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
+                                >
+                                  <CalendarMonthIcon fontSize="inherit" />
+                                  {new Date(event.date).toLocaleDateString()}
+                                </Typography>
+                              </Box>
+                            </Box>
+                          </Card>
+                        ))}
+                      </Stack>
+                    </Paper>
+                  )}
+                </Box>
+              </Grid>
+              
+              {/* Right Main Content */}
+              <Grid item xs={12} md={8}>
+                <Box sx={{ p: 3 }}>
+                  {/* About Section */}
+                  <Box sx={{ mb: 4 }}>
+                    <Typography 
+                      variant="h6" 
+                      gutterBottom 
+                      sx={{ 
+                        display: 'flex', 
+                        alignItems: 'center',
+                        gap: 1,
+                        pb: 1,
+                        borderBottom: '1px solid',
+                        borderColor: 'divider'
+                      }}
+                    >
+                      <DescriptionIcon fontSize="small" color="primary" />
+                      About
+                    </Typography>
+                    
+                    {profile.bio ? (
+                      <Typography variant="body1" paragraph>
+                        {profile.bio}
+                      </Typography>
+                    ) : (
+                      <Alert severity="info" variant="outlined" sx={{ mt: 1 }}>
+                        No bio provided.
+                      </Alert>
+                    )}
+                  </Box>
+                  
+                  {/* Skills Section */}
+                  <Box sx={{ mb: 4 }}>
+                    <Typography 
+                      variant="h6" 
+                      gutterBottom 
+                      sx={{ 
+                        display: 'flex', 
+                        alignItems: 'center',
+                        gap: 1,
+                        pb: 1,
+                        borderBottom: '1px solid',
+                        borderColor: 'divider'
+                      }}
+                    >
+                      <Badge fontSize="small" color="primary" />
+                      Skills & Expertise
+                    </Typography>
+                    
+                    {profile.skills && profile.skills.length > 0 ? (
+                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 2 }}>
+                        {profile.skills.map((skill, index) => (
+                          <Chip 
+                            key={index} 
+                            label={skill} 
+                            sx={{ 
+                              borderRadius: 1,
+                              bgcolor: alpha('#3f51b5', 0.1)
+                            }}
+                          />
+                        ))}
+                      </Box>
+                    ) : (
+                      <Alert severity="info" variant="outlined" sx={{ mt: 1 }}>
+                        No skills listed.
+                      </Alert>
+                    )}
+                  </Box>
+                  
+                  {/* Portfolio Preview Section */}
+                  {profile.projects && profile.projects.length > 0 && (
+                    <Box>
+                      <Box sx={{ 
+                        display: 'flex', 
+                        justifyContent: 'space-between', 
+                        alignItems: 'center',
+                        pb: 1,
+                        borderBottom: '1px solid',
+                        borderColor: 'divider',
+                        mb: 2
+                      }}>
+                        <Typography 
+                          variant="h6" 
+                          sx={{ 
+                            display: 'flex', 
+                            alignItems: 'center',
+                            gap: 1
+                          }}
+                        >
+                          <LanguageIcon fontSize="small" color="primary" />
+                          Portfolio Highlights
+                        </Typography>
+                        
+                        <Button 
+                          size="small" 
+                          endIcon={<MoreHorizIcon />} 
+                          onClick={() => setActiveTab(1)}
+                        >
+                          See All
+                        </Button>
+                      </Box>
+                      
+                      <Grid container spacing={2}>
+                        {profile.projects.slice(0, 2).map(project => (
+                          <Grid item xs={12} sm={6} key={project.id}>
+                            <Card 
+                              sx={{ 
+                                height: '100%',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                borderRadius: 2,
+                                transition: 'all 0.2s ease',
+                                '&:hover': {
+                                  transform: 'translateY(-4px)',
+                                  boxShadow: '0 8px 24px rgba(0,0,0,0.12)'
+                                }
+                              }}
+                            >
+                              {project.image_url ? (
+                                <CardMedia
+                                  component="img"
+                                  height="140"
+                                  image={project.image_url}
+                                  alt={project.title}
+                                />
+                              ) : (
+                                <Box 
+                                  sx={{ 
+                                    height: 140, 
+                                    bgcolor: 'grey.100',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center'
+                                  }}
+                                >
+                                  <LanguageIcon fontSize="large" color="disabled" />
+                                </Box>
+                              )}
+                              
+                              <CardContent sx={{ flexGrow: 1 }}>
+                                <Typography variant="h6" gutterBottom>
+                                  {project.title}
+                                </Typography>
+                                
+                                {project.description && (
+                                  <Typography 
+                                    variant="body2" 
+                                    color="text.secondary"
+                                    sx={{
+                                      overflow: 'hidden',
+                                      textOverflow: 'ellipsis',
+                                      display: '-webkit-box',
+                                      WebkitLineClamp: 3,
+                                      WebkitBoxOrient: 'vertical'
+                                    }}
+                                  >
+                                    {project.description}
+                                  </Typography>
+                                )}
+                              </CardContent>
+                              
+                              {project.url && (
+                                <CardActions>
+                                  <Button 
+                                    size="small" 
+                                    href={project.url} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    endIcon={<LaunchIcon />}
+                                  >
+                                    View Project
+                                  </Button>
+                                </CardActions>
+                              )}
+                            </Card>
+                          </Grid>
+                        ))}
+                      </Grid>
+                    </Box>
+                  )}
+                </Box>
+              </Grid>
+            </Grid>
+          )}
+          
+          {/* Portfolio Tab */}
+          {activeTab === 1 && (
+            <Box sx={{ p: 3 }}>
+              <Typography variant="h5" gutterBottom>
+                Portfolio Projects
+              </Typography>
+              
+              {profile.projects && profile.projects.length > 0 ? (
+                <Grid container spacing={3}>
+                  {profile.projects.map(project => (
+                    <Grid item xs={12} sm={6} md={4} key={project.id}>
+                      <Card 
+                        sx={{ 
+                          height: '100%',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          borderRadius: 2,
+                          transition: 'all 0.2s ease',
+                          '&:hover': {
+                            transform: 'translateY(-4px)',
+                            boxShadow: '0 8px 24px rgba(0,0,0,0.12)'
+                          }
+                        }}
+                      >
+                        {project.image_url ? (
+                          <CardMedia
+                            component="img"
+                            height="180"
+                            image={project.image_url}
+                            alt={project.title}
+                          />
+                        ) : (
+                          <Box 
+                            sx={{ 
+                              height: 180, 
+                              bgcolor: 'grey.100',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center'
+                            }}
+                          >
+                            <LanguageIcon fontSize="large" color="disabled" />
+                          </Box>
+                        )}
+                        
+                        <CardContent sx={{ flexGrow: 1 }}>
+                          <Typography variant="h6" gutterBottom>
+                            {project.title}
+                          </Typography>
+                          
+                          {project.description && (
+                            <Typography 
+                              variant="body2" 
+                              color="text.secondary"
+                              paragraph
+                            >
+                              {project.description}
+                            </Typography>
                           )}
-                        </div>
-                      </div>
-                    </div>
+                        </CardContent>
+                        
+                        {project.url && (
+                          <CardActions>
+                            <Button 
+                              size="small" 
+                              href={project.url} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              endIcon={<LaunchIcon />}
+                            >
+                              View Project
+                            </Button>
+                          </CardActions>
+                        )}
+                      </Card>
+                    </Grid>
                   ))}
-                </div>
+                </Grid>
               ) : (
-                <p className="empty-section">No projects shared yet.</p>
+                <Alert severity="info" variant="outlined" sx={{ mt: 2 }}>
+                  No portfolio projects have been shared yet.
+                </Alert>
               )}
-            </div>
-          </div>
-        </div>
-      </div>
+            </Box>
+          )}
+          
+          {/* Events Tab */}
+          {activeTab === 2 && upcomingEvents.length > 0 && (
+            <Box sx={{ p: 3 }}>
+              <Typography variant="h5" gutterBottom>
+                Upcoming Events
+              </Typography>
+              
+              <Grid container spacing={3}>
+                {upcomingEvents.map(event => (
+                  <Grid item xs={12} sm={6} md={4} key={event.id}>
+                    <Card 
+                      sx={{ 
+                        height: '100%',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        borderRadius: 2,
+                        transition: 'all 0.2s ease',
+                        cursor: 'pointer',
+                        '&:hover': {
+                          transform: 'translateY(-4px)',
+                          boxShadow: '0 8px 24px rgba(0,0,0,0.12)'
+                        }
+                      }}
+                      onClick={() => handleEventClick(event)}
+                    >
+                      {event.cover_image_url ? (
+                        <CardMedia
+                          component="img"
+                          height="160"
+                          image={event.cover_image_url}
+                          alt={event.title}
+                        />
+                      ) : (
+                        <Box 
+                          sx={{ 
+                            height: 160, 
+                            bgcolor: 'primary.light',
+                            color: 'white',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            flexDirection: 'column'
+                          }}
+                        >
+                          <EventIcon fontSize="large" />
+                          <Typography variant="h6" mt={1}>
+                            {new Date(event.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                          </Typography>
+                        </Box>
+                      )}
+                      
+                      <CardContent sx={{ flexGrow: 1 }}>
+                        <Typography variant="h6" gutterBottom>
+                          {event.title}
+                        </Typography>
+                        
+                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                          <CalendarMonthIcon fontSize="small" color="action" sx={{ mr: 1 }} />
+                          <Typography variant="body2" color="text.secondary">
+                            {new Date(event.date).toLocaleDateString()}
+                          </Typography>
+                        </Box>
+                        
+                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                          <LocationOnIcon fontSize="small" color="action" sx={{ mr: 1 }} />
+                          <Typography variant="body2" color="text.secondary">
+                            {event.location}
+                          </Typography>
+                        </Box>
+                        
+                        {event.description && (
+                          <Typography 
+                            variant="body2" 
+                            color="text.secondary"
+                            sx={{
+                              mt: 2,
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              display: '-webkit-box',
+                              WebkitLineClamp: 3,
+                              WebkitBoxOrient: 'vertical'
+                            }}
+                          >
+                            {event.description}
+                          </Typography>
+                        )}
+                      </CardContent>
+                      
+                      <CardActions>
+                        <Chip 
+                          label="Attending" 
+                          color="success" 
+                          size="small"
+                          variant="outlined"
+                          icon={<EventIcon fontSize="small" />}
+                        />
+                      </CardActions>
+                    </Card>
+                  </Grid>
+                ))}
+              </Grid>
+            </Box>
+          )}
+        </Box>
+      </Paper>
       
       {/* Event Details Dialog */}
       <Dialog
-  open={showEventDialog}
-  onClose={closeEventDialog}
-  maxWidth="md"
-  fullWidth
->
-  {selectedEvent && (
-    <>
-      <DialogTitle>
-        {selectedEvent.title}
-      </DialogTitle>
-      <DialogContent dividers>
-        {selectedEvent.cover_image_url && (
-          <Box sx={{ 
-            width: '100%', 
-            height: 300, 
-            mb: 3,
-            borderRadius: 1,
+        open={showEventDialog}
+        onClose={closeEventDialog}
+        maxWidth="md"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 2,
             overflow: 'hidden'
-          }}>
-            <img 
-              src={selectedEvent.cover_image_url} 
-              alt={selectedEvent.title}
-              style={{ 
-                width: '100%', 
-                height: '100%', 
-                objectFit: 'cover' 
-              }} 
-            />
-          </Box>
+          }
+        }}
+      >
+        {selectedEvent && (
+          <>
+            <DialogTitle sx={{ 
+              display: 'flex', 
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              p: 2,
+              bgcolor: 'primary.main',
+              color: 'white'
+            }}>
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <EventIcon sx={{ mr: 1.5 }} />
+                <Typography variant="h6" component="div">
+                  {selectedEvent.title}
+                </Typography>
+              </Box>
+              <Button 
+                onClick={closeEventDialog}
+                sx={{ color: 'white' }}
+              >
+                Close
+              </Button>
+            </DialogTitle>
+            <DialogContent dividers sx={{ p: 0 }}>
+              {selectedEvent.cover_image_url && (
+                <Box sx={{ 
+                  width: '100%', 
+                  height: 300,
+                  position: 'relative'
+                }}>
+                  <img 
+                    src={selectedEvent.cover_image_url} 
+                    alt={selectedEvent.title}
+                    style={{ 
+                      width: '100%', 
+                      height: '100%', 
+                      objectFit: 'cover' 
+                    }} 
+                  />
+                </Box>
+              )}
+              <Box sx={{ p: 3 }}>
+                <Grid container spacing={3}>
+                  <Grid item xs={12} md={4}>
+                    <Paper 
+                      variant="outlined" 
+                      sx={{ 
+                        p: 2, 
+                        borderRadius: 2,
+                        height: '100%'
+                      }}
+                    >
+                      <Typography 
+                        variant="subtitle2" 
+                        color="text.secondary" 
+                        gutterBottom
+                      >
+                        Event Details
+                      </Typography>
+                      
+                      <Stack spacing={2} mt={1}>
+                        <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+                          <CalendarMonthIcon fontSize="small" color="primary" />
+                          <Box>
+                            <Typography variant="body2" fontWeight="medium">
+                              Date & Time
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary">
+                              {formatEventDate(selectedEvent.date)}
+                            </Typography>
+                          </Box>
+                        </Box>
+                        
+                        <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+                          <LocationOnIcon fontSize="small" color="primary" />
+                          <Box>
+                            <Typography variant="body2" fontWeight="medium">
+                              Location
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary">
+                              {selectedEvent.location}
+                            </Typography>
+                          </Box>
+                        </Box>
+                        
+                        {selectedEvent.capacity && (
+                          <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+                            <GroupsIcon fontSize="small" color="primary" />
+                            <Box>
+                              <Typography variant="body2" fontWeight="medium">
+                                Capacity
+                              </Typography>
+                              <Typography variant="body2" color="text.secondary">
+                                {selectedEvent.capacity} attendees
+                              </Typography>
+                            </Box>
+                          </Box>
+                        )}
+                      </Stack>
+                      
+                      {isOwnProfile && (
+                        <Box sx={{ mt: 3 }}>
+                          <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                            Your RSVP
+                          </Typography>
+                          <EventParticipation 
+                            event={selectedEvent}
+                            showParticipants={true}
+                          />
+                        </Box>
+                      )}
+                    </Paper>
+                  </Grid>
+                  
+                  <Grid item xs={12} md={8}>
+                    {selectedEvent.description ? (
+                      <>
+                        <Typography variant="h6" gutterBottom>
+                          About this event
+                        </Typography>
+                        <Typography variant="body1" paragraph>
+                          {selectedEvent.description}
+                        </Typography>
+                      </>
+                    ) : (
+                      <Alert severity="info" variant="outlined">
+                        No description provided for this event.
+                      </Alert>
+                    )}
+                  </Grid>
+                </Grid>
+              </Box>
+            </DialogContent>
+            <DialogActions sx={{ p: 2 }}>
+              <Button onClick={closeEventDialog}>
+                Close
+              </Button>
+              {selectedEvent.network_id && (
+                <Button 
+                  component={Link}
+                  to={`/network/${selectedEvent.network_id}`}
+                  variant="contained"
+                  color="primary"
+                >
+                  View Network
+                </Button>
+              )}
+            </DialogActions>
+          </>
         )}
-        <Box sx={{ mb: 3 }}>
-          <Typography variant="subtitle1" gutterBottom>
-            <strong>Date:</strong> {formatEventDate(selectedEvent.date)}
-          </Typography>
-          <Typography variant="subtitle1" gutterBottom>
-            <strong>Location:</strong> {selectedEvent.location}
-          </Typography>
-          {selectedEvent.capacity && (
-            <Typography variant="subtitle1" gutterBottom>
-              <strong>Capacity:</strong> {selectedEvent.capacity}
-            </Typography>
-          )}
-        </Box>
-        
-        {selectedEvent.description && (
-          <Box sx={{ mb: 3 }}>
-            <Typography variant="h6" gutterBottom>
-              Description
-            </Typography>
-            <Typography variant="body1" paragraph>
-              {selectedEvent.description}
-            </Typography>
-          </Box>
-        )}
-        
-        {isOwnProfile && (
-          <Box sx={{ mt: 3 }}>
-            <Typography variant="h6" gutterBottom>
-              Your RSVP
-            </Typography>
-            <EventParticipation 
-              event={selectedEvent}
-              showParticipants={true}
-            />
-          </Box>
-        )}
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={closeEventDialog}>
-          Close
-        </Button>
-        {selectedEvent.network_id && (
-          <Button 
-            component={Link}
-            to={`/network/${selectedEvent.network_id}`}
-            color="primary"
-          >
-            View Network
-          </Button>
-        )}
-      </DialogActions>
-    </>
-  )}
-</Dialog>
-    </div>
+      </Dialog>
+    </Container>
   );
 }
 

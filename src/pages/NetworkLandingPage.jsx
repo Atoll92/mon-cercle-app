@@ -10,6 +10,7 @@ import Chat from '../components/Chat';
 import TimelineIcon from '@mui/icons-material/Timeline';
 import EventParticipation from '../components/EventParticipation';
 import EventsMap from '../components/EventsMap';
+import backgroundImage from '../assets/test.jpeg';
 
 import {
   Container,
@@ -338,78 +339,151 @@ const [membersTabDarkMode, setMembersTabDarkMode] = useState(false);
   
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-      <Paper sx={{ p: 3, mb: 3 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-          <Button
-            component={Link}
-            to="/dashboard"
-            startIcon={<ArrowBackIcon />}
-            sx={{ mr: 2 }}
-          >
-            Dashboard
-          </Button>
-          
-          {isUserAdmin && (
-            <Button
-              component={Link}
-              to="/admin"
-              startIcon={<AdminIcon />}
-              color="primary"
-              variant="outlined"
-              sx={{ ml: 'auto', mr: 1 }}
-            >
-              Admin Panel
-            </Button>
-          )}
-        </Box>
-        
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' }}>
-          <Typography variant="h4" component="h1" gutterBottom sx={{ mr: 2, flexGrow: 1 }}>
-            {network.name}
+      <Paper 
+  sx={{ 
+    p: 3, 
+    mb: 3,
+    borderRadius: 2,
+    backgroundImage: `url(${backgroundImage})`,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    position: 'relative',
+    boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+    overflow: 'hidden'
+  }}
+>
+  {/* Dark overlay for better text readability */}
+  <Box 
+    sx={{ 
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      zIndex: 1
+    }} 
+  />
+  
+  {/* Content with increased z-index to be above the overlay */}
+  <Box sx={{ position: 'relative', zIndex: 2 }}>
+    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+      <Button
+        component={Link}
+        to="/dashboard"
+        startIcon={<ArrowBackIcon />}
+        sx={{ 
+          mr: 2, 
+          bgcolor: 'rgba(255, 255, 255, 0.2)', 
+          color: 'white',
+          '&:hover': {
+            bgcolor: 'rgba(255, 255, 255, 0.3)',
+          }
+        }}
+      >
+        Dashboard
+      </Button>
+      
+      {isUserAdmin && (
+        <Button
+          component={Link}
+          to="/admin"
+          startIcon={<AdminIcon />}
+          color="primary"
+          variant="contained"
+          sx={{ ml: 'auto', mr: 1 }}
+        >
+          Admin Panel
+        </Button>
+      )}
+    </Box>
+    
+    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' }}>
+      <Typography 
+        variant="h4" 
+        component="h1" 
+        gutterBottom 
+        sx={{ 
+          mr: 2, 
+          flexGrow: 1, 
+          color: 'white',
+          textShadow: '1px 1px 3px rgba(0,0,0,0.7)'
+        }}
+      >
+        {network.name}
+      </Typography>
+      
+      <Box>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => setShowShareLink(!showShareLink)}
+          startIcon={<ContentCopyIcon />}
+          size="small"
+          sx={{ mb: { xs: 1, sm: 0 } }}
+        >
+          Share Network
+        </Button>
+      </Box>
+    </Box>
+    
+    {showShareLink && (
+      <Box sx={{ mt: 2, mb: 3, display: 'flex', alignItems: 'center' }}>
+        <TextField
+          value={shareableLink}
+          size="small"
+          fullWidth
+          variant="outlined"
+          InputProps={{
+            readOnly: true,
+            sx: {
+              bgcolor: 'rgba(255,255,255,0.9)',
+              '&:hover': {
+                bgcolor: 'rgba(255,255,255,1)',
+              }
+            }
+          }}
+        />
+        <IconButton 
+          onClick={copyToClipboard} 
+          color="primary"
+          sx={{ 
+            bgcolor: 'white', 
+            ml: 1,
+            '&:hover': {
+              bgcolor: 'rgba(255,255,255,0.9)',
+            }
+          }}
+        >
+          <ContentCopyIcon />
+        </IconButton>
+        {copied && (
+          <Typography variant="caption" sx={{ ml: 1, color: 'white', bgcolor: 'success.main', px: 1, py: 0.5, borderRadius: 1 }}>
+            Copied!
           </Typography>
-          
-          <Box>
-            <Button
-              variant="outlined"
-              color="primary"
-              onClick={() => setShowShareLink(!showShareLink)}
-              startIcon={<ContentCopyIcon />}
-              size="small"
-              sx={{ mb: { xs: 1, sm: 0 } }}
-            >
-              Share Network
-            </Button>
-          </Box>
-        </Box>
-        
-        {showShareLink && (
-          <Box sx={{ mt: 2, mb: 3, display: 'flex', alignItems: 'center' }}>
-            <TextField
-              value={shareableLink}
-              size="small"
-              fullWidth
-              variant="outlined"
-              InputProps={{
-                readOnly: true,
-              }}
-            />
-            <IconButton onClick={copyToClipboard} color="primary">
-              <ContentCopyIcon />
-            </IconButton>
-            {copied && (
-              <Typography variant="caption" color="success.main" sx={{ ml: 1 }}>
-                Copied!
-              </Typography>
-            )}
-          </Box>
         )}
-        
-        {network.description && (
-          <Typography variant="body1" paragraph sx={{ mt: 2 }}>
-            {network.description}
-          </Typography>
-        )}
-      </Paper>
+      </Box>
+    )}
+    
+    {network.description && (
+      <Typography 
+        variant="body1" 
+        paragraph 
+        sx={{ 
+          mt: 2, 
+          color: 'white',
+          textShadow: '0px 1px 2px rgba(0,0,0,0.6)',
+          maxWidth: '800px',
+          bgcolor: 'rgba(0,0,0,0.3)',
+          p: 2,
+          borderRadius: 1
+        }}
+      >
+        {network.description}
+      </Typography>
+    )}
+  </Box>
+</Paper>
       
       <Paper sx={{ width: '100%', mb: 3, backgroundColor: 'white' }}>
   <Tabs
