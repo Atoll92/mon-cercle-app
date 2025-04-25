@@ -5,7 +5,7 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 
 // Use the provided token and custom style
 const MAPBOX_TOKEN = 'pk.eyJ1IjoiZGdjb2Jvc3MiLCJhIjoiY2xzY2JkNTdqMGJzbDJrbzF2Zm84aWxwZCJ9.b9GP9FrGHsVquJf7ubWfKQ';
-const MAPBOX_STYLE = 'mapbox://styles/dgcoboss/cm9tb8i5b00hn01sb556wered';
+const MAPBOX_STYLE = 'mapbox://styles/dgcoboss/cm5k9ztpe003g01s76e7v8owz';
 
 export default function EventsMap({ events = [], onEventSelect, initialCoordinates = null }) {
   const mapContainerRef = useRef(null);
@@ -30,7 +30,8 @@ export default function EventsMap({ events = [], onEventSelect, initialCoordinat
           center: initialCoordinates 
             ? [initialCoordinates.longitude, initialCoordinates.latitude] 
             : [0, 20], // Use initialCoordinates if provided, otherwise default
-          zoom: initialCoordinates ? 10 : 1 // Zoom in if we have initialCoordinates
+          zoom: initialCoordinates ? 10 : 1,// Zoom in if we have initialCoordinates       
+          projection: 'mercator',
         });
         
         // Add navigation controls
