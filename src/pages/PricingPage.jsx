@@ -51,6 +51,10 @@ import { useTheme, alpha } from '@mui/material/styles';
 import { Business } from '@mui/icons-material';
 import { Groups } from '@mui/icons-material';
 import { Security } from '@mui/icons-material';
+import SwapVertIcon from '@mui/icons-material/SwapVert';
+import CancelIcon from '@mui/icons-material/Cancel';
+import BusinessIcon from '@mui/icons-material/Business';
+import ThreeJSBackground from '../components/ThreeJSBackground';
 
 const PricingPage = () => {
   const [annual, setAnnual] = useState(false);
@@ -170,8 +174,13 @@ const PricingPage = () => {
   };
 
   return (
-    <Container maxWidth="lg" sx={{ py: 8 }}>
+    <>
+    <ThreeJSBackground />
+
+    <Container maxWidth="lg" sx={{ py: 8 , zIndex: 99,   backdropFilter: 'blur(8px)',
+  backgroundColor: alpha(theme.palette.background.paper, 0.4) }}>
       {/* Header */}
+
       <Box sx={{ textAlign: 'center', mb: 8 }}>
         <Typography variant="h3" component="h1" gutterBottom fontWeight="bold" color="primary">
           Simple, Transparent Pricing
@@ -665,12 +674,10 @@ const PricingPage = () => {
         </Typography>
       </Box>
     </Container>
+    </>
   );
 };
 
-// Missing icon imports
-import SwapVertIcon from '@mui/icons-material/SwapVert';
-import CancelIcon from '@mui/icons-material/Cancel';
-import BusinessIcon from '@mui/icons-material/Business';
+
 
 export default PricingPage;

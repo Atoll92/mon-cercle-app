@@ -133,8 +133,8 @@ function App() {
     <DirectMessagesProvider>
       <div className="App">
         {/* Pass the network name to the header */}
-        {window.location.pathname !== "/" && (
-          <NetworkLogoHeader networkName={networkName} />
+        {window.location.pathname !== "/" && window.location.pathname !== "/pricing" && (
+        <NetworkLogoHeader networkName={networkName} />
         )}
         <Routes>
           {/* Public Routes */}
