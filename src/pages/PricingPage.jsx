@@ -329,6 +329,18 @@ const PricingPage = () => {
         >
           All plans include €2/additional member beyond your plan limit for up to 30 days
         </Alert>
+        <Alert 
+          severity="info" 
+          icon={<SchoolIcon />}
+          sx={{ 
+            mt: 3, 
+            maxWidth: 500, 
+            mx: 'auto', 
+            '& .MuiAlert-message': { display: 'flex', alignItems: 'center' } 
+          }}
+        >
+          Educational & non-profits receive 30% off all plans
+        </Alert>
       </Box>
 
       {/* Desktop Pricing Table */}
