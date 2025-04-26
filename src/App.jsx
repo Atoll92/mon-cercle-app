@@ -27,6 +27,7 @@ import NetworkLandingPage from './pages/NetworkLandingPage';
 import DemoPage from './pages/DemoPage';
 import DirectMessagesPage from './pages/DirectMessagesPage';
 import { DirectMessagesProvider } from './context/directMessagesContext';
+import PricingPage from './pages/PricingPage';
 
 function App() {
   const { loading, session, user } = useAuth();
@@ -142,6 +143,8 @@ function App() {
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/password-reset" element={<PasswordResetPage />} />
           <Route path="/demo" element={<DemoPage />} />
+          <Route path="/pricing" element={<PricingPage />} />
+
           
           {/* Public Wiki routes */}
           <Route path="/network/:networkId/wiki" element={<WikiListPage />} />

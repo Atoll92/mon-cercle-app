@@ -1,0 +1,676 @@
+import React, { useState } from 'react';
+import { 
+  Box, 
+  Typography, 
+  Button, 
+  Container, 
+  Grid, 
+  Card, 
+  CardContent, 
+  CardActions, 
+  CardHeader,
+  Switch, 
+  Divider, 
+  Chip, 
+  List, 
+  ListItem, 
+  ListItemIcon, 
+  ListItemText,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Tooltip,
+  useMediaQuery,
+  IconButton,
+  Stack,
+  FormControlLabel,
+  Alert
+} from '@mui/material';
+import { 
+  Check as CheckIcon, 
+  Close as CloseIcon, 
+  Info as InfoIcon,
+  Groups as GroupsIcon,
+  Palette as PaletteIcon,
+  Storage as StorageIcon,
+  AdminPanelSettings as AdminIcon,
+  Security as SecurityIcon,
+  Headset as SupportIcon,
+  Cloud as CloudIcon,
+  Code as CodeIcon,
+  Bookmark as BookmarkIcon,
+  EventNote as EventIcon,
+  School as SchoolIcon,
+//   Business as BusinessIcon
+} from '@mui/icons-material';
+import { useTheme, alpha } from '@mui/material/styles';
+import { Business } from '@mui/icons-material';
+import { Groups } from '@mui/icons-material';
+import { Security } from '@mui/icons-material';
+
+const PricingPage = () => {
+  const [annual, setAnnual] = useState(false);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isTablet = useMediaQuery(theme.breakpoints.down('md'));
+
+  // Calculate discounted annual prices (10 months for price of 12)
+  const getAnnualPrice = (monthlyPrice) => {
+    if (typeof monthlyPrice === 'number') {
+      return Math.round((monthlyPrice * 10) / 12);
+    }
+    return monthlyPrice;
+  };
+
+  const plans = [
+    {
+      name: 'Community',
+      price: 0,
+      description: 'For small teams and family groups',
+      features: [
+        { name: 'Members', value: '30', icon: <GroupsIcon color="primary" /> },
+        { name: 'Storage', value: '5GB', icon: <StorageIcon color="primary" /> },
+        { name: 'Admin accounts', value: '1', icon: <AdminIcon color="primary" /> },
+        { name: 'White label', value: false, icon: <PaletteIcon color="primary" /> },
+        { name: 'Wiki', value: true, icon: <BookmarkIcon color="primary" /> },
+        { name: 'Events', value: true, icon: <EventIcon color="primary" /> },
+        { name: 'Support', value: 'Community', icon: <SupportIcon color="primary" /> },
+        { name: 'API Access', value: false, icon: <CodeIcon color="primary" /> },
+      ],
+      popular: false,
+      color: 'default',
+      buttonVariant: 'outlined',
+      buttonText: 'Start for Free',
+      icon: <Groups color="primary" sx={{ fontSize: 48 }} />
+    },
+    {
+      name: 'Organization',
+      price: 99,
+      description: 'For growing organizations and associations',
+      features: [
+        { name: 'Members', value: '100', icon: <GroupsIcon color="primary" /> },
+        { name: 'Storage', value: '25GB', icon: <StorageIcon color="primary" /> },
+        { name: 'Admin accounts', value: '3', icon: <AdminIcon color="primary" /> },
+        { name: 'White label', value: true, icon: <PaletteIcon color="primary" /> },
+        { name: 'Wiki', value: true, icon: <BookmarkIcon color="primary" /> },
+        { name: 'Events', value: true, icon: <EventIcon color="primary" /> },
+        { name: 'Support', value: 'Email', icon: <SupportIcon color="primary" /> },
+        { name: 'API Access', value: false, icon: <CodeIcon color="primary" /> },
+      ],
+      popular: true,
+      color: 'primary',
+      buttonVariant: 'contained',
+      buttonText: 'Start 14-Day Trial',
+      icon: <Business color="primary" sx={{ fontSize: 48 }} />
+    },
+    {
+      name: 'Network',
+      price: 249,
+      description: 'For large networks and professional organizations',
+      features: [
+        { name: 'Members', value: '500', icon: <GroupsIcon color="primary" /> },
+        { name: 'Storage', value: '100GB', icon: <StorageIcon color="primary" /> },
+        { name: 'Admin accounts', value: '10', icon: <AdminIcon color="primary" /> },
+        { name: 'White label', value: true, icon: <PaletteIcon color="primary" /> },
+        { name: 'Wiki', value: true, icon: <BookmarkIcon color="primary" /> },
+        { name: 'Events', value: true, icon: <EventIcon color="primary" /> },
+        { name: 'Support', value: 'Priority', icon: <SupportIcon color="primary" /> },
+        { name: 'API Access', value: true, icon: <CodeIcon color="primary" /> },
+      ],
+      popular: false,
+      color: 'secondary',
+      buttonVariant: 'outlined',
+      buttonText: 'Start 14-Day Trial',
+      icon: <BusinessIcon color="secondary" sx={{ fontSize: 48 }} />
+    },
+    {
+      name: 'Enterprise',
+      price: 'Custom',
+      description: 'For large institutions with custom needs',
+      features: [
+        { name: 'Members', value: 'Unlimited', icon: <GroupsIcon color="primary" /> },
+        { name: 'Storage', value: 'Unlimited', icon: <StorageIcon color="primary" /> },
+        { name: 'Admin accounts', value: 'Unlimited', icon: <AdminIcon color="primary" /> },
+        { name: 'White label', value: true, icon: <PaletteIcon color="primary" /> },
+        { name: 'Wiki', value: true, icon: <BookmarkIcon color="primary" /> },
+        { name: 'Events', value: true, icon: <EventIcon color="primary" /> },
+        { name: 'Support', value: 'Dedicated', icon: <SupportIcon color="primary" /> },
+        { name: 'API Access', value: true, icon: <CodeIcon color="primary" /> },
+      ],
+      popular: false,
+      color: 'info',
+      buttonVariant: 'outlined',
+      buttonText: 'Contact Sales',
+      icon: <Security color="info" sx={{ fontSize: 48 }} />
+    }
+  ];
+
+  const FeatureRow = ({ feature, value }) => (
+    <ListItem>
+      <ListItemIcon>
+        {typeof value === 'boolean' ? (
+          value ? <CheckIcon color="success" /> : <CloseIcon color="error" />
+        ) : (
+          feature.icon
+        )}
+      </ListItemIcon>
+      <ListItemText 
+        primary={feature.name} 
+        secondary={typeof value !== 'boolean' ? value : null} 
+      />
+    </ListItem>
+  );
+
+  const handleToggleChange = () => {
+    setAnnual(!annual);
+  };
+
+  return (
+    <Container maxWidth="lg" sx={{ py: 8 }}>
+      {/* Header */}
+      <Box sx={{ textAlign: 'center', mb: 8 }}>
+        <Typography variant="h3" component="h1" gutterBottom fontWeight="bold" color="primary">
+          Simple, Transparent Pricing
+        </Typography>
+        <Typography variant="h6" color="text.secondary" sx={{ mb: 4, maxWidth: '700px', mx: 'auto' }}>
+          Choose the plan that works best for your organization's needs
+        </Typography>
+        
+        {/* Billing toggle */}
+        <Box sx={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center', 
+          mt: 4, 
+          bgcolor: alpha(theme.palette.primary.main, 0.05),
+          py: 2,
+          px: 4,
+          borderRadius: 3,
+          maxWidth: 'fit-content',
+          mx: 'auto'
+        }}>
+          <Typography 
+            variant="subtitle1" 
+            sx={{ 
+              fontWeight: !annual ? 600 : 400,
+              color: !annual ? 'primary.main' : 'text.secondary'
+            }}
+          >
+            Monthly
+          </Typography>
+          
+          <FormControlLabel
+            control={
+              <Switch
+                checked={annual}
+                onChange={handleToggleChange}
+                color="primary"
+                sx={{ mx: 2 }}
+              />
+            }
+            label=""
+          />
+          
+          <Typography 
+            variant="subtitle1" 
+            sx={{ 
+              fontWeight: annual ? 600 : 400,
+              color: annual ? 'primary.main' : 'text.secondary'
+            }}
+          >
+            Annual
+          </Typography>
+          
+          <Chip 
+            label="Save ~17%" 
+            color="success" 
+            size="small" 
+            sx={{ ml: 1, display: annual ? 'inline-flex' : 'none' }}
+          />
+        </Box>
+        
+        {/* Educational discount notice */}
+        <Alert 
+          severity="info" 
+          icon={<SchoolIcon />}
+          sx={{ 
+            mt: 3, 
+            maxWidth: 500, 
+            mx: 'auto', 
+            '& .MuiAlert-message': { display: 'flex', alignItems: 'center' } 
+          }}
+        >
+          Educational & non-profits receive 30% off all plans
+        </Alert>
+      </Box>
+
+      {/* Desktop Pricing Table */}
+      {!isTablet && (
+        <TableContainer 
+          component={Paper} 
+          elevation={4}
+          sx={{ 
+            borderRadius: 4, 
+            overflow: 'hidden',
+            mb: 8,
+            paddingTop : 5
+          }}
+        >
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell 
+                  sx={{ 
+                    background: alpha(theme.palette.primary.main, 0.05),
+                    borderBottom: `2px solid ${theme.palette.primary.main}`,
+                    width: '20%',
+                    py: 3
+                  }}
+                >
+                  <Typography variant="h6" fontWeight="bold">Features</Typography>
+                </TableCell>
+                
+                {plans.map((plan, index) => (
+                  <TableCell 
+                    key={plan.name} 
+                    align="center" 
+                    sx={{ 
+                      position: 'relative',
+                      background: plan.popular ? alpha(theme.palette.primary.main, 0.05) : 'white',
+                      borderBottom: plan.popular 
+                        ? `2px solid ${theme.palette.primary.main}` 
+                        : `2px solid ${theme.palette.divider}`,
+                      py: 3
+                    }}
+                  >
+                    {plan.popular && (
+                      <Chip
+                        label="Most Popular"
+                        color="primary"
+                        size="small"
+                        sx={{
+                          position: 'absolute',
+                          top: -12,
+                          left: '50%',
+                          transform: 'translateX(-50%)',
+                          fontSize: '0.75rem',
+                          fontWeight: 'bold',
+                          px: 1
+                        }}
+                      />
+                    )}
+                    
+                    <Box sx={{ mb: 2, display: 'flex', justifyContent: 'center' }}>
+                      {plan.icon}
+                    </Box>
+                    
+                    <Typography variant="h5" gutterBottom fontWeight="bold" color={`${plan.color}.main`}>
+                      {plan.name}
+                    </Typography>
+                    
+                    <Typography variant="body2" color="text.secondary" sx={{ height: 40, mb: 2 }}>
+                      {plan.description}
+                    </Typography>
+                    
+                    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'baseline', mt: 3, mb: 2 }}>
+                      <Typography variant="h3" fontWeight="bold" color={`${plan.color}.main`}>
+                        {typeof plan.price === 'number' ? 
+                          `€${annual ? getAnnualPrice(plan.price) : plan.price}` : 
+                          plan.price}
+                      </Typography>
+                      {typeof plan.price === 'number' && plan.price > 0 && (
+                        <Typography variant="subtitle1" color="text.secondary" sx={{ ml: 1 }}>
+                          /{annual ? 'mo' : 'month'}
+                        </Typography>
+                      )}
+                    </Box>
+                    
+                    {annual && typeof plan.price === 'number' && plan.price > 0 && (
+                      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>
+                        billed annually
+                      </Typography>
+                    )}
+                    
+                    <Button 
+                      variant={plan.buttonVariant} 
+                      color={plan.color === 'default' ? 'primary' : plan.color} 
+                      sx={{ 
+                        px: 4, 
+                        borderRadius: 2, 
+                        fontWeight: 500,
+                        my: 1
+                      }}
+                      fullWidth
+                    >
+                      {plan.buttonText}
+                    </Button>
+                  </TableCell>
+                ))}
+              </TableRow>
+            </TableHead>
+            
+            <TableBody>
+              {plans[0].features.map((feature, idx) => (
+                <TableRow 
+                  key={feature.name}
+                  sx={{
+                    '&:nth-of-type(odd)': {
+                      backgroundColor: theme.palette.action.hover,
+                    },
+                  }}
+                >
+                  <TableCell 
+                    sx={{ 
+                      borderLeft: `4px solid ${theme.palette.primary.main}`, 
+                      fontWeight: 500
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      {feature.icon}
+                      <Typography sx={{ ml: 1 }}>{feature.name}</Typography>
+                    </Box>
+                  </TableCell>
+                  
+                  {plans.map((plan) => (
+                    <TableCell 
+                      key={`${plan.name}-${feature.name}`} 
+                      align="center"
+                      sx={{ 
+                        backgroundColor: plan.popular ? alpha(theme.palette.primary.main, 0.03) : 'inherit',
+                        fontWeight: 500
+                      }}
+                    >
+                      {typeof plan.features[idx].value === 'boolean' ? (
+                        plan.features[idx].value ? (
+                          <CheckIcon sx={{ color: theme.palette.success.main }} />
+                        ) : (
+                          <CloseIcon sx={{ color: theme.palette.error.main }} />
+                        )
+                      ) : (
+                        <Typography>
+                          {plan.features[idx].value}
+                        </Typography>
+                      )}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
+      
+      {/* Mobile/Tablet Cards View */}
+      {isTablet && (
+        <Grid container spacing={3} sx={{ mb: 8 }}>
+          {plans.map((plan) => (
+            <Grid item xs={12} sm={6} key={plan.name}>
+              <Card 
+                elevation={plan.popular ? 8 : 2}
+                sx={{ 
+                  height: '100%',
+                  borderRadius: 4,
+                  position: 'relative',
+                  overflow: 'visible',
+                  transition: 'transform 0.3s ease',
+                  '&:hover': {
+                    transform: 'translateY(-8px)'
+                  },
+                  border: plan.popular ? `2px solid ${theme.palette.primary.main}` : 'none',
+                }}
+              >
+                {plan.popular && (
+                  <Chip
+                    label="Most Popular"
+                    color="primary"
+                    size="small"
+                    sx={{
+                      position: 'absolute',
+                      top: -12,
+                      right: 24,
+                      fontWeight: 'bold',
+                      zIndex: 1
+                    }}
+                  />
+                )}
+                
+                <CardHeader
+                  title={
+                    <Box sx={{ textAlign: 'center' }}>
+                      <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+                        {plan.icon}
+                      </Box>
+                      <Typography variant="h5" component="h2" fontWeight="bold" color={`${plan.color}.main`}>
+                        {plan.name}
+                      </Typography>
+                    </Box>
+                  }
+                  subheader={
+                    <Typography variant="body2" color="text.secondary" align="center">
+                      {plan.description}
+                    </Typography>
+                  }
+                  sx={{
+                    textAlign: 'center',
+                    pb: 0,
+                    backgroundColor: plan.popular ? alpha(theme.palette.primary.main, 0.05) : 'transparent'
+                  }}
+                />
+                
+                <CardContent sx={{ pt: 0 }}>
+                  <Box sx={{ 
+                    display: 'flex', 
+                    justifyContent: 'center', 
+                    alignItems: 'baseline', 
+                    my: 3 
+                  }}>
+                    <Typography 
+                      variant="h3" 
+                      component="span" 
+                      fontWeight="bold" 
+                      color={`${plan.color}.main`}
+                    >
+                      {typeof plan.price === 'number' ? 
+                        `€${annual ? getAnnualPrice(plan.price) : plan.price}` : 
+                        plan.price}
+                    </Typography>
+                    
+                    {typeof plan.price === 'number' && plan.price > 0 && (
+                      <Typography variant="subtitle1" color="text.secondary" sx={{ ml: 1 }}>
+                        /{annual ? 'mo' : 'month'}
+                      </Typography>
+                    )}
+                  </Box>
+                  
+                  {annual && typeof plan.price === 'number' && plan.price > 0 && (
+                    <Typography variant="caption" color="text.secondary" align="center" display="block">
+                      billed annually
+                    </Typography>
+                  )}
+                  
+                  <Divider sx={{ my: 2 }} />
+                  
+                  <List disablePadding>
+                    {plan.features.map((feature) => (
+                      <ListItem 
+                        key={feature.name} 
+                        disableGutters 
+                        sx={{ py: 1 }}
+                      >
+                        <ListItemIcon sx={{ minWidth: 40 }}>
+                          {typeof feature.value === 'boolean' ? (
+                            feature.value ? 
+                              <CheckIcon color="success" /> : 
+                              <CloseIcon color="error" />
+                          ) : (
+                            feature.icon
+                          )}
+                        </ListItemIcon>
+                        <ListItemText 
+                          primary={feature.name} 
+                          secondary={typeof feature.value !== 'boolean' ? feature.value : null}
+                          primaryTypographyProps={{ fontWeight: 500 }}
+                        />
+                      </ListItem>
+                    ))}
+                  </List>
+                </CardContent>
+                
+                <CardActions sx={{ p: 3, pt: 1, justifyContent: 'center' }}>
+                  <Button 
+                    variant={plan.buttonVariant} 
+                    color={plan.color === 'default' ? 'primary' : plan.color}
+                    size="large"
+                    fullWidth
+                    sx={{ 
+                      py: 1.5, 
+                      borderRadius: 2,
+                      fontWeight: 500
+                    }}
+                  >
+                    {plan.buttonText}
+                  </Button>
+                </CardActions>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+      )}
+      
+      {/* FAQ Section */}
+      <Box sx={{ mt: 10, mb: 8 }}>
+        <Typography 
+          variant="h4" 
+          component="h2" 
+          gutterBottom 
+          fontWeight="bold" 
+          color="primary" 
+          align="center"
+          sx={{ mb: 5 }}
+        >
+          Frequently Asked Questions
+        </Typography>
+        
+        <Grid container spacing={4}>
+          <Grid item xs={12} md={6}>
+            <Paper elevation={2} sx={{ p: 3, height: '100%', borderRadius: 3 }}>
+              <Typography variant="h6" gutterBottom fontWeight="bold">
+                <SchoolIcon sx={{ mr: 1, verticalAlign: 'middle', color: 'primary.main' }} />
+                Do you offer discounts for educational institutions?
+              </Typography>
+              <Typography variant="body1" color="text.secondary">
+                Yes, we offer a 30% discount for verified educational institutions and non-profit organizations. Contact our sales team for verification.
+              </Typography>
+            </Paper>
+          </Grid>
+          
+          <Grid item xs={12} md={6}>
+            <Paper elevation={2} sx={{ p: 3, height: '100%', borderRadius: 3 }}>
+              <Typography variant="h6" gutterBottom fontWeight="bold">
+                <SwapVertIcon sx={{ mr: 1, verticalAlign: 'middle', color: 'primary.main' }} />
+                Can I upgrade or downgrade my plan?
+              </Typography>
+              <Typography variant="body1" color="text.secondary">
+                Yes, you can change your plan at any time. When upgrading, we'll prorate the remaining days in your billing cycle. When downgrading, the new price takes effect on your next billing date.
+              </Typography>
+            </Paper>
+          </Grid>
+          
+          <Grid item xs={12} md={6}>
+            <Paper elevation={2} sx={{ p: 3, height: '100%', borderRadius: 3 }}>
+              <Typography variant="h6" gutterBottom fontWeight="bold">
+                <GroupsIcon sx={{ mr: 1, verticalAlign: 'middle', color: 'primary.main' }} />
+                What happens if we exceed our member limit?
+              </Typography>
+              <Typography variant="body1" color="text.secondary">
+                You can exceed your member limit by up to 10% for up to 30 days. After that, you'll need to upgrade to a higher tier or remove members to comply with your plan's limits.
+              </Typography>
+            </Paper>
+          </Grid>
+          
+          <Grid item xs={12} md={6}>
+            <Paper elevation={2} sx={{ p: 3, height: '100%', borderRadius: 3 }}>
+              <Typography variant="h6" gutterBottom fontWeight="bold">
+                <CancelIcon sx={{ mr: 1, verticalAlign: 'middle', color: 'primary.main' }} />
+                Can I cancel my subscription?
+              </Typography>
+              <Typography variant="body1" color="text.secondary">
+                Yes, you can cancel your subscription at any time. You'll maintain access until the end of your current billing period. We don't offer refunds for partial months.
+              </Typography>
+            </Paper>
+          </Grid>
+        </Grid>
+      </Box>
+      
+      {/* CTA Section */}
+      <Paper
+        elevation={8}
+        sx={{
+          background: 'linear-gradient(135deg, #1976d2 0%, #3f51b5 100%)',
+          color: 'white',
+          borderRadius: 6,
+          p: { xs: 4, md: 6 },
+          textAlign: 'center',
+          mb: 8,
+          mt: 10
+        }}
+      >
+        <Typography variant="h3" component="h2" gutterBottom fontWeight="bold">
+          Ready to get started?
+        </Typography>
+        <Typography variant="h6" sx={{ mb: 4, maxWidth: 700, mx: 'auto', opacity: 0.9 }}>
+          Try ÜNIO free for 14 days. No credit card required. Cancel anytime.
+        </Typography>
+        <Button
+          variant="contained"
+          color="secondary"
+          size="large"
+          sx={{ 
+            px: 6, 
+            py: 1.5, 
+            borderRadius: 2,
+            fontSize: '1.1rem',
+            fontWeight: 500,
+            boxShadow: theme.shadows[8],
+            '&:hover': {
+              boxShadow: theme.shadows[12],
+              transform: 'translateY(-2px)'
+            },
+            transition: 'all 0.3s ease'
+          }}
+        >
+          Start Your Free Trial
+        </Button>
+        <Typography variant="body2" sx={{ mt: 2, opacity: 0.8 }}>
+          Full access to all features. No credit card required.
+        </Typography>
+      </Paper>
+      
+      {/* Stripe logos and security notice */}
+      <Box sx={{ textAlign: 'center', my: 8 }}>
+        <Typography variant="body2" color="text.secondary" gutterBottom>
+          Secure payment processing with
+        </Typography>
+        <img 
+          src="https://cdn.worldvectorlogo.com/logos/stripe-4.svg" 
+          alt="Stripe" 
+          style={{ height: 40, marginBottom: 16 }}
+        />
+        <Typography variant="caption" color="text.secondary" display="block">
+          All payments processed securely. We never store your credit card information.
+        </Typography>
+      </Box>
+    </Container>
+  );
+};
+
+// Missing icon imports
+import SwapVertIcon from '@mui/icons-material/SwapVert';
+import CancelIcon from '@mui/icons-material/Cancel';
+import BusinessIcon from '@mui/icons-material/Business';
+
+export default PricingPage;
