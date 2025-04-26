@@ -45,7 +45,9 @@ import {
   Bookmark as BookmarkIcon,
   EventNote as EventIcon,
   School as SchoolIcon,
-//   Business as BusinessIcon
+  Add as AddIcon,
+  VisibilityOff as VisibilityOffIcon,
+  AttachMoney as AttachMoneyIcon
 } from '@mui/icons-material';
 import { useTheme, alpha } from '@mui/material/styles';
 import { Business } from '@mui/icons-material';
@@ -56,11 +58,13 @@ import CancelIcon from '@mui/icons-material/Cancel';
 import BusinessIcon from '@mui/icons-material/Business';
 import ThreeJSBackground from '../components/ThreeJSBackground';
 
+
 const PricingPage = () => {
   const [annual, setAnnual] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const isTablet = useMediaQuery(theme.breakpoints.down('md'));
+  const isLargeScreen = useMediaQuery(theme.breakpoints.up('lg'));
 
   // Calculate discounted annual prices (10 months for price of 12)
   const getAnnualPrice = (monthlyPrice) => {
@@ -70,18 +74,27 @@ const PricingPage = () => {
     return monthlyPrice;
   };
 
+  // Calculate annual savings in euros
+  const getAnnualSavings = (monthlyPrice) => {
+    if (typeof monthlyPrice === 'number') {
+      return Math.round(monthlyPrice * 12 - monthlyPrice * 10);
+    }
+    return 0;
+  };
+
   const plans = [
     {
       name: 'Community',
       price: 0,
       description: 'For small teams and family groups',
       features: [
-        { name: 'Members', value: '30', icon: <GroupsIcon color="primary" /> },
-        { name: 'Storage', value: '5GB', icon: <StorageIcon color="primary" /> },
+        { name: 'Members', value: '100', icon: <GroupsIcon color="primary" /> },
+        { name: 'Storage', value: '10GB', icon: <StorageIcon color="primary" /> },
         { name: 'Admin accounts', value: '1', icon: <AdminIcon color="primary" /> },
         { name: 'White label', value: false, icon: <PaletteIcon color="primary" /> },
         { name: 'Wiki', value: true, icon: <BookmarkIcon color="primary" /> },
         { name: 'Events', value: true, icon: <EventIcon color="primary" /> },
+        { name: 'Zero tracking by design', value: true, icon: <VisibilityOffIcon color="primary" /> },
         { name: 'Support', value: 'Community', icon: <SupportIcon color="primary" /> },
         { name: 'API Access', value: false, icon: <CodeIcon color="primary" /> },
       ],
@@ -89,39 +102,68 @@ const PricingPage = () => {
       color: 'default',
       buttonVariant: 'outlined',
       buttonText: 'Start for Free',
-      icon: <Groups color="primary" sx={{ fontSize: 48 }} />
+      icon: <Groups color="primary" sx={{ fontSize: 40 }} />,
+      addOns: [
+        { name: 'White Label', price: 99 }
+      ]
     },
     {
-      name: 'Organization',
-      price: 99,
-      description: 'For growing organizations and associations',
+      name: 'Non-Profit',
+      price: 49,
+      description: 'For educational and non-profit organizations',
       features: [
-        { name: 'Members', value: '100', icon: <GroupsIcon color="primary" /> },
-        { name: 'Storage', value: '25GB', icon: <StorageIcon color="primary" /> },
+        { name: 'Members', value: '500', icon: <GroupsIcon color="primary" /> },
+        { name: 'Storage', value: '50GB', icon: <StorageIcon color="primary" /> },
         { name: 'Admin accounts', value: '3', icon: <AdminIcon color="primary" /> },
         { name: 'White label', value: true, icon: <PaletteIcon color="primary" /> },
         { name: 'Wiki', value: true, icon: <BookmarkIcon color="primary" /> },
         { name: 'Events', value: true, icon: <EventIcon color="primary" /> },
+        { name: 'Zero tracking by design', value: true, icon: <VisibilityOffIcon color="primary" /> },
         { name: 'Support', value: 'Email', icon: <SupportIcon color="primary" /> },
+        { name: 'API Access', value: false, icon: <CodeIcon color="primary" /> },
+      ],
+      popular: false,
+      color: 'success',
+      buttonVariant: 'outlined',
+      buttonText: 'Verify & Start',
+      icon: <School color="success" sx={{ fontSize: 40 }} />,
+      badge: 'SPECIAL RATE',
+      addOns: []
+    },
+    {
+      name: 'Organization',
+      price: 97,
+      description: 'For growing organizations and associations',
+      features: [
+        { name: 'Members', value: '500', icon: <GroupsIcon color="primary" /> },
+        { name: 'Storage', value: '100GB', icon: <StorageIcon color="primary" /> },
+        { name: 'Admin accounts', value: '5', icon: <AdminIcon color="primary" /> },
+        { name: 'White label', value: true, icon: <PaletteIcon color="primary" /> },
+        { name: 'Wiki', value: true, icon: <BookmarkIcon color="primary" /> },
+        { name: 'Events', value: true, icon: <EventIcon color="primary" /> },
+        { name: 'Zero tracking by design', value: true, icon: <VisibilityOffIcon color="primary" /> },
+        { name: 'Support', value: 'Priority', icon: <SupportIcon color="primary" /> },
         { name: 'API Access', value: false, icon: <CodeIcon color="primary" /> },
       ],
       popular: true,
       color: 'primary',
       buttonVariant: 'contained',
       buttonText: 'Start 14-Day Trial',
-      icon: <Business color="primary" sx={{ fontSize: 48 }} />
+      icon: <Business color="primary" sx={{ fontSize: 40 }} />,
+      addOns: []
     },
     {
       name: 'Network',
-      price: 249,
+      price: 247,
       description: 'For large networks and professional organizations',
       features: [
-        { name: 'Members', value: '500', icon: <GroupsIcon color="primary" /> },
-        { name: 'Storage', value: '100GB', icon: <StorageIcon color="primary" /> },
+        { name: 'Members', value: '2,500', icon: <GroupsIcon color="primary" /> },
+        { name: 'Storage', value: '1TB', icon: <StorageIcon color="primary" /> },
         { name: 'Admin accounts', value: '10', icon: <AdminIcon color="primary" /> },
         { name: 'White label', value: true, icon: <PaletteIcon color="primary" /> },
         { name: 'Wiki', value: true, icon: <BookmarkIcon color="primary" /> },
         { name: 'Events', value: true, icon: <EventIcon color="primary" /> },
+        { name: 'Zero tracking by design', value: true, icon: <VisibilityOffIcon color="primary" /> },
         { name: 'Support', value: 'Priority', icon: <SupportIcon color="primary" /> },
         { name: 'API Access', value: true, icon: <CodeIcon color="primary" /> },
       ],
@@ -129,29 +171,62 @@ const PricingPage = () => {
       color: 'secondary',
       buttonVariant: 'outlined',
       buttonText: 'Start 14-Day Trial',
-      icon: <BusinessIcon color="secondary" sx={{ fontSize: 48 }} />
+      icon: <BusinessIcon color="secondary" sx={{ fontSize: 40 }} />,
+      addOns: []
+    },
+    {
+      name: 'Business',
+      price: 497,
+      description: 'For enterprises with advanced needs and SLAs',
+      features: [
+        { name: 'Members', value: '10,000', icon: <GroupsIcon color="primary" /> },
+        { name: 'Storage', value: '5TB', icon: <StorageIcon color="primary" /> },
+        { name: 'Admin accounts', value: '20', icon: <AdminIcon color="primary" /> },
+        { name: 'White label', value: true, icon: <PaletteIcon color="primary" /> },
+        { name: 'Wiki', value: true, icon: <BookmarkIcon color="primary" /> },
+        { name: 'Events', value: true, icon: <EventIcon color="primary" /> },
+        { name: 'Zero tracking by design', value: true, icon: <VisibilityOffIcon color="primary" /> },
+        { name: 'Support', value: '24/7 Dedicated', icon: <SupportIcon color="primary" /> },
+        { name: 'API Access', value: true, icon: <CodeIcon color="primary" /> },
+      ],
+      popular: false,
+      color: 'info',
+      buttonVariant: 'outlined',
+      buttonText: 'Start 14-Day Trial',
+      icon: <Security color="info" sx={{ fontSize: 40 }} />,
+      addOns: []
     },
     {
       name: 'Enterprise',
       price: 'Custom',
-      description: 'For large institutions with custom needs',
+      description: 'Custom enterprise solution with bespoke features',
       features: [
         { name: 'Members', value: 'Unlimited', icon: <GroupsIcon color="primary" /> },
         { name: 'Storage', value: 'Unlimited', icon: <StorageIcon color="primary" /> },
         { name: 'Admin accounts', value: 'Unlimited', icon: <AdminIcon color="primary" /> },
         { name: 'White label', value: true, icon: <PaletteIcon color="primary" /> },
         { name: 'Wiki', value: true, icon: <BookmarkIcon color="primary" /> },
+        { name: 'Zero tracking by design', value: true, icon: <VisibilityOffIcon color="primary" /> },
         { name: 'Events', value: true, icon: <EventIcon color="primary" /> },
-        { name: 'Support', value: 'Dedicated', icon: <SupportIcon color="primary" /> },
+        { name: 'Support', value: 'VIP Concierge', icon: <SupportIcon color="primary" /> },
         { name: 'API Access', value: true, icon: <CodeIcon color="primary" /> },
       ],
       popular: false,
-      color: 'info',
+      color: 'error',
       buttonVariant: 'outlined',
       buttonText: 'Contact Sales',
-      icon: <Security color="info" sx={{ fontSize: 48 }} />
+      icon: <Security color="error" sx={{ fontSize: 40 }} />,
+      addOns: []
     }
   ];
+
+  // For desktop view, we'll determine the number of plans to show based on screen size
+  const desktopPlans = isLargeScreen 
+    ? plans 
+    : [plans[0], plans[2], plans[3], plans[5]]; // When not large screen, show core plans
+
+  // For mobile/tablet view, show all plans
+  const mobilePlans = plans;
 
   const FeatureRow = ({ feature, value }) => (
     <ListItem>
@@ -177,10 +252,9 @@ const PricingPage = () => {
     <>
     <ThreeJSBackground />
 
-    <Container maxWidth="lg" sx={{ py: 8 , zIndex: 99,   backdropFilter: 'blur(8px)',
-  backgroundColor: alpha(theme.palette.background.paper, 0.4) }}>
+    <Container maxWidth="xl" sx={{ py: 8, zIndex: 99, backdropFilter: 'blur(8px)',
+      backgroundColor: alpha(theme.palette.background.paper, 0.4) }}>
       {/* Header */}
-
       <Box sx={{ textAlign: 'center', mb: 8 }}>
         <Typography variant="h3" component="h1" gutterBottom fontWeight="bold" color="primary">
           Simple, Transparent Pricing
@@ -235,25 +309,25 @@ const PricingPage = () => {
           </Typography>
           
           <Chip 
-            label="Save ~17%" 
+            label="Save up to €594/yr" 
             color="success" 
             size="small" 
             sx={{ ml: 1, display: annual ? 'inline-flex' : 'none' }}
           />
         </Box>
         
-        {/* Educational discount notice */}
+        {/* Usage-based pricing notice */}
         <Alert 
           severity="info" 
-          icon={<SchoolIcon />}
+          icon={<AttachMoneyIcon />}
           sx={{ 
             mt: 3, 
-            maxWidth: 500, 
+            maxWidth: 600, 
             mx: 'auto', 
             '& .MuiAlert-message': { display: 'flex', alignItems: 'center' } 
           }}
         >
-          Educational & non-profits receive 30% off all plans
+          All plans include €2/additional member beyond your plan limit for up to 30 days
         </Alert>
       </Box>
 
@@ -266,24 +340,24 @@ const PricingPage = () => {
             borderRadius: 4, 
             overflow: 'hidden',
             mb: 8,
-            paddingTop : 5
+            paddingTop: 5
           }}
         >
-          <Table>
+          <Table size={isLargeScreen ? "medium" : "small"}>
             <TableHead>
               <TableRow>
                 <TableCell 
                   sx={{ 
                     background: alpha(theme.palette.primary.main, 0.05),
                     borderBottom: `2px solid ${theme.palette.primary.main}`,
-                    width: '20%',
+                    width: '16%',
                     py: 3
                   }}
                 >
                   <Typography variant="h6" fontWeight="bold">Features</Typography>
                 </TableCell>
                 
-                {plans.map((plan, index) => (
+                {desktopPlans.map((plan, index) => (
                   <TableCell 
                     key={plan.name} 
                     align="center" 
@@ -293,13 +367,31 @@ const PricingPage = () => {
                       borderBottom: plan.popular 
                         ? `2px solid ${theme.palette.primary.main}` 
                         : `2px solid ${theme.palette.divider}`,
-                      py: 3
+                      py: 3,
+                      width: `${84/desktopPlans.length}%`
                     }}
                   >
                     {plan.popular && (
                       <Chip
                         label="Most Popular"
                         color="primary"
+                        size="small"
+                        sx={{
+                          position: 'absolute',
+                          top: -12,
+                          left: '50%',
+                          transform: 'translateX(-50%)',
+                          fontSize: '0.75rem',
+                          fontWeight: 'bold',
+                          px: 1
+                        }}
+                      />
+                    )}
+                    
+                    {plan.badge && !plan.popular && (
+                      <Chip
+                        label={plan.badge}
+                        color={plan.color}
                         size="small"
                         sx={{
                           position: 'absolute',
@@ -339,8 +431,8 @@ const PricingPage = () => {
                     </Box>
                     
                     {annual && typeof plan.price === 'number' && plan.price > 0 && (
-                      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>
-                        billed annually
+                      <Typography variant="caption" color="success.main" sx={{ display: 'block', mb: 2, fontWeight: 'bold' }}>
+                        Save €{getAnnualSavings(plan.price)}/year
                       </Typography>
                     )}
                     
@@ -348,7 +440,7 @@ const PricingPage = () => {
                       variant={plan.buttonVariant} 
                       color={plan.color === 'default' ? 'primary' : plan.color} 
                       sx={{ 
-                        px: 4, 
+                        px: 2, 
                         borderRadius: 2, 
                         fontWeight: 500,
                         my: 1
@@ -384,7 +476,7 @@ const PricingPage = () => {
                     </Box>
                   </TableCell>
                   
-                  {plans.map((plan) => (
+                  {desktopPlans.map((plan) => (
                     <TableCell 
                       key={`${plan.name}-${feature.name}`} 
                       align="center"
@@ -408,20 +500,52 @@ const PricingPage = () => {
                   ))}
                 </TableRow>
               ))}
+              
+              {/* Additional members pricing row */}
+              <TableRow sx={{ backgroundColor: alpha(theme.palette.secondary.main, 0.05) }}>
+                <TableCell sx={{ 
+                  borderLeft: `4px solid ${theme.palette.secondary.main}`, 
+                  fontWeight: 500 
+                }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <AddIcon color="secondary" />
+                    <Typography sx={{ ml: 1 }}>Additional members</Typography>
+                  </Box>
+                </TableCell>
+                
+                {desktopPlans.map((plan) => (
+                  <TableCell 
+                    key={`${plan.name}-addons`} 
+                    align="center"
+                    sx={{ fontWeight: 500 }}
+                  >
+                    {plan.name === 'Enterprise' ? 'Included' : '€2/member/month'}
+                  </TableCell>
+                ))}
+              </TableRow>
             </TableBody>
           </Table>
         </TableContainer>
       )}
       
-      {/* Mobile/Tablet Cards View */}
+      {/* Mobile/Tablet Cards View - Show all plans in a scrollable container */}
       {isTablet && (
-        <Grid container spacing={3} sx={{ mb: 8 }}>
-          {plans.map((plan) => (
-            <Grid item xs={12} sm={6} key={plan.name}>
+        <Box sx={{ mb: 8, overflow: 'auto', pb: 2 }}>
+          <Stack 
+            direction="row" 
+            spacing={3} 
+            sx={{ 
+              minWidth: 'min-content', // Ensure cards don't shrink too small
+              pb: 1 // Add padding to show box shadow
+            }}
+          >
+            {mobilePlans.map((plan) => (
               <Card 
+                key={plan.name}
                 elevation={plan.popular ? 8 : 2}
                 sx={{ 
-                  height: '100%',
+                  minWidth: 280,
+                  maxWidth: 330,
                   borderRadius: 4,
                   position: 'relative',
                   overflow: 'visible',
@@ -436,6 +560,21 @@ const PricingPage = () => {
                   <Chip
                     label="Most Popular"
                     color="primary"
+                    size="small"
+                    sx={{
+                      position: 'absolute',
+                      top: -12,
+                      right: 24,
+                      fontWeight: 'bold',
+                      zIndex: 1
+                    }}
+                  />
+                )}
+                
+                {plan.badge && !plan.popular && (
+                  <Chip
+                    label={plan.badge}
+                    color={plan.color}
                     size="small"
                     sx={{
                       position: 'absolute',
@@ -496,8 +635,8 @@ const PricingPage = () => {
                   </Box>
                   
                   {annual && typeof plan.price === 'number' && plan.price > 0 && (
-                    <Typography variant="caption" color="text.secondary" align="center" display="block">
-                      billed annually
+                    <Typography variant="caption" color="success.main" align="center" display="block" fontWeight="bold">
+                      Save €{getAnnualSavings(plan.price)}/year
                     </Typography>
                   )}
                   
@@ -526,6 +665,18 @@ const PricingPage = () => {
                         />
                       </ListItem>
                     ))}
+                    
+                    {/* Additional member pricing */}
+                    <ListItem disableGutters sx={{ py: 1, bgcolor: alpha(theme.palette.secondary.main, 0.05), px: 1, borderRadius: 1, mt: 1 }}>
+                      <ListItemIcon sx={{ minWidth: 40 }}>
+                        <AddIcon color="secondary" />
+                      </ListItemIcon>
+                      <ListItemText 
+                        primary="Additional members" 
+                        secondary={plan.name === 'Enterprise' ? 'Included' : '€2/member/month'}
+                        primaryTypographyProps={{ fontWeight: 500 }}
+                      />
+                    </ListItem>
                   </List>
                 </CardContent>
                 
@@ -545,10 +696,77 @@ const PricingPage = () => {
                   </Button>
                 </CardActions>
               </Card>
-            </Grid>
-          ))}
-        </Grid>
+            ))}
+          </Stack>
+          
+          {/* Scroll indicator for mobile */}
+          <Box sx={{ textAlign: 'center', mt: 2, display: { sm: 'none' } }}>
+            <Typography variant="caption" color="text.secondary">
+              Swipe to see more plans →
+            </Typography>
+          </Box>
+        </Box>
       )}
+      
+      {/* Comparison Table */}
+      <Box sx={{ my: 8 }}>
+        <Typography 
+          variant="h4" 
+          component="h2" 
+          gutterBottom 
+          fontWeight="bold" 
+          color="primary" 
+          align="center"
+          sx={{ mb: 3 }}
+        >
+          How We Compare
+        </Typography>
+        
+        <TableContainer component={Paper} elevation={2} sx={{ borderRadius: 3, overflow: 'hidden' }}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell sx={{ fontWeight: 'bold', bgcolor: alpha(theme.palette.primary.main, 0.05) }}>
+                  Feature
+                </TableCell>
+                <TableCell align="center" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
+                  ÜNIO
+                </TableCell>
+                <TableCell align="center">
+                  Competitors
+                </TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              <TableRow>
+                <TableCell>Members in Free Tier</TableCell>
+                <TableCell align="center" sx={{ fontWeight: 'bold', color: 'primary.main' }}>100</TableCell>
+                <TableCell align="center">20-50</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell>White Label Option</TableCell>
+                <TableCell align="center" sx={{ fontWeight: 'bold', color: 'primary.main' }}>€97/mo</TableCell>
+                <TableCell align="center">€300+/mo</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell>Privacy by Design</TableCell>
+                <TableCell align="center"><CheckIcon color="success" /></TableCell>
+                <TableCell align="center"><CloseIcon color="error" /></TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell>Non-Profit Discount</TableCell>
+                <TableCell align="center" sx={{ fontWeight: 'bold', color: 'primary.main' }}>€49/mo Plan</TableCell>
+                <TableCell align="center">Usually 10-15%</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell>5-Year Total Cost (500 Members)</TableCell>
+                <TableCell align="center" sx={{ fontWeight: 'bold', color: 'primary.main' }}>€4,656 (annual billing)</TableCell>
+                <TableCell align="center">€9,000-12,000</TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Box>
       
       {/* FAQ Section */}
       <Box sx={{ mt: 10, mb: 8 }}>
@@ -572,7 +790,8 @@ const PricingPage = () => {
                 Do you offer discounts for educational institutions?
               </Typography>
               <Typography variant="body1" color="text.secondary">
-                Yes, we offer a 30% discount for verified educational institutions and non-profit organizations. Contact our sales team for verification.
+                Yes, we offer a dedicated Non-Profit tier at €49/mo for verified educational institutions and 
+                non-profit organizations with 500 members included. Contact our sales team for verification.
               </Typography>
             </Paper>
           </Grid>
@@ -584,7 +803,8 @@ const PricingPage = () => {
                 Can I upgrade or downgrade my plan?
               </Typography>
               <Typography variant="body1" color="text.secondary">
-                Yes, you can change your plan at any time. When upgrading, we'll prorate the remaining days in your billing cycle. When downgrading, the new price takes effect on your next billing date.
+                Yes, you can change your plan at any time. When upgrading, we'll prorate the remaining days 
+                in your billing cycle. When downgrading, the new price takes effect on your next billing date.
               </Typography>
             </Paper>
           </Grid>
@@ -596,7 +816,8 @@ const PricingPage = () => {
                 What happens if we exceed our member limit?
               </Typography>
               <Typography variant="body1" color="text.secondary">
-                You can exceed your member limit by up to 10% for up to 30 days. After that, you'll need to upgrade to a higher tier or remove members to comply with your plan's limits.
+                You can exceed your member limit at a rate of €2 per additional member for up to 30 days. 
+                After that, you'll need to upgrade to a higher tier or remove members to comply with your plan's limits.
               </Typography>
             </Paper>
           </Grid>
@@ -677,7 +898,5 @@ const PricingPage = () => {
     </>
   );
 };
-
-
-
+import { School } from '@mui/icons-material';
 export default PricingPage;
