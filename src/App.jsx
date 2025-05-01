@@ -8,6 +8,7 @@ import { supabase } from './supabaseclient';
 import WikiListPage from './pages/WikiListPage';
 import WikiPage from './pages/WikiPage';
 import WikiEditPage from './pages/WikiEditPage';
+import PaymentSuccessPage from './pages/PaymentSuccessPage';
 
 // Import Pages
 import LoginPage from './pages/LoginPage';
@@ -145,7 +146,7 @@ function App() {
           <Route path="/password-reset" element={<PasswordResetPage />} />
           <Route path="/demo" element={<DemoPage />} />
           <Route path="/pricing" element={<PricingPage />} />
-
+          <Route path="/payment-success" element={<PaymentSuccessPage />} />
           <Route path="/shimmer" element={<ShimmeringTextPage />} />
           
           {/* Public Wiki routes */}

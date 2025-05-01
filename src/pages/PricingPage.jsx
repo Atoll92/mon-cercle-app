@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState  } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   Box, 
   Typography, 
@@ -57,6 +58,10 @@ import SwapVertIcon from '@mui/icons-material/SwapVert';
 import CancelIcon from '@mui/icons-material/Cancel';
 import BusinessIcon from '@mui/icons-material/Business';
 import ThreeJSBackground from '../components/ThreeJSBackground';
+import { createCheckoutSession } from '../services/stripeService';
+import { useAuth } from '../context/authcontext';
+import { PRICE_IDS, ANNUAL_PRICE_IDS } from '../stripe/config';
+import { PRICE_ID } from '../stripe/config';
 
 
 const PricingPage = () => {
@@ -74,6 +79,49 @@ const PricingPage = () => {
     return monthlyPrice;
   };
 
+  const navigate = useNavigate();
+
+
+  const { user } = useAuth();
+const [loadingPlan, setLoadingPlan] = useState(null);
+
+const handlePlanSelect = async (plan) => {
+  // If it's the free Community plan
+  if (plan.price === 0) {
+    navigate('/dashboard');
+    return;
+  }
+
+  // If user not logged in, redirect to signup
+  if (!user) {
+    navigate('/signup');
+    return;
+  }
+
+  // For now, only handle the Organization plan (€97)
+  if (plan.price === 97) {
+    try {
+      setLoadingPlan(plan.name);
+      
+      // Get user's network ID
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('network_id')
+        .eq('id', user.id)
+        .single();
+
+      await createCheckoutSession(PRICE_ID, profile.network_id);
+    } catch (error) {
+      console.error('Error starting checkout:', error);
+      // You could show an error toast here
+    } finally {
+      setLoadingPlan(null);
+    }
+  } else {
+    // For other plans, you can show a message
+    alert('This plan is coming soon!');
+  }
+};
   // Calculate annual savings in euros
   const getAnnualSavings = (monthlyPrice) => {
     if (typeof monthlyPrice === 'number') {
@@ -449,18 +497,19 @@ const PricingPage = () => {
                     )}
                     
                     <Button 
-                      variant={plan.buttonVariant} 
-                      color={plan.color === 'default' ? 'primary' : plan.color} 
-                      sx={{ 
-                        px: 2, 
-                        borderRadius: 2, 
-                        fontWeight: 500,
-                        my: 1
-                      }}
-                      fullWidth
-                    >
-                      {plan.buttonText}
-                    </Button>
+    variant={plan.buttonVariant} 
+    color={plan.color === 'default' ? 'primary' : plan.color} 
+    sx={{ /* your styles */ }}
+    fullWidth
+    onClick={() => handlePlanSelect(plan)}
+    disabled={loadingPlan === plan.name}
+  >
+    {loadingPlan === plan.name ? (
+      <CircularProgress size={24} color="inherit" />
+    ) : (
+      plan.buttonText
+    )}
+  </Button>
                   </TableCell>
                 ))}
               </TableRow>
