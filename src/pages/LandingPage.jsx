@@ -38,6 +38,8 @@ import EventIcon from '@mui/icons-material/Event'; // For event organization
 import SupportAgentIcon from '@mui/icons-material/SupportAgent'; // For human assistance
 import BrushIcon from '@mui/icons-material/Brush'; // For white-label options
 import TextCycler from '../components/TextCycler';
+import ShimmeryText from '../components/ShimmeryText';
+import ShimmerProvider from '../components/ShimmerProvider';
 
 // --- Component Definition ---
 function LandingPage() {
@@ -711,6 +713,7 @@ const DGLogo = () => (
 
       backgroundColor: '#eef4f9'
     }}>
+      <ShimmerProvider/>
       {/* Three.js Background Animation */}
       <ThreeJSBackground />
       
@@ -1032,12 +1035,12 @@ const DGLogo = () => (
               gutterBottom
               sx={{
                 fontWeight: 600,
-                fontSize: '1rem',
+                fontSize: '2rem',
                 // color: 'rgb(4, 13, 22)',
 
               }}
             >
-              {feature.title}
+              <ShimmeryText>{feature.title}</ShimmeryText>
             </Typography>
             <Typography
               variant="body2"

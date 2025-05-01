@@ -28,6 +28,7 @@ import DemoPage from './pages/DemoPage';
 import DirectMessagesPage from './pages/DirectMessagesPage';
 import { DirectMessagesProvider } from './context/directMessagesContext';
 import PricingPage from './pages/PricingPage';
+import ShimmeringTextPage from './pages/ShimmeringTextPage';
 
 function App() {
   const { loading, session, user } = useAuth();
@@ -145,6 +146,7 @@ function App() {
           <Route path="/demo" element={<DemoPage />} />
           <Route path="/pricing" element={<PricingPage />} />
 
+          <Route path="/shimmer" element={<ShimmeringTextPage />} />
           
           {/* Public Wiki routes */}
           <Route path="/network/:networkId/wiki" element={<WikiListPage />} />
