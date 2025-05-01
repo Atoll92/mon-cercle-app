@@ -139,7 +139,7 @@ const DGLogo = () => (
   // --- Text content for different languages ---
   const content = {
     en: {
-      appName: 'ÜNIO App',
+      appName: 'Conclav App',
       navFeatures: 'Features',
       navLogin: 'Login',
       navSignUp: 'Sign Up',
@@ -151,7 +151,7 @@ const DGLogo = () => (
       heroTitle: 'Your', // Fixed part
     animatedPhrases: ["private network", "organization's hub", "community directory", "space to share"],
 
-      featuresTitle: 'Why Choose ÜNIO?',
+      featuresTitle: 'Why Choose Conclav?',
       features: [
         {
           title: 'Closed Networks',
@@ -190,7 +190,7 @@ const DGLogo = () => (
       terms: 'Terms of Service'
     },
     fr: {
-      appName: 'ÜNIO',
+      appName: 'Conclav',
       navFeatures: 'Fonctionnalités',
       navLogin: 'Connexion',
       navSignUp: 'S\'inscrire',
@@ -202,7 +202,7 @@ const DGLogo = () => (
       heroTitle: 'Votre', // Fixed part
     animatedPhrases: ["réseau privé", "plateforme d'organisation", "annuaire communautaire", "espace de partage"],
 
-      featuresTitle: 'Pourquoi Choisir ÜNIO?',
+      featuresTitle: 'Pourquoi Choisir Conclav?',
       features: [
         {
           title: 'Réseaux Fermés',
@@ -393,7 +393,7 @@ const DGLogo = () => (
     heroSubtitle: 'Crie e gerencie redes fechadas para membros se conectarem, compartilharem portfólios e informações de contato com segurança.',
     getStarted: 'Começar',
     viewDemo: 'Ver Demonstração',
-    featuresTitle: 'Por Que Escolher ÜNIO?',
+    featuresTitle: 'Por Que Escolher Conclav?',
     heroTitle: 'Seu', // Fixed part
     animatedPhrases: ["rede privada", "hub organizacional", "diretório comunitário", "espaço para compartilhar"],
     features: [
@@ -489,7 +489,7 @@ const DGLogo = () => (
     heroSubtitle: 'Maak en beheer gesloten netwerken zodat leden veilig kunnen verbinden, portfolio\'s delen en contactgegevens tonen.',
     getStarted: 'Start Nu',
     viewDemo: 'Demo Bekijken',
-    featuresTitle: 'Waarom ÜNIO Kiezen?',
+    featuresTitle: 'Waarom Conclav Kiezen?',
     heroTitle: 'Uw', // Fixed part
     animatedPhrases: ["privé netwerk", "organisatiehub", "gemeenschapsindex", "ruimte om te delen"],
     features: [
@@ -753,7 +753,7 @@ const DGLogo = () => (
                     ml: 1,
                   }}
                 >
-                  ÜNIO
+                  Conclav
                 </Typography>
               </Typography>
               <nav style={{ display: 'flex', alignItems: 'center' }}>
