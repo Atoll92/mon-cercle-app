@@ -1,5 +1,5 @@
 // src/stripe/config.js
-export const STRIPE_PUBLIC_KEY = 'pk_live_51PomwV2KqNIKpvjTaSUJSUuF41j7eSjsJxc2oPFf3omKBkUJAz0Q2hHSsDdATg2vZie9bOKSiFanC3jClektBUmR00GVvQFFkl';
+export const STRIPE_PUBLIC_KEY = 'pk_test_51PomwV2KqNIKpvjTmfXGqzMBFeOaL5IB6eo2JXrYQyQA6I9SpcBk0BUryvoLItEwLsIqAhJjKN32a3OAsXaDHPFV00nKPNqqnx';
 
 // Price IDs for different plans (you'll need to create these in your Stripe dashboard)
 export const PRICE_IDS = {
