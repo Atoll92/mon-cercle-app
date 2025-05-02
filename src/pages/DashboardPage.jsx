@@ -47,15 +47,108 @@ import {
   LocationOn as LocationOnIcon,
   CreateNewFolder as CreateNewFolderIcon,
   InsertInvitation as InvitationIcon,
-  PersonAdd as PersonAddIcon
+  PersonAdd as PersonAddIcon,
+  WorkspacePremium as PremiumIcon,
+  Verified as VerifiedIcon,
+  Business as BusinessIcon,
+  School as SchoolIcon
 } from '@mui/icons-material';
 import { fetchNetworkMembers } from '../api/networks';
+
+// Subscription Badge Component
+const SubscriptionBadge = ({ plan, status }) => {
+  // Only show badge for active subscriptions
+  if (status !== 'active' || plan === 'community' || !plan) {
+    return null;
+  }
+  
+  // Helper function to determine icon and color based on plan
+  const getPlanDetails = (plan) => {
+    switch (plan) {
+      case 'organization':
+        return {
+          label: 'Organization Plan',
+          icon: <BusinessIcon fontSize="small" />,
+          color: 'primary',
+          tooltip: 'Organization Plan: Up to 500 members & 100GB storage'
+        };
+      case 'network':
+        return {
+          label: 'Network Plan',
+          icon: <PremiumIcon fontSize="small" />,
+          color: 'secondary',
+          tooltip: 'Network Plan: Up to 2,500 members & 1TB storage'
+        };
+      case 'nonprofit':
+        return {
+          label: 'Non-Profit Plan',
+          icon: <SchoolIcon fontSize="small" />,
+          color: 'success',
+          tooltip: 'Non-Profit Plan: Up to 500 members & 50GB storage'
+        };
+      case 'business':
+        return {
+          label: 'Business Plan',
+          icon: <VerifiedIcon fontSize="small" />,
+          color: 'info',
+          tooltip: 'Business Plan: Up to 10,000 members & 5TB storage'
+        };
+      default:
+        return {
+          label: 'Premium Plan',
+          icon: <VerifiedIcon fontSize="small" />,
+          color: 'primary',
+          tooltip: 'Premium subscription'
+        };
+    }
+  };
+
+  const planDetails = getPlanDetails(plan);
+
+  return (
+    <Tooltip title={planDetails.tooltip}>
+      <Chip
+        icon={planDetails.icon}
+        label={planDetails.label}
+        color={planDetails.color}
+        size="small"
+        variant="outlined"
+        sx={{
+          fontWeight: 500,
+          '& .MuiChip-icon': {
+            color: `${planDetails.color}.main`
+          }
+        }}
+      />
+    </Tooltip>
+  );
+};
+
+// Network details fetching function
+const fetchNetworkDetails = async (networkId) => {
+  try {
+    console.log('Fetching network details for network:', networkId);
+    const { data, error } = await supabase
+      .from('networks')
+      .select('*')
+      .eq('id', networkId)
+      .single();
+      
+    if (error) throw error;
+    console.log('Network details:', data);
+    return data;
+  } catch (error) {
+    console.error("Error fetching network details:", error);
+    return null;
+  }
+};
 
 function DashboardPage() {
   const { user, session, signOut } = useAuth();
   const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
   const [networkMembers, setNetworkMembers] = useState([]);
+  const [networkDetails, setNetworkDetails] = useState(null);
   const [loadingProfile, setLoadingProfile] = useState(true);
   const [loadingMembers, setLoadingMembers] = useState(true);
   const [error, setError] = useState(null);
@@ -68,7 +161,8 @@ function DashboardPage() {
     loadingProfile, 
     loadingMembers, 
     hasProfile: !!profile, 
-    memberCount: networkMembers?.length
+    memberCount: networkMembers?.length,
+    hasNetworkDetails: !!networkDetails
   });
 
   useEffect(() => {
@@ -143,9 +237,15 @@ function DashboardPage() {
 
         // Once profile is fetched, fetch members of the same network
         if (data?.network_id) {
+          // Fetch network members
           fetchNetworkMembers(data.network_id).then(members => {
             setNetworkMembers(members);
             setLoadingMembers(false);
+          });
+          
+          // Fetch network details (for subscription info)
+          fetchNetworkDetails(data.network_id).then(details => {
+            setNetworkDetails(details);
           });
           
           // Fetch upcoming events for the network
@@ -642,13 +742,23 @@ function DashboardPage() {
                         </Box>
                       ) : (
                         <Box>
+                          {/* Subscription Badge */}
+                          {networkDetails && networkDetails.subscription_status === 'active' && (
+                            <Box sx={{ mb: 2 }}>
+                              <SubscriptionBadge 
+                                plan={networkDetails.subscription_plan} 
+                                status={networkDetails.subscription_status} 
+                              />
+                            </Box>
+                          )}
+                          
                           <Box sx={{ 
                             display: 'flex',
                             justifyContent: 'space-between',
                             mb: 2
                           }}>
                             <Typography variant="h6">
-                              {profile?.networks?.name || 'My Network'}
+                              {networkDetails?.name || 'My Network'}
                             </Typography>
                             
                             <Button

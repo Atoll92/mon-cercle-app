@@ -19,6 +19,25 @@ const fetchNetworkMembers = async (networkId) => {
     }
 };
 
+ const fetchNetworkDetails = async (networkId) => {
+    try {
+      console.log('Fetching network details for network:', networkId);
+      const { data, error } = await supabase
+        .from('networks')
+        .select('*')
+        .eq('id', networkId)
+        .single();
+        
+      if (error) throw error;
+      console.log('Network details:', data);
+      return data;
+    } catch (error) {
+      console.error("Error fetching network details:", error);
+      return null;
+    }
+  };
+
 export {
-    fetchNetworkMembers
+    fetchNetworkMembers ,
+    fetchNetworkDetails
 }

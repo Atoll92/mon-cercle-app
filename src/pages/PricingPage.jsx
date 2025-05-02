@@ -30,6 +30,7 @@ import {
   IconButton,
   Stack,
   FormControlLabel,
+  CircularProgress,
   Alert
 } from '@mui/material';
 import { 
@@ -105,16 +106,34 @@ const handlePlanSelect = async (plan) => {
       setLoadingPlan(plan.name);
       
       // Get user's network ID
-      const { data: profile } = await supabase
+      const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('network_id')
         .eq('id', user.id)
         .single();
 
-      await createCheckoutSession(PRICE_ID, profile.network_id);
+      if (profileError) {
+        console.error('Error fetching profile:', profileError);
+        alert('Could not retrieve your account information. Please try again.');
+        setLoadingPlan(null);
+        return;
+      }
+      
+      if (!profile || !profile.network_id) {
+        console.error('User has no network ID:', profile);
+        alert('Your account is not associated with a network. Please create one first.');
+        setLoadingPlan(null);
+        return;
+      }
+
+      // Use the direct price ID from your config or directly from Stripe
+      const priceId = 'price_1RK6qr2KqNIKpvjTZh47uSJO'; // Your actual price ID
+      
+      console.log('Starting checkout with:', { priceId, networkId: profile.network_id });
+      await createCheckoutSession(priceId, profile.network_id);
     } catch (error) {
       console.error('Error starting checkout:', error);
-      // You could show an error toast here
+      alert(`Payment error: ${error.message || 'Unknown error'}`);
     } finally {
       setLoadingPlan(null);
     }
