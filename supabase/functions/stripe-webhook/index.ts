@@ -2,95 +2,114 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import Stripe from 'https://esm.sh/stripe@13.10.0?target=deno'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3'
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS'
-}
-
-// Handle CORS preflight requests
 serve(async (req) => {
+  // CORS headers
+  const corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, stripe-signature',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS'
+  }
+  
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
-
+  
   try {
     const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') as string, {
       apiVersion: '2023-10-16',
       httpClient: Stripe.createFetchHttpClient(),
     })
-
+    
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
-
+    
     const signature = req.headers.get('stripe-signature')
+    
     if (!signature) {
       console.error("Missing Stripe signature")
-      return new Response('Missing signature', { 
+      return new Response('Missing signature', {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400 
+        status: 400
       })
     }
-
+    
     const body = await req.text()
     
-    console.log("Verifying webhook signature...")
+    // Log the incoming webhook data for debugging
+    console.log("Incoming webhook payload:", body.substring(0, 500) + "...")
+    console.log("Signature:", signature)
+    
     const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET')
     if (!webhookSecret) {
       throw new Error('Missing STRIPE_WEBHOOK_SECRET')
     }
-
+    
     // Construct the event
-    const event = stripe.webhooks.constructEvent(
-      body,
-      signature,
-      webhookSecret
-    )
+    let event;
+    try {
+      event = stripe.webhooks.constructEvent(
+        body,
+        signature,
+        webhookSecret
+      )
+    } catch (err) {
+      console.error(`Webhook signature verification failed: ${err.message}`)
+      return new Response(`Webhook signature verification failed: ${err.message}`, { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400 
+      })
+    }
     
     console.log(`Webhook event received: ${event.type}`)
-
-    // Handle checkout.session.completed events
+    
+    // Rest of your code to handle different events...
     if (event.type === 'checkout.session.completed') {
-      const session = event.data.object as Stripe.Checkout.Session
-      console.log('Checkout session completed. Session ID:', session.id)
+      // Your existing code...
+    }
+    
+    // Handle invoice.payment_succeeded event (this was in your error message)
+    if (event.type === 'invoice.payment_succeeded') {
+      const invoice = event.data.object
+      console.log('Invoice payment succeeded. Invoice ID:', invoice.id)
       
-      // Extract metadata from the session
-      const { userId, networkId } = session.metadata || {}
-      if (!userId || !networkId) {
-        console.error('Missing userId or networkId in session metadata')
-        return new Response(JSON.stringify({ error: 'Missing metadata' }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 400
-        })
-      }
+      // Get subscription ID from the invoice
+      const subscriptionId = invoice.subscription
       
-      console.log(`Updating network ${networkId} with subscription info`)
-      console.log('Subscription ID:', session.subscription)
-      console.log('Customer ID:', session.customer)
-      
-      // Update network subscription status - hardcode the plan for simplicity
-      const { data, error } = await supabase
-        .from('networks')
-        .update({
-          stripe_customer_id: session.customer as string,
-          stripe_subscription_id: session.subscription as string,
-          subscription_status: 'active',
-          subscription_plan: 'organization',
-          subscription_updated_at: new Date().toISOString(),
-          subscription_start_date: new Date().toISOString()
-        })
-        .eq('id', networkId)
-        .select()
-      
-      if (error) {
-        console.error('Error updating network:', error)
-      } else {
-        console.log('Network updated successfully:', data)
+      if (subscriptionId) {
+        // Look up the network that has this subscription ID
+        const { data: networks, error: networkError } = await supabase
+          .from('networks')
+          .select('id')
+          .eq('stripe_subscription_id', subscriptionId)
+          .limit(1)
+        
+        if (networkError) {
+          console.error('Error finding network:', networkError)
+        } else if (networks && networks.length > 0) {
+          const networkId = networks[0].id
+          
+          // Update the subscription status
+          const { data, error } = await supabase
+            .from('networks')
+            .update({
+              subscription_status: 'active',
+              subscription_updated_at: new Date().toISOString()
+            })
+            .eq('id', networkId)
+          
+          if (error) {
+            console.error('Error updating network:', error)
+          } else {
+            console.log('Network updated successfully:', data)
+          }
+        } else {
+          console.log('No network found with subscription ID:', subscriptionId)
+        }
       }
     }
-
+    
     // Return a success response
     return new Response(JSON.stringify({ received: true }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -98,9 +117,9 @@ serve(async (req) => {
     })
   } catch (err) {
     console.error(`Webhook error: ${err.message}`)
-    return new Response(JSON.stringify({ error: err.message }), { 
+    return new Response(JSON.stringify({ error: err.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 400 
+      status: 400
     })
   }
 })
