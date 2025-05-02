@@ -4,6 +4,11 @@ import { useAuth } from '../context/authcontext';
 import { supabase } from '../supabaseclient';
 import { useNavigate, Link } from 'react-router-dom';
 import { 
+  AttachMoney as AttachMoneyIcon,
+  Star as StarIcon,
+  HourglassEmpty as HourglassEmptyIcon
+} from '@mui/icons-material';
+import { 
   CircularProgress, 
   Box, 
   Typography, 
@@ -61,6 +66,8 @@ const SubscriptionBadge = ({ plan, status }) => {
   if (status !== 'active' || plan === 'community' || !plan) {
     return null;
   }
+
+
   
   // Helper function to determine icon and color based on plan
   const getPlanDetails = (plan) => {
@@ -708,6 +715,143 @@ function DashboardPage() {
                     />
                     
                     <Divider />
+                    {profile.network_id && (
+  <Card sx={{ 
+    borderRadius: 2, 
+    boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+    mb: 3
+  }}>
+    <CardHeader
+      title="Subscription Status"
+      titleTypographyProps={{ variant: 'h6' }}
+      avatar={<AttachMoneyIcon color="primary" />}
+      sx={{ bgcolor: 'rgba(33, 150, 243, 0.05)' }}
+    />
+    
+    <Divider />
+    
+    <CardContent>
+      {profile.networks?.subscription_status === 'active' ? (
+        <Box>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+            <Box>
+              <Typography variant="h6" color="primary.main">
+                {(profile.networks.subscription_plan || 'Organization').charAt(0).toUpperCase() + 
+                  (profile.networks.subscription_plan || 'Organization').slice(1)} Plan
+              </Typography>
+              
+              <Typography variant="body2" color="text.secondary">
+                Active subscription
+              </Typography>
+            </Box>
+            
+            <Chip 
+              icon={<StarIcon />}
+              label="Premium" 
+              color="success" 
+              size="small"
+            />
+          </Box>
+          
+          {profile.networks?.subscription_end_date && (
+            <Typography variant="body2" color="text.secondary" gutterBottom>
+              Next billing: {new Date(profile.networks.subscription_end_date).toLocaleDateString()}
+            </Typography>
+          )}
+          
+          {profile.role === 'admin' && (
+            <Button 
+              variant="outlined" 
+              color="primary" 
+              fullWidth
+              sx={{ mt: 2 }}
+              component={Link}
+              to="/billing"
+            >
+              Manage Subscription
+            </Button>
+          )}
+        </Box>
+      ) : profile.networks?.subscription_status === 'canceled' ? (
+        <Box>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+            <Box>
+              <Typography variant="h6" color="warning.main">
+                Subscription Ending
+              </Typography>
+              
+              <Typography variant="body2" color="text.secondary">
+                Your benefits will continue until the end of your billing period
+              </Typography>
+            </Box>
+            
+            <Chip 
+              icon={<HourglassEmptyIcon />}
+              label="Ending Soon" 
+              color="warning" 
+              size="small"
+            />
+          </Box>
+          
+          {profile.networks?.subscription_end_date && (
+            <Typography variant="body2" color="text.secondary" gutterBottom>
+              Access until: {new Date(profile.networks.subscription_end_date).toLocaleDateString()}
+            </Typography>
+          )}
+          
+          {profile.role === 'admin' && (
+            <Button 
+              variant="contained" 
+              color="primary" 
+              fullWidth
+              sx={{ mt: 2 }}
+              component={Link}
+              to="/pricing"
+            >
+              Renew Subscription
+            </Button>
+          )}
+        </Box>
+      ) : (
+        <Box>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+            <Box>
+              <Typography variant="h6">
+                Community Plan
+              </Typography>
+              
+              <Typography variant="body2" color="text.secondary">
+                Free tier with basic features
+              </Typography>
+            </Box>
+            
+            <Chip 
+              label="Free Plan" 
+              variant="outlined"
+              size="small"
+            />
+          </Box>
+          
+          <Alert severity="info" sx={{ mb: 2 }}>
+            Upgrade to access premium features like white labeling, more storage, and advanced admin controls.
+          </Alert>
+          
+          {profile.role === 'admin' && (
+            <Button 
+              variant="contained" 
+              color="primary" 
+              fullWidth
+              component={Link}
+              to="/pricing"
+            >
+              Upgrade to Premium
+            </Button>
+          )}
+        </Box>
+      )}
+    </CardContent>
+  </Card>
+)}
                     
                     <CardContent>
                       {!profile.network_id ? (
