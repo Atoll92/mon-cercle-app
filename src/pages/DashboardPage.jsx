@@ -66,8 +66,6 @@ const SubscriptionBadge = ({ plan, status }) => {
   if (status !== 'active' || plan === 'community' || !plan) {
     return null;
   }
-
-
   
   // Helper function to determine icon and color based on plan
   const getPlanDetails = (plan) => {
@@ -143,6 +141,8 @@ const fetchNetworkDetails = async (networkId) => {
       
     if (error) throw error;
     console.log('Network details:', data);
+    console.log('Subscription plan:', data?.subscription_plan);
+    console.log('Subscription status:', data?.subscription_status);
     return data;
   } catch (error) {
     console.error("Error fetching network details:", error);
@@ -158,6 +158,7 @@ function DashboardPage() {
   const [networkDetails, setNetworkDetails] = useState(null);
   const [loadingProfile, setLoadingProfile] = useState(true);
   const [loadingMembers, setLoadingMembers] = useState(true);
+  const [loadingNetworkDetails, setLoadingNetworkDetails] = useState(true);
   const [error, setError] = useState(null);
   const [retryCount, setRetryCount] = useState(0);
   const [activeTab, setActiveTab] = useState(0);
@@ -166,23 +167,31 @@ function DashboardPage() {
 
   console.log("Component render cycle. States:", { 
     loadingProfile, 
-    loadingMembers, 
+    loadingMembers,
+    loadingNetworkDetails,
     hasProfile: !!profile, 
     memberCount: networkMembers?.length,
-    hasNetworkDetails: !!networkDetails
+    hasNetworkDetails: !!networkDetails,
+    networkDetails: networkDetails
   });
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (loadingProfile || loadingMembers) {
+      if (loadingProfile || loadingMembers || loadingNetworkDetails) {
         console.log("Force-resetting loading states after timeout");
         setLoadingProfile(false);
         setLoadingMembers(false);
+        setLoadingNetworkDetails(false);
       }
     }, 5000);
     
     return () => clearTimeout(timer);
   }, []);
+
+  // Force re-render when networkDetails changes
+  useEffect(() => {
+    console.log('Network details updated:', networkDetails);
+  }, [networkDetails]);
 
   useEffect(() => {
     // Fetch the user's profile data when the component mounts or user changes
@@ -251,8 +260,11 @@ function DashboardPage() {
           });
           
           // Fetch network details (for subscription info)
+          setLoadingNetworkDetails(true);
           fetchNetworkDetails(data.network_id).then(details => {
+            console.log('Network details fetched:', details);
             setNetworkDetails(details);
+            setLoadingNetworkDetails(false);
           });
           
           // Fetch upcoming events for the network
@@ -260,11 +272,13 @@ function DashboardPage() {
         } else {
           setLoadingMembers(false);
           setLoadingEvents(false);
+          setLoadingNetworkDetails(false);
         }
       } catch (error) {
         console.error("Error fetching profile:", error);
         setError("Failed to load your profile. Please try again later.");
         setLoadingProfile(false);
+        setLoadingNetworkDetails(false);
       }
     };
     
@@ -297,6 +311,7 @@ function DashboardPage() {
       setLoadingProfile(false);
       setLoadingMembers(false);
       setLoadingEvents(false);
+      setLoadingNetworkDetails(false);
     }
   }, [user, retryCount, navigate]);
 
@@ -364,6 +379,21 @@ function DashboardPage() {
 
   const handleTabChange = (event, newValue) => {
     setActiveTab(newValue);
+  };
+  
+  const refreshNetworkDetails = async () => {
+    if (profile?.network_id) {
+      setLoadingNetworkDetails(true);
+      try {
+        const details = await fetchNetworkDetails(profile.network_id);
+        console.log('Refreshed network details:', details);
+        setNetworkDetails(details);
+      } catch (error) {
+        console.error("Error refreshing network details:", error);
+      } finally {
+        setLoadingNetworkDetails(false);
+      }
+    }
   };
 
   if (loadingProfile) {
@@ -712,146 +742,159 @@ function DashboardPage() {
                       title="Network Status"
                       titleTypographyProps={{ variant: 'h6' }}
                       avatar={<NetworkIcon color="primary" />}
+                      action={
+                        profile.network_id ? (
+                          <IconButton onClick={refreshNetworkDetails} disabled={loadingNetworkDetails}>
+                            {loadingNetworkDetails ? <CircularProgress size={20} /> : <RefreshIcon />}
+                          </IconButton>
+                        ) : null
+                      }
                     />
                     
                     <Divider />
                     {profile.network_id && (
-  <Card sx={{ 
-    borderRadius: 2, 
-    boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-    mb: 3
-  }}>
-    <CardHeader
-      title="Subscription Status"
-      titleTypographyProps={{ variant: 'h6' }}
-      avatar={<AttachMoneyIcon color="primary" />}
-      sx={{ bgcolor: 'rgba(33, 150, 243, 0.05)' }}
-    />
-    
-    <Divider />
-    
-    <CardContent>
-      {profile.networks?.subscription_status === 'active' ? (
-        <Box>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-            <Box>
-              <Typography variant="h6" color="primary.main">
-                {(profile.networks.subscription_plan || 'Organization').charAt(0).toUpperCase() + 
-                  (profile.networks.subscription_plan || 'Organization').slice(1)} Plan
-              </Typography>
-              
-              <Typography variant="body2" color="text.secondary">
-                Active subscription
-              </Typography>
-            </Box>
-            
-            <Chip 
-              icon={<StarIcon />}
-              label="Premium" 
-              color="success" 
-              size="small"
-            />
-          </Box>
-          
-          {profile.networks?.subscription_end_date && (
-            <Typography variant="body2" color="text.secondary" gutterBottom>
-              Next billing: {new Date(profile.networks.subscription_end_date).toLocaleDateString()}
-            </Typography>
-          )}
-          
-          {profile.role === 'admin' && (
-            <Button 
-              variant="outlined" 
-              color="primary" 
-              fullWidth
-              sx={{ mt: 2 }}
-              component={Link}
-              to="/billing"
-            >
-              Manage Subscription
-            </Button>
-          )}
-        </Box>
-      ) : profile.networks?.subscription_status === 'canceled' ? (
-        <Box>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-            <Box>
-              <Typography variant="h6" color="warning.main">
-                Subscription Ending
-              </Typography>
-              
-              <Typography variant="body2" color="text.secondary">
-                Your benefits will continue until the end of your billing period
-              </Typography>
-            </Box>
-            
-            <Chip 
-              icon={<HourglassEmptyIcon />}
-              label="Ending Soon" 
-              color="warning" 
-              size="small"
-            />
-          </Box>
-          
-          {profile.networks?.subscription_end_date && (
-            <Typography variant="body2" color="text.secondary" gutterBottom>
-              Access until: {new Date(profile.networks.subscription_end_date).toLocaleDateString()}
-            </Typography>
-          )}
-          
-          {profile.role === 'admin' && (
-            <Button 
-              variant="contained" 
-              color="primary" 
-              fullWidth
-              sx={{ mt: 2 }}
-              component={Link}
-              to="/pricing"
-            >
-              Renew Subscription
-            </Button>
-          )}
-        </Box>
-      ) : (
-        <Box>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-            <Box>
-              <Typography variant="h6">
-                Community Plan
-              </Typography>
-              
-              <Typography variant="body2" color="text.secondary">
-                Free tier with basic features
-              </Typography>
-            </Box>
-            
-            <Chip 
-              label="Free Plan" 
-              variant="outlined"
-              size="small"
-            />
-          </Box>
-          
-          <Alert severity="info" sx={{ mb: 2 }}>
-            Upgrade to access premium features like white labeling, more storage, and advanced admin controls.
-          </Alert>
-          
-          {profile.role === 'admin' && (
-            <Button 
-              variant="contained" 
-              color="primary" 
-              fullWidth
-              component={Link}
-              to="/pricing"
-            >
-              Upgrade to Premium
-            </Button>
-          )}
-        </Box>
-      )}
-    </CardContent>
-  </Card>
-)}
+                      <Card sx={{ 
+                        borderRadius: 2, 
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                        mb: 3,
+                        mx: 3,
+                        mt: 3
+                      }}>
+                        <CardHeader
+                          title="Subscription Status"
+                          titleTypographyProps={{ variant: 'h6' }}
+                          avatar={<AttachMoneyIcon color="primary" />}
+                          sx={{ bgcolor: 'rgba(33, 150, 243, 0.05)' }}
+                        />
+                        
+                        <Divider />
+                        
+                        <CardContent>
+                          {loadingNetworkDetails ? (
+                            <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
+                              <CircularProgress size={30} />
+                            </Box>
+                          ) : networkDetails?.subscription_status === 'active' ? (
+                            <Box>
+                              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                                <Box>
+                                  <Typography variant="h6" color="primary.main">
+                                    {(networkDetails.subscription_plan || 'Organization').charAt(0).toUpperCase() + 
+                                      (networkDetails.subscription_plan || 'Organization').slice(1)} Plan
+                                  </Typography>
+                                  
+                                  <Typography variant="body2" color="text.secondary">
+                                    Active subscription
+                                  </Typography>
+                                </Box>
+                                
+                                <Chip 
+                                  icon={<StarIcon />}
+                                  label="Premium" 
+                                  color="success" 
+                                  size="small"
+                                />
+                              </Box>
+                              
+                              {networkDetails?.subscription_end_date && (
+                                <Typography variant="body2" color="text.secondary" gutterBottom>
+                                  Next billing: {new Date(networkDetails.subscription_end_date).toLocaleDateString()}
+                                </Typography>
+                              )}
+                              
+                              {profile.role === 'admin' && (
+                                <Button 
+                                  variant="outlined" 
+                                  color="primary" 
+                                  fullWidth
+                                  sx={{ mt: 2 }}
+                                  component={Link}
+                                  to="/billing"
+                                >
+                                  Manage Subscription
+                                </Button>
+                              )}
+                            </Box>
+                          ) : networkDetails?.subscription_status === 'canceled' ? (
+                            <Box>
+                              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                                <Box>
+                                  <Typography variant="h6" color="warning.main">
+                                    Subscription Ending
+                                  </Typography>
+                                  
+                                  <Typography variant="body2" color="text.secondary">
+                                    Your benefits will continue until the end of your billing period
+                                  </Typography>
+                                </Box>
+                                
+                                <Chip 
+                                  icon={<HourglassEmptyIcon />}
+                                  label="Ending Soon" 
+                                  color="warning" 
+                                  size="small"
+                                />
+                              </Box>
+                              
+                              {networkDetails?.subscription_end_date && (
+                                <Typography variant="body2" color="text.secondary" gutterBottom>
+                                  Access until: {new Date(networkDetails.subscription_end_date).toLocaleDateString()}
+                                </Typography>
+                              )}
+                              
+                              {profile.role === 'admin' && (
+                                <Button 
+                                  variant="contained" 
+                                  color="primary" 
+                                  fullWidth
+                                  sx={{ mt: 2 }}
+                                  component={Link}
+                                  to="/pricing"
+                                >
+                                  Renew Subscription
+                                </Button>
+                              )}
+                            </Box>
+                          ) : (
+                            <Box>
+                              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                                <Box>
+                                  <Typography variant="h6">
+                                    Community Plan
+                                  </Typography>
+                                  
+                                  <Typography variant="body2" color="text.secondary">
+                                    Free tier with basic features
+                                  </Typography>
+                                </Box>
+                                
+                                <Chip 
+                                  label="Free Plan" 
+                                  variant="outlined"
+                                  size="small"
+                                />
+                              </Box>
+                              
+                              <Alert severity="info" sx={{ mb: 2 }}>
+                                Upgrade to access premium features like white labeling, more storage, and advanced admin controls.
+                              </Alert>
+                              
+                              {profile.role === 'admin' && (
+                                <Button 
+                                  variant="contained" 
+                                  color="primary" 
+                                  fullWidth
+                                  component={Link}
+                                  to="/pricing"
+                                >
+                                  Upgrade to Premium
+                                </Button>
+                              )}
+                            </Box>
+                          )}
+                        </CardContent>
+                      </Card>
+                    )}
                     
                     <CardContent>
                       {!profile.network_id ? (
@@ -887,13 +930,20 @@ function DashboardPage() {
                       ) : (
                         <Box>
                           {/* Subscription Badge */}
-                          {networkDetails && networkDetails.subscription_status === 'active' && (
-                            <Box sx={{ mb: 2 }}>
-                              <SubscriptionBadge 
-                                plan={networkDetails.subscription_plan} 
-                                status={networkDetails.subscription_status} 
-                              />
+                          {loadingNetworkDetails ? (
+                            <Box sx={{ mb: 2, display: 'flex', alignItems: 'center' }}>
+                              <CircularProgress size={20} sx={{ mr: 1 }} />
+                              <Typography variant="body2">Loading subscription info...</Typography>
                             </Box>
+                          ) : (
+                            networkDetails && networkDetails.subscription_status === 'active' && (
+                              <Box sx={{ mb: 2 }}>
+                                <SubscriptionBadge 
+                                  plan={networkDetails.subscription_plan} 
+                                  status={networkDetails.subscription_status} 
+                                />
+                              </Box>
+                            )
                           )}
                           
                           <Box sx={{ 
