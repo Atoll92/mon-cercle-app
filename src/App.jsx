@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from './context/authcontext';
 import { CircularProgress, Box } from '@mui/material';
-import NetworkLogoHeader from './components/NetworkLogoHeader';
+import NetworkHeader from './components/NetworkHeader';
 import { supabase } from './supabaseclient';
 import WikiListPage from './pages/WikiListPage';
 import WikiPage from './pages/WikiPage';
@@ -140,7 +140,7 @@ function App() {
       <div className="App">
         {/* Pass the network name to the header */}
         {window.location.pathname !== "/" && window.location.pathname !== "/pricing" && (
-          <NetworkLogoHeader/>
+          <NetworkHeader/>
         )}
         <Routes>
           {/* Public Routes */}

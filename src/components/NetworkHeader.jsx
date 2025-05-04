@@ -1,6 +1,7 @@
 import React, { useState, useEffect, memo } from 'react';
-import { Box, Typography, Skeleton, IconButton, Badge, Button } from '@mui/material';
-import { Logout as LogoutIcon } from '@mui/icons-material';
+import { Box, Typography, Skeleton, IconButton, Badge, Button, Menu, MenuItem, Avatar } from '@mui/material';
+import { Logout as LogoutIcon, Person as PersonIcon } from '@mui/icons-material';
+import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
 import { useAuth } from '../context/authcontext';
 import { supabase } from '../supabaseclient';
 import { Link } from 'react-router-dom';
@@ -25,31 +26,95 @@ const MessageBadge = memo(() => {
     return () => clearInterval(intervalId);
   }, [refreshConversations]);
   
-  console.log('Rendering MessageBadge with unread count:', unreadTotal);
-  
   return (
-    <IconButton component={Link} to="/messages" color="inherit" aria-label={`${unreadTotal} unread messages`}>
-      <Badge 
-        badgeContent={unreadTotal} 
-        color="error"
-        max={99}
-        overlap="circular"
-        sx={{
-          '& .MuiBadge-badge': {
-            fontSize: '0.7rem',
-            height: '20px',
-            minWidth: '20px',
-            fontWeight: 'bold'
-          }
-        }}
-      >
-        <MailIcon />
-      </Badge>
-    </IconButton>
+    <Badge 
+      badgeContent={unreadTotal} 
+      color="error"
+      max={99}
+      invisible={unreadTotal === 0}
+      sx={{
+        '& .MuiBadge-badge': {
+          fontSize: '0.7rem',
+          height: '20px',
+          minWidth: '20px',
+          fontWeight: 'bold',
+        },
+        mr: 1,
+      }}
+    >
+      <MailIcon />
+    </Badge>
   );
 });
 
-const NetworkLogoHeader = () => {
+// User Profile Menu component
+const UserProfileMenu = () => {
+  const { user } = useAuth();
+  const { unreadTotal } = useDirectMessages();
+  const [anchorEl, setAnchorEl] = useState(null);
+  const open = Boolean(anchorEl);
+  
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+  
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+  
+  return (
+    <div>
+      <IconButton
+        onClick={handleClick}
+        size="medium"
+        aria-controls={open ? 'profile-menu' : undefined}
+        aria-haspopup="true"
+        aria-expanded={open ? 'true' : undefined}
+      >
+        <Badge 
+          badgeContent={unreadTotal} 
+          color="error"
+          overlap="circular"
+          invisible={unreadTotal === 0}
+          max={99}
+          sx={{
+            '& .MuiBadge-badge': {
+              fontSize: '0.7rem',
+              height: '20px',
+              minWidth: '20px',
+              fontWeight: 'bold'
+            }
+          }}
+        >
+          <AccountCircleOutlinedIcon style={{ fontSize: 30 }} />
+        </Badge>
+      </IconButton>
+      <Menu
+        id="profile-menu"
+        anchorEl={anchorEl}
+        open={open}
+        onClose={handleClose}
+        transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+      >
+        <MenuItem component={Link} to={`/profile/${user?.id}`} onClick={handleClose}>
+          <PersonIcon sx={{ mr: 1 }} />
+          My Profile
+        </MenuItem>
+        <MenuItem component={Link} to="/messages" onClick={handleClose}>
+          <MessageBadge />
+          Messages
+        </MenuItem>
+        <MenuItem onClick={() => { handleClose(); logout(); }}>
+          <LogoutIcon sx={{ mr: 1 }} />
+          Logout
+        </MenuItem>
+      </Menu>
+    </div>
+  );
+};
+
+const NetworkHeader = () => {
   const { user } = useAuth();
   const [networkInfo, setNetworkInfo] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -159,21 +224,9 @@ const NetworkLogoHeader = () => {
         ) : null}
       </Box>
       
-      {user && 
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <MessageBadge />
-          <Button 
-              variant="contained" 
-              color="error" 
-              onClick={logout}
-              startIcon={<LogoutIcon />}
-            >
-              Logout
-            </Button>
-          </Box>
-      }
+      {user && <UserProfileMenu />}
     </Box>
   );
 };
 
-export default NetworkLogoHeader;
+export default NetworkHeader;
