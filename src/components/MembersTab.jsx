@@ -172,7 +172,7 @@ const MembersTab = ({
   }
   
   return (
-    <Box sx={{ position: 'relative' }}>
+    <Paper sx={{ p: 3 }}>
       {/* Header with search and filters */}
       <Box sx={{ 
         display: 'flex', 
@@ -590,7 +590,7 @@ const MembersTab = ({
           />
         </Box>
       )}
-    </Box>
+    </Paper>
   );
 };
 
