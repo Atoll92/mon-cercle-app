@@ -36,7 +36,8 @@ import {
   Tabs,
   Tab,
   Slider,
-  Tooltip
+  Tooltip,
+  LinearProgress
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
@@ -266,6 +267,11 @@ function NetworkAdminPage() {
   const [newsTitle, setNewsTitle] = useState('');
   const [editorContent, setEditorContent] = useState('');
 
+  // Background Image state
+  const [backgroundImageFile, setBackgroundImageFile] = useState(null);
+  const [backgroundImagePreview, setBackgroundImagePreview] = useState(null);
+  const [uploadingBackgroundImage, setUploadingBackgroundImage] = useState(false);
+
   // Theme state
   const [themeSettings, setThemeSettings] = useState({
     backgroundColor: '#ffffff',
@@ -346,6 +352,11 @@ function NetworkAdminPage() {
         // Set logo preview if available
         if (networkData.logo_url) {
           setLogoPreview(networkData.logo_url);
+        }
+
+        // Set background image preview if available
+        if (networkData.background_image_url) {
+          setBackgroundImagePreview(networkData.background_image_url);
         }
         
         // Get members
@@ -577,6 +588,143 @@ function NetworkAdminPage() {
       setError('Failed to update theme settings. Please try again.');
     } finally {
       setUpdating(false);
+    }
+  };
+
+  // Handle background image file selection
+  const handleBackgroundImageChange = (event) => {
+    if (!event.target.files || event.target.files.length === 0) {
+      setBackgroundImageFile(null);
+      return;
+    }
+    
+    const file = event.target.files[0];
+    
+    // Check file type
+    if (!file.type.startsWith('image/')) {
+      setError('Please select an image file (PNG, JPG, GIF).');
+      return;
+    }
+    
+    // Check file size (10MB max)
+    if (file.size > 10 * 1024 * 1024) {
+      setError('Background image file must be less than 10MB.');
+      return;
+    }
+    
+    setBackgroundImageFile(file);
+    
+    // Create a preview
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setBackgroundImagePreview(e.target.result);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Upload and save background image
+  const handleSaveBackgroundImage = async () => {
+    if (!backgroundImageFile) {
+      setError('Please select a background image first.');
+      return;
+    }
+    
+    try {
+      setUploadingBackgroundImage(true);
+      setError(null);
+      setMessage('');
+      
+      // Create a unique file path in the 'networks' bucket
+      const filePath = `backgrounds/${network.id}/${Date.now()}-${backgroundImageFile.name}`;
+      
+      // Get an authenticated client
+      const supabaseClient = supabase;
+      
+      // Upload the file to storage with explicit content type
+      const { error: uploadError, data } = await supabaseClient.storage
+        .from('networks')
+        .upload(filePath, backgroundImageFile, {
+          cacheControl: '3600',
+          upsert: true,
+          contentType: backgroundImageFile.type // Explicitly set content type
+        });
+        
+      if (uploadError) throw uploadError;
+      
+      // Get the public URL
+      const { data: { publicUrl } } = supabaseClient.storage
+        .from('networks')
+        .getPublicUrl(filePath);
+      
+      // Update the network record with the background image URL
+      const { error: updateError } = await supabaseClient
+        .from('networks')
+        .update({ background_image_url: publicUrl })
+        .eq('id', network.id);
+        
+      if (updateError) throw updateError;
+      
+      // Update local state
+      setNetwork({
+        ...network,
+        background_image_url: publicUrl
+      });
+      
+      setMessage('Network background image updated successfully!');
+      setBackgroundImageFile(null);
+      
+    } catch (error) {
+      console.error('Error uploading background image:', error);
+      setError('Failed to upload background image: ' + error.message);
+    } finally {
+      setUploadingBackgroundImage(false);
+    }
+  };
+
+  // Remove background image
+  const handleRemoveBackgroundImage = async () => {
+    if (!network.background_image_url) return;
+    
+    try {
+      setUploadingBackgroundImage(true);
+      setError(null);
+      setMessage('');
+      
+      // Extract the file path from the URL
+      const urlParts = network.background_image_url.split('/');
+      const filePath = urlParts.slice(urlParts.indexOf('networks') + 1).join('/');
+      
+      // Delete the file from storage - don't throw an error if it's not there
+      const { error: deleteError } = await supabase.storage
+        .from('networks')
+        .remove([filePath]);
+      
+      if (deleteError && deleteError.message !== 'The resource was not found') {
+        console.warn('Error deleting background image file:', deleteError);
+      }
+      
+      // Update the network record to remove the background image URL
+      const { error: updateError } = await supabase
+        .from('networks')
+        .update({ background_image_url: null })
+        .eq('id', network.id);
+        
+      if (updateError) throw updateError;
+      
+      // Update local state
+      setNetwork({
+        ...network,
+        background_image_url: null
+      });
+      
+      setBackgroundImagePreview(null);
+      setMessage('Network background image removed successfully!');
+      
+    } catch (error) {
+      console.error('Error removing background image:', error);
+      setError('Failed to remove background image. Please try again.');
+    } finally {
+      setUploadingBackgroundImage(false);
     }
   };
 
@@ -1776,6 +1924,152 @@ function NetworkAdminPage() {
                 <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 2 }}>
                   Recommended logo size: 250x250 pixels. Max file size: 5MB.
                   Supported formats: PNG, JPG, GIF.
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          {/* Background Image Card */}
+          <Grid item xs={12}>
+            <Card>
+              <CardContent>
+                <Typography variant="h5" component="h2" gutterBottom>
+                  Landing Page Background Image
+                </Typography>
+                <Divider sx={{ mb: 3 }} />
+                
+                <Box sx={{ mb: 4 }}>
+                  <Typography variant="subtitle1" gutterBottom>
+                    Current Background Image
+                  </Typography>
+                  
+                  {backgroundImagePreview ? (
+                    <Box 
+                      sx={{ 
+                        width: '100%',
+                        height: 300,
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        border: '1px solid #ddd',
+                        borderRadius: 1,
+                        mb: 2,
+                        overflow: 'hidden',
+                        position: 'relative'
+                      }}
+                    >
+                      <img 
+                        src={backgroundImagePreview} 
+                        alt="Network Background" 
+                        style={{ 
+                          width: '100%', 
+                          height: '100%', 
+                          objectFit: 'cover'
+                        }} 
+                      />
+                      <Box 
+                        sx={{ 
+                          position: 'absolute',
+                          bottom: 0,
+                          left: 0,
+                          right: 0,
+                          p: 1,
+                          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                          color: 'white',
+                          fontSize: '0.8rem'
+                        }}
+                      >
+                        This is how the background will appear on your network landing page
+                      </Box>
+                    </Box>
+                  ) : (
+                    <Box 
+                      sx={{ 
+                        width: '100%',
+                        height: 300,
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        border: '1px dashed #aaa',
+                        borderRadius: 1,
+                        backgroundColor: '#f9f9f9',
+                        mb: 2,
+                        flexDirection: 'column'
+                      }}
+                    >
+                      <ImageIcon sx={{ fontSize: 60, color: '#aaa', mb: 2 }} />
+                      <Typography variant="body2" color="text.secondary">
+                        No custom background image set
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary" sx={{ mt: 1 }}>
+                        A default gradient will be used
+                      </Typography>
+                    </Box>
+                  )}
+                  
+                  <input
+                    accept="image/*"
+                    id="background-image-upload"
+                    type="file"
+                    onChange={handleBackgroundImageChange}
+                    style={{ display: 'none' }}
+                  />
+                  
+                  <Box sx={{ display: 'flex', gap: 2 }}>
+                    <label htmlFor="background-image-upload">
+                      <Button
+                        variant="contained"
+                        component="span"
+                        startIcon={<AddIcon />}
+                      >
+                        Select New Background
+                      </Button>
+                    </label>
+                    
+                    {backgroundImagePreview && (
+                      <Button
+                        variant="outlined"
+                        color="error"
+                        onClick={handleRemoveBackgroundImage}
+                        disabled={uploadingBackgroundImage}
+                      >
+                        Remove Background Image
+                      </Button>
+                    )}
+                  </Box>
+                </Box>
+                
+                {backgroundImageFile && (
+                  <Box sx={{ mt: 3 }}>
+                    <Typography variant="subtitle2" gutterBottom>
+                      Selected file: {backgroundImageFile.name}
+                    </Typography>
+
+                    {uploadingBackgroundImage && (
+                      <Box sx={{ width: '100%', mb: 2 }}>
+                        <Typography variant="body2" sx={{ mb: 1 }}>
+                          Uploading...
+                        </Typography>
+                        <LinearProgress />
+                      </Box>
+                    )}
+
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      startIcon={<SaveIcon />}
+                      onClick={handleSaveBackgroundImage}
+                      disabled={uploadingBackgroundImage}
+                      sx={{ mt: 1 }}
+                    >
+                      {uploadingBackgroundImage ? 'Uploading...' : 'Upload Background Image'}
+                    </Button>
+                  </Box>
+                )}
+                
+                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 2 }}>
+                  Recommended image size: 1920x1080 pixels (16:9 ratio). Max file size: 10MB.
+                  Supported formats: PNG, JPG, GIF. For best results, use an image with good contrast for text visibility.
                 </Typography>
               </CardContent>
             </Card>

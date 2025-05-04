@@ -8,9 +8,7 @@ import ChatIcon from '@mui/icons-material/Chat';
 import TimelineIcon from '@mui/icons-material/Timeline';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import MailIcon from '@mui/icons-material/Mail';
-import backgroundImage from '../assets/test.jpeg';
 import { Attachment } from '@mui/icons-material';
-
 
 import {
   Container,
@@ -299,7 +297,9 @@ function NetworkLandingPage() {
           p: 3, 
           mb: 3,
           borderRadius: 2,
-          backgroundImage: `url(${backgroundImage})`,
+          backgroundImage: network.background_image_url 
+            ? `url(${network.background_image_url})` 
+            : 'linear-gradient(135deg, #4568dc 0%, #b06ab3 100%)', // Default gradient if no image
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           position: 'relative',
@@ -315,7 +315,7 @@ function NetworkLandingPage() {
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            backgroundColor: 'rgba(0, 0, 0, 0.2)',
             zIndex: 1
           }} 
         />
@@ -518,13 +518,12 @@ function NetworkLandingPage() {
         />
       )}
 
-{activeTab === 6 && (
-  <FilesTab
-    networkId={networkId}
-    isUserMember={isUserMember}
-  />
-)}
-
+      {activeTab === 6 && (
+        <FilesTab
+          networkId={networkId}
+          isUserMember={isUserMember}
+        />
+      )}
       
       {/* Member details modal */}
       <MemberDetailsModal
