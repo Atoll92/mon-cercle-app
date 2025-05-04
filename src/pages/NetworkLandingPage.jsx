@@ -9,6 +9,8 @@ import TimelineIcon from '@mui/icons-material/Timeline';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import MailIcon from '@mui/icons-material/Mail';
 import backgroundImage from '../assets/test.jpeg';
+import { Attachment } from '@mui/icons-material';
+
 
 import {
   Container,
@@ -46,6 +48,8 @@ import SocialWallTab from '../components/SocialWallTab';
 import WikiTab from '../components/WikiTab';
 import AboutTab from '../components/AboutTab';
 import MemberDetailsModal from '../components/MembersDetailModal';
+import AttachmentIcon from '@mui/icons-material/Attachment';
+import FilesTab from '../components/FilesTab';
 
 function NetworkLandingPage() {
   const { networkId } = useParams();
@@ -444,21 +448,22 @@ function NetworkLandingPage() {
       </Paper>
       
       <Paper sx={{ width: '100%', mb: 3, backgroundColor: 'white' }}>
-        <Tabs
-          value={activeTab}
-          onChange={handleTabChange}
-          indicatorColor="primary"
-          textColor="primary"
-          variant="fullWidth"
-        >
-          <Tab icon={<GroupsIcon />} label="Members" />
-          <Tab icon={<EventIcon />} label="Events" />
-          <Tab icon={<ArticleIcon />} label="News" />
-          <Tab icon={<ChatIcon />} label="Chat" />
-          <Tab icon={<TimelineIcon />} label="Social Wall" />
-          <Tab icon={<MenuBookIcon />} label="Wiki" />
-          <Tab icon={<InfoIcon />} label="About" />
-        </Tabs>
+      <Tabs
+  value={activeTab}
+  onChange={handleTabChange}
+  indicatorColor="primary"
+  textColor="primary"
+  variant="fullWidth"
+>
+  <Tab icon={<GroupsIcon />} label="Members" />
+  <Tab icon={<EventIcon />} label="Events" />
+  <Tab icon={<ArticleIcon />} label="News" />
+  <Tab icon={<ChatIcon />} label="Chat" />
+  <Tab icon={<TimelineIcon />} label="Social Wall" />
+  <Tab icon={<MenuBookIcon />} label="Wiki" />
+  <Tab icon={<AttachmentIcon />} label="Files" /> {/* New Files tab */}
+  <Tab icon={<InfoIcon />} label="About" />
+</Tabs>
       </Paper>
 
       {/* Conditionally render the appropriate tab component */}
@@ -512,13 +517,21 @@ function NetworkLandingPage() {
         />
       )}
 
-      {activeTab === 6 && (
+      {activeTab === 7 && (
         <AboutTab
           network={network}
           networkMembers={networkMembers}
           isUserAdmin={isUserAdmin}
         />
       )}
+
+{activeTab === 6 && (
+  <FilesTab
+    networkId={networkId}
+    isUserMember={isUserMember}
+  />
+)}
+
       
       {/* Member details modal */}
       <MemberDetailsModal

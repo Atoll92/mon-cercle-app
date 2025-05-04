@@ -1,4 +1,4 @@
-// src/App.jsx - Updated version with wiki protected routes
+// src/App.jsx - Updated version with shared files routes
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from './context/authcontext';
@@ -10,6 +10,7 @@ import WikiPage from './pages/WikiPage';
 import WikiEditPage from './pages/WikiEditPage';
 import PaymentSuccessPage from './pages/PaymentSuccessPage';
 import BillingPage from './pages/BillingPage';
+import SharedFilesPage from './pages/SharedFilesPage'; // Import the SharedFilesPage
 
 // Import Pages
 import LoginPage from './pages/LoginPage';
@@ -115,8 +116,10 @@ function App() {
   // Save returnTo to session storage when redirecting to login
   useEffect(() => {
     if (!loading && !session) {
-      // Check if we're on a protected wiki edit page
-      if (location.pathname.includes('/wiki/edit/') || location.pathname.includes('/wiki/new')) {
+      // Check if we're on a protected page
+      if (location.pathname.includes('/wiki/edit/') || 
+          location.pathname.includes('/wiki/new') || 
+          location.pathname.includes('/files')) { // Add files to protected routes
         sessionStorage.setItem('returnTo', location.pathname);
       }
     }
@@ -161,8 +164,13 @@ function App() {
             <Route path="/network/:networkId/wiki/edit/:pageSlug" element={<WikiEditPage />} />
           </Route>
 
-            {/* Protected Direct Messages Routes */}
-            <Route element={<ProtectedRoute />}>
+          {/* Protected Shared Files Routes */}
+          <Route element={<ProtectedRoute />}>
+            <Route path="/network/:networkId/files" element={<SharedFilesPage />} />
+          </Route>
+
+          {/* Protected Direct Messages Routes */}
+          <Route element={<ProtectedRoute />}>
             <Route path="/messages" element={<DirectMessagesPage />} />
             <Route path="/messages/:userId" element={<DirectMessagesPage />} />
           </Route>
