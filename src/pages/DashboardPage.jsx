@@ -37,9 +37,7 @@ import {
 import { 
   Person as PersonIcon, 
   Edit as EditIcon,
-  Add as AddIcon,
   AdminPanelSettings as AdminIcon,
-  Logout as LogoutIcon, 
   ArrowForward as ArrowForwardIcon,
   Dashboard as DashboardIcon,
   Groups as GroupsIcon,
@@ -315,35 +313,6 @@ function DashboardPage() {
     }
   }, [user, retryCount, navigate]);
 
-  const handleLogout = async () => {
-    try {
-      console.log("Attempting to log out...");
-      // Force clear local storage first to ensure clean state
-      localStorage.removeItem('supabase.auth.token');
-      
-      // Then call the signOut method from context
-      const { error } = await signOut();
-      
-      if (error) {
-        console.error("Logout error from context:", error);
-        // If context signOut fails, try direct supabase logout as fallback
-        await supabase.auth.signOut();
-      }
-      
-      // Force navigation regardless of outcome
-      navigate('/login', { replace: true });
-      
-      // Optional: force page reload to clear any remaining state
-      window.location.reload();
-    } catch (error) {
-      console.error("Logout error:", error);
-      alert(`Failed to log out: ${error.message}`);
-      
-      // Even if everything fails, force redirect to login
-      navigate('/login', { replace: true });
-    }
-  };
-
   const handleCreateNetwork = async () => {
     try {
       // Create a new network
@@ -538,12 +507,13 @@ function DashboardPage() {
               Dashboard
             </Typography>
           </Box>
-          
-          <Button 
+
+          <Button
             variant="contained" 
             color="error" 
-            onClick={handleLogout}
-            startIcon={<LogoutIcon />}
+            component={Link}
+            to={`/network/${profile.network_id}`}
+            endIcon={<ArrowForwardIcon />}
             sx={{ 
               bgcolor: 'rgba(255,255,255,0.15)', 
               '&:hover': { 
@@ -552,7 +522,7 @@ function DashboardPage() {
               color: 'white'
             }}
           >
-            Logout
+            Go to Network
           </Button>
         </Box>
 
@@ -954,17 +924,6 @@ function DashboardPage() {
                             <Typography variant="h6">
                               {networkDetails?.name || 'My Network'}
                             </Typography>
-                            
-                            <Button
-                              variant="contained" 
-                              color="primary" 
-                              component={Link}
-                              to={`/network/${profile.network_id}`}
-                              endIcon={<ArrowForwardIcon />}
-                              size="small"
-                            >
-                              Go to Network
-                            </Button>
                           </Box>
                           
                           <Grid container spacing={2} sx={{ mb: 2 }}>

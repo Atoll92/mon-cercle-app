@@ -136,7 +136,7 @@ function App() {
       <div className="App">
         {/* Pass the network name to the header */}
         {window.location.pathname !== "/" && window.location.pathname !== "/pricing" && (
-        <NetworkLogoHeader networkName={networkName} />
+          <NetworkLogoHeader/>
         )}
         <Routes>
           {/* Public Routes */}

@@ -1,11 +1,13 @@
 import React, { useState, useEffect, memo } from 'react';
-import { Box, Typography, Skeleton, IconButton, Badge } from '@mui/material';
-import { useTheme } from './ThemeProvider';
+import { Box, Typography, Skeleton, IconButton, Badge, Button } from '@mui/material';
+import { Logout as LogoutIcon } from '@mui/icons-material';
 import { useAuth } from '../context/authcontext';
 import { supabase } from '../supabaseclient';
 import { Link } from 'react-router-dom';
 import MailIcon from '@mui/icons-material/Mail';
 import { useDirectMessages } from '../context/directMessagesContext';
+import { fetchNetworkDetails } from '../api/networks';
+import { logout } from '../api/auth';
 
 // Separate MessageBadge component to focus on unread notifications
 const MessageBadge = memo(() => {
@@ -47,19 +49,38 @@ const MessageBadge = memo(() => {
   );
 });
 
-const NetworkLogoHeader = ({ networkName: propNetworkName }) => {
-  const { theme } = useTheme();
+const NetworkLogoHeader = () => {
   const { user } = useAuth();
   const [networkInfo, setNetworkInfo] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  function getNetworkIdFromUrl() {
+    // try to get the network id from the url (network/:id)
+    const urlParts = window.location.pathname.split('/');
+    const networkPartIndex = urlParts.indexOf('network');
+    if (networkPartIndex !== -1 && urlParts[networkPartIndex + 1]) {
+      return urlParts[networkPartIndex + 1];
+    }
+    return null;
+  }
+  const networkIdFromUrl = getNetworkIdFromUrl();
   
   // If no networkName is provided as a prop, fetch it
   useEffect(() => {
-    const fetchNetworkInfo = async () => {
-      if (!user || propNetworkName) return;
+    const getNetworkInfo = async () => {
+      if (!user && !networkIdFromUrl) return;
       
       try {
         setLoading(true);
+
+        if (networkIdFromUrl) {
+          const networkData = await fetchNetworkDetails(networkIdFromUrl);
+          if (!networkData) return;
+          setNetworkInfo(networkData);
+          return;
+        }
+        if (!user) return;
+
         // Get user's profile
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
@@ -70,14 +91,8 @@ const NetworkLogoHeader = ({ networkName: propNetworkName }) => {
         if (profileError || !profileData?.network_id) return;
         
         // Get network details
-        const { data: networkData, error: networkError } = await supabase
-          .from('networks')
-          .select('id, name, logo_url')
-          .eq('id', profileData.network_id)
-          .single();
-          
-        if (networkError) return;
-        
+        const networkData = await fetchNetworkDetails(profileData.network_id);
+        if (!networkData) return;
         setNetworkInfo(networkData);
       } catch (error) {
         console.error('Error fetching network info:', error);
@@ -86,13 +101,13 @@ const NetworkLogoHeader = ({ networkName: propNetworkName }) => {
       }
     };
     
-    fetchNetworkInfo();
-  }, [user, propNetworkName]);
+    getNetworkInfo();
+  }, [user]);
   
-  if (!user) return null;
+  if (!networkInfo) return null;
   
-  const displayedNetworkName = propNetworkName || networkInfo?.name;
-  const displayedLogoUrl = theme?.logoUrl || networkInfo?.logo_url;
+  const displayedNetworkName = networkInfo?.name;
+  const displayedLogoUrl = networkInfo?.logo_url;
   const networkId = networkInfo?.id;
   
   return (
@@ -144,8 +159,19 @@ const NetworkLogoHeader = ({ networkName: propNetworkName }) => {
         ) : null}
       </Box>
       
-      {/* Use the separate MessageBadge component */}
-      <MessageBadge />
+      {user && 
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <MessageBadge />
+          <Button 
+              variant="contained" 
+              color="error" 
+              onClick={logout}
+              startIcon={<LogoutIcon />}
+            >
+              Logout
+            </Button>
+          </Box>
+      }
     </Box>
   );
 };

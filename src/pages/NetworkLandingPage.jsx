@@ -181,15 +181,8 @@ function NetworkLandingPage() {
         setLoading(false);
       }
     };
-    
-    // lets do some performance measuring
-    const timeBefore = performance.now();
 
-    fetchData().then(() => {
-      const timeAfter = performance.now();
-      console.log(`Network data fetched in ${timeAfter - timeBefore} ms`);
-    }
-    );
+    fetchData();
   }, [networkId, user]);
   
   const handleTabChange = (event, newValue) => {
