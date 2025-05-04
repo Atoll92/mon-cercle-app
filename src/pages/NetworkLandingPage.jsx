@@ -138,25 +138,24 @@ function NetworkLandingPage() {
         }
 
         const portfolioItems = [];
-        for (const member of members) {
-          const { data: memberPortfolio, error: portfolioError } = await supabase
-            .from('portfolio_items')
-            .select('*')
-            .eq('profile_id', member.id)
-            .order('created_at', { ascending: false })
-            .limit(5);
-            
-          if (!portfolioError && memberPortfolio) {
-            // Add member information to each portfolio item
-            const portfolioWithMember = memberPortfolio.map(item => ({
-              ...item,
-              memberName: member.full_name,
-              memberAvatar: member.profile_picture_url,
-              memberId: member.id,
-              itemType: 'portfolio'
-            }));
-            portfolioItems.push(...portfolioWithMember);
-          }
+        // Fetch all portfolio items for network members in a single query
+        const { data: portfolioData, error: portfolioError } = await supabase
+          .from('portfolio_items')
+          .select('*, profiles:profile_id(id, full_name, profile_picture_url)')
+          .in('profile_id', members.map(member => member.id))
+          .order('created_at', { ascending: false });
+          
+        if (!portfolioError && portfolioData) {
+          // Map the results to include member information
+          const portfolioWithMember = portfolioData.map(item => ({
+            ...item,
+            memberName: item.profiles?.full_name,
+            memberAvatar: item.profiles?.profile_picture_url,
+            memberId: item.profiles?.id,
+            itemType: 'portfolio'
+          }));
+          
+          portfolioItems.push(...portfolioWithMember);
         }
 
         const combinedFeed = [
@@ -183,7 +182,14 @@ function NetworkLandingPage() {
       }
     };
     
-    fetchData();
+    // lets do some performance measuring
+    const timeBefore = performance.now();
+
+    fetchData().then(() => {
+      const timeAfter = performance.now();
+      console.log(`Network data fetched in ${timeAfter - timeBefore} ms`);
+    }
+    );
   }, [networkId, user]);
   
   const handleTabChange = (event, newValue) => {
