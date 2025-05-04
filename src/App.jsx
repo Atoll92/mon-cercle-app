@@ -9,6 +9,7 @@ import WikiListPage from './pages/WikiListPage';
 import WikiPage from './pages/WikiPage';
 import WikiEditPage from './pages/WikiEditPage';
 import PaymentSuccessPage from './pages/PaymentSuccessPage';
+import BillingPage from './pages/BillingPage';
 
 // Import Pages
 import LoginPage from './pages/LoginPage';
@@ -164,6 +165,10 @@ function App() {
             <Route element={<ProtectedRoute />}>
             <Route path="/messages" element={<DirectMessagesPage />} />
             <Route path="/messages/:userId" element={<DirectMessagesPage />} />
+          </Route>
+
+          <Route element={<ProtectedRoute />}>
+            <Route path="/billing" element={<BillingPage />} />
           </Route>
           
           
