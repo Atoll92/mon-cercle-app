@@ -35,8 +35,9 @@ import {
   Article as DocIcon,
   Archive as ZipIcon,
   Download as DownloadIcon,
-  ArrowForward as ArrowForwardIcon
+  ArrowForward as ArrowForwardIcon,
 } from '@mui/icons-material';
+import { Attachment } from '@mui/icons-material';
 import { formatDistanceToNow } from 'date-fns';
 
 // Component to display file icon based on file type
