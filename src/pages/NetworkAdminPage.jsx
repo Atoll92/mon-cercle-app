@@ -771,15 +771,29 @@ function NetworkAdminPage() {
       setError(null);
       setMessage('');
       
-      // Create a unique file path in the 'networks' bucket
-      const filePath = `${network.id}/${Date.now()}-${logoFile.name}`;
+      // Validate network ID
+      if (!network?.id) {
+        throw new Error('Network ID is missing or invalid');
+      }
+      
+      // Sanitize filename - remove special characters and spaces
+      const sanitizedFilename = logoFile.name
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "") // Remove accents
+        .replace(/[^a-zA-Z0-9.-]/g, "_"); // Replace special chars with underscore
+      
+      // Use the CORRECT path format for logo: ${network.id}/filename
+      const filePath = `${network.id}/${Date.now()}-${sanitizedFilename}`;
+      
+      console.log('Uploading logo to path:', filePath);
       
       // Upload the file to storage
       const { error: uploadError } = await supabase.storage
         .from('networks')
         .upload(filePath, logoFile, {
           cacheControl: '3600',
-          upsert: true
+          upsert: true,
+          contentType: logoFile.type // Explicitly set content type
         });
         
       if (uploadError) throw uploadError;
@@ -808,7 +822,7 @@ function NetworkAdminPage() {
       
     } catch (error) {
       console.error('Error uploading logo:', error);
-      setError('Failed to upload logo. Please try again.');
+      setError('Failed to upload logo: ' + error.message);
     } finally {
       setUploadingLogo(false);
     }
