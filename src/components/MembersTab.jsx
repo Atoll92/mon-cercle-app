@@ -23,7 +23,9 @@ import {
   Tooltip,
   Paper,
   Badge,
-  alpha
+  alpha,
+  useTheme,
+  useMediaQuery
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -37,7 +39,11 @@ import {
   ArrowUpward as ArrowUpwardIcon,
   ArrowDownward as ArrowDownwardIcon,
   EventBusy as EventBusyIcon,
-  Clear as ClearIcon
+  Clear as ClearIcon,
+  Facebook as FacebookIcon,
+  Twitter as TwitterIcon,
+  LinkedIn as LinkedInIcon,
+  Language as LanguageIcon
 } from '@mui/icons-material';
 import VirtualizedMemberList from './VirtualizedMemberList';
 
@@ -50,6 +56,10 @@ const MembersTab = ({
   darkMode = false,
   onMemberSelect
 }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isTablet = useMediaQuery(theme.breakpoints.down('md'));
+  
   // State for filtering and pagination
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
@@ -57,13 +67,13 @@ const MembersTab = ({
   const [page, setPage] = useState(1);
   const [sortBy, setSortBy] = useState('name');
   const [sortDirection, setSortDirection] = useState('asc');
-  const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
+  const [viewMode, setViewMode] = useState('grid');
   const [filteredMembers, setFilteredMembers] = useState([]);
   const [displayMembers, setDisplayMembers] = useState([]);
   const [showFilters, setShowFilters] = useState(false);
   const [uniqueSkills, setUniqueSkills] = useState([]);
   
-  const itemsPerPage = viewMode === 'grid' ? 12 : 10;
+  const itemsPerPage = viewMode === 'grid' ? (isMobile ? 6 : isTablet ? 8 : 12) : 10;
   
   // Extract all unique skills from members for filter dropdown
   useEffect(() => {
@@ -163,6 +173,16 @@ const MembersTab = ({
   // Check if there are too many members for efficient rendering
   const useLargeDataStrategy = networkMembers.length > 500;
   
+  // Sample social media profiles (in a real app, these would come from your data)
+  const getSocialMedia = (member) => {
+    return {
+      facebook: member.facebook_url || null,
+      twitter: member.twitter_url || null,
+      linkedin: member.linkedin_url || null,
+      website: member.website_url || null
+    };
+  };
+  
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
@@ -172,7 +192,15 @@ const MembersTab = ({
   }
   
   return (
-    <Paper sx={{ p: 3 }}>
+    <Paper 
+      sx={{ 
+        p: { xs: 2, md: 3 },
+        borderRadius: 2,
+        bgcolor: darkMode ? alpha('#000', 0.2) : 'background.paper',
+        boxShadow: darkMode ? '0 8px 32px rgba(0,0,0,0.3)' : '0 4px 20px rgba(0,0,0,0.05)'
+      }}
+      elevation={darkMode ? 4 : 1}
+    >
       {/* Header with search and filters */}
       <Box sx={{ 
         display: 'flex', 
@@ -182,35 +210,80 @@ const MembersTab = ({
         mb: 3,
         gap: 2
       }}>
-        <Typography variant="h5" component="h2">
-          Network Members ({networkMembers.length})
+        <Typography 
+          variant="h5" 
+          component="h2"
+          sx={{
+            color: darkMode ? 'white' : 'text.primary',
+            fontWeight: 600,
+            display: 'flex',
+            alignItems: 'center'
+          }}
+        >
+          <Box 
+            component="span" 
+            sx={{ 
+              display: 'inline-flex', 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              bgcolor: darkMode ? alpha(theme.palette.primary.main, 0.2) : alpha(theme.palette.primary.light, 0.1),
+              color: darkMode ? theme.palette.primary.light : theme.palette.primary.main,
+              borderRadius: '50%',
+              width: 40,
+              height: 40,
+              mr: 1.5
+            }}
+          >
+            <Badge
+              badgeContent={networkMembers.length}
+              color="primary"
+              max={999}
+              sx={{
+                '& .MuiBadge-badge': {
+                  fontSize: '0.7rem',
+                  height: 20,
+                  minWidth: 20,
+                  padding: '0 4px'
+                }
+              }}
+            >
+              <PersonAddIcon />
+            </Badge>
+          </Box>
+          Network Members
         </Typography>
         
         <Box sx={{ display: 'flex', gap: 1 }}>
           {isUserAdmin && (
             <Button
-              variant="contained"
+              variant={darkMode ? "contained" : "outlined"}
               color="primary"
               startIcon={<PersonAddIcon />}
               component={Link}
               to="/admin"
-              sx={{ height: 40 }}
+              sx={{ 
+                height: 40,
+                borderRadius: 2,
+                px: 2,
+                boxShadow: darkMode ? '0 4px 12px rgba(25, 118, 210, 0.3)' : 'none'
+              }}
             >
               Invite Members
             </Button>
           )}
           
           <Button 
-            variant={darkMode ? "outlined" : "contained"}
-            color={darkMode ? "inherit" : "primary"}
+            variant={darkMode ? "contained" : "outlined"}
+            color={darkMode ? "secondary" : "primary"}
             startIcon={<FilterListIcon />}
             onClick={() => setShowFilters(!showFilters)}
             sx={{ 
               height: 40,
-              backgroundColor: darkMode ? alpha('#fff', 0.1) : null
+              borderRadius: 2,
+              boxShadow: darkMode ? '0 4px 12px rgba(156, 39, 176, 0.3)' : 'none'
             }}
           >
-            Filters
+            {showFilters ? "Hide Filters" : "Show Filters"}
           </Button>
         </Box>
       </Box>
@@ -218,11 +291,13 @@ const MembersTab = ({
       {/* Search and filters */}
       <Paper 
         sx={{ 
-          p: 2, 
+          p: { xs: 2, md: 3 }, 
           mb: 3,
-          backgroundColor: darkMode ? alpha('#000', 0.2) : alpha('#f5f5f5', 0.7),
+          backgroundColor: darkMode ? alpha('#121212', 0.6) : alpha('#f5f5f5', 0.7),
           backdropFilter: 'blur(8px)',
-          display: showFilters ? 'block' : 'none'
+          display: showFilters ? 'block' : 'none',
+          borderRadius: 2,
+          border: darkMode ? `1px solid ${alpha('#fff', 0.1)}` : `1px solid ${alpha('#000', 0.05)}`
         }}
         elevation={darkMode ? 3 : 1}
       >
@@ -252,8 +327,12 @@ const MembersTab = ({
                   </InputAdornment>
                 ) : null,
                 sx: { 
-                  bgcolor: darkMode ? alpha('#000', 0.1) : alpha('#fff', 0.9),
-                  color: darkMode ? 'white' : 'inherit' 
+                  bgcolor: darkMode ? alpha('#000', 0.2) : alpha('#fff', 0.9),
+                  color: darkMode ? 'white' : 'inherit',
+                  borderRadius: 2,
+                  '& .MuiOutlinedInput-notchedOutline': {
+                    borderColor: darkMode ? alpha('#fff', 0.1) : alpha('#000', 0.1)
+                  }
                 }
               }}
             />
@@ -264,12 +343,17 @@ const MembersTab = ({
               fullWidth 
               size="small"
               sx={{ 
-                bgcolor: darkMode ? alpha('#000', 0.1) : alpha('#fff', 0.9),
+                bgcolor: darkMode ? alpha('#000', 0.2) : alpha('#fff', 0.9),
+                borderRadius: 2,
                 '& .MuiOutlinedInput-root': {
-                  color: darkMode ? 'white' : 'inherit'
+                  color: darkMode ? 'white' : 'inherit',
+                  borderRadius: 2
                 },
                 '& .MuiInputLabel-root': {
                   color: darkMode ? alpha('white', 0.7) : 'inherit'
+                },
+                '& .MuiOutlinedInput-notchedOutline': {
+                  borderColor: darkMode ? alpha('#fff', 0.1) : alpha('#000', 0.1)
                 }
               }}
             >
@@ -292,12 +376,17 @@ const MembersTab = ({
               fullWidth 
               size="small"
               sx={{ 
-                bgcolor: darkMode ? alpha('#000', 0.1) : alpha('#fff', 0.9),
+                bgcolor: darkMode ? alpha('#000', 0.2) : alpha('#fff', 0.9),
+                borderRadius: 2,
                 '& .MuiOutlinedInput-root': {
-                  color: darkMode ? 'white' : 'inherit'
+                  color: darkMode ? 'white' : 'inherit',
+                  borderRadius: 2
                 },
                 '& .MuiInputLabel-root': {
                   color: darkMode ? alpha('white', 0.7) : 'inherit'
+                },
+                '& .MuiOutlinedInput-notchedOutline': {
+                  borderColor: darkMode ? alpha('#fff', 0.1) : alpha('#000', 0.1)
                 }
               }}
             >
@@ -322,18 +411,36 @@ const MembersTab = ({
             <Button
               fullWidth
               variant="outlined"
-              color={darkMode ? "inherit" : "secondary"}
+              color={darkMode ? "error" : "secondary"}
               onClick={handleClearFilters}
               startIcon={<ClearIcon />}
-              sx={{ height: '40px' }}
+              sx={{ 
+                height: '40px',
+                borderRadius: 2,
+                borderColor: darkMode ? alpha('#f44336', 0.5) : undefined
+              }}
             >
               Clear
             </Button>
           </Grid>
           
           <Grid item xs={12}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Box sx={{ display: 'flex', gap: 1 }}>
+            <Box sx={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              mt: 1
+            }}>
+              <Box sx={{ 
+                display: 'flex', 
+                gap: 1,
+                flexWrap: 'wrap',
+                '& button': {
+                  minWidth: 'auto',
+                  borderRadius: 8
+                }
+              }}>
                 <Button
                   size="small"
                   color={sortBy === 'name' ? 'primary' : 'inherit'}
@@ -341,7 +448,9 @@ const MembersTab = ({
                   startIcon={sortBy === 'name' && (sortDirection === 'asc' ? <ArrowUpwardIcon fontSize="small" /> : <ArrowDownwardIcon fontSize="small" />)}
                   sx={{ 
                     color: darkMode ? (sortBy === 'name' ? 'primary.light' : 'white') : 'inherit',
-                    textTransform: 'none'
+                    textTransform: 'none',
+                    fontWeight: sortBy === 'name' ? 600 : 400,
+                    bgcolor: sortBy === 'name' ? (darkMode ? alpha('#1976d2', 0.1) : alpha('#1976d2', 0.05)) : 'transparent'
                   }}
                 >
                   Name
@@ -354,7 +463,9 @@ const MembersTab = ({
                   startIcon={sortBy === 'joinDate' && (sortDirection === 'asc' ? <ArrowUpwardIcon fontSize="small" /> : <ArrowDownwardIcon fontSize="small" />)}
                   sx={{ 
                     color: darkMode ? (sortBy === 'joinDate' ? 'primary.light' : 'white') : 'inherit',
-                    textTransform: 'none'
+                    textTransform: 'none',
+                    fontWeight: sortBy === 'joinDate' ? 600 : 400,
+                    bgcolor: sortBy === 'joinDate' ? (darkMode ? alpha('#1976d2', 0.1) : alpha('#1976d2', 0.05)) : 'transparent'
                   }}
                 >
                   Join Date
@@ -367,14 +478,20 @@ const MembersTab = ({
                   startIcon={sortBy === 'skillCount' && (sortDirection === 'asc' ? <ArrowUpwardIcon fontSize="small" /> : <ArrowDownwardIcon fontSize="small" />)}
                   sx={{ 
                     color: darkMode ? (sortBy === 'skillCount' ? 'primary.light' : 'white') : 'inherit',
-                    textTransform: 'none'
+                    textTransform: 'none',
+                    fontWeight: sortBy === 'skillCount' ? 600 : 400,
+                    bgcolor: sortBy === 'skillCount' ? (darkMode ? alpha('#1976d2', 0.1) : alpha('#1976d2', 0.05)) : 'transparent'
                   }}
                 >
                   Skills Count
                 </Button>
               </Box>
               
-              <Typography variant="body2" color={darkMode ? "white" : "text.secondary"}>
+              <Typography 
+                variant="body2" 
+                color={darkMode ? alpha("white", 0.7) : "text.secondary"}
+                sx={{ mt: { xs: 2, sm: 0 } }}
+              >
                 Showing {filteredMembers.length} of {networkMembers.length} members
               </Typography>
             </Box>
@@ -382,31 +499,33 @@ const MembersTab = ({
         </Grid>
       </Paper>
       
-      <Divider sx={{ mb: 3 }} />
-      
       {/* Members grid/list */}
       {filteredMembers.length === 0 ? (
         <Paper 
           sx={{ 
-            p: 4, 
+            py: 6,
+            px: 4, 
             textAlign: 'center',
             bgcolor: darkMode ? alpha('#000', 0.2) : alpha('#f5f5f5', 0.7),
-            backdropFilter: 'blur(8px)'
+            backdropFilter: 'blur(8px)',
+            borderRadius: 2,
+            border: darkMode ? `1px solid ${alpha('#fff', 0.05)}` : 'none'
           }}
+          elevation={darkMode ? 2 : 0}
         >
-          <EventBusyIcon sx={{ fontSize: 60, color: darkMode ? 'gray' : 'text.disabled', mb: 2 }} />
+          <EventBusyIcon sx={{ fontSize: 70, color: darkMode ? alpha('white', 0.2) : 'text.disabled', mb: 2 }} />
           <Typography variant="h6" gutterBottom color={darkMode ? "white" : "text.primary"}>
             No members found
           </Typography>
-          <Typography variant="body2" color={darkMode ? "gray" : "text.secondary"}>
+          <Typography variant="body2" color={darkMode ? alpha("white", 0.6) : "text.secondary"}>
             Try adjusting your filters or search criteria
           </Typography>
           {(searchTerm || roleFilter !== 'all' || skillFilter) && (
             <Button
               variant="outlined"
-              color={darkMode ? "inherit" : "primary"}
+              color={darkMode ? "primary" : "secondary"}
               onClick={handleClearFilters}
-              sx={{ mt: 2 }}
+              sx={{ mt: 3, borderRadius: 2 }}
             >
               Clear Filters
             </Button>
@@ -423,161 +542,322 @@ const MembersTab = ({
       ) : (
         // Regular grid display for normal sized datasets
         <Grid container spacing={3}>
-          {displayMembers.map((member) => (
-            <Grid item xs={12} sm={6} md={4} lg={3} key={member.id}>
-              <Card 
-                sx={{ 
-                  height: '100%',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-                  cursor: 'pointer',
-                  '&:hover': {
-                    transform: 'translateY(-4px)',
-                    boxShadow: 6
-                  },
-                  bgcolor: darkMode ? alpha('#000', 0.3) : 'background.paper',
-                  backdropFilter: darkMode ? 'blur(8px)' : 'none',
-                  borderRadius: 2,
-                  border: darkMode ? `1px solid ${alpha('#fff', 0.1)}` : 'none'
-                }}
-                onClick={() => onMemberSelect && onMemberSelect(member)}
-              >
-                <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', p: 3 }}>
-                  <Badge
-                    overlap="circular"
-                    badgeContent={member.role === 'admin' ? '★' : null}
-                    color="primary"
-                    anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-                    sx={{
-                      '& .MuiBadge-badge': {
-                        fontSize: '1rem',
-                        height: '22px',
-                        minWidth: '22px'
-                      }
-                    }}
-                  >
-                    <Avatar
-                      src={member.profile_picture_url}
-                      sx={{ 
-                        width: 80, 
-                        height: 80, 
-                        mb: 2,
-                        border: `3px solid ${darkMode ? alpha('#fff', 0.2) : '#f0f0f0'}`,
-                        boxShadow: darkMode ? '0 4px 12px rgba(0,0,0,0.5)' : '0 4px 12px rgba(0,0,0,0.1)'
-                      }}
-                    >
-                      {member.full_name ? member.full_name.charAt(0).toUpperCase() : '?'}
-                    </Avatar>
-                  </Badge>
-                  
-                  <Typography 
-                    variant="h6" 
-                    component="h3" 
-                    align="center" 
-                    gutterBottom
+          {displayMembers.map((member) => {
+            const socialMedia = getSocialMedia(member);
+            return (
+              <Grid item xs={12} sm={6} md={4} lg={3} key={member.id}>
+                <Card 
+                  sx={{ 
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    transition: 'all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)',
+                    cursor: 'pointer',
+                    '&:hover': {
+                      transform: 'translateY(-8px)',
+                      boxShadow: darkMode ? '0 14px 28px rgba(0,0,0,0.4)' : '0 14px 28px rgba(0,0,0,0.1)'
+                    },
+                    bgcolor: darkMode ? alpha('#121212', 0.7) : 'background.paper',
+                    backdropFilter: 'blur(10px)',
+                    borderRadius: 3,
+                    overflow: 'hidden',
+                    border: darkMode ? `1px solid ${alpha('#fff', 0.05)}` : 'none',
+                    position: 'relative'
+                  }}
+                  onClick={() => onMemberSelect && onMemberSelect(member)}
+                  elevation={darkMode ? 4 : 1}
+                >
+                  {/* Decorative top bar, color based on role */}
+                  <Box 
                     sx={{ 
-                      mt: 1, 
-                      fontWeight: 600,
-                      color: darkMode ? 'white' : 'text.primary'
-                    }}
-                  >
-                    {member.full_name || 'Unnamed User'}
-                    {member.id === user?.id && ' (You)'}
-                  </Typography>
+                      height: 8, 
+                      width: '100%', 
+                      bgcolor: member.role === 'admin' ? 'primary.main' : 'secondary.main',
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      zIndex: 1
+                    }} 
+                  />
                   
-                  <Box sx={{ mb: 2, display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: 0.5 }}>
-                    <Chip 
-                      label={member.role === 'admin' ? 'Admin' : 'Member'} 
-                      color={member.role === 'admin' ? 'primary' : 'default'}
-                      size="small"
-                      sx={{ 
-                        bgcolor: darkMode ? 
-                          (member.role === 'admin' ? alpha('#1976d2', 0.8) : alpha('#333', 0.8)) : 
-                          undefined
-                      }}
-                    />
-                    
-                    {member.skills && member.skills.length > 0 && (
-                      <Tooltip title={member.skills.join(', ')}>
-                        <Chip
-                          label={`${member.skills.length} skills`}
-                          size="small"
-                          color="secondary"
-                          sx={{ 
-                            bgcolor: darkMode ? alpha('#9c27b0', 0.8) : undefined
-                          }}
-                        />
-                      </Tooltip>
-                    )}
-                  </Box>
-                  
-                  {member.bio && (
-                    <Typography 
-                      variant="body2" 
-                      color={darkMode ? alpha('white', 0.7) : "text.secondary"} 
-                      align="center" 
-                      sx={{ 
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        display: '-webkit-box',
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: 'vertical',
-                        mb: 2
-                      }}
-                    >
-                      {member.bio}
-                    </Typography>
-                  )}
-                </CardContent>
-                
-                <CardActions sx={{ justifyContent: 'center', p: 2, pt: 0 }}>
-                  <Button
-                    variant={darkMode ? "outlined" : "contained"}
-                    component={Link}
-                    to={`/profile/${member.id}`}
-                    size="small"
-                    onClick={(e) => e.stopPropagation()}
+                  <CardContent 
                     sx={{ 
-                      minWidth: '120px',
-                      color: darkMode ? 'white' : undefined,
-                      borderColor: darkMode ? alpha('white', 0.3) : undefined,
-                      '&:hover': {
-                        borderColor: darkMode ? 'white' : undefined
-                      }
+                      flexGrow: 1, 
+                      display: 'flex', 
+                      flexDirection: 'column', 
+                      alignItems: 'center', 
+                      p: 3,
+                      pt: 4,
+                      position: 'relative'
                     }}
                   >
-                    View Profile
-                  </Button>
-                  
-                  {member.id !== user?.id && (
-                    <IconButton
-                      component={Link}
-                      to={`/messages/${member.id}`}
-                      size="small"
-                      onClick={(e) => e.stopPropagation()}
-                      color={darkMode ? "inherit" : "primary"}
-                      sx={{ 
-                        ml: 1,
-                        color: darkMode ? 'white' : undefined,
-                        '&:hover': { 
-                          bgcolor: darkMode ? alpha('white', 0.1) : undefined
+                    <Badge
+                      overlap="circular"
+                      badgeContent={member.role === 'admin' ? '★' : null}
+                      color="primary"
+                      anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+                      sx={{
+                        '& .MuiBadge-badge': {
+                          fontSize: '1rem',
+                          height: '22px',
+                          minWidth: '22px',
+                          fontWeight: 'bold'
                         }
                       }}
                     >
-                      <MailIcon fontSize="small" />
-                    </IconButton>
-                  )}
-                </CardActions>
-              </Card>
-            </Grid>
-          ))}
+                      <Avatar
+                        src={member.profile_picture_url}
+                        sx={{ 
+                          width: 100, 
+                          height: 100, 
+                          mb: 2.5,
+                          border: `4px solid ${darkMode ? alpha('#fff', 0.1) : theme.palette.primary.light}`,
+                          boxShadow: darkMode ? '0 8px 16px rgba(0,0,0,0.5)' : '0 8px 16px rgba(0,0,0,0.1)'
+                        }}
+                      >
+                        {member.full_name ? member.full_name.charAt(0).toUpperCase() : '?'}
+                      </Avatar>
+                    </Badge>
+                    
+                    <Typography 
+                      variant="h6" 
+                      component="h3" 
+                      align="center" 
+                      gutterBottom
+                      sx={{ 
+                        fontWeight: 600,
+                        color: darkMode ? 'white' : 'text.primary',
+                        lineHeight: 1.2,
+                        mb: 1
+                      }}
+                    >
+                      {member.full_name || 'Unnamed User'}
+                      {member.id === user?.id && ' (You)'}
+                    </Typography>
+                    
+                    <Box sx={{ 
+                      mb: 2, 
+                      display: 'flex', 
+                      justifyContent: 'center', 
+                      flexWrap: 'wrap', 
+                      gap: 0.7
+                    }}>
+                      <Chip 
+                        label={member.role === 'admin' ? 'Admin' : 'Member'} 
+                        color={member.role === 'admin' ? 'primary' : 'default'}
+                        size="small"
+                        sx={{ 
+                          fontWeight: 500,
+                          bgcolor: darkMode ? 
+                            (member.role === 'admin' ? alpha('#1976d2', 0.8) : alpha('#333', 0.8)) : 
+                            undefined,
+                          '& .MuiChip-label': {
+                            px: 1
+                          }
+                        }}
+                      />
+                      
+                      {member.skills && member.skills.length > 0 && (
+                        <Tooltip title={member.skills.join(', ')}>
+                          <Chip
+                            label={`${member.skills.length} skills`}
+                            size="small"
+                            color="secondary"
+                            sx={{ 
+                              fontWeight: 500,
+                              bgcolor: darkMode ? alpha('#9c27b0', 0.8) : undefined,
+                              '& .MuiChip-label': {
+                                px: 1
+                              }
+                            }}
+                          />
+                        </Tooltip>
+                      )}
+                    </Box>
+                    
+                    {/* Social Media Links */}
+                    <Box sx={{ 
+                      display: 'flex', 
+                      justifyContent: 'center', 
+                      mb: 2,
+                      gap: 1
+                    }}>
+                      {socialMedia.facebook && (
+                        <Tooltip title="Facebook Profile">
+                          <IconButton 
+                            size="small" 
+                            component="a" 
+                            href={socialMedia.facebook} 
+                            target="_blank"
+                            onClick={(e) => e.stopPropagation()}
+                            sx={{ 
+                              bgcolor: darkMode ? alpha('#3b5998', 0.2) : alpha('#3b5998', 0.1),
+                              color: '#3b5998',
+                              '&:hover': { 
+                                bgcolor: darkMode ? alpha('#3b5998', 0.3) : alpha('#3b5998', 0.2) 
+                              }
+                            }}
+                          >
+                            <FacebookIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      )}
+                      
+                      {socialMedia.twitter && (
+                        <Tooltip title="Twitter Profile">
+                          <IconButton 
+                            size="small" 
+                            component="a" 
+                            href={socialMedia.twitter} 
+                            target="_blank"
+                            onClick={(e) => e.stopPropagation()}
+                            sx={{ 
+                              bgcolor: darkMode ? alpha('#1DA1F2', 0.2) : alpha('#1DA1F2', 0.1),
+                              color: '#1DA1F2',
+                              '&:hover': { 
+                                bgcolor: darkMode ? alpha('#1DA1F2', 0.3) : alpha('#1DA1F2', 0.2) 
+                              }
+                            }}
+                          >
+                            <TwitterIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      )}
+                      
+                      {socialMedia.linkedin && (
+                        <Tooltip title="LinkedIn Profile">
+                          <IconButton 
+                            size="small" 
+                            component="a" 
+                            href={socialMedia.linkedin} 
+                            target="_blank"
+                            onClick={(e) => e.stopPropagation()}
+                            sx={{ 
+                              bgcolor: darkMode ? alpha('#0077B5', 0.2) : alpha('#0077B5', 0.1),
+                              color: '#0077B5',
+                              '&:hover': { 
+                                bgcolor: darkMode ? alpha('#0077B5', 0.3) : alpha('#0077B5', 0.2) 
+                              }
+                            }}
+                          >
+                            <LinkedInIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      )}
+                      
+                      {socialMedia.website && (
+                        <Tooltip title="Personal Website">
+                          <IconButton 
+                            size="small" 
+                            component="a" 
+                            href={socialMedia.website} 
+                            target="_blank"
+                            onClick={(e) => e.stopPropagation()}
+                            sx={{ 
+                              bgcolor: darkMode ? alpha('#4CAF50', 0.2) : alpha('#4CAF50', 0.1),
+                              color: '#4CAF50',
+                              '&:hover': { 
+                                bgcolor: darkMode ? alpha('#4CAF50', 0.3) : alpha('#4CAF50', 0.2) 
+                              }
+                            }}
+                          >
+                            <LanguageIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      )}
+                    </Box>
+                    
+                    {member.bio && (
+                      <Typography 
+                        variant="body2" 
+                        color={darkMode ? alpha('white', 0.7) : "text.secondary"} 
+                        align="center" 
+                        sx={{ 
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          display: '-webkit-box',
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical',
+                          mb: 2,
+                          lineHeight: 1.4
+                        }}
+                      >
+                        {member.bio}
+                      </Typography>
+                    )}
+                  </CardContent>
+                  
+                  <CardActions 
+                    sx={{ 
+                      justifyContent: 'center', 
+                      p: 2, 
+                      pt: 0,
+                      pb: 3, 
+                      gap: 1
+                    }}
+                  >
+                    <Button
+                      variant={darkMode ? "outlined" : "contained"}
+                      color="primary"
+                      component={Link}
+                      to={`/profile/${member.id}`}
+                      size="small"
+                      onClick={(e) => e.stopPropagation()}
+                      sx={{ 
+                        minWidth: '120px',
+                        borderRadius: 6,
+                        color: darkMode ? theme.palette.primary.light : 'white',
+                        borderColor: darkMode ? alpha(theme.palette.primary.light, 0.5) : undefined,
+                        '&:hover': {
+                          borderColor: darkMode ? theme.palette.primary.light : undefined,
+                          transform: 'scale(1.05)',
+                          boxShadow: darkMode ? '0 4px 8px rgba(25, 118, 210, 0.5)' : '0 4px 8px rgba(0,0,0,0.2)'
+                        },
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
+                      View Profile
+                    </Button>
+                    
+                    {member.id !== user?.id && (
+                      <Tooltip title="Send Message">
+                        <IconButton
+                          component={Link}
+                          to={`/messages/${member.id}`}
+                          size="small"
+                          onClick={(e) => e.stopPropagation()}
+                          color={darkMode ? "inherit" : "primary"}
+                          sx={{ 
+                            ml: 1,
+                            color: darkMode ? theme.palette.primary.light : theme.palette.primary.main,
+                            bgcolor: darkMode ? alpha(theme.palette.primary.main, 0.1) : alpha(theme.palette.primary.main, 0.05),
+                            '&:hover': { 
+                              bgcolor: darkMode ? alpha(theme.palette.primary.main, 0.2) : alpha(theme.palette.primary.main, 0.1),
+                              transform: 'scale(1.1)'
+                            },
+                            transition: 'all 0.2s ease'
+                          }}
+                        >
+                          <MailIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    )}
+                  </CardActions>
+                </Card>
+              </Grid>
+            );
+          })}
         </Grid>
       )}
       
       {/* Pagination controls */}
       {!useLargeDataStrategy && totalPages > 1 && (
-        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4, mb: 2 }}>
+        <Box sx={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          mt: 4, 
+          mb: 2 
+        }}>
           <Pagination
             count={totalPages}
             page={page}
@@ -586,7 +866,16 @@ const MembersTab = ({
             size="large"
             showFirstButton
             showLastButton
-            siblingCount={1}
+            siblingCount={isMobile ? 0 : 1}
+            sx={{
+              '& .MuiPaginationItem-root': {
+                color: darkMode ? 'white' : undefined,
+                '&.Mui-selected': {
+                  bgcolor: darkMode ? alpha(theme.palette.primary.main, 0.8) : undefined,
+                  fontWeight: 'bold'
+                }
+              }
+            }}
           />
         </Box>
       )}
