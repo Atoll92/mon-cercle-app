@@ -796,7 +796,7 @@ const MembersTab = ({
                       gap: 1
                     }}
                   >
-                    <Button
+                    {/* <Button
                       variant={darkMode ? "outlined" : "contained"}
                       color="primary"
                       component={Link}
@@ -817,7 +817,7 @@ const MembersTab = ({
                       }}
                     >
                       View Profile
-                    </Button>
+                    </Button> */}
                     
                     {member.id !== user?.id && (
                       <Tooltip title="Send Message">
