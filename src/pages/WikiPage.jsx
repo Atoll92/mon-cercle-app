@@ -3,10 +3,6 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../supabaseclient';
 import { useAuth } from '../context/authcontext';
-import ReactMarkdown from 'react-markdown';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { solarizedlight } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import remarkGfm from 'remark-gfm';
 
 import {
   Container,
@@ -588,27 +584,9 @@ const WikiPage = () => {
         <Box sx={{ mb: 4 }}>
           {displayContent ? (
             <Box className="wiki-content">
-              <ReactMarkdown
-                children={displayContent}
-                remarkPlugins={[remarkGfm]}
-                components={{
-                  code({ node, inline, className, children, ...props }) {
-                    const match = /language-(\w+)/.exec(className || '');
-                    return !inline && match ? (
-                      <SyntaxHighlighter
-                        children={String(children).replace(/\n$/, '')}
-                        style={solarizedlight}
-                        language={match[1]}
-                        PreTag="div"
-                        {...props}
-                      />
-                    ) : (
-                      <code className={className} {...props}>
-                        {children}
-                      </code>
-                    );
-                  }
-                }}
+              <div 
+                className="prose max-w-none" 
+                dangerouslySetInnerHTML={{ __html: displayContent }}
               />
             </Box>
           ) : (

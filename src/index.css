@@ -1374,3 +1374,8 @@ input, textarea, select, button {
 .mapboxgl-control-container {
   display:none;
 }
+
+/* Quill editor style */
+.ql-container > .ql-editor{
+  min-height:200px;
+}

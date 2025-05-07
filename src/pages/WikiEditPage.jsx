@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../supabaseclient';
 import { useAuth } from '../context/authcontext';
-import MDEditor from '@uiw/react-md-editor';
+import QuillEditor from '../components/QuillEditor';
 
 import {
   Container,
@@ -627,24 +627,14 @@ const WikiEditPage = () => {
             </FormControl>
 
             {/* Content field */}
-            <Box>
-              <Typography variant="subtitle1" gutterBottom>
-                Page Content (Markdown format)
-              </Typography>
-              <MDEditor
+            <Typography variant="subtitle1" gutterBottom>
+              Page Content
+            </Typography>
+            <Box className="mb-16">
+              <QuillEditor
                 value={content}
-                onChange={setContent}
-                preview={previewMode ? 'preview' : 'edit'}
-                height={400}
+                setContent={setContent}
               />
-              <Button
-                size="small"
-                onClick={() => setPreviewMode(!previewMode)}
-                startIcon={previewMode ? <EditIcon /> : <PreviewIcon />}
-                sx={{ mt: 1 }}
-              >
-                {previewMode ? 'Switch to Edit Mode' : 'Preview'}
-              </Button>
             </Box>
 
             {/* Revision comment */}
@@ -654,7 +644,6 @@ const WikiEditPage = () => {
               value={revisionComment}
               onChange={(e) => setRevisionComment(e.target.value)}
               helperText="Briefly describe your changes (optional)"
-              disabled={previewMode}
             />
 
             {/* Submission notice for non-admins */}
