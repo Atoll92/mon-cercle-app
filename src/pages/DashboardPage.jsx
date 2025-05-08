@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/authcontext';
 import { supabase } from '../supabaseclient';
 import { useNavigate, Link } from 'react-router-dom';
+import PersonalMoodboardWidget from '../components/PersonalMoodboardWidget';
 import { 
   AttachMoney as AttachMoneyIcon,
   Star as StarIcon,
@@ -1037,6 +1038,7 @@ function DashboardPage() {
                       )}
                     </CardContent>
                   </Card>
+                  <PersonalMoodboardWidget user={user} />
 
                   {/* Admin Controls Card */}
                   {profile.role === 'admin' && profile.network_id && (

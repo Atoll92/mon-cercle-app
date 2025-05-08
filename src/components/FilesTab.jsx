@@ -1,3 +1,4 @@
+// src/components/FilesTab.jsx
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../supabaseclient';
@@ -21,7 +22,12 @@ import {
   ListItemText,
   ListItemSecondaryAction,
   IconButton,
-  Tooltip
+  Tooltip,
+  Avatar,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions
 } from '@mui/material';
 import {
   CloudUpload as CloudUploadIcon,
@@ -36,9 +42,11 @@ import {
   Archive as ZipIcon,
   Download as DownloadIcon,
   ArrowForward as ArrowForwardIcon,
+  Dashboard as DashboardIcon
 } from '@mui/icons-material';
 import { Attachment } from '@mui/icons-material';
 import { formatDistanceToNow } from 'date-fns';
+import { addMoodboardItem } from '../api/moodboards'; // Import the moodboards API
 
 // Component to display file icon based on file type
 const FileTypeIcon = ({ fileType }) => {
@@ -76,6 +84,36 @@ const FilesTab = ({ networkId, isUserMember }) => {
   const [loading, setLoading] = useState(true);
   const [files, setFiles] = useState([]);
   const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [moodboardDialogOpen, setMoodboardDialogOpen] = useState(false);
+  const [createMoodboardDialogOpen, setCreateMoodboardDialogOpen] = useState(false);
+  const [userMoodboards, setUserMoodboards] = useState([]);
+  const [loadingMoodboards, setLoadingMoodboards] = useState(false);
+  const [processing, setProcessing] = useState(false);
+
+  // Function to fetch user's moodboards
+  const fetchUserMoodboards = async () => {
+    if (!user) return;
+
+    try {
+      setLoadingMoodboards(true);
+      
+      const { data, error } = await supabase
+        .from('moodboards')
+        .select('*')
+        .eq('created_by', user.id)
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      setUserMoodboards(data || []);
+    } catch (err) {
+      console.error('Error fetching moodboards:', err);
+      setError('Failed to load your moodboards');
+    } finally {
+      setLoadingMoodboards(false);
+    }
+  };
   
   useEffect(() => {
     const fetchFiles = async () => {
@@ -120,6 +158,41 @@ const FilesTab = ({ networkId, isUserMember }) => {
     
     fetchFiles();
   }, [networkId]);
+
+  const handleUseInMoodboard = (file) => {
+    setSelectedFile(file);
+    fetchUserMoodboards(); // Fetch moodboards when dialog is opened
+    setMoodboardDialogOpen(true);
+  };
+
+  const handleAddToMoodboard = async (file, moodboardId) => {
+    try {
+      setProcessing(true);
+      
+      // Add the file as an image item to the moodboard
+      const newItem = {
+        moodboard_id: moodboardId,
+        type: file.file_type.startsWith('image/') ? 'image' : 'link',
+        content: file.file_url,
+        title: file.filename,
+        x: 100, // Default position
+        y: 100,
+        width: 300,
+        height: 200,
+        created_by: user.id
+      };
+      
+      await addMoodboardItem(newItem);
+      
+      setSuccess('Added to moodboard successfully!');
+      setMoodboardDialogOpen(false);
+    } catch (err) {
+      console.error('Error adding to moodboard:', err);
+      setError('Failed to add to moodboard');
+    } finally {
+      setProcessing(false);
+    }
+  };
   
   // Handle file download
   const handleDownloadFile = async (file) => {
@@ -174,8 +247,14 @@ const FilesTab = ({ networkId, isUserMember }) => {
       </Box>
       
       {error && (
-        <Alert severity="error" sx={{ mb: 3 }}>
+        <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError(null)}>
           {error}
+        </Alert>
+      )}
+
+      {success && (
+        <Alert severity="success" sx={{ mb: 3 }} onClose={() => setSuccess(null)}>
+          {success}
         </Alert>
       )}
       
@@ -252,7 +331,16 @@ const FilesTab = ({ networkId, isUserMember }) => {
                     }
                   />
                   
-                  <ListItemSecondaryAction>
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <Button
+                      size="small"
+                      startIcon={<DashboardIcon />}
+                      onClick={() => handleUseInMoodboard(file)}
+                      sx={{ mr: 1 }}
+                    >
+                      Use in Moodboard
+                    </Button>
+                    
                     <Tooltip title="Download">
                       <IconButton 
                         edge="end" 
@@ -262,11 +350,65 @@ const FilesTab = ({ networkId, isUserMember }) => {
                         <DownloadIcon />
                       </IconButton>
                     </Tooltip>
-                  </ListItemSecondaryAction>
+                  </Box>
                 </ListItem>
               </React.Fragment>
             ))}
           </List>
+          
+          {/* Moodboard Selection Dialog */}
+          <Dialog 
+            open={moodboardDialogOpen} 
+            onClose={() => setMoodboardDialogOpen(false)}
+            maxWidth="sm"
+            fullWidth
+          >
+            <DialogTitle>Add to Moodboard</DialogTitle>
+            <DialogContent>
+              {loadingMoodboards ? (
+                <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
+                  <CircularProgress />
+                </Box>
+              ) : userMoodboards.length === 0 ? (
+                <Typography>
+                  You don't have any moodboards yet. Would you like to create one?
+                </Typography>
+              ) : (
+                <List>
+                  {userMoodboards.map(moodboard => (
+                    <ListItem 
+                      button 
+                      key={moodboard.id}
+                      onClick={() => handleAddToMoodboard(selectedFile, moodboard.id)}
+                    >
+                      <ListItemIcon>
+                        <DashboardIcon />
+                      </ListItemIcon>
+                      <ListItemText
+                        primary={moodboard.title}
+                        secondary={`${moodboard.permissions} • Created ${new Date(moodboard.created_at).toLocaleDateString()}`}
+                      />
+                    </ListItem>
+                  ))}
+                </List>
+              )}
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setMoodboardDialogOpen(false)}>Cancel</Button>
+              <Button 
+                variant="contained" 
+                color="primary"
+                onClick={() => {
+                  setMoodboardDialogOpen(false);
+                  navigate(`/network/${networkId}/moodboards/create`, { 
+                    state: { fileToAdd: selectedFile } 
+                  });
+                }}
+              >
+                Create New Moodboard
+              </Button>
+            </DialogActions>
+          </Dialog>
           
           <Box sx={{ mt: 3, textAlign: 'center' }}>
             <Button 

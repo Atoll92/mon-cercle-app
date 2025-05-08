@@ -18,7 +18,6 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  Divider,
   IconButton,
   Tooltip,
   Paper,
@@ -32,10 +31,6 @@ import {
   PersonAdd as PersonAddIcon,
   Mail as MailIcon,
   FilterList as FilterListIcon,
-  AccessTime as AccessTimeIcon,
-  LocationOn as LocationOnIcon,
-  Work as WorkIcon,
-  School as SchoolIcon,
   ArrowUpward as ArrowUpwardIcon,
   ArrowDownward as ArrowDownwardIcon,
   EventBusy as EventBusyIcon,
@@ -45,7 +40,6 @@ import {
   LinkedIn as LinkedInIcon,
   Language as LanguageIcon
 } from '@mui/icons-material';
-import VirtualizedMemberList from './VirtualizedMemberList';
 
 const MembersTab = ({ 
   networkMembers = [], 
@@ -67,13 +61,12 @@ const MembersTab = ({
   const [page, setPage] = useState(1);
   const [sortBy, setSortBy] = useState('name');
   const [sortDirection, setSortDirection] = useState('asc');
-  const [viewMode, setViewMode] = useState('grid');
   const [filteredMembers, setFilteredMembers] = useState([]);
   const [displayMembers, setDisplayMembers] = useState([]);
   const [showFilters, setShowFilters] = useState(false);
   const [uniqueSkills, setUniqueSkills] = useState([]);
   
-  const itemsPerPage = viewMode === 'grid' ? (isMobile ? 6 : isTablet ? 8 : 12) : 10;
+  const itemsPerPage = isMobile ? 6 : isTablet ? 8 : 12;
   
   // Extract all unique skills from members for filter dropdown
   useEffect(() => {
@@ -149,7 +142,7 @@ const MembersTab = ({
   // Reset to page 1 when filters change
   useEffect(() => {
     setPage(1);
-  }, [searchTerm, roleFilter, skillFilter, sortBy, sortDirection, viewMode]);
+  }, [searchTerm, roleFilter, skillFilter, sortBy, sortDirection]);
   
   const handleSortChange = (newSortBy) => {
     if (sortBy === newSortBy) {
@@ -170,10 +163,7 @@ const MembersTab = ({
   
   const totalPages = Math.ceil(filteredMembers.length / itemsPerPage);
   
-  // Check if there are too many members for efficient rendering
-  const useLargeDataStrategy = networkMembers.length > 500;
-  
-  // Sample social media profiles (in a real app, these would come from your data)
+  // Sample social media profiles
   const getSocialMedia = (member) => {
     return {
       facebook: member.facebook_url || null,
@@ -531,16 +521,8 @@ const MembersTab = ({
             </Button>
           )}
         </Paper>
-      ) : useLargeDataStrategy ? (
-        // For very large datasets, use a virtualized list
-        <VirtualizedMemberList 
-          members={filteredMembers} 
-          user={user} 
-          darkMode={darkMode}
-          onMemberSelect={onMemberSelect}
-        />
       ) : (
-        // Regular grid display for normal sized datasets
+        // Fixed-width minimalist member cards
         <Grid container spacing={3}>
           {displayMembers.map((member) => {
             const socialMedia = getSocialMedia(member);
@@ -591,33 +573,65 @@ const MembersTab = ({
                       position: 'relative'
                     }}
                   >
-                    <Badge
-                      overlap="circular"
-                      badgeContent={member.role === 'admin' ? '★' : null}
-                      color="primary"
-                      anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-                      sx={{
-                        '& .MuiBadge-badge': {
-                          fontSize: '1rem',
-                          height: '22px',
-                          minWidth: '22px',
-                          fontWeight: 'bold'
-                        }
-                      }}
-                    >
-                      <Avatar
-                        src={member.profile_picture_url}
-                        sx={{ 
-                          width: 100, 
-                          height: 100, 
-                          mb: 2.5,
-                          border: `4px solid ${darkMode ? alpha('#fff', 0.1) : theme.palette.primary.light}`,
-                          boxShadow: darkMode ? '0 8px 16px rgba(0,0,0,0.5)' : '0 8px 16px rgba(0,0,0,0.1)'
+                    <Box sx={{ position: 'relative' }}>
+                      <Badge
+                        overlap="circular"
+                        badgeContent={member.role === 'admin' ? '★' : null}
+                        color="primary"
+                        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+                        sx={{
+                          '& .MuiBadge-badge': {
+                            fontSize: '1rem',
+                            height: '22px',
+                            minWidth: '22px',
+                            fontWeight: 'bold'
+                          }
                         }}
                       >
-                        {member.full_name ? member.full_name.charAt(0).toUpperCase() : '?'}
-                      </Avatar>
-                    </Badge>
+                        <Avatar
+                          src={member.profile_picture_url}
+                          sx={{ 
+                            width: 90, 
+                            height: 90, 
+                            mb: 2.5,
+                            border: `4px solid ${darkMode ? alpha('#fff', 0.1) : theme.palette.primary.light}`,
+                            boxShadow: darkMode ? '0 8px 16px rgba(0,0,0,0.5)' : '0 8px 16px rgba(0,0,0,0.1)'
+                          }}
+                        >
+                          {member.full_name ? member.full_name.charAt(0).toUpperCase() : '?'}
+                        </Avatar>
+                      </Badge>
+                      
+                      {/* Message button positioned over the bottom right of avatar */}
+                      {member.id !== user?.id && (
+                        <Tooltip title="Send Message">
+                          <IconButton
+                            component={Link}
+                            to={`/messages/${member.id}`}
+                            size="small"
+                            onClick={(e) => e.stopPropagation()}
+                            color={darkMode ? "inherit" : "primary"}
+                            sx={{ 
+                              position: 'absolute',
+                              bottom: 10,
+                              right: -10,
+                              color: darkMode ? '#fff' : '#fff',
+                              bgcolor: darkMode ? theme.palette.primary.dark : theme.palette.primary.main,
+                              '&:hover': { 
+                                bgcolor: darkMode ? theme.palette.primary.main : theme.palette.primary.dark,
+                                transform: 'scale(1.1)'
+                              },
+                              transition: 'all 0.2s ease',
+                              width: 32,
+                              height: 32,
+                              boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
+                            }}
+                          >
+                            <MailIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      )}
+                    </Box>
                     
                     <Typography 
                       variant="h6" 
@@ -628,7 +642,20 @@ const MembersTab = ({
                         fontWeight: 600,
                         color: darkMode ? 'white' : 'text.primary',
                         lineHeight: 1.2,
-                        mb: 1
+                        mb: 1,
+                        // Fixed height and width for consistent card sizing
+                        height: '2.4em',
+                        width: '100%',
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        // For multi-line ellipsis
+                        /*display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical'
+                        */
                       }}
                     >
                       {member.full_name || 'Unnamed User'}
@@ -693,6 +720,8 @@ const MembersTab = ({
                             sx={{ 
                               bgcolor: darkMode ? alpha('#3b5998', 0.2) : alpha('#3b5998', 0.1),
                               color: '#3b5998',
+                              width: 30,
+                              height: 30,
                               '&:hover': { 
                                 bgcolor: darkMode ? alpha('#3b5998', 0.3) : alpha('#3b5998', 0.2) 
                               }
@@ -714,6 +743,8 @@ const MembersTab = ({
                             sx={{ 
                               bgcolor: darkMode ? alpha('#1DA1F2', 0.2) : alpha('#1DA1F2', 0.1),
                               color: '#1DA1F2',
+                              width: 30,
+                              height: 30,
                               '&:hover': { 
                                 bgcolor: darkMode ? alpha('#1DA1F2', 0.3) : alpha('#1DA1F2', 0.2) 
                               }
@@ -735,6 +766,8 @@ const MembersTab = ({
                             sx={{ 
                               bgcolor: darkMode ? alpha('#0077B5', 0.2) : alpha('#0077B5', 0.1),
                               color: '#0077B5',
+                              width: 30,
+                              height: 30,
                               '&:hover': { 
                                 bgcolor: darkMode ? alpha('#0077B5', 0.3) : alpha('#0077B5', 0.2) 
                               }
@@ -756,6 +789,8 @@ const MembersTab = ({
                             sx={{ 
                               bgcolor: darkMode ? alpha('#4CAF50', 0.2) : alpha('#4CAF50', 0.1),
                               color: '#4CAF50',
+                              width: 30,
+                              height: 30,
                               '&:hover': { 
                                 bgcolor: darkMode ? alpha('#4CAF50', 0.3) : alpha('#4CAF50', 0.2) 
                               }
@@ -778,71 +813,15 @@ const MembersTab = ({
                           display: '-webkit-box',
                           WebkitLineClamp: 2,
                           WebkitBoxOrient: 'vertical',
-                          mb: 2,
-                          lineHeight: 1.4
+                          lineHeight: 1.4,
+                          height: '2.8em', // Fixed height for consistent sizing
+                          width: '100%',
                         }}
                       >
                         {member.bio}
                       </Typography>
                     )}
                   </CardContent>
-                  
-                  <CardActions 
-                    sx={{ 
-                      justifyContent: 'center', 
-                      p: 2, 
-                      pt: 0,
-                      pb: 3, 
-                      gap: 1
-                    }}
-                  >
-                    {/* <Button
-                      variant={darkMode ? "outlined" : "contained"}
-                      color="primary"
-                      component={Link}
-                      to={`/profile/${member.id}`}
-                      size="small"
-                      onClick={(e) => e.stopPropagation()}
-                      sx={{ 
-                        minWidth: '120px',
-                        borderRadius: 6,
-                        color: darkMode ? theme.palette.primary.light : 'white',
-                        borderColor: darkMode ? alpha(theme.palette.primary.light, 0.5) : undefined,
-                        '&:hover': {
-                          borderColor: darkMode ? theme.palette.primary.light : undefined,
-                          transform: 'scale(1.05)',
-                          boxShadow: darkMode ? '0 4px 8px rgba(25, 118, 210, 0.5)' : '0 4px 8px rgba(0,0,0,0.2)'
-                        },
-                        transition: 'all 0.2s ease'
-                      }}
-                    >
-                      View Profile
-                    </Button> */}
-                    
-                    {member.id !== user?.id && (
-                      <Tooltip title="Send Message">
-                        <IconButton
-                          component={Link}
-                          to={`/messages/${member.id}`}
-                          size="small"
-                          onClick={(e) => e.stopPropagation()}
-                          color={darkMode ? "inherit" : "primary"}
-                          sx={{ 
-                            ml: 1,
-                            color: darkMode ? theme.palette.primary.light : theme.palette.primary.main,
-                            bgcolor: darkMode ? alpha(theme.palette.primary.main, 0.1) : alpha(theme.palette.primary.main, 0.05),
-                            '&:hover': { 
-                              bgcolor: darkMode ? alpha(theme.palette.primary.main, 0.2) : alpha(theme.palette.primary.main, 0.1),
-                              transform: 'scale(1.1)'
-                            },
-                            transition: 'all 0.2s ease'
-                          }}
-                        >
-                          <MailIcon fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                    )}
-                  </CardActions>
                 </Card>
               </Grid>
             );
@@ -851,7 +830,7 @@ const MembersTab = ({
       )}
       
       {/* Pagination controls */}
-      {!useLargeDataStrategy && totalPages > 1 && (
+      {totalPages > 1 && (
         <Box sx={{ 
           display: 'flex', 
           justifyContent: 'center', 

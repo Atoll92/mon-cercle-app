@@ -11,6 +11,7 @@ import WikiEditPage from './pages/WikiEditPage';
 import PaymentSuccessPage from './pages/PaymentSuccessPage';
 import BillingPage from './pages/BillingPage';
 import SharedFilesPage from './pages/SharedFilesPage'; // Import the SharedFilesPage
+import MoodboardPage from './pages/MoodboardPage';
 
 // Import Pages
 import LoginPage from './pages/LoginPage';
@@ -162,6 +163,10 @@ function App() {
           <Route element={<ProtectedRoute />}>
             <Route path="/network/:networkId/wiki/new" element={<WikiEditPage />} />
             <Route path="/network/:networkId/wiki/edit/:pageSlug" element={<WikiEditPage />} />
+          </Route>
+
+          <Route element={<ProtectedRoute />}>
+            <Route path="/moodboard/:moodboardId" element={<MoodboardPage />} />
           </Route>
 
           {/* Protected Shared Files Routes */}
