@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../supabaseclient';
 import {
@@ -16,7 +16,9 @@ import {
   alpha,
   Paper,
   Stack,
-  CircularProgress
+  CircularProgress,
+  Tooltip,
+  useTheme
 } from '@mui/material';
 import {
   Close as CloseIcon,
@@ -24,11 +26,13 @@ import {
   Language as LanguageIcon,
   LinkedIn as LinkedInIcon,
   Person as PersonIcon,
-  LocationOn as LocationIcon,
-  Work as WorkIcon,
-  School as SchoolIcon,
   EventNote as EventNoteIcon,
-  Label as LabelIcon
+  Label as LabelIcon,
+  Work as WorkIcon,
+  Dashboard as DashboardIcon,
+  OpenInNew as OpenInNewIcon,
+  ZoomIn as ZoomInIcon,
+  ZoomOut as ZoomOutIcon
 } from '@mui/icons-material';
 
 const MemberDetailsModal = ({ 
@@ -38,10 +42,25 @@ const MemberDetailsModal = ({
   isCurrentUser,
   darkMode = false
 }) => {
+  const theme = useTheme(); // Get the theme
   const [portfolioItems, setPortfolioItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   
+  // State for member's moodboards
+  const [featuredMoodboard, setFeaturedMoodboard] = useState(null);
+  const [moodboardItems, setMoodboardItems] = useState([]);
+  const [loadingMoodboard, setLoadingMoodboard] = useState(false);
+  const [moodboardError, setMoodboardError] = useState(null);
+  
+  // State for cover display
+  const [scale, setScale] = useState(0.5);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  
+  // Ref for cover canvas
+  const canvasRef = useRef(null);
+  
+  // Fetch portfolio items
   useEffect(() => {
     const fetchPortfolioItems = async () => {
       if (!member || !open) return;
@@ -70,6 +89,275 @@ const MemberDetailsModal = ({
     fetchPortfolioItems();
   }, [member, open]);
 
+  // Fetch member's featured moodboard
+  useEffect(() => {
+    const fetchFeaturedMoodboard = async () => {
+      if (!member || !open) return;
+      
+      try {
+        setLoadingMoodboard(true);
+        setMoodboardError(null);
+        
+        // Get the member's most recent public moodboard
+        const { data, error } = await supabase
+          .from('moodboards')
+          .select('*')
+          .eq('created_by', member.id)
+          .in('permissions', ['public', 'collaborative'])
+          .order('updated_at', { ascending: false })
+          .limit(1);
+          
+        if (error) throw error;
+        
+        if (data && data.length > 0) {
+          setFeaturedMoodboard(data[0]);
+          
+          // Fetch items for the featured moodboard
+          const { data: itemsData, error: itemsError } = await supabase
+            .from('moodboard_items')
+            .select('*')
+            .eq('moodboard_id', data[0].id)
+            .order('created_at', { ascending: true });
+            
+          if (itemsError) throw itemsError;
+          
+          setMoodboardItems(itemsData || []);
+          
+          // Auto fit the canvas to show all items
+          setTimeout(() => {
+            fitContentToView();
+          }, 300);
+        }
+      } catch (err) {
+        console.error('Error fetching featured moodboard:', err);
+        setMoodboardError('Failed to load moodboard');
+      } finally {
+        setLoadingMoodboard(false);
+      }
+    };
+    
+    fetchFeaturedMoodboard();
+  }, [member, open]);
+  
+  // Function to fit all moodboard content to view
+  const fitContentToView = () => {
+    if (!moodboardItems.length || !canvasRef.current) return;
+    
+    // Find the bounds of all items
+    const bounds = moodboardItems.reduce((acc, item) => {
+      // Skip background elements
+      if (item.type === 'background') return acc;
+      
+      // Update min and max coordinates
+      acc.minX = Math.min(acc.minX, item.x || 0);
+      acc.minY = Math.min(acc.minY, item.y || 0);
+      acc.maxX = Math.max(acc.maxX, (item.x || 0) + (item.width || 200));
+      acc.maxY = Math.max(acc.maxY, (item.y || 0) + (item.height || 200));
+      return acc;
+    }, { 
+      minX: Number.MAX_SAFE_INTEGER, 
+      minY: Number.MAX_SAFE_INTEGER, 
+      maxX: Number.MIN_SAFE_INTEGER, 
+      maxY: Number.MIN_SAFE_INTEGER 
+    });
+    
+    // Check if we have valid bounds
+    if (bounds.minX === Number.MAX_SAFE_INTEGER || bounds.maxX === Number.MIN_SAFE_INTEGER) {
+      setScale(0.5);
+      setPosition({ x: 0, y: 0 });
+      return;
+    }
+    
+    // Calculate content dimensions
+    const contentWidth = bounds.maxX - bounds.minX;
+    const contentHeight = bounds.maxY - bounds.minY;
+    
+    // Get canvas dimensions
+    const canvasWidth = canvasRef.current.clientWidth || 600;
+    const canvasHeight = canvasRef.current.clientHeight || 200;
+    
+    // Add padding
+    const paddingX = canvasWidth * 0.1;
+    const paddingY = canvasHeight * 0.1;
+    
+    // Calculate scale needed to fit content
+    const scaleX = (canvasWidth - paddingX * 2) / contentWidth;
+    const scaleY = (canvasHeight - paddingY * 2) / contentHeight;
+    const newScale = Math.min(scaleX, scaleY, 0.8);
+    
+    // Calculate position to center content
+    const centerX = canvasWidth / 2;
+    const centerY = canvasHeight / 2;
+    const contentCenterX = bounds.minX + contentWidth / 2;
+    const contentCenterY = bounds.minY + contentHeight / 2;
+    
+    // Set new position and scale
+    setScale(newScale);
+    setPosition({
+      x: centerX - contentCenterX * newScale,
+      y: centerY - contentCenterY * newScale
+    });
+  };
+  
+  // Zoom handlers
+  const handleZoomIn = () => {
+    setScale(prev => Math.min(prev + 0.1, 1.5));
+  };
+  
+  const handleZoomOut = () => {
+    setScale(prev => Math.max(prev - 0.1, 0.2));
+  };
+  
+  const handleZoomReset = () => {
+    fitContentToView();
+  };
+  
+  // MoodboardItem component - a simplified version
+  const MoodboardItem = ({ item }) => {
+    const [imageLoaded, setImageLoaded] = useState(false);
+    
+    // Provide defaults for item properties
+    const safeItem = {
+      ...item,
+      x: item.x || 0,
+      y: item.y || 0,
+      width: item.width || 200,
+      height: item.height || 200,
+      zIndex: item.zIndex || item.z_index || 1
+    };
+    
+    // Render item content based on type
+    const renderContent = () => {
+      switch (item.type) {
+        case 'image':
+          return (
+            <Box sx={{ 
+              width: '100%', 
+              height: '100%', 
+              position: 'relative', 
+              overflow: 'hidden',
+              backgroundColor: 'rgba(245, 245, 245, 0.5)',
+            }}>
+              {!imageLoaded && item.content && (
+                <Box 
+                  sx={{ 
+                    position: 'absolute', 
+                    top: 0, 
+                    left: 0, 
+                    right: 0, 
+                    bottom: 0, 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    backgroundColor: 'rgba(0,0,0,0.1)',
+                  }}
+                >
+                  <CircularProgress size={16} />
+                </Box>
+              )}
+              
+              <img 
+                src={item.content} 
+                alt={item.title || 'Moodboard image'} 
+                onLoad={() => setImageLoaded(true)}
+                onError={(e) => console.error('Image load error:', item.content)}
+                style={{ 
+                  width: '100%', 
+                  height: '100%', 
+                  objectFit: 'contain',
+                  pointerEvents: 'none',
+                  opacity: imageLoaded ? 1 : 0.3,
+                  transition: 'opacity 0.3s ease',
+                }} 
+              />
+            </Box>
+          );
+        case 'text':
+          return (
+            <Box sx={{ width: '100%', height: '100%', pointerEvents: 'none' }}>
+              <Typography 
+                variant="body1" 
+                component="div" 
+                sx={{ 
+                  p: 2, 
+                  overflow: 'auto',
+                  width: '100%',
+                  height: '100%',
+                  color: item.textColor || '#000000',
+                  backgroundColor: item.backgroundColor || 'transparent',
+                  fontFamily: item.font_family || 'inherit',
+                  fontSize: item.font_size || 'inherit',
+                  fontWeight: item.font_weight || 'normal',
+                  lineHeight: item.line_height || 'normal',
+                  textAlign: item.text_align || 'left',
+                  pointerEvents: 'none'
+                }}
+              >
+                {item.content}
+              </Typography>
+            </Box>
+          );
+        case 'link':
+          return (
+            <Box 
+              sx={{ 
+                p: 2, 
+                display: 'flex', 
+                flexDirection: 'column',
+                justifyContent: 'center',
+                alignItems: 'center',
+                width: '100%',
+                height: '100%',
+                backgroundColor: item.backgroundColor || '#f5f5f5',
+                borderRadius: item.border_radius || 1,
+                pointerEvents: 'none'
+              }}
+            >
+              <LanguageIcon sx={{ fontSize: 24, mb: 1, color: 'primary.main' }} />
+              <Typography 
+                variant="body2" 
+                component="div" 
+                sx={{ 
+                  textDecoration: 'none',
+                  color: 'primary.main',
+                  fontWeight: 'medium',
+                  textAlign: 'center',
+                  wordBreak: 'break-word'
+                }}
+              >
+                {item.title || item.content}
+              </Typography>
+            </Box>
+          );
+        default:
+          return null;
+      }
+    };
+  
+    return (
+      <Paper
+        elevation={1}
+        sx={{
+          position: 'absolute',
+          left: `${safeItem.x}px`,
+          top: `${safeItem.y}px`,
+          width: `${safeItem.width}px`,
+          height: `${safeItem.height}px`,
+          overflow: 'hidden',
+          cursor: 'default',
+          border: darkMode ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.08)',
+          transition: 'box-shadow 0.2s ease',
+          zIndex: safeItem.zIndex,
+          transform: safeItem.rotation ? `rotate(${safeItem.rotation}deg)` : 'none',
+          opacity: safeItem.opacity ? safeItem.opacity / 100 : 1,
+          borderRadius: safeItem.border_radius ? `${safeItem.border_radius}px` : '2px',
+        }}
+      >
+        {renderContent()}
+      </Paper>
+    );
+  };
+
   if (!member) return null;
 
   return (
@@ -83,7 +371,8 @@ const MemberDetailsModal = ({
           bgcolor: darkMode ? '#121212' : 'background.paper',
           backgroundImage: darkMode ? 'linear-gradient(rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.05))' : 'none',
           boxShadow: 24,
-          borderRadius: 2
+          borderRadius: 2,
+          overflow: 'hidden'
         }
       }}
     >
@@ -91,10 +380,12 @@ const MemberDetailsModal = ({
         display: 'flex', 
         justifyContent: 'space-between',
         alignItems: 'center',
-        bgcolor: darkMode ? alpha('#000', 0.3) : alpha('#f5f5f5', 0.5),
-        color: darkMode ? 'white' : 'text.primary',
+        p: 1.5,
+        pl: 2.5,
+        bgcolor: darkMode ? alpha('#000000', 0.3) : alpha('#f5f5f5', 0.5),
+        color: darkMode ? '#ffffff' : 'text.primary',
         borderBottom: '1px solid',
-        borderColor: darkMode ? alpha('#fff', 0.1) : 'divider'
+        borderColor: darkMode ? alpha('#ffffff', 0.1) : 'divider'
       }}>
         <Typography variant="h6" component="div">
           Member Profile
@@ -103,7 +394,7 @@ const MemberDetailsModal = ({
           edge="end" 
           onClick={onClose} 
           aria-label="close"
-          sx={{ color: darkMode ? 'white' : undefined }}
+          sx={{ color: darkMode ? '#ffffff' : undefined }}
         >
           <CloseIcon />
         </IconButton>
@@ -114,25 +405,195 @@ const MemberDetailsModal = ({
         sx={{ 
           p: 0, 
           bgcolor: darkMode ? '#121212' : 'background.paper',
-          color: darkMode ? 'white' : 'text.primary'
+          color: darkMode ? '#ffffff' : 'text.primary'
         }}
       >
-        {/* Header with avatar and basic info */}
-        <Box sx={{ 
-          p: 3, 
-          position: 'relative',
-          bgcolor: darkMode ? alpha('#000', 0.2) : alpha('#f5f5f5', 0.5),
-          borderBottom: '1px solid',
-          borderColor: darkMode ? alpha('#fff', 0.1) : 'divider'
-        }}>
-          <Grid container spacing={3} alignItems="center">
+        {/* Moodboard Cover Image Section */}
+        <Box 
+          sx={{ 
+            position: 'relative',
+            height: '200px',
+            width: '100%',
+            bgcolor: featuredMoodboard?.background_color || (darkMode ? alpha('#333333', 0.5) : alpha('#f5f5f5', 0.8)),
+            overflow: 'hidden',
+            borderBottom: '1px solid',
+            borderColor: darkMode ? alpha('#ffffff', 0.1) : 'divider'
+          }}
+          ref={canvasRef}
+        >
+          {/* If there's no moodboard or it's loading, show a placeholder */}
+          {(loadingMoodboard || !featuredMoodboard) ? (
+            <Box 
+              sx={{ 
+                display: 'flex', 
+                flexDirection: 'column',
+                justifyContent: 'center', 
+                alignItems: 'center',
+                height: '100%',
+                width: '100%'
+              }}
+            >
+              {loadingMoodboard ? (
+                <CircularProgress size={32} />
+              ) : (
+                <>
+                  <DashboardIcon 
+                    sx={{ 
+                      fontSize: 40, 
+                      mb: 1, 
+                      color: darkMode ? alpha('#ffffff', 0.3) : alpha('#000000', 0.2) 
+                    }} 
+                  />
+                  <Typography 
+                    variant="body2" 
+                    color={darkMode ? alpha('#ffffff', 0.5) : 'text.secondary'}
+                  >
+                    No public moodboards
+                  </Typography>
+                </>
+              )}
+            </Box>
+          ) : (
+            <>
+              {/* The interactive moodboard canvas */}
+              <Box
+                sx={{
+                  width: '100%',
+                  height: '100%',
+                  position: 'relative'
+                }}
+              >
+                {/* Only show grid background if no background color is set */}
+                {!featuredMoodboard.background_color && (
+                  <Box 
+                    sx={{ 
+                      position: 'absolute',
+                      inset: '-5000px',
+                      width: '10000px',
+                      height: '10000px',
+                      backgroundImage: `linear-gradient(#dddddd 1px, transparent 1px), 
+                                      linear-gradient(90deg, #dddddd 1px, transparent 1px)`,
+                      backgroundSize: '20px 20px',
+                      zIndex: 0,
+                      pointerEvents: 'none'
+                    }} 
+                  />
+                )}
+                
+                {/* Canvas with transform for items */}
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    width: '100%',
+                    height: '100%',
+                    transformOrigin: 'center center',
+                    transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
+                    transition: 'transform 0.2s ease'
+                  }}
+                >
+                  {/* Render all moodboard items */}
+                  {moodboardItems.map(item => (
+                    <MoodboardItem key={item.id} item={item} />
+                  ))}
+                </Box>
+              </Box>
+              
+              {/* Zoom controls and moodboard title overlay */}
+              <Box
+                sx={{
+                  position: 'absolute',
+                  bottom: 10,
+                  left: 0,
+                  right: 0,
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  px: 2,
+                  zIndex: 10
+                }}
+              >
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    bgcolor: darkMode ? alpha('#000000', 0.7) : alpha('#ffffff', 0.7),
+                    borderRadius: 1,
+                    px: 1,
+                    py: 0.5
+                  }}
+                >
+                  <Typography
+                    variant="body2"
+                    fontWeight="medium"
+                    color={darkMode ? '#ffffff' : 'text.primary'}
+                  >
+                    {featuredMoodboard.title}
+                  </Typography>
+                </Box>
+                
+                <Box 
+                  sx={{ 
+                    display: 'flex',
+                    gap: 0.5,
+                    bgcolor: darkMode ? alpha('#000000', 0.7) : alpha('#ffffff', 0.7),
+                    borderRadius: 1,
+                    p: 0.5
+                  }}
+                >
+                  <Tooltip title="Zoom Out">
+                    <IconButton onClick={handleZoomOut} size="small">
+                      <ZoomOutIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                  
+                  <Tooltip title="Fit Content">
+                    <IconButton onClick={handleZoomReset} size="small" color="primary">
+                      <DashboardIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                  
+                  <Tooltip title="Zoom In">
+                    <IconButton onClick={handleZoomIn} size="small">
+                      <ZoomInIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                  
+                  <Tooltip title="Open Moodboard">
+                    <IconButton 
+                      component={Link}
+                      to={`/moodboard/${featuredMoodboard.id}`}
+                      size="small"
+                      color="primary"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <OpenInNewIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                </Box>
+              </Box>
+            </>
+          )}
+        </Box>
+        
+        {/* Profile Info Section with Avatar partially overlapping moodboard */}
+        <Box 
+          sx={{ 
+            position: 'relative',
+            pl: 3,
+            pr: 3,
+            pt: 0,
+            pb: 2,
+            mt: '-60px' // Negative margin to overlap with moodboard
+          }}
+        >
+          <Grid container spacing={3} alignItems="flex-end">
             <Grid item xs={12} sm="auto" sx={{ display: 'flex', justifyContent: 'center' }}>
               <Avatar
                 src={member.profile_picture_url}
                 sx={{ 
                   width: 120, 
                   height: 120,
-                  border: `4px solid ${darkMode ? alpha('#fff', 0.2) : '#f0f0f0'}`,
+                  border: `4px solid ${darkMode ? alpha('#121212', 0.95) : '#ffffff'}`,
                   boxShadow: darkMode ? '0 8px 16px rgba(0,0,0,0.5)' : '0 8px 16px rgba(0,0,0,0.1)'
                 }}
               >
@@ -154,7 +615,7 @@ const MemberDetailsModal = ({
                     size="small"
                     sx={{ 
                       bgcolor: darkMode ? 
-                        (member.role === 'admin' ? alpha('#1976d2', 0.8) : alpha('#333', 0.8)) : 
+                        (member.role === 'admin' ? alpha('#1976d2', 0.8) : alpha('#333333', 0.8)) : 
                         undefined
                     }}
                   />
@@ -165,8 +626,8 @@ const MemberDetailsModal = ({
                       label={`Joined: ${new Date(member.created_at).toLocaleDateString()}`}
                       size="small"
                       sx={{ 
-                        bgcolor: darkMode ? alpha('#555', 0.8) : undefined,
-                        color: darkMode ? 'white' : undefined
+                        bgcolor: darkMode ? alpha('#555555', 0.8) : undefined,
+                        color: darkMode ? '#ffffff' : undefined
                       }}
                     />
                   )}
@@ -177,7 +638,7 @@ const MemberDetailsModal = ({
                     variant="body1" 
                     paragraph
                     sx={{ 
-                      color: darkMode ? alpha('white', 0.7) : 'text.secondary',
+                      color: darkMode ? alpha('#ffffff', 0.7) : 'text.secondary',
                       maxWidth: '600px'
                     }}
                   >
@@ -209,15 +670,31 @@ const MemberDetailsModal = ({
                   to={`/profile/${member.id}`}
                   fullWidth
                   sx={{ 
-                    color: darkMode ? 'white' : undefined,
-                    borderColor: darkMode ? alpha('white', 0.3) : undefined,
+                    color: darkMode ? '#ffffff' : undefined,
+                    borderColor: darkMode ? alpha('#ffffff', 0.3) : undefined,
                     '&:hover': {
-                      borderColor: darkMode ? 'white' : undefined
+                      borderColor: darkMode ? '#ffffff' : undefined
                     }
                   }}
                 >
                   Full Profile
                 </Button>
+                
+                {featuredMoodboard && (
+                  <Button
+                    variant="outlined"
+                    startIcon={<DashboardIcon />}
+                    component={Link}
+                    to={`/moodboard/${featuredMoodboard.id}`}
+                    fullWidth
+                    color={darkMode ? "secondary" : "secondary"}
+                    sx={{
+                      mt: 1
+                    }}
+                  >
+                    View Moodboard
+                  </Button>
+                )}
               </Stack>
             </Grid>
           </Grid>
@@ -225,7 +702,7 @@ const MemberDetailsModal = ({
         
         {/* Contact and Links */}
         {(member.contact_email || member.portfolio_url || member.linkedin_url) && (
-          <Box sx={{ p: 3 }}>
+          <Box sx={{ px: 3, pb: 2 }}>
             <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
               <Box component="span" sx={{ 
                 display: 'inline-flex', 
@@ -247,14 +724,14 @@ const MemberDetailsModal = ({
                     elevation={0} 
                     sx={{ 
                       p: 1.5, 
-                      bgcolor: darkMode ? alpha('#000', 0.3) : alpha('#f5f5f5', 0.8),
+                      bgcolor: darkMode ? alpha('#000000', 0.3) : alpha('#f5f5f5', 0.8),
                       border: '1px solid',
-                      borderColor: darkMode ? alpha('#fff', 0.1) : alpha('#000', 0.1),
+                      borderColor: darkMode ? alpha('#ffffff', 0.1) : alpha('#000000', 0.1),
                       borderRadius: 1,
                       display: 'flex',
                       alignItems: 'center',
                       '&:hover': {
-                        bgcolor: darkMode ? alpha('#000', 0.4) : alpha('#f5f5f5', 1)
+                        bgcolor: darkMode ? alpha('#000000', 0.4) : alpha('#f5f5f5', 1)
                       }
                     }}
                   >
@@ -265,7 +742,7 @@ const MemberDetailsModal = ({
                       href={`mailto:${member.contact_email}`}
                       sx={{ 
                         textDecoration: 'none',
-                        color: darkMode ? alpha('white', 0.9) : 'text.primary',
+                        color: darkMode ? alpha('#ffffff', 0.9) : 'text.primary',
                         wordBreak: 'break-all'
                       }}
                     >
@@ -281,14 +758,14 @@ const MemberDetailsModal = ({
                     elevation={0} 
                     sx={{ 
                       p: 1.5, 
-                      bgcolor: darkMode ? alpha('#000', 0.3) : alpha('#f5f5f5', 0.8),
+                      bgcolor: darkMode ? alpha('#000000', 0.3) : alpha('#f5f5f5', 0.8),
                       border: '1px solid',
-                      borderColor: darkMode ? alpha('#fff', 0.1) : alpha('#000', 0.1),
+                      borderColor: darkMode ? alpha('#ffffff', 0.1) : alpha('#000000', 0.1),
                       borderRadius: 1,
                       display: 'flex',
                       alignItems: 'center',
                       '&:hover': {
-                        bgcolor: darkMode ? alpha('#000', 0.4) : alpha('#f5f5f5', 1)
+                        bgcolor: darkMode ? alpha('#000000', 0.4) : alpha('#f5f5f5', 1)
                       }
                     }}
                   >
@@ -301,7 +778,7 @@ const MemberDetailsModal = ({
                       rel="noopener noreferrer"
                       sx={{ 
                         textDecoration: 'none',
-                        color: darkMode ? alpha('white', 0.9) : 'text.primary',
+                        color: darkMode ? alpha('#ffffff', 0.9) : 'text.primary',
                         wordBreak: 'break-all'
                       }}
                     >
@@ -317,14 +794,14 @@ const MemberDetailsModal = ({
                     elevation={0} 
                     sx={{ 
                       p: 1.5, 
-                      bgcolor: darkMode ? alpha('#000', 0.3) : alpha('#f5f5f5', 0.8),
+                      bgcolor: darkMode ? alpha('#000000', 0.3) : alpha('#f5f5f5', 0.8),
                       border: '1px solid',
-                      borderColor: darkMode ? alpha('#fff', 0.1) : alpha('#000', 0.1),
+                      borderColor: darkMode ? alpha('#ffffff', 0.1) : alpha('#000000', 0.1),
                       borderRadius: 1,
                       display: 'flex',
                       alignItems: 'center',
                       '&:hover': {
-                        bgcolor: darkMode ? alpha('#000', 0.4) : alpha('#f5f5f5', 1)
+                        bgcolor: darkMode ? alpha('#000000', 0.4) : alpha('#f5f5f5', 1)
                       }
                     }}
                   >
@@ -337,7 +814,7 @@ const MemberDetailsModal = ({
                       rel="noopener noreferrer"
                       sx={{ 
                         textDecoration: 'none',
-                        color: darkMode ? alpha('white', 0.9) : 'text.primary',
+                        color: darkMode ? alpha('#ffffff', 0.9) : 'text.primary',
                         wordBreak: 'break-all'
                       }}
                     >
@@ -354,7 +831,7 @@ const MemberDetailsModal = ({
         
         {/* Skills */}
         {member.skills && member.skills.length > 0 && (
-          <Box sx={{ p: 3 }}>
+          <Box sx={{ p: 3, pt: 2 }}>
             <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
               <Box component="span" sx={{ 
                 display: 'inline-flex', 
@@ -426,7 +903,7 @@ const MemberDetailsModal = ({
                         flexDirection: 'column',
                         borderRadius: 2,
                         overflow: 'hidden',
-                        bgcolor: darkMode ? alpha('#000', 0.3) : 'background.paper',
+                        bgcolor: darkMode ? alpha('#000000', 0.3) : 'background.paper',
                         transition: 'transform 0.2s ease',
                         '&:hover': {
                           transform: 'translateY(-4px)'
@@ -463,7 +940,7 @@ const MemberDetailsModal = ({
                         {item.description && (
                           <Typography 
                             variant="body2"
-                            color={darkMode ? alpha('white', 0.7) : 'text.secondary'}
+                            color={darkMode ? alpha('#ffffff', 0.7) : 'text.secondary'}
                             sx={{
                               overflow: 'hidden',
                               textOverflow: 'ellipsis',
@@ -479,7 +956,7 @@ const MemberDetailsModal = ({
                       </Box>
                       
                       {item.url && (
-                        <Box sx={{ p: 1, pt: 0, borderTop: '1px solid', borderColor: darkMode ? alpha('#fff', 0.05) : 'divider' }}>
+                        <Box sx={{ p: 1, pt: 0, borderTop: '1px solid', borderColor: darkMode ? alpha('#ffffff', 0.05) : 'divider' }}>
                           <Button
                             size="small"
                             href={item.url}
@@ -519,7 +996,7 @@ const MemberDetailsModal = ({
           ) : (
             <Typography 
               variant="body2" 
-              color={darkMode ? alpha('white', 0.5) : "text.secondary"}
+              color={darkMode ? alpha('#ffffff', 0.5) : "text.secondary"}
               sx={{ p: 1, fontStyle: 'italic' }}
             >
               No portfolio items yet
