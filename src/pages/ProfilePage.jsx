@@ -830,7 +830,7 @@ function ProfilePage() {
           )}
           
           {/* Portfolio Tab */}
-          {activeTab === 1 && (
+          {activeTab === 2 && (
             <Box sx={{ p: 3 }}>
               <Typography variant="h5" gutterBottom>
                 Portfolio Projects
@@ -916,7 +916,7 @@ function ProfilePage() {
           )}
           
           {/* Events Tab */}
-          {activeTab === 2 && upcomingEvents.length > 0 && (
+          {activeTab === 3 && upcomingEvents.length > 0 && (
             <Box sx={{ p: 3 }}>
               <Typography variant="h5" gutterBottom>
                 Upcoming Events
