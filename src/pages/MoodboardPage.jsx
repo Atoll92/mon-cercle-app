@@ -186,148 +186,150 @@ const MoodboardItem = ({
     };
   
     // Render different content based on item type
-    const renderContent = () => {
-      switch (item.type) {
-        case 'image':
-          return (
-            <Box sx={{ 
-              width: '100%', 
-              height: '100%', 
-              position: 'relative', 
-              overflow: 'hidden',
-              backgroundColor: '#f5f5f5', // Add background to make loading more visible
-            }}>
-              {/* Loading indicator */}
-              {!imageLoaded && item.content && (
-                <Box 
-                  sx={{ 
-                    position: 'absolute', 
-                    top: 0, 
-                    left: 0, 
-                    right: 0, 
-                    bottom: 0, 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    justifyContent: 'center',
-                    backgroundColor: 'rgba(0,0,0,0.1)',
-                  }}
-                >
-                  <CircularProgress size={24} />
-                </Box>
-              )}
-              
-              <img 
-                src={item.content} 
-                alt={item.title || 'Moodboard image'} 
-                onLoad={() => setImageLoaded(true)}
-                onError={(e) => {
-                  console.error('Image load error:', item.content);
-                  // Replace with error placeholder if needed
-                  // e.target.src = 'data:image/svg+xml,%3Csvg...';
-                }}
-                style={{ 
-                  width: '100%', 
-                  height: '100%', 
-                  objectFit: 'contain', // Use contain instead of cover to preserve aspect ratio
-                  pointerEvents: 'none', // Prevent image from capturing mouse events
-                  opacity: imageLoaded ? 1 : 0.3, // Fade in when loaded
-                  transition: 'opacity 0.3s ease',
-                }} 
-              />
-            </Box>
-          );
-        case 'text':
-          return (
-            <Box sx={{ width: '100%', height: '100%', pointerEvents: 'none' }}>
-              <Typography 
-                variant="body1" 
-                component="div" 
+    // Updated renderContent method with corrected property names
+const renderContent = () => {
+    switch (item.type) {
+      case 'image':
+        return (
+          <Box sx={{ 
+            width: '100%', 
+            height: '100%', 
+            position: 'relative', 
+            overflow: 'hidden',
+            backgroundColor: '#f5f5f5', // Add background to make loading more visible
+          }}>
+            {/* Loading indicator */}
+            {!imageLoaded && item.content && (
+              <Box 
                 sx={{ 
-                  p: 2, 
-                  overflow: 'auto',
-                  width: '100%',
-                  height: '100%',
-                  color: item.textColor || '#000000',
-                  backgroundColor: item.backgroundColor || 'transparent',
-                  fontFamily: item.fontFamily || 'inherit',
-                  fontSize: item.fontSize || 'inherit',
-                  fontWeight: item.fontWeight || 'normal',
-                  lineHeight: item.lineHeight || 'normal',
-                  textAlign: item.textAlign || 'left',
-                  pointerEvents: 'none'
+                  position: 'absolute', 
+                  top: 0, 
+                  left: 0, 
+                  right: 0, 
+                  bottom: 0, 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  backgroundColor: 'rgba(0,0,0,0.1)',
                 }}
               >
-                {item.content}
-              </Typography>
-            </Box>
-          );
-        case 'video':
-          return (
-            <Box sx={{ width: '100%', height: '100%', pointerEvents: selected ? 'auto' : 'none' }}>
-              <video 
-                controls 
-                style={{ 
-                  width: '100%', 
-                  height: '100%', 
-                  objectFit: 'contain', // Changed from cover to contain
-                  pointerEvents: selected ? 'auto' : 'none' // Only allow video controls when selected
-                }}
-              >
-                <source src={item.content} type="video/mp4" />
-                Your browser does not support the video tag.
-              </video>
-            </Box>
-          );
-        case 'link':
-          return (
-            <Box 
+                <CircularProgress size={24} />
+              </Box>
+            )}
+            
+            <img 
+              src={item.content} 
+              alt={item.title || 'Moodboard image'} 
+              onLoad={() => setImageLoaded(true)}
+              onError={(e) => {
+                console.error('Image load error:', item.content);
+                // Replace with error placeholder if needed
+                // e.target.src = 'data:image/svg+xml,%3Csvg...';
+              }}
+              style={{ 
+                width: '100%', 
+                height: '100%', 
+                objectFit: 'contain', // Use contain instead of cover to preserve aspect ratio
+                pointerEvents: 'none', // Prevent image from capturing mouse events
+                opacity: imageLoaded ? 1 : 0.3, // Fade in when loaded
+                transition: 'opacity 0.3s ease',
+              }} 
+            />
+          </Box>
+        );
+      case 'text':
+        return (
+          <Box sx={{ width: '100%', height: '100%', pointerEvents: 'none' }}>
+            <Typography 
+              variant="body1" 
+              component="div" 
               sx={{ 
                 p: 2, 
-                display: 'flex', 
-                flexDirection: 'column',
-                justifyContent: 'center',
-                alignItems: 'center',
+                overflow: 'auto',
                 width: '100%',
                 height: '100%',
-                backgroundColor: item.backgroundColor || '#f5f5f5',
-                borderRadius: 1,
-                pointerEvents: 'none' // Change from conditional to always none
+                color: item.textColor || '#000000',
+                backgroundColor: item.backgroundColor || 'transparent',
+                // Use snake_case property names to match database schema
+                fontFamily: item.font_family || 'inherit',
+                fontSize: item.font_size || 'inherit',
+                fontWeight: item.font_weight || 'normal',
+                lineHeight: item.line_height || 'normal',
+                textAlign: item.text_align || 'left',
+                pointerEvents: 'none'
               }}
             >
-              <LinkIcon sx={{ fontSize: 32, mb: 1, color: 'primary.main' }} />
-              <Typography 
-                variant="body1" 
-                component="a" 
-                href={item.content} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                sx={{ 
-                  textDecoration: 'none',
-                  color: 'primary.main',
-                  fontWeight: 'medium',
-                  textAlign: 'center',
-                  wordBreak: 'break-word',
-                  pointerEvents: 'auto' // Always allow link clicks
-                }}
-                onClick={(e) => {
-                  // Prevent item selection when clicking the link
-                  e.stopPropagation();
-                }}
-              >
-                {item.title || item.content}
-              </Typography>
-            </Box>
-          );
-        default:
-          return (
-            <Box sx={{ p: 2, pointerEvents: 'none' }}>
-              <Typography variant="body2" color="text.secondary">
-                Unknown item type
-              </Typography>
-            </Box>
-          );
-      }
-    };
+              {item.content}
+            </Typography>
+          </Box>
+        );
+      case 'video':
+        return (
+          <Box sx={{ width: '100%', height: '100%', pointerEvents: selected ? 'auto' : 'none' }}>
+            <video 
+              controls 
+              style={{ 
+                width: '100%', 
+                height: '100%', 
+                objectFit: 'contain', // Changed from cover to contain
+                pointerEvents: selected ? 'auto' : 'none' // Only allow video controls when selected
+              }}
+            >
+              <source src={item.content} type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
+          </Box>
+        );
+      case 'link':
+        return (
+          <Box 
+            sx={{ 
+              p: 2, 
+              display: 'flex', 
+              flexDirection: 'column',
+              justifyContent: 'center',
+              alignItems: 'center',
+              width: '100%',
+              height: '100%',
+              backgroundColor: item.backgroundColor || '#f5f5f5',
+              borderRadius: item.border_radius || 1, // Use border_radius from database
+              pointerEvents: 'none' // Change from conditional to always none
+            }}
+          >
+            <LinkIcon sx={{ fontSize: 32, mb: 1, color: 'primary.main' }} />
+            <Typography 
+              variant="body1" 
+              component="a" 
+              href={item.content} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              sx={{ 
+                textDecoration: 'none',
+                color: 'primary.main',
+                fontWeight: 'medium',
+                textAlign: 'center',
+                wordBreak: 'break-word',
+                pointerEvents: 'auto' // Always allow link clicks
+              }}
+              onClick={(e) => {
+                // Prevent item selection when clicking the link
+                e.stopPropagation();
+              }}
+            >
+              {item.title || item.content}
+            </Typography>
+          </Box>
+        );
+      default:
+        return (
+          <Box sx={{ p: 2, pointerEvents: 'none' }}>
+            <Typography variant="body2" color="text.secondary">
+              Unknown item type
+            </Typography>
+          </Box>
+        );
+    }
+  };
   
     return (
       <Paper
@@ -435,10 +437,7 @@ const MoodboardItem = ({
       </Paper>
     );
   };
-// The issue is in how EditItemDialog is being used. 
-// In the component definition, it expects 'open' as a prop, but in the MoodboardPage it references 'editDialogOpen' directly.
-
-// Here's the fixed EditItemDialog component:
+// EditItemDialog correctly aligned with database schema
 const EditItemDialog = ({ 
     open, 
     onClose, 
@@ -446,34 +445,30 @@ const EditItemDialog = ({
     onSave, 
     processing 
   }) => {
-    // State for all editable properties
+    // State for all editable properties - using exact field names from database
     const [editedContent, setEditedContent] = useState('');
     const [editedTitle, setEditedTitle] = useState('');
     const [editedTextColor, setEditedTextColor] = useState('#000000');
-    const [editedBgColor, setEditedBgColor] = useState('transparent');
-    const [editedFontFamily, setEditedFontFamily] = useState('');
-    const [editedFontSize, setEditedFontSize] = useState('');
-    const [editedFontWeight, setEditedFontWeight] = useState('');
-    const [editedTextAlign, setEditedTextAlign] = useState('');
-    const [editedLineHeight, setEditedLineHeight] = useState('');
+    const [editedBackgroundColor, setEditedBackgroundColor] = useState('transparent');
+    const [editedFont_family, setEditedFont_family] = useState('');
+    const [editedFont_size, setEditedFont_size] = useState('');
+    const [editedFont_weight, setEditedFont_weight] = useState('');
+    const [editedText_align, setEditedText_align] = useState('');
+    const [editedLine_height, setEditedLine_height] = useState('');
     const [editedOpacity, setEditedOpacity] = useState(100);
-    const [editedBorderRadius, setEditedBorderRadius] = useState(0);
+    const [editedBorder_radius, setEditedBorder_radius] = useState(0);
     const [editedRotation, setEditedRotation] = useState(0);
     const [editedZIndex, setEditedZIndex] = useState(1);
-    const [imageLoaded, setImageLoaded] = useState(false);
     
-    // Initialize form values when dialog opens
+    // Initialize form values when dialog opens - using exact field names from database
     useEffect(() => {
       if (!currentItem) return;
       
-      // Reset image loaded state
-      setImageLoaded(false);
-      
       // Common properties
       setEditedTitle(currentItem.title || '');
-      setEditedBgColor(currentItem.backgroundColor || 'transparent');
+      setEditedBackgroundColor(currentItem.backgroundColor || 'transparent');
       setEditedOpacity(currentItem.opacity || 100);
-      setEditedBorderRadius(currentItem.border_radius || 0);
+      setEditedBorder_radius(currentItem.border_radius || 0);
       setEditedRotation(currentItem.rotation || 0);
       setEditedZIndex(currentItem.zIndex || 1);
       
@@ -482,11 +477,11 @@ const EditItemDialog = ({
         case 'text':
           setEditedContent(currentItem.content || '');
           setEditedTextColor(currentItem.textColor || '#000000');
-          setEditedFontFamily(currentItem.font_family || 'inherit');
-          setEditedFontSize(currentItem.font_size || '1rem');
-          setEditedFontWeight(currentItem.font_weight || 'normal');
-          setEditedTextAlign(currentItem.text_align || 'left');
-          setEditedLineHeight(currentItem.line_height || 'normal');
+          setEditedFont_family(currentItem.font_family || 'inherit');
+          setEditedFont_size(currentItem.font_size || '1rem');
+          setEditedFont_weight(currentItem.font_weight || 'normal');
+          setEditedText_align(currentItem.text_align || 'left');
+          setEditedLine_height(currentItem.line_height || 'normal');
           break;
         case 'link':
           setEditedContent(currentItem.content || '');
@@ -499,7 +494,7 @@ const EditItemDialog = ({
       }
     }, [currentItem]);
     
-    // Prepare data for saving
+    // Prepare data for saving - using exact field names from database
     const handleSave = () => {
       if (!currentItem) return;
       
@@ -507,9 +502,9 @@ const EditItemDialog = ({
       let updatedItem = { 
         ...currentItem,
         title: editedTitle,
-        backgroundColor: editedBgColor,
+        backgroundColor: editedBackgroundColor,
         opacity: editedOpacity,
-        border_radius: editedBorderRadius,
+        border_radius: editedBorder_radius,
         rotation: editedRotation,
         zIndex: editedZIndex
       };
@@ -521,11 +516,11 @@ const EditItemDialog = ({
             ...updatedItem,
             content: editedContent,
             textColor: editedTextColor,
-            font_family: editedFontFamily,
-            font_size: editedFontSize,
-            font_weight: editedFontWeight,
-            text_align: editedTextAlign,
-            line_height: editedLineHeight
+            font_family: editedFont_family,
+            font_size: editedFont_size,
+            font_weight: editedFont_weight,
+            text_align: editedText_align,
+            line_height: editedLine_height
           };
           break;
         case 'link':
@@ -568,8 +563,8 @@ const EditItemDialog = ({
             <TextField
               label="Background"
               type="color"
-              value={editedBgColor === 'transparent' ? '#ffffff' : editedBgColor}
-              onChange={(e) => setEditedBgColor(e.target.value === '#ffffff' ? 'transparent' : e.target.value)}
+              value={editedBackgroundColor === 'transparent' ? '#ffffff' : editedBackgroundColor}
+              onChange={(e) => setEditedBackgroundColor(e.target.value === '#ffffff' ? 'transparent' : e.target.value)}
               fullWidth
               size="small"
               InputProps={{ sx: { height: '40px' } }}
@@ -581,8 +576,8 @@ const EditItemDialog = ({
             <TextField
               label="Border Radius"
               type="number"
-              value={editedBorderRadius}
-              onChange={(e) => setEditedBorderRadius(parseInt(e.target.value) || 0)}
+              value={editedBorder_radius}
+              onChange={(e) => setEditedBorder_radius(parseInt(e.target.value) || 0)}
               fullWidth
               size="small"
               InputProps={{
@@ -678,8 +673,8 @@ const EditItemDialog = ({
                   <FormControl fullWidth size="small">
                     <InputLabel>Font Family</InputLabel>
                     <Select
-                      value={editedFontFamily}
-                      onChange={(e) => setEditedFontFamily(e.target.value)}
+                      value={editedFont_family}
+                      onChange={(e) => setEditedFont_family(e.target.value)}
                       label="Font Family"
                     >
                       <MenuItem value="inherit">Default</MenuItem>
@@ -697,10 +692,11 @@ const EditItemDialog = ({
                 <Grid item xs={4}>
                   <TextField
                     label="Font Size"
-                    value={editedFontSize}
-                    onChange={(e) => setEditedFontSize(e.target.value)}
+                    value={editedFont_size}
+                    onChange={(e) => setEditedFont_size(e.target.value)}
                     fullWidth
                     size="small"
+                    placeholder="e.g., 16px, 1.2rem"
                   />
                 </Grid>
                 
@@ -709,8 +705,8 @@ const EditItemDialog = ({
                   <FormControl fullWidth size="small">
                     <InputLabel>Weight</InputLabel>
                     <Select
-                      value={editedFontWeight}
-                      onChange={(e) => setEditedFontWeight(e.target.value)}
+                      value={editedFont_weight}
+                      onChange={(e) => setEditedFont_weight(e.target.value)}
                       label="Weight"
                     >
                       <MenuItem value="normal">Normal</MenuItem>
@@ -735,8 +731,8 @@ const EditItemDialog = ({
                   <FormControl fullWidth size="small">
                     <InputLabel>Align</InputLabel>
                     <Select
-                      value={editedTextAlign}
-                      onChange={(e) => setEditedTextAlign(e.target.value)}
+                      value={editedText_align}
+                      onChange={(e) => setEditedText_align(e.target.value)}
                       label="Align"
                     >
                       <MenuItem value="left">Left</MenuItem>
@@ -751,8 +747,8 @@ const EditItemDialog = ({
                 <Grid item xs={12}>
                   <TextField
                     label="Line Height"
-                    value={editedLineHeight}
-                    onChange={(e) => setEditedLineHeight(e.target.value)}
+                    value={editedLine_height}
+                    onChange={(e) => setEditedLine_height(e.target.value)}
                     fullWidth
                     size="small"
                     placeholder="e.g., 1.5, 20px, normal"
@@ -766,8 +762,8 @@ const EditItemDialog = ({
                 p: 2, 
                 border: '1px solid',
                 borderColor: 'divider',
-                borderRadius: `${editedBorderRadius}px`,
-                bgcolor: editedBgColor,
+                borderRadius: `${editedBorder_radius}px`,
+                bgcolor: editedBackgroundColor,
                 opacity: editedOpacity / 100,
                 transform: `rotate(${editedRotation}deg)`,
                 transition: 'all 0.2s ease'
@@ -776,11 +772,11 @@ const EditItemDialog = ({
                   variant="body1"
                   sx={{ 
                     color: editedTextColor,
-                    fontFamily: editedFontFamily,
-                    fontSize: editedFontSize,
-                    fontWeight: editedFontWeight,
-                    textAlign: editedTextAlign,
-                    lineHeight: editedLineHeight
+                    fontFamily: editedFont_family,
+                    fontSize: editedFont_size,
+                    fontWeight: editedFont_weight,
+                    textAlign: editedText_align,
+                    lineHeight: editedLine_height
                   }}
                 >
                   {editedContent || 'Preview of your text will appear here'}
@@ -812,8 +808,8 @@ const EditItemDialog = ({
                 p: 2, 
                 border: '1px solid',
                 borderColor: 'divider',
-                borderRadius: `${editedBorderRadius}px`,
-                bgcolor: editedBgColor || '#f5f5f5',
+                borderRadius: `${editedBorder_radius}px`,
+                bgcolor: editedBackgroundColor || '#f5f5f5',
                 opacity: editedOpacity / 100,
                 transform: `rotate(${editedRotation}deg)`,
                 display: 'flex',
@@ -880,8 +876,8 @@ const EditItemDialog = ({
     
     return (
         <Dialog 
-        open={open} // This was changed from editDialogOpen to open
-        onClose={onClose} // This was changed to use the onClose prop
+        open={open}
+        onClose={onClose}
         maxWidth="sm"
         fullWidth
       >
@@ -1324,15 +1320,15 @@ function MoodboardPage() {
   
   // Improved updateItem method
   // Updated handleUpdateItem function to save all properties
+// Updated handleUpdateItem function to match database schema exactly
 const handleUpdateItem = async (updatedItem) => {
     if (!updatedItem) return;
     
     try {
       setSaving(true);
       
-      // Make sure we're only updating fields that exist in the database
+      // Create an object that only includes fields that are in the database
       const itemUpdate = {
-        // Common properties
         title: updatedItem.title,
         content: updatedItem.content,
         x: updatedItem.x,
@@ -1341,31 +1337,33 @@ const handleUpdateItem = async (updatedItem) => {
         height: updatedItem.height,
         rotation: updatedItem.rotation,
         zIndex: updatedItem.zIndex,
-        backgroundColor: updatedItem.backgroundColor,
-        opacity: updatedItem.opacity,
-        border_radius: updatedItem.border_radius,
         updated_at: new Date()
       };
       
-      // Add type-specific properties
-      if (updatedItem.type === 'text') {
-        Object.assign(itemUpdate, {
-          textColor: updatedItem.textColor,
-          font_family: updatedItem.font_family,
-          font_size: updatedItem.font_size,
-          font_weight: updatedItem.font_weight,
-          text_align: updatedItem.text_align,
-          line_height: updatedItem.line_height
-        });
-      }
+      // Only add these properties if they exist in the updated item
+      // (different item types have different properties)
+      if (updatedItem.textColor !== undefined) itemUpdate.textColor = updatedItem.textColor;
+      if (updatedItem.backgroundColor !== undefined) itemUpdate.backgroundColor = updatedItem.backgroundColor;
+      if (updatedItem.font_family !== undefined) itemUpdate.font_family = updatedItem.font_family;
+      if (updatedItem.font_size !== undefined) itemUpdate.font_size = updatedItem.font_size;
+      if (updatedItem.font_weight !== undefined) itemUpdate.font_weight = updatedItem.font_weight;
+      if (updatedItem.text_align !== undefined) itemUpdate.text_align = updatedItem.text_align;
+      if (updatedItem.line_height !== undefined) itemUpdate.line_height = updatedItem.line_height;
+      if (updatedItem.opacity !== undefined) itemUpdate.opacity = updatedItem.opacity;
+      if (updatedItem.border_radius !== undefined) itemUpdate.border_radius = updatedItem.border_radius;
+      
+      console.log('Updating item with data:', itemUpdate);
       
       // Update in database
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('moodboard_items')
         .update(itemUpdate)
-        .eq('id', updatedItem.id);
+        .eq('id', updatedItem.id)
+        .select();
       
       if (error) throw error;
+      
+      console.log('Update successful:', data);
       
       // Update in local state
       setItems(prevItems => 
@@ -1383,7 +1381,7 @@ const handleUpdateItem = async (updatedItem) => {
       
     } catch (err) {
       console.error('Error updating item:', err);
-      setError('Failed to update item: ' + err.message);
+      setError('Failed to update item: ' + (err.message || 'Unknown error'));
     } finally {
       setSaving(false);
     }
