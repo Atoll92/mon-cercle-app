@@ -1642,64 +1642,66 @@ const handleUpdateItem = async (updatedItem) => {
         )}
       </Box>
       
-      {/* Main Canvas */}
       <Box
-        ref={canvasRef}
+  ref={canvasRef}
+  sx={{ 
+    flexGrow: 1, 
+    position: 'relative', 
+    overflow: 'hidden',
+    bgcolor: moodboard.background_color || '#f5f5f5', // Use background_color from database
+    cursor: isDraggingCanvas ? 'grabbing' : 'default'
+  }}
+  onClick={handleCanvasClick}
+  onMouseDown={handleCanvasMouseDown}
+  onMouseMove={handleCanvasMouseMove}
+  onMouseUp={handleCanvasMouseUp}
+  onMouseLeave={handleCanvasMouseUp}
+>
+  {/* The infinite canvas */}
+  <Box
+    sx={{
+      position: 'absolute',
+      width: '100%',
+      height: '100%',
+      transformOrigin: '0 0',
+      transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
+      transition: isDraggingCanvas ? 'none' : 'transform 0.1s ease'
+    }}
+  >
+    {/* Background grid - Only show if no background_color is set */}
+    {!moodboard.background_color && (
+      <Box 
         sx={{ 
-          flexGrow: 1, 
-          position: 'relative', 
-          overflow: 'hidden',
-          bgcolor: '#f5f5f5',
-          cursor: isDraggingCanvas ? 'grabbing' : 'default'
-        }}
-        onClick={handleCanvasClick}
-        onMouseDown={handleCanvasMouseDown}
-        onMouseMove={handleCanvasMouseMove}
-        onMouseUp={handleCanvasMouseUp}
-        onMouseLeave={handleCanvasMouseUp}
-      >
-        {/* The infinite canvas */}
-        <Box
-          sx={{
-            position: 'absolute',
-            width: '100%',
-            height: '100%',
-            transformOrigin: '0 0',
-            transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
-            transition: isDraggingCanvas ? 'none' : 'transform 0.1s ease'
-          }}
-        >
-          {/* Background grid */}
-          <Box 
-            sx={{ 
-              position: 'absolute',
-              inset: '-5000px',
-              width: '10000px',
-              height: '10000px',
-              backgroundImage: `linear-gradient(#ddd 1px, transparent 1px), 
-                                linear-gradient(90deg, #ddd 1px, transparent 1px)`,
-              backgroundSize: '20px 20px',
-              zIndex: 0
-            }} 
-          />
-          
-          {/* Render all items */}
-          {items.map(item => (
-            <MoodboardItem
-              key={item.id}
-              item={item}
-              selected={selectedItemId === item.id}
-              onSelect={handleSelectItem}
-              onMove={handleMoveItem}
-              onResize={handleResizeItem}
-              onEdit={handleEditItem}
-              onDelete={handleDeleteItem}
-              scale={scale}
-              isEditable={isEditable}
-            />
-          ))}
-        </Box>
-      </Box>
+          position: 'absolute',
+          inset: '-5000px',
+          width: '10000px',
+          height: '10000px',
+          backgroundImage: `linear-gradient(#ddd 1px, transparent 1px), 
+                          linear-gradient(90deg, #ddd 1px, transparent 1px)`,
+          backgroundSize: '20px 20px',
+          zIndex: 0
+        }} 
+      />
+    )}
+    
+    {/* Render all items */}
+    {items.map(item => (
+      <MoodboardItem
+        key={item.id}
+        item={item}
+        selected={selectedItemId === item.id}
+        onSelect={handleSelectItem}
+        onMove={handleMoveItem}
+        onResize={handleResizeItem}
+        onEdit={handleEditItem}
+        onDelete={handleDeleteItem}
+        scale={scale}
+        isEditable={isEditable}
+      />
+    ))}
+  </Box>
+</Box>
+
       
       {/* Floating action buttons when item is selected */}
       <Box

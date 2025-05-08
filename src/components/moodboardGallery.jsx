@@ -1,4 +1,4 @@
-// src/components/MoodboardGallery.jsx - Complete version with auto-fit view
+// src/components/MoodboardGallery.jsx - Updated to properly use background_color
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../supabaseclient';
@@ -56,13 +56,16 @@ const MoodboardGallery = ({ userId, isOwnProfile, limit, showFeatured = false })
   const theme = useTheme();
   const canvasRef = useRef(null);
 
-  // Auto-fit all content in view
+  // Auto-fit all content in view (excluding background)
   const fitContentToView = useCallback(() => {
     if (!featuredItems || featuredItems.length === 0 || !canvasRef.current) return;
     
-    // Find the bounds of all items
+    // Find the bounds of all items, excluding any background
     const bounds = featuredItems.reduce((acc, item) => {
-      // Update min and max coordinates
+      // Skip background elements if they exist
+      if (item.type === 'background') return acc;
+      
+      // Update min and max coordinates for non-background items only
       acc.minX = Math.min(acc.minX, item.x || 0);
       acc.minY = Math.min(acc.minY, item.y || 0);
       acc.maxX = Math.max(acc.maxX, (item.x || 0) + (item.width || 200));
@@ -74,6 +77,14 @@ const MoodboardGallery = ({ userId, isOwnProfile, limit, showFeatured = false })
       maxX: Number.MIN_SAFE_INTEGER, 
       maxY: Number.MIN_SAFE_INTEGER 
     });
+    
+    // Check if we have valid bounds (no items would result in MAX_SAFE_INTEGER - MIN_SAFE_INTEGER)
+    if (bounds.minX === Number.MAX_SAFE_INTEGER || bounds.maxX === Number.MIN_SAFE_INTEGER) {
+      // No valid items to fit, use default position and scale
+      setScale(0.5);
+      setPosition({ x: 0, y: 0 });
+      return;
+    }
     
     // Calculate content dimensions
     const contentWidth = bounds.maxX - bounds.minX;
@@ -555,14 +566,14 @@ const MoodboardGallery = ({ userId, isOwnProfile, limit, showFeatured = false })
           </Box>
         </Box>
         
-        {/* Main Canvas with auto-fit view */}
+        {/* Main Canvas with auto-fit view - Apply backgroundColor from database*/}
         <Box
           ref={canvasRef}
           sx={{ 
             flexGrow: 1, 
             position: 'relative', 
             overflow: 'hidden',
-            bgcolor: '#f5f5f5',
+            bgcolor: featuredBoard.background_color || '#f5f5f5', // Use background_color from database
             cursor: 'default'
           }}
         >
@@ -594,19 +605,22 @@ const MoodboardGallery = ({ userId, isOwnProfile, limit, showFeatured = false })
                 transition: 'transform 0.2s ease'
               }}
             >
-              {/* Background grid */}
-              <Box 
-                sx={{ 
-                  position: 'absolute',
-                  inset: '-5000px',
-                  width: '10000px',
-                  height: '10000px',
-                  backgroundImage: `linear-gradient(#ddd 1px, transparent 1px), 
+              {/* Background grid - Only show if no background_color is set */}
+              {!featuredBoard.background_color && (
+                <Box 
+                  sx={{ 
+                    position: 'absolute',
+                    inset: '-5000px',
+                    width: '10000px',
+                    height: '10000px',
+                    backgroundImage: `linear-gradient(#ddd 1px, transparent 1px), 
                                     linear-gradient(90deg, #ddd 1px, transparent 1px)`,
-                  backgroundSize: '20px 20px',
-                  zIndex: 0
-                }} 
-              />
+                    backgroundSize: '20px 20px',
+                    zIndex: 0,
+                    pointerEvents: 'none' // Ensure background doesn't interfere with interactions
+                  }} 
+                />
+              )}
               
               {/* Render all items with auto-fit positioning */}
               {featuredItems.map(item => (
@@ -732,7 +746,11 @@ const MoodboardGallery = ({ userId, isOwnProfile, limit, showFeatured = false })
                                   backgroundSize: 'cover',
                                   backgroundPosition: 'center'
                                 } 
-                              : generateMoodboardPreview(moodboard))
+                              : moodboard.background_color
+                                ? {
+                                    backgroundColor: moodboard.background_color
+                                  }
+                                : generateMoodboardPreview(moodboard))
                           }}
                         >
                           {/* Item count badge */}
