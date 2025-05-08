@@ -1,5 +1,5 @@
-// src/components/MoodboardGallery.jsx - Simplified version with direct Supabase query
-import React, { useState, useEffect, useRef } from 'react';
+// src/components/MoodboardGallery.jsx - Complete version with auto-fit view
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../supabaseclient';
 import {
@@ -33,11 +33,12 @@ import {
   Link as LinkIcon,
   TextFields as TextFieldsIcon,
   Image as ImageIcon,
+  ZoomOutMap as ZoomOutMapIcon,
 } from '@mui/icons-material';
 
 /**
  * Component to display a user's public moodboards in a gallery format
- * using the exact same layout as the MoodboardPage
+ * with auto-fitting all content into the view
  * 
  * @param {string} userId - The user ID whose moodboards to display
  * @param {boolean} isOwnProfile - Whether this is the current user's profile
@@ -50,10 +51,74 @@ const MoodboardGallery = ({ userId, isOwnProfile, limit, showFeatured = false })
   const [featuredItems, setFeaturedItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [scale, setScale] = useState(0.5); // Start at 50% scale to show more content
+  const [scale, setScale] = useState(0.5); // Start at 50% scale
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const theme = useTheme();
   const canvasRef = useRef(null);
+
+  // Auto-fit all content in view
+  const fitContentToView = useCallback(() => {
+    if (!featuredItems || featuredItems.length === 0 || !canvasRef.current) return;
+    
+    // Find the bounds of all items
+    const bounds = featuredItems.reduce((acc, item) => {
+      // Update min and max coordinates
+      acc.minX = Math.min(acc.minX, item.x || 0);
+      acc.minY = Math.min(acc.minY, item.y || 0);
+      acc.maxX = Math.max(acc.maxX, (item.x || 0) + (item.width || 200));
+      acc.maxY = Math.max(acc.maxY, (item.y || 0) + (item.height || 200));
+      return acc;
+    }, { 
+      minX: Number.MAX_SAFE_INTEGER, 
+      minY: Number.MAX_SAFE_INTEGER, 
+      maxX: Number.MIN_SAFE_INTEGER, 
+      maxY: Number.MIN_SAFE_INTEGER 
+    });
+    
+    // Calculate content dimensions
+    const contentWidth = bounds.maxX - bounds.minX;
+    const contentHeight = bounds.maxY - bounds.minY;
+    
+    // Get canvas dimensions
+    const canvasWidth = canvasRef.current.clientWidth || 600;
+    const canvasHeight = canvasRef.current.clientHeight || 400;
+    
+    // Add padding (percentage of canvas size)
+    const paddingX = canvasWidth * 0.1;
+    const paddingY = canvasHeight * 0.1;
+    
+    // Calculate scale needed to fit content
+    const scaleX = (canvasWidth - paddingX * 2) / contentWidth;
+    const scaleY = (canvasHeight - paddingY * 2) / contentHeight;
+    const newScale = Math.min(scaleX, scaleY, 0.9); // Cap at 0.9x to ensure content isn't too large
+    
+    // Calculate position to center content
+    const centerX = canvasWidth / 2;
+    const centerY = canvasHeight / 2;
+    const contentCenterX = bounds.minX + contentWidth / 2;
+    const contentCenterY = bounds.minY + contentHeight / 2;
+    
+    // Set new position and scale
+    setScale(newScale);
+    setPosition({
+      x: centerX - contentCenterX * newScale,
+      y: centerY - contentCenterY * newScale
+    });
+    
+    console.log(`Auto-fitted ${featuredItems.length} items to view with scale ${newScale.toFixed(2)}`);
+  }, [featuredItems]);
+
+  // Auto-fit content when items change
+  useEffect(() => {
+    if (featuredItems.length > 0 && canvasRef.current) {
+      // Wait a bit for the canvas to be properly rendered
+      const timer = setTimeout(() => {
+        fitContentToView();
+      }, 200);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [featuredItems, fitContentToView]);
 
   useEffect(() => {
     const fetchMoodboards = async () => {
@@ -96,6 +161,19 @@ const MoodboardGallery = ({ userId, isOwnProfile, limit, showFeatured = false })
               console.error('Error fetching moodboard items:', itemsError);
             } else {
               console.log(`Found ${itemsData?.length || 0} items for featured moodboard`);
+              
+              // Log item types to help with debugging
+              if (itemsData && itemsData.length > 0) {
+                const itemTypes = itemsData.reduce((acc, item) => {
+                  acc[item.type] = (acc[item.type] || 0) + 1;
+                  return acc;
+                }, {});
+                console.log('Item types:', itemTypes);
+                
+                // Log field names for debugging
+                console.log('Item field names:', Object.keys(itemsData[0]));
+              }
+              
               setFeaturedItems(itemsData || []);
             }
           }
@@ -139,16 +217,15 @@ const MoodboardGallery = ({ userId, isOwnProfile, limit, showFeatured = false })
   }, [userId, isOwnProfile, limit, showFeatured]);
 
   const handleZoomIn = () => {
-    setScale(prev => Math.min(prev + 0.1, 1));
+    setScale(prev => Math.min(prev + 0.1, 1.5));
   };
   
   const handleZoomOut = () => {
-    setScale(prev => Math.max(prev - 0.1, 0.3));
+    setScale(prev => Math.max(prev - 0.1, 0.2));
   };
   
   const handleZoomReset = () => {
-    setScale(0.5);
-    setPosition({ x: 0, y: 0 });
+    fitContentToView();
   };
 
   // Skeleton loader for loading state
@@ -252,6 +329,17 @@ const MoodboardGallery = ({ userId, isOwnProfile, limit, showFeatured = false })
   const MoodboardItem = ({ item }) => {
     const [imageLoaded, setImageLoaded] = useState(false);
     
+    // Check for any null or undefined properties and provide defaults
+    const safeItem = {
+      ...item,
+      x: item.x || 0,
+      y: item.y || 0,
+      width: item.width || 200,
+      height: item.height || 200,
+      // Handle both zIndex and z_index (depending on your database field name)
+      zIndex: item.zIndex || item.z_index || 1
+    };
+    
     // Render different content based on item type
     const renderContent = () => {
       switch (item.type) {
@@ -262,7 +350,7 @@ const MoodboardGallery = ({ userId, isOwnProfile, limit, showFeatured = false })
               height: '100%', 
               position: 'relative', 
               overflow: 'hidden',
-              backgroundColor: '#f5f5f5', // Add background to make loading more visible
+              backgroundColor: '#f5f5f5',
             }}>
               {/* Loading indicator */}
               {!imageLoaded && item.content && (
@@ -293,9 +381,9 @@ const MoodboardGallery = ({ userId, isOwnProfile, limit, showFeatured = false })
                 style={{ 
                   width: '100%', 
                   height: '100%', 
-                  objectFit: 'contain', // Use contain instead of cover to preserve aspect ratio
-                  pointerEvents: 'none', // Prevent image from capturing mouse events
-                  opacity: imageLoaded ? 1 : 0.3, // Fade in when loaded
+                  objectFit: 'contain',
+                  pointerEvents: 'none',
+                  opacity: imageLoaded ? 1 : 0.3,
                   transition: 'opacity 0.3s ease',
                 }} 
               />
@@ -339,8 +427,8 @@ const MoodboardGallery = ({ userId, isOwnProfile, limit, showFeatured = false })
                 width: '100%',
                 height: '100%',
                 backgroundColor: item.backgroundColor || '#f5f5f5',
-                borderRadius: item.border_radius || 1, // Use border_radius from database
-                pointerEvents: 'none' // Always none in preview
+                borderRadius: item.border_radius || 1,
+                pointerEvents: 'none'
               }}
             >
               <LinkIcon sx={{ fontSize: 32, mb: 1, color: 'primary.main' }} />
@@ -375,18 +463,18 @@ const MoodboardGallery = ({ userId, isOwnProfile, limit, showFeatured = false })
         elevation={1}
         sx={{
           position: 'absolute',
-          left: `${item.x}px`,
-          top: `${item.y}px`,
-          width: `${item.width}px`,
-          height: `${item.height}px`,
+          left: `${safeItem.x}px`,
+          top: `${safeItem.y}px`,
+          width: `${safeItem.width}px`,
+          height: `${safeItem.height}px`,
           overflow: 'hidden',
           cursor: 'default',
           border: '1px solid rgba(0,0,0,0.08)',
           transition: 'box-shadow 0.2s ease',
-          zIndex: item.zIndex || 1,
-          transform: item.rotation ? `rotate(${item.rotation}deg)` : 'none',
-          opacity: item.opacity ? item.opacity / 100 : 1,
-          borderRadius: item.border_radius ? `${item.border_radius}px` : '4px',
+          zIndex: safeItem.zIndex,
+          transform: safeItem.rotation ? `rotate(${safeItem.rotation}deg)` : 'none',
+          opacity: safeItem.opacity ? safeItem.opacity / 100 : 1,
+          borderRadius: safeItem.border_radius ? `${safeItem.border_radius}px` : '4px',
         }}
       >
         {renderContent()}
@@ -394,7 +482,7 @@ const MoodboardGallery = ({ userId, isOwnProfile, limit, showFeatured = false })
     );
   };
 
-  // Render featured moodboard with the exact same layout as MoodboardPage
+  // Render featured moodboard with auto-fit view
   const renderFeaturedMoodboard = () => {
     if (!featuredBoard) return null;
 
@@ -412,7 +500,7 @@ const MoodboardGallery = ({ userId, isOwnProfile, limit, showFeatured = false })
           height: '500px' // Fixed height for preview
         }}
       >
-        {/* Moodboard Header - just like in MoodboardPage */}
+        {/* Moodboard Header */}
         <Box 
           sx={{ 
             p: 1, 
@@ -455,18 +543,19 @@ const MoodboardGallery = ({ userId, isOwnProfile, limit, showFeatured = false })
               </IconButton>
             </Tooltip>
             
-            <Button 
-              size="small" 
-              variant="outlined" 
-              onClick={handleZoomReset}
-              sx={{ ml: 1 }}
-            >
-              Reset View
-            </Button>
+            <Tooltip title="Fit All Content">
+              <IconButton 
+                onClick={handleZoomReset}
+                color="primary"
+                size="small"
+              >
+                <ZoomOutMapIcon />
+              </IconButton>
+            </Tooltip>
           </Box>
         </Box>
         
-        {/* Main Canvas - just like in MoodboardPage */}
+        {/* Main Canvas with auto-fit view */}
         <Box
           ref={canvasRef}
           sx={{ 
@@ -477,36 +566,54 @@ const MoodboardGallery = ({ userId, isOwnProfile, limit, showFeatured = false })
             cursor: 'default'
           }}
         >
-          {/* The infinite canvas with proper transform */}
-          <Box
-            sx={{
-              position: 'absolute',
-              width: '100%',
-              height: '100%',
-              transformOrigin: '0 0',
-              transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
-              transition: 'transform 0.1s ease'
-            }}
-          >
-            {/* Background grid */}
+          {featuredItems.length === 0 ? (
             <Box 
               sx={{ 
+                display: 'flex', 
+                flexDirection: 'column', 
+                alignItems: 'center', 
+                justifyContent: 'center',
+                height: '100%',
+                color: 'text.secondary'
+              }}
+            >
+              <DashboardIcon sx={{ fontSize: 60, color: 'text.disabled', mb: 2 }} />
+              <Typography variant="body1">
+                {isOwnProfile ? 'This moodboard is empty. Add some content!' : 'This moodboard has no visible content.'}
+              </Typography>
+            </Box>
+          ) : (
+            /* The infinite canvas with proper transform */
+            <Box
+              sx={{
                 position: 'absolute',
-                inset: '-5000px',
-                width: '10000px',
-                height: '10000px',
-                backgroundImage: `linear-gradient(#ddd 1px, transparent 1px), 
-                                  linear-gradient(90deg, #ddd 1px, transparent 1px)`,
-                backgroundSize: '20px 20px',
-                zIndex: 0
-              }} 
-            />
-            
-            {/* Render all items exactly as in MoodboardPage */}
-            {featuredItems.map(item => (
-              <MoodboardItem key={item.id} item={item} />
-            ))}
-          </Box>
+                width: '100%',
+                height: '100%',
+                transformOrigin: 'center center',
+                transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
+                transition: 'transform 0.2s ease'
+              }}
+            >
+              {/* Background grid */}
+              <Box 
+                sx={{ 
+                  position: 'absolute',
+                  inset: '-5000px',
+                  width: '10000px',
+                  height: '10000px',
+                  backgroundImage: `linear-gradient(#ddd 1px, transparent 1px), 
+                                    linear-gradient(90deg, #ddd 1px, transparent 1px)`,
+                  backgroundSize: '20px 20px',
+                  zIndex: 0
+                }} 
+              />
+              
+              {/* Render all items with auto-fit positioning */}
+              {featuredItems.map(item => (
+                <MoodboardItem key={item.id} item={item} />
+              ))}
+            </Box>
+          )}
         </Box>
         
         {/* Footer with count and open link */}
