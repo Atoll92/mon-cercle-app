@@ -33,6 +33,7 @@ import DirectMessagesPage from './pages/DirectMessagesPage';
 import { DirectMessagesProvider } from './context/directMessagesContext';
 import PricingPage from './pages/PricingPage';
 import ShimmeringTextPage from './pages/ShimmeringTextPage';
+import PersonalMoodboardsPage from './pages/PersonalMoodboardPage';
 
 function App() {
   const { loading, session, user } = useAuth();
@@ -167,6 +168,8 @@ function App() {
 
           <Route element={<ProtectedRoute />}>
             <Route path="/moodboard/:moodboardId" element={<MoodboardPage />} />
+            <Route path="/dashboard/moodboards" element={<PersonalMoodboardsPage />} />
+            <Route path="/network/:networkId/moodboards/create" element={<MoodboardPage />} />
           </Route>
 
           {/* Protected Shared Files Routes */}

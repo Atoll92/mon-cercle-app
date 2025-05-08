@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/authcontext';
 import { supabase } from '../supabaseclient';
+import MoodboardGallery from '../components/moodboardGallery';
 import EventParticipation from '../components/EventParticipation';
 import {
   Button,
@@ -29,7 +30,8 @@ import {
   Stack,
   alpha,
   Alert,
-  Tooltip
+  Tooltip,
+  
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
@@ -46,6 +48,7 @@ import {
   CalendarMonth as CalendarMonthIcon,
   MoreHoriz as MoreHorizIcon,
   Description as DescriptionIcon,
+  Dashboard as DashboardIcon,
   Badge as Badge,
 
 } from '@mui/icons-material';
@@ -319,6 +322,11 @@ function ProfilePage() {
             icon={<PersonOutlineIcon />} 
             iconPosition="start"
           />
+           <Tab 
+    label="Moodboards" 
+    icon={<PersonOutlineIcon />} 
+    iconPosition="start"
+  />
           <Tab 
             label="Portfolio" 
             icon={<LanguageIcon />} 
@@ -335,6 +343,20 @@ function ProfilePage() {
         
         {/* Profile Content */}
         <Box sx={{ p: 0 }}>
+
+        {activeTab === 1 && (
+  <Box sx={{ p: 3 }}>
+    <Typography variant="h5" gutterBottom>
+      {isOwnProfile ? 'Your Moodboards' : `${profile.full_name}'s Moodboards`}
+    </Typography>
+    
+    <MoodboardGallery
+      userId={userId}
+      isOwnProfile={isOwnProfile}
+      showFeatured={true}
+    />
+  </Box>
+)}
           {/* Overview Tab */}
           {activeTab === 0 && (
             <Grid container>
@@ -636,6 +658,60 @@ function ProfilePage() {
                       </Alert>
                     )}
                   </Box>
+
+{activeTab === 1 && (
+  <Box sx={{ p: 3 }}>
+    <Typography variant="h5" gutterBottom>
+      {isOwnProfile ? 'Your Moodboards' : `${profile.full_name}'s Moodboards`}
+    </Typography>
+    
+    <MoodboardGallery
+      userId={userId}
+      isOwnProfile={isOwnProfile}
+      showFeatured={true}
+    />
+  </Box>
+)}
+
+{/* Moodboards Preview Section */}
+<Box sx={{ mt: 4 }}>
+  <Box sx={{ 
+    display: 'flex', 
+    justifyContent: 'space-between', 
+    alignItems: 'center',
+    pb: 1,
+    borderBottom: '1px solid',
+    borderColor: 'divider',
+    mb: 2
+  }}>
+    <Typography 
+      variant="h6" 
+      sx={{ 
+        display: 'flex', 
+        alignItems: 'center',
+        gap: 1
+      }}
+    >
+      <DashboardIcon fontSize="small" color="primary" />
+      Moodboards
+    </Typography>
+    
+    <Button 
+      size="small" 
+      endIcon={<MoreHorizIcon />} 
+      onClick={() => setActiveTab(1)}
+    >
+      See All
+    </Button>
+  </Box>
+  
+  <MoodboardGallery
+    userId={userId}
+    isOwnProfile={isOwnProfile}
+    limit={2}
+  />
+</Box>
+
                   
                   {/* Portfolio Preview Section */}
                   {profile.projects && profile.projects.length > 0 && (
