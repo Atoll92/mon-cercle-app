@@ -118,7 +118,7 @@ const NetworkHeader = () => {
     '&:hover': {
       backgroundColor: 'rgba(0, 0, 0, 0.04)',
       '& .buttonText': {
-        width: '70px',
+        width: '80px',
         opacity: 1,
         marginLeft: '8px',
       }

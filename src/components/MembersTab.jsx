@@ -1,11 +1,10 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Box,
   Button,
   Card,
   CardContent,
-  CardActions,
   Chip,
   Typography,
   Avatar,
@@ -13,7 +12,6 @@ import {
   TextField,
   InputAdornment,
   CircularProgress,
-  Pagination,
   FormControl,
   InputLabel,
   Select,
@@ -24,7 +22,8 @@ import {
   Badge,
   alpha,
   useTheme,
-  useMediaQuery
+  useMediaQuery,
+  Fade
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -38,8 +37,12 @@ import {
   Facebook as FacebookIcon,
   Twitter as TwitterIcon,
   LinkedIn as LinkedInIcon,
-  Language as LanguageIcon
+  Language as LanguageIcon,
+  ArrowUpward as ScrollTopIcon
 } from '@mui/icons-material';
+
+// Number of items to load per batch
+const ITEMS_PER_BATCH = 12;
 
 const MembersTab = ({ 
   networkMembers = [], 
@@ -54,19 +57,47 @@ const MembersTab = ({
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const isTablet = useMediaQuery(theme.breakpoints.down('md'));
   
-  // State for filtering and pagination
+  // State for filtering and sorting
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
   const [skillFilter, setSkillFilter] = useState('');
-  const [page, setPage] = useState(1);
   const [sortBy, setSortBy] = useState('name');
   const [sortDirection, setSortDirection] = useState('asc');
-  const [filteredMembers, setFilteredMembers] = useState([]);
-  const [displayMembers, setDisplayMembers] = useState([]);
   const [showFilters, setShowFilters] = useState(false);
   const [uniqueSkills, setUniqueSkills] = useState([]);
   
-  const itemsPerPage = isMobile ? 6 : isTablet ? 8 : 12;
+  // State for infinite scrolling
+  const [filteredMembers, setFilteredMembers] = useState([]);
+  const [displayMembers, setDisplayMembers] = useState([]);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(ITEMS_PER_BATCH);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+  
+  // Ref for intersection observer
+  const observer = useRef();
+  const lastMemberRef = useCallback(node => {
+    if (loadingMore) return;
+    if (observer.current) observer.current.disconnect();
+    
+    observer.current = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && hasMore) {
+        loadMoreMembers();
+      }
+    });
+    
+    if (node) observer.current.observe(node);
+  }, [loadingMore, hasMore]);
+  
+  // Scroll position tracking
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowScrollTop(window.pageYOffset > 300);
+    };
+    
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
   
   // Extract all unique skills from members for filter dropdown
   useEffect(() => {
@@ -79,10 +110,10 @@ const MembersTab = ({
     setUniqueSkills(Array.from(skills).sort());
   }, [networkMembers]);
   
-  // Filter and sort members based on search, filters, and sort criteria
+  // Filter and sort members based on criteria
   const filterAndSortMembers = useCallback(() => {
     // First apply filters
-    let filtered = networkMembers;
+    let filtered = [...networkMembers];
     
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
@@ -127,22 +158,46 @@ const MembersTab = ({
     });
     
     setFilteredMembers(filtered);
+    setVisibleCount(ITEMS_PER_BATCH);
+    setHasMore(filtered.length > ITEMS_PER_BATCH);
     
-    // Update pagination
-    const startIndex = (page - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-    setDisplayMembers(filtered.slice(startIndex, endIndex));
-  }, [networkMembers, searchTerm, roleFilter, skillFilter, sortBy, sortDirection, page, itemsPerPage]);
+    // Update display members
+    const initialBatch = filtered.slice(0, ITEMS_PER_BATCH);
+    setDisplayMembers(initialBatch);
+    
+    // Scroll to top when filters change
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [networkMembers, searchTerm, roleFilter, skillFilter, sortBy, sortDirection]);
   
-  // Update filtered members when filters or sort changes
+  // Load more members for infinite scroll
+  const loadMoreMembers = useCallback(() => {
+    if (!hasMore || loadingMore) return;
+    
+    setLoadingMore(true);
+    
+    // Simulate loading delay
+    setTimeout(() => {
+      const nextBatch = filteredMembers.slice(
+        visibleCount, 
+        visibleCount + ITEMS_PER_BATCH
+      );
+      
+      if (nextBatch.length === 0) {
+        setHasMore(false);
+      } else {
+        setDisplayMembers(prevMembers => [...prevMembers, ...nextBatch]);
+        setVisibleCount(prev => prev + nextBatch.length);
+        setHasMore(visibleCount + nextBatch.length < filteredMembers.length);
+      }
+      
+      setLoadingMore(false);
+    }, 500);
+  }, [filteredMembers, visibleCount, hasMore, loadingMore]);
+  
+  // Initial filtering and when filters change
   useEffect(() => {
     filterAndSortMembers();
-  }, [filterAndSortMembers]);
-  
-  // Reset to page 1 when filters change
-  useEffect(() => {
-    setPage(1);
-  }, [searchTerm, roleFilter, skillFilter, sortBy, sortDirection]);
+  }, [filterAndSortMembers, networkMembers, searchTerm, roleFilter, skillFilter, sortBy, sortDirection]);
   
   const handleSortChange = (newSortBy) => {
     if (sortBy === newSortBy) {
@@ -161,7 +216,12 @@ const MembersTab = ({
     setSortDirection('asc');
   };
   
-  const totalPages = Math.ceil(filteredMembers.length / itemsPerPage);
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  };
   
   // Sample social media profiles
   const getSocialMedia = (member) => {
@@ -279,215 +339,216 @@ const MembersTab = ({
       </Box>
       
       {/* Search and filters */}
-      <Paper 
-        sx={{ 
-          p: { xs: 2, md: 3 }, 
-          mb: 3,
-          backgroundColor: darkMode ? alpha('#121212', 0.6) : alpha('#f5f5f5', 0.7),
-          backdropFilter: 'blur(8px)',
-          display: showFilters ? 'block' : 'none',
-          borderRadius: 2,
-          border: darkMode ? `1px solid ${alpha('#fff', 0.1)}` : `1px solid ${alpha('#000', 0.05)}`
-        }}
-        elevation={darkMode ? 3 : 1}
-      >
-        <Grid container spacing={2} alignItems="center">
-          <Grid item xs={12} md={4}>
-            <TextField
-              fullWidth
-              placeholder="Search members..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              size="small"
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon color={darkMode ? "primary" : "action"} />
-                  </InputAdornment>
-                ),
-                endAdornment: searchTerm ? (
-                  <InputAdornment position="end">
-                    <IconButton 
-                      size="small" 
-                      onClick={() => setSearchTerm('')}
-                      sx={{ color: darkMode ? 'white' : 'text.secondary' }}
-                    >
-                      <ClearIcon fontSize="small" />
-                    </IconButton>
-                  </InputAdornment>
-                ) : null,
-                sx: { 
+      {showFilters && (
+        <Paper 
+          sx={{ 
+            p: { xs: 2, md: 3 }, 
+            mb: 3,
+            backgroundColor: darkMode ? alpha('#121212', 0.6) : alpha('#f5f5f5', 0.7),
+            backdropFilter: 'blur(8px)',
+            borderRadius: 2,
+            border: darkMode ? `1px solid ${alpha('#fff', 0.1)}` : `1px solid ${alpha('#000', 0.05)}`
+          }}
+          elevation={darkMode ? 3 : 1}
+        >
+          <Grid container spacing={2} alignItems="center">
+            <Grid item xs={12} md={4}>
+              <TextField
+                fullWidth
+                placeholder="Search members..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                size="small"
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon color={darkMode ? "primary" : "action"} />
+                    </InputAdornment>
+                  ),
+                  endAdornment: searchTerm ? (
+                    <InputAdornment position="end">
+                      <IconButton 
+                        size="small" 
+                        onClick={() => setSearchTerm('')}
+                        sx={{ color: darkMode ? 'white' : 'text.secondary' }}
+                      >
+                        <ClearIcon fontSize="small" />
+                      </IconButton>
+                    </InputAdornment>
+                  ) : null,
+                  sx: { 
+                    bgcolor: darkMode ? alpha('#000', 0.2) : alpha('#fff', 0.9),
+                    color: darkMode ? 'white' : 'inherit',
+                    borderRadius: 2,
+                    '& .MuiOutlinedInput-notchedOutline': {
+                      borderColor: darkMode ? alpha('#fff', 0.1) : alpha('#000', 0.1)
+                    }
+                  }
+                }}
+              />
+            </Grid>
+            
+            <Grid item xs={12} sm={6} md={3}>
+              <FormControl 
+                fullWidth 
+                size="small"
+                sx={{ 
                   bgcolor: darkMode ? alpha('#000', 0.2) : alpha('#fff', 0.9),
-                  color: darkMode ? 'white' : 'inherit',
                   borderRadius: 2,
+                  '& .MuiOutlinedInput-root': {
+                    color: darkMode ? 'white' : 'inherit',
+                    borderRadius: 2
+                  },
+                  '& .MuiInputLabel-root': {
+                    color: darkMode ? alpha('white', 0.7) : 'inherit'
+                  },
                   '& .MuiOutlinedInput-notchedOutline': {
                     borderColor: darkMode ? alpha('#fff', 0.1) : alpha('#000', 0.1)
                   }
-                }
-              }}
-            />
-          </Grid>
-          
-          <Grid item xs={12} sm={6} md={3}>
-            <FormControl 
-              fullWidth 
-              size="small"
-              sx={{ 
-                bgcolor: darkMode ? alpha('#000', 0.2) : alpha('#fff', 0.9),
-                borderRadius: 2,
-                '& .MuiOutlinedInput-root': {
-                  color: darkMode ? 'white' : 'inherit',
-                  borderRadius: 2
-                },
-                '& .MuiInputLabel-root': {
-                  color: darkMode ? alpha('white', 0.7) : 'inherit'
-                },
-                '& .MuiOutlinedInput-notchedOutline': {
-                  borderColor: darkMode ? alpha('#fff', 0.1) : alpha('#000', 0.1)
-                }
-              }}
-            >
-              <InputLabel id="role-filter-label">Role</InputLabel>
-              <Select
-                labelId="role-filter-label"
-                value={roleFilter}
-                onChange={(e) => setRoleFilter(e.target.value)}
-                label="Role"
+                }}
               >
-                <MenuItem value="all">All Roles</MenuItem>
-                <MenuItem value="admin">Admins Only</MenuItem>
-                <MenuItem value="member">Regular Members</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-          
-          <Grid item xs={12} sm={6} md={3}>
-            <FormControl 
-              fullWidth 
-              size="small"
-              sx={{ 
-                bgcolor: darkMode ? alpha('#000', 0.2) : alpha('#fff', 0.9),
-                borderRadius: 2,
-                '& .MuiOutlinedInput-root': {
-                  color: darkMode ? 'white' : 'inherit',
-                  borderRadius: 2
-                },
-                '& .MuiInputLabel-root': {
-                  color: darkMode ? alpha('white', 0.7) : 'inherit'
-                },
-                '& .MuiOutlinedInput-notchedOutline': {
-                  borderColor: darkMode ? alpha('#fff', 0.1) : alpha('#000', 0.1)
-                }
-              }}
-            >
-              <InputLabel id="skill-filter-label">Skill</InputLabel>
-              <Select
-                labelId="skill-filter-label"
-                value={skillFilter}
-                onChange={(e) => setSkillFilter(e.target.value)}
-                label="Skill"
+                <InputLabel id="role-filter-label">Role</InputLabel>
+                <Select
+                  labelId="role-filter-label"
+                  value={roleFilter}
+                  onChange={(e) => setRoleFilter(e.target.value)}
+                  label="Role"
+                >
+                  <MenuItem value="all">All Roles</MenuItem>
+                  <MenuItem value="admin">Admins Only</MenuItem>
+                  <MenuItem value="member">Regular Members</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+            
+            <Grid item xs={12} sm={6} md={3}>
+              <FormControl 
+                fullWidth 
+                size="small"
+                sx={{ 
+                  bgcolor: darkMode ? alpha('#000', 0.2) : alpha('#fff', 0.9),
+                  borderRadius: 2,
+                  '& .MuiOutlinedInput-root': {
+                    color: darkMode ? 'white' : 'inherit',
+                    borderRadius: 2
+                  },
+                  '& .MuiInputLabel-root': {
+                    color: darkMode ? alpha('white', 0.7) : 'inherit'
+                  },
+                  '& .MuiOutlinedInput-notchedOutline': {
+                    borderColor: darkMode ? alpha('#fff', 0.1) : alpha('#000', 0.1)
+                  }
+                }}
               >
-                <MenuItem value="">All Skills</MenuItem>
-                {uniqueSkills.map(skill => (
-                  <MenuItem key={skill} value={skill}>
-                    {skill}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid>
-          
-          <Grid item xs={12} sm={6} md={2}>
-            <Button
-              fullWidth
-              variant="outlined"
-              color={darkMode ? "error" : "secondary"}
-              onClick={handleClearFilters}
-              startIcon={<ClearIcon />}
-              sx={{ 
-                height: '40px',
-                borderRadius: 2,
-                borderColor: darkMode ? alpha('#f44336', 0.5) : undefined
-              }}
-            >
-              Clear
-            </Button>
-          </Grid>
-          
-          <Grid item xs={12}>
-            <Box sx={{ 
-              display: 'flex', 
-              justifyContent: 'space-between', 
-              alignItems: 'center',
-              flexWrap: 'wrap',
-              mt: 1
-            }}>
+                <InputLabel id="skill-filter-label">Skill</InputLabel>
+                <Select
+                  labelId="skill-filter-label"
+                  value={skillFilter}
+                  onChange={(e) => setSkillFilter(e.target.value)}
+                  label="Skill"
+                >
+                  <MenuItem value="">All Skills</MenuItem>
+                  {uniqueSkills.map(skill => (
+                    <MenuItem key={skill} value={skill}>
+                      {skill}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+            
+            <Grid item xs={12} sm={6} md={2}>
+              <Button
+                fullWidth
+                variant="outlined"
+                color={darkMode ? "error" : "secondary"}
+                onClick={handleClearFilters}
+                startIcon={<ClearIcon />}
+                sx={{ 
+                  height: '40px',
+                  borderRadius: 2,
+                  borderColor: darkMode ? alpha('#f44336', 0.5) : undefined
+                }}
+              >
+                Clear
+              </Button>
+            </Grid>
+            
+            <Grid item xs={12}>
               <Box sx={{ 
                 display: 'flex', 
-                gap: 1,
+                justifyContent: 'space-between', 
+                alignItems: 'center',
                 flexWrap: 'wrap',
-                '& button': {
-                  minWidth: 'auto',
-                  borderRadius: 8
-                }
+                mt: 1
               }}>
-                <Button
-                  size="small"
-                  color={sortBy === 'name' ? 'primary' : 'inherit'}
-                  onClick={() => handleSortChange('name')}
-                  startIcon={sortBy === 'name' && (sortDirection === 'asc' ? <ArrowUpwardIcon fontSize="small" /> : <ArrowDownwardIcon fontSize="small" />)}
-                  sx={{ 
-                    color: darkMode ? (sortBy === 'name' ? 'primary.light' : 'white') : 'inherit',
-                    textTransform: 'none',
-                    fontWeight: sortBy === 'name' ? 600 : 400,
-                    bgcolor: sortBy === 'name' ? (darkMode ? alpha('#1976d2', 0.1) : alpha('#1976d2', 0.05)) : 'transparent'
-                  }}
-                >
-                  Name
-                </Button>
+                <Box sx={{ 
+                  display: 'flex', 
+                  gap: 1,
+                  flexWrap: 'wrap',
+                  '& button': {
+                    minWidth: 'auto',
+                    borderRadius: 8
+                  }
+                }}>
+                  <Button
+                    size="small"
+                    color={sortBy === 'name' ? 'primary' : 'inherit'}
+                    onClick={() => handleSortChange('name')}
+                    startIcon={sortBy === 'name' && (sortDirection === 'asc' ? <ArrowUpwardIcon fontSize="small" /> : <ArrowDownwardIcon fontSize="small" />)}
+                    sx={{ 
+                      color: darkMode ? (sortBy === 'name' ? 'primary.light' : 'white') : 'inherit',
+                      textTransform: 'none',
+                      fontWeight: sortBy === 'name' ? 600 : 400,
+                      bgcolor: sortBy === 'name' ? (darkMode ? alpha('#1976d2', 0.1) : alpha('#1976d2', 0.05)) : 'transparent'
+                    }}
+                  >
+                    Name
+                  </Button>
+                  
+                  <Button
+                    size="small"
+                    color={sortBy === 'joinDate' ? 'primary' : 'inherit'}
+                    onClick={() => handleSortChange('joinDate')}
+                    startIcon={sortBy === 'joinDate' && (sortDirection === 'asc' ? <ArrowUpwardIcon fontSize="small" /> : <ArrowDownwardIcon fontSize="small" />)}
+                    sx={{ 
+                      color: darkMode ? (sortBy === 'joinDate' ? 'primary.light' : 'white') : 'inherit',
+                      textTransform: 'none',
+                      fontWeight: sortBy === 'joinDate' ? 600 : 400,
+                      bgcolor: sortBy === 'joinDate' ? (darkMode ? alpha('#1976d2', 0.1) : alpha('#1976d2', 0.05)) : 'transparent'
+                    }}
+                  >
+                    Join Date
+                  </Button>
+                  
+                  <Button
+                    size="small"
+                    color={sortBy === 'skillCount' ? 'primary' : 'inherit'}
+                    onClick={() => handleSortChange('skillCount')}
+                    startIcon={sortBy === 'skillCount' && (sortDirection === 'asc' ? <ArrowUpwardIcon fontSize="small" /> : <ArrowDownwardIcon fontSize="small" />)}
+                    sx={{ 
+                      color: darkMode ? (sortBy === 'skillCount' ? 'primary.light' : 'white') : 'inherit',
+                      textTransform: 'none',
+                      fontWeight: sortBy === 'skillCount' ? 600 : 400,
+                      bgcolor: sortBy === 'skillCount' ? (darkMode ? alpha('#1976d2', 0.1) : alpha('#1976d2', 0.05)) : 'transparent'
+                    }}
+                  >
+                    Skills Count
+                  </Button>
+                </Box>
                 
-                <Button
-                  size="small"
-                  color={sortBy === 'joinDate' ? 'primary' : 'inherit'}
-                  onClick={() => handleSortChange('joinDate')}
-                  startIcon={sortBy === 'joinDate' && (sortDirection === 'asc' ? <ArrowUpwardIcon fontSize="small" /> : <ArrowDownwardIcon fontSize="small" />)}
-                  sx={{ 
-                    color: darkMode ? (sortBy === 'joinDate' ? 'primary.light' : 'white') : 'inherit',
-                    textTransform: 'none',
-                    fontWeight: sortBy === 'joinDate' ? 600 : 400,
-                    bgcolor: sortBy === 'joinDate' ? (darkMode ? alpha('#1976d2', 0.1) : alpha('#1976d2', 0.05)) : 'transparent'
-                  }}
+                <Typography 
+                  variant="body2" 
+                  color={darkMode ? alpha("white", 0.7) : "text.secondary"}
+                  sx={{ mt: { xs: 2, sm: 0 } }}
                 >
-                  Join Date
-                </Button>
-                
-                <Button
-                  size="small"
-                  color={sortBy === 'skillCount' ? 'primary' : 'inherit'}
-                  onClick={() => handleSortChange('skillCount')}
-                  startIcon={sortBy === 'skillCount' && (sortDirection === 'asc' ? <ArrowUpwardIcon fontSize="small" /> : <ArrowDownwardIcon fontSize="small" />)}
-                  sx={{ 
-                    color: darkMode ? (sortBy === 'skillCount' ? 'primary.light' : 'white') : 'inherit',
-                    textTransform: 'none',
-                    fontWeight: sortBy === 'skillCount' ? 600 : 400,
-                    bgcolor: sortBy === 'skillCount' ? (darkMode ? alpha('#1976d2', 0.1) : alpha('#1976d2', 0.05)) : 'transparent'
-                  }}
-                >
-                  Skills Count
-                </Button>
+                  Showing {displayMembers.length} of {filteredMembers.length} members
+                </Typography>
               </Box>
-              
-              <Typography 
-                variant="body2" 
-                color={darkMode ? alpha("white", 0.7) : "text.secondary"}
-                sx={{ mt: { xs: 2, sm: 0 } }}
-              >
-                Showing {filteredMembers.length} of {networkMembers.length} members
-              </Typography>
-            </Box>
+            </Grid>
           </Grid>
-        </Grid>
-      </Paper>
+        </Paper>
+      )}
       
       {/* Members grid/list */}
       {filteredMembers.length === 0 ? (
@@ -522,15 +583,32 @@ const MembersTab = ({
           )}
         </Paper>
       ) : (
-        // Fixed-width minimalist member cards
-        <Grid container spacing={3}>
-          {displayMembers.map((member) => {
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: {
+              xs: 'repeat(2, 1fr)',            // Mobile: 2 columns
+              sm: 'repeat(3, 1fr)',            // Tablet: 3 columns
+              md: 'repeat(4, 1fr)',            // Desktop: 4 columns
+              lg: 'repeat(6, 1fr)'             // Large screens: 6 columns
+            },
+            gap: 3
+          }}
+        >
+          {displayMembers.map((member, index) => {
+            const isLastMember = index === displayMembers.length - 1;
             const socialMedia = getSocialMedia(member);
+            
             return (
-              <Grid item xs={12} sm={6} md={4} lg={3} key={member.id}>
+              <Box
+                key={member.id}
+                ref={isLastMember ? lastMemberRef : null}
+                sx={{ width: '100%' }}
+              >
                 <Card 
                   sx={{ 
                     height: '100%',
+                    width: '100%',
                     display: 'flex',
                     flexDirection: 'column',
                     transition: 'all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)',
@@ -570,7 +648,8 @@ const MembersTab = ({
                       alignItems: 'center', 
                       p: 3,
                       pt: 4,
-                      position: 'relative'
+                      position: 'relative',
+                      width: '100%'
                     }}
                   >
                     <Box sx={{ position: 'relative' }}>
@@ -602,7 +681,7 @@ const MembersTab = ({
                         </Avatar>
                       </Badge>
                       
-                      {/* Message button positioned over the bottom right of avatar */}
+                      {/* Message button */}
                       {member.id !== user?.id && (
                         <Tooltip title="Send Message">
                           <IconButton
@@ -633,34 +712,44 @@ const MembersTab = ({
                       )}
                     </Box>
                     
-                    <Typography 
-                      variant="h6" 
-                      component="h3" 
-                      align="center" 
-                      gutterBottom
+                    {/* Name with fixed width container */}
+                    <Box 
                       sx={{ 
-                        fontWeight: 600,
-                        color: darkMode ? 'white' : 'text.primary',
-                        lineHeight: 1.2,
-                        mb: 1,
-                        // Fixed height and width for consistent card sizing
-                        height: '2.4em',
                         width: '100%',
+                        height: '2.4em',
+                        mb: 1,
                         display: 'flex',
                         justifyContent: 'center',
                         alignItems: 'center',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        // For multi-line ellipsis
-                        /*display: '-webkit-box',
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: 'vertical'
-                        */
+                        overflow: 'hidden'
                       }}
                     >
-                      {member.full_name || 'Unnamed User'}
-                      {member.id === user?.id && ' (You)'}
-                    </Typography>
+                      <Typography 
+                        variant="h6" 
+                        component="h3"
+                        noWrap={false}
+                        sx={{ 
+                          fontWeight: 600,
+                          color: darkMode ? 'white' : 'text.primary',
+                          lineHeight: 1.2,
+                          textAlign: 'center',
+                          width: '100%',
+                          maxWidth: '100%',
+                          padding: '0 4px',
+                          // Proper text truncation with ellipsis
+                          display: '-webkit-box',
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          wordBreak: 'break-word',
+                          fontSize: '0.8rem',
+                        }}
+                      >
+                        {member.full_name || 'Unnamed User'}
+                        {member.id === user?.id && ' (You)'}
+                      </Typography>
+                    </Box>
                     
                     <Box sx={{ 
                       mb: 2, 
@@ -802,6 +891,7 @@ const MembersTab = ({
                       )}
                     </Box>
                     
+                    {/* Bio with consistent height */}
                     {member.bio && (
                       <Typography 
                         variant="body2" 
@@ -814,8 +904,10 @@ const MembersTab = ({
                           WebkitLineClamp: 2,
                           WebkitBoxOrient: 'vertical',
                           lineHeight: 1.4,
-                          height: '2.8em', // Fixed height for consistent sizing
+                          height: '2.8em',
                           width: '100%',
+                          padding: '0 4px',
+                          wordBreak: 'break-word'
                         }}
                       >
                         {member.bio}
@@ -823,40 +915,57 @@ const MembersTab = ({
                     )}
                   </CardContent>
                 </Card>
-              </Grid>
+              </Box>
             );
           })}
-        </Grid>
+        </Box>
       )}
       
-      {/* Pagination controls */}
-      {totalPages > 1 && (
-        <Box sx={{ 
-          display: 'flex', 
-          justifyContent: 'center', 
-          mt: 4, 
-          mb: 2 
-        }}>
-          <Pagination
-            count={totalPages}
-            page={page}
-            onChange={(_, newPage) => setPage(newPage)}
-            color="primary"
-            size="large"
-            showFirstButton
-            showLastButton
-            siblingCount={isMobile ? 0 : 1}
-            sx={{
-              '& .MuiPaginationItem-root': {
-                color: darkMode ? 'white' : undefined,
-                '&.Mui-selected': {
-                  bgcolor: darkMode ? alpha(theme.palette.primary.main, 0.8) : undefined,
-                  fontWeight: 'bold'
-                }
-              }
-            }}
-          />
+      {/* Loading indicator for infinite scroll */}
+      {loadingMore && (
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 3 }}>
+          <CircularProgress size={32} />
         </Box>
+      )}
+      
+      {/* End of content message */}
+      {!hasMore && displayMembers.length > 0 && !loadingMore && (
+        <Box 
+          sx={{ 
+            textAlign: 'center', 
+            py: 3,
+            mt: 2,
+            color: darkMode ? alpha('white', 0.5) : 'text.secondary',
+            borderTop: `1px solid ${darkMode ? alpha('white', 0.1) : alpha('#000', 0.1)}`
+          }}
+        >
+          <Typography variant="body2">
+            You've reached the end of the member list
+          </Typography>
+        </Box>
+      )}
+      
+      {/* Scroll to top button */}
+      {displayMembers.length > 10 && showScrollTop && (
+        <Fade in={showScrollTop}>
+          <IconButton 
+            onClick={scrollToTop}
+            sx={{
+              position: 'fixed',
+              bottom: 20,
+              right: 20,
+              zIndex: 100,
+              bgcolor: theme.palette.primary.main,
+              color: 'white',
+              '&:hover': {
+                bgcolor: theme.palette.primary.dark,
+              },
+              boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+            }}
+          >
+            <ScrollTopIcon />
+          </IconButton>
+        </Fade>
       )}
     </Paper>
   );
