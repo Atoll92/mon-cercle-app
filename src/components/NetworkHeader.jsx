@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Skeleton, Badge, Button } from '@mui/material';
+import { Box, Typography, Skeleton, Badge } from '@mui/material';
 import { Logout as LogoutIcon, Person as PersonIcon } from '@mui/icons-material';
 import MailIcon from '@mui/icons-material/Mail';
 import BusinessIcon from '@mui/icons-material/Business'; // Icon for network
@@ -103,6 +103,38 @@ const NetworkHeader = () => {
   const displayedLogoUrl = networkInfo?.logo_url;
   const networkId = networkInfo?.id;
   
+  // Simplified icon button style with consistent transitions
+  const iconButtonStyle = {
+    display: 'flex',
+    alignItems: 'center',
+    position: 'relative',
+    minWidth: '40px',
+    height: '40px',
+    borderRadius: '4px',
+    padding: '8px',
+    color: 'inherit',
+    textDecoration: 'none',
+    transition: 'background-color 0.3s ease-in-out',
+    '&:hover': {
+      backgroundColor: 'rgba(0, 0, 0, 0.04)',
+      '& .buttonText': {
+        width: '70px',
+        opacity: 1,
+        marginLeft: '8px',
+      }
+    }
+  };
+
+  // Simplified text style with consistent transitions
+  const buttonTextStyle = {
+    width: '0px',
+    overflow: 'hidden',
+    whiteSpace: 'nowrap',
+    opacity: 0,
+    marginLeft: '0px',
+    transition: 'width 0.3s ease-in-out, opacity 0.3s ease-in-out, margin-left 0.3s ease-in-out',
+  };
+  
   return (
     <Box
       sx={{
@@ -154,44 +186,68 @@ const NetworkHeader = () => {
       
       {user && (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Button 
+          {/* Profile */}
+          <Box 
             component={Link} 
             to={`/profile/${user?.id}`}
-            startIcon={<PersonIcon />}
-            color="inherit"
-            size="small"
+            sx={iconButtonStyle}
           >
-            Profile
-          </Button>
+            <PersonIcon />
+            <Typography
+              className="buttonText"
+              sx={buttonTextStyle}
+            >
+              Profile
+            </Typography>
+          </Box>
           
-          <Button 
+          {/* Network */}
+          <Box 
             component={Link} 
             to={networkId ? `/network/${networkId}` : '/dashboard'}
-            startIcon={<BusinessIcon />}
-            color="inherit"
-            size="small"
+            sx={iconButtonStyle}
           >
-            Network
-          </Button>
+            <BusinessIcon />
+            <Typography
+              className="buttonText"
+              sx={buttonTextStyle}
+            >
+              Network
+            </Typography>
+          </Box>
           
-          <Button 
+          {/* Messages */}
+          <Box 
             component={Link} 
             to="/messages"
-            startIcon={<MessageBadge />}
-            color="inherit"
-            size="small"
+            sx={iconButtonStyle}
           >
-            Messages
-          </Button>
+            <MessageBadge />
+            <Typography
+              className="buttonText"
+              sx={buttonTextStyle}
+            >
+              Messages
+            </Typography>
+          </Box>
           
-          <Button 
+          {/* Logout */}
+          <Box 
+            component="div"
             onClick={logout}
-            startIcon={<LogoutIcon />}
-            color="inherit"
-            size="small"
+            sx={{
+              ...iconButtonStyle,
+              cursor: 'pointer',
+            }}
           >
-            Logout
-          </Button>
+            <LogoutIcon />
+            <Typography
+              className="buttonText"
+              sx={buttonTextStyle}
+            >
+              Logout
+            </Typography>
+          </Box>
         </Box>
       )}
     </Box>
