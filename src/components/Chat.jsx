@@ -23,7 +23,7 @@ import SendIcon from '@mui/icons-material/Send';
 import PersonIcon from '@mui/icons-material/Person';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
-import backgroundImage from '../assets/backiee-277128-landscape.jpg';
+import backgroundImage from '../assets/8-bit-artwork-sky-landscape-wallpaper-preview.jpg';
 
 const Chat = ({ networkId }) => {
   const { user } = useAuth();
