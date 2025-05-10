@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/authcontext';
 import { supabase } from '../supabaseclient';
+import LinkPreview from '../components/LinkPreview';
 import {
   Box,
   Paper,
@@ -280,46 +281,25 @@ const renderContent = () => {
             </video>
           </Box>
         );
-      case 'link':
-        return (
-          <Box 
-            sx={{ 
-              p: 2, 
-              display: 'flex', 
-              flexDirection: 'column',
-              justifyContent: 'center',
-              alignItems: 'center',
-              width: '100%',
-              height: '100%',
-              backgroundColor: item.backgroundColor || '#f5f5f5',
-              borderRadius: item.border_radius || 1, // Use border_radius from database
-              pointerEvents: 'none' // Change from conditional to always none
-            }}
-          >
-            <LinkIcon sx={{ fontSize: 32, mb: 1, color: 'primary.main' }} />
-            <Typography 
-              variant="body1" 
-              component="a" 
-              href={item.content} 
-              target="_blank" 
-              rel="noopener noreferrer"
+        case 'link':
+          // Enhanced link rendering using LinkPreview
+          return (
+            <Box 
               sx={{ 
-                textDecoration: 'none',
-                color: 'primary.main',
-                fontWeight: 'medium',
-                textAlign: 'center',
-                wordBreak: 'break-word',
-                pointerEvents: 'auto' // Always allow link clicks
-              }}
-              onClick={(e) => {
-                // Prevent item selection when clicking the link
-                e.stopPropagation();
+                width: '100%', 
+                height: '100%',
+                overflow: 'hidden',
+                borderRadius: item.border_radius || 1,
+                backgroundColor: item.backgroundColor || 'transparent',
               }}
             >
-              {item.title || item.content}
-            </Typography>
-          </Box>
-        );
+              <LinkPreview 
+                url={item.content} 
+                height="100%" 
+                isEditable={isEditable} 
+              />
+            </Box>
+          );
       default:
         return (
           <Box sx={{ p: 2, pointerEvents: 'none' }}>
@@ -785,55 +765,85 @@ const EditItemDialog = ({
             </>
           );
           
-        case 'link':
-          return (
-            <>
-              <Typography variant="subtitle1" gutterBottom>
-                Link Properties
-              </Typography>
-              
-              <TextField
-                label="URL"
-                value={editedContent}
-                onChange={(e) => setEditedContent(e.target.value)}
-                fullWidth
-                margin="normal"
-                variant="outlined"
-                placeholder="https://example.com"
-              />
-              
-              {/* Link Preview */}
-              <Box sx={{ 
-                mt: 3, 
-                p: 2, 
-                border: '1px solid',
-                borderColor: 'divider',
-                borderRadius: `${editedBorder_radius}px`,
-                bgcolor: editedBackgroundColor || '#f5f5f5',
-                opacity: editedOpacity / 100,
-                transform: `rotate(${editedRotation}deg)`,
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                transition: 'all 0.2s ease'
-              }}>
-                <LinkIcon sx={{ fontSize: 32, mb: 1, color: 'primary.main' }} />
-                <Typography 
-                  variant="body1"
-                  component="div" 
-                  sx={{ 
-                    color: 'primary.main',
-                    fontWeight: 'medium',
-                    textAlign: 'center',
-                    wordBreak: 'break-word'
-                  }}
-                >
-                  {editedTitle || editedContent || 'Link preview'}
+          case 'link':
+            return (
+              <>
+                <Typography variant="subtitle1" gutterBottom>
+                  Link Properties
                 </Typography>
-              </Box>
-            </>
-          );
+                
+                <TextField
+                  label="URL"
+                  value={editedContent}
+                  onChange={(e) => setEditedContent(e.target.value)}
+                  fullWidth
+                  margin="normal"
+                  variant="outlined"
+                  placeholder="https://example.com"
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <LinkIcon color="action" />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+                
+                <TextField
+                  label="Custom Title (Optional)"
+                  value={editedTitle}
+                  onChange={(e) => setEditedTitle(e.target.value)}
+                  fullWidth
+                  margin="normal"
+                  variant="outlined"
+                  placeholder="Custom title for this link"
+                  helperText="Leave empty to use the website's title"
+                />
+                
+                {/* OpenGraph Preview */}
+                <Box sx={{ mt: 3, mb: 1 }}>
+                  <Typography variant="subtitle2" gutterBottom>
+                    Preview
+                  </Typography>
+                  
+                  <Box sx={{ 
+                    border: '1px solid',
+                    borderColor: 'divider',
+                    borderRadius: `${editedBorder_radius}px`,
+                    overflow: 'hidden',
+                    bgcolor: editedBackgroundColor || 'transparent',
+                    opacity: editedOpacity / 100,
+                    transform: `rotate(${editedRotation}deg)`,
+                    transition: 'all 0.2s ease'
+                  }}>
+                    {editedContent ? (
+                      <LinkPreview 
+                        url={editedContent} 
+                        onDataLoaded={(data) => {
+                          // Auto-fill title if user hasn't entered one and this is the first load
+                          if (!editedTitle && data?.title && data.title !== editedContent && currentItem.content === editedContent) {
+                            setEditedTitle(data.title);
+                          }
+                        }}
+                      />
+                    ) : (
+                      <Box sx={{ 
+                        p: 3, 
+                        display: 'flex', 
+                        flexDirection: 'column', 
+                        alignItems: 'center',
+                        bgcolor: '#f8f9fa'
+                      }}>
+                        <LinkIcon sx={{ fontSize: 40, color: 'text.disabled', mb: 1 }} />
+                        <Typography variant="body2" color="text.secondary" align="center">
+                          Enter a URL above to see a preview
+                        </Typography>
+                      </Box>
+                    )}
+                  </Box>
+                </Box>
+              </>
+            );
           
         case 'image':
           return (
