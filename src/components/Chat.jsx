@@ -24,6 +24,10 @@ import PersonIcon from '@mui/icons-material/Person';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
 import backgroundImage from '../assets/8-bit-artwork-sky-landscape-wallpaper-preview.jpg';
+import LinkPreview from './LinkPreview'; // Import the LinkPreview component
+
+// URL regex pattern to detect links in messages
+const URL_REGEX = /(https?:\/\/[^\s]+)/g;
 
 const Chat = ({ networkId }) => {
   const { user } = useAuth();
@@ -218,6 +222,72 @@ const Chat = ({ networkId }) => {
     }
   };
 
+  // Helper function to check if a message contains a URL
+  const containsUrl = (content) => {
+    if (!content) return false;
+    
+    // Reset the regex before testing
+    URL_REGEX.lastIndex = 0;
+    
+    const hasMatch = URL_REGEX.test(content);
+    console.log(`Testing URL in: "${content}" - Result: ${hasMatch}`);
+    return hasMatch;
+  };
+  
+  const extractUrl = (content) => {
+    if (!content) return null;
+    
+    // Reset the regex before matching
+    URL_REGEX.lastIndex = 0;
+    
+    const matches = content.match(URL_REGEX);
+    const url = matches ? matches[0] : null;
+    console.log(`Extracted URL from: "${content}" - URL: ${url}`);
+    return url;
+  };
+
+  // Function to render message content (either plain text or link preview)
+  const renderMessageContent = (message) => {
+    if (!message || !message.content) {
+      return null;
+    }
+    
+    // Important: Reset the regex before testing
+    URL_REGEX.lastIndex = 0;
+    
+    // Check if content contains a URL
+    const isUrl = URL_REGEX.test(message.content);
+    console.log(`Message content: "${message.content}" - Contains URL: ${isUrl}`);
+    
+    if (isUrl) {
+      // Reset regex again before extracting
+      URL_REGEX.lastIndex = 0;
+      
+      const url = message.content.match(URL_REGEX)[0];
+      console.log(`Found URL: ${url}`);
+      
+      // Render with link preview
+      return (
+        <>
+          <Typography component="span" variant="body2" sx={{ /*styles*/ }}>
+            {message.content}
+          </Typography>
+          
+          <Box sx={{ my: 1, bgcolor: 'background.paper', borderRadius: 1, overflow: 'hidden' }}>
+            <LinkPreview url={url} compact={false} isEditable={true} />
+          </Box>
+        </>
+      );
+    } else {
+      // Render as plain text
+      return (
+        <Typography component="span" variant="body2" sx={{ /*styles*/ }}>
+          {message.content}
+        </Typography>
+      );
+    }
+  };
+
   // Count unique active users
   const activeUserCount = Object.keys(activeUsers).length;
   
@@ -372,103 +442,98 @@ const Chat = ({ networkId }) => {
             </Typography>
           </Box>
         ) : (
-          messages.map(message => (
-            <ListItem 
-              key={message.id}
-              sx={{
-                opacity: message.pending ? 0.7 : 1,
-                backgroundColor: darkMode
-                  ? (message.user_id === user.id 
-                    ? alpha('#1976d2', 0.6) 
-                    : alpha('#333', 0.5))
-                  : (message.user_id === user.id 
-                    ? alpha('#e3f2fd', 0.9) 
-                    : alpha('#fff', 0.85)),
-                borderRadius: 2,
-                mb: 1.5,
-                backdropFilter: 'blur(8px)',
-                boxShadow: darkMode
-                  ? '0 2px 5px rgba(0,0,0,0.2)'
-                  : '0 2px 5px rgba(0,0,0,0.05)',
-                transform: message.user_id === user.id 
-                  ? 'translateX(5%)' 
-                  : 'translateX(-5%)',
-                maxWidth: '85%',
-                marginLeft: message.user_id === user.id ? 'auto' : 2,
-                marginRight: message.user_id === user.id ? 2 : 'auto',
-                transition: 'all 0.2s ease',
-                border: darkMode 
-                  ? 'none' 
-                  : `1px solid ${message.user_id === user.id ? '#bbdefb' : '#e0e0e0'}`
-              }}
-            >
-              <ListItemAvatar>
-                <Avatar 
-                  src={message.profiles?.profile_picture_url}
-                  alt={message.profiles?.full_name}
-                  sx={{ 
-                    border: darkMode
-                      ? '2px solid white'
-                      : '2px solid #e0e0e0',
-                    boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
-                  }}
-                >
-                  {!message.profiles?.profile_picture_url && message.profiles?.full_name?.[0]}
-                </Avatar>
-              </ListItemAvatar>
-              <ListItemText
-                primary={
-                  <Typography 
-                    variant="subtitle2" 
+          messages.map(message => {
+            const containsLink = containsUrl(message.content);
+            
+            return (
+              <ListItem 
+                key={message.id}
+                sx={{
+                  opacity: message.pending ? 0.7 : 1,
+                  backgroundColor: darkMode
+                    ? (message.user_id === user.id 
+                      ? alpha('#1976d2', 0.6) 
+                      : alpha('#333', 0.5))
+                    : (message.user_id === user.id 
+                      ? alpha('#e3f2fd', 0.9) 
+                      : alpha('#fff', 0.85)),
+                  borderRadius: 2,
+                  mb: 1.5,
+                  backdropFilter: 'blur(8px)',
+                  boxShadow: darkMode
+                    ? '0 2px 5px rgba(0,0,0,0.2)'
+                    : '0 2px 5px rgba(0,0,0,0.05)',
+                  transform: message.user_id === user.id 
+                    ? 'translateX(5%)' 
+                    : 'translateX(-5%)',
+                  maxWidth: containsLink ? '95%' : '85%',
+                  marginLeft: message.user_id === user.id ? 'auto' : 2,
+                  marginRight: message.user_id === user.id ? 2 : 'auto',
+                  transition: 'all 0.2s ease',
+                  border: darkMode 
+                    ? 'none' 
+                    : `1px solid ${message.user_id === user.id ? '#bbdefb' : '#e0e0e0'}`
+                }}
+              >
+                <ListItemAvatar>
+                  <Avatar 
+                    src={message.profiles?.profile_picture_url}
+                    alt={message.profiles?.full_name}
                     sx={{ 
-                      color: darkMode 
-                        ? 'white' 
-                        : (message.user_id === user.id ? '#1565c0' : '#424242'),
-                      fontWeight: 500 
+                      border: darkMode
+                        ? '2px solid white'
+                        : '2px solid #e0e0e0',
+                      boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
                     }}
                   >
-                    {message.profiles?.full_name || 'Anonymous'}
-                    {message.user_id === user.id && ' (You)'}
-                  </Typography>
-                }
-                secondary={
-                  <>
-                    <Typography
-                      component="span"
-                      variant="body2"
+                    {!message.profiles?.profile_picture_url && message.profiles?.full_name?.[0]}
+                  </Avatar>
+                </ListItemAvatar>
+                <ListItemText
+                  primary={
+                    <Typography 
+                      variant="subtitle2" 
                       sx={{ 
-                        display: 'block',
-                        wordBreak: 'break-word', 
-                        whiteSpace: 'pre-wrap',
                         color: darkMode 
-                          ? 'rgba(255, 255, 255, 0.9)'
-                          : 'text.primary',
-                        py: 0.5
+                          ? 'white' 
+                          : (message.user_id === user.id ? '#1565c0' : '#424242'),
+                        fontWeight: 500 
                       }}
                     >
-                      {message.content}
+                      {message.profiles?.full_name || 'Anonymous'}
+                      {message.user_id === user.id && ' (You)'}
                     </Typography>
-                    <Typography
-                      component="span"
-                      variant="caption"
-                      sx={{ 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        gap: 0.5,
-                        color: darkMode 
-                          ? 'rgba(255, 255, 255, 0.7)'
-                          : 'text.secondary',
-                        fontSize: '0.7rem'
-                      }}
-                    >
-                      {new Date(message.created_at).toLocaleDateString()} {new Date(message.created_at).toLocaleTimeString()}
-                      {message.pending && ' (sending...)'}
-                    </Typography>
-                  </>
-                }
-              />
-            </ListItem>
-          ))
+                  }
+                  secondary={
+                    <>
+                      {renderMessageContent(message)}
+                      <Typography
+                        component="span"
+                        variant="caption"
+                        sx={{ 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          gap: 0.5,
+                          color: darkMode 
+                            ? 'rgba(255, 255, 255, 0.7)'
+                            : 'text.secondary',
+                          fontSize: '0.7rem',
+                          mt: 0.5
+                        }}
+                      >
+                        {new Date(message.created_at).toLocaleDateString()} {new Date(message.created_at).toLocaleTimeString()}
+                        {message.pending && ' (sending...)'}
+                      </Typography>
+                    </>
+                  }
+                  sx={{
+                    // Expand width for link previews
+                    width: containsLink ? '100%' : 'auto'
+                  }}
+                />
+              </ListItem>
+            );
+          })
         )}
         <div ref={messageEndRef} />
       </List>
@@ -493,7 +558,7 @@ const Chat = ({ networkId }) => {
         <TextField
           fullWidth
           variant="outlined"
-          placeholder="Type a message..."
+          placeholder="Type a message or paste a link..."
           value={newMessage}
           onChange={(e) => setNewMessage(e.target.value)}
           onKeyPress={(e) => {
