@@ -34,6 +34,7 @@ import { DirectMessagesProvider } from './context/directMessagesContext';
 import PricingPage from './pages/PricingPage';
 import ShimmeringTextPage from './pages/ShimmeringTextPage';
 import PersonalMoodboardsPage from './pages/PersonalMoodboardPage';
+import PasswordUpdatePage from './pages/PasswordUpdatePage';
 
 function App() {
   const { loading, session, user } = useAuth();
@@ -150,6 +151,7 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/password-reset" element={<PasswordResetPage />} />
+          <Route path="/update-password" element={<PasswordUpdatePage />} />
           <Route path="/demo" element={<DemoPage />} />
           <Route path="/pricing" element={<PricingPage />} />
           <Route path="/payment-success" element={<PaymentSuccessPage />} />
