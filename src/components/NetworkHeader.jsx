@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Skeleton, Badge, IconButton, Tooltip } from '@mui/material';
+import { Box, Typography, Skeleton, Badge, IconButton, Tooltip, Switch, alpha, Divider } from '@mui/material';
 import { 
   Logout as LogoutIcon, 
   Person as PersonIcon,
-  DarkMode as DarkModeIcon,
-  LightMode as LightModeIcon
+  WbSunny as SunIcon,
+  NightsStay as MoonIcon
 } from '@mui/icons-material';
 import MailIcon from '@mui/icons-material/Mail';
 import BusinessIcon from '@mui/icons-material/Business'; // Icon for network
@@ -123,7 +123,7 @@ const NetworkHeader = () => {
     textDecoration: 'none',
     transition: 'background-color 0.3s ease-in-out',
     '&:hover': {
-      backgroundColor: 'rgba(0, 0, 0, 0.04)',
+      backgroundColor: darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.04)',
       '& .buttonText': {
         width: '80px',
         opacity: 1,
@@ -149,10 +149,10 @@ const NetworkHeader = () => {
         alignItems: 'center',
         justifyContent: 'space-between',
         padding: 2,
-        backgroundColor: darkMode ? '#1e1e1e' : 'white', // Apply dark/light mode
-        borderBottom: `1px solid ${darkMode ? '#333' : '#eee'}`,
+        backgroundColor: darkMode ? '#1e1e1e' : '#ffffff', // Apply dark/light mode
+        borderBottom: `1px solid ${darkMode ? '#333333' : '#eeeeee'}`,
         boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-        color: darkMode ? 'white' : 'inherit' // Apply dark/light mode to text color
+        color: darkMode ? '#ffffff' : 'inherit' // Apply dark/light mode to text color
       }}
     >
       <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -180,7 +180,7 @@ const NetworkHeader = () => {
             to={networkId ? `/network/${networkId}` : undefined}
             sx={{
               fontWeight: displayedLogoUrl ? 700 : 900,
-              color: darkMode ? 'white' : '#333', // Apply dark/light mode
+              color: darkMode ? '#ffffff' : '#333333', // Apply dark/light mode
               textDecoration: 'none',
               '&:hover': {
                 textDecoration: networkId ? 'underline' : 'none',
@@ -193,36 +193,7 @@ const NetworkHeader = () => {
       </Box>
       
       {user && (
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          {/* Theme Toggle Button */}
-          <Tooltip title={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}>
-            <Box 
-              component="div"
-              onClick={toggleDarkMode}
-              sx={{
-                ...iconButtonStyle,
-                cursor: 'pointer',
-                backgroundColor: darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.04)',
-                '&:hover': {
-                  backgroundColor: darkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.08)',
-                  '& .buttonText': {
-                    width: '80px',
-                    opacity: 1,
-                    marginLeft: '8px',
-                  }
-                }
-              }}
-            >
-              {darkMode ? <LightModeIcon /> : <DarkModeIcon />}
-              <Typography
-                className="buttonText"
-                sx={buttonTextStyle}
-              >
-                {darkMode ? "Light" : "Dark"}
-              </Typography>
-            </Box>
-          </Tooltip>
-          
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
           {/* Profile */}
           <Box 
             component={Link} 
@@ -285,6 +256,63 @@ const NetworkHeader = () => {
               Logout
             </Typography>
           </Box>
+          
+          {/* Small vertical divider */}
+          <Divider orientation="vertical" flexItem sx={{ 
+            mx: 1, 
+            height: '24px', 
+            alignSelf: 'center',
+            borderColor: darkMode ? alpha('#ffffff', 0.2) : alpha('#000000', 0.1)
+          }} />
+          
+          {/* Dark Mode Toggle - Small Sun/Moon Toggle */}
+          <Tooltip title={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                backgroundColor: darkMode ? alpha('#ffffff', 0.05) : alpha('#000000', 0.02),
+                borderRadius: '14px',
+                padding: '3px',
+                border: `1px solid ${darkMode ? alpha('#ffffff', 0.1) : alpha('#000000', 0.08)}`,
+                height: '28px',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease-in-out',
+                '&:hover': {
+                  backgroundColor: darkMode ? alpha('#ffffff', 0.1) : alpha('#000000', 0.05),
+                }
+              }}
+              onClick={toggleDarkMode}
+            >
+              <Box
+                sx={{ 
+                  width: '22px',
+                  position: 'relative',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center'
+                }}
+              >
+                {darkMode ? (
+                  <SunIcon 
+                    fontSize="small" 
+                    sx={{ 
+                      color: '#FFA000',
+                      fontSize: '16px'
+                    }} 
+                  />
+                ) : (
+                  <MoonIcon 
+                    fontSize="small"
+                    sx={{ 
+                      color: '#424242',
+                      fontSize: '16px'
+                    }} 
+                  />
+                )}
+              </Box>
+            </Box>
+          </Tooltip>
         </Box>
       )}
     </Box>
