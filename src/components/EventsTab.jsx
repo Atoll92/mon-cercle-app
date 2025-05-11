@@ -94,10 +94,20 @@ const EventsTab = ({
       
       <Divider sx={{ mb: 3 }} />
 
-      {/* Two-column layout for desktop */}
-      <Grid container spacing={3}>
+      {/* Fixed layout with two equal width columns using a flex container instead of Grid */}
+      <Box sx={{ 
+        display: 'flex', 
+        flexDirection: { xs: 'column', md: 'row' }, 
+        gap: 3,
+        width: '100%'
+      }}>
         {/* Left column: Map and upcoming events */}
-        <Grid item xs={12} md={5} sx={{ display: 'flex', flexDirection: 'column' }}>
+        <Box sx={{ 
+          flex: '1 1 0px', 
+          display: 'flex', 
+          flexDirection: 'column',
+          minWidth: 0 // This ensures the flex item can shrink below its content size
+        }}>
           {/* Events Map */}
           <Paper 
             elevation={0} 
@@ -389,10 +399,13 @@ const EventsTab = ({
               )}
             </Box>
           </Paper>
-        </Grid>
+        </Box>
         
-        {/* Right column: Calendar */}
-        <Grid item xs={12} md={7}>
+        {/* Right column: Calendar - Ensuring equal width with flex */}
+        <Box sx={{ 
+          flex: '1 1 0px',
+          minWidth: 0 // This ensures the flex item can shrink below its content size
+        }}>
           <Paper 
             elevation={0} 
             variant="outlined" 
@@ -460,6 +473,10 @@ const EventsTab = ({
               flex: '1 1 auto', 
               display: 'flex', 
               flexDirection: 'column',
+              width: '100%', // Explicitly set width for the container
+              '& .rbc-calendar': {
+                width: '100%' // Make sure the calendar takes full width
+              },
               '& .rbc-header': {
                 padding: '8px',
                 fontWeight: 'bold',
@@ -557,7 +574,11 @@ const EventsTab = ({
                 onNavigate={setCalendarDate}
                 startAccessor="start"
                 endAccessor="end"
-                style={{ flex: '1 1 auto', minHeight: '500px' }}
+                style={{ 
+                  flex: '1 1 auto', 
+                  minHeight: '500px',
+                  width: '100%' // Explicitly set width for the calendar
+                }}
                 onSelectEvent={handleEventSelect}
                 eventPropGetter={(event) => ({
                   style: {
@@ -643,8 +664,8 @@ const EventsTab = ({
               />
             </Box>
           </Paper>
-        </Grid>
-      </Grid>
+        </Box>
+      </Box>
       
       {/* Mobile card grid - only shows on xs/sm breakpoints */}
       <Box sx={{ mt: 4, display: { md: 'none' } }}>
@@ -879,7 +900,7 @@ const EventsTab = ({
                   }}>
                     <strong>Event Link:</strong>&nbsp;
                     <Link
-                      href={event.event_link}
+                      href={selectedEvent.event_link}
                       target="_blank"
                       rel="noopener noreferrer"
                       sx={{
