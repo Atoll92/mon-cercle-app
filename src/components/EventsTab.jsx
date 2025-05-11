@@ -21,6 +21,8 @@ import {
   Event as EventIcon,
   LocationOn as LocationOnIcon,
   ArrowForward as ArrowForwardIcon,
+  Link as LinkIcon,
+  OpenInNew as OpenInNewIcon
 } from '@mui/icons-material';
 import TimelineIcon from '@mui/icons-material/Timeline';
 import { Calendar, dateFnsLocalizer } from 'react-big-calendar';
@@ -302,8 +304,23 @@ const EventsTab = ({
                               zIndex: 2,
                               position: 'relative'
                             }}>
-                              <Typography variant="subtitle1" sx={{ fontWeight: 'medium', mb: 0.5 }}>
+                              <Typography variant="subtitle1" sx={{ 
+                                fontWeight: 'medium', 
+                                mb: 0.5, 
+                                display: 'flex', 
+                                alignItems: 'center'
+                              }}>
                                 {event.title}
+                                {/* Add link icon if event has a link */}
+                                {event.event_link && (
+                                  <LinkIcon 
+                                    fontSize="small" 
+                                    sx={{ 
+                                      ml: 0.5, 
+                                      color: 'primary.main'
+                                    }}
+                                  />
+                                )}
                               </Typography>
                               
                               <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
@@ -319,7 +336,9 @@ const EventsTab = ({
                                 mt: 'auto', 
                                 pt: 1,
                                 justifyContent: 'space-between', 
-                                alignItems: 'center' 
+                                alignItems: 'center',
+                                flexWrap: 'wrap',
+                                gap: 1
                               }}>
                                 {/* RSVP buttons */}
                                 {user && (
@@ -331,19 +350,35 @@ const EventsTab = ({
                                   />
                                 )}
                                 
-                                <Button 
-                                  size="small" 
-                                  variant="text"
-                                  color="primary"
-                                  endIcon={<ArrowForwardIcon fontSize="small" />}
-                                  onClick={() => {
-                                    setSelectedEvent(event);
-                                    setShowEventDialog(true);
-                                  }}
-                                  sx={{ ml: 'auto' }}
-                                >
-                                  Details
-                                </Button>
+                                <Box sx={{ display: 'flex', gap: 1, ml: 'auto' }}>
+                                  {/* Event link button if available */}
+                                  {event.event_link && (
+                                    <Button
+                                      size="small"
+                                      variant="outlined"
+                                      color="primary"
+                                      startIcon={<LinkIcon fontSize="small" />}
+                                      href={event.event_link}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                    >
+                                      Join
+                                    </Button>
+                                  )}
+                                  
+                                  <Button 
+                                    size="small" 
+                                    variant={event.event_link ? "text" : "outlined"}
+                                    color="primary"
+                                    endIcon={<ArrowForwardIcon fontSize="small" />}
+                                    onClick={() => {
+                                      setSelectedEvent(event);
+                                      setShowEventDialog(true);
+                                    }}
+                                  >
+                                    Details
+                                  </Button>
+                                </Box>
                               </Box>
                             </Box>
                           </Box>
@@ -512,7 +547,8 @@ const EventsTab = ({
                     allDay: true,
                     resource: event,
                     color: eventColor,
-                    coverImage: event.cover_image_url
+                    coverImage: event.cover_image_url,
+                    hasLink: !!event.event_link
                   };
                 })}
                 date={calendarDate}
@@ -588,10 +624,15 @@ const EventsTab = ({
                           textOverflow: 'ellipsis',
                           whiteSpace: 'nowrap',
                           fontWeight: 'medium',
-                          textShadow: '0 1px 2px rgba(0,0,0,0.3)'
+                          textShadow: '0 1px 2px rgba(0,0,0,0.3)',
+                          display: 'flex',
+                          alignItems: 'center'
                         }}
                       >
                         {event.title}
+                        {event.hasLink && (
+                          <LinkIcon fontSize="inherit" sx={{ ml: 0.5 }} />
+                        )}
                       </Typography>
                     </Box>
                   ),
@@ -672,8 +713,17 @@ const EventsTab = ({
                       </Box>
                     )}
                     <CardContent sx={{ flexGrow: 1, pb: 0 }}>
-                      <Typography variant="subtitle1" sx={{ fontWeight: 'medium', mb: 1 }}>
+                      <Typography variant="subtitle1" sx={{ 
+                        fontWeight: 'medium', 
+                        mb: 1, 
+                        display: 'flex', 
+                        alignItems: 'center',
+                        gap: 0.5
+                      }}>
                         {event.title}
+                        {event.event_link && (
+                          <LinkIcon fontSize="small" color="primary" />
+                        )}
                       </Typography>
                       <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5 }}>
                         <LocationOnIcon fontSize="small" color="action" sx={{ mr: 0.5 }} />
@@ -689,17 +739,27 @@ const EventsTab = ({
                         </Typography>
                       )}
                       
-                      {/* Location coordinates indicator */}
-                      {event.coordinates && event.coordinates.latitude && (
-                        <Chip 
-                          icon={<LocationOnIcon fontSize="small" />}
-                          label="Has location"
-                          size="small"
-                          color="primary"
-                          variant="outlined"
-                          sx={{ mb: 2 }}
-                        />
-                      )}
+                      {/* Feature indicators */}
+                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 2 }}>
+                        {event.coordinates && event.coordinates.latitude && (
+                          <Chip 
+                            icon={<LocationOnIcon fontSize="small" />}
+                            label="Has location"
+                            size="small"
+                            color="primary"
+                            variant="outlined"
+                          />
+                        )}
+                        {event.event_link && (
+                          <Chip 
+                            icon={<LinkIcon fontSize="small" />}
+                            label="Event Link"
+                            size="small"
+                            color="primary"
+                            variant="outlined"
+                          />
+                        )}
+                      </Box>
                     </CardContent>
                     <Box sx={{ px: 2, pb: 2 }}>
                       {/* RSVP Component */}
@@ -712,19 +772,42 @@ const EventsTab = ({
                           />
                         </Box>
                       )}
-                      <Button 
-                        fullWidth
-                        variant="outlined"
-                        color="primary"
-                        size="small"
-                        endIcon={<ArrowForwardIcon />}
-                        onClick={() => {
-                          setSelectedEvent(event);
-                          setShowEventDialog(true);
-                        }}
-                      >
-                        View Details
-                      </Button>
+                      
+                      {/* Action buttons */}
+                      <Grid container spacing={1}>
+                        <Grid item xs={event.event_link ? 6 : 12}>
+                          <Button 
+                            fullWidth
+                            variant="outlined"
+                            color="primary"
+                            size="small"
+                            endIcon={<ArrowForwardIcon />}
+                            onClick={() => {
+                              setSelectedEvent(event);
+                              setShowEventDialog(true);
+                            }}
+                          >
+                            Details
+                          </Button>
+                        </Grid>
+                        
+                        {event.event_link && (
+                          <Grid item xs={6}>
+                            <Button 
+                              fullWidth
+                              variant="contained"
+                              color="primary"
+                              size="small"
+                              startIcon={<LinkIcon />}
+                              href={event.event_link}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              Join
+                            </Button>
+                          </Grid>
+                        )}
+                      </Grid>
                     </Box>
                   </Card>
                 </Grid>
@@ -744,6 +827,9 @@ const EventsTab = ({
           <>
             <DialogTitle>
               {selectedEvent.title}
+              {selectedEvent.event_link && (
+                <LinkIcon color="primary" fontSize="small" sx={{ ml: 1, verticalAlign: 'middle' }} />
+              )}
             </DialogTitle>
             <DialogContent dividers>
               {selectedEvent.cover_image_url && (
@@ -782,6 +868,35 @@ const EventsTab = ({
                     <strong>Capacity:</strong> {selectedEvent.capacity}
                   </Typography>
                 )}
+                
+                {/* Add Event Link */}
+                {selectedEvent.event_link && (
+                  <Typography variant="subtitle1" gutterBottom sx={{ 
+                    display: 'flex', 
+                    alignItems: 'center',
+                    flexWrap: 'wrap',
+                    wordBreak: 'break-word'
+                  }}>
+                    <strong>Event Link:</strong>&nbsp;
+                    <Link
+                      href={event.event_link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      sx={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        color: 'primary.main',
+                        textDecoration: 'none',
+                        '&:hover': {
+                          textDecoration: 'underline'
+                        }
+                      }}
+                    >
+                      {selectedEvent.event_link}
+                      <OpenInNewIcon fontSize="small" sx={{ ml: 0.5 }} />
+                    </Link>
+                  </Typography>
+                )}
               </Box>
               
               {selectedEvent.description && (
@@ -808,7 +923,21 @@ const EventsTab = ({
                 </Box>
               )}
             </DialogContent>
+            
             <DialogActions>
+              {selectedEvent.event_link && (
+                <Button
+                  variant="contained"
+                  color="primary"
+                  startIcon={<LinkIcon />}
+                  href={selectedEvent.event_link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  sx={{ mr: 'auto' }}
+                >
+                  Visit Event Link
+                </Button>
+              )}
               <Button onClick={closeEventDialog}>
                 Close
               </Button>

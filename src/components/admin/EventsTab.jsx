@@ -14,7 +14,9 @@ import {
   IconButton,
   CircularProgress,
   Chip,
-  Alert
+  Alert,
+  InputAdornment,
+  Link
 } from '@mui/material';
 import {
   Edit as EditIcon,
@@ -22,7 +24,9 @@ import {
   Add as AddIcon,
   LocationOn as LocationOnIcon,
   People as PeopleIcon,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Link as LinkIcon,
+  OpenInNew as OpenInNewIcon
 } from '@mui/icons-material';
 import AddressSuggestions from '../AddressSuggestions';
 import EventParticipationStats from '../EventParticipationStats';
@@ -38,7 +42,8 @@ const EventsTab = ({ events, setEvents, user, networkId }) => {
     location: '',
     description: '',
     capacity: '',
-    coordinates: null
+    coordinates: null,
+    event_link: '' // Add the event_link field
   });
   const [locationSuggestion, setLocationSuggestion] = useState(null);
   const [eventImageFile, setEventImageFile] = useState(null);
@@ -64,7 +69,8 @@ const EventsTab = ({ events, setEvents, user, networkId }) => {
         location: event.location,
         description: event.description || '',
         capacity: event.capacity || '',
-        coordinates: event.coordinates
+        coordinates: event.coordinates,
+        event_link: event.event_link || '' // Set the event_link value
       });
       
       if (event.location) {
@@ -85,7 +91,8 @@ const EventsTab = ({ events, setEvents, user, networkId }) => {
         location: '',
         description: '',
         capacity: '',
-        coordinates: null
+        coordinates: null,
+        event_link: '' // Reset the event_link field
       });
       setLocationSuggestion(null);
       setEventImagePreview(null);
@@ -313,15 +320,54 @@ const EventsTab = ({ events, setEvents, user, networkId }) => {
                   </Typography>
                 </Box>
                 
-                {event.coordinates && (
-                  <Chip 
-                    size="small" 
-                    variant="outlined"
-                    icon={<LocationOnIcon fontSize="small" />}
-                    label="Has coordinates" 
-                    sx={{ mt: 1, fontSize: '0.7rem' }}
-                  />
+                {/* Display event link if it exists */}
+                {event.event_link && (
+                  <Box sx={{ display: 'flex', alignItems: 'center', mt: 0.5 }}>
+                    <LinkIcon fontSize="small" sx={{ mr: 0.5, color: 'primary.main' }} />
+                    <Link
+                      href={event.event_link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      variant="body2"
+                      sx={{ 
+                        textDecoration: 'none',
+                        '&:hover': { textDecoration: 'underline' },
+                        maxWidth: '100%',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        display: 'block'
+                      }}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {event.event_link}
+                    </Link>
+                  </Box>
                 )}
+                
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
+                  {event.coordinates && (
+                    <Chip 
+                      size="small" 
+                      variant="outlined"
+                      icon={<LocationOnIcon fontSize="small" />}
+                      label="Has coordinates" 
+                      sx={{ fontSize: '0.7rem' }}
+                    />
+                  )}
+                  
+                  {/* Display event link indicator if it exists */}
+                  {event.event_link && (
+                    <Chip
+                      size="small"
+                      variant="outlined"
+                      icon={<LinkIcon fontSize="small" />}
+                      label="Has event link"
+                      color="primary"
+                      sx={{ fontSize: '0.7rem' }}
+                    />
+                  )}
+                </Box>
                 
                 {event.description && (
                   <Typography variant="body2" sx={{ mt: 2 }}>
@@ -397,6 +443,25 @@ const EventsTab = ({ events, setEvents, user, networkId }) => {
                   </Typography>
                 </Box>
               )}
+              
+              {/* Add Event Link field */}
+              <TextField
+                margin="dense"
+                label="Event Link (optional)"
+                fullWidth
+                placeholder="https://example.com/your-event"
+                value={eventForm.event_link}
+                onChange={(e) => setEventForm({ ...eventForm, event_link: e.target.value })}
+                sx={{ mb: 2 }}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <LinkIcon />
+                    </InputAdornment>
+                  ),
+                }}
+                helperText="Add a link to the event registration page, Zoom meeting, or any external event resource."
+              />
               
               <TextField
                 margin="dense"

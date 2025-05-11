@@ -15,7 +15,8 @@ import {
   BrokenImage as BrokenImageIcon,
   OpenInNew as OpenInNewIcon,
   MusicNote as MusicNoteIcon,
-  PlayCircleOutline as PlayCircleOutlineIcon
+  PlayCircleOutline as PlayCircleOutlineIcon,
+  Event as EventIcon
 } from '@mui/icons-material';
 import { getOpenGraphData } from '../services/opengraphService';
 
@@ -81,6 +82,21 @@ const detectMediaService = (url) => {
   return null;
 };
 
+// Check if URL is from Facebook
+const isFacebookUrl = (url) => {
+  if (!url) return false;
+  return url.includes('facebook.com') || 
+         url.includes('fb.com') || 
+         url.includes('fb.me');
+};
+
+// Check if URL is a Facebook event
+const isFacebookEventUrl = (url) => {
+  if (!url) return false;
+  return (url.includes('facebook.com/events/') || 
+         url.includes('fb.me/e/'));
+};
+
 // Special case for YouTube video metadata from ogData
 const hasYouTubeData = (ogData) => {
   return ogData && ogData.videoId && ogData.siteName === 'YouTube';
@@ -126,13 +142,22 @@ const LinkPreview = ({ url, compact = false, onDataLoaded = null, height = 'auto
         console.log('LinkPreview: Received data:', data);
         setOgData(data);
         
-        // Handle special case for YouTube videos - try to create media info from ogData if not already set
+        // Handle special case for YouTube videos
         if (hasYouTubeData(data) && !mediaInfo) {
           setMediaInfo({
             service: 'youtube',
             embedUrl: `https://www.youtube.com/embed/${data.videoId}`,
             height: 315
           });
+        }
+        
+        // For Facebook data with embedded SVG images, mark them as already loaded
+        if (data.image && data.image.startsWith('data:image/svg+xml;base64')) {
+          setImageLoaded(true);
+        }
+        
+        if (data.favicon && data.favicon.startsWith('data:image/svg+xml;base64')) {
+          setFaviconLoaded(true);
         }
         
         // Notify parent component if data was loaded
@@ -191,6 +216,12 @@ const LinkPreview = ({ url, compact = false, onDataLoaded = null, height = 'auto
 
   // Determine if we should auto-embed media (Spotify is auto-embedded, YouTube requires a click)
   const shouldAutoEmbed = mediaInfo && (mediaInfo.service === 'spotify' || isPlaying);
+
+  // Check if this is a Facebook event
+  const isFacebookEvent = ogData?.isFacebookEvent || (isFacebookEventUrl(formattedUrl));
+  
+  // Check if this is a Facebook link
+  const isFacebook = ogData?.isFacebook || (isFacebookUrl(formattedUrl));
 
   // Loading state
   if (loading) {
@@ -258,6 +289,60 @@ const LinkPreview = ({ url, compact = false, onDataLoaded = null, height = 'auto
         >
           {formattedUrl}
         </MuiLink>
+      </Paper>
+    );
+  }
+
+  // Compact preview for Facebook events with special styling
+  if (compact && isFacebookEvent) {
+    return (
+      <Paper
+        elevation={0}
+        sx={{
+          height: height,
+          width: '100%',
+          display: 'flex',
+          flexDirection: 'row',
+          alignItems: 'center',
+          bgcolor: 'background.paper',
+          borderRadius: 1,
+          p: 1
+        }}
+      >
+        <EventIcon color="primary" sx={{ fontSize: 20, mr: 1, flexShrink: 0 }} />
+        <Box sx={{ minWidth: 0, flexGrow: 1 }}>
+          <Typography
+            variant="subtitle2"
+            noWrap
+            sx={{
+              fontWeight: 'medium',
+              color: 'text.primary'
+            }}
+          >
+            {ogData.title || "Facebook Event"}
+          </Typography>
+          <Typography
+            variant="caption"
+            noWrap
+            sx={{
+              color: 'text.secondary',
+              display: 'block'
+            }}
+          >
+            {getHostname(formattedUrl)}
+          </Typography>
+        </Box>
+        <IconButton 
+          size="small" 
+          color="primary" 
+          component="a"
+          href={formattedUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          sx={{ ml: 1 }}
+        >
+          <OpenInNewIcon />
+        </IconButton>
       </Paper>
     );
   }
@@ -333,7 +418,16 @@ const LinkPreview = ({ url, compact = false, onDataLoaded = null, height = 'auto
           p: 1
         }}
       >
-        {ogData.favicon && !faviconError ? (
+        {isFacebookEvent ? (
+          <EventIcon color="primary" sx={{ fontSize: 20, mr: 1, flexShrink: 0 }} />
+        ) : isFacebook ? (
+          <Box
+            component="img"
+            src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cGF0aCBmaWxsPSIjMTg3N0YyIiBkPSJNNTA0IDI1NkM1MDQgMTE5IDM5MyA4IDI1NiA4UzggMTE5IDggMjU2YzAgMTIzLjc4IDkwLjY5IDIyNi4zOCAyMDkuMjUgMjQ1VjMyNy42OWgtNjMuVjI1Nmg2My4wOVYyMDhjMC02Mi4xNSAzNy05Ni40OCA5My42Ny05Ni40OCAyNy4xNCAwIDU1LjUyIDQuODQgNTUuNTIgNC44NHY2MS4wNWgtMzEuMjhjLTMwLjggMC00MC40MSAxOS4xMi00MC40MSAzOC43M1YyNTZoNjguNzhsLTExIDcxLjY5aC01Ny43OFY1MDFDNDEzLjMxIDQ4Mi4zOCA1MDQgMzc5Ljc4IDUwNCAyNTZ6Ii8+PC9zdmc+"
+            alt="Facebook"
+            sx={{ width: 20, height: 20, mr: 1, flexShrink: 0 }}
+          />
+        ) : ogData.favicon && !faviconError ? (
           <Box
             component="img"
             src={ogData.favicon}
@@ -486,6 +580,46 @@ const LinkPreview = ({ url, compact = false, onDataLoaded = null, height = 'auto
     );
   }
 
+  // Full preview for Facebook event
+  if (isFacebookEvent) {
+    return (
+      <Paper
+        elevation={1}
+        sx={{
+          height: height,
+          width: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+          bgcolor: 'background.paper',
+          borderRadius: 1,
+          transition: 'box-shadow 0.2s',
+          '&:hover': {
+            boxShadow: isEditable ? 3 : 0
+          },
+          cursor: isEditable ? 'pointer' : 'default'
+        }}
+      >
+        {isEditable ? (
+          <MuiLink
+            href={formattedUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            underline="none"
+            sx={{ display: 'contents' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {renderFacebookEventContent()}
+          </MuiLink>
+        ) : (
+          <Box sx={{ display: 'contents' }}>
+            {renderFacebookEventContent()}
+          </Box>
+        )}
+      </Paper>
+    );
+  }
+
   // Full preview for normal links or media links that aren't playing
   return (
     <Paper
@@ -502,7 +636,6 @@ const LinkPreview = ({ url, compact = false, onDataLoaded = null, height = 'auto
         '&:hover': {
           boxShadow: isEditable ? 3 : 0
         },
-        // This helps with showing it's not interactive in edit mode
         cursor: isEditable ? 'pointer' : 'default'
       }}
     >
@@ -526,12 +659,153 @@ const LinkPreview = ({ url, compact = false, onDataLoaded = null, height = 'auto
     </Paper>
   );
 
-  // Helper function to render the content
+  // Helper function to render Facebook event content
+  function renderFacebookEventContent() {
+    return (
+      <>
+        {/* Facebook event image */}
+        <Box
+          sx={{
+            position: 'relative',
+            width: '100%',
+            height: 160,
+            bgcolor: '#1877F2', // Facebook blue
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}
+        >
+          {ogData.image ? (
+            <Box
+              component="img"
+              src={ogData.image}
+              alt={ogData.title || "Facebook Event"}
+              sx={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover'
+              }}
+            />
+          ) : (
+            <EventIcon sx={{ fontSize: 80, color: 'white' }} />
+          )}
+          
+          {/* Facebook event indicator */}
+          <Box
+            sx={{
+              position: 'absolute',
+              top: 10,
+              left: 10,
+              bgcolor: 'rgba(255,255,255,0.9)',
+              color: '#1877F2', // Facebook blue
+              borderRadius: '4px',
+              px: 1,
+              py: 0.5,
+              display: 'flex',
+              alignItems: 'center',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.12)'
+            }}
+          >
+            <EventIcon fontSize="small" sx={{ mr: 0.5 }} />
+            <Typography variant="caption" sx={{ fontWeight: 'medium' }}>
+              Facebook Event
+            </Typography>
+          </Box>
+        </Box>
+
+        {/* Content section */}
+        <Box sx={{ p: 2, flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+          <Typography
+            variant="subtitle1"
+            component="h3"
+            gutterBottom
+            sx={{
+              fontWeight: 'medium',
+              lineHeight: 1.2,
+              mb: 0.5,
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical'
+            }}
+          >
+            {ogData.title || "Facebook Event"}
+          </Typography>
+
+          {ogData.description && (
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{
+                mb: 1,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                display: '-webkit-box',
+                WebkitLineClamp: 3,
+                WebkitBoxOrient: 'vertical'
+              }}
+            >
+              {ogData.description}
+            </Typography>
+          )}
+
+          <Box
+            sx={{
+              mt: 'auto',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between'
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1 }}>
+              <Box
+                component="img" 
+                src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cGF0aCBmaWxsPSIjMTg3N0YyIiBkPSJNNTA0IDI1NkM1MDQgMTE5IDM5MyA4IDI1NiA4UzggMTE5IDggMjU2YzAgMTIzLjc4IDkwLjY5IDIyNi4zOCAyMDkuMjUgMjQ1VjMyNy42OWgtNjMuVjI1Nmg2My4wOVYyMDhjMC02Mi4xNSAzNy05Ni40OCA5My42Ny05Ni40OCAyNy4xNCAwIDU1LjUyIDQuODQgNTUuNTIgNC44NHY2MS4wNWgtMzEuMjhjLTMwLjggMC00MC40MSAxOS4xMi00MC40MSAzOC43M1YyNTZoNjguNzhsLTExIDcxLjY5aC01Ny43OFY1MDFDNDEzLjMxIDQ4Mi4zOCA1MDQgMzc5Ljc4IDUwNCAyNTZ6Ii8+PC9zdmc+"
+                alt="Facebook"
+                sx={{ width: 16, height: 16, mr: 0.5 }}
+              />
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap'
+                }}
+              >
+                Facebook Event
+              </Typography>
+            </Box>
+            
+            {isEditable && (
+              <IconButton 
+                size="small" 
+                color="primary" 
+                component="a"
+                href={formattedUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <OpenInNewIcon />
+              </IconButton>
+            )}
+          </Box>
+        </Box>
+      </>
+    );
+  }
+
+  // Helper function to render normal content
   function renderContent() {
+    // Handle image URL - use appropriate fallbacks for different types of links
+    let imageUrl = ogData.image;
+    
     return (
       <>
         {/* Image section or Media Preview Thumbnail */}
-        {ogData.image && !imageError ? (
+        {imageUrl ? (
           <Box
             sx={{
               position: 'relative',
@@ -540,7 +814,7 @@ const LinkPreview = ({ url, compact = false, onDataLoaded = null, height = 'auto
               bgcolor: 'action.hover'
             }}
           >
-            {!imageLoaded && (
+            {!imageLoaded && !imageError && !(imageUrl.startsWith('data:')) && (
               <Box
                 sx={{
                   position: 'absolute',
@@ -558,7 +832,7 @@ const LinkPreview = ({ url, compact = false, onDataLoaded = null, height = 'auto
             )}
             <Box
               component="img"
-              src={ogData.image}
+              src={imageUrl}
               alt={ogData.title || "Link preview"}
               onLoad={handleImageLoad}
               onError={handleImageError}
@@ -566,12 +840,12 @@ const LinkPreview = ({ url, compact = false, onDataLoaded = null, height = 'auto
                 width: '100%',
                 height: '100%',
                 objectFit: 'cover',
-                display: imageLoaded ? 'block' : 'none'
+                display: imageLoaded || imageUrl.startsWith('data:') ? 'block' : 'none'
               }}
             />
             
             {/* Play button overlay for media links */}
-            {mediaInfo && imageLoaded && (
+            {mediaInfo && (imageLoaded || imageUrl.startsWith('data:')) && (
               <Box
                 onClick={toggleMediaPlayer}
                 sx={{
@@ -698,7 +972,14 @@ const LinkPreview = ({ url, compact = false, onDataLoaded = null, height = 'auto
             }}
           >
             <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1 }}>
-              {ogData.favicon && !faviconError ? (
+              {isFacebook ? (
+                <Box
+                  component="img" 
+                  src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cGF0aCBmaWxsPSIjMTg3N0YyIiBkPSJNNTA0IDI1NkM1MDQgMTE5IDM5MyA4IDI1NiA4UzggMTE5IDggMjU2YzAgMTIzLjc4IDkwLjY5IDIyNi4zOCAyMDkuMjUgMjQ1VjMyNy42OWgtNjMuVjI1Nmg2My4wOVYyMDhjMC02Mi4xNSAzNy05Ni40OCA5My42Ny05Ni40OCAyNy4xNCAwIDU1LjUyIDQuODQgNTUuNTIgNC44NHY2MS4wNWgtMzEuMjhjLTMwLjggMC00MC40MSAxOS4xMi00MC40MSAzOC43M1YyNTZoNjguNzhsLTExIDcxLjY5aC01Ny43OFY1MDFDNDEzLjMxIDQ4Mi4zOCA1MDQgMzc5Ljc4IDUwNCAyNTZ6Ii8+PC9zdmc+"
+                  alt="Facebook"
+                  sx={{ width: 16, height: 16, mr: 0.5 }}
+                />
+              ) : ogData.favicon && !faviconError ? (
                 <Box
                   component="img"
                   src={ogData.favicon}
@@ -709,7 +990,7 @@ const LinkPreview = ({ url, compact = false, onDataLoaded = null, height = 'auto
                     width: 16,
                     height: 16,
                     mr: 0.5,
-                    display: faviconLoaded ? 'block' : 'none'
+                    display: faviconLoaded || ogData.favicon.startsWith('data:') ? 'block' : 'none'
                   }}
                 />
               ) : (
