@@ -189,7 +189,7 @@ const NetworkHeader = () => {
           {/* Profile */}
           <Box 
             component={Link} 
-            to={`/profile/${user?.id}`}
+            to={`/dashboard`}
             sx={iconButtonStyle}
           >
             <PersonIcon />
@@ -197,7 +197,7 @@ const NetworkHeader = () => {
               className="buttonText"
               sx={buttonTextStyle}
             >
-              Profile
+              Dashboard
             </Typography>
           </Box>
           

@@ -1,4 +1,6 @@
 // src/components/LinkPreview.jsx
+// Revert to the original version but keep the URL prefix handling
+
 import React, { useState, useEffect } from 'react';
 import {
   Box,
@@ -22,24 +24,29 @@ const LinkPreview = ({ url, compact = false, onDataLoaded = null, height = 'auto
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
 
+  // Ensure URL has http/https prefix
+  const formattedUrl = url && !url.startsWith('http') ? `https://${url}` : url;
+
   // Fetch OpenGraph data when URL changes
   useEffect(() => {
     const fetchData = async () => {
-      if (!url) return;
+      if (!formattedUrl) return;
       
       try {
+        console.log('LinkPreview: Fetching data for URL:', formattedUrl);
         setLoading(true);
         setError(null);
         setImageLoaded(false);
         setImageError(false);
         
-        const data = await getOpenGraphData(url);
+        const data = await getOpenGraphData(formattedUrl);
+        console.log('LinkPreview: Received data:', data);
         setOgData(data);
         
         // Notify parent component if data was loaded
         if (onDataLoaded) onDataLoaded(data);
       } catch (err) {
-        console.error('Error loading link preview:', err);
+        console.error('LinkPreview: Error loading link preview:', err);
         setError('Failed to load preview');
       } finally {
         setLoading(false);
@@ -47,7 +54,7 @@ const LinkPreview = ({ url, compact = false, onDataLoaded = null, height = 'auto
     };
     
     fetchData();
-  }, [url, onDataLoaded]);
+  }, [formattedUrl, onDataLoaded]);
 
   const handleImageLoad = () => {
     setImageLoaded(true);
@@ -117,7 +124,7 @@ const LinkPreview = ({ url, compact = false, onDataLoaded = null, height = 'auto
       >
         <LinkIcon color="primary" sx={{ fontSize: 32, mb: 1 }} />
         <MuiLink
-          href={url}
+          href={formattedUrl}
           target="_blank"
           rel="noopener noreferrer"
           onClick={(e) => isEditable && e.stopPropagation()}
@@ -129,7 +136,7 @@ const LinkPreview = ({ url, compact = false, onDataLoaded = null, height = 'auto
             pointerEvents: isEditable ? 'auto' : 'none'
           }}
         >
-          {url}
+          {formattedUrl}
         </MuiLink>
       </Paper>
     );
@@ -161,7 +168,7 @@ const LinkPreview = ({ url, compact = false, onDataLoaded = null, height = 'auto
               color: 'text.primary'
             }}
           >
-            {ogData.title || url}
+            {ogData.title || formattedUrl}
           </Typography>
           <Typography
             variant="caption"
@@ -171,7 +178,7 @@ const LinkPreview = ({ url, compact = false, onDataLoaded = null, height = 'auto
               display: 'block'
             }}
           >
-            {getHostname(url)}
+            {getHostname(formattedUrl)}
           </Typography>
         </Box>
       </Paper>
@@ -197,7 +204,7 @@ const LinkPreview = ({ url, compact = false, onDataLoaded = null, height = 'auto
       }}
     >
       <MuiLink
-        href={url}
+        href={formattedUrl}
         target="_blank"
         rel="noopener noreferrer"
         underline="none"
@@ -207,8 +214,8 @@ const LinkPreview = ({ url, compact = false, onDataLoaded = null, height = 'auto
         }}
         onClick={(e) => isEditable && e.stopPropagation()}
       >
-        {/* Image section */}
-        {ogData.image && !imageError ? (
+       {/* Image section */}
+       {ogData.image && !imageError ? (
           <Box
             sx={{
               position: 'relative',
@@ -266,6 +273,7 @@ const LinkPreview = ({ url, compact = false, onDataLoaded = null, height = 'auto
           </Box>
         )}
 
+
         {/* Content section */}
         <Box sx={{ p: 2, flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
           <Typography
@@ -283,7 +291,7 @@ const LinkPreview = ({ url, compact = false, onDataLoaded = null, height = 'auto
               WebkitBoxOrient: 'vertical'
             }}
           >
-            {ogData.title || url}
+            {ogData.title || formattedUrl}
           </Typography>
 
           {ogData.description && (
@@ -320,7 +328,7 @@ const LinkPreview = ({ url, compact = false, onDataLoaded = null, height = 'auto
                 whiteSpace: 'nowrap'
               }}
             >
-              {getHostname(url)}
+              {getHostname(formattedUrl)}
             </Typography>
           </Box>
         </Box>

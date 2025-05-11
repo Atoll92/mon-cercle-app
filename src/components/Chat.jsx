@@ -27,7 +27,7 @@ import backgroundImage from '../assets/8-bit-artwork-sky-landscape-wallpaper-pre
 import LinkPreview from './LinkPreview'; // Import the LinkPreview component
 
 // URL regex pattern to detect links in messages
-const URL_REGEX = /(https?:\/\/[^\s]+)/g;
+// const URL_REGEX = /(https?:\/\/[^\s]+)/g;
 
 const Chat = ({ networkId }) => {
   const { user } = useAuth();
@@ -222,29 +222,39 @@ const Chat = ({ networkId }) => {
     }
   };
 
-  // Helper function to check if a message contains a URL
-  const containsUrl = (content) => {
-    if (!content) return false;
-    
-    // Reset the regex before testing
-    URL_REGEX.lastIndex = 0;
-    
-    const hasMatch = URL_REGEX.test(content);
-    console.log(`Testing URL in: "${content}" - Result: ${hasMatch}`);
-    return hasMatch;
-  };
+ // Better URL regex pattern that can match URLs with or without the http/https prefix
+const URL_REGEX = /(https?:\/\/)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/gi;
+
+// Fixed containsUrl function that resets the regex state
+const containsUrl = (content) => {
+  if (!content) return false;
   
-  const extractUrl = (content) => {
-    if (!content) return null;
-    
-    // Reset the regex before matching
-    URL_REGEX.lastIndex = 0;
-    
-    const matches = content.match(URL_REGEX);
-    const url = matches ? matches[0] : null;
-    console.log(`Extracted URL from: "${content}" - URL: ${url}`);
-    return url;
-  };
+  // Reset the regex before testing
+  URL_REGEX.lastIndex = 0;
+  
+  const hasMatch = URL_REGEX.test(content);
+  console.log(`Testing URL in: "${content}" - Result: ${hasMatch}`);
+  return hasMatch;
+};
+
+// Fixed extractUrl function that resets the regex state
+const extractUrl = (content) => {
+  if (!content) return null;
+  
+  // Reset the regex before matching
+  URL_REGEX.lastIndex = 0;
+  
+  const matches = content.match(URL_REGEX);
+  const url = matches ? matches[0] : null;
+  
+  // If we found a URL without http/https, add it
+  if (url && !url.startsWith('http')) {
+    return 'https://' + url;
+  }
+  
+  console.log(`Extracted URL from: "${content}" - URL: ${url}`);
+  return url;
+};
 
   // Function to render message content (either plain text or link preview)
   const renderMessageContent = (message) => {
