@@ -1,6 +1,4 @@
 // src/components/LinkPreview.jsx
-// Revert to the original version but keep the URL prefix handling
-
 import React, { useState, useEffect } from 'react';
 import {
   Box,
@@ -73,6 +71,15 @@ const LinkPreview = ({ url, compact = false, onDataLoaded = null, height = 'auto
     }
   };
 
+  // Function to handle link clicks
+  const handleLinkClick = (e) => {
+    // If in edit mode, prevent the default action and stop propagation
+    if (!isEditable) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  };
+
   // Loading state
   if (loading) {
     return (
@@ -124,16 +131,17 @@ const LinkPreview = ({ url, compact = false, onDataLoaded = null, height = 'auto
       >
         <LinkIcon color="primary" sx={{ fontSize: 32, mb: 1 }} />
         <MuiLink
-          href={formattedUrl}
+          href={isEditable ? formattedUrl : "#"}
           target="_blank"
           rel="noopener noreferrer"
-          onClick={(e) => isEditable && e.stopPropagation()}
+          onClick={handleLinkClick}
           sx={{
             textDecoration: 'none',
             color: 'primary.main',
             textAlign: 'center',
             fontWeight: 'medium',
-            pointerEvents: isEditable ? 'auto' : 'none'
+            pointerEvents: isEditable ? 'auto' : 'none',
+            cursor: isEditable ? 'pointer' : 'default'
           }}
         >
           {formattedUrl}
@@ -199,23 +207,38 @@ const LinkPreview = ({ url, compact = false, onDataLoaded = null, height = 'auto
         borderRadius: 1,
         transition: 'box-shadow 0.2s',
         '&:hover': {
-          boxShadow: 3
-        }
+          boxShadow: isEditable ? 3 : 0
+        },
+        // This helps with showing it's not interactive in edit mode
+        cursor: isEditable ? 'pointer' : 'default'
       }}
     >
-      <MuiLink
-        href={formattedUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        underline="none"
-        sx={{
-          display: 'contents',
-          pointerEvents: isEditable ? 'auto' : 'none'
-        }}
-        onClick={(e) => isEditable && e.stopPropagation()}
-      >
-       {/* Image section */}
-       {ogData.image && !imageError ? (
+      {/* Wrap content in either a link or a div depending on editability */}
+      {isEditable ? (
+        <MuiLink
+          href={formattedUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          underline="none"
+          sx={{ display: 'contents' }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          {renderContent()}
+        </MuiLink>
+      ) : (
+        <Box sx={{ display: 'contents' }}>
+          {renderContent()}
+        </Box>
+      )}
+    </Paper>
+  );
+
+  // Helper function to render the content
+  function renderContent() {
+    return (
+      <>
+        {/* Image section */}
+        {ogData.image && !imageError ? (
           <Box
             sx={{
               position: 'relative',
@@ -272,7 +295,6 @@ const LinkPreview = ({ url, compact = false, onDataLoaded = null, height = 'auto
             )}
           </Box>
         )}
-
 
         {/* Content section */}
         <Box sx={{ p: 2, flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
@@ -332,9 +354,9 @@ const LinkPreview = ({ url, compact = false, onDataLoaded = null, height = 'auto
             </Typography>
           </Box>
         </Box>
-      </MuiLink>
-    </Paper>
-  );
+      </>
+    );
+  }
 };
 
 export default LinkPreview;

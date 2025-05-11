@@ -1,9 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Skeleton, Badge } from '@mui/material';
-import { Logout as LogoutIcon, Person as PersonIcon } from '@mui/icons-material';
+import { Box, Typography, Skeleton, Badge, IconButton, Tooltip } from '@mui/material';
+import { 
+  Logout as LogoutIcon, 
+  Person as PersonIcon,
+  DarkMode as DarkModeIcon,
+  LightMode as LightModeIcon
+} from '@mui/icons-material';
 import MailIcon from '@mui/icons-material/Mail';
 import BusinessIcon from '@mui/icons-material/Business'; // Icon for network
 import { useAuth } from '../context/authcontext';
+import { useTheme } from '../components/ThemeProvider'; // Import directly from ThemeProvider
 import { supabase } from '../supabaseclient';
 import { Link } from 'react-router-dom';
 import { useDirectMessages } from '../context/directMessagesContext';
@@ -46,6 +52,7 @@ const MessageBadge = React.memo(() => {
 
 const NetworkHeader = () => {
   const { user } = useAuth();
+  const { darkMode, toggleDarkMode } = useTheme(); // Get theme context
   const [networkInfo, setNetworkInfo] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -142,9 +149,10 @@ const NetworkHeader = () => {
         alignItems: 'center',
         justifyContent: 'space-between',
         padding: 2,
-        backgroundColor: 'white',
-        borderBottom: '1px solid #eee',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
+        backgroundColor: darkMode ? '#1e1e1e' : 'white', // Apply dark/light mode
+        borderBottom: `1px solid ${darkMode ? '#333' : '#eee'}`,
+        boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+        color: darkMode ? 'white' : 'inherit' // Apply dark/light mode to text color
       }}
     >
       <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -172,7 +180,7 @@ const NetworkHeader = () => {
             to={networkId ? `/network/${networkId}` : undefined}
             sx={{
               fontWeight: displayedLogoUrl ? 700 : 900,
-              color: '#333',
+              color: darkMode ? 'white' : '#333', // Apply dark/light mode
               textDecoration: 'none',
               '&:hover': {
                 textDecoration: networkId ? 'underline' : 'none',
@@ -186,6 +194,35 @@ const NetworkHeader = () => {
       
       {user && (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          {/* Theme Toggle Button */}
+          <Tooltip title={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}>
+            <Box 
+              component="div"
+              onClick={toggleDarkMode}
+              sx={{
+                ...iconButtonStyle,
+                cursor: 'pointer',
+                backgroundColor: darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.04)',
+                '&:hover': {
+                  backgroundColor: darkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.08)',
+                  '& .buttonText': {
+                    width: '80px',
+                    opacity: 1,
+                    marginLeft: '8px',
+                  }
+                }
+              }}
+            >
+              {darkMode ? <LightModeIcon /> : <DarkModeIcon />}
+              <Typography
+                className="buttonText"
+                sx={buttonTextStyle}
+              >
+                {darkMode ? "Light" : "Dark"}
+              </Typography>
+            </Box>
+          </Tooltip>
+          
           {/* Profile */}
           <Box 
             component={Link} 

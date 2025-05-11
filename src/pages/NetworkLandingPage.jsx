@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/authcontext';
+import { useTheme } from '../components/ThemeProvider'; // Import useTheme hook
 import { supabase } from '../supabaseclient';
 import { fetchNetworkMembers } from '../api/networks';
 import ArticleIcon from '@mui/icons-material/Article';
@@ -25,7 +26,9 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogActions
+  DialogActions,
+  alpha,
+  useTheme as useMuiTheme
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
@@ -52,6 +55,8 @@ import FilesTab from '../components/FilesTab';
 function NetworkLandingPage() {
   const { networkId } = useParams();
   const { user } = useAuth();
+  const { darkMode } = useTheme(); // Get darkMode from theme context
+  const muiTheme = useMuiTheme(); // Get the MUI theme for accessing custom colors
   const navigate = useNavigate();
   const [events, setEvents] = useState([]);
   
@@ -69,7 +74,9 @@ function NetworkLandingPage() {
   const [userParticipations, setUserParticipations] = useState([]);
   const [selectedMember, setSelectedMember] = useState(null);
   const [showMemberModal, setShowMemberModal] = useState(false);
-  const [membersTabDarkMode, setMembersTabDarkMode] = useState(false);
+  
+  // Use the global darkMode state for members tab
+  const membersTabDarkMode = darkMode;
   
   useEffect(() => {
     const fetchData = async () => {
@@ -238,7 +245,8 @@ function NetworkLandingPage() {
           flexDirection: 'column',
           alignItems: 'center', 
           justifyContent: 'center', 
-          height: '50vh' 
+          height: '50vh',
+          color: muiTheme.palette.custom.lightText
         }}
       >
         <CircularProgress size={40} />
@@ -271,7 +279,14 @@ function NetworkLandingPage() {
   if (!network) {
     return (
       <Container maxWidth="md" sx={{ mt: 4 }}>
-        <Paper sx={{ p: 3, textAlign: 'center' }}>
+        <Paper 
+          sx={{ 
+            p: 3, 
+            textAlign: 'center',
+            bgcolor: muiTheme.palette.background.paper,
+            color: muiTheme.palette.custom.lightText
+          }}
+        >
           <Typography variant="h5" component="h1" gutterBottom>
             Network Not Found
           </Typography>
@@ -330,7 +345,7 @@ function NetworkLandingPage() {
               sx={{ 
                 mr: 2, 
                 bgcolor: 'rgba(255, 255, 255, 0.2)', 
-                color: 'white',
+                color: '#ffffff',
                 '&:hover': {
                   bgcolor: 'rgba(255, 255, 255, 0.3)',
                 }
@@ -361,7 +376,7 @@ function NetworkLandingPage() {
               sx={{ 
                 mr: 2, 
                 flexGrow: 1, 
-                color: 'white',
+                color: '#ffffff',
                 textShadow: '1px 1px 3px rgba(0,0,0,0.7)'
               }}
             >
@@ -403,7 +418,7 @@ function NetworkLandingPage() {
                 onClick={copyToClipboard} 
                 color="primary"
                 sx={{ 
-                  bgcolor: 'white', 
+                  bgcolor: '#ffffff', 
                   ml: 1,
                   '&:hover': {
                     bgcolor: 'rgba(255,255,255,0.9)',
@@ -413,7 +428,7 @@ function NetworkLandingPage() {
                 <ContentCopyIcon />
               </IconButton>
               {copied && (
-                <Typography variant="caption" sx={{ ml: 1, color: 'white', bgcolor: 'success.main', px: 1, py: 0.5, borderRadius: 1 }}>
+                <Typography variant="caption" sx={{ ml: 1, color: '#ffffff', bgcolor: 'success.main', px: 1, py: 0.5, borderRadius: 1 }}>
                   Copied!
                 </Typography>
               )}
@@ -426,7 +441,7 @@ function NetworkLandingPage() {
               paragraph 
               sx={{ 
                 mt: 2, 
-                color: 'white',
+                color: '#ffffff',
                 textShadow: '0px 1px 2px rgba(0,0,0,0.6)',
                 maxWidth: '800px',
                 bgcolor: 'rgba(0,0,0,0.3)',
@@ -440,23 +455,49 @@ function NetworkLandingPage() {
         </Box>
       </Paper>
       
-      <Paper sx={{ width: '100%', mb: 3, backgroundColor: 'white' }}>
-      <Tabs
-  value={activeTab}
-  onChange={handleTabChange}
-  indicatorColor="primary"
-  textColor="primary"
-  variant="fullWidth"
->
-  <Tab icon={<GroupsIcon />} label="Members" />
-  <Tab icon={<EventIcon />} label="Events" />
-  <Tab icon={<ArticleIcon />} label="News" />
-  <Tab icon={<ChatIcon />} label="Chat" />
-  <Tab icon={<TimelineIcon />} label="Social Wall" />
-  <Tab icon={<MenuBookIcon />} label="Wiki" />
-  <Tab icon={<AttachmentIcon />} label="Files" /> {/* New Files tab */}
-  <Tab icon={<InfoIcon />} label="About" />
-</Tabs>
+      <Paper 
+        sx={{ 
+          width: '100%', 
+          mb: 3, 
+          // Adjust background color based on dark mode
+          backgroundColor: muiTheme.palette.background.paper,
+          // Add a subtle border in dark mode to improve visibility
+          border: `1px solid ${muiTheme.palette.custom.border}`,
+          // Add shadow for better separation in dark mode
+          boxShadow: darkMode ? '0 4px 20px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.1)'
+        }}
+      >
+        <Tabs
+          value={activeTab}
+          onChange={handleTabChange}
+          indicatorColor="primary"
+          // Adjust text color for better contrast in dark mode
+          textColor={darkMode ? "secondary" : "primary"}
+          variant="fullWidth"
+          sx={{
+            // Add custom styles for dark mode
+            '& .MuiTab-root': {
+              color: muiTheme.palette.custom.fadedText,
+              '&.Mui-selected': {
+                color: muiTheme.palette.custom.lightText,
+              },
+            },
+            // Make the indicator more visible in dark mode
+            '& .MuiTabs-indicator': {
+              backgroundColor: darkMode ? '#90caf9' : undefined,
+              height: darkMode ? 3 : undefined,
+            }
+          }}
+        >
+          <Tab icon={<GroupsIcon />} label="Members" />
+          <Tab icon={<EventIcon />} label="Events" />
+          <Tab icon={<ArticleIcon />} label="News" />
+          <Tab icon={<ChatIcon />} label="Chat" />
+          <Tab icon={<TimelineIcon />} label="Social Wall" />
+          <Tab icon={<MenuBookIcon />} label="Wiki" />
+          <Tab icon={<AttachmentIcon />} label="Files" /> {/* Files tab */}
+          <Tab icon={<InfoIcon />} label="About" />
+        </Tabs>
       </Paper>
 
       {/* Conditionally render the appropriate tab component */}
@@ -479,6 +520,7 @@ function NetworkLandingPage() {
           isUserAdmin={isUserAdmin}
           userParticipations={userParticipations}
           onParticipationChange={handleParticipationChange}
+          darkMode={darkMode} // Pass dark mode to events tab
         />
       )}
 
@@ -486,6 +528,7 @@ function NetworkLandingPage() {
         <NewsTab
           networkNews={networkNews}
           networkMembers={networkMembers}
+          darkMode={darkMode} // Pass dark mode to news tab
         />
       )}
 
@@ -493,6 +536,7 @@ function NetworkLandingPage() {
         <ChatTab
           networkId={networkId}
           isUserMember={isUserMember}
+          darkMode={darkMode} // Pass dark mode to chat tab
         />
       )}
 
@@ -500,6 +544,7 @@ function NetworkLandingPage() {
         <SocialWallTab
           socialWallItems={socialWallItems}
           networkMembers={networkMembers}
+          darkMode={darkMode} // Pass dark mode to social wall tab
         />
       )}
 
@@ -507,6 +552,7 @@ function NetworkLandingPage() {
         <WikiTab
           networkId={networkId}
           isUserMember={isUserMember}
+          darkMode={darkMode} // Pass dark mode to wiki tab
         />
       )}
 
@@ -515,6 +561,7 @@ function NetworkLandingPage() {
           network={network}
           networkMembers={networkMembers}
           isUserAdmin={isUserAdmin}
+          darkMode={darkMode} // Pass dark mode to about tab
         />
       )}
 
@@ -522,6 +569,7 @@ function NetworkLandingPage() {
         <FilesTab
           networkId={networkId}
           isUserMember={isUserMember}
+          darkMode={darkMode} // Pass dark mode to files tab
         />
       )}
       
@@ -536,7 +584,15 @@ function NetworkLandingPage() {
       />
       
       {!isUserMember && user && (
-        <Paper sx={{ p: 3, mt: 3, backgroundColor: 'primary.light', color: 'primary.contrastText' }}>
+        <Paper 
+          sx={{ 
+            p: 3, 
+            mt: 3, 
+            backgroundColor: darkMode ? alpha('#1976d2', 0.2) : 'primary.light', 
+            color: muiTheme.palette.custom.lightText,
+            border: darkMode ? `1px solid ${alpha('#1976d2', 0.5)}` : 'none',
+          }}
+        >
           <Typography variant="h6" gutterBottom>
             You're not a member of this network
           </Typography>

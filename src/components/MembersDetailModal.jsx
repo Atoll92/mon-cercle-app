@@ -42,7 +42,14 @@ const MemberDetailsModal = ({
   isCurrentUser,
   darkMode = false
 }) => {
-  const theme = useTheme(); // Get the theme
+  const muiTheme = useTheme(); // Get the MUI theme
+  
+  // When using theme.palette.custom, check first if it exists
+  // This is for compatibility with both your custom theme and the default theme
+  const customLightText = muiTheme.palette.custom?.lightText || (darkMode ? '#ffffff' : '#000000');
+  const customFadedText = muiTheme.palette.custom?.fadedText || (darkMode ? alpha('#ffffff', 0.7) : alpha('#000000', 0.7));
+  const customBorder = muiTheme.palette.custom?.border || (darkMode ? alpha('#ffffff', 0.1) : alpha('#000000', 0.1));
+  
   const [portfolioItems, setPortfolioItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -345,7 +352,7 @@ const MemberDetailsModal = ({
           height: `${safeItem.height}px`,
           overflow: 'hidden',
           cursor: 'default',
-          border: darkMode ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.08)',
+          border: `1px solid ${customBorder}`,
           transition: 'box-shadow 0.2s ease',
           zIndex: safeItem.zIndex,
           transform: safeItem.rotation ? `rotate(${safeItem.rotation}deg)` : 'none',
@@ -383,9 +390,9 @@ const MemberDetailsModal = ({
         p: 1.5,
         pl: 2.5,
         bgcolor: darkMode ? alpha('#000000', 0.3) : alpha('#f5f5f5', 0.5),
-        color: darkMode ? '#ffffff' : 'text.primary',
+        color: customLightText,
         borderBottom: '1px solid',
-        borderColor: darkMode ? alpha('#ffffff', 0.1) : 'divider'
+        borderColor: customBorder
       }}>
         <Typography variant="h6" component="div">
           Member Profile
@@ -394,7 +401,7 @@ const MemberDetailsModal = ({
           edge="end" 
           onClick={onClose} 
           aria-label="close"
-          sx={{ color: darkMode ? '#ffffff' : undefined }}
+          sx={{ color: customLightText }}
         >
           <CloseIcon />
         </IconButton>
@@ -405,7 +412,7 @@ const MemberDetailsModal = ({
         sx={{ 
           p: 0, 
           bgcolor: darkMode ? '#121212' : 'background.paper',
-          color: darkMode ? '#ffffff' : 'text.primary'
+          color: customLightText
         }}
       >
         {/* Moodboard Cover Image Section */}
@@ -417,7 +424,7 @@ const MemberDetailsModal = ({
             bgcolor: featuredMoodboard?.background_color || (darkMode ? alpha('#333333', 0.5) : alpha('#f5f5f5', 0.8)),
             overflow: 'hidden',
             borderBottom: '1px solid',
-            borderColor: darkMode ? alpha('#ffffff', 0.1) : 'divider'
+            borderColor: customBorder
           }}
           ref={canvasRef}
         >
@@ -441,12 +448,12 @@ const MemberDetailsModal = ({
                     sx={{ 
                       fontSize: 40, 
                       mb: 1, 
-                      color: darkMode ? alpha('#ffffff', 0.3) : alpha('#000000', 0.2) 
+                      color: customFadedText
                     }} 
                   />
                   <Typography 
                     variant="body2" 
-                    color={darkMode ? alpha('#ffffff', 0.5) : 'text.secondary'}
+                    color={customFadedText}
                   >
                     No public moodboards
                   </Typography>
@@ -525,7 +532,7 @@ const MemberDetailsModal = ({
                   <Typography
                     variant="body2"
                     fontWeight="medium"
-                    color={darkMode ? '#ffffff' : 'text.primary'}
+                    color={customLightText}
                   >
                     {featuredMoodboard.title}
                   </Typography>
@@ -638,7 +645,7 @@ const MemberDetailsModal = ({
                     variant="body1" 
                     paragraph
                     sx={{ 
-                      color: darkMode ? alpha('#ffffff', 0.7) : 'text.secondary',
+                      color: customFadedText,
                       maxWidth: '600px'
                     }}
                   >
@@ -726,7 +733,7 @@ const MemberDetailsModal = ({
                       p: 1.5, 
                       bgcolor: darkMode ? alpha('#000000', 0.3) : alpha('#f5f5f5', 0.8),
                       border: '1px solid',
-                      borderColor: darkMode ? alpha('#ffffff', 0.1) : alpha('#000000', 0.1),
+                      borderColor: customBorder,
                       borderRadius: 1,
                       display: 'flex',
                       alignItems: 'center',
@@ -742,7 +749,7 @@ const MemberDetailsModal = ({
                       href={`mailto:${member.contact_email}`}
                       sx={{ 
                         textDecoration: 'none',
-                        color: darkMode ? alpha('#ffffff', 0.9) : 'text.primary',
+                        color: customLightText,
                         wordBreak: 'break-all'
                       }}
                     >
@@ -760,7 +767,7 @@ const MemberDetailsModal = ({
                       p: 1.5, 
                       bgcolor: darkMode ? alpha('#000000', 0.3) : alpha('#f5f5f5', 0.8),
                       border: '1px solid',
-                      borderColor: darkMode ? alpha('#ffffff', 0.1) : alpha('#000000', 0.1),
+                      borderColor: customBorder,
                       borderRadius: 1,
                       display: 'flex',
                       alignItems: 'center',
@@ -778,7 +785,7 @@ const MemberDetailsModal = ({
                       rel="noopener noreferrer"
                       sx={{ 
                         textDecoration: 'none',
-                        color: darkMode ? alpha('#ffffff', 0.9) : 'text.primary',
+                        color: customLightText,
                         wordBreak: 'break-all'
                       }}
                     >
@@ -796,7 +803,7 @@ const MemberDetailsModal = ({
                       p: 1.5, 
                       bgcolor: darkMode ? alpha('#000000', 0.3) : alpha('#f5f5f5', 0.8),
                       border: '1px solid',
-                      borderColor: darkMode ? alpha('#ffffff', 0.1) : alpha('#000000', 0.1),
+                      borderColor: customBorder,
                       borderRadius: 1,
                       display: 'flex',
                       alignItems: 'center',
@@ -814,7 +821,7 @@ const MemberDetailsModal = ({
                       rel="noopener noreferrer"
                       sx={{ 
                         textDecoration: 'none',
-                        color: darkMode ? alpha('#ffffff', 0.9) : 'text.primary',
+                        color: customLightText,
                         wordBreak: 'break-all'
                       }}
                     >
@@ -940,7 +947,7 @@ const MemberDetailsModal = ({
                         {item.description && (
                           <Typography 
                             variant="body2"
-                            color={darkMode ? alpha('#ffffff', 0.7) : 'text.secondary'}
+                            color={customFadedText}
                             sx={{
                               overflow: 'hidden',
                               textOverflow: 'ellipsis',
@@ -956,7 +963,7 @@ const MemberDetailsModal = ({
                       </Box>
                       
                       {item.url && (
-                        <Box sx={{ p: 1, pt: 0, borderTop: '1px solid', borderColor: darkMode ? alpha('#ffffff', 0.05) : 'divider' }}>
+                        <Box sx={{ p: 1, pt: 0, borderTop: '1px solid', borderColor: customBorder }}>
                           <Button
                             size="small"
                             href={item.url}
@@ -996,7 +1003,7 @@ const MemberDetailsModal = ({
           ) : (
             <Typography 
               variant="body2" 
-              color={darkMode ? alpha('#ffffff', 0.5) : "text.secondary"}
+              color={customFadedText}
               sx={{ p: 1, fontStyle: 'italic' }}
             >
               No portfolio items yet

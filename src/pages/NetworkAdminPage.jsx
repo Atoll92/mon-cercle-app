@@ -1,7 +1,8 @@
-// File: src/pages/NetworkAdminPage.jsx - Refactored main component
+// File: src/pages/NetworkAdminPage.jsx - Updated for dark mode with theme constants
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/authcontext';
+import { useTheme } from '../components/ThemeProvider'; // Import useTheme hook
 import { supabase } from '../supabaseclient';
 import {
   Container,
@@ -13,7 +14,9 @@ import {
   Grid,
   Alert,
   Tabs,
-  Tab
+  Tab,
+  alpha,
+  useTheme as useMuiTheme
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
@@ -24,7 +27,7 @@ import {
   Article as ArticleIcon
 } from '@mui/icons-material';
 
-// Import our new API functions
+// Import our API functions
 import { 
   fetchNetworkMembers, 
   fetchNetworkDetails,
@@ -39,6 +42,7 @@ import NetworkInfoPanel from '../components/admin/NetworkInfoPanel';
 import ThemeTab from '../components/admin/ThemeTab';
 import EventsTab from '../components/admin/EventsTab';
 import NewsTab from '../components/admin/Newstab';
+
 // Helper component for tab panels
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -58,6 +62,8 @@ function TabPanel(props) {
 
 function NetworkAdminPage() {
   const { user } = useAuth();
+  const { darkMode } = useTheme(); // Get darkMode from theme context
+  const muiTheme = useMuiTheme(); // Get the MUI theme for accessing custom colors
   const navigate = useNavigate();
   
   // State variables
@@ -151,7 +157,15 @@ function NetworkAdminPage() {
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+      <Box 
+        sx={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'center', 
+          height: '100vh',
+          color: muiTheme.palette.custom.lightText
+        }}
+      >
         <CircularProgress size={60} />
       </Box>
     );
@@ -160,7 +174,14 @@ function NetworkAdminPage() {
   if (error) {
     return (
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-        <Paper sx={{ p: 3, mb: 3 }}>
+        <Paper 
+          sx={{ 
+            p: 3, 
+            mb: 3,
+            bgcolor: muiTheme.palette.background.paper,
+            color: muiTheme.palette.custom.lightText
+          }}
+        >
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <Button
               component={Link}
@@ -195,7 +216,14 @@ function NetworkAdminPage() {
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-      <Paper sx={{ p: 3, mb: 3 }}>
+      <Paper 
+        sx={{ 
+          p: 3, 
+          mb: 3,
+          bgcolor: muiTheme.palette.background.paper,
+          color: muiTheme.palette.custom.lightText
+        }}
+      >
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
           <Button
             component={Link}
@@ -217,13 +245,36 @@ function NetworkAdminPage() {
         </Alert>
       )}
 
-      <Paper sx={{ mb: 3 }}>
+      <Paper 
+        sx={{ 
+          mb: 3,
+          bgcolor: muiTheme.palette.background.paper,
+          // Add a subtle border for better visibility
+          border: `1px solid ${muiTheme.palette.custom.border}`,
+          // Add shadow for better separation
+          boxShadow: darkMode ? '0 4px 20px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.1)'
+        }}
+      >
         <Tabs
           value={activeTab}
           onChange={handleTabChange}
           indicatorColor="primary"
-          textColor="primary"
+          textColor={darkMode ? "secondary" : "primary"}
           centered
+          sx={{
+            // Add custom styles for dark mode
+            '& .MuiTab-root': {
+              color: muiTheme.palette.custom.fadedText,
+              '&.Mui-selected': {
+                color: muiTheme.palette.custom.lightText,
+              },
+            },
+            // Make the indicator more visible in dark mode
+            '& .MuiTabs-indicator': {
+              backgroundColor: darkMode ? '#90caf9' : undefined,
+              height: darkMode ? 3 : undefined,
+            }
+          }}
         >
           <Tab label="Network Settings" icon={<AdminIcon />} />
           <Tab label="Members" icon={<PersonAddIcon />} />
@@ -239,13 +290,18 @@ function NetworkAdminPage() {
             {/* Network Settings Component */}
             <NetworkSettingsTab 
               network={network} 
-              onNetworkUpdate={updateNetworkState} 
+              onNetworkUpdate={updateNetworkState}
+              darkMode={darkMode} // Pass dark mode to component
             />
           </Grid>
           
           <Grid item xs={12} md={6}>
             {/* Network Info Component */}
-            <NetworkInfoPanel network={network} members={members} />
+            <NetworkInfoPanel 
+              network={network} 
+              members={members}
+              darkMode={darkMode} // Pass dark mode to component
+            />
           </Grid>
         </Grid>
       </TabPanel>
@@ -257,6 +313,7 @@ function NetworkAdminPage() {
           user={user}
           network={network}
           onMembersChange={refreshMembers}
+          darkMode={darkMode} // Pass dark mode to component
         />
       </TabPanel>
 
@@ -268,6 +325,7 @@ function NetworkAdminPage() {
           newsPosts={newsPosts}
           setNewsPosts={setNewsPosts}
           members={members}
+          darkMode={darkMode} // Pass dark mode to component
         />
       </TabPanel>
 
@@ -278,6 +336,7 @@ function NetworkAdminPage() {
           setEvents={setEvents}
           user={user}
           networkId={network.id}
+          darkMode={darkMode} // Pass dark mode to component
         />
       </TabPanel>
 
@@ -285,7 +344,8 @@ function NetworkAdminPage() {
         {/* Theme Settings Component */}
         <ThemeTab 
           network={network} 
-          onNetworkUpdate={updateNetworkState} 
+          onNetworkUpdate={updateNetworkState}
+          darkMode={darkMode} // Pass dark mode to component
         />
       </TabPanel>
     </Container>

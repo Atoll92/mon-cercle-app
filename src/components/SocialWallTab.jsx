@@ -35,8 +35,14 @@ import {
 const ITEMS_PER_FETCH = 6;
 
 const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = false }) => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const muiTheme = useTheme();
+  const isMobile = useMediaQuery(muiTheme.breakpoints.down('sm'));
+  
+  // When using theme.palette.custom, check first if it exists
+  // This is for compatibility with both your custom theme and the default theme
+  const customLightText = muiTheme.palette.custom?.lightText || (darkMode ? '#ffffff' : '#000000');
+  const customFadedText = muiTheme.palette.custom?.fadedText || (darkMode ? alpha('#ffffff', 0.7) : alpha('#000000', 0.7));
+  const customBorder = muiTheme.palette.custom?.border || (darkMode ? alpha('#ffffff', 0.1) : alpha('#000000', 0.1));
   
   // State for infinite scroll
   const [displayItems, setDisplayItems] = useState([]);
@@ -82,6 +88,7 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
       return () => clearTimeout(timer);
     }
   }, [expandedCardId]);
+  
   const lastItemRef = useCallback(node => {
     if (loading) return;
     if (observer.current) observer.current.disconnect();
@@ -204,7 +211,7 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
           component="h2" 
           sx={{
             fontWeight: 600,
-            color: darkMode ? 'white' : 'text.primary',
+            color: customLightText,
             position: 'relative',
             display: 'inline-flex',
             alignItems: 'center',
@@ -216,7 +223,7 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
               width: 40,
               height: 3,
               borderRadius: 4,
-              bgcolor: theme.palette.primary.main
+              bgcolor: muiTheme.palette.primary.main
             }
           }}
         >
@@ -232,10 +239,10 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                 bottom: 20,
                 right: 20,
                 zIndex: 100,
-                bgcolor: theme.palette.primary.main,
-                color: 'white',
+                bgcolor: muiTheme.palette.primary.main,
+                color: '#ffffff',
                 '&:hover': {
-                  bgcolor: theme.palette.primary.dark,
+                  bgcolor: muiTheme.palette.primary.dark,
                 },
                 boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
               }}
@@ -250,7 +257,10 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
       
       {socialWallItems.length === 0 ? (
         <Box sx={{ textAlign: 'center', py: 4 }}>
-          <Typography variant="body1" color="text.secondary">
+          <Typography 
+            variant="body1" 
+            color={customFadedText}
+          >
             No activity to display yet.
           </Typography>
         </Box>
@@ -290,7 +300,7 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                     },
                     bgcolor: darkMode ? alpha('#1e1e1e', 0.5) : 'background.paper',
                     backdropFilter: 'blur(10px)',
-                    border: darkMode ? `1px solid ${alpha('#fff', 0.05)}` : 'none',
+                    border: `1px solid ${customBorder}`,
                     // Apply special styles when expanded
                     ...(expandedCardId === `${item.itemType}-${item.id}` && {
                       zIndex: 10,
@@ -306,8 +316,8 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                         src={item.itemType === 'portfolio' ? item.memberAvatar : 
                             networkMembers.find(m => m.id === item.created_by)?.profile_picture_url}
                         sx={{ 
-                          border: darkMode ? `2px solid ${alpha('#fff', 0.1)}` : 'none',
-                          bgcolor: theme.palette.primary.main
+                          border: `2px solid ${customBorder}`,
+                          bgcolor: muiTheme.palette.primary.main
                         }}
                       >
                         {item.itemType === 'portfolio' ? 
@@ -333,7 +343,7 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                         variant="subtitle2" 
                         sx={{ 
                           fontWeight: 600,
-                          color: darkMode ? 'white' : 'text.primary'
+                          color: customLightText
                         }}
                       >
                         {item.itemType === 'portfolio' ? 
@@ -344,7 +354,7 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                     subheader={
                       <Typography 
                         variant="caption" 
-                        color={darkMode ? alpha("white", 0.6) : "text.secondary"}
+                        color={customFadedText}
                       >
                         {formatDate(item.createdAt)}
                       </Typography>
@@ -380,7 +390,7 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                       sx={{ 
                         fontSize: '1.1rem',
                         fontWeight: 600,
-                        color: darkMode ? 'white' : 'text.primary',
+                        color: customLightText,
                         mb: 1
                       }}
                     >
@@ -400,7 +410,7 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                         >
                           <Typography 
                             variant="body2" 
-                            color={darkMode ? alpha("white", 0.7) : "text.secondary"}
+                            color={customFadedText}
                             sx={{ 
                               ...(expandedCardId !== `${item.itemType}-${item.id}` && {
                                 display: '-webkit-box',
@@ -439,9 +449,9 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                             startIcon={expandedCardId === `${item.itemType}-${item.id}` ? <ExpandLessIcon /> : <ReadMoreIcon />}
                             sx={{ 
                               mb: 2, 
-                              color: theme.palette.secondary.main,
+                              color: muiTheme.palette.secondary.main,
                               '&:hover': {
-                                backgroundColor: alpha(theme.palette.secondary.main, 0.08)
+                                backgroundColor: alpha(muiTheme.palette.secondary.main, 0.08)
                               },
                               transition: 'all 0.2s ease-in-out',
                             }}
@@ -464,7 +474,7 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                           <Box
                             className="tiptap-output"
                             sx={{ 
-                              color: darkMode ? alpha("white", 0.7) : "text.secondary",
+                              color: customFadedText,
                               fontSize: '0.875rem',
                               '& p': { margin: 0 },
                               ...(expandedCardId !== `${item.itemType}-${item.id}` && {
@@ -505,9 +515,9 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                             startIcon={expandedCardId === `${item.itemType}-${item.id}` ? <ExpandLessIcon /> : <ReadMoreIcon />}
                             sx={{ 
                               mb: 2,
-                              color: theme.palette.primary.main,
+                              color: muiTheme.palette.primary.main,
                               '&:hover': {
-                                backgroundColor: alpha(theme.palette.primary.main, 0.08)
+                                backgroundColor: alpha(muiTheme.palette.primary.main, 0.08)
                               },
                               transition: 'all 0.2s ease-in-out',
                             }}
@@ -529,8 +539,8 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                             style={{ 
                               display: 'inline-block',
                               padding: '6px 12px',
-                              backgroundColor: theme.palette.secondary.main,
-                              color: 'white',
+                              backgroundColor: muiTheme.palette.secondary.main,
+                              color: '#ffffff',
                               textDecoration: 'none',
                               borderRadius: '4px',
                               fontWeight: 'bold',
@@ -550,8 +560,8 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                               display: 'inline-block',
                               padding: '6px 12px',
                               backgroundColor: item.itemType === 'portfolio' ? 
-                                theme.palette.secondary.main : theme.palette.primary.main,
-                              color: 'white',
+                                muiTheme.palette.secondary.main : muiTheme.palette.primary.main,
+                              color: '#ffffff',
                               textDecoration: 'none',
                               borderRadius: '4px',
                               fontWeight: 'bold',
@@ -583,8 +593,8 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
               sx={{ 
                 textAlign: 'center', 
                 py: 3,
-                color: darkMode ? alpha('white', 0.5) : 'text.secondary',
-                borderTop: `1px solid ${darkMode ? alpha('white', 0.1) : alpha('#000', 0.1)}`,
+                color: customFadedText,
+                borderTop: `1px solid ${customBorder}`,
                 mt: 2
               }}
             >

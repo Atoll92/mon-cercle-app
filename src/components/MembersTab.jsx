@@ -57,6 +57,12 @@ const MembersTab = ({
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const isTablet = useMediaQuery(theme.breakpoints.down('md'));
   
+  // When using theme.palette.custom, check first if it exists
+  // This is for compatibility with both your custom theme and the default theme
+  const customLightText = theme.palette.custom?.lightText || (darkMode ? '#ffffff' : '#000000');
+  const customFadedText = theme.palette.custom?.fadedText || (darkMode ? alpha('#ffffff', 0.7) : alpha('#000000', 0.7));
+  const customBorder = theme.palette.custom?.border || (darkMode ? alpha('#ffffff', 0.1) : alpha('#000000', 0.1));
+  
   // State for filtering and sorting
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
@@ -246,7 +252,7 @@ const MembersTab = ({
       sx={{ 
         p: { xs: 2, md: 3 },
         borderRadius: 2,
-        bgcolor: darkMode ? alpha('#000', 0.2) : 'background.paper',
+        bgcolor: darkMode ? alpha('#000000', 0.2) : 'background.paper',
         boxShadow: darkMode ? '0 8px 32px rgba(0,0,0,0.3)' : '0 4px 20px rgba(0,0,0,0.05)'
       }}
       elevation={darkMode ? 4 : 1}
@@ -264,7 +270,7 @@ const MembersTab = ({
           variant="h5" 
           component="h2"
           sx={{
-            color: darkMode ? 'white' : 'text.primary',
+            color: customLightText,
             fontWeight: 600,
             display: 'flex',
             alignItems: 'center'
@@ -347,7 +353,7 @@ const MembersTab = ({
             backgroundColor: darkMode ? alpha('#121212', 0.6) : alpha('#f5f5f5', 0.7),
             backdropFilter: 'blur(8px)',
             borderRadius: 2,
-            border: darkMode ? `1px solid ${alpha('#fff', 0.1)}` : `1px solid ${alpha('#000', 0.05)}`
+            border: `1px solid ${customBorder}`
           }}
           elevation={darkMode ? 3 : 1}
         >
@@ -370,18 +376,18 @@ const MembersTab = ({
                       <IconButton 
                         size="small" 
                         onClick={() => setSearchTerm('')}
-                        sx={{ color: darkMode ? 'white' : 'text.secondary' }}
+                        sx={{ color: customLightText }}
                       >
                         <ClearIcon fontSize="small" />
                       </IconButton>
                     </InputAdornment>
                   ) : null,
                   sx: { 
-                    bgcolor: darkMode ? alpha('#000', 0.2) : alpha('#fff', 0.9),
-                    color: darkMode ? 'white' : 'inherit',
+                    bgcolor: darkMode ? alpha('#000000', 0.2) : alpha('#ffffff', 0.9),
+                    color: customLightText,
                     borderRadius: 2,
                     '& .MuiOutlinedInput-notchedOutline': {
-                      borderColor: darkMode ? alpha('#fff', 0.1) : alpha('#000', 0.1)
+                      borderColor: customBorder
                     }
                   }
                 }}
@@ -393,17 +399,17 @@ const MembersTab = ({
                 fullWidth 
                 size="small"
                 sx={{ 
-                  bgcolor: darkMode ? alpha('#000', 0.2) : alpha('#fff', 0.9),
+                  bgcolor: darkMode ? alpha('#000000', 0.2) : alpha('#ffffff', 0.9),
                   borderRadius: 2,
                   '& .MuiOutlinedInput-root': {
-                    color: darkMode ? 'white' : 'inherit',
+                    color: customLightText,
                     borderRadius: 2
                   },
                   '& .MuiInputLabel-root': {
-                    color: darkMode ? alpha('white', 0.7) : 'inherit'
+                    color: customFadedText
                   },
                   '& .MuiOutlinedInput-notchedOutline': {
-                    borderColor: darkMode ? alpha('#fff', 0.1) : alpha('#000', 0.1)
+                    borderColor: customBorder
                   }
                 }}
               >
@@ -426,17 +432,17 @@ const MembersTab = ({
                 fullWidth 
                 size="small"
                 sx={{ 
-                  bgcolor: darkMode ? alpha('#000', 0.2) : alpha('#fff', 0.9),
+                  bgcolor: darkMode ? alpha('#000000', 0.2) : alpha('#ffffff', 0.9),
                   borderRadius: 2,
                   '& .MuiOutlinedInput-root': {
-                    color: darkMode ? 'white' : 'inherit',
+                    color: customLightText,
                     borderRadius: 2
                   },
                   '& .MuiInputLabel-root': {
-                    color: darkMode ? alpha('white', 0.7) : 'inherit'
+                    color: customFadedText
                   },
                   '& .MuiOutlinedInput-notchedOutline': {
-                    borderColor: darkMode ? alpha('#fff', 0.1) : alpha('#000', 0.1)
+                    borderColor: customBorder
                   }
                 }}
               >
@@ -497,7 +503,7 @@ const MembersTab = ({
                     onClick={() => handleSortChange('name')}
                     startIcon={sortBy === 'name' && (sortDirection === 'asc' ? <ArrowUpwardIcon fontSize="small" /> : <ArrowDownwardIcon fontSize="small" />)}
                     sx={{ 
-                      color: darkMode ? (sortBy === 'name' ? 'primary.light' : 'white') : 'inherit',
+                      color: darkMode ? (sortBy === 'name' ? 'primary.light' : customLightText) : 'inherit',
                       textTransform: 'none',
                       fontWeight: sortBy === 'name' ? 600 : 400,
                       bgcolor: sortBy === 'name' ? (darkMode ? alpha('#1976d2', 0.1) : alpha('#1976d2', 0.05)) : 'transparent'
@@ -512,7 +518,7 @@ const MembersTab = ({
                     onClick={() => handleSortChange('joinDate')}
                     startIcon={sortBy === 'joinDate' && (sortDirection === 'asc' ? <ArrowUpwardIcon fontSize="small" /> : <ArrowDownwardIcon fontSize="small" />)}
                     sx={{ 
-                      color: darkMode ? (sortBy === 'joinDate' ? 'primary.light' : 'white') : 'inherit',
+                      color: darkMode ? (sortBy === 'joinDate' ? 'primary.light' : customLightText) : 'inherit',
                       textTransform: 'none',
                       fontWeight: sortBy === 'joinDate' ? 600 : 400,
                       bgcolor: sortBy === 'joinDate' ? (darkMode ? alpha('#1976d2', 0.1) : alpha('#1976d2', 0.05)) : 'transparent'
@@ -527,7 +533,7 @@ const MembersTab = ({
                     onClick={() => handleSortChange('skillCount')}
                     startIcon={sortBy === 'skillCount' && (sortDirection === 'asc' ? <ArrowUpwardIcon fontSize="small" /> : <ArrowDownwardIcon fontSize="small" />)}
                     sx={{ 
-                      color: darkMode ? (sortBy === 'skillCount' ? 'primary.light' : 'white') : 'inherit',
+                      color: darkMode ? (sortBy === 'skillCount' ? 'primary.light' : customLightText) : 'inherit',
                       textTransform: 'none',
                       fontWeight: sortBy === 'skillCount' ? 600 : 400,
                       bgcolor: sortBy === 'skillCount' ? (darkMode ? alpha('#1976d2', 0.1) : alpha('#1976d2', 0.05)) : 'transparent'
@@ -539,7 +545,7 @@ const MembersTab = ({
                 
                 <Typography 
                   variant="body2" 
-                  color={darkMode ? alpha("white", 0.7) : "text.secondary"}
+                  color={customFadedText}
                   sx={{ mt: { xs: 2, sm: 0 } }}
                 >
                   Showing {displayMembers.length} of {filteredMembers.length} members
@@ -557,18 +563,18 @@ const MembersTab = ({
             py: 6,
             px: 4, 
             textAlign: 'center',
-            bgcolor: darkMode ? alpha('#000', 0.2) : alpha('#f5f5f5', 0.7),
+            bgcolor: darkMode ? alpha('#000000', 0.2) : alpha('#f5f5f5', 0.7),
             backdropFilter: 'blur(8px)',
             borderRadius: 2,
-            border: darkMode ? `1px solid ${alpha('#fff', 0.05)}` : 'none'
+            border: `1px solid ${customBorder}`
           }}
           elevation={darkMode ? 2 : 0}
         >
-          <EventBusyIcon sx={{ fontSize: 70, color: darkMode ? alpha('white', 0.2) : 'text.disabled', mb: 2 }} />
-          <Typography variant="h6" gutterBottom color={darkMode ? "white" : "text.primary"}>
+          <EventBusyIcon sx={{ fontSize: 70, color: darkMode ? alpha('#ffffff', 0.2) : 'text.disabled', mb: 2 }} />
+          <Typography variant="h6" gutterBottom color={customLightText}>
             No members found
           </Typography>
-          <Typography variant="body2" color={darkMode ? alpha("white", 0.6) : "text.secondary"}>
+          <Typography variant="body2" color={customFadedText}>
             Try adjusting your filters or search criteria
           </Typography>
           {(searchTerm || roleFilter !== 'all' || skillFilter) && (
@@ -621,7 +627,7 @@ const MembersTab = ({
                     backdropFilter: 'blur(10px)',
                     borderRadius: 3,
                     overflow: 'hidden',
-                    border: darkMode ? `1px solid ${alpha('#fff', 0.05)}` : 'none',
+                    border: `1px solid ${customBorder}`,
                     position: 'relative'
                   }}
                   onClick={() => onMemberSelect && onMemberSelect(member)}
@@ -673,7 +679,7 @@ const MembersTab = ({
                             width: 90, 
                             height: 90, 
                             mb: 2.5,
-                            border: `4px solid ${darkMode ? alpha('#fff', 0.1) : theme.palette.primary.light}`,
+                            border: `4px solid ${darkMode ? alpha('#ffffff', 0.1) : theme.palette.primary.light}`,
                             boxShadow: darkMode ? '0 8px 16px rgba(0,0,0,0.5)' : '0 8px 16px rgba(0,0,0,0.1)'
                           }}
                         >
@@ -694,7 +700,7 @@ const MembersTab = ({
                               position: 'absolute',
                               bottom: 10,
                               right: -10,
-                              color: darkMode ? '#fff' : '#fff',
+                              color: '#ffffff',
                               bgcolor: darkMode ? theme.palette.primary.dark : theme.palette.primary.main,
                               '&:hover': { 
                                 bgcolor: darkMode ? theme.palette.primary.main : theme.palette.primary.dark,
@@ -730,7 +736,7 @@ const MembersTab = ({
                         noWrap={false}
                         sx={{ 
                           fontWeight: 600,
-                          color: darkMode ? 'white' : 'text.primary',
+                          color: customLightText,
                           lineHeight: 1.2,
                           textAlign: 'center',
                           width: '100%',
@@ -765,7 +771,7 @@ const MembersTab = ({
                         sx={{ 
                           fontWeight: 500,
                           bgcolor: darkMode ? 
-                            (member.role === 'admin' ? alpha('#1976d2', 0.8) : alpha('#333', 0.8)) : 
+                            (member.role === 'admin' ? alpha('#1976d2', 0.8) : alpha('#333333', 0.8)) : 
                             undefined,
                           '& .MuiChip-label': {
                             px: 1
@@ -895,7 +901,7 @@ const MembersTab = ({
                     {member.bio && (
                       <Typography 
                         variant="body2" 
-                        color={darkMode ? alpha('white', 0.7) : "text.secondary"} 
+                        color={customFadedText} 
                         align="center" 
                         sx={{ 
                           overflow: 'hidden',
@@ -935,8 +941,8 @@ const MembersTab = ({
             textAlign: 'center', 
             py: 3,
             mt: 2,
-            color: darkMode ? alpha('white', 0.5) : 'text.secondary',
-            borderTop: `1px solid ${darkMode ? alpha('white', 0.1) : alpha('#000', 0.1)}`
+            color: customFadedText,
+            borderTop: `1px solid ${customBorder}`
           }}
         >
           <Typography variant="body2">
@@ -956,7 +962,7 @@ const MembersTab = ({
               right: 20,
               zIndex: 100,
               bgcolor: theme.palette.primary.main,
-              color: 'white',
+              color: '#ffffff',
               '&:hover': {
                 bgcolor: theme.palette.primary.dark,
               },

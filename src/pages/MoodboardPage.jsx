@@ -188,128 +188,130 @@ const MoodboardItem = ({
   
     // Render different content based on item type
     // Updated renderContent method with corrected property names
+// This is the fixed renderContent method from MoodboardItem component
 const renderContent = () => {
-    switch (item.type) {
-      case 'image':
-        return (
-          <Box sx={{ 
-            width: '100%', 
-            height: '100%', 
-            position: 'relative', 
-            overflow: 'hidden',
-            backgroundColor: '#f5f5f5', // Add background to make loading more visible
-          }}>
-            {/* Loading indicator */}
-            {!imageLoaded && item.content && (
-              <Box 
-                sx={{ 
-                  position: 'absolute', 
-                  top: 0, 
-                  left: 0, 
-                  right: 0, 
-                  bottom: 0, 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'center',
-                  backgroundColor: 'rgba(0,0,0,0.1)',
-                }}
-              >
-                <CircularProgress size={24} />
-              </Box>
-            )}
-            
-            <img 
-              src={item.content} 
-              alt={item.title || 'Moodboard image'} 
-              onLoad={() => setImageLoaded(true)}
-              onError={(e) => {
-                console.error('Image load error:', item.content);
-                // Replace with error placeholder if needed
-                // e.target.src = 'data:image/svg+xml,%3Csvg...';
-              }}
-              style={{ 
-                width: '100%', 
-                height: '100%', 
-                objectFit: 'contain', // Use contain instead of cover to preserve aspect ratio
-                pointerEvents: 'none', // Prevent image from capturing mouse events
-                opacity: imageLoaded ? 1 : 0.3, // Fade in when loaded
-                transition: 'opacity 0.3s ease',
-              }} 
-            />
-          </Box>
-        );
-      case 'text':
-        return (
-          <Box sx={{ width: '100%', height: '100%', pointerEvents: 'none' }}>
-            <Typography 
-              variant="body1" 
-              component="div" 
-              sx={{ 
-                p: 2, 
-                overflow: 'auto',
-                width: '100%',
-                height: '100%',
-                color: item.textColor || '#000000',
-                backgroundColor: item.backgroundColor || 'transparent',
-                // Use snake_case property names to match database schema
-                fontFamily: item.font_family || 'inherit',
-                fontSize: item.font_size || 'inherit',
-                fontWeight: item.font_weight || 'normal',
-                lineHeight: item.line_height || 'normal',
-                textAlign: item.text_align || 'left',
-                pointerEvents: 'none'
-              }}
-            >
-              {item.content}
-            </Typography>
-          </Box>
-        );
-      case 'video':
-        return (
-          <Box sx={{ width: '100%', height: '100%', pointerEvents: selected ? 'auto' : 'none' }}>
-            <video 
-              controls 
-              style={{ 
-                width: '100%', 
-                height: '100%', 
-                objectFit: 'contain', // Changed from cover to contain
-                pointerEvents: selected ? 'auto' : 'none' // Only allow video controls when selected
-              }}
-            >
-              <source src={item.content} type="video/mp4" />
-              Your browser does not support the video tag.
-            </video>
-          </Box>
-        );
-        case 'link':
-          // Enhanced link rendering using LinkPreview
-          return (
+  switch (item.type) {
+    case 'image':
+      return (
+        <Box sx={{ 
+          width: '100%', 
+          height: '100%', 
+          position: 'relative', 
+          overflow: 'hidden',
+          backgroundColor: '#f5f5f5', // Add background to make loading more visible
+        }}>
+          {/* Loading indicator */}
+          {!imageLoaded && item.content && (
             <Box 
               sx={{ 
-                width: '100%', 
-                height: '100%',
-                overflow: 'hidden',
-                borderRadius: item.border_radius || 1,
-                backgroundColor: item.backgroundColor || 'transparent',
+                position: 'absolute', 
+                top: 0, 
+                left: 0, 
+                right: 0, 
+                bottom: 0, 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center',
+                backgroundColor: 'rgba(0,0,0,0.1)',
               }}
             >
-              <LinkPreview 
-                url={item.content} 
-                height="100%" 
-                isEditable={isEditable} 
-              />
+              <CircularProgress size={24} />
             </Box>
-          );
-      default:
-        return (
-          <Box sx={{ p: 2, pointerEvents: 'none' }}>
-            <Typography variant="body2" color="text.secondary">
-              Unknown item type
-            </Typography>
-          </Box>
-        );
-    }
-  };
+          )}
+          
+          <img 
+            src={item.content} 
+            alt={item.title || 'Moodboard image'} 
+            onLoad={() => setImageLoaded(true)}
+            onError={(e) => {
+              console.error('Image load error:', item.content);
+              // Replace with error placeholder if needed
+              // e.target.src = 'data:image/svg+xml,%3Csvg...';
+            }}
+            style={{ 
+              width: '100%', 
+              height: '100%', 
+              objectFit: 'contain', // Use contain instead of cover to preserve aspect ratio
+              pointerEvents: 'none', // Prevent image from capturing mouse events
+              opacity: imageLoaded ? 1 : 0.3, // Fade in when loaded
+              transition: 'opacity 0.3s ease',
+            }} 
+          />
+        </Box>
+      );
+    case 'text':
+      return (
+        <Box sx={{ width: '100%', height: '100%', pointerEvents: 'none' }}>
+          <Typography 
+            variant="body1" 
+            component="div" 
+            sx={{ 
+              p: 2, 
+              overflow: 'auto',
+              width: '100%',
+              height: '100%',
+              color: item.textColor || '#000000',
+              backgroundColor: item.backgroundColor || 'transparent',
+              // Use snake_case property names to match database schema
+              fontFamily: item.font_family || 'inherit',
+              fontSize: item.font_size || 'inherit',
+              fontWeight: item.font_weight || 'normal',
+              lineHeight: item.line_height || 'normal',
+              textAlign: item.text_align || 'left',
+              pointerEvents: 'none'
+            }}
+          >
+            {item.content}
+          </Typography>
+        </Box>
+      );
+    case 'video':
+      return (
+        <Box sx={{ width: '100%', height: '100%', pointerEvents: selected ? 'auto' : 'none' }}>
+          <video 
+            controls 
+            style={{ 
+              width: '100%', 
+              height: '100%', 
+              objectFit: 'contain', // Changed from cover to contain
+              pointerEvents: selected ? 'auto' : 'none' // Only allow video controls when selected
+            }}
+          >
+            <source src={item.content} type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
+        </Box>
+      );
+    case 'link':
+      // Enhanced link rendering using LinkPreview - the key change is here!
+      return (
+        <Box 
+          sx={{ 
+            width: '100%', 
+            height: '100%',
+            overflow: 'hidden',
+            borderRadius: item.border_radius || 1,
+            backgroundColor: item.backgroundColor || 'transparent',
+          }}
+        >
+          <LinkPreview 
+            url={item.content} 
+            height="100%" 
+            isEditable={!isEditable} // IMPORTANT: We pass the opposite of isEditable
+                                    // When moodboard is editable (true), links should not be clickable (false)
+          />
+        </Box>
+      );
+    default:
+      return (
+        <Box sx={{ p: 2, pointerEvents: 'none' }}>
+          <Typography variant="body2" color="text.secondary">
+            Unknown item type
+          </Typography>
+        </Box>
+      );
+  }
+};
   
     return (
       <Paper
