@@ -21,6 +21,8 @@ const LinkPreview = ({ url, compact = false, onDataLoaded = null, height = 'auto
   const [ogData, setOgData] = useState(null);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const [faviconLoaded, setFaviconLoaded] = useState(false);
+  const [faviconError, setFaviconError] = useState(false);
 
   // Ensure URL has http/https prefix
   const formattedUrl = url && !url.startsWith('http') ? `https://${url}` : url;
@@ -36,6 +38,8 @@ const LinkPreview = ({ url, compact = false, onDataLoaded = null, height = 'auto
         setError(null);
         setImageLoaded(false);
         setImageError(false);
+        setFaviconLoaded(false);
+        setFaviconError(false);
         
         const data = await getOpenGraphData(formattedUrl);
         console.log('LinkPreview: Received data:', data);
@@ -60,6 +64,14 @@ const LinkPreview = ({ url, compact = false, onDataLoaded = null, height = 'auto
 
   const handleImageError = () => {
     setImageError(true);
+  };
+
+  const handleFaviconLoad = () => {
+    setFaviconLoaded(true);
+  };
+
+  const handleFaviconError = () => {
+    setFaviconError(true);
   };
 
   // Extract hostname from URL
@@ -166,7 +178,24 @@ const LinkPreview = ({ url, compact = false, onDataLoaded = null, height = 'auto
           p: 1
         }}
       >
-        <LinkIcon color="primary" sx={{ fontSize: 20, mr: 1, flexShrink: 0 }} />
+        {ogData.favicon && !faviconError ? (
+          <Box
+            component="img"
+            src={ogData.favicon}
+            alt="Site favicon"
+            onLoad={handleFaviconLoad}
+            onError={handleFaviconError}
+            sx={{
+              width: 20,
+              height: 20,
+              mr: 1,
+              flexShrink: 0,
+              display: faviconLoaded ? 'block' : 'none'
+            }}
+          />
+        ) : (
+          <LinkIcon color="primary" sx={{ fontSize: 20, mr: 1, flexShrink: 0 }} />
+        )}
         <Box sx={{ minWidth: 0, flexGrow: 1 }}>
           <Typography
             variant="subtitle2"
@@ -340,7 +369,23 @@ const LinkPreview = ({ url, compact = false, onDataLoaded = null, height = 'auto
               alignItems: 'center'
             }}
           >
-            <LinkIcon fontSize="small" sx={{ color: 'text.secondary', mr: 0.5 }} />
+            {ogData.favicon && !faviconError ? (
+              <Box
+                component="img"
+                src={ogData.favicon}
+                alt="Site favicon"
+                onLoad={handleFaviconLoad}
+                onError={handleFaviconError}
+                sx={{
+                  width: 16,
+                  height: 16,
+                  mr: 0.5,
+                  display: faviconLoaded ? 'block' : 'none'
+                }}
+              />
+            ) : (
+              <LinkIcon fontSize="small" sx={{ color: 'text.secondary', mr: 0.5 }} />
+            )}
             <Typography
               variant="caption"
               color="text.secondary"
