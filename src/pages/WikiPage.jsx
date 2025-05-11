@@ -3,6 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../supabaseclient';
 import { useAuth } from '../context/authcontext';
+// Import the useTheme hook from your ThemeProvider
+import { useTheme } from '../components/ThemeProvider';
 
 import {
   Container,
@@ -48,6 +50,8 @@ const WikiPage = () => {
   const { networkId, pageSlug } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  // Get theme information including darkMode state
+  const { darkMode } = useTheme();
   
   const [page, setPage] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -451,6 +455,46 @@ const WikiPage = () => {
 
   const displayContent = viewingRevision ? viewingRevision.content : page.content;
 
+  // Dark mode styling adjustments for the wiki content
+  const wikiContentStyles = {
+    // Add custom styles for the wiki content area depending on dark mode
+    color: darkMode ? 'inherit' : 'inherit',
+    '& a': {
+      color: darkMode ? '#90caf9' : '#1976d2', // Different link colors for dark/light mode
+    },
+    '& img': {
+      maxWidth: '100%',
+      height: 'auto',
+      // Optional: add a subtle border in dark mode for better visibility of images
+      ...(darkMode && {
+        border: '1px solid rgba(255, 255, 255, 0.1)',
+      }),
+    },
+    '& pre, & code': {
+      backgroundColor: darkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)',
+      padding: '0.2em 0.4em',
+      borderRadius: '3px',
+      fontFamily: 'monospace',
+    },
+    '& table': {
+      borderCollapse: 'collapse',
+      width: '100%',
+      marginBottom: '1rem',
+    },
+    '& th, & td': {
+      border: darkMode ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid rgba(0, 0, 0, 0.1)',
+      padding: '8px',
+    },
+    '& th': {
+      backgroundColor: darkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)',
+    },
+    '& blockquote': {
+      borderLeft: darkMode ? '4px solid rgba(255, 255, 255, 0.2)' : '4px solid rgba(0, 0, 0, 0.1)',
+      margin: '1em 0',
+      padding: '0 1em',
+    },
+  };
+
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       <Paper sx={{ p: 3 }}>
@@ -580,10 +624,10 @@ const WikiPage = () => {
 
         <Divider sx={{ mb: 3 }} />
 
-        {/* Page content */}
+        {/* Page content - with dark mode styling */}
         <Box sx={{ mb: 4 }}>
           {displayContent ? (
-            <Box className="wiki-content">
+            <Box className="wiki-content" sx={wikiContentStyles}>
               <div 
                 className="prose max-w-none" 
                 dangerouslySetInnerHTML={{ __html: displayContent }}
@@ -705,7 +749,7 @@ const WikiPage = () => {
         </Box>
       </Paper>
 
-      {/* Revision history sidebar */}
+      {/* Revision history sidebar - with dark mode compatible styling */}
       {showRevisionHistory && (
         <Paper sx={{ p: 3, mt: 3 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
@@ -731,7 +775,8 @@ const WikiPage = () => {
                     borderLeft: revision.is_approved ? '3px solid #4caf50' : 
                               viewingRevision?.id === revision.id ? '3px solid #2196f3' : 'none',
                     pl: revision.is_approved || viewingRevision?.id === revision.id ? 2 : 3,
-                    backgroundColor: viewingRevision?.id === revision.id ? 'rgba(33, 150, 243, 0.1)' : 'inherit'
+                    backgroundColor: viewingRevision?.id === revision.id ? 
+                      (darkMode ? 'rgba(33, 150, 243, 0.15)' : 'rgba(33, 150, 243, 0.1)') : 'inherit'
                   }}
                 >
                   <ListItemText
