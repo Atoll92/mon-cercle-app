@@ -1,156 +1,3 @@
-// // src/services/opengraphService.js
-// import { supabase } from '../supabaseclient';
-
-// /**
-//  * Improved fetch OpenGraph data for a URL
-//  * @param {string} url - The URL to fetch OpenGraph data for
-//  * @returns {Promise<object>} The OpenGraph data
-//  */
-// export const fetchOpenGraphData = async (url) => {
-//   try {
-//     console.log('OpenGraph Service: Fetching data for URL:', url);
-    
-//     // Simple URL validation
-//     if (!url || !url.trim() || !url.startsWith('http')) {
-//       console.error('OpenGraph Service: Invalid URL format:', url);
-//       return { title: url || 'Invalid URL', url: url || '#' };
-//     }
-    
-//     // Using a proxy to avoid CORS issues
-//     const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
-//     console.log('OpenGraph Service: Using proxy URL:', proxyUrl);
-    
-//     const response = await fetch(proxyUrl);
-    
-//     if (!response.ok) {
-//       throw new Error(`Network response error: ${response.status} ${response.statusText}`);
-//     }
-    
-//     const data = await response.json();
-    
-//     if (!data.contents) {
-//       console.warn('OpenGraph Service: No contents in response for URL:', url);
-//       return { title: url, url };
-//     }
-    
-//     // Parse HTML
-//     const parser = new DOMParser();
-//     const doc = parser.parseFromString(data.contents, 'text/html');
-    
-//     // Extract OG data
-//     const og = {
-//       url: url,
-//       title: getMetaTag(doc, 'og:title') || getMetaTag(doc, 'title') || doc.title || url,
-//       description: getMetaTag(doc, 'og:description') || getMetaTag(doc, 'description') || '',
-//       image: getMetaTag(doc, 'og:image') || '',
-//       siteName: getMetaTag(doc, 'og:site_name') || ''
-//     };
-    
-//     console.log('OpenGraph Service: Successfully extracted data:', og);
-//     return og;
-//   } catch (error) {
-//     console.error('OpenGraph Service: Error fetching data:', error);
-//     // Return a minimal object instead of throwing
-//     return { 
-//       title: url || 'Error loading URL',
-//       url: url || '#',
-//       error: error.message
-//     };
-//   }
-// };
-
-// /**
-//  * Fetch OpenGraph data from our Supabase cache or fetch it remotely
-//  * @param {string} url - The URL to fetch OpenGraph data for 
-//  * @returns {Promise<object>} The OpenGraph data
-//  */
-// export const getOpenGraphData = async (url) => {
-//   try {
-//     if (!url) {
-//       console.error('OpenGraph Service: No URL provided to getOpenGraphData');
-//       return { title: 'No URL provided', url: '#' };
-//     }
-    
-//     console.log('OpenGraph Service: Getting data for URL:', url);
-    
-//     // Check if we have cached data
-//     const { data: cachedData, error } = await supabase
-//       .from('opengraph_cache')
-//       .select('*')
-//       .eq('url', url)
-//       .maybeSingle();
-    
-//     // If we have fresh cached data (less than 7 days old), use it
-//     if (cachedData && !error && new Date(cachedData.updated_at) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)) {
-//       console.log('OpenGraph Service: Using cached data for URL:', url);
-//       try {
-//         return JSON.parse(cachedData.data);
-//       } catch (parseError) {
-//         console.error('OpenGraph Service: Error parsing cached data:', parseError);
-//         // If JSON parsing fails, continue to fetch new data
-//       }
-//     }
-    
-//     // Otherwise fetch new data
-//     console.log('OpenGraph Service: Fetching fresh data for URL:', url);
-//     const ogData = await fetchOpenGraphData(url);
-    
-//     // Cache the data if we got valid results
-//     if (ogData && ogData.title) {
-//       try {
-//         if (cachedData) {
-//           // Update existing cache
-//           console.log('OpenGraph Service: Updating cache for URL:', url);
-//           await supabase
-//             .from('opengraph_cache')
-//             .update({
-//               data: JSON.stringify(ogData),
-//               updated_at: new Date()
-//             })
-//             .eq('url', url);
-//         } else {
-//           // Create new cache entry
-//           console.log('OpenGraph Service: Creating new cache for URL:', url);
-//           await supabase
-//             .from('opengraph_cache')
-//             .insert([{
-//               url,
-//               data: JSON.stringify(ogData),
-//               created_at: new Date(),
-//               updated_at: new Date()
-//             }]);
-//         }
-//       } catch (cacheError) {
-//         console.error('OpenGraph Service: Error updating cache:', cacheError);
-//         // Don't fail if caching fails
-//       }
-//     }
-    
-//     return ogData;
-//   } catch (error) {
-//     console.error('OpenGraph Service: Error getting OpenGraph data:', error);
-//     return { 
-//       title: url || 'Error loading URL', 
-//       url: url || '#',
-//       error: error.message
-//     };
-//   }
-// };
-
-// /**
-//  * Helper function to get meta tag content
-//  */
-// function getMetaTag(doc, tagName) {
-//   try {
-//     const metaTag = doc.querySelector(`meta[property="${tagName}"], meta[name="${tagName}"]`);
-//     return metaTag ? metaTag.getAttribute('content') : null;
-//   } catch (error) {
-//     console.error('OpenGraph Service: Error getting meta tag:', tagName, error);
-//     return null;
-//   }
-// }
-
-
 // src/services/opengraphService.js
 import { supabase } from '../supabaseclient';
 
@@ -167,6 +14,21 @@ export const fetchOpenGraphData = async (url) => {
     let formattedUrl = url;
     if (!url.startsWith('http://') && !url.startsWith('https://')) {
       formattedUrl = 'https://' + url;
+    }
+
+    // Check if it's a YouTube URL - use direct API for better data
+    const ytVideoId = extractYouTubeVideoId(formattedUrl);
+    if (ytVideoId) {
+      try {
+        const ytData = await fetchYouTubeData(ytVideoId);
+        if (ytData) {
+          console.log('OpenGraph Service: Using YouTube API data:', ytData);
+          return ytData;
+        }
+      } catch (ytError) {
+        console.error('OpenGraph Service: YouTube API error:', ytError);
+        // Continue with normal fetch if YouTube API fails
+      }
     }
     
     // Using a proxy to avoid CORS issues
@@ -210,6 +72,49 @@ export const fetchOpenGraphData = async (url) => {
 };
 
 /**
+ * Extract YouTube video ID from URL
+ */
+function extractYouTubeVideoId(url) {
+  try {
+    const ytRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i;
+    const match = url.match(ytRegex);
+    return match ? match[1] : null;
+  } catch (error) {
+    console.error('Error extracting YouTube ID:', error);
+    return null;
+  }
+}
+
+/**
+ * Fetch YouTube video data using their oEmbed API
+ */
+async function fetchYouTubeData(videoId) {
+  try {
+    // YouTube oEmbed API doesn't require API key for basic info
+    const response = await fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`);
+    
+    if (!response.ok) {
+      throw new Error(`YouTube API error: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    
+    return {
+      url: `https://www.youtube.com/watch?v=${videoId}`,
+      title: data.title || 'YouTube Video',
+      description: data.author_name ? `Video by ${data.author_name}` : 'Watch this video on YouTube',
+      image: data.thumbnail_url || `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
+      siteName: 'YouTube',
+      favicon: 'https://www.youtube.com/s2/favicons?domain=youtube.com',
+      videoId: videoId
+    };
+  } catch (error) {
+    console.error('YouTube API fetch error:', error);
+    return null;
+  }
+}
+
+/**
  * Fetch OpenGraph data from our Supabase cache or fetch it remotely
  * @param {string} url - The URL to fetch OpenGraph data for 
  * @returns {Promise<object>} The OpenGraph data
@@ -229,16 +134,19 @@ export const getOpenGraphData = async (url) => {
       normalizedUrl = 'https://' + url;
     }
     
+    // Clean URL for caching (remove tracking parameters)
+    const cleanUrl = cleanUrlForCaching(normalizedUrl);
+    
     // Check if we have cached data
     const { data: cachedData, error } = await supabase
       .from('opengraph_cache')
       .select('*')
-      .eq('url', normalizedUrl)
+      .eq('url', cleanUrl)
       .maybeSingle();
     
     // If we have fresh cached data (less than 7 days old), use it
     if (cachedData && !error && new Date(cachedData.updated_at) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)) {
-      console.log('OpenGraph Service: Using cached data for URL:', normalizedUrl);
+      console.log('OpenGraph Service: Using cached data for URL:', cleanUrl);
       try {
         return JSON.parse(cachedData.data);
       } catch (parseError) {
@@ -256,25 +164,29 @@ export const getOpenGraphData = async (url) => {
       try {
         if (cachedData) {
           // Update existing cache
-          console.log('OpenGraph Service: Updating cache for URL:', normalizedUrl);
+          console.log('OpenGraph Service: Updating cache for URL:', cleanUrl);
           await supabase
             .from('opengraph_cache')
             .update({
               data: JSON.stringify(ogData),
-              updated_at: new Date()
+              updated_at: new Date().toISOString()
             })
-            .eq('url', normalizedUrl);
+            .eq('url', cleanUrl);
         } else {
-          // Create new cache entry
-          console.log('OpenGraph Service: Creating new cache for URL:', normalizedUrl);
+          // Create new cache entry with a unique URL to avoid conflicts
+          console.log('OpenGraph Service: Creating new cache for URL:', cleanUrl);
+          
+          // Use upsert instead of insert to handle potential conflicts
           await supabase
             .from('opengraph_cache')
-            .insert([{
-              url: normalizedUrl,
+            .upsert([{
+              url: cleanUrl,
               data: JSON.stringify(ogData),
-              created_at: new Date(),
-              updated_at: new Date()
-            }]);
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            }], { 
+              onConflict: 'url' 
+            });
         }
       } catch (cacheError) {
         console.error('OpenGraph Service: Error updating cache:', cacheError);
@@ -288,6 +200,27 @@ export const getOpenGraphData = async (url) => {
     return createFallbackData(url);
   }
 };
+
+/**
+ * Clean URL by removing tracking parameters for better caching
+ */
+function cleanUrlForCaching(url) {
+  try {
+    const urlObj = new URL(url);
+    
+    // Remove common tracking parameters
+    const trackingParams = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'fbclid', 'gclid', 'ab_channel'];
+    
+    trackingParams.forEach(param => {
+      urlObj.searchParams.delete(param);
+    });
+    
+    return urlObj.toString();
+  } catch (error) {
+    console.error('Error cleaning URL:', error);
+    return url;
+  }
+}
 
 /**
  * Helper function to get meta tag content
@@ -404,6 +337,14 @@ function getFallbackImage(url) {
     
     if (domain.includes('github.com')) {
       return 'https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png';
+    }
+    
+    if (domain.includes('youtube.com')) {
+      return 'https://www.youtube.com/img/desktop/yt_1200.png';
+    }
+    
+    if (domain.includes('spotify.com')) {
+      return 'https://storage.googleapis.com/pr-newsroom-wp/1/2018/11/Spotify_Logo_RGB_Green.png';
     }
     
     // Generate a placeholder with the domain name

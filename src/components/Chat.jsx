@@ -257,46 +257,52 @@ const extractUrl = (content) => {
 };
 
   // Function to render message content (either plain text or link preview)
-  const renderMessageContent = (message) => {
-    if (!message || !message.content) {
-      return null;
-    }
-    
-    // Important: Reset the regex before testing
+  // Function to render message content (either plain text or link preview)
+const renderMessageContent = (message) => {
+  if (!message || !message.content) {
+    return null;
+  }
+  
+  // Important: Reset the regex before testing
+  URL_REGEX.lastIndex = 0;
+  
+  // Check if content contains a URL
+  const isUrl = URL_REGEX.test(message.content);
+  console.log(`Message content: "${message.content}" - Contains URL: ${isUrl}`);
+  
+  if (isUrl) {
+    // Reset regex again before extracting
     URL_REGEX.lastIndex = 0;
     
-    // Check if content contains a URL
-    const isUrl = URL_REGEX.test(message.content);
-    console.log(`Message content: "${message.content}" - Contains URL: ${isUrl}`);
+    const url = message.content.match(URL_REGEX)[0];
+    console.log(`Found URL: ${url}`);
     
-    if (isUrl) {
-      // Reset regex again before extracting
-      URL_REGEX.lastIndex = 0;
-      
-      const url = message.content.match(URL_REGEX)[0];
-      console.log(`Found URL: ${url}`);
-      
-      // Render with link preview
-      return (
-        <>
-          <Typography component="span" variant="body2" sx={{ /*styles*/ }}>
+    // Check if the message is just the URL or contains additional text
+    const isOnlyUrl = message.content.trim() === url;
+    
+    // Render with link preview
+    return (
+      <>
+        {!isOnlyUrl && (
+          <Typography component="span" variant="body2" sx={{ mb: 1, display: 'block' }}>
             {message.content}
           </Typography>
-          
-          <Box sx={{ my: 1, bgcolor: 'background.paper', borderRadius: 1, overflow: 'hidden' }}>
-            <LinkPreview url={url} compact={false} isEditable={true} />
-          </Box>
-        </>
-      );
-    } else {
-      // Render as plain text
-      return (
-        <Typography component="span" variant="body2" sx={{ /*styles*/ }}>
-          {message.content}
-        </Typography>
-      );
-    }
-  };
+        )}
+        
+        <Box sx={{ my: isOnlyUrl ? 0 : 1, bgcolor: 'background.paper', borderRadius: 1, overflow: 'hidden' }}>
+          <LinkPreview url={url} compact={false} isEditable={true} />
+        </Box>
+      </>
+    );
+  } else {
+    // Render as plain text
+    return (
+      <Typography component="span" variant="body2">
+        {message.content}
+      </Typography>
+    );
+  }
+};
 
   // Count unique active users
   const activeUserCount = Object.keys(activeUsers).length;
