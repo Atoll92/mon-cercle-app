@@ -218,7 +218,8 @@ const EventsTab = ({
                       
                       return (
                         <Box 
-                          key={event.id} 
+                          key={event.id}
+                          className="parent-event-row" 
                           sx={{ 
                             display: 'flex',
                             borderBottom: index < events.filter(e => new Date(e.date) > new Date()).length - 1 ? '1px solid' : 'none',
@@ -226,46 +227,12 @@ const EventsTab = ({
                             position: 'relative',
                             transition: 'all 0.2s ease',
                             bgcolor: isToday ? 'rgba(33, 150, 243, 0.05)' : 'transparent',
+                            overflow: 'hidden', // Prevent content from spilling out
                             '&:hover': {
                               bgcolor: 'rgba(0, 0, 0, 0.02)',
                             }
                           }}
                         >
-                          {/* Date column */}
-                          <Box sx={{ 
-                            width: '80px', 
-                            p: 2,
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            borderRight: '1px solid',
-                            borderColor: 'divider'
-                          }}>
-                            <Box sx={{
-                              width: '48px',
-                              height: '48px',
-                              borderRadius: '50%',
-                              display: 'flex',
-                              flexDirection: 'column',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              bgcolor: dateBadgeColor,
-                              color: 'white',
-                              mb: 0.5
-                            }}>
-                              <Typography variant="caption" sx={{ fontWeight: 'bold', lineHeight: 1 }}>
-                                {eventDate.toLocaleString('default', { month: 'short' })}
-                              </Typography>
-                              <Typography variant="h6" sx={{ fontWeight: 'bold', lineHeight: 1 }}>
-                                {eventDate.getDate()}
-                              </Typography>
-                            </Box>
-                            <Typography variant="caption" color="text.secondary" sx={{ textAlign: 'center' }}>
-                              {isToday ? 'Today' : isTomorrow ? 'Tomorrow' : eventDate.toLocaleString('default', { weekday: 'short' })}
-                            </Typography>
-                          </Box>
-                          
                           {/* Event details */}
                           <Box sx={{ 
                             display: 'flex', 
@@ -273,37 +240,96 @@ const EventsTab = ({
                             position: 'relative',
                             overflow: 'hidden'
                           }}>
-                            {/* Event image */}
-                            {event.cover_image_url && (
-                              <Box sx={{ 
-                                width: '100px', 
-                                position: 'relative',
-                                overflow: 'hidden'
-                              }}>
-                                <img
-                                  src={event.cover_image_url}
-                                  alt={event.title}
-                                  style={{
-                                    width: '100%',
-                                    height: '100%',
-                                    objectFit: 'cover',
+                            {/* Event image with overlaid date badge - with animation on hover */}
+                            <Box sx={{ 
+                              width: '50%', // 50% of the column width as requested
+                              position: 'relative',
+                              overflow: 'hidden',
+                              transition: 'all 0.3s ease',
+                              flexShrink: 0, // Prevent shrinking by default
+                              '.parent-event-row:hover &': {
+                                width: '30%', // Shrink to 30% on hover
+                              }
+                            }}>
+                              {event.cover_image_url ? (
+                                <>
+                                  <img
+                                    src={event.cover_image_url}
+                                    alt={event.title}
+                                    style={{
+                                      width: '100%',
+                                      height: '100%',
+                                      objectFit: 'cover',
+                                      position: 'absolute',
+                                      top: 0,
+                                      left: 0,
+                                      transition: 'transform 0.3s ease',
+                                    }}
+                                  />
+                                  {/* Gradient overlay for text readability */}
+                                  <Box sx={{
                                     position: 'absolute',
                                     top: 0,
-                                    left: 0
-                                  }}
-                                />
-                                {/* Gradient overlay for text readability */}
+                                    left: 0,
+                                    right: 0,
+                                    bottom: 0,
+                                    background: 'linear-gradient(to right, rgba(0,0,0,0.4), rgba(0,0,0,0))',
+                                    zIndex: 1
+                                  }} />
+                                </>
+                              ) : (
                                 <Box sx={{
-                                  position: 'absolute',
-                                  top: 0,
-                                  left: 0,
-                                  right: 0,
-                                  bottom: 0,
-                                  background: 'linear-gradient(to right, rgba(0,0,0,0.5), rgba(0,0,0,0))',
-                                  zIndex: 1
+                                  width: '100%',
+                                  height: '100%',
+                                  bgcolor: 'rgba(0, 0, 0, 0.03)',
                                 }} />
+                              )}
+                              
+                              {/* Date badge overlay */}
+                              <Box sx={{
+                                position: 'absolute',
+                                top: 10,
+                                left: 10,
+                                zIndex: 2,
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'baseline'
+                              }}>
+                                <Box sx={{
+                                  width: '45px',
+                                  height: '45px',
+                                  borderRadius: '50%',
+                                  display: 'flex',
+                                  flexDirection: 'column',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  bgcolor: dateBadgeColor,
+                                  color: 'white',
+                                  boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
+                                }}>
+                                  <Typography variant="caption" sx={{ fontWeight: 'bold', lineHeight: 1 }}>
+                                    {eventDate.toLocaleString('default', { month: 'short' })}
+                                  </Typography>
+                                  <Typography variant="h6" sx={{ fontWeight: 'bold', lineHeight: 1 }}>
+                                    {eventDate.getDate()}
+                                  </Typography>
+                                </Box>
+                                <Typography 
+                                  variant="caption" 
+                                  sx={{ 
+                                    color: event.cover_image_url ? 'white' : 'text.secondary',
+                                    textShadow: event.cover_image_url ? '0 1px 2px rgba(0,0,0,0.8)' : 'none',
+                                    fontWeight: 'medium',
+                                    mt: 0.5,
+                                    bgcolor: event.cover_image_url ? 'rgba(0,0,0,0.4)' : 'transparent',
+                                    px: 1,
+                                    borderRadius: 1
+                                  }}
+                                >
+                                  {isToday ? 'Today' : isTomorrow ? 'Tomorrow' : eventDate.toLocaleString('default', { weekday: 'short' })}
+                                </Typography>
                               </Box>
-                            )}
+                            </Box>
                             
                             {/* Event info */}
                             <Box sx={{ 
@@ -312,7 +338,13 @@ const EventsTab = ({
                               flexDirection: 'column',
                               flex: '1 1 auto',
                               zIndex: 2,
-                              position: 'relative'
+                              position: 'relative',
+                              transition: 'all 0.3s ease',
+                              width: '50%', // Start at 50%
+                              '.parent-event-row:hover &': {
+                                width: '70%', // Expand to 70% on hover
+                              },
+                              overflow: 'hidden'
                             }}>
                               <Typography variant="subtitle1" sx={{ 
                                 fontWeight: 'medium', 
@@ -361,7 +393,7 @@ const EventsTab = ({
                                 )}
                                 
                                 <Box sx={{ display: 'flex', gap: 1, ml: 'auto' }}>
-                                  {/* Event link button if available */}
+                                  {/* Event link button if available
                                   {event.event_link && (
                                     <Button
                                       size="small"
@@ -374,7 +406,7 @@ const EventsTab = ({
                                     >
                                       Join
                                     </Button>
-                                  )}
+                                  )} */}
                                   
                                   <Button 
                                     size="small" 
@@ -678,6 +710,15 @@ const EventsTab = ({
             .map(event => {
               // Find user participation for this event
               const participation = userParticipations.find(p => p.event_id === event.id);
+              const eventDate = new Date(event.date);
+              const isToday = new Date().toDateString() === eventDate.toDateString();
+              const isTomorrow = new Date(new Date().setDate(new Date().getDate() + 1)).toDateString() === eventDate.toDateString();
+              
+              // Color to use for the date badge
+              const dateBadgeColor = participation ? 
+                (participation.status === 'attending' ? '#4caf50' : 
+                 participation.status === 'maybe' ? '#ff9800' : '#f44336') : 
+                (isToday ? '#2196f3' : '#757575');
               
               return (
                 <Grid item xs={12} sm={6} key={event.id}>
@@ -715,21 +756,32 @@ const EventsTab = ({
                         <Box sx={{
                           position: 'absolute',
                           top: 12,
-                          right: 12,
-                          backgroundColor: 'white',
-                          borderRadius: 1,
-                          padding: '4px 8px',
-                          boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                          left: 12,
+                          zIndex: 2,
                           display: 'flex',
                           flexDirection: 'column',
                           alignItems: 'center'
                         }}>
-                          <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 'bold' }}>
-                            {new Date(event.date).toLocaleString('default', { month: 'short' })}
-                          </Typography>
-                          <Typography variant="h6" color="text.primary" sx={{ fontWeight: 'bold', lineHeight: 1 }}>
-                            {new Date(event.date).getDate()}
-                          </Typography>
+                          <Box sx={{
+                            backgroundColor: dateBadgeColor,
+                            borderRadius: 1,
+                            padding: '4px 8px',
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            color: 'white'
+                          }}>
+                            <Typography variant="caption" sx={{ fontWeight: 'bold' }}>
+                              {eventDate.toLocaleString('default', { month: 'short' })}
+                            </Typography>
+                            <Typography variant="h6" sx={{ fontWeight: 'bold', lineHeight: 1 }}>
+                              {eventDate.getDate()}
+                            </Typography>
+                            <Typography variant="caption" sx={{ fontWeight: 'medium' }}>
+                              {isToday ? 'Today' : isTomorrow ? 'Tomorrow' : eventDate.toLocaleString('default', { weekday: 'short' })}
+                            </Typography>
+                          </Box>
                         </Box>
                       </Box>
                     )}
