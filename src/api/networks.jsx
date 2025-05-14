@@ -491,16 +491,27 @@ export const uploadEventImage = async (eventId, imageFile) => {
 };
 
 // News post functions
-export const createNewsPost = async (networkId, userId, title, content) => {
+export const createNewsPost = async (networkId, userId, title, content, imageUrl = null, imageCaption = null) => {
   try {
+    // Create base post object
+    const postData = {
+      title,
+      content,
+      network_id: networkId,
+      created_by: userId
+    };
+    
+    // Add image fields if provided
+    if (imageUrl) {
+      postData.image_url = imageUrl;
+      if (imageCaption) {
+        postData.image_caption = imageCaption;
+      }
+    }
+    
     const { data, error } = await supabase
       .from('network_news')
-      .insert([{
-        title,
-        content,
-        network_id: networkId,
-        created_by: userId
-      }])
+      .insert([postData])
       .select();
       
     if (error) throw error;

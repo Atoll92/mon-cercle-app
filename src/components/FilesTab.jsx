@@ -1,20 +1,15 @@
 // src/components/FilesTab.jsx
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseclient';
 import { useAuth } from '../context/authcontext';
+import { useNetwork } from '../context/networkContext';
 import {
   Box,
   Button,
   Typography,
   Paper,
   CircularProgress,
-  Grid,
-  Card,
-  CardContent,
-  CardActions,
-  Divider,
-  Chip,
   Alert,
   List,
   ListItem,
@@ -23,7 +18,8 @@ import {
   ListItemSecondaryAction,
   IconButton,
   Tooltip,
-  Avatar,
+  Chip,
+  Divider,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -44,9 +40,8 @@ import {
   ArrowForward as ArrowForwardIcon,
   Dashboard as DashboardIcon
 } from '@mui/icons-material';
-import { Attachment } from '@mui/icons-material';
 import { formatDistanceToNow } from 'date-fns';
-import { addMoodboardItem } from '../api/moodboards'; // Import the moodboards API
+import { addMoodboardItem } from '../api/moodboards';
 
 // Component to display file icon based on file type
 const FileTypeIcon = ({ fileType }) => {
@@ -78,19 +73,65 @@ const formatFileSize = (bytes) => {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 };
 
-// Files Tab Component
-const FilesTab = ({ networkId, isUserMember }) => {
+// Files Tab Component - now with simplified props and using context
+const FilesTab = ({ darkMode }) => {
   const { user } = useAuth();
-  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+  
+  // Use the network context
+  const { 
+    network,
+    files: allFiles,
+    loading, 
+    error: networkError,
+    refreshFiles,
+    isAdmin
+  } = useNetwork();
+  
+  // Local state
   const [files, setFiles] = useState([]);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
   const [moodboardDialogOpen, setMoodboardDialogOpen] = useState(false);
-  const [createMoodboardDialogOpen, setCreateMoodboardDialogOpen] = useState(false);
   const [userMoodboards, setUserMoodboards] = useState([]);
   const [loadingMoodboards, setLoadingMoodboards] = useState(false);
   const [processing, setProcessing] = useState(false);
+  
+  // Process files when they're loaded from context
+  useEffect(() => {
+    const processFiles = async () => {
+      if (!allFiles) return;
+      
+      try {
+        // Sort by most recent and take top 5
+        const recentFiles = [...allFiles]
+          .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+          .slice(0, 5);
+        
+        // Enhance file data with uploader information
+        const filesWithUploaders = await Promise.all(recentFiles.map(async (file) => {
+          const { data: uploaderData } = await supabase
+            .from('profiles')
+            .select('full_name, profile_picture_url')
+            .eq('id', file.uploaded_by)
+            .single();
+            
+          return {
+            ...file,
+            uploader: uploaderData || { full_name: 'Unknown User' }
+          };
+        }));
+        
+        setFiles(filesWithUploaders);
+      } catch (err) {
+        console.error('Error processing files:', err);
+        setError('Failed to process network files.');
+      }
+    };
+    
+    processFiles();
+  }, [allFiles]);
 
   // Function to fetch user's moodboards
   const fetchUserMoodboards = async () => {
@@ -114,50 +155,6 @@ const FilesTab = ({ networkId, isUserMember }) => {
       setLoadingMoodboards(false);
     }
   };
-  
-  useEffect(() => {
-    const fetchFiles = async () => {
-      if (!networkId) return;
-      
-      try {
-        setLoading(true);
-        setError(null);
-        
-        // Fetch only the 5 most recent files
-        const { data, error } = await supabase
-          .from('network_files')
-          .select('*')
-          .eq('network_id', networkId)
-          .order('created_at', { ascending: false })
-          .limit(5);
-          
-        if (error) throw error;
-        
-        // Enhance file data with uploader information
-        const filesWithUploaders = await Promise.all(data.map(async (file) => {
-          const { data: uploaderData } = await supabase
-            .from('profiles')
-            .select('full_name, profile_picture_url')
-            .eq('id', file.uploaded_by)
-            .single();
-            
-          return {
-            ...file,
-            uploader: uploaderData || { full_name: 'Unknown User' }
-          };
-        }));
-        
-        setFiles(filesWithUploaders);
-      } catch (error) {
-        console.error('Error fetching files:', error);
-        setError('Failed to load network files.');
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    fetchFiles();
-  }, [networkId]);
 
   const handleUseInMoodboard = (file) => {
     setSelectedFile(file);
@@ -172,7 +169,7 @@ const FilesTab = ({ networkId, isUserMember }) => {
       // Add the file as an image item to the moodboard
       const newItem = {
         moodboard_id: moodboardId,
-        type: file.file_type.startsWith('image/') ? 'image' : 'link',
+        type: file.file_type?.startsWith('image/') ? 'image' : 'link',
         content: file.file_url,
         title: file.filename,
         x: 100, // Default position
@@ -214,11 +211,17 @@ const FilesTab = ({ networkId, isUserMember }) => {
       
       // Trigger the download
       window.open(file.file_url, '_blank');
+      
+      // Refresh the files list in context to reflect updated download count
+      refreshFiles();
     } catch (error) {
       console.error('Error downloading file:', error);
       setError('Failed to download file.');
     }
   };
+
+  // Determine if user is a member
+  const isUserMember = user && network?.id;
   
   if (loading) {
     return (
@@ -229,7 +232,13 @@ const FilesTab = ({ networkId, isUserMember }) => {
   }
   
   return (
-    <Paper sx={{ p: 3 }}>
+    <Paper 
+      sx={{ 
+        p: 3,
+        bgcolor: darkMode ? 'background.paper' : undefined,
+        color: darkMode ? 'text.primary' : undefined
+      }}
+    >
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h5" component="h2">
           Network Files
@@ -237,7 +246,7 @@ const FilesTab = ({ networkId, isUserMember }) => {
         
         <Button
           component={Link}
-          to={`/network/${networkId}/files`}
+          to={`/network/${network?.id}/files`}
           variant="contained"
           color="primary"
           endIcon={<ArrowForwardIcon />}
@@ -246,9 +255,9 @@ const FilesTab = ({ networkId, isUserMember }) => {
         </Button>
       </Box>
       
-      {error && (
+      {(error || networkError) && (
         <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError(null)}>
-          {error}
+          {error || networkError}
         </Alert>
       )}
 
@@ -263,16 +272,26 @@ const FilesTab = ({ networkId, isUserMember }) => {
           You need to be a member of this network to access shared files.
         </Alert>
       ) : files.length === 0 ? (
-        <Paper sx={{ p: 4, textAlign: 'center', backgroundColor: '#f5f5f5' }}>
+        <Paper 
+          sx={{ 
+            p: 4, 
+            textAlign: 'center', 
+            backgroundColor: darkMode ? 'rgba(255,255,255,0.05)' : '#f5f5f5'
+          }}
+        >
           <Typography variant="h6" gutterBottom>
             No files shared yet
           </Typography>
-          <Typography variant="body2" color="text.secondary" paragraph>
+          <Typography 
+            variant="body2" 
+            color={darkMode ? 'text.secondary' : 'text.secondary'} 
+            paragraph
+          >
             Be the first to share files with this network!
           </Typography>
           <Button
             component={Link}
-            to={`/network/${networkId}/files`}
+            to={`/network/${network?.id}/files`}
             variant="contained"
             startIcon={<CloudUploadIcon />}
           >
@@ -285,7 +304,13 @@ const FilesTab = ({ networkId, isUserMember }) => {
             Recently Shared Files
           </Typography>
           
-          <List sx={{ bgcolor: 'background.paper' }}>
+          <List 
+            sx={{ 
+              bgcolor: darkMode ? 'background.paper' : 'background.paper',
+              border: darkMode ? '1px solid rgba(255,255,255,0.1)' : undefined,
+              borderRadius: 1
+            }}
+          >
             {files.map((file, index) => (
               <React.Fragment key={file.id}>
                 {index > 0 && <Divider component="li" />}
@@ -294,7 +319,7 @@ const FilesTab = ({ networkId, isUserMember }) => {
                   sx={{ 
                     p: 2,
                     '&:hover': {
-                      backgroundColor: 'rgba(0, 0, 0, 0.04)'
+                      backgroundColor: darkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.04)'
                     }
                   }}
                 >
@@ -315,16 +340,25 @@ const FilesTab = ({ networkId, isUserMember }) => {
                             label={formatFileSize(file.file_size)} 
                             size="small" 
                             variant="outlined"
+                            sx={{
+                              borderColor: darkMode ? 'rgba(255,255,255,0.2)' : undefined
+                            }}
                           />
                           <Chip 
                             label={`Uploaded ${formatDistanceToNow(new Date(file.created_at))} ago`} 
                             size="small" 
                             variant="outlined"
+                            sx={{
+                              borderColor: darkMode ? 'rgba(255,255,255,0.2)' : undefined
+                            }}
                           />
                           <Chip 
                             label={`By: ${file.uploader.full_name}`} 
                             size="small" 
                             variant="outlined"
+                            sx={{
+                              borderColor: darkMode ? 'rgba(255,255,255,0.2)' : undefined
+                            }}
                           />
                         </Box>
                       </>
@@ -362,6 +396,12 @@ const FilesTab = ({ networkId, isUserMember }) => {
             onClose={() => setMoodboardDialogOpen(false)}
             maxWidth="sm"
             fullWidth
+            PaperProps={{
+              sx: {
+                bgcolor: darkMode ? 'background.paper' : undefined,
+                color: darkMode ? 'text.primary' : undefined
+              }
+            }}
           >
             <DialogTitle>Add to Moodboard</DialogTitle>
             <DialogContent>
@@ -400,7 +440,7 @@ const FilesTab = ({ networkId, isUserMember }) => {
                 color="primary"
                 onClick={() => {
                   setMoodboardDialogOpen(false);
-                  navigate(`/network/${networkId}/moodboards/create`, { 
+                  navigate(`/network/${network?.id}/moodboards/create`, { 
                     state: { fileToAdd: selectedFile } 
                   });
                 }}
@@ -413,7 +453,7 @@ const FilesTab = ({ networkId, isUserMember }) => {
           <Box sx={{ mt: 3, textAlign: 'center' }}>
             <Button 
               component={Link}
-              to={`/network/${networkId}/files`}
+              to={`/network/${network?.id}/files`}
               variant="outlined"
               endIcon={<ArrowForwardIcon />}
             >

@@ -1,15 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useParams, useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/authcontext';
-import { useTheme } from '../components/ThemeProvider'; // Import useTheme hook
-import { supabase } from '../supabaseclient';
-import { fetchNetworkMembers } from '../api/networks';
+import { useTheme } from '../components/ThemeProvider';
+import { useNetwork, NetworkProviderWithParams } from '../context/networkContext';
 import ArticleIcon from '@mui/icons-material/Article';
 import ChatIcon from '@mui/icons-material/Chat';
 import TimelineIcon from '@mui/icons-material/Timeline';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
-import MailIcon from '@mui/icons-material/Mail';
-import { Attachment } from '@mui/icons-material';
+import AttachmentIcon from '@mui/icons-material/Attachment';
 
 import {
   Container,
@@ -49,150 +47,46 @@ import SocialWallTab from '../components/SocialWallTab';
 import WikiTab from '../components/WikiTab';
 import AboutTab from '../components/AboutTab';
 import MemberDetailsModal from '../components/MembersDetailModal';
-import AttachmentIcon from '@mui/icons-material/Attachment';
 import FilesTab from '../components/FilesTab';
 
+// Create wrapper component that uses NetworkProviderWithParams
+const NetworkLandingPageWrapper = () => (
+  <NetworkProviderWithParams>
+    <NetworkLandingPage />
+  </NetworkProviderWithParams>
+);
+
 function NetworkLandingPage() {
-  const { networkId } = useParams();
   const { user } = useAuth();
-  const { darkMode } = useTheme(); // Get darkMode from theme context
-  const muiTheme = useMuiTheme(); // Get the MUI theme for accessing custom colors
+  const { darkMode } = useTheme();
+  const muiTheme = useMuiTheme();
   const navigate = useNavigate();
-  const [events, setEvents] = useState([]);
   
-  const [network, setNetwork] = useState(null);
-  const [networkMembers, setNetworkMembers] = useState([]);
-  const [userProfile, setUserProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  // Use the network context instead of local state and API calls
+  const {
+    network,
+    members: networkMembers,
+    events,
+    news: networkNews,
+    files,
+    loading,
+    error,
+    userRole,
+    isAdmin: isUserAdmin
+  } = useNetwork();
+  
   const [activeTab, setActiveTab] = useState(0);
   const [copied, setCopied] = useState(false);
   const [showShareLink, setShowShareLink] = useState(false);
-  const [shareableLink, setShareableLink] = useState('');
-  const [networkNews, setNetworkNews] = useState([]);
-  const [socialWallItems, setSocialWallItems] = useState([]);
-  const [userParticipations, setUserParticipations] = useState([]);
   const [selectedMember, setSelectedMember] = useState(null);
   const [showMemberModal, setShowMemberModal] = useState(false);
+  const [userParticipations, setUserParticipations] = useState([]);
+  
+  // Generate shareable link
+  const shareableLink = network ? `${window.location.origin}/network/${network.id}` : '';
   
   // Use the global darkMode state for members tab
   const membersTabDarkMode = darkMode;
-  
-  useEffect(() => {
-    const fetchData = async () => {
-      if (!networkId) return;
-      
-      try {
-        setLoading(true);
-        setError(null);
-        
-        // Fetch network data
-        const { data: networkData, error: networkError } = await supabase
-          .from('networks')
-          .select('*')
-          .eq('id', networkId)
-          .single();
-          
-        if (networkError) throw networkError;
-        setNetwork(networkData);
-        
-        // Generate shareable link
-        const baseUrl = window.location.origin;
-        setShareableLink(`${baseUrl}/network/${networkId}`);
-        
-        // Fetch network members
-        const members = await fetchNetworkMembers(networkId);
-        setNetworkMembers(members || []);
-
-        // Fetch network events
-        const { data: eventsData, error: eventsError } = await supabase
-          .from('network_events')
-          .select('*')
-          .eq('network_id', networkId)
-          .order('date', { ascending: true });
- 
-        if (eventsError) console.error('Error fetching events:', eventsError);
-        setEvents(eventsData || []);
-
-        const { data: newsData, error: newsError } = await supabase
-          .from('network_news')
-          .select('*')
-          .eq('network_id', networkId)
-          .order('created_at', { ascending: false });
-
-        if (newsError) console.error('News error:', newsError);
-        setNetworkNews(newsData || []);
-        
-        // If user is logged in, get their profile and participations
-        if (user) {
-          const { data: profileData, error: profileError } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', user.id)
-            .single();
-            
-          if (!profileError) {
-            setUserProfile(profileData);
-            
-            // Fetch user's event participations
-            const { data: participations, error: participationsError } = await supabase
-              .from('event_participations')
-              .select('event_id, status')
-              .eq('profile_id', user.id);
-              
-            if (!participationsError) {
-              setUserParticipations(participations || []);
-            }
-          }
-        }
-
-        const portfolioItems = [];
-        // Fetch all portfolio items for network members in a single query
-        const { data: portfolioData, error: portfolioError } = await supabase
-          .from('portfolio_items')
-          .select('*, profiles:profile_id(id, full_name, profile_picture_url)')
-          .in('profile_id', members.map(member => member.id))
-          .order('created_at', { ascending: false });
-          
-        if (!portfolioError && portfolioData) {
-          // Map the results to include member information
-          const portfolioWithMember = portfolioData.map(item => ({
-            ...item,
-            memberName: item.profiles?.full_name,
-            memberAvatar: item.profiles?.profile_picture_url,
-            memberId: item.profiles?.id,
-            itemType: 'portfolio'
-          }));
-          
-          portfolioItems.push(...portfolioWithMember);
-        }
-
-        const combinedFeed = [
-          ...newsData.map(item => ({
-            ...item,
-            itemType: 'news',
-            createdAt: item.created_at
-          })),
-          ...portfolioItems.map(item => ({
-            ...item,
-            createdAt: item.created_at || new Date().toISOString()
-          }))
-        ];
-
-        // Sort by creation date
-        combinedFeed.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-        setSocialWallItems(combinedFeed);
-
-      } catch (error) {
-        console.error('Error fetching network data:', error);
-        setError('Failed to load network information. It may not exist or you may not have permission to view it.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [networkId, user]);
   
   const handleTabChange = (event, newValue) => {
     setActiveTab(newValue);
@@ -205,8 +99,7 @@ function NetworkLandingPage() {
     });
   };
   
-  const isUserMember = userProfile && userProfile.network_id === networkId;
-  const isUserAdmin = isUserMember && userProfile.role === 'admin';
+  const isUserMember = user && network && userRole !== null;
   
   const handleMemberSelect = (member) => {
     setSelectedMember(member);
@@ -236,6 +129,26 @@ function NetworkLandingPage() {
       return prevParticipations;
     });
   };
+
+  // Prepare social wall items
+  const socialWallItems = React.useMemo(() => {
+    if (!networkNews) return [];
+    
+    // Social wall items would be prepared here
+    // In a real app, this would combine news and portfolio items
+    const combinedFeed = [
+      ...networkNews.map(item => ({
+        ...item,
+        itemType: 'news',
+        createdAt: item.created_at
+      }))
+      // Add other items as needed
+    ];
+    
+    // Sort by creation date
+    combinedFeed.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    return combinedFeed;
+  }, [networkNews]);
 
   if (loading) {
     return (
@@ -506,7 +419,7 @@ function NetworkLandingPage() {
           networkMembers={networkMembers}
           user={user}
           isUserAdmin={isUserAdmin}
-          networkId={networkId}
+          networkId={network.id}
           loading={loading}
           darkMode={membersTabDarkMode}
           onMemberSelect={handleMemberSelect}
@@ -534,7 +447,7 @@ function NetworkLandingPage() {
 
       {activeTab === 3 && (
         <ChatTab
-          networkId={networkId}
+          networkId={network.id}
           isUserMember={isUserMember}
           darkMode={darkMode} // Pass dark mode to chat tab
         />
@@ -550,7 +463,7 @@ function NetworkLandingPage() {
 
       {activeTab === 5 && (
         <WikiTab
-          networkId={networkId}
+          networkId={network.id}
           isUserMember={isUserMember}
           darkMode={darkMode} // Pass dark mode to wiki tab
         />
@@ -567,9 +480,10 @@ function NetworkLandingPage() {
 
       {activeTab === 6 && (
         <FilesTab
-          networkId={networkId}
+          networkId={network.id}
           isUserMember={isUserMember}
           darkMode={darkMode} // Pass dark mode to files tab
+          files={files}
         />
       )}
       
@@ -605,4 +519,5 @@ function NetworkLandingPage() {
   );
 }
 
-export default NetworkLandingPage;
+// Export the wrapper component instead of the base component
+export default NetworkLandingPageWrapper;
