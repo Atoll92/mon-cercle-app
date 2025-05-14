@@ -38,6 +38,17 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
   const muiTheme = useTheme();
   const isMobile = useMediaQuery(muiTheme.breakpoints.down('sm'));
   
+  // Debug log for items received
+  React.useEffect(() => {
+    console.log('SocialWallTab received items:', socialWallItems);
+    // Log portfolio items specifically
+    const portfolioItems = socialWallItems.filter(item => item.itemType === 'portfolio');
+    console.log('Portfolio items:', portfolioItems);
+    // Log if there are portfolio items with images
+    const portfolioItemsWithImages = portfolioItems.filter(item => item.image_url);
+    console.log('Portfolio items with images:', portfolioItemsWithImages);
+  }, [socialWallItems]);
+  
   // When using theme.palette.custom, check first if it exists
   // This is for compatibility with both your custom theme and the default theme
   const customLightText = muiTheme.palette.custom?.lightText || (darkMode ? '#ffffff' : '#000000');
@@ -50,6 +61,7 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const [scrollPosition, setScrollPosition] = useState(0);
   
   // State for expanded cards
   const [expandedCardId, setExpandedCardId] = useState(null);
@@ -89,36 +101,69 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
     }
   }, [expandedCardId]);
   
+  // Declare a ref for the loadMore function to avoid circular dependencies
+  const loadMoreFn = useRef(null);
+  
   const lastItemRef = useCallback(node => {
     if (loading) return;
     if (observer.current) observer.current.disconnect();
     
     observer.current = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting && hasMore) {
-        loadMoreItems();
+      if (entries[0].isIntersecting && hasMore && loadMoreFn.current) {
+        console.log('Last item is visible, loading more items...');
+        loadMoreFn.current();
       }
+    }, {
+      rootMargin: '200px', // Load more content before reaching the end
+      threshold: 0.1 // Trigger when at least 10% of the element is visible
     });
     
     if (node) observer.current.observe(node);
   }, [loading, hasMore]);
   
+  // No additional preload function needed, we're using the ref to loadMoreItems
+
   // Scroll position tracking
   useEffect(() => {
     const handleScroll = () => {
-      setShowScrollTop(window.pageYOffset > 300);
+      const currentPosition = window.pageYOffset;
+      setShowScrollTop(currentPosition > 300);
+      setScrollPosition(currentPosition);
+      
+      // If user is scrolling back up and not near the bottom, preload more content
+      const scrollingUp = currentPosition < scrollPosition;
+      const nearBottom = window.innerHeight + currentPosition > document.body.offsetHeight - 1000;
+      
+      if (scrollingUp && !nearBottom && hasMore && !loading) {
+        // Preload more content when scrolling up to ensure content is already loaded
+        const shouldPreloadMore = page * ITEMS_PER_FETCH < socialWallItems.length;
+        if (shouldPreloadMore && loadMoreFn.current) {
+          console.log('Preloading more items while scrolling up');
+          setTimeout(loadMoreFn.current, 100); // Small delay to avoid performance issues
+        }
+      }
     };
     
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [scrollPosition, hasMore, loading, page, socialWallItems.length]);
   
   // Initial load
   useEffect(() => {
     if (socialWallItems && socialWallItems.length > 0) {
-      // Load first batch of items
-      const initialItems = socialWallItems.slice(0, ITEMS_PER_FETCH);
+      // Determine how many items to load initially - more if there are fewer total items
+      const initialLoadCount = Math.min(
+        ITEMS_PER_FETCH * 2, // Load 2 pages worth initially for smoother experience
+        Math.max(ITEMS_PER_FETCH, Math.ceil(socialWallItems.length / 2)) // But at least half of all items
+      );
+      
+      console.log(`Initially loading ${initialLoadCount} of ${socialWallItems.length} items`);
+      
+      // Load initial batch of items
+      const initialItems = socialWallItems.slice(0, initialLoadCount);
       setDisplayItems(initialItems);
-      setHasMore(socialWallItems.length > initialItems.length);
+      setPage(Math.ceil(initialLoadCount / ITEMS_PER_FETCH)); // Set appropriate page number
+      setHasMore(socialWallItems.length > initialLoadCount);
     } else {
       setDisplayItems([]);
       setHasMore(false);
@@ -132,21 +177,28 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
     setLoading(true);
     
     setTimeout(() => {
-      const nextItems = socialWallItems.slice(
-        page * ITEMS_PER_FETCH,
-        (page + 1) * ITEMS_PER_FETCH
-      );
+      // Calculate which items to display based on the current page
+      const endIndex = (page + 1) * ITEMS_PER_FETCH;
+      const nextItems = socialWallItems.slice(0, endIndex);
       
-      if (nextItems.length === 0) {
+      if (nextItems.length === socialWallItems.length) {
         setHasMore(false);
       } else {
-        setDisplayItems(prevItems => [...prevItems, ...nextItems]);
         setPage(prevPage => prevPage + 1);
       }
       
+      // Always set displayItems to all items up to the current page
+      setDisplayItems(nextItems);
       setLoading(false);
+      
+      console.log(`Loaded items up to page ${page + 1}, total: ${nextItems.length} items`);
     }, 500); // Small timeout to prevent rapid scrolling issues
   }, [page, hasMore, loading, socialWallItems]);
+  
+  // Store the loadMoreItems function in the ref
+  useEffect(() => {
+    loadMoreFn.current = loadMoreItems;
+  }, [loadMoreItems]);
   
   // Scroll to top function
   const scrollToTop = () => {
@@ -282,12 +334,15 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
             }}
           >
             {displayItems.map((item, index) => {
-              const isLastItem = index === displayItems.length - 1;
+              // Set the ref to the last visible item, as well as to a few items before the end
+              // to ensure smoother loading
+              const isRefItem = index === displayItems.length - 1 || 
+                               (displayItems.length > 10 && index % 10 === 0 && index > displayItems.length - 10);
               
               return (
                 <Card 
                   key={`${item.itemType}-${item.id}`}
-                  ref={isLastItem ? lastItemRef : (expandedCardId === `${item.itemType}-${item.id}` ? expandedCardRef : null)}
+                  ref={isRefItem ? lastItemRef : (expandedCardId === `${item.itemType}-${item.id}` ? expandedCardRef : null)}
                   sx={{ 
                     mb: 3,
                     height: getCardHeight(item),
@@ -377,6 +432,11 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                           objectFit: 'contain', // Never crop the image
                           bgcolor: darkMode ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.05)',
                           p: 1 // Add slight padding around the image
+                        }}
+                        onError={(e) => {
+                          console.error("Error loading image:", item.image_url);
+                          e.target.onerror = null; // Prevent infinite error loop
+                          e.target.src = 'https://via.placeholder.com/300x200?text=Image+Not+Available';
                         }}
                       />
                     </Box>

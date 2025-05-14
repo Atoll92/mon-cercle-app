@@ -299,20 +299,35 @@ function EditProfilePage() {
           const fileName = `${user.id}-${Date.now()}-${index}.${fileExt}`;
           const filePath = `portfolios/${fileName}`;
 
+          console.log('Uploading portfolio image:', filePath); // Debug log
+          
           const { error: uploadError } = await supabase.storage
             .from('profiles')
             .upload(filePath, item.imageFile);
 
-          if (uploadError) throw uploadError;
+          if (uploadError) {
+            console.error('Error uploading portfolio image:', uploadError);
+            throw uploadError;
+          }
 
           const { data: urlData } = supabase.storage
             .from('profiles')
             .getPublicUrl(filePath);
           
           imageUrl = urlData.publicUrl;
+          console.log('Generated image URL:', imageUrl); // Debug log
         }
 
-        const { error } = await supabase
+        console.log('Saving portfolio item:', {
+          id: item.id || undefined,
+          profile_id: user.id,
+          title: item.title,
+          description: item.description,
+          url: item.url,
+          image_url: imageUrl
+        }); // Debug log
+        
+        const { error, data } = await supabase
           .from('portfolio_items')
           .upsert({
             id: item.id || undefined,
@@ -321,9 +336,14 @@ function EditProfilePage() {
             description: item.description,
             url: item.url,
             image_url: imageUrl
-          });
+          }, { returning: 'minimal' });
 
-        if (error) throw error;
+        if (error) {
+          console.error('Error saving portfolio item:', error);
+          throw error;
+        }
+        
+        console.log('Portfolio item saved successfully');
       }
       
       // Upload avatar if changed

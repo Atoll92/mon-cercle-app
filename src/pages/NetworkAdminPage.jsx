@@ -42,6 +42,8 @@ import NetworkInfoPanel from '../components/admin/NetworkInfoPanel';
 import ThemeTab from '../components/admin/ThemeTab';
 import EventsTab from '../components/admin/EventsTab';
 import NewsTab from '../components/admin/Newstab';
+import AdminLayout from '../components/admin/AdminLayout';
+import AdminBreadcrumbs from '../components/admin/AdminBreadcrumbs';
 
 // Helper component for tab panels
 function TabPanel(props) {
@@ -156,199 +158,191 @@ function NetworkAdminPage() {
   };
 
   if (loading) {
+    // Show a more engaging loading state with the AdminLayout
     return (
-      <Box 
-        sx={{ 
-          display: 'flex', 
-          justifyContent: 'center', 
-          alignItems: 'center', 
-          height: '100vh',
-          color: muiTheme.palette.custom.lightText
-        }}
+      <AdminLayout
+        darkMode={darkMode}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        network={null}
       >
-        <CircularProgress size={60} />
-      </Box>
+        <Box 
+          sx={{ 
+            display: 'flex', 
+            flexDirection: 'column',
+            justifyContent: 'center', 
+            alignItems: 'center', 
+            height: '70vh',
+            color: muiTheme.palette.custom.lightText
+          }}
+        >
+          <CircularProgress size={60} sx={{ mb: 3 }} />
+          <Typography variant="h6">
+            Loading admin panel...
+          </Typography>
+        </Box>
+      </AdminLayout>
     );
   }
 
   if (error) {
     return (
-      <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+      <AdminLayout
+        darkMode={darkMode}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        network={null}
+      >
         <Paper 
           sx={{ 
-            p: 3, 
+            p: 4, 
             mb: 3,
             bgcolor: muiTheme.palette.background.paper,
-            color: muiTheme.palette.custom.lightText
+            color: muiTheme.palette.custom.lightText,
+            borderRadius: 2,
+            textAlign: 'center',
+            border: `1px solid ${muiTheme.palette.error.light}`
           }}
         >
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <Button
+          <Typography variant="h5" component="h1" gutterBottom sx={{ color: muiTheme.palette.error.main }}>
+            Admin Panel Access Error
+          </Typography>
+          
+          <Alert severity="error" sx={{ mb: 4, justifyContent: 'center' }}>
+            {error}
+          </Alert>
+          
+          <Box sx={{ mt: 3 }}>
+            <Button 
+              variant="contained" 
               component={Link}
               to="/dashboard"
               startIcon={<ArrowBackIcon />}
-              sx={{ mr: 2 }}
+              size="large"
             >
-              Back to Dashboard
+              Return to Dashboard
             </Button>
-            <Typography variant="h4" component="h1">
-              Network Admin Error
-            </Typography>
           </Box>
         </Paper>
-        
-        <Alert severity="error" sx={{ mb: 3 }}>
-          {error}
-        </Alert>
-        
-        <Box sx={{ textAlign: 'center', mt: 3 }}>
-          <Button 
-            variant="contained" 
-            component={Link}
-            to="/dashboard"
-          >
-            Return to Dashboard
-          </Button>
-        </Box>
-      </Container>
+      </AdminLayout>
     );
   }
 
+  // Use our new AdminLayout component
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-      <Paper 
-        sx={{ 
-          p: 3, 
-          mb: 3,
-          bgcolor: muiTheme.palette.background.paper,
-          color: muiTheme.palette.custom.lightText
-        }}
-      >
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <Button
-            component={Link}
-            to="/dashboard"
-            startIcon={<ArrowBackIcon />}
-            sx={{ mr: 2 }}
-          >
-            Back to Dashboard
-          </Button>
-          <Typography variant="h4" component="h1">
-            Network Admin Panel
-          </Typography>
-        </Box>
-      </Paper>
-
+    <AdminLayout 
+      darkMode={darkMode} 
+      activeTab={activeTab} 
+      setActiveTab={setActiveTab} 
+      network={network}
+      message={message}
+      clearMessage={() => setMessage('')}
+    >
+      {/* Breadcrumbs navigation */}
+      <AdminBreadcrumbs 
+        activeTab={activeTab} 
+        networkName={network?.name} 
+        darkMode={darkMode} 
+      />
+      
       {message && (
-        <Alert severity="success" sx={{ mb: 3 }} onClose={() => setMessage('')}>
+        <Alert severity="success" sx={{ mb: 4 }} onClose={() => setMessage('')}>
           {message}
         </Alert>
       )}
 
-      <Paper 
-        sx={{ 
-          mb: 3,
+      {/* Tab panels with content */}
+      <Paper
+        elevation={0}
+        sx={{
+          p: { xs: 2, sm: 3 },
           bgcolor: muiTheme.palette.background.paper,
-          // Add a subtle border for better visibility
+          borderRadius: 2,
           border: `1px solid ${muiTheme.palette.custom.border}`,
-          // Add shadow for better separation
-          boxShadow: darkMode ? '0 4px 20px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.1)'
+          mb: 3,
+          boxShadow: darkMode ? '0 4px 20px rgba(0,0,0,0.2)' : '0 1px 3px rgba(0,0,0,0.05)'
         }}
       >
-        <Tabs
-          value={activeTab}
-          onChange={handleTabChange}
-          indicatorColor="primary"
-          textColor={darkMode ? "secondary" : "primary"}
-          centered
-          sx={{
-            // Add custom styles for dark mode
-            '& .MuiTab-root': {
-              color: muiTheme.palette.custom.fadedText,
-              '&.Mui-selected': {
-                color: muiTheme.palette.custom.lightText,
-              },
-            },
-            // Make the indicator more visible in dark mode
-            '& .MuiTabs-indicator': {
-              backgroundColor: darkMode ? '#90caf9' : undefined,
-              height: darkMode ? 3 : undefined,
-            }
-          }}
-        >
-          <Tab label="Network Settings" icon={<AdminIcon />} />
-          <Tab label="Members" icon={<PersonAddIcon />} />
-          <Tab label="News" icon={<ArticleIcon />} />
-          <Tab label="Events" icon={<EventIcon />} />
-          <Tab label="Theme & Branding" icon={<PaletteIcon />} />
-        </Tabs>
+        <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+          <Typography 
+            variant="h5" 
+            component="h1" 
+            sx={{ mb: 3, color: muiTheme.palette.custom.lightText, fontWeight: 'medium' }}
+          >
+            {activeTab === 0 && "Network Settings"}
+            {activeTab === 1 && "Members Management"}
+            {activeTab === 2 && "News Management"}
+            {activeTab === 3 && "Events Management"}
+            {activeTab === 4 && "Theme & Branding"}
+          </Typography>
+        </Box>
+
+        {activeTab === 0 && (
+          <Grid container spacing={3}>
+            <Grid item xs={12} md={6}>
+              {/* Network Settings Component */}
+              <NetworkSettingsTab 
+                network={network} 
+                onNetworkUpdate={updateNetworkState}
+                darkMode={darkMode} // Pass dark mode to component
+              />
+            </Grid>
+            
+            <Grid item xs={12} md={6}>
+              {/* Network Info Component */}
+              <NetworkInfoPanel 
+                network={network} 
+                members={members}
+                darkMode={darkMode} // Pass dark mode to component
+              />
+            </Grid>
+          </Grid>
+        )}
+
+        {activeTab === 1 && (
+          /* Members Management Component */
+          <MembersTab
+            members={members}
+            user={user}
+            network={network}
+            onMembersChange={refreshMembers}
+            darkMode={darkMode} // Pass dark mode to component
+          />
+        )}
+
+        {activeTab === 2 && (
+          /* News Management Component */
+          <NewsTab
+            networkId={network.id}
+            userId={user.id}
+            newsPosts={newsPosts}
+            setNewsPosts={setNewsPosts}
+            members={members}
+            darkMode={darkMode} // Pass dark mode to component
+          />
+        )}
+
+        {activeTab === 3 && (
+          /* Events Management Component */
+          <EventsTab 
+            events={events}
+            setEvents={setEvents}
+            user={user}
+            networkId={network.id}
+            darkMode={darkMode} // Pass dark mode to component
+          />
+        )}
+
+        {activeTab === 4 && (
+          /* Theme Settings Component */
+          <ThemeTab 
+            network={network} 
+            onNetworkUpdate={updateNetworkState}
+            darkMode={darkMode} // Pass dark mode to component
+          />
+        )}
       </Paper>
-
-      <TabPanel value={activeTab} index={0}>
-        <Grid container spacing={3}>
-          <Grid item xs={12} md={6}>
-            {/* Network Settings Component */}
-            <NetworkSettingsTab 
-              network={network} 
-              onNetworkUpdate={updateNetworkState}
-              darkMode={darkMode} // Pass dark mode to component
-            />
-          </Grid>
-          
-          <Grid item xs={12} md={6}>
-            {/* Network Info Component */}
-            <NetworkInfoPanel 
-              network={network} 
-              members={members}
-              darkMode={darkMode} // Pass dark mode to component
-            />
-          </Grid>
-        </Grid>
-      </TabPanel>
-
-      <TabPanel value={activeTab} index={1}>
-        {/* Members Management Component */}
-        <MembersTab
-          members={members}
-          user={user}
-          network={network}
-          onMembersChange={refreshMembers}
-          darkMode={darkMode} // Pass dark mode to component
-        />
-      </TabPanel>
-
-      <TabPanel value={activeTab} index={2}>
-        {/* News Management Component */}
-        <NewsTab
-          networkId={network.id}
-          userId={user.id}
-          newsPosts={newsPosts}
-          setNewsPosts={setNewsPosts}
-          members={members}
-          darkMode={darkMode} // Pass dark mode to component
-        />
-      </TabPanel>
-
-      <TabPanel value={activeTab} index={3}>
-        {/* Events Management Component */}
-        <EventsTab 
-          events={events}
-          setEvents={setEvents}
-          user={user}
-          networkId={network.id}
-          darkMode={darkMode} // Pass dark mode to component
-        />
-      </TabPanel>
-
-      <TabPanel value={activeTab} index={4}>
-        {/* Theme Settings Component */}
-        <ThemeTab 
-          network={network} 
-          onNetworkUpdate={updateNetworkState}
-          darkMode={darkMode} // Pass dark mode to component
-        />
-      </TabPanel>
-    </Container>
+    </AdminLayout>
   );
 }
 

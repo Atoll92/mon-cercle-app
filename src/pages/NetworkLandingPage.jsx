@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/authcontext';
 import { useTheme } from '../components/ThemeProvider';
 import { useNetwork, NetworkProviderWithParams } from '../context/networkContext';
+import { supabase } from '../supabaseclient';
 import ArticleIcon from '@mui/icons-material/Article';
 import ChatIcon from '@mui/icons-material/Chat';
 import TimelineIcon from '@mui/icons-material/Timeline';
@@ -130,25 +131,77 @@ function NetworkLandingPage() {
     });
   };
 
+  // State to hold portfolio items for all members
+  const [portfolioItems, setPortfolioItems] = useState([]);
+  const [loadingPortfolios, setLoadingPortfolios] = useState(false);
+
+  // Fetch portfolio items for all network members
+  useEffect(() => {
+    const fetchPortfolioItems = async () => {
+      if (!networkMembers || networkMembers.length === 0) return;
+      
+      setLoadingPortfolios(true);
+      try {
+        // Fetch all portfolio items for the network members
+        const { data, error } = await supabase
+          .from('portfolio_items')
+          .select('*')
+          .in('profile_id', networkMembers.map(m => m.id));
+          
+        if (error) throw error;
+        
+        console.log('Fetched portfolio items:', data); // Debug log
+        
+        // Add member info to each portfolio item
+        const itemsWithMemberInfo = data.map(item => {
+          const member = networkMembers.find(m => m.id === item.profile_id);
+          return {
+            ...item,
+            itemType: 'portfolio',
+            createdAt: item.created_at,
+            memberName: member?.full_name || 'Network Member',
+            memberAvatar: member?.profile_picture_url || '',
+            memberId: member?.id,
+            // Ensure image_url is properly used
+            image_url: item.image_url || ''
+          };
+        });
+        
+        console.log('Portfolio items with member info:', itemsWithMemberInfo); // Debug log
+        setPortfolioItems(itemsWithMemberInfo);
+      } catch (err) {
+        console.error('Error fetching portfolio items:', err);
+      } finally {
+        setLoadingPortfolios(false);
+      }
+    };
+    
+    fetchPortfolioItems();
+  }, [networkMembers]);
+
   // Prepare social wall items
   const socialWallItems = React.useMemo(() => {
-    if (!networkNews) return [];
+    // Create arrays for news and portfolio items
+    const newsItems = networkNews ? networkNews.map(item => ({
+      ...item,
+      itemType: 'news',
+      createdAt: item.created_at
+    })) : [];
     
-    // Social wall items would be prepared here
-    // In a real app, this would combine news and portfolio items
-    const combinedFeed = [
-      ...networkNews.map(item => ({
-        ...item,
-        itemType: 'news',
-        createdAt: item.created_at
-      }))
-      // Add other items as needed
-    ];
+    // Log the portfolio items before combining
+    console.log('Using portfolio items in socialWallItems:', portfolioItems);
+    
+    // Combine news and portfolio items
+    const combinedFeed = [...newsItems, ...portfolioItems];
     
     // Sort by creation date
     combinedFeed.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    
+    // Log the final combined feed
+    console.log('Final social wall items:', combinedFeed);
+    
     return combinedFeed;
-  }, [networkNews]);
+  }, [networkNews, portfolioItems]);
 
   if (loading) {
     return (
@@ -274,7 +327,20 @@ function NetworkLandingPage() {
                 startIcon={<AdminIcon />}
                 color="primary"
                 variant="contained"
-                sx={{ ml: 'auto', mr: 1 }}
+                sx={{ 
+                  ml: 'auto', 
+                  mr: 1,
+                  bgcolor: 'rgba(255, 255, 255, 0.85)',
+                  color: 'primary.dark',
+                  fontWeight: 'medium',
+                  '&:hover': {
+                    bgcolor: 'rgba(255, 255, 255, 0.95)',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+                  },
+                  backdropFilter: 'blur(8px)',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                  transition: 'all 0.2s ease-in-out'
+                }}
               >
                 Admin Panel
               </Button>
@@ -492,7 +558,7 @@ function NetworkLandingPage() {
         open={showMemberModal}
         onClose={() => setShowMemberModal(false)}
         member={selectedMember}
-        portfolioItems={[]} // You could fetch the member's portfolio items here
+        portfolioItems={selectedMember ? portfolioItems.filter(item => item.profile_id === selectedMember.id) : []}
         isCurrentUser={selectedMember?.id === user?.id}
         darkMode={membersTabDarkMode}
       />
