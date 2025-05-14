@@ -28,7 +28,7 @@ import {
 import { Link } from 'react-router-dom';
 import { inviteUserToNetwork, toggleMemberAdmin, removeMemberFromNetwork } from '../../api/networks';
 
-const MembersTab = ({ members, user, network, onMembersChange }) => {
+const MembersTab = ({ members, user, network, onMembersChange, darkMode = false }) => {
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviting, setInviting] = useState(false);
   const [message, setMessage] = useState('');

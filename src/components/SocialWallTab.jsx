@@ -370,9 +370,19 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                       <Avatar
                         src={item.itemType === 'portfolio' ? item.memberAvatar : 
                             networkMembers.find(m => m.id === item.created_by)?.profile_picture_url}
+                        component={Link}
+                        to={item.itemType === 'portfolio' ? 
+                          `/profile/${item.memberId}` : 
+                          `/profile/${item.created_by}`}
                         sx={{ 
                           border: `2px solid ${customBorder}`,
-                          bgcolor: muiTheme.palette.primary.main
+                          bgcolor: muiTheme.palette.primary.main,
+                          cursor: 'pointer',
+                          transition: 'transform 0.2s ease',
+                          '&:hover': {
+                            transform: 'scale(1.1)',
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
+                          }
                         }}
                       >
                         {item.itemType === 'portfolio' ? 
@@ -394,17 +404,30 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                       />
                     }
                     title={
-                      <Typography 
-                        variant="subtitle2" 
-                        sx={{ 
-                          fontWeight: 600,
-                          color: customLightText
-                        }}
+                      <Link
+                        to={item.itemType === 'portfolio' ? 
+                          `/profile/${item.memberId}` : 
+                          `/profile/${item.created_by}`}
+                        style={{ textDecoration: 'none' }}
                       >
-                        {item.itemType === 'portfolio' ? 
-                          item.memberName : 
-                          networkMembers.find(m => m.id === item.created_by)?.full_name || 'Network Admin'}
-                      </Typography>
+                        <Typography 
+                          variant="subtitle2" 
+                          sx={{ 
+                            fontWeight: 600,
+                            color: customLightText,
+                            cursor: 'pointer',
+                            '&:hover': {
+                              color: muiTheme.palette.primary.main,
+                              textDecoration: 'underline'
+                            },
+                            transition: 'color 0.2s ease'
+                          }}
+                        >
+                          {item.itemType === 'portfolio' ? 
+                            item.memberName : 
+                            networkMembers.find(m => m.id === item.created_by)?.full_name || 'Network Admin'}
+                        </Typography>
+                      </Link>
                     }
                     subheader={
                       <Typography 

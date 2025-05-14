@@ -32,7 +32,7 @@ import AddressSuggestions from '../AddressSuggestions';
 import EventParticipationStats from '../EventParticipationStats';
 import { createEvent, updateEvent, deleteEvent, exportEventParticipantsList } from '../../api/networks';
 
-const EventsTab = ({ events, setEvents, user, networkId }) => {
+const EventsTab = ({ events, setEvents, user, networkId, darkMode = false }) => {
   const [openDialog, setOpenDialog] = useState(false);
   const [dialogMode, setDialogMode] = useState('create');
   const [selectedEvent, setSelectedEvent] = useState(null);

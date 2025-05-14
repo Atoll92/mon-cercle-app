@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { supabase } from '../supabaseclient';
 import { useAuth } from '../context/authcontext';
 import {
@@ -29,7 +30,7 @@ import LinkPreview from './LinkPreview'; // Import the LinkPreview component
 // URL regex pattern to detect links in messages
 // const URL_REGEX = /(https?:\/\/[^\s]+)/g;
 
-const Chat = ({ networkId }) => {
+const Chat = ({ networkId, isFullscreen = false }) => {
   const { user } = useAuth();
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
@@ -284,20 +285,43 @@ const renderMessageContent = (message) => {
     return (
       <>
         {!isOnlyUrl && (
-          <Typography component="span" variant="body2" sx={{ mb: 1, display: 'block' }}>
+          <Typography 
+            component="span" 
+            variant="body2" 
+            sx={{ 
+              mb: 0.5, 
+              display: 'block', 
+              fontSize: '0.85rem', // Smaller font size
+              lineHeight: 1.4   // Tighter line height
+            }}
+          >
             {message.content}
           </Typography>
         )}
         
-        <Box sx={{ my: isOnlyUrl ? 0 : 1, bgcolor: 'background.paper', borderRadius: 1, overflow: 'hidden' }}>
-          <LinkPreview url={url} compact={false} isEditable={true} />
+        <Box sx={{ 
+          my: isOnlyUrl ? 0 : 0.5, 
+          bgcolor: 'background.paper', 
+          borderRadius: 1, 
+          overflow: 'hidden',
+          transform: 'scale(0.97)',  // Slightly smaller scale for link previews
+          transformOrigin: 'top left'
+        }}>
+          <LinkPreview url={url} compact={true} isEditable={true} />
         </Box>
       </>
     );
   } else {
     // Render as plain text
     return (
-      <Typography component="span" variant="body2">
+      <Typography 
+        component="span" 
+        variant="body2" 
+        sx={{ 
+          fontSize: '0.85rem', // Smaller font size
+          lineHeight: 1.4      // Tighter line height
+        }}
+      >
         {message.content}
       </Typography>
     );
@@ -342,12 +366,12 @@ const renderMessageContent = (message) => {
   return (
     <Paper 
       sx={{ 
-        height: '70vh', 
+        height: isFullscreen ? '100%' : '70vh', 
         display: 'flex', 
         flexDirection: 'column',
         overflow: 'hidden',
-        borderRadius: 2,
-        boxShadow: 8,
+        borderRadius: isFullscreen ? 0 : 2,
+        boxShadow: isFullscreen ? 0 : 8,
         backgroundImage: darkMode ? `url(${backgroundImage})` : 'none',
         backgroundColor: darkMode ? 'transparent' : '#f5f7fa',
         backgroundSize: 'cover',
@@ -474,15 +498,17 @@ const renderMessageContent = (message) => {
                       ? alpha('#e3f2fd', 0.9) 
                       : alpha('#fff', 0.85)),
                   borderRadius: 2,
-                  mb: 1.5,
+                  mb: 1,
+                  py: 0.5, // Reduced vertical padding
+                  px: 1.5, // Slightly reduced horizontal padding
                   backdropFilter: 'blur(8px)',
                   boxShadow: darkMode
-                    ? '0 2px 5px rgba(0,0,0,0.2)'
-                    : '0 2px 5px rgba(0,0,0,0.05)',
+                    ? '0 1px 3px rgba(0,0,0,0.2)'
+                    : '0 1px 3px rgba(0,0,0,0.05)',
                   transform: message.user_id === user.id 
-                    ? 'translateX(5%)' 
-                    : 'translateX(-5%)',
-                  maxWidth: containsLink ? '95%' : '85%',
+                    ? 'translateX(4%)' 
+                    : 'translateX(-4%)',
+                  maxWidth: containsLink ? '92%' : '80%', // Slightly smaller max width
                   marginLeft: message.user_id === user.id ? 'auto' : 2,
                   marginRight: message.user_id === user.id ? 2 : 'auto',
                   transition: 'all 0.2s ease',
@@ -491,15 +517,24 @@ const renderMessageContent = (message) => {
                     : `1px solid ${message.user_id === user.id ? '#bbdefb' : '#e0e0e0'}`
                 }}
               >
-                <ListItemAvatar>
+                <ListItemAvatar sx={{ minWidth: 42 }}> {/* Reduced avatar area width */}
                   <Avatar 
                     src={message.profiles?.profile_picture_url}
                     alt={message.profiles?.full_name}
+                    component={message.profiles?.id ? Link : 'div'}
+                    to={message.profiles?.id ? `/profile/${message.profiles.id}` : undefined}
                     sx={{ 
+                      width: 32,  // Smaller avatar
+                      height: 32, // Smaller avatar
                       border: darkMode
                         ? '2px solid white'
                         : '2px solid #e0e0e0',
-                      boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                      boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+                      cursor: message.profiles?.id ? 'pointer' : 'default',
+                      '&:hover': message.profiles?.id ? {
+                        transform: 'scale(1.1)',
+                        transition: 'transform 0.2s ease'
+                      } : {}
                     }}
                   >
                     {!message.profiles?.profile_picture_url && message.profiles?.full_name?.[0]}
@@ -507,18 +542,46 @@ const renderMessageContent = (message) => {
                 </ListItemAvatar>
                 <ListItemText
                   primary={
-                    <Typography 
-                      variant="subtitle2" 
-                      sx={{ 
-                        color: darkMode 
-                          ? 'white' 
-                          : (message.user_id === user.id ? '#1565c0' : '#424242'),
-                        fontWeight: 500 
-                      }}
-                    >
-                      {message.profiles?.full_name || 'Anonymous'}
-                      {message.user_id === user.id && ' (You)'}
-                    </Typography>
+                    message.profiles?.id ? (
+                      <Link 
+                        to={`/profile/${message.profiles.id}`}
+                        style={{ 
+                          textDecoration: 'none',
+                          color: darkMode 
+                            ? 'white' 
+                            : (message.user_id === user.id ? '#1565c0' : '#424242')
+                        }}
+                      >
+                        <Typography 
+                          variant="subtitle2" 
+                          component="span"
+                          sx={{ 
+                            fontWeight: 500,
+                            fontSize: '0.85rem', // Slightly smaller text
+                            '&:hover': {
+                              textDecoration: 'underline'
+                            }
+                          }}
+                        >
+                          {message.profiles?.full_name || 'Anonymous'}
+                          {message.user_id === user.id && ' (You)'}
+                        </Typography>
+                      </Link>
+                    ) : (
+                      <Typography 
+                        variant="subtitle2" 
+                        sx={{ 
+                          color: darkMode 
+                            ? 'white' 
+                            : (message.user_id === user.id ? '#1565c0' : '#424242'),
+                          fontWeight: 500,
+                          fontSize: '0.85rem' // Slightly smaller text
+                        }}
+                      >
+                        {message.profiles?.full_name || 'Anonymous'}
+                        {message.user_id === user.id && ' (You)'}
+                      </Typography>
+                    )
                   }
                   secondary={
                     <>
@@ -531,13 +594,14 @@ const renderMessageContent = (message) => {
                           alignItems: 'center', 
                           gap: 0.5,
                           color: darkMode 
-                            ? 'rgba(255, 255, 255, 0.7)'
-                            : 'text.secondary',
-                          fontSize: '0.7rem',
-                          mt: 0.5
+                            ? 'rgba(255, 255, 255, 0.5)'
+                            : 'rgba(0, 0, 0, 0.4)',
+                          fontSize: '0.65rem',
+                          mt: 0.5,
+                          fontStyle: 'italic'
                         }}
                       >
-                        {new Date(message.created_at).toLocaleDateString()} {new Date(message.created_at).toLocaleTimeString()}
+                        {new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         {message.pending && ' (sending...)'}
                       </Typography>
                     </>

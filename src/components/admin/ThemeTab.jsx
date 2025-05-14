@@ -19,7 +19,7 @@ import {
 } from '@mui/icons-material';
 import { updateNetworkDetails, uploadNetworkImage, removeNetworkImage } from '../../api/networks';
 
-const ThemeTab = ({ network, onNetworkUpdate }) => {
+const ThemeTab = ({ network, onNetworkUpdate, darkMode = false }) => {
   const [themeSettings, setThemeSettings] = useState({
     backgroundColor: network.theme_bg_color || '#ffffff'
   });

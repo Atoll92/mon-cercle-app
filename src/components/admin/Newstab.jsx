@@ -25,7 +25,7 @@ import {
 } from '@mui/icons-material';
 import { createNewsPost, deleteNewsPost } from '../../api/networks';
 
-const NewsTab = ({ networkId, userId, newsPosts, setNewsPosts, members }) => {
+const NewsTab = ({ networkId, userId, newsPosts, setNewsPosts, members, darkMode = false }) => {
   const [newsTitle, setNewsTitle] = useState('');
   const [imageFile, setImageFile] = useState(null);
   const [imageCaption, setImageCaption] = useState('');
@@ -168,7 +168,7 @@ const NewsTab = ({ networkId, userId, newsPosts, setNewsPosts, members }) => {
         </Alert>
       )}
       
-      <Card sx={{ p: 3, mb: 3 }}>
+      <Card sx={{ p: 3, mb: 3, bgcolor: darkMode ? 'background.paper' : undefined }}>
         <Typography variant="h5" gutterBottom>
           Create News Post
         </Typography>
@@ -178,6 +178,11 @@ const NewsTab = ({ networkId, userId, newsPosts, setNewsPosts, members }) => {
           value={newsTitle}
           onChange={(e) => setNewsTitle(e.target.value)}
           sx={{ mb: 2 }}
+          InputProps={{
+            sx: {
+              color: darkMode ? 'text.primary' : undefined
+            }
+          }}
         />
         
         {/* Image upload section */}
