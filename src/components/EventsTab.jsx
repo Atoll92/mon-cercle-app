@@ -500,201 +500,299 @@ const EventsTab = ({
               </Box>
             </Box>
             
-            <Box sx={{ 
-              p: 2, 
-              flex: '1 1 auto', 
-              display: 'flex', 
-              flexDirection: 'column',
-              width: '100%', // Explicitly set width for the container
-              '& .rbc-calendar': {
-                width: '100%' // Make sure the calendar takes full width
-              },
-              '& .rbc-header': {
-                padding: '8px',
-                fontWeight: 'bold',
-                backgroundColor: 'rgba(0, 0, 0, 0.02)',
-                borderBottom: '1px solid',
-                borderColor: 'divider'
-              },
-              '& .rbc-month-view': {
-                border: 'none',
-                boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
-                borderRadius: 1
-              },
-              '& .rbc-day-bg': {
-                transition: 'all 0.2s ease',
-                '&:hover': {
-                  backgroundColor: 'rgba(0, 0, 0, 0.03)',
-                }
-              },
-              '& .rbc-date-cell': {
-                padding: '4px 8px',
-                textAlign: 'center',
-                fontSize: '0.85rem'
-              },
-              '& .rbc-today': {
-                backgroundColor: 'rgba(33, 150, 243, 0.1)',
-              },
-              '& .rbc-btn-group button': {
+            
+<Box sx={{ 
+  p: 2, 
+  flex: '1 1 auto', 
+  display: 'flex', 
+  flexDirection: 'column',
+  width: '100%',
+  '& .rbc-calendar': {
+    width: '100%'
+  },
+  // Dark mode compatible header
+  '& .rbc-header': {
+    padding: '8px',
+    fontWeight: 'bold',
+    backgroundColor: (theme) => theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.02)',
+    borderBottom: '1px solid',
+    borderColor: 'divider', // Using MUI's divider color which is theme aware
+    color: 'text.primary' // Using MUI's text primary color which is theme aware
+  },
+  '& .rbc-month-view': {
+    border: 'none',
+    boxShadow: (theme) => theme.palette.mode === 'dark' ? '0 1px 3px rgba(0, 0, 0, 0.3)' : '0 1px 3px rgba(0, 0, 0, 0.1)',
+    borderRadius: 1,
+    backgroundColor: 'background.paper' // Using MUI's background paper color which adapts to dark mode
+  },
+  '& .rbc-day-bg': {
+    transition: 'all 0.2s ease',
+    '&:hover': {
+      backgroundColor: (theme) => theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.03)',
+    }
+  },
+  '& .rbc-date-cell': {
+    padding: '4px 8px',
+    textAlign: 'center',
+    fontSize: '0.85rem',
+    color: 'text.primary' // Using MUI's text primary color which is theme aware
+  },
+  // Fix for today's date in dark mode
+  '& .rbc-today': {
+    backgroundColor: (theme) => theme.palette.mode === 'dark' ? 'rgba(33, 150, 243, 0.15)' : 'rgba(33, 150, 243, 0.1)',
+  },
+  // Fix for buttons in dark mode
+  '& .rbc-btn-group button': {
+    borderRadius: '4px',
+    padding: '4px 12px',
+    textTransform: 'capitalize',
+    fontWeight: 500,
+    transition: 'all 0.2s ease',
+    borderColor: 'divider', // Using MUI's divider color
+    color: 'text.primary', // Using MUI's text primary color
+    '&:hover': {
+      backgroundColor: 'action.hover', // Using MUI's hover action color
+    },
+    '&.rbc-active': {
+      backgroundColor: 'primary.main',
+      color: (theme) => theme.palette.mode === 'dark' ? '#fff' : '#fff',
+      borderColor: 'primary.main',
+      boxShadow: (theme) => `0 0 0 1px ${theme.palette.primary.main}`,
+      '&:hover': {
+        backgroundColor: 'primary.dark',
+        borderColor: 'primary.dark'
+      }
+    }
+  },
+  '& .rbc-toolbar': {
+    marginBottom: '16px',
+    color: 'text.primary', // Using MUI's text primary color
+    display:'none',
+  },
+  '& .rbc-toolbar-label': {
+    fontWeight: 'bold',
+    fontSize: '1.2rem',
+    color: 'text.primary' // Using MUI's text primary color
+  },
+  // Fix for events in dark mode with better contrast
+  '& .rbc-event': {
+    borderRadius: '6px',
+    boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+    margin: '1px',
+    padding: '2px 4px',
+    border: 'none', // Remove border for cleaner look
+    '&:focus': {
+      outline: 'none', // Remove outline on focus
+      boxShadow: (theme) => `0 0 0 2px ${theme.palette.background.paper}, 0 0 0 4px ${theme.palette.primary.main}`
+    }
+  },
+  '& .rbc-row-segment': {
+    padding: '0 2px 1px 2px'
+  },
+  '& .rbc-row': {
+    minHeight: '35px'
+  },
+  '& .rbc-month-row': {
+    overflow: 'visible'
+  },
+  // Overlay for popovers in dark mode
+  '& .rbc-overlay': {
+    backgroundColor: 'background.paper', // Using MUI's background paper color
+    border: '1px solid',
+    borderColor: 'divider', // Using MUI's divider color
+    boxShadow: 4, // Using MUI's elevation level
+    borderRadius: 2,
+    padding: 2,
+    color: 'text.primary' // Using MUI's text primary color
+  },
+  // Fix for off-range days in dark mode
+  '& .rbc-off-range-bg': {
+    backgroundColor: (theme) => theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.2)' : 'rgba(0, 0, 0, 0.03)'
+  },
+  // Fix for today's color in month view
+  '& .rbc-month-view .rbc-now': {
+    color: 'primary.main' // Use primary color for today's date text
+  },
+  // Fix for daygrid background
+  '& .rbc-month-view .rbc-day-bg + .rbc-day-bg': {
+    borderLeft: '1px solid',
+    borderLeftColor: 'divider' // Using MUI's divider color
+  },
+  // Fix month row separator
+  '& .rbc-month-row + .rbc-month-row': {
+    borderTop: '1px solid',
+    borderTopColor: 'divider' // Using MUI's divider color
+  },
+  // Fix for time gutter in agenda view
+  '& .rbc-time-view .rbc-time-gutter': {
+    backgroundColor: 'background.paper', // Using MUI's background paper color
+  },
+  // Fix for time column in agenda view
+  '& .rbc-time-view .rbc-time-content': {
+    borderTop: '1px solid',
+    borderTopColor: 'divider', // Using MUI's divider color
+  },
+  // Fix for time header in agenda view
+  '& .rbc-time-header-content': {
+    borderLeft: '1px solid',
+    borderLeftColor: 'divider', // Using MUI's divider color
+  },
+  // Fix for time slots in agenda view
+  '& .rbc-timeslot-group': {
+    borderBottom: '1px solid',
+    borderBottomColor: 'divider', // Using MUI's divider color
+    minHeight: '40px'
+  },
+  // Fix for agenda view events
+  '& .rbc-agenda-view table.rbc-agenda-table': {
+    borderCollapse: 'separate',
+    borderSpacing: 0,
+    color: 'text.primary', // Using MUI's text primary color
+    border: '1px solid',
+    borderColor: 'divider', // Using MUI's divider color
+    '& th': {
+      borderBottom: '1px solid',
+      borderBottomColor: 'divider', // Using MUI's divider color
+      padding: '8px',
+      backgroundColor: (theme) => theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.02)',
+    },
+    '& td': {
+      padding: '8px',
+      borderTop: '1px solid',
+      borderTopColor: 'divider', // Using MUI's divider color
+    }
+  },
+  // Fix for event gutter in agenda view
+  '& .rbc-agenda-view .rbc-agenda-empty': {
+    color: 'text.secondary', // Using MUI's text secondary color
+    padding: '16px'
+  },
+  // Fix for event colors to be more visible in dark mode
+  '& .rbc-day-slot .rbc-event': {
+    borderWidth: 0
+  }
+}}>
+  <Calendar
+    localizer={localizer}
+    events={events.map(event => {
+      // Find if user is participating in this event
+      const participation = userParticipations.find(p => p.event_id === event.id);
+      
+      // Enhanced color coding for better dark mode visibility
+      let eventColor;
+      if (participation) {
+        // More saturated colors for dark mode visibility
+        if (participation.status === 'attending') eventColor = '#4caf50'; // Green - unchanged
+        else if (participation.status === 'maybe') eventColor = '#ff9800'; // Orange - unchanged
+        else if (participation.status === 'declined') eventColor = '#f44336'; // Red - unchanged
+      } else {
+        eventColor = '#2196f3'; // Default blue - unchanged
+      }
+      
+      return {
+        title: event.title,
+        start: new Date(event.date),
+        end: new Date(event.date),
+        allDay: true,
+        resource: event,
+        color: eventColor,
+        coverImage: event.cover_image_url,
+        hasLink: !!event.event_link
+      };
+    })}
+    date={calendarDate}
+    view={calendarView}
+    onView={setCalendarView}
+    onNavigate={setCalendarDate}
+    startAccessor="start"
+    endAccessor="end"
+    style={{ flex: '1 1 auto', minHeight: '500px', width: '100%' }}
+    onSelectEvent={handleEventSelect}
+    eventPropGetter={(event) => ({
+      style: {
+        backgroundColor: event.color,
+        borderRadius: '8px',
+        border: 'none',
+        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+        color: 'white'
+      }
+    })}
+    dayPropGetter={(date) => ({
+      style: {
+        backgroundColor: new Date().toDateString() === date.toDateString() 
+          ? 'rgba(33, 150, 243, 0.05)' 
+          : 'transparent',
+        // Using inherited text color for day cells
+        color: 'inherit' 
+      }
+    })}
+    formats={{
+      dateFormat: 'd',
+      dayFormat: 'eee d/M',
+      monthHeaderFormat: 'MMMM yyyy',
+      dayHeaderFormat: 'eeee d MMMM',
+      dayRangeHeaderFormat: ({ start, end }) => `${format(start, 'MMMM d')} - ${format(end, 'MMMM d, yyyy')}`
+    }}
+    components={{
+      event: ({ event }) => (
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            height: '100%',
+            width: '100%',
+            overflow: 'hidden',
+            padding: '2px 4px'
+          }}
+        >
+          {event.coverImage && (
+            <Box
+              sx={{
+                width: '28px',
+                height: '28px',
+                marginRight: '4px',
+                flexShrink: 0,
                 borderRadius: '4px',
-                padding: '4px 12px',
-                textTransform: 'capitalize',
-                fontWeight: 500,
-                transition: 'all 0.2s ease'
-              },
-              '& .rbc-toolbar': {
-                marginBottom: '16px'
-              },
-              '& .rbc-toolbar-label': {
-                fontWeight: 'bold',
-                fontSize: '1.2rem'
-              },
-              '& .rbc-event': {
-                borderRadius: '6px',
-                boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                margin: '1px',
-                padding: '2px 4px'
-              },
-              '& .rbc-row-segment': {
-                padding: '0 2px 1px 2px'
-              },
-              '& .rbc-row': {
-                minHeight: '35px'
-              },
-              '& .rbc-month-row': {
-                overflow: 'visible'
-              },
-              '& .rbc-overlay': {
-                backgroundColor: 'white',
-                border: '1px solid #ddd',
-                boxShadow: '0 5px 15px rgba(0,0,0,0.15)',
-                borderRadius: 2,
-                padding: 2
-              },
-              '& .rbc-off-range-bg': {
-                backgroundColor: 'rgba(0, 0, 0, 0.03)'
-              }
-            }}>
-              <Calendar
-                localizer={localizer}
-                events={events.map(event => {
-                  // Find if user is participating in this event
-                  const participation = userParticipations.find(p => p.event_id === event.id);
-                  let eventColor = '#2196f3'; // Default blue
-                  
-                  // Color coding based on participation status
-                  if (participation) {
-                    if (participation.status === 'attending') eventColor = '#4caf50'; // Green
-                    else if (participation.status === 'maybe') eventColor = '#ff9800'; // Orange
-                    else if (participation.status === 'declined') eventColor = '#f44336'; // Red
-                  }
-                  
-                  return {
-                    title: event.title,
-                    start: new Date(event.date),
-                    end: new Date(event.date),
-                    allDay: true,
-                    resource: event,
-                    color: eventColor,
-                    coverImage: event.cover_image_url,
-                    hasLink: !!event.event_link
-                  };
-                })}
-                date={calendarDate}
-                view={calendarView}
-                onView={setCalendarView}
-                onNavigate={setCalendarDate}
-                startAccessor="start"
-                endAccessor="end"
-                style={{ 
-                  flex: '1 1 auto', 
-                  minHeight: '500px',
-                  width: '100%' // Explicitly set width for the calendar
+                overflow: 'hidden',
+                border: '2px solid rgba(255,255,255,0.7)'
+              }}
+            >
+              <img
+                src={event.coverImage}
+                alt=""
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover'
                 }}
-                onSelectEvent={handleEventSelect}
-                eventPropGetter={(event) => ({
-                  style: {
-                    backgroundColor: event.color,
-                    borderRadius: '8px',
-                    border: 'none',
-                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                    color: 'white'
-                  }
-                })}
-                dayPropGetter={(date) => ({
-                  style: {
-                    backgroundColor: new Date().toDateString() === date.toDateString() 
-                      ? 'rgba(33, 150, 243, 0.05)' 
-                      : 'transparent'
-                  }
-                })}
-                formats={{
-                  dateFormat: 'd',
-                  dayFormat: 'eee d/M',
-                  monthHeaderFormat: 'MMMM yyyy',
-                  dayHeaderFormat: 'eeee d MMMM',
-                  dayRangeHeaderFormat: ({ start, end }) => `${format(start, 'MMMM d')} - ${format(end, 'MMMM d, yyyy')}`
-                }}
-                components={{
-                  event: ({ event }) => (
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        height: '100%',
-                        width: '100%',
-                        overflow: 'hidden',
-                        padding: '2px 4px'
-                      }}
-                    >
-                      {event.coverImage && (
-                        <Box
-                          sx={{
-                            width: '28px',
-                            height: '28px',
-                            marginRight: '4px',
-                            flexShrink: 0,
-                            borderRadius: '4px',
-                            overflow: 'hidden',
-                            border: '2px solid rgba(255,255,255,0.7)'
-                          }}
-                        >
-                          <img
-                            src={event.coverImage}
-                            alt=""
-                            style={{
-                              width: '100%',
-                              height: '100%',
-                              objectFit: 'cover'
-                            }}
-                          />
-                        </Box>
-                      )}
-                      <Typography
-                        variant="caption"
-                        sx={{
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap',
-                          fontWeight: 'medium',
-                          textShadow: '0 1px 2px rgba(0,0,0,0.3)',
-                          display: 'flex',
-                          alignItems: 'center'
-                        }}
-                      >
-                        {event.title}
-                        {event.hasLink && (
-                          <LinkIcon fontSize="inherit" sx={{ ml: 0.5 }} />
-                        )}
-                      </Typography>
-                    </Box>
-                  ),
-                }}
-                popup
-                selectable
-                views={['month', 'week', 'day']}
               />
             </Box>
+          )}
+          <Typography
+            variant="caption"
+            sx={{
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+              fontWeight: 'medium',
+              textShadow: '0 1px 2px rgba(0,0,0,0.5)', // Increased shadow for better readability in both modes
+              display: 'flex',
+              alignItems: 'center'
+            }}
+          >
+            {event.title}
+            {event.hasLink && (
+              <LinkIcon fontSize="inherit" sx={{ ml: 0.5 }} />
+            )}
+          </Typography>
+        </Box>
+      ),
+    }}
+    popup
+    selectable
+    views={['month', 'week', 'day']}
+  />
+</Box>
           </Paper>
         </Box>
       </Box>
