@@ -14,7 +14,6 @@ const fetchNetworkMembers = async (networkId) => {
         return data || [];
     } catch (error) {
         console.error("Error fetching network members:", error);
-        setError("Failed to load network members. Please try again later.");
         return [];
     }
 };
