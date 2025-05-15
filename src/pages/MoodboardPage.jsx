@@ -55,7 +55,8 @@ import {
   NoteAdd as NoteAddIcon,
   FileCopy as FileCopyIcon,
   Close as CloseIcon,
-  CloudUpload as CloudUploadIcon
+  CloudUpload as CloudUploadIcon,
+  PictureAsPdf as PdfIcon
 } from '@mui/icons-material';
 
 // Improved MoodboardItem component with better image handling and resizing
@@ -188,7 +189,7 @@ const MoodboardItem = ({
   
     // Render different content based on item type
     // Updated renderContent method with corrected property names
-// This is the fixed renderContent method from MoodboardItem component
+// Improved renderContent method with PDF support
 const renderContent = () => {
   switch (item.type) {
     case 'image':
@@ -237,6 +238,128 @@ const renderContent = () => {
               transition: 'opacity 0.3s ease',
             }} 
           />
+        </Box>
+      );
+    case 'pdf':
+      return (
+        <Box sx={{ 
+          width: '100%', 
+          height: '100%', 
+          position: 'relative', 
+          overflow: 'hidden',
+          backgroundColor: '#f8f9fa',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}>
+          {!imageLoaded && item.thumbnail && (
+            <Box 
+              sx={{ 
+                position: 'absolute', 
+                top: 0, 
+                left: 0, 
+                right: 0, 
+                bottom: 0, 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center',
+                backgroundColor: 'rgba(0,0,0,0.1)',
+              }}
+            >
+              <CircularProgress size={24} />
+            </Box>
+          )}
+          
+          {item.thumbnail ? (
+            // If we have a thumbnail, show it
+            <img 
+              src={item.thumbnail} 
+              alt={item.title || 'PDF preview'} 
+              onLoad={() => setImageLoaded(true)}
+              style={{ 
+                width: '100%', 
+                height: 'calc(100% - 40px)', 
+                objectFit: 'contain',
+                pointerEvents: 'none',
+                opacity: imageLoaded ? 1 : 0.3,
+                transition: 'opacity 0.3s ease'
+              }} 
+            />
+          ) : (
+            // Otherwise show a pdf icon
+            <PdfIcon sx={{ fontSize: 64, color: 'primary.main', opacity: 0.8, mb: 2 }} />
+          )}
+          
+          {/* PDF info footer */}
+          <Box sx={{ 
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            bgcolor: 'rgba(0,0,0,0.05)',
+            p: 1,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 1
+          }}>
+            <PdfIcon fontSize="small" color="primary" />
+            <Typography variant="caption" fontWeight="medium" noWrap>
+              {item.title || 'PDF Document'}
+            </Typography>
+          </Box>
+          
+          {/* For editable mode, we just show the preview */}
+          {/* For view mode, we add a clickable overlay to open the PDF */}
+          {!isEditable && (
+            <Box 
+              component="a"
+              href={item.content}
+              target="_blank"
+              rel="noopener noreferrer"
+              sx={{ 
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                bgcolor: 'transparent',
+                '&:hover': {
+                  bgcolor: 'rgba(0,0,0,0.04)',
+                  '& .view-pdf-overlay': {
+                    opacity: 1
+                  }
+                }
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Box 
+                className="view-pdf-overlay"
+                sx={{ 
+                  bgcolor: 'rgba(255,255,255,0.9)',
+                  borderRadius: 1,
+                  px: 2,
+                  py: 1,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1,
+                  boxShadow: 2,
+                  opacity: 0,
+                  transition: 'opacity 0.2s'
+                }}
+              >
+                <PdfIcon color="primary" />
+                <Typography color="primary" fontWeight="medium">
+                  View PDF
+                </Typography>
+              </Box>
+            </Box>
+          )}
         </Box>
       );
     case 'text':
@@ -419,7 +542,7 @@ const renderContent = () => {
       </Paper>
     );
   };
-// EditItemDialog correctly aligned with database schema
+// Enhanced EditItemDialog with improved UI and PDF support
 const EditItemDialog = ({ 
     open, 
     onClose, 
@@ -485,7 +608,7 @@ const EditItemDialog = ({
         ...currentItem,
         title: editedTitle,
         backgroundColor: editedBackgroundColor,
-        opacity: editedOpacity,
+        opacity: editedOpacity !== undefined ? editedOpacity : 100,
         border_radius: editedBorder_radius,
         rotation: editedRotation,
         zIndex: editedZIndex
@@ -521,95 +644,215 @@ const EditItemDialog = ({
       onSave(updatedItem);
     };
     
-    // Shared properties panel for all item types
+    // Improved shared properties panel with better UI organization
     const renderSharedProperties = () => (
       <Box sx={{ mt: 3 }}>
         <Typography variant="subtitle1" gutterBottom>
           Common Properties
         </Typography>
         
-        <Grid container spacing={2}>
-          {/* Title (for all items) */}
-          <Grid item xs={12}>
-            <TextField
-              label="Title (Optional)"
-              value={editedTitle}
-              onChange={(e) => setEditedTitle(e.target.value)}
-              fullWidth
-              size="small"
-            />
+        <Paper sx={{ p: 2, mb: 2, bgcolor: 'rgba(0,0,0,0.02)' }}>
+          <Grid container spacing={2}>
+            {/* Title (for all items) */}
+            <Grid item xs={12}>
+              <TextField
+                label="Title (Optional)"
+                value={editedTitle}
+                onChange={(e) => setEditedTitle(e.target.value)}
+                fullWidth
+                size="small"
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <span role="img" aria-label="title">📝</span>
+                    </InputAdornment>
+                  )
+                }}
+              />
+            </Grid>
           </Grid>
-          
-          {/* Background Color */}
-          <Grid item xs={6}>
-            <TextField
-              label="Background"
-              type="color"
-              value={editedBackgroundColor === 'transparent' ? '#ffffff' : editedBackgroundColor}
-              onChange={(e) => setEditedBackgroundColor(e.target.value === '#ffffff' ? 'transparent' : e.target.value)}
-              fullWidth
-              size="small"
-              InputProps={{ sx: { height: '40px' } }}
-            />
+        </Paper>
+            
+        <Typography variant="subtitle2" gutterBottom sx={{ mt: 2, display: 'flex', alignItems: 'center' }}>
+          <span role="img" aria-label="appearance" style={{ marginRight: '8px' }}>🎨</span> Appearance
+        </Typography>
+        <Paper sx={{ p: 2, mb: 2 }}>
+          <Grid container spacing={2}>
+            {/* Background Color */}
+            <Grid item xs={12} sm={6}>
+              <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                <Typography variant="body2" gutterBottom>Background Color</Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Box 
+                    sx={{ 
+                      width: 36, 
+                      height: 36, 
+                      borderRadius: 1, 
+                      border: '1px solid',
+                      borderColor: 'divider',
+                      bgcolor: editedBackgroundColor === 'transparent' ? 'transparent' : editedBackgroundColor,
+                      backgroundImage: editedBackgroundColor === 'transparent' ? 
+                        'linear-gradient(45deg, #ccc 25%, transparent 25%, transparent 75%, #ccc 75%, #ccc), linear-gradient(45deg, #ccc 25%, transparent 25%, transparent 75%, #ccc 75%, #ccc)' : 
+                        'none',
+                      backgroundSize: '8px 8px',
+                      backgroundPosition: '0 0, 4px 4px',
+                    }}
+                  />
+                  <TextField
+                    type="color"
+                    value={editedBackgroundColor === 'transparent' ? '#ffffff' : editedBackgroundColor}
+                    onChange={(e) => setEditedBackgroundColor(e.target.value === '#ffffff' ? 'transparent' : e.target.value)}
+                    fullWidth
+                    size="small"
+                    InputProps={{ sx: { height: '36px' } }}
+                  />
+                  <Button 
+                    size="small" 
+                    variant="outlined" 
+                    onClick={() => setEditedBackgroundColor('transparent')}
+                    sx={{ minWidth: 'auto', px: 1 }}
+                  >
+                    Clear
+                  </Button>
+                </Box>
+              </Box>
+            </Grid>
+            
+            {/* Opacity Slider with visual feedback */}
+            <Grid item xs={12} sm={6}>
+              <Typography variant="body2" gutterBottom>
+                Opacity: {editedOpacity}%
+              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Typography variant="caption" color="text.secondary">0%</Typography>
+                <Slider
+                  value={editedOpacity}
+                  onChange={(e, newValue) => setEditedOpacity(newValue)}
+                  min={0}
+                  max={100}
+                  step={1}
+                  valueLabelDisplay="auto"
+                  sx={{ flex: 1 }}
+                />
+                <Typography variant="caption" color="text.secondary">100%</Typography>
+              </Box>
+            </Grid>
+            
+            {/* Border Radius */}
+            <Grid item xs={12} sm={6}>
+              <Typography variant="body2" gutterBottom>Border Radius</Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Box 
+                  sx={{ 
+                    width: 24, 
+                    height: 24, 
+                    borderRadius: `${editedBorder_radius}px`,
+                    border: '1px solid',
+                    borderColor: 'primary.main',
+                    bgcolor: 'primary.light',
+                    opacity: 0.7,
+                    transition: 'border-radius 0.2s'
+                  }}
+                />
+                <TextField
+                  type="number"
+                  value={editedBorder_radius}
+                  onChange={(e) => setEditedBorder_radius(parseInt(e.target.value) || 0)}
+                  fullWidth
+                  size="small"
+                  InputProps={{
+                    endAdornment: <InputAdornment position="end">px</InputAdornment>,
+                  }}
+                />
+              </Box>
+            </Grid>
+            
+            {/* Rotation with visual indicator */}
+            <Grid item xs={12} sm={6}>
+              <Typography variant="body2" gutterBottom>Rotation</Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Box 
+                  sx={{ 
+                    width: 24, 
+                    height: 24, 
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transform: `rotate(${editedRotation}deg)`,
+                    transition: 'transform 0.2s'
+                  }}
+                >
+                  <ArrowBackIcon fontSize="small" sx={{ transform: 'rotate(135deg)' }} />
+                </Box>
+                <TextField
+                  type="number"
+                  value={editedRotation}
+                  onChange={(e) => setEditedRotation(parseInt(e.target.value) || 0)}
+                  fullWidth
+                  size="small"
+                  InputProps={{
+                    endAdornment: <InputAdornment position="end">°</InputAdornment>,
+                  }}
+                />
+              </Box>
+            </Grid>
           </Grid>
-          
-          {/* Border Radius */}
-          <Grid item xs={6}>
-            <TextField
-              label="Border Radius"
-              type="number"
-              value={editedBorder_radius}
-              onChange={(e) => setEditedBorder_radius(parseInt(e.target.value) || 0)}
-              fullWidth
-              size="small"
-              InputProps={{
-                endAdornment: <InputAdornment position="end">px</InputAdornment>,
-              }}
-            />
+        </Paper>
+        
+        <Typography variant="subtitle2" gutterBottom sx={{ mt: 2, display: 'flex', alignItems: 'center' }}>
+          <span role="img" aria-label="layers" style={{ marginRight: '8px' }}>📚</span> Layer Position
+        </Typography>
+        <Paper sx={{ p: 2 }}>
+          <Grid container spacing={2}>
+            {/* Z-Index with visual explanation */}
+            <Grid item xs={12}>
+              <Typography variant="body2" gutterBottom>Layer (Z-Index)</Typography>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <TextField
+                  type="number"
+                  value={editedZIndex}
+                  onChange={(e) => setEditedZIndex(parseInt(e.target.value) || 1)}
+                  fullWidth
+                  size="small"
+                  helperText="Higher numbers appear on top of lower numbers"
+                />
+                <Box sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  position: 'relative',
+                  height: 60,
+                  mt: 1
+                }}>
+                  {[1, 2, 3].map(idx => (
+                    <Paper 
+                      key={idx}
+                      elevation={idx === editedZIndex ? 8 : 1}
+                      sx={{ 
+                        position: 'absolute', 
+                        width: 40, 
+                        height: 40,
+                        left: `calc(50% - 20px + ${(idx - 2) * 20}px)`,
+                        top: `calc(50% - 20px - ${(idx - 2) * 5}px)`,
+                        zIndex: idx,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        border: idx === editedZIndex ? '2px solid' : '1px solid',
+                        borderColor: idx === editedZIndex ? 'primary.main' : 'divider',
+                        bgcolor: idx === editedZIndex ? 'primary.light' : 'background.paper',
+                        opacity: idx === editedZIndex ? 1 : 0.7,
+                        transition: 'all 0.2s'
+                      }}
+                    >
+                      {idx}
+                    </Paper>
+                  ))}
+                </Box>
+              </Box>
+            </Grid>
           </Grid>
-          
-          {/* Opacity Slider */}
-          <Grid item xs={12}>
-            <Typography variant="body2" gutterBottom>
-              Opacity: {editedOpacity}%
-            </Typography>
-            <Slider
-              value={editedOpacity}
-              onChange={(e, newValue) => setEditedOpacity(newValue)}
-              min={0}
-              max={100}
-              step={1}
-              valueLabelDisplay="auto"
-            />
-          </Grid>
-          
-          {/* Rotation */}
-          <Grid item xs={6}>
-            <TextField
-              label="Rotation"
-              type="number"
-              value={editedRotation}
-              onChange={(e) => setEditedRotation(parseInt(e.target.value) || 0)}
-              fullWidth
-              size="small"
-              InputProps={{
-                endAdornment: <InputAdornment position="end">°</InputAdornment>,
-              }}
-            />
-          </Grid>
-          
-          {/* Z-Index */}
-          <Grid item xs={6}>
-            <TextField
-              label="Layer (Z-Index)"
-              type="number"
-              value={editedZIndex}
-              onChange={(e) => setEditedZIndex(parseInt(e.target.value) || 1)}
-              fullWidth
-              size="small"
-            />
-          </Grid>
-        </Grid>
+        </Paper>
       </Box>
     );
     
@@ -746,7 +989,7 @@ const EditItemDialog = ({
                 borderColor: 'divider',
                 borderRadius: `${editedBorder_radius}px`,
                 bgcolor: editedBackgroundColor,
-                opacity: editedOpacity / 100,
+                opacity: editedOpacity !== undefined ? editedOpacity / 100 : 1,
                 transform: `rotate(${editedRotation}deg)`,
                 transition: 'all 0.2s ease'
               }}>
@@ -814,7 +1057,7 @@ const EditItemDialog = ({
                     borderRadius: `${editedBorder_radius}px`,
                     overflow: 'hidden',
                     bgcolor: editedBackgroundColor || 'transparent',
-                    opacity: editedOpacity / 100,
+                    opacity: editedOpacity !== undefined ? editedOpacity / 100 : 1,
                     transform: `rotate(${editedRotation}deg)`,
                     transition: 'all 0.2s ease'
                   }}>
@@ -862,19 +1105,135 @@ const EditItemDialog = ({
                   flexDirection: 'column',
                   alignItems: 'center'
                 }}>
-                  <img 
-                    src={currentItem.content} 
-                    alt={currentItem.title || "Image"} 
-                    style={{ 
-                      maxWidth: '100%', 
-                      maxHeight: '200px',
-                      objectFit: 'contain', 
-                      border: '1px solid #ddd',
-                      borderRadius: '4px'
-                    }} 
-                  />
-                  <Typography variant="caption" color="text.secondary" sx={{ mt: 1 }}>
+                  <Paper 
+                    elevation={2}
+                    sx={{ 
+                      p: 2, 
+                      display: 'flex', 
+                      flexDirection: 'column', 
+                      alignItems: 'center',
+                      borderRadius: `${editedBorder_radius}px`,
+                      bgcolor: editedBackgroundColor || 'transparent',
+                      opacity: editedOpacity !== undefined ? editedOpacity / 100 : 1,
+                      transform: `rotate(${editedRotation}deg)`,
+                      transition: 'all 0.2s ease',
+                      maxWidth: '100%',
+                      overflow: 'hidden'
+                    }}
+                  >
+                    <img 
+                      src={currentItem.content} 
+                      alt={currentItem.title || "Image"} 
+                      style={{ 
+                        maxWidth: '100%', 
+                        maxHeight: '200px',
+                        objectFit: 'contain'
+                      }} 
+                    />
+                  </Paper>
+                  <Typography variant="caption" color="text.secondary" sx={{ mt: 2 }}>
                     The image content cannot be edited directly. To change the image,
+                    you'll need to delete this item and add a new one.
+                  </Typography>
+                </Box>
+              )}
+            </Box>
+          );
+
+        case 'pdf':
+          return (
+            <Box sx={{ p: 2 }}>
+              <Typography variant="subtitle1" gutterBottom>
+                PDF Properties
+              </Typography>
+              
+              {currentItem?.content && (
+                <Box sx={{ 
+                  mt: 2, 
+                  mb: 3,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center'
+                }}>
+                  <Paper 
+                    elevation={2}
+                    sx={{ 
+                      p: 2, 
+                      display: 'flex', 
+                      flexDirection: 'column', 
+                      alignItems: 'center',
+                      borderRadius: `${editedBorder_radius}px`,
+                      bgcolor: editedBackgroundColor || '#f8f9fa',
+                      opacity: editedOpacity !== undefined ? editedOpacity / 100 : 1,
+                      transform: `rotate(${editedRotation}deg)`,
+                      transition: 'all 0.2s ease',
+                      maxWidth: '100%',
+                      overflow: 'hidden',
+                      height: 200,
+                      width: '100%',
+                      position: 'relative'
+                    }}
+                  >
+                    {currentItem.thumbnail ? (
+                      <img 
+                        src={currentItem.thumbnail} 
+                        alt={currentItem.title || "PDF Preview"} 
+                        style={{ 
+                          maxWidth: '100%', 
+                          maxHeight: '160px',
+                          objectFit: 'contain'
+                        }} 
+                      />
+                    ) : (
+                      <Box sx={{ 
+                        height: '100%', 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'center',
+                        flexDirection: 'column'
+                      }}>
+                        <PdfIcon sx={{ fontSize: 48, color: 'primary.main', opacity: 0.8, mb: 1 }} />
+                        <Typography variant="body2" color="text.secondary" align="center">
+                          PDF Document
+                        </Typography>
+                      </Box>
+                    )}
+                    
+                    {/* PDF info footer */}
+                    <Box sx={{ 
+                      position: 'absolute',
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      bgcolor: 'rgba(0,0,0,0.05)',
+                      p: 1,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 1
+                    }}>
+                      <PdfIcon fontSize="small" color="primary" />
+                      <Typography variant="caption" fontWeight="medium" noWrap>
+                        {editedTitle || currentItem.title || 'PDF Document'}
+                      </Typography>
+                    </Box>
+                  </Paper>
+                  
+                  <Button
+                    component="a"
+                    href={currentItem.content}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    variant="outlined"
+                    startIcon={<PdfIcon />}
+                    size="small"
+                    sx={{ mt: 2 }}
+                  >
+                    View PDF
+                  </Button>
+                  
+                  <Typography variant="caption" color="text.secondary" sx={{ mt: 2 }}>
+                    The PDF content cannot be edited directly. To change the PDF,
                     you'll need to delete this item and add a new one.
                   </Typography>
                 </Box>
@@ -950,6 +1309,7 @@ function MoodboardPage() {
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [textDialogOpen, setTextDialogOpen] = useState(false);
   const [linkDialogOpen, setLinkDialogOpen] = useState(false);
+  const [pdfDialogOpen, setPdfDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [currentEditItem, setCurrentEditItem] = useState(null);
   const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
@@ -963,6 +1323,10 @@ function MoodboardPage() {
   const [newLink, setNewLink] = useState('');
   const [newLinkTitle, setNewLinkTitle] = useState('');
   const [newVideoUrl, setNewVideoUrl] = useState('');
+  const [newPdf, setNewPdf] = useState(null);
+  const [newPdfUrl, setNewPdfUrl] = useState(''); 
+  const [newPdfTitle, setNewPdfTitle] = useState('');
+  const [newPdfThumbnail, setNewPdfThumbnail] = useState(null);
   
   // State for permissions
   const [isEditable, setIsEditable] = useState(false);
@@ -1292,6 +1656,84 @@ function MoodboardPage() {
     } catch (err) {
       console.error('Error adding link:', err);
       setError('Failed to add link');
+    } finally {
+      setSaving(false);
+    }
+  };
+  
+  const handleAddPdf = async () => {
+    if (!newPdf) return;
+    
+    try {
+      setSaving(true);
+      
+      // Upload PDF to storage
+      const fileExt = newPdf.name.split('.').pop();
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const filePath = `moodboards/${moodboardId}/pdfs/${fileName}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('shared')
+        .upload(filePath, newPdf, {
+          cacheControl: '3600',
+          upsert: true
+        });
+      
+      if (uploadError) throw uploadError;
+      
+      // Get public URL for the PDF
+      const { data: { publicUrl } } = supabase.storage
+        .from('shared')
+        .getPublicUrl(filePath);
+      
+      // Calculate position based on current view
+      const canvasRect = canvasRef.current.getBoundingClientRect();
+      const centerX = (canvasRect.width / 2 - position.x) / scale;
+      const centerY = (canvasRect.height / 2 - position.y) / scale;
+      
+      // Create new item
+      const newItem = {
+        moodboard_id: moodboardId,
+        type: 'pdf',
+        content: publicUrl,
+        title: newPdfTitle || newPdf.name.replace(/\.[^/.]+$/, ''), // Remove extension
+        x: centerX - 150, // Center the item in view
+        y: centerY - 100,
+        width: 300,
+        height: 300,
+        zIndex: items.length + 1,
+        created_by: user.id
+      };
+      
+      // If we have a thumbnail, add it to the item
+      if (newPdfThumbnail) {
+        newItem.thumbnail = newPdfThumbnail;
+      }
+      
+      const { data: itemData, error: itemError } = await supabase
+        .from('moodboard_items')
+        .insert([newItem])
+        .select();
+      
+      if (itemError) throw itemError;
+      
+      // Add to local state
+      setItems(prev => [...prev, itemData[0]]);
+      setSelectedItemId(itemData[0].id);
+      
+      // Reset form and close dialog
+      setNewPdf(null);
+      setNewPdfUrl('');
+      setNewPdfTitle('');
+      setNewPdfThumbnail(null);
+      setPdfDialogOpen(false);
+      
+      setSuccess('PDF added successfully');
+      setTimeout(() => setSuccess(null), 3000);
+      
+    } catch (err) {
+      console.error('Error uploading PDF:', err);
+      setError('Failed to upload PDF: ' + err.message);
     } finally {
       setSaving(false);
     }
@@ -1815,6 +2257,14 @@ const handleUpdateItem = async (updatedItem) => {
         >
           <LinkIcon sx={{ mr: 1 }} /> Add Link
         </MenuItem>
+        <MenuItem 
+          onClick={() => {
+            handleAddMenuClose();
+            setPdfDialogOpen(true);
+          }}
+        >
+          <PdfIcon sx={{ mr: 1 }} /> Add PDF
+        </MenuItem>
       </Menu>
       
       {/* Upload Image Dialog */}
@@ -2026,6 +2476,103 @@ const handleUpdateItem = async (updatedItem) => {
   onSave={handleUpdateItem}
   processing={saving}
 />
+
+      {/* Add PDF Dialog */}
+      <Dialog 
+        open={pdfDialogOpen} 
+        onClose={() => setPdfDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>Add PDF Document</DialogTitle>
+        <DialogContent>
+          <Box sx={{ mt: 1, mb: 2 }}>
+            <input
+              accept="application/pdf"
+              style={{ display: 'none' }}
+              id="upload-pdf-button"
+              type="file"
+              onChange={(e) => {
+                if (!e.target.files || e.target.files.length === 0) {
+                  return;
+                }
+                
+                const file = e.target.files[0];
+                
+                // Check file size (20MB max)
+                if (file.size > 20 * 1024 * 1024) {
+                  setError('PDF file size must be less than 20MB');
+                  return;
+                }
+                
+                setNewPdf(file);
+                setNewPdfUrl(URL.createObjectURL(file));
+                
+                // Auto-set the title based on filename
+                if (!newPdfTitle) {
+                  const fileName = file.name.replace(/\.[^/.]+$/, '');
+                  setNewPdfTitle(fileName);
+                }
+              }}
+            />
+            <label htmlFor="upload-pdf-button">
+              <Button
+                variant="outlined"
+                component="span"
+                startIcon={<PdfIcon />}
+                fullWidth
+                sx={{ py: 5, border: '1px dashed' }}
+              >
+                {newPdfUrl ? 'Change PDF Document' : 'Select a PDF to upload'}
+              </Button>
+            </label>
+            
+            {newPdfUrl && (
+              <Box sx={{ 
+                mt: 2, 
+                p: 2, 
+                border: '1px solid',
+                borderColor: 'divider',
+                borderRadius: 1,
+                bgcolor: '#f8f9fa',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center'
+              }}>
+                <PdfIcon sx={{ fontSize: 48, color: 'primary.main', mb: 1 }} />
+                <Typography variant="body1" gutterBottom noWrap sx={{ maxWidth: '100%' }}>
+                  {newPdf?.name || 'Selected PDF'}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {newPdf ? `${(newPdf.size / (1024 * 1024)).toFixed(2)} MB` : ''}
+                </Typography>
+              </Box>
+            )}
+            
+            <TextField
+              label="PDF Title (Optional)"
+              value={newPdfTitle}
+              onChange={(e) => setNewPdfTitle(e.target.value)}
+              fullWidth
+              margin="normal"
+              variant="outlined"
+              placeholder="Enter a title for this PDF"
+              helperText="If left empty, the filename will be used"
+            />
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setPdfDialogOpen(false)}>Cancel</Button>
+          <Button 
+            onClick={handleAddPdf} 
+            variant="contained" 
+            disabled={!newPdf || saving}
+            startIcon={saving ? <CircularProgress size={20} /> : <PdfIcon />}
+          >
+            {saving ? 'Uploading...' : 'Add PDF'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

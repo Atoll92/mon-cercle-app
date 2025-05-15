@@ -151,13 +151,22 @@ const LinkPreview = ({ url, compact = false, onDataLoaded = null, height = 'auto
           });
         }
         
-        // For Facebook data with embedded SVG images, mark them as already loaded
-        if (data.image && data.image.startsWith('data:image/svg+xml;base64')) {
-          setImageLoaded(true);
+        // For Facebook data with embedded SVG images or any already loaded images, mark them as already loaded
+        if (data.image) {
+          // For data URIs or cached images, mark as already loaded
+          if (data.image.startsWith('data:') || data.image.startsWith('blob:') || 
+              data.image.includes('ggpht.com') || data.image.includes('ytimg.com')) {
+            console.log('Image preloaded:', data.image);
+            setImageLoaded(true);
+          }
         }
         
-        if (data.favicon && data.favicon.startsWith('data:image/svg+xml;base64')) {
-          setFaviconLoaded(true);
+        if (data.favicon) {
+          // For data URIs or cached favicons, mark as already loaded
+          if (data.favicon.startsWith('data:') || data.favicon.startsWith('blob:')) {
+            console.log('Favicon preloaded:', data.favicon);
+            setFaviconLoaded(true);
+          }
         }
         
         // Notify parent component if data was loaded
@@ -213,6 +222,14 @@ const LinkPreview = ({ url, compact = false, onDataLoaded = null, height = 'auto
     e.stopPropagation();
     setIsPlaying(!isPlaying);
   };
+
+  // Auto-play media in chat when the component mounts
+  useEffect(() => {
+    // If this is not in a compact view and it's a media URL, auto-play it
+    if (!compact && mediaInfo) {
+      setIsPlaying(true);
+    }
+  }, [compact, mediaInfo]);
 
   // Determine if we should auto-embed media (Spotify is auto-embedded, YouTube requires a click)
   const shouldAutoEmbed = mediaInfo && (mediaInfo.service === 'spotify' || isPlaying);
@@ -404,6 +421,78 @@ const LinkPreview = ({ url, compact = false, onDataLoaded = null, height = 'auto
 
   // Compact preview
   if (compact) {
+    // If there's an image available in the metadata, show a compact preview with the image
+    if (ogData.image && !imageError) {
+      return (
+        <Paper
+          elevation={0}
+          sx={{
+            height: height,
+            width: '100%',
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
+            bgcolor: 'background.paper',
+            borderRadius: 1,
+            p: 1,
+            overflow: 'hidden'
+          }}
+        >
+          {/* Small thumbnail image */}
+          <Box 
+            sx={{ 
+              width: 48, 
+              height: 48, 
+              mr: 1, 
+              flexShrink: 0,
+              position: 'relative',
+              overflow: 'hidden',
+              borderRadius: 1,
+              bgcolor: 'action.hover'
+            }}
+          >
+            <Box
+              component="img"
+              src={ogData.image}
+              alt={ogData.title || "Thumbnail"}
+              onLoad={handleImageLoad}
+              onError={handleImageError}
+              sx={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                display: imageLoaded || ogData.image.startsWith('data:') ? 'block' : 'none'
+              }}
+            />
+          </Box>
+          
+          <Box sx={{ minWidth: 0, flexGrow: 1 }}>
+            <Typography
+              variant="subtitle2"
+              noWrap
+              sx={{
+                fontWeight: 'medium',
+                color: 'text.primary'
+              }}
+            >
+              {ogData.title || formattedUrl}
+            </Typography>
+            <Typography
+              variant="caption"
+              noWrap
+              sx={{
+                color: 'text.secondary',
+                display: 'block'
+              }}
+            >
+              {getHostname(formattedUrl)}
+            </Typography>
+          </Box>
+        </Paper>
+      );
+    }
+    
+    // Standard compact view without image
     return (
       <Paper
         elevation={0}
@@ -568,7 +657,7 @@ const LinkPreview = ({ url, compact = false, onDataLoaded = null, height = 'auto
             title={ogData.title || "Media content"}
             frameBorder="0"
             allowFullScreen
-            allow="encrypted-media; accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allow="autoplay; encrypted-media; accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             sx={{
               width: '100%',
               height: '100%',
@@ -800,7 +889,7 @@ const LinkPreview = ({ url, compact = false, onDataLoaded = null, height = 'auto
   // Helper function to render normal content
   function renderContent() {
     // Handle image URL - use appropriate fallbacks for different types of links
-    let imageUrl = ogData.image;
+    let imageUrl = ogData.thumbnail || ogData.image;
     
     return (
       <>

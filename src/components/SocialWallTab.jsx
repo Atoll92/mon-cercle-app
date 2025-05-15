@@ -439,8 +439,8 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                     }
                   />
                   
-                  {/* Image for portfolio items */}
-                  {item.itemType === 'portfolio' && item.image_url && (
+                  {/* Image for portfolio or news items */}
+                  {item.image_url && (
                     <Box sx={{ position: 'relative', width: '100%', pt: '56.25%' /* 16:9 aspect ratio container */ }}>
                       <CardMedia
                         component="img"
@@ -545,6 +545,8 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                       </>
                     ) : (
                       <>
+                        {/* Note: News post images are now handled by the common image section above */}
+                        
                         <Box 
                           sx={{
                             transition: 'max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease',

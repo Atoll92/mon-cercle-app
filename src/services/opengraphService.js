@@ -450,7 +450,8 @@ function isFacebookUrl(url) {
         url: formattedUrl,
         title: getMetaTag(doc, 'og:title') || getMetaTag(doc, 'title') || doc.title || getDomainName(formattedUrl),
         description: getMetaTag(doc, 'og:description') || getMetaTag(doc, 'description') || getDefaultDescription(formattedUrl),
-        image: getMetaTag(doc, 'og:image') || findFirstImage(doc) || getFallbackImage(formattedUrl),
+        image: getMetaTag(doc, 'og:image') || getMetaTag(doc, 'twitter:image') || findFirstImage(doc) || getFallbackImage(formattedUrl),
+        thumbnail: getMetaTag(doc, 'og:image:secure_url') || getMetaTag(doc, 'twitter:image:src') || getMetaTag(doc, 'og:image'),
         siteName: getMetaTag(doc, 'og:site_name') || getDomainName(formattedUrl),
         favicon: getFavicon(doc, formattedUrl)
       };

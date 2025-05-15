@@ -258,7 +258,6 @@ const extractUrl = (content) => {
 };
 
   // Function to render message content (either plain text or link preview)
-  // Function to render message content (either plain text or link preview)
 const renderMessageContent = (message) => {
   if (!message || !message.content) {
     return null;
@@ -280,6 +279,9 @@ const renderMessageContent = (message) => {
     
     // Check if the message is just the URL or contains additional text
     const isOnlyUrl = message.content.trim() === url;
+
+    // Check if it's a media URL that should auto-play
+    const isMediaUrl = url.match(/youtube|spotify|vimeo|soundcloud/i);
     
     // Render with link preview
     return (
@@ -307,7 +309,12 @@ const renderMessageContent = (message) => {
           transform: 'scale(0.97)',  // Slightly smaller scale for link previews
           transformOrigin: 'top left'
         }}>
-          <LinkPreview url={url} compact={true} isEditable={true} />
+          <LinkPreview 
+            url={url} 
+            compact={false} 
+            isEditable={true} 
+            height={isMediaUrl ? (url.match(/spotify/i) ? 80 : 315) : 'auto'} 
+          />
         </Box>
       </>
     );

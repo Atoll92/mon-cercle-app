@@ -210,7 +210,14 @@ const EventsTab = ({
                       if (isToday) dateLabel = 'Today';
                       if (isTomorrow) dateLabel = 'Tomorrow';
                       
-                      // Color to use for the date badge
+                      // Color to use for the date badge - converting to CSS classes for better rendering
+                      const dateBadgeClass = participation ? 
+                        (participation.status === 'attending' ? 'event-attending' : 
+                         participation.status === 'maybe' ? 'event-maybe' : 
+                         'event-declined') : 
+                        (isToday ? 'event-today' : 'event-default');
+                      
+                      // Also keep the color for backward compatibility
                       const dateBadgeColor = participation ? 
                         (participation.status === 'attending' ? '#4caf50' : 
                          participation.status === 'maybe' ? '#ff9800' : '#f44336') : 
@@ -295,18 +302,31 @@ const EventsTab = ({
                                 flexDirection: 'column',
                                 alignItems: 'baseline'
                               }}>
-                                <Box sx={{
-                                  width: '45px',
-                                  height: '45px',
-                                  borderRadius: '50%',
-                                  display: 'flex',
-                                  flexDirection: 'column',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  bgcolor: dateBadgeColor,
-                                  color: 'white',
-                                  boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
-                                }}>
+                                <Box 
+                                  className={`date-badge ${dateBadgeClass}`}
+                                  sx={{
+                                    width: '45px',
+                                    height: '45px',
+                                    borderRadius: '50%',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    bgcolor: dateBadgeColor,
+                                    color: 'white',
+                                    boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                                    // Force the background color to load properly on initial render
+                                    position: 'relative',
+                                    '&::before': {
+                                      content: '""',
+                                      position: 'absolute',
+                                      inset: 0,
+                                      borderRadius: 'inherit',
+                                      backgroundColor: 'inherit',
+                                      zIndex: -1
+                                    }
+                                  }}
+                                >
                                   <Typography variant="caption" sx={{ fontWeight: 'bold', lineHeight: 1 }}>
                                     {eventDate.toLocaleString('default', { month: 'short' })}
                                   </Typography>
@@ -581,9 +601,82 @@ const EventsTab = ({
     margin: '1px',
     padding: '2px 4px',
     border: 'none', // Remove border for cleaner look
+    position: 'relative', // Add for pseudo-element
     '&:focus': {
       outline: 'none', // Remove outline on focus
       boxShadow: (theme) => `0 0 0 2px ${theme.palette.background.paper}, 0 0 0 4px ${theme.palette.primary.main}`
+    },
+    // Force background color to render on initial load
+    '&::before': {
+      content: '""',
+      position: 'absolute',
+      inset: 0,
+      borderRadius: 'inherit',
+      backgroundColor: 'inherit',
+      zIndex: -1
+    }
+  },
+  // Individual color styles to force proper initial rendering for calendar events
+  '& .rbc-event.event-attending': {
+    backgroundColor: '#4caf50 !important',
+    '&::before': {
+      backgroundColor: '#4caf50 !important'
+    }
+  },
+  '& .rbc-event.event-maybe': {
+    backgroundColor: '#ff9800 !important',
+    '&::before': {
+      backgroundColor: '#ff9800 !important'
+    }
+  },
+  '& .rbc-event.event-declined': {
+    backgroundColor: '#f44336 !important',
+    '&::before': {
+      backgroundColor: '#f44336 !important'
+    }
+  },
+  '& .rbc-event.event-default': {
+    backgroundColor: '#2196f3 !important',
+    '&::before': {
+      backgroundColor: '#2196f3 !important'
+    }
+  },
+  '& .rbc-event.event-today': {
+    backgroundColor: '#2196f3 !important',
+    '&::before': {
+      backgroundColor: '#2196f3 !important'
+    }
+  },
+  
+  // Color styles for date badges
+  '& .date-badge.event-attending': {
+    backgroundColor: '#4caf50 !important',
+    '&::before': {
+      backgroundColor: '#4caf50 !important'
+    }
+  },
+  '& .date-badge.event-maybe': {
+    backgroundColor: '#ff9800 !important',
+    '&::before': {
+      backgroundColor: '#ff9800 !important'
+    }
+  },
+  '& .date-badge.event-declined': {
+    backgroundColor: '#f44336 !important',
+    '&::before': {
+      backgroundColor: '#f44336 !important'
+    }
+  },
+  '& .date-badge.event-default': {
+    backgroundColor: '#757575 !important',
+    '&::before': {
+      backgroundColor: '#757575 !important'
+    }
+  },
+  '& .date-badge.event-today': {
+    backgroundColor: '#2196f3 !important',
+    '&::before': {
+      backgroundColor: '#2196f3 !important'
     }
   },
   '& .rbc-row-segment': {
@@ -680,13 +773,25 @@ const EventsTab = ({
       
       // Enhanced color coding for better dark mode visibility
       let eventColor;
+      let eventClass = 'event-default';
+      
       if (participation) {
         // More saturated colors for dark mode visibility
-        if (participation.status === 'attending') eventColor = '#4caf50'; // Green - unchanged
-        else if (participation.status === 'maybe') eventColor = '#ff9800'; // Orange - unchanged
-        else if (participation.status === 'declined') eventColor = '#f44336'; // Red - unchanged
+        if (participation.status === 'attending') {
+          eventColor = '#4caf50'; // Green - unchanged
+          eventClass = 'event-attending';
+        }
+        else if (participation.status === 'maybe') {
+          eventColor = '#ff9800'; // Orange - unchanged
+          eventClass = 'event-maybe';
+        }
+        else if (participation.status === 'declined') {
+          eventColor = '#f44336'; // Red - unchanged
+          eventClass = 'event-declined';
+        }
       } else {
         eventColor = '#2196f3'; // Default blue - unchanged
+        eventClass = 'event-default';
       }
       
       return {
@@ -696,6 +801,7 @@ const EventsTab = ({
         allDay: true,
         resource: event,
         color: eventColor,
+        className: eventClass,
         coverImage: event.cover_image_url,
         hasLink: !!event.event_link
       };
@@ -714,7 +820,8 @@ const EventsTab = ({
         borderRadius: '8px',
         border: 'none',
         boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-        color: 'white'
+        color: 'white',
+        position: 'relative'
       }
     })}
     dayPropGetter={(date) => ({
@@ -812,7 +919,14 @@ const EventsTab = ({
               const isToday = new Date().toDateString() === eventDate.toDateString();
               const isTomorrow = new Date(new Date().setDate(new Date().getDate() + 1)).toDateString() === eventDate.toDateString();
               
-              // Color to use for the date badge
+              // Color to use for the date badge - converting to CSS classes for better rendering
+              const dateBadgeClass = participation ? 
+                (participation.status === 'attending' ? 'event-attending' : 
+                 participation.status === 'maybe' ? 'event-maybe' : 
+                 'event-declined') : 
+                (isToday ? 'event-today' : 'event-default');
+              
+              // Also keep the color for backward compatibility
               const dateBadgeColor = participation ? 
                 (participation.status === 'attending' ? '#4caf50' : 
                  participation.status === 'maybe' ? '#ff9800' : '#f44336') : 
@@ -860,16 +974,28 @@ const EventsTab = ({
                           flexDirection: 'column',
                           alignItems: 'center'
                         }}>
-                          <Box sx={{
-                            backgroundColor: dateBadgeColor,
-                            borderRadius: 1,
-                            padding: '4px 8px',
-                            boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            color: 'white'
-                          }}>
+                          <Box 
+                            className={`date-badge ${dateBadgeClass}`}
+                            sx={{
+                              backgroundColor: dateBadgeColor,
+                              borderRadius: 1,
+                              padding: '4px 8px',
+                              boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              alignItems: 'center',
+                              color: 'white',
+                              // Force the background color to load properly on initial render
+                              position: 'relative',
+                              '&::before': {
+                                content: '""',
+                                position: 'absolute',
+                                inset: 0,
+                                borderRadius: 'inherit',
+                                backgroundColor: 'inherit',
+                                zIndex: -1
+                              }
+                            }}>
                             <Typography variant="caption" sx={{ fontWeight: 'bold' }}>
                               {eventDate.toLocaleString('default', { month: 'short' })}
                             </Typography>

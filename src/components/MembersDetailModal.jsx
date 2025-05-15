@@ -356,7 +356,7 @@ const MemberDetailsModal = ({
           transition: 'box-shadow 0.2s ease',
           zIndex: safeItem.zIndex,
           transform: safeItem.rotation ? `rotate(${safeItem.rotation}deg)` : 'none',
-          opacity: safeItem.opacity ? safeItem.opacity / 100 : 1,
+          opacity: safeItem.opacity !== undefined ? safeItem.opacity / 100 : 1,
           borderRadius: safeItem.border_radius ? `${safeItem.border_radius}px` : '2px',
         }}
       >
