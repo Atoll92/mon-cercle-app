@@ -200,6 +200,7 @@ const PersonalMoodboardWidget = ({ user }) => {
     <Card 
       sx={{ 
         height: '100%',
+        width: '100%',
         display: 'flex',
         flexDirection: 'column',
         boxShadow: '0 4px 12px rgba(0,0,0,0.08)'

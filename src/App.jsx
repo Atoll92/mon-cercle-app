@@ -4,6 +4,7 @@ import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from './context/authcontext';
 import { CircularProgress, Box } from '@mui/material';
 import NetworkHeader from './components/NetworkHeader';
+import Footer from './components/Footer';
 import { supabase } from './supabaseclient';
 import WikiListPage from './pages/WikiListPage';
 import WikiPage from './pages/WikiPage';
@@ -141,71 +142,74 @@ function App() {
   return (
     <ThemeProvider>
     <DirectMessagesProvider>
-      <div className="App">
+      <div className="App" style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
         {/* Pass the network name to the header */}
         {window.location.pathname !== "/" && window.location.pathname !== "/pricing" && (
           <NetworkHeader/>
         )}
-        <Routes>
-          {/* Public Routes */}
-          <Route path="/" element={<LandingPage/>}/>
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/signup" element={<SignupPage />} />
-          <Route path="/password-reset" element={<PasswordResetPage />} />
-          <Route path="/update-password" element={<PasswordUpdatePage />} />
-          <Route path="/demo" element={<DemoPage />} />
-          <Route path="/pricing" element={<PricingPage />} />
-          <Route path="/payment-success" element={<PaymentSuccessPage />} />
-          <Route path="/shimmer" element={<ShimmeringTextPage />} />
-          
-          {/* Public Wiki routes */}
-          <Route path="/network/:networkId/wiki" element={<WikiListPage />} />
-          <Route path="/network/:networkId/wiki/category/:categorySlug" element={<WikiListPage />} />
-          <Route path="/network/:networkId/wiki/:pageSlug" element={<WikiPage />} />
-          
-          {/* Protected Wiki routes - need to be inside ProtectedRoute */}
-          <Route element={<ProtectedRoute />}>
-            <Route path="/network/:networkId/wiki/new" element={<WikiEditPage />} />
-            <Route path="/network/:networkId/wiki/edit/:pageSlug" element={<WikiEditPage />} />
-          </Route>
+        <Box component="main" sx={{ flex: 1 }}>
+          <Routes>
+            {/* Public Routes */}
+            <Route path="/" element={<LandingPage/>}/>
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/signup" element={<SignupPage />} />
+            <Route path="/password-reset" element={<PasswordResetPage />} />
+            <Route path="/update-password" element={<PasswordUpdatePage />} />
+            <Route path="/demo" element={<DemoPage />} />
+            <Route path="/pricing" element={<PricingPage />} />
+            <Route path="/payment-success" element={<PaymentSuccessPage />} />
+            <Route path="/shimmer" element={<ShimmeringTextPage />} />
+            
+            {/* Public Wiki routes */}
+            <Route path="/network/:networkId/wiki" element={<WikiListPage />} />
+            <Route path="/network/:networkId/wiki/category/:categorySlug" element={<WikiListPage />} />
+            <Route path="/network/:networkId/wiki/:pageSlug" element={<WikiPage />} />
+            
+            {/* Protected Wiki routes - need to be inside ProtectedRoute */}
+            <Route element={<ProtectedRoute />}>
+              <Route path="/network/:networkId/wiki/new" element={<WikiEditPage />} />
+              <Route path="/network/:networkId/wiki/edit/:pageSlug" element={<WikiEditPage />} />
+            </Route>
 
-          <Route element={<ProtectedRoute />}>
-            <Route path="/moodboard/:moodboardId" element={<MoodboardPage />} />
-            <Route path="/dashboard/moodboards" element={<PersonalMoodboardsPage />} />
-            <Route path="/network/:networkId/moodboards/create" element={<MoodboardPage />} />
-          </Route>
+            <Route element={<ProtectedRoute />}>
+              <Route path="/moodboard/:moodboardId" element={<MoodboardPage />} />
+              <Route path="/dashboard/moodboards" element={<PersonalMoodboardsPage />} />
+              <Route path="/network/:networkId/moodboards/create" element={<MoodboardPage />} />
+            </Route>
 
-          {/* Protected Shared Files Routes */}
-          <Route element={<ProtectedRoute />}>
-            <Route path="/network/:networkId/files" element={<SharedFilesPage />} />
-          </Route>
+            {/* Protected Shared Files Routes */}
+            <Route element={<ProtectedRoute />}>
+              <Route path="/network/:networkId/files" element={<SharedFilesPage />} />
+            </Route>
 
-          {/* Protected Direct Messages Routes */}
-          <Route element={<ProtectedRoute />}>
-            <Route path="/messages" element={<DirectMessagesPage />} />
-            <Route path="/messages/:userId" element={<DirectMessagesPage />} />
-          </Route>
+            {/* Protected Direct Messages Routes */}
+            <Route element={<ProtectedRoute />}>
+              <Route path="/messages" element={<DirectMessagesPage />} />
+              <Route path="/messages/:userId" element={<DirectMessagesPage />} />
+            </Route>
 
-          <Route element={<ProtectedRoute />}>
-            <Route path="/billing" element={<BillingPage />} />
-          </Route>
-          
-          
-          {/* Other Protected Routes */}
-          <Route element={<ProtectedRoute />}>
-            <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/profile/:userId" element={<ProfilePage />} />
-            <Route path="/profile/edit" element={<EditProfilePage />} />
-            <Route path="/admin" element={<NetworkAdminPage />} />
-            <Route path="/create-network" element={<NetworkOnboardingPage />} />
-          </Route>
-          
-          {/* Networks routes */}
-          <Route path="/network/:networkId" element={<NetworkLandingPage />} />
-          
-          {/* Catch-all Route for 404 Not Found */}
-          <Route path="*" element={<NotFoundPage />} />
-        </Routes>
+            <Route element={<ProtectedRoute />}>
+              <Route path="/billing" element={<BillingPage />} />
+            </Route>
+            
+            
+            {/* Other Protected Routes */}
+            <Route element={<ProtectedRoute />}>
+              <Route path="/dashboard" element={<DashboardPage />} />
+              <Route path="/profile/:userId" element={<ProfilePage />} />
+              <Route path="/profile/edit" element={<EditProfilePage />} />
+              <Route path="/admin" element={<NetworkAdminPage />} />
+              <Route path="/create-network" element={<NetworkOnboardingPage />} />
+            </Route>
+            
+            {/* Networks routes */}
+            <Route path="/network/:networkId" element={<NetworkLandingPage />} />
+            
+            {/* Catch-all Route for 404 Not Found */}
+            <Route path="*" element={<NotFoundPage />} />
+          </Routes>
+        </Box>
+        <Footer />
       </div>
       </DirectMessagesProvider>
     </ThemeProvider>

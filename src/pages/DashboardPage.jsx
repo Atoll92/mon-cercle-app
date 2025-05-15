@@ -588,7 +588,7 @@ function DashboardPage() {
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container maxWidth="lg" sx={{ py: 3, display: 'flex', flexDirection: 'column', minHeight: 'calc(100vh - 80px)' }}>
       {/* Header Card */}
       <Paper 
         elevation={3} 
@@ -596,13 +596,13 @@ function DashboardPage() {
           borderRadius: 2,
           overflow: 'hidden',
           boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-          mb: 3
+          mb: 2
         }}
       >
         {/* Blue header banner */}
         <Box 
           sx={{ 
-            p: 3, 
+            p: 2, 
             background: 'linear-gradient(120deg, #2196f3, #3f51b5)', 
             color: 'white',
             display: 'flex',
@@ -611,28 +611,31 @@ function DashboardPage() {
           }}
         >
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <DashboardIcon sx={{ mr: 2, fontSize: 32 }} />
-            <Typography variant="h4" component="h1" fontWeight="500">
+            <DashboardIcon sx={{ mr: 2, fontSize: 28 }} />
+            <Typography variant="h5" component="h1" fontWeight="500">
               Dashboard
             </Typography>
           </Box>
 
-          <Button
-            variant="contained" 
-            color="error" 
-            component={Link}
-            to={`/network/${profile.network_id}`}
-            endIcon={<ArrowForwardIcon />}
-            sx={{ 
-              bgcolor: 'rgba(255,255,255,0.15)', 
-              '&:hover': { 
-                bgcolor: 'rgba(255,255,255,0.25)'
-              },
-              color: 'white'
-            }}
-          >
-            Go to Network
-          </Button>
+          {profile.network_id && (
+            <Button
+              variant="contained" 
+              color="error" 
+              component={Link}
+              to={`/network/${profile.network_id}`}
+              endIcon={<ArrowForwardIcon />}
+              sx={{ 
+                bgcolor: 'rgba(255,255,255,0.15)', 
+                '&:hover': { 
+                  bgcolor: 'rgba(255,255,255,0.25)'
+                },
+                color: 'white'
+              }}
+              size="small"
+            >
+              Go to Network
+            </Button>
+          )}
         </Box>
 
         {/* Tabs Navigation */}
@@ -660,24 +663,26 @@ function DashboardPage() {
       </Paper>
 
       {session && profile ? (
-        <Box>
+        <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', width: '100%' }}>
           {/* Overview Tab */}
           {activeTab === 0 && (
-            <Grid container spacing={2} alignItems="flex-start">
-              {/* Top Row */}
-              <Grid item xs={12} lg={8}>
-                <Grid container spacing={2} alignItems="stretch">
+            <Grid container spacing={2} alignItems="stretch" sx={{ height: '100%', width: '100%', flexGrow: 1 }}>
+              {/* Row 1: Profile and Network Management */}
+              <Grid item xs={12} sx={{ minHeight: '300px', width: '100%' }}>
+                <Grid container spacing={2} sx={{ height: '100%', width: '100%' }}>
                   {/* Profile Card - Left Column */}
-                  <Grid item xs={12} md={6}>
+                  <Grid item xs={12} md={4} sx={{ display: 'flex' }}>
                     <Card sx={{ 
                       borderRadius: 2, 
                       boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
                       display: 'flex',
-                      flexDirection: 'column'
+                      flexDirection: 'column',
+                      height: '100%',
+                      width: '100%'
                     }}>
                       <CardMedia
                         sx={{ 
-                          height: 120, 
+                          height: 100, 
                           bgcolor: 'primary.main',
                           display: 'flex',
                           alignItems: 'flex-end',
@@ -687,12 +692,12 @@ function DashboardPage() {
                       >
                         <Avatar 
                           sx={{ 
-                            width: 100, 
-                            height: 100, 
+                            width: 80, 
+                            height: 80, 
                             border: '4px solid white',
                             boxShadow: '0 4px 10px rgba(0,0,0,0.2)',
                             position: 'absolute',
-                            bottom: '-40px',
+                            bottom: '-30px',
                             bgcolor: 'grey.200'
                           }}
                           src={profile.profile_picture_url} 
@@ -701,8 +706,8 @@ function DashboardPage() {
                         </Avatar>
                       </CardMedia>
                       
-                      <CardContent sx={{ pt: 6, pb: 1.5 }}>
-                        <Box sx={{ textAlign: 'center', mb: 2 }}>
+                      <CardContent sx={{ pt: 4, pb: 1 }}>
+                        <Box sx={{ textAlign: 'center', mb: 1 }}>
                           <Typography variant="h5" component="h2" gutterBottom>
                             {profile.full_name || user?.email?.split('@')[0] || 'Not set'}
                           </Typography>
@@ -726,7 +731,7 @@ function DashboardPage() {
                           </Box>
                         </Box>
                         
-                        <Divider sx={{ mb: 2 }} />
+                        <Divider sx={{ mb: 1.5 }} />
                         
                         <Typography variant="body2" color="text.secondary" gutterBottom>
                           <strong>Email:</strong> {user?.email}
@@ -738,30 +743,24 @@ function DashboardPage() {
                           </Typography>
                         )}
                         
-                        {profile.network_id && (
-                          <Typography variant="body2" color="text.secondary" gutterBottom>
-                            <strong>Network ID:</strong> {profile.network_id.substring(0, 8) + '...'}
-                          </Typography>
-                        )}
-                        
                         {profile.bio && (
-                          <Box sx={{ mt: 2 }}>
+                          <Box sx={{ mt: 1 }}>
                             <Typography variant="subtitle2" gutterBottom>
                               Bio:
                             </Typography>
                             <Typography variant="body2" color="text.secondary">
-                              {profile.bio.length > 120 ? profile.bio.substring(0, 120) + '...' : profile.bio}
+                              {profile.bio.length > 80 ? profile.bio.substring(0, 80) + '...' : profile.bio}
                             </Typography>
                           </Box>
                         )}
                         
                         {profile.skills && profile.skills.length > 0 && (
-                          <Box sx={{ mt: 2 }}>
+                          <Box sx={{ mt: 1 }}>
                             <Typography variant="subtitle2" gutterBottom>
                               Skills:
                             </Typography>
                             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                              {profile.skills.slice(0, 5).map((skill, index) => (
+                              {profile.skills.slice(0, 3).map((skill, index) => (
                                 <Chip 
                                   key={index} 
                                   label={skill} 
@@ -772,9 +771,9 @@ function DashboardPage() {
                                   }}
                                 />
                               ))}
-                              {profile.skills.length > 5 && (
+                              {profile.skills.length > 3 && (
                                 <Chip 
-                                  label={`+${profile.skills.length - 5}`} 
+                                  label={`+${profile.skills.length - 3}`} 
                                   size="small" 
                                   color="primary"
                                 />
@@ -786,7 +785,7 @@ function DashboardPage() {
                       
                       <Box sx={{ flexGrow: 1 }} />
                       
-                      <CardActions sx={{ p: 1.5, justifyContent: 'space-between' }}>
+                      <CardActions sx={{ p: 1, justifyContent: 'space-between' }}>
                         <Button 
                           size="small" 
                           startIcon={<EditIcon />}
@@ -811,295 +810,250 @@ function DashboardPage() {
                     </Card>
                   </Grid>
                   
-                  {/* Admin Panel Card - Right Column (for admins only) */}
-                  {profile.role === 'admin' && profile.network_id && (
-                    <Grid item xs={12} md={6}>
+                  {/* Network Management Widget */}
+                  <Grid item xs={12} md={8} sx={{flexGrow:2}}>
+                    {profile.network_id ? (
                       <Card sx={{ 
                         borderRadius: 2, 
                         boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                        height: '100%',
+                        width: '100%',
                         display: 'flex',
-                        flexDirection: 'column'
+                        flexDirection: 'column',
                       }}>
                         <CardHeader
-                          title="Admin Controls"
+                          title="Network Management"
                           titleTypographyProps={{ variant: 'h6' }}
-                          avatar={<AdminIcon color="secondary" />}
-                          sx={{ bgcolor: 'rgba(156, 39, 176, 0.05)' }}
+                          avatar={<NetworkIcon color="primary" />}
+                          sx={{ 
+                            py: 1,
+                            bgcolor: 'rgba(33, 150, 243, 0.05)'
+                          }}
                         />
                         
-                        <CardContent sx={{ py: 1.5 }}>
-                          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                            As an admin, you can manage network settings, members, and content.
-                          </Typography>
-                          
-                          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                            <Button 
-                              variant="contained" 
-                              color="secondary" 
-                              component={Link} 
-                              to="/admin"
-                              startIcon={<AdminIcon />}
-                              fullWidth
-                            >
-                              Admin Panel
-                            </Button>
-                            
-                            <Button 
-                              variant="outlined" 
-                              color="secondary" 
-                              component={Link} 
-                              to="/admin"
-                              startIcon={<PersonAddIcon />}
-                              fullWidth
-                            >
-                              Invite Members
-                            </Button>
-                          </Box>
-                        </CardContent>
-                      </Card>
-                    </Grid>
-                  )}
-                </Grid>
-              </Grid>
-
-              {/* Sidebar */}
-              <Grid item xs={12} lg={4} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <PersonalMoodboardWidget user={user} />
-                
-                {/* Additional sidebar widgets can be added here */}
-              </Grid>
-              
-              {/* Main Content Area */}
-              <Grid item xs={12} sx={{ pt: 1 }}>
-                <Stack spacing={2}>
-                  {/* Network Status Card */}
-                  <Card sx={{ 
-                    borderRadius: 2, 
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-                  }}>
-                    <CardHeader
-                      title="Network Status"
-                      titleTypographyProps={{ variant: 'h6' }}
-                      avatar={<NetworkIcon color="primary" />}
-                      action={
-                        profile.network_id ? (
-                          <IconButton onClick={refreshNetworkDetails} disabled={loadingNetworkDetails}>
-                            {loadingNetworkDetails ? <CircularProgress size={20} /> : <RefreshIcon />}
-                          </IconButton>
-                        ) : null
-                      }
-                    />
-                    
-                    <Divider />
-                    {profile.network_id && (
-                      <Card sx={{ 
-                        borderRadius: 2, 
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-                        mb: 3,
-                        mx: 3,
-                        mt: 3
-                      }}>
-                        <CardHeader
-                          title="Subscription Status"
-                          titleTypographyProps={{ variant: 'h6' }}
-                          avatar={<AttachMoneyIcon color="primary" />}
-                          sx={{ bgcolor: 'rgba(33, 150, 243, 0.05)' }}
-                        />
-                        
-                        <Divider />
-                        
-                        <CardContent>
-                          {loadingNetworkDetails ? (
-                            <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
-                              <CircularProgress size={30} />
-                            </Box>
-                          ) : networkDetails?.subscription_status === 'active' ? (
-                            <Box>
-                              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                                <Box>
-                                  <Typography variant="h6" color="primary.main">
-                                    {(networkDetails.subscription_plan || 'Organization').charAt(0).toUpperCase() + 
-                                      (networkDetails.subscription_plan || 'Organization').slice(1)} Plan
-                                  </Typography>
-                                  
-                                  <Typography variant="body2" color="text.secondary">
-                                    Active subscription
-                                  </Typography>
-                                </Box>
-                                
-                                <Chip 
-                                  icon={<StarIcon />}
-                                  label="Premium" 
-                                  color="success" 
-                                  size="small"
-                                />
-                              </Box>
-                              
-                              {networkDetails?.subscription_end_date && (
-                                <Typography variant="body2" color="text.secondary" gutterBottom>
-                                  Next billing: {new Date(networkDetails.subscription_end_date).toLocaleDateString()}
-                                </Typography>
-                              )}
-                              
-                              {profile.role === 'admin' && (
-                                <Button 
-                                  variant="outlined" 
-                                  color="primary" 
-                                  fullWidth
-                                  sx={{ mt: 2 }}
-                                  component={Link}
-                                  to="/billing"
-                                >
-                                  Manage Subscription
-                                </Button>
-                              )}
-                            </Box>
-                          ) : networkDetails?.subscription_status === 'canceled' ? (
-                            <Box>
-                              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                                <Box>
-                                  <Typography variant="h6" color="warning.main">
-                                    Subscription Ending
-                                  </Typography>
-                                  
-                                  <Typography variant="body2" color="text.secondary">
-                                    Your benefits will continue until the end of your billing period
-                                  </Typography>
-                                </Box>
-                                
-                                <Chip 
-                                  icon={<HourglassEmptyIcon />}
-                                  label="Ending Soon" 
-                                  color="warning" 
-                                  size="small"
-                                />
-                              </Box>
-                              
-                              {networkDetails?.subscription_end_date && (
-                                <Typography variant="body2" color="text.secondary" gutterBottom>
-                                  Access until: {new Date(networkDetails.subscription_end_date).toLocaleDateString()}
-                                </Typography>
-                              )}
-                              
-                              {profile.role === 'admin' && (
-                                <Button 
-                                  variant="contained" 
-                                  color="primary" 
-                                  fullWidth
-                                  sx={{ mt: 2 }}
-                                  component={Link}
-                                  to="/pricing"
-                                >
-                                  Renew Subscription
-                                </Button>
-                              )}
-                            </Box>
-                          ) : (
-                            <Box>
-                              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                                <Box>
-                                  <Typography variant="h6">
-                                    Community Plan
-                                  </Typography>
-                                  
-                                  <Typography variant="body2" color="text.secondary">
-                                    Free tier with basic features
-                                  </Typography>
-                                </Box>
-                                
-                                <Chip 
-                                  label="Free Plan" 
-                                  variant="outlined"
-                                  size="small"
-                                />
-                              </Box>
-                              
-                              <Alert severity="info" sx={{ mb: 2 }}>
-                                Upgrade to access premium features like white labeling, more storage, and advanced admin controls.
-                              </Alert>
-                              
-                              {profile.role === 'admin' && (
-                                <Button 
-                                  variant="contained" 
-                                  color="primary" 
-                                  fullWidth
-                                  component={Link}
-                                  to="/pricing"
-                                >
-                                  Upgrade to Premium
-                                </Button>
-                              )}
-                            </Box>
-                          )}
-                        </CardContent>
-                      </Card>
-                    )}
-                    
-                    <CardContent>
-                      {!profile.network_id ? (
-                        <Box sx={{ textAlign: 'center', py: 3 }}>
-                          <Typography variant="h6" sx={{ mb: 1, color: 'text.secondary' }}>
-                            You're not part of any network yet
-                          </Typography>
-                          
-                          <Typography paragraph color="text.secondary">
-                            Create your own network or wait for an invitation from a network admin.
-                          </Typography>
-                          
-                          <Button 
-                            variant="contained" 
-                            color="primary" 
-                            startIcon={<CreateNewFolderIcon />}
-                            component={Link}
-                            to="/create-network"
-                            size="large"
-                            sx={{ mt: 1 }}
-                          >
-                            Create My Network
-                          </Button>
-                          
-                          <Box sx={{ mt: 3, display: 'flex', justifyContent: 'center' }}>
-                            <Chip
-                              icon={<InvitationIcon fontSize="small" />}
-                              label="Waiting for Invitations" 
-                              variant="outlined"
-                              color="primary"
-                            />
-                          </Box>
-                        </Box>
-                      ) : (
-                        <Box>
-                          {/* Subscription Badge */}
-                          {loadingNetworkDetails ? (
-                            <Box sx={{ mb: 2, display: 'flex', alignItems: 'center' }}>
-                              <CircularProgress size={20} sx={{ mr: 1 }} />
-                              <Typography variant="body2">Loading subscription info...</Typography>
-                            </Box>
-                          ) : (
-                            networkDetails && networkDetails.subscription_status === 'active' && (
-                              <Box sx={{ mb: 2 }}>
-                                <SubscriptionBadge 
-                                  plan={networkDetails.subscription_plan} 
-                                  status={networkDetails.subscription_status} 
-                                />
-                              </Box>
-                            )
-                          )}
-                          
+                        <CardContent sx={{ py: 1, flexGrow: 1 }}>
+                          {/* Network Name and Subscription Badge */}
                           <Box sx={{ 
-                            display: 'flex',
+                            display: 'flex', 
                             justifyContent: 'space-between',
-                            mb: 2
+                            alignItems: 'flex-start', 
+                            mb: 1.5
                           }}>
-                            <Typography variant="h6">
+                            <Typography variant="subtitle1" color="primary.main" fontWeight="medium">
                               {networkDetails?.name || 'My Network'}
                             </Typography>
+                            
+                            {/* Subscription Badge */}
+                            {!loadingNetworkDetails && networkDetails?.subscription_status === 'active' && (
+                              <SubscriptionBadge 
+                                plan={networkDetails.subscription_plan} 
+                                status={networkDetails.subscription_status} 
+                              />
+                            )}
                           </Box>
                           
-                          <Grid container spacing={2} sx={{ mb: 2 }}>
-                            <Grid item xs={6} sm={3}>
+                          {/* Admin Quick Links */}
+                          {profile.role === 'admin' && (
+                            <Box sx={{ mb: 2 }}>
+                              <Box sx={{ display: 'flex', gap: 1, mb: 1 }}>
+                                <Button 
+                                  variant="contained" 
+                                  color="secondary" 
+                                  component={Link} 
+                                  to="/admin"
+                                  startIcon={<AdminIcon />}
+                                  size="small"
+                                  sx={{ flexGrow: 1 }}
+                                >
+                                  Admin Panel
+                                </Button>
+                                
+                                <Button 
+                                  variant="outlined" 
+                                  color="secondary" 
+                                  component={Link} 
+                                  to="/admin"
+                                  startIcon={<PersonAddIcon />}
+                                  size="small"
+                                  sx={{ flexGrow: 1 }}
+                                >
+                                  Invite Members
+                                </Button>
+                              </Box>
+                              
+                              <Typography variant="caption" color="text.secondary">
+                                You have admin privileges for this network
+                              </Typography>
+                            </Box>
+                          )}
+                          
+                          {/* Subscription Status Card */}
+                          <Box sx={{ mb: 2 }}>
+                            {loadingNetworkDetails ? (
+                              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                <CircularProgress size={20} sx={{ mr: 1 }} />
+                                <Typography variant="body2">Loading subscription info...</Typography>
+                              </Box>
+                            ) : networkDetails?.subscription_status === 'active' ? (
+                              <Card variant="outlined" sx={{ 
+                                p: 1, 
+                                borderRadius: 1, 
+                                bgcolor: 'rgba(33, 150, 243, 0.05)',
+                                mb: 1
+                              }}>
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                  <Box>
+                                    <Typography variant="body2" color="primary.main" fontWeight="medium">
+                                      {(networkDetails.subscription_plan || 'Organization').charAt(0).toUpperCase() + 
+                                        (networkDetails.subscription_plan || 'Organization').slice(1)} Plan
+                                    </Typography>
+                                    
+                                    <Typography variant="caption" color="text.secondary">
+                                      Active premium subscription
+                                    </Typography>
+                                  </Box>
+                                  
+                                  <Chip 
+                                    icon={<StarIcon fontSize="small" />}
+                                    label="Premium" 
+                                    color="success" 
+                                    size="small"
+                                    variant="outlined"
+                                  />
+                                </Box>
+                                
+                                {networkDetails?.subscription_end_date && (
+                                  <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.5 }}>
+                                    Next billing: {new Date(networkDetails.subscription_end_date).toLocaleDateString()}
+                                  </Typography>
+                                )}
+
+                                {profile.role === 'admin' && (
+                                  <Button 
+                                    variant="outlined" 
+                                    color="primary" 
+                                    fullWidth
+                                    component={Link}
+                                    to="/billing"
+                                    size="small"
+                                    sx={{ mt: 1 }}
+                                    startIcon={<AttachMoneyIcon />}
+                                  >
+                                    Manage Subscription
+                                  </Button>
+                                )}
+                              </Card>
+                            ) : networkDetails?.subscription_status === 'canceled' ? (
+                              <Card variant="outlined" sx={{ 
+                                p: 1, 
+                                borderRadius: 1, 
+                                bgcolor: 'rgba(255, 152, 0, 0.05)',
+                                mb: 1
+                              }}>
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                  <Box>
+                                    <Typography variant="body2" color="warning.main" fontWeight="medium">
+                                      Subscription Ending
+                                    </Typography>
+                                    
+                                    <Typography variant="caption" color="text.secondary">
+                                      Benefits continue until end of billing period
+                                    </Typography>
+                                  </Box>
+                                  
+                                  <Chip 
+                                    icon={<HourglassEmptyIcon fontSize="small" />}
+                                    label="Ending Soon" 
+                                    color="warning" 
+                                    size="small"
+                                    variant="outlined"
+                                  />
+                                </Box>
+                                
+                                {networkDetails?.subscription_end_date && (
+                                  <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.5 }}>
+                                    Access until: {new Date(networkDetails.subscription_end_date).toLocaleDateString()}
+                                  </Typography>
+                                )}
+
+                                {profile.role === 'admin' && (
+                                  <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
+                                    <Button 
+                                      variant="contained" 
+                                      color="primary" 
+                                      component={Link}
+                                      to="/pricing"
+                                      size="small"
+                                      fullWidth
+                                    >
+                                      Renew Plan
+                                    </Button>
+                                    
+                                    <Button 
+                                      variant="outlined" 
+                                      color="primary" 
+                                      component={Link}
+                                      to="/billing"
+                                      size="small"
+                                      fullWidth
+                                    >
+                                      Billing
+                                    </Button>
+                                  </Box>
+                                )}
+                              </Card>
+                            ) : (
+                              <Card variant="outlined" sx={{ 
+                                p: 1, 
+                                borderRadius: 1, 
+                                mb: 1
+                              }}>
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                  <Box>
+                                    <Typography variant="body2" fontWeight="medium">
+                                      Community Plan
+                                    </Typography>
+                                    
+                                    <Typography variant="caption" color="text.secondary">
+                                      Free tier with basic features
+                                    </Typography>
+                                  </Box>
+                                  
+                                  <Chip 
+                                    label="Free Plan" 
+                                    variant="outlined"
+                                    size="small"
+                                  />
+                                </Box>
+                                
+                                <Box sx={{ mt: 1, display: 'flex', alignItems: 'center' }}>
+                                  <Typography variant="caption" color="text.secondary" sx={{ flexGrow: 1 }}>
+                                    Limited to 20 members & 2GB storage
+                                  </Typography>
+                                </Box>
+                                
+                                {profile.role === 'admin' && (
+                                  <Button 
+                                    variant="contained" 
+                                    color="primary" 
+                                    fullWidth
+                                    component={Link}
+                                    to="/pricing"
+                                    sx={{ mt: 1 }}
+                                    startIcon={<StarIcon />}
+                                  >
+                                    Upgrade Plan
+                                  </Button>
+                                )}
+                              </Card>
+                            )}
+                          </Box>
+                          
+                          {/* Network Stats */}
+                          <Grid container spacing={1.5}>
+                            <Grid item xs={6}>
                               <Paper sx={{ 
-                                p: 2, 
+                                p: 1, 
                                 textAlign: 'center',
                                 bgcolor: 'rgba(33, 150, 243, 0.1)',
                                 borderRadius: 2
@@ -1113,9 +1067,9 @@ function DashboardPage() {
                               </Paper>
                             </Grid>
                             
-                            <Grid item xs={6} sm={3}>
+                            <Grid item xs={6}>
                               <Paper sx={{ 
-                                p: 1.5, 
+                                p: 1, 
                                 textAlign: 'center',
                                 bgcolor: 'rgba(76, 175, 80, 0.1)',
                                 borderRadius: 2
@@ -1124,331 +1078,357 @@ function DashboardPage() {
                                   {recentEvents.length}
                                 </Typography>
                                 <Typography variant="body2" color="text.secondary">
-                                  Upcoming Events
-                                </Typography>
-                              </Paper>
-                            </Grid>
-                            
-                            <Grid item xs={6} sm={3}>
-                              <Paper sx={{ 
-                                p: 2, 
-                                textAlign: 'center',
-                                bgcolor: 'rgba(244, 67, 54, 0.1)',
-                                borderRadius: 2
-                              }}>
-                                <Typography variant="h5" fontWeight="500" color="error.main">
-                                  {networkMembers.filter(m => m.role === 'admin').length}
-                                </Typography>
-                                <Typography variant="body2" color="text.secondary">
-                                  Admins
-                                </Typography>
-                              </Paper>
-                            </Grid>
-                            
-                            <Grid item xs={6} sm={3}>
-                              <Paper sx={{ 
-                                p: 2, 
-                                textAlign: 'center',
-                                bgcolor: 'rgba(156, 39, 176, 0.1)',
-                                borderRadius: 2
-                              }}>
-                                <Typography variant="h5" fontWeight="500" sx={{ color: 'secondary.main' }}>
-                                  {profile.role === 'admin' ? 'Admin' : 'Member'}
-                                </Typography>
-                                <Typography variant="body2" color="text.secondary">
-                                  Your Role
+                                  Events
                                 </Typography>
                               </Paper>
                             </Grid>
                           </Grid>
-                          
-                          <Box sx={{ display: 'flex', gap: 1, mt: 3 }}>
-                            <Button
-                              variant="outlined"
-                              component={Link}
-                              to={`/network/${profile.network_id}`}
-                              startIcon={<GroupsIcon />}
-                              size="small"
-                            >
-                              Members
-                            </Button>
-                            
-                            <Button
-                              variant="outlined"
-                              component={Link}
-                              to={`/network/${profile.network_id}`}
-                              startIcon={<EventIcon />}
-                              size="small"
-                            >
-                              Events
-                            </Button>
-                            
-                            <Button
-                              variant="outlined"
-                              component={Link}
-                              to={`/network/${profile.network_id}`}
-                              startIcon={<ArticleIcon />}
-                              size="small"
-                            >
-                              News
-                            </Button>
-                            
-                            <Button
-                              variant="outlined"
-                              component={Link}
-                              to={`/network/${profile.network_id}`}
-                              startIcon={<MenuBookIcon />}
-                              size="small"
-                            >
-                              Wiki
-                            </Button>
-                          </Box>
-                        </Box>
-                      )}
-                    </CardContent>
-                  </Card>
-                  
-                  {/* Create New Post Widget */}
-                  <Card sx={{ 
-                    borderRadius: 2, 
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-                    mb: 3
-                  }}>
-                    <CardHeader
-                      title="Create New Post"
-                      titleTypographyProps={{ variant: 'subtitle1' }}
-                      avatar={<AddIcon color="primary" />}
-                      sx={{ 
-                        bgcolor: 'rgba(25, 118, 210, 0.05)',
-                        py: 1.5 
-                      }}
-                    />
-                    <CardContent sx={{ pt: 1, pb: 2 }}>
-                      {postMessage && (
-                        <Alert 
-                          severity={postMessage.includes('successfully') ? "success" : "error"} 
-                          sx={{ mb: 2 }}
-                          onClose={() => setPostMessage('')}
-                        >
-                          {postMessage}
-                        </Alert>
-                      )}
-                      
-                      <Box sx={{ mb: 3 }}>
-                        <TextField
-                          fullWidth
-                          label="Post Title"
-                          placeholder="What's on your mind?"
-                          variant="outlined"
-                          sx={{ mb: 2 }}
-                          value={newPostTitle}
-                          onChange={(e) => setNewPostTitle(e.target.value)}
-                          required
+                        </CardContent>
+                      </Card>
+                    ) : (
+                      <Card sx={{ 
+                        borderRadius: 2, 
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.08)'
+                      }}>
+                        <CardHeader
+                          title="Create Network"
+                          titleTypographyProps={{ variant: 'h6' }}
+                          avatar={<CreateNewFolderIcon color="primary" />}
+                          sx={{ py: 1 }}
                         />
                         
-                        <TextField
-                          fullWidth
-                          label="Post Content"
-                          placeholder="Share your thoughts with the community..."
-                          multiline
-                          rows={3}
-                          variant="outlined"
-                          sx={{ mb: 2 }}
-                          value={newPostContent}
-                          onChange={(e) => setNewPostContent(e.target.value)}
-                        />
-                        
-                        {/* Display image preview if available */}
-                        {newPostImagePreview && (
-                          <Box sx={{ mb: 2, position: 'relative', width: '100%', maxHeight: '200px', overflow: 'hidden', borderRadius: 1 }}>
-                            <img 
-                              src={newPostImagePreview} 
-                              alt="Post preview" 
-                              style={{ 
-                                width: '100%', 
-                                objectFit: 'cover',
-                                maxHeight: '200px'
-                              }} 
-                            />
-                            <IconButton
-                              size="small"
-                              sx={{
-                                position: 'absolute',
-                                top: 8,
-                                right: 8,
-                                bgcolor: 'rgba(0,0,0,0.5)',
-                                color: 'white',
-                                '&:hover': {
-                                  bgcolor: 'rgba(0,0,0,0.7)'
-                                }
-                              }}
-                              onClick={() => {
-                                setNewPostImage(null);
-                                setNewPostImagePreview('');
-                              }}
-                            >
-                              <DeleteIcon />
-                            </IconButton>
-                          </Box>
-                        )}
-                        
-                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                          <label htmlFor="quick-post-image">
-                            <input
-                              accept="image/*"
-                              type="file"
-                              id="quick-post-image"
-                              hidden
-                              onChange={handleNewPostImageChange}
-                            />
+                        <CardContent sx={{ py: 1 }}>
+                          <Box sx={{ textAlign: 'center', py: 1 }}>
+                            <Typography variant="body2" color="text.secondary" paragraph>
+                              Create your own network to connect with friends, colleagues, or community members.
+                            </Typography>
+                            
                             <Button 
-                              variant="outlined" 
-                              component="span"
-                              startIcon={<ImageIcon />}
-                              sx={{ mr: 2 }}
+                              variant="contained" 
+                              color="primary" 
+                              startIcon={<CreateNewFolderIcon />}
+                              onClick={handleCreateNetwork}
+                              fullWidth
+                              sx={{ mb: 1 }}
                             >
-                              {newPostImage ? 'Change Image' : 'Add Image'}
+                              Create Network
                             </Button>
-                          </label>
-                          
-                          <TextField
-                            label="Add Link (Optional)"
-                            placeholder="https://example.com"
-                            variant="outlined"
-                            size="small"
-                            sx={{ flexGrow: 1 }}
-                            value={newPostLink}
-                            onChange={(e) => setNewPostLink(e.target.value)}
-                            InputProps={{
-                              startAdornment: <LanguageIcon color="action" sx={{ mr: 1 }} fontSize="small" />
-                            }}
-                          />
-                        </Box>
-                      </Box>
-                      
-                      <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-                        <Button
-                          variant="contained" 
-                          color="primary"
-                          onClick={handlePublishNewPost}
-                          disabled={!newPostTitle.trim() || publishingPost}
-                          startIcon={publishingPost ? <CircularProgress size={20} color="inherit" /> : null}
-                        >
-                          {publishingPost ? 'Publishing...' : 'Publish Post'}
-                        </Button>
-                      </Box>
-                    </CardContent>
-                  </Card>
-
-                  {/* Removed old Admin Controls Card as it's now in the top row */}
-                  
-                  {/* Upcoming Events Card */}
-                  {profile.network_id && recentEvents.length > 0 && (
+                            
+                            <Chip
+                              icon={<InvitationIcon fontSize="small" />}
+                              label="Waiting for Invitations" 
+                              variant="outlined"
+                              color="primary"
+                              size="small"
+                            />
+                          </Box>
+                        </CardContent>
+                      </Card>
+                    )}
+                  </Grid>
+                </Grid>
+              </Grid>
+              
+              {/* Row 2: Create Post and Events */}
+              <Grid item xs={12} sx={{ minHeight: '300px', width:'100%' }}>
+                <Grid container spacing={2} sx={{ height: '100%', width: '100%' }}>
+                  {/* Left Column: Create Post */}
+                  <Grid item xs={12} md={4} sx={{ display: 'flex' }}>
                     <Card sx={{ 
                       borderRadius: 2, 
                       boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                      height: '100%',
+                      width: '100%',
+                      display: 'flex',
+                      flexDirection: 'column'
                     }}>
                       <CardHeader
-                        title="Upcoming Events"
-                        titleTypographyProps={{ variant: 'h6' }}
-                        avatar={<EventIcon color="primary" />}
+                        title="Create New Post"
+                        titleTypographyProps={{ variant: 'subtitle1' }}
+                        avatar={<AddIcon color="primary" />}
+                        sx={{ 
+                          bgcolor: 'rgba(25, 118, 210, 0.05)',
+                          py: 1
+                        }}
                       />
-                      
-                      <Divider />
-                      
-                      {loadingEvents ? (
-                        <Box sx={{ p: 3, textAlign: 'center' }}>
-                          <CircularProgress size={30} />
-                        </Box>
-                      ) : (
-                        <CardContent>
-                          <Stack spacing={2}>
-                            {recentEvents.map(event => (
-                              <Paper
-                                key={event.id}
-                                variant="outlined"
-                                sx={{ 
-                                  p: 2, 
-                                  borderRadius: 2,
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  gap: 2
+                      <CardContent sx={{ pt: 1, pb: 1.5, flexGrow: 1 }}>
+                        {postMessage && (
+                          <Alert 
+                            severity={postMessage.includes('successfully') ? "success" : "error"} 
+                            sx={{ mb: 1 }}
+                            onClose={() => setPostMessage('')}
+                          >
+                            {postMessage}
+                          </Alert>
+                        )}
+                        
+                        <Box sx={{ mb: 1 }}>
+                          <TextField
+                            fullWidth
+                            label="Post Title"
+                            placeholder="What's on your mind?"
+                            variant="outlined"
+                            sx={{ mb: 1.5 }}
+                            value={newPostTitle}
+                            onChange={(e) => setNewPostTitle(e.target.value)}
+                            required
+                            size="small"
+                          />
+                          
+                          <TextField
+                            fullWidth
+                            label="Post Content"
+                            placeholder="Share your thoughts..."
+                            multiline
+                            rows={2}
+                            variant="outlined"
+                            sx={{ mb: 1.5 }}
+                            value={newPostContent}
+                            onChange={(e) => setNewPostContent(e.target.value)}
+                            size="small"
+                          />
+                          
+                          {/* Display image preview if available */}
+                          {newPostImagePreview && (
+                            <Box sx={{ mb: 1.5, position: 'relative', width: '100%', maxHeight: '120px', overflow: 'hidden', borderRadius: 1 }}>
+                              <img 
+                                src={newPostImagePreview} 
+                                alt="Post preview" 
+                                style={{ 
+                                  width: '100%', 
+                                  objectFit: 'cover',
+                                  maxHeight: '120px'
+                                }} 
+                              />
+                              <IconButton
+                                size="small"
+                                sx={{
+                                  position: 'absolute',
+                                  top: 8,
+                                  right: 8,
+                                  bgcolor: 'rgba(0,0,0,0.5)',
+                                  color: 'white',
+                                  '&:hover': {
+                                    bgcolor: 'rgba(0,0,0,0.7)'
+                                  }
+                                }}
+                                onClick={() => {
+                                  setNewPostImage(null);
+                                  setNewPostImagePreview('');
                                 }}
                               >
-                                <Box sx={{ 
-                                  width: 60, 
-                                  height: 60, 
-                                  bgcolor: event.cover_image_url ? 'transparent' : 'primary.light',
-                                  borderRadius: 2,
-                                  display: 'flex',
-                                  flexDirection: 'column',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  color: 'white',
-                                  overflow: 'hidden'
-                                }}>
-                                  {event.cover_image_url ? (
-                                    <img 
-                                      src={event.cover_image_url} 
-                                      alt={event.title}
-                                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                    />
-                                  ) : (
-                                    <>
-                                      <Typography variant="caption" fontWeight="bold">
-                                        {new Date(event.date).toLocaleDateString('en-US', { month: 'short' })}
-                                      </Typography>
-                                      <Typography variant="subtitle1" fontWeight="bold">
-                                        {new Date(event.date).getDate()}
-                                      </Typography>
-                                    </>
-                                  )}
-                                </Box>
-                                
-                                <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-                                  <Typography variant="subtitle1" noWrap>
-                                    {event.title}
-                                  </Typography>
-                                  
-                                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                    <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center' }}>
-                                      <EventIcon fontSize="inherit" sx={{ mr: 0.5 }} />
-                                      {new Date(event.date).toLocaleDateString()}
-                                    </Typography>
-                                    
-                                    <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center' }}>
-                                      <LocationOnIcon fontSize="inherit" sx={{ mr: 0.5 }} />
-                                      {event.location}
-                                    </Typography>
-                                  </Box>
-                                </Box>
-                                
-                                <Button
-                                  variant="outlined"
-                                  size="small"
-                                  component={Link}
-                                  to={`/network/${profile.network_id}`}
-                                >
-                                  Details
-                                </Button>
-                              </Paper>
-                            ))}
-                          </Stack>
+                                <DeleteIcon fontSize="small" />
+                              </IconButton>
+                            </Box>
+                          )}
                           
-                          <Box sx={{ textAlign: 'center', mt: 2 }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
+                            <label htmlFor="quick-post-image">
+                              <input
+                                accept="image/*"
+                                type="file"
+                                id="quick-post-image"
+                                hidden
+                                onChange={handleNewPostImageChange}
+                              />
+                              <Button 
+                                variant="outlined" 
+                                component="span"
+                                startIcon={<ImageIcon />}
+                                size="small"
+                              >
+                                {newPostImage ? 'Change' : 'Add Image'}
+                              </Button>
+                            </label>
+                            
                             <Button
+                              variant="contained" 
+                              color="primary"
+                              onClick={handlePublishNewPost}
+                              disabled={!newPostTitle.trim() || publishingPost}
+                              startIcon={publishingPost ? <CircularProgress size={16} color="inherit" /> : null}
+                              size="small"
+                            >
+                              {publishingPost ? 'Publishing...' : 'Publish'}
+                            </Button>
+                            
+                            <TextField
+                              placeholder="Add link (optional)"
+                              variant="outlined"
+                              size="small"
+                              sx={{ flexGrow: 1, minWidth: { xs: '100%', sm: 'auto' }, mt: { xs: 1, sm: 0 } }}
+                              value={newPostLink}
+                              onChange={(e) => setNewPostLink(e.target.value)}
+                              InputProps={{
+                                startAdornment: <LanguageIcon color="action" sx={{ mr: 1 }} fontSize="small" />
+                              }}
+                            />
+                          </Box>
+                        </Box>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                  
+                  {/* Middle Column: Upcoming Events */}
+                  <Grid item xs={12} md={8} sx={{ display: 'flex', flexGrow: '1' }}>
+                    {profile.network_id && recentEvents.length > 0 ? (
+                      <Card sx={{ 
+                        borderRadius: 2, 
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                        height: '100%',
+                        width: '100%',
+                        display: 'flex',
+                        flexDirection: 'column'
+                      }}>
+                        <CardHeader
+                          title="Upcoming Events"
+                          titleTypographyProps={{ variant: 'h6' }}
+                          avatar={<EventIcon color="primary" />}
+                          action={
+                            <Button 
                               component={Link}
                               to={`/network/${profile.network_id}`}
                               endIcon={<ArrowForwardIcon />}
+                              size="small"
                             >
-                              View All Events
+                              View All
                             </Button>
+                          }
+                          sx={{ py: 1 }}
+                        />
+                        
+                        {loadingEvents ? (
+                          <Box sx={{ p: 2, textAlign: 'center' }}>
+                            <CircularProgress size={30} />
+                          </Box>
+                        ) : (
+                          <CardContent sx={{ py: 0.5, flexGrow: 1, overflow: 'auto' }}>
+                            <Stack spacing={1}>
+                              {recentEvents.map(event => (
+                                <Paper
+                                  key={event.id}
+                                  variant="outlined"
+                                  sx={{ 
+                                    p: 1, 
+                                    borderRadius: 2,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 1
+                                  }}
+                                >
+                                  <Box sx={{ 
+                                    width: 40, 
+                                    height: 40, 
+                                    bgcolor: event.cover_image_url ? 'transparent' : 'primary.light',
+                                    borderRadius: 1,
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    color: 'white',
+                                    overflow: 'hidden',
+                                    flexShrink: 0
+                                  }}>
+                                    {event.cover_image_url ? (
+                                      <img 
+                                        src={event.cover_image_url} 
+                                        alt={event.title}
+                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                      />
+                                    ) : (
+                                      <>
+                                        <Typography variant="caption" fontWeight="bold" sx={{ lineHeight: 1 }}>
+                                          {new Date(event.date).toLocaleDateString('en-US', { month: 'short' })}
+                                        </Typography>
+                                        <Typography variant="subtitle2" fontWeight="bold" sx={{ lineHeight: 1 }}>
+                                          {new Date(event.date).getDate()}
+                                        </Typography>
+                                      </>
+                                    )}
+                                  </Box>
+                                  
+                                  <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+                                    <Typography variant="subtitle2" noWrap>
+                                      {event.title}
+                                    </Typography>
+                                    
+                                    <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
+                                      <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center' }}>
+                                        <EventIcon fontSize="inherit" sx={{ mr: 0.5 }} />
+                                        {new Date(event.date).toLocaleDateString()}
+                                      </Typography>
+                                      
+                                      <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center' }}>
+                                        <LocationOnIcon fontSize="inherit" sx={{ mr: 0.5 }} />
+                                        {event.location}
+                                      </Typography>
+                                    </Box>
+                                  </Box>
+                                  
+                                  <Button
+                                    variant="outlined"
+                                    size="small"
+                                    component={Link}
+                                    to={`/network/${profile.network_id}`}
+                                    sx={{ flexShrink: 0, minWidth: 'auto', px: 1 }}
+                                  >
+                                    View
+                                  </Button>
+                                </Paper>
+                              ))}
+                            </Stack>
+                          </CardContent>
+                        )}
+                      </Card>
+                    ) : (
+                      // No events, show empty state
+                      <Card sx={{ 
+                        borderRadius: 2, 
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                        height: '100%',
+                        width: '100%',
+                        display: 'flex',
+                        flexDirection: 'column'
+                      }}>
+                        <CardHeader
+                          title="Upcoming Events"
+                          titleTypographyProps={{ variant: 'h6' }}
+                          avatar={<EventIcon color="primary" />}
+                          sx={{ py: 1 }}
+                        />
+                        <CardContent sx={{ py: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexGrow: 1 }}>
+                          <Box sx={{ textAlign: 'center', py: 2 }}>
+                            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                              No upcoming events scheduled
+                            </Typography>
+                            
+                            {profile.network_id && profile.role === 'admin' && (
+                              <Button 
+                                variant="outlined" 
+                                component={Link} 
+                                to="/admin"
+                                startIcon={<AddIcon />}
+                                size="small"
+                              >
+                                Create Event
+                              </Button>
+                            )}
                           </Box>
                         </CardContent>
-                      )}
-                    </Card>
-                  )}
-                </Stack>
+                      </Card>
+                    )}
+                  </Grid>
+                  
+                </Grid>
+              </Grid>
+              
+              {/* Row 3: Moodboard (Full Width) */}
+              <Grid item xs={12} sx={{ minHeight: '350px', width: '100%' }}>
+                <Grid container spacing={2} sx={{ height: '100%', width: '100%' }}>
+                  <Grid item xs={12} sx={{ display: 'flex', height: '100%', width: '100%' }}>
+                    <PersonalMoodboardWidget user={user} />
+                  </Grid>
+                </Grid>
               </Grid>
             </Grid>
           )}
@@ -1473,23 +1453,24 @@ function DashboardPage() {
                     Network Page
                   </Button>
                 }
+                sx={{ py: 1 }}
               />
               
               <Divider />
               
-              <CardContent>
+              <CardContent sx={{ py: 1.5 }}>
                 {(loadingMembers && networkMembers.length === 0) ? (
                   <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
                     <CircularProgress size={30} />
                   </Box>
                 ) : networkMembers.length > 0 ? (
-                  <Grid container spacing={2}>
+                  <Grid container spacing={2} sx={{ height: '100%', width: '100%' }}>
                     {networkMembers.map(member => (
                       <Grid item xs={12} sm={6} md={4} key={member.id}>
                         <Paper
                           elevation={1}
                           sx={{
-                            p: 2,
+                            p: 1.5,
                             borderRadius: 2,
                             display: 'flex',
                             alignItems: 'center',
@@ -1503,14 +1484,14 @@ function DashboardPage() {
                           }}
                         >
                           <Avatar
-                            sx={{ mr: 2, width: 50, height: 50 }}
+                            sx={{ mr: 2, width: 40, height: 40 }}
                             src={member.profile_picture_url}
                           >
                             {member.full_name ? member.full_name.charAt(0).toUpperCase() : '?'}
                           </Avatar>
                           
                           <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-                            <Typography variant="subtitle1" noWrap>
+                            <Typography variant="subtitle2" noWrap>
                               {member.full_name || 'Unnamed User'}
                               {member.id === user.id && ' (You)'}
                             </Typography>
@@ -1590,6 +1571,7 @@ function DashboardPage() {
           </Button>
         </Paper>
       )}
+      
     </Container>
   );
 }
