@@ -919,6 +919,26 @@ const DGLogo = () => (
               {t.getStarted}
             </Button>
             <Button 
+              component={RouterLink}
+              to="/create-network"
+              variant="contained" 
+              color="secondary"
+              size="large"
+              sx={{
+                px: 4,
+                py: 1.5,
+                borderRadius: '2rem',
+                boxShadow: '0 4px 14px 0 rgba(0, 0, 0, 0.2)',
+                '&:hover': {
+                  boxShadow: '0 6px 20px rgba(0, 0, 0, 0.3)',
+                  transform: 'translateY(-2px)'
+                },
+                transition: 'all 0.2s ease-in-out'
+              }}
+            >
+              Create Your Network
+            </Button>
+            <Button 
               variant="outlined" 
               size="large"
               component={RouterLink}

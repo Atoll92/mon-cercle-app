@@ -990,7 +990,8 @@ function DashboardPage() {
                             variant="contained" 
                             color="primary" 
                             startIcon={<CreateNewFolderIcon />}
-                            onClick={handleCreateNetwork}
+                            component={Link}
+                            to="/create-network"
                             size="large"
                             sx={{ mt: 1 }}
                           >

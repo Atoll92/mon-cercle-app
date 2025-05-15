@@ -35,6 +35,7 @@ import PricingPage from './pages/PricingPage';
 import ShimmeringTextPage from './pages/ShimmeringTextPage';
 import PersonalMoodboardsPage from './pages/PersonalMoodboardPage';
 import PasswordUpdatePage from './pages/PasswordUpdatePage';
+import NetworkOnboardingPage from './pages/NetworkOnboardingPage';
 
 function App() {
   const { loading, session, user } = useAuth();
@@ -196,6 +197,7 @@ function App() {
             <Route path="/profile/:userId" element={<ProfilePage />} />
             <Route path="/profile/edit" element={<EditProfilePage />} />
             <Route path="/admin" element={<NetworkAdminPage />} />
+            <Route path="/create-network" element={<NetworkOnboardingPage />} />
           </Route>
           
           {/* Networks routes */}

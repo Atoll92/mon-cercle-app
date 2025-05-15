@@ -28,6 +28,7 @@ npm run test
 ### Tech Stack
 
 - **Frontend**: React with Vite
+
 - **Backend**: Supabase (PostgreSQL, Auth, Storage, Edge Functions)
 - **Authentication**: Supabase Auth
 - **Styling**: Material UI (MUI), CSS
