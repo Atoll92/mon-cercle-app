@@ -663,155 +663,215 @@ function DashboardPage() {
         <Box>
           {/* Overview Tab */}
           {activeTab === 0 && (
-            <Grid container spacing={3}>
-              {/* Left Column */}
-              <Grid item xs={12} md={4}>
-                <Card sx={{ 
-                  borderRadius: 2, 
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-                  height: '100%',
-                  display: 'flex',
-                  flexDirection: 'column'
-                }}>
-                  <CardMedia
-                    sx={{ 
-                      height: 120, 
-                      bgcolor: 'primary.main',
+            <Grid container spacing={2} alignItems="flex-start">
+              {/* Top Row */}
+              <Grid item xs={12} lg={8}>
+                <Grid container spacing={2} alignItems="stretch">
+                  {/* Profile Card - Left Column */}
+                  <Grid item xs={12} md={6}>
+                    <Card sx={{ 
+                      borderRadius: 2, 
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
                       display: 'flex',
-                      alignItems: 'flex-end',
-                      justifyContent: 'center',
-                      position: 'relative'
-                    }}
-                  >
-                    <Avatar 
-                      sx={{ 
-                        width: 100, 
-                        height: 100, 
-                        border: '4px solid white',
-                        boxShadow: '0 4px 10px rgba(0,0,0,0.2)',
-                        position: 'absolute',
-                        bottom: '-40px',
-                        bgcolor: 'grey.200'
-                      }}
-                      src={profile.profile_picture_url} 
-                    >
-                      {profile.full_name ? profile.full_name.charAt(0).toUpperCase() : <PersonIcon fontSize="large" />}
-                    </Avatar>
-                  </CardMedia>
-                  
-                  <CardContent sx={{ pt: 6, pb: 2 }}>
-                    <Box sx={{ textAlign: 'center', mb: 2 }}>
-                      <Typography variant="h5" component="h2" gutterBottom>
-                        {profile.full_name || user?.email?.split('@')[0] || 'Not set'}
-                      </Typography>
+                      flexDirection: 'column'
+                    }}>
+                      <CardMedia
+                        sx={{ 
+                          height: 120, 
+                          bgcolor: 'primary.main',
+                          display: 'flex',
+                          alignItems: 'flex-end',
+                          justifyContent: 'center',
+                          position: 'relative'
+                        }}
+                      >
+                        <Avatar 
+                          sx={{ 
+                            width: 100, 
+                            height: 100, 
+                            border: '4px solid white',
+                            boxShadow: '0 4px 10px rgba(0,0,0,0.2)',
+                            position: 'absolute',
+                            bottom: '-40px',
+                            bgcolor: 'grey.200'
+                          }}
+                          src={profile.profile_picture_url} 
+                        >
+                          {profile.full_name ? profile.full_name.charAt(0).toUpperCase() : <PersonIcon fontSize="large" />}
+                        </Avatar>
+                      </CardMedia>
                       
-                      <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1 }}>
-                        <Chip 
-                          label={profile.role === 'admin' ? 'Admin' : 'Member'} 
-                          color={profile.role === 'admin' ? 'primary' : 'default'} 
-                          size="small" 
-                        />
+                      <CardContent sx={{ pt: 6, pb: 1.5 }}>
+                        <Box sx={{ textAlign: 'center', mb: 2 }}>
+                          <Typography variant="h5" component="h2" gutterBottom>
+                            {profile.full_name || user?.email?.split('@')[0] || 'Not set'}
+                          </Typography>
+                          
+                          <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1 }}>
+                            <Chip 
+                              label={profile.role === 'admin' ? 'Admin' : 'Member'} 
+                              color={profile.role === 'admin' ? 'primary' : 'default'} 
+                              size="small" 
+                            />
+                            
+                            {profile.network_id && (
+                              <Chip 
+                                icon={<NetworkIcon fontSize="small" />}
+                                label="Connected" 
+                                color="success" 
+                                size="small" 
+                                variant="outlined"
+                              />
+                            )}
+                          </Box>
+                        </Box>
+                        
+                        <Divider sx={{ mb: 2 }} />
+                        
+                        <Typography variant="body2" color="text.secondary" gutterBottom>
+                          <strong>Email:</strong> {user?.email}
+                        </Typography>
+                        
+                        {profile.contact_email && (
+                          <Typography variant="body2" color="text.secondary" gutterBottom>
+                            <strong>Contact:</strong> {profile.contact_email}
+                          </Typography>
+                        )}
                         
                         {profile.network_id && (
-                          <Chip 
-                            icon={<NetworkIcon fontSize="small" />}
-                            label="Connected" 
-                            color="success" 
-                            size="small" 
-                            variant="outlined"
-                          />
+                          <Typography variant="body2" color="text.secondary" gutterBottom>
+                            <strong>Network ID:</strong> {profile.network_id.substring(0, 8) + '...'}
+                          </Typography>
                         )}
-                      </Box>
-                    </Box>
-                    
-                    <Divider sx={{ mb: 2 }} />
-                    
-                    <Typography variant="body2" color="text.secondary" gutterBottom>
-                      <strong>Email:</strong> {user?.email}
-                    </Typography>
-                    
-                    {profile.contact_email && (
-                      <Typography variant="body2" color="text.secondary" gutterBottom>
-                        <strong>Contact:</strong> {profile.contact_email}
-                      </Typography>
-                    )}
-                    
-                    {profile.network_id && (
-                      <Typography variant="body2" color="text.secondary" gutterBottom>
-                        <strong>Network ID:</strong> {profile.network_id.substring(0, 8) + '...'}
-                      </Typography>
-                    )}
-                    
-                    {profile.bio && (
-                      <Box sx={{ mt: 2 }}>
-                        <Typography variant="subtitle2" gutterBottom>
-                          Bio:
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {profile.bio.length > 120 ? profile.bio.substring(0, 120) + '...' : profile.bio}
-                        </Typography>
-                      </Box>
-                    )}
-                    
-                    {profile.skills && profile.skills.length > 0 && (
-                      <Box sx={{ mt: 2 }}>
-                        <Typography variant="subtitle2" gutterBottom>
-                          Skills:
-                        </Typography>
-                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                          {profile.skills.slice(0, 5).map((skill, index) => (
-                            <Chip 
-                              key={index} 
-                              label={skill} 
-                              size="small" 
-                              sx={{ 
-                                bgcolor: 'rgba(63, 81, 181, 0.1)',
-                                fontWeight: 400
-                              }}
-                            />
-                          ))}
-                          {profile.skills.length > 5 && (
-                            <Chip 
-                              label={`+${profile.skills.length - 5}`} 
-                              size="small" 
-                              color="primary"
-                            />
-                          )}
-                        </Box>
-                      </Box>
-                    )}
-                  </CardContent>
+                        
+                        {profile.bio && (
+                          <Box sx={{ mt: 2 }}>
+                            <Typography variant="subtitle2" gutterBottom>
+                              Bio:
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary">
+                              {profile.bio.length > 120 ? profile.bio.substring(0, 120) + '...' : profile.bio}
+                            </Typography>
+                          </Box>
+                        )}
+                        
+                        {profile.skills && profile.skills.length > 0 && (
+                          <Box sx={{ mt: 2 }}>
+                            <Typography variant="subtitle2" gutterBottom>
+                              Skills:
+                            </Typography>
+                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                              {profile.skills.slice(0, 5).map((skill, index) => (
+                                <Chip 
+                                  key={index} 
+                                  label={skill} 
+                                  size="small" 
+                                  sx={{ 
+                                    bgcolor: 'rgba(63, 81, 181, 0.1)',
+                                    fontWeight: 400
+                                  }}
+                                />
+                              ))}
+                              {profile.skills.length > 5 && (
+                                <Chip 
+                                  label={`+${profile.skills.length - 5}`} 
+                                  size="small" 
+                                  color="primary"
+                                />
+                              )}
+                            </Box>
+                          </Box>
+                        )}
+                      </CardContent>
+                      
+                      <Box sx={{ flexGrow: 1 }} />
+                      
+                      <CardActions sx={{ p: 1.5, justifyContent: 'space-between' }}>
+                        <Button 
+                          size="small" 
+                          startIcon={<EditIcon />}
+                          component={Link} 
+                          to="/profile/edit"
+                          variant="outlined"
+                        >
+                          Edit Profile
+                        </Button>
+                        
+                        <Button 
+                          size="small" 
+                          startIcon={<PersonIcon />}
+                          component={Link} 
+                          to={`/profile/${user.id}`}
+                          variant="outlined"
+                          color="secondary"
+                        >
+                          View Profile
+                        </Button>
+                      </CardActions>
+                    </Card>
+                  </Grid>
                   
-                  <Box sx={{ flexGrow: 1 }} />
-                  
-                  <CardActions sx={{ p: 2, pt: 0, justifyContent: 'space-between' }}>
-                    <Button 
-                      size="small" 
-                      startIcon={<EditIcon />}
-                      component={Link} 
-                      to="/profile/edit"
-                      variant="outlined"
-                    >
-                      Edit Profile
-                    </Button>
-                    
-                    <Button 
-                      size="small" 
-                      startIcon={<PersonIcon />}
-                      component={Link} 
-                      to={`/profile/${user.id}`}
-                      variant="outlined"
-                      color="secondary"
-                    >
-                      View Public Profile
-                    </Button>
-                  </CardActions>
-                </Card>
+                  {/* Admin Panel Card - Right Column (for admins only) */}
+                  {profile.role === 'admin' && profile.network_id && (
+                    <Grid item xs={12} md={6}>
+                      <Card sx={{ 
+                        borderRadius: 2, 
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                        display: 'flex',
+                        flexDirection: 'column'
+                      }}>
+                        <CardHeader
+                          title="Admin Controls"
+                          titleTypographyProps={{ variant: 'h6' }}
+                          avatar={<AdminIcon color="secondary" />}
+                          sx={{ bgcolor: 'rgba(156, 39, 176, 0.05)' }}
+                        />
+                        
+                        <CardContent sx={{ py: 1.5 }}>
+                          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                            As an admin, you can manage network settings, members, and content.
+                          </Typography>
+                          
+                          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                            <Button 
+                              variant="contained" 
+                              color="secondary" 
+                              component={Link} 
+                              to="/admin"
+                              startIcon={<AdminIcon />}
+                              fullWidth
+                            >
+                              Admin Panel
+                            </Button>
+                            
+                            <Button 
+                              variant="outlined" 
+                              color="secondary" 
+                              component={Link} 
+                              to="/admin"
+                              startIcon={<PersonAddIcon />}
+                              fullWidth
+                            >
+                              Invite Members
+                            </Button>
+                          </Box>
+                        </CardContent>
+                      </Card>
+                    </Grid>
+                  )}
+                </Grid>
               </Grid>
 
-              {/* Right Column */}
-              <Grid item xs={12} md={8}>
-                <Stack spacing={3}>
+              {/* Sidebar */}
+              <Grid item xs={12} lg={4} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <PersonalMoodboardWidget user={user} />
+                
+                {/* Additional sidebar widgets can be added here */}
+              </Grid>
+              
+              {/* Main Content Area */}
+              <Grid item xs={12} sx={{ pt: 1 }}>
+                <Stack spacing={2}>
                   {/* Network Status Card */}
                   <Card sx={{ 
                     borderRadius: 2, 
@@ -1055,7 +1115,7 @@ function DashboardPage() {
                             
                             <Grid item xs={6} sm={3}>
                               <Paper sx={{ 
-                                p: 2, 
+                                p: 1.5, 
                                 textAlign: 'center',
                                 bgcolor: 'rgba(76, 175, 80, 0.1)',
                                 borderRadius: 2
@@ -1156,11 +1216,14 @@ function DashboardPage() {
                   }}>
                     <CardHeader
                       title="Create New Post"
-                      titleTypographyProps={{ variant: 'h6' }}
+                      titleTypographyProps={{ variant: 'subtitle1' }}
                       avatar={<AddIcon color="primary" />}
-                      sx={{ bgcolor: 'rgba(25, 118, 210, 0.05)' }}
+                      sx={{ 
+                        bgcolor: 'rgba(25, 118, 210, 0.05)',
+                        py: 1.5 
+                      }}
                     />
-                    <CardContent>
+                    <CardContent sx={{ pt: 1, pb: 2 }}>
                       {postMessage && (
                         <Alert 
                           severity={postMessage.includes('successfully') ? "success" : "error"} 
@@ -1276,50 +1339,8 @@ function DashboardPage() {
                       </Box>
                     </CardContent>
                   </Card>
-                  
-                  <PersonalMoodboardWidget user={user} />
 
-                  {/* Admin Controls Card */}
-                  {profile.role === 'admin' && profile.network_id && (
-                    <Card sx={{ 
-                      borderRadius: 2, 
-                      boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-                    }}>
-                      <CardHeader
-                        title="Admin Controls"
-                        titleTypographyProps={{ variant: 'h6' }}
-                        avatar={<AdminIcon color="secondary" />}
-                        sx={{ bgcolor: 'rgba(156, 39, 176, 0.05)' }}
-                      />
-                      
-                      <CardContent>
-                        <Typography paragraph>
-                          As an admin, you can manage your network settings, members, and events.
-                        </Typography>
-                        
-                        <Button 
-                          variant="contained" 
-                          color="secondary" 
-                          component={Link} 
-                          to="/admin"
-                          startIcon={<AdminIcon />}
-                          sx={{ mr: 2 }}
-                        >
-                          Admin Panel
-                        </Button>
-                        
-                        <Button 
-                          variant="outlined" 
-                          color="secondary" 
-                          component={Link} 
-                          to="/admin"
-                          startIcon={<PersonAddIcon />}
-                        >
-                          Invite Members
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  )}
+                  {/* Removed old Admin Controls Card as it's now in the top row */}
                   
                   {/* Upcoming Events Card */}
                   {profile.network_id && recentEvents.length > 0 && (

@@ -464,15 +464,22 @@ export const uploadEventImage = async (eventId, imageFile) => {
   try {
     if (!imageFile) return null;
     
+    // Sanitize filename to remove special characters and accents
+    const fileExtension = imageFile.name.split('.').pop();
+    const sanitizedFilename = `${Date.now()}-event-image.${fileExtension}`;
+    
     // Create a unique file path in the events bucket
-    const filePath = `${eventId}/${Date.now()}-${imageFile.name}`;
+    const filePath = `${eventId}/${sanitizedFilename}`;
+    
+    console.log('Uploading event image to path:', filePath);
     
     // Upload the file to storage
     const { error: uploadError } = await supabase.storage
       .from('events')
       .upload(filePath, imageFile, {
         cacheControl: '3600',
-        upsert: true
+        upsert: true,
+        contentType: imageFile.type
       });
       
     if (uploadError) throw uploadError;
@@ -482,6 +489,7 @@ export const uploadEventImage = async (eventId, imageFile) => {
       .from('events')
       .getPublicUrl(filePath);
     
+    console.log('Image uploaded successfully, public URL:', publicUrl);
     return publicUrl;
   } catch (error) {
     console.error('Error uploading event image:', error);

@@ -19,18 +19,24 @@ ALTER TABLE public.networks ADD COLUMN IF NOT EXISTS default_tabs jsonb DEFAULT 
 -- Add constraints for enumerated fields
 DO $$
 BEGIN
+  -- Check if constraint already exists before adding it
   IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint WHERE conname = 'valid_privacy_level'
+    SELECT 1 FROM pg_constraint 
+    WHERE conname = 'valid_privacy_level' 
+    AND conrelid = 'public.networks'::regclass
   ) THEN
-    ALTER TABLE public.networks ADD CONSTRAINT valid_privacy_level 
-      CHECK (privacy_level IN ('public', 'private', 'restricted'));
+    EXECUTE 'ALTER TABLE public.networks ADD CONSTRAINT valid_privacy_level 
+      CHECK (privacy_level IN (''public'', ''private'', ''restricted''))';
   END IF;
   
+  -- Check if constraint already exists before adding it
   IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint WHERE conname = 'valid_purpose'
+    SELECT 1 FROM pg_constraint 
+    WHERE conname = 'valid_purpose' 
+    AND conrelid = 'public.networks'::regclass
   ) THEN
-    ALTER TABLE public.networks ADD CONSTRAINT valid_purpose
-      CHECK (purpose IN ('general', 'professional', 'interest', 'education', 'nonprofit'));
+    EXECUTE 'ALTER TABLE public.networks ADD CONSTRAINT valid_purpose
+      CHECK (purpose IN (''general'', ''professional'', ''interest'', ''education'', ''nonprofit''))';
   END IF;
 END$$;
 
