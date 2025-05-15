@@ -131,18 +131,74 @@ function NetworkLandingPage() {
     });
   };
 
-  // State to hold portfolio items for all members
-  const [portfolioItems, setPortfolioItems] = useState([]);
-  const [loadingPortfolios, setLoadingPortfolios] = useState(false);
-
-  // Fetch portfolio items for all network members
+  // State to hold post items for all members (stored as portfolio_items in database)
+  const [postItems, setPostItems] = useState([]);
+  const [loadingPosts, setLoadingPosts] = useState(false);
+  
+  // Fetch user's event participations on component mount
   useEffect(() => {
-    const fetchPortfolioItems = async () => {
+    const fetchUserParticipations = async () => {
+      if (!user || !events || events.length === 0) {
+        console.log("SKIPPING participation fetch - missing data:", { 
+          user: !!user, 
+          events: !!events, 
+          eventsLength: events?.length || 0 
+        });
+        return;
+      }
+      
+      console.log("=== START PARTICIPATION FETCH ===");
+      console.log("User ID:", user.id);
+      console.log("Events count:", events.length);
+      console.log("Event IDs for fetch:", events.map(e => e.id));
+      
+      try {
+        // Refactor query to always return all possible participations
+        const { data, error } = await supabase
+          .from('event_participations')
+          .select('*')
+          .eq('profile_id', user.id);
+        
+        if (error) {
+          console.error('Error fetching user participations:', error);
+          return;
+        }
+        
+        console.log("FULL Fetched participations:", data);
+        
+        // Filter to just participations for events in our current view
+        const relevantParticipations = data.filter(p => 
+          events.some(e => e.id === p.event_id)
+        );
+        
+        console.log("FILTERED Fetched user participations:", relevantParticipations);
+        console.log("Mapped Status by Event:", relevantParticipations.map(p => ({
+          event_id: p.event_id,
+          event_title: events.find(e => e.id === p.event_id)?.title || 'Unknown',
+          status: p.status
+        })));
+        
+        // Always set the state, even if empty
+        setUserParticipations(relevantParticipations);
+        
+        console.log("=== END PARTICIPATION FETCH ===");
+      } catch (err) {
+        console.error('Error in fetchUserParticipations:', err);
+      }
+    };
+    
+    fetchUserParticipations();
+  }, [user, events]);
+
+  // Fetch post items for all network members (stored as portfolio_items in database)
+  useEffect(() => {
+    const fetchPostItems = async () => {
       if (!networkMembers || networkMembers.length === 0) return;
       
-      setLoadingPortfolios(true);
+      setLoadingPosts(true);
       try {
-        // Fetch all portfolio items for the network members
+        console.log("Fetching posts (stored as portfolio_items in the database)");
+        // Fetch all portfolio items from the database (will display as posts in UI)
         const { data, error } = await supabase
           .from('portfolio_items')
           .select('*')
@@ -150,49 +206,49 @@ function NetworkLandingPage() {
           
         if (error) throw error;
         
-        console.log('Fetched portfolio items:', data); // Debug log
+        console.log('Fetched portfolio items (to be displayed as posts):', data); // Debug log
         
-        // Add member info to each portfolio item
+        // Add member info to each post item
         const itemsWithMemberInfo = data.map(item => {
           const member = networkMembers.find(m => m.id === item.profile_id);
           return {
             ...item,
-            itemType: 'portfolio',
+            itemType: 'post', // Using 'post' for UI display, but item is from portfolio_items table
             createdAt: item.created_at,
             memberName: member?.full_name || 'Network Member',
             memberAvatar: member?.profile_picture_url || '',
             memberId: member?.id,
-            // Ensure image_url is properly used
-            image_url: item.image_url || ''
+            // Ensure image_url is properly used - database field is still image_url
+            image_url: item.image_url || item.file_url || ''
           };
         });
         
-        console.log('Portfolio items with member info:', itemsWithMemberInfo); // Debug log
-        setPortfolioItems(itemsWithMemberInfo);
+        console.log('Portfolio items transformed to posts with member info:', itemsWithMemberInfo); // Debug log
+        setPostItems(itemsWithMemberInfo);
       } catch (err) {
-        console.error('Error fetching portfolio items:', err);
+        console.error('Error fetching post items:', err);
       } finally {
-        setLoadingPortfolios(false);
+        setLoadingPosts(false);
       }
     };
     
-    fetchPortfolioItems();
+    fetchPostItems();
   }, [networkMembers]);
 
   // Prepare social wall items
   const socialWallItems = React.useMemo(() => {
-    // Create arrays for news and portfolio items
+    // Create arrays for news and post items
     const newsItems = networkNews ? networkNews.map(item => ({
       ...item,
       itemType: 'news',
       createdAt: item.created_at
     })) : [];
     
-    // Log the portfolio items before combining
-    console.log('Using portfolio items in socialWallItems:', portfolioItems);
+    // Log the post items before combining
+    console.log('Using post items in socialWallItems:', postItems);
     
-    // Combine news and portfolio items
-    const combinedFeed = [...newsItems, ...portfolioItems];
+    // Combine news and post items
+    const combinedFeed = [...newsItems, ...postItems];
     
     // Sort by creation date
     combinedFeed.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
@@ -201,7 +257,7 @@ function NetworkLandingPage() {
     console.log('Final social wall items:', combinedFeed);
     
     return combinedFeed;
-  }, [networkNews, portfolioItems]);
+  }, [networkNews, postItems]);
 
   if (loading) {
     return (
@@ -558,7 +614,7 @@ function NetworkLandingPage() {
         open={showMemberModal}
         onClose={() => setShowMemberModal(false)}
         member={selectedMember}
-        portfolioItems={selectedMember ? portfolioItems.filter(item => item.profile_id === selectedMember.id) : []}
+        portfolioItems={selectedMember ? postItems.filter(item => item.profile_id === selectedMember.id) : []}
         isCurrentUser={selectedMember?.id === user?.id}
         darkMode={membersTabDarkMode}
       />

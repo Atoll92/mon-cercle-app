@@ -39,6 +39,7 @@ const MemberDetailsModal = ({
   open, 
   onClose, 
   member, 
+  portfolioItems: initialPortfolioItems = [], // Rename prop to avoid conflict with state
   isCurrentUser,
   darkMode = false
 }) => {
@@ -50,7 +51,7 @@ const MemberDetailsModal = ({
   const customFadedText = muiTheme.palette.custom?.fadedText || (darkMode ? alpha('#ffffff', 0.7) : alpha('#000000', 0.7));
   const customBorder = muiTheme.palette.custom?.border || (darkMode ? alpha('#ffffff', 0.1) : alpha('#000000', 0.1));
   
-  const [portfolioItems, setPortfolioItems] = useState([]);
+  const [memberPortfolioItems, setMemberPortfolioItems] = useState(initialPortfolioItems || []);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   
@@ -67,15 +68,27 @@ const MemberDetailsModal = ({
   // Ref for cover canvas
   const canvasRef = useRef(null);
   
-  // Fetch portfolio items
+  // Fetch portfolio items only if not provided through props
   useEffect(() => {
-    const fetchPortfolioItems = async () => {
-      if (!member || !open) return;
+    // Initialize with provided items if available
+    if (initialPortfolioItems && initialPortfolioItems.length > 0) {
+      console.log("Using provided initialPortfolioItems:", initialPortfolioItems);
+      setMemberPortfolioItems(initialPortfolioItems);
+      setLoading(false);
+      return;
+    }
+    
+    // Skip fetching if member is not defined or modal not open
+    if (!member || !open) {
+      return;
+    }
 
+    const fetchPortfolioItems = async () => {
       try {
         setLoading(true);
         setError(null);
         
+        console.log("Fetching portfolioItems for member:", member.id);
         const { data, error } = await supabase
           .from('portfolio_items')
           .select('*')
@@ -84,7 +97,8 @@ const MemberDetailsModal = ({
           
         if (error) throw error;
         
-        setPortfolioItems(data || []);
+        console.log("Fetched portfolioItems:", data);
+        setMemberPortfolioItems(data || []);
       } catch (err) {
         console.error('Error fetching portfolio items:', err);
         setError('Failed to load portfolio items');
@@ -94,7 +108,7 @@ const MemberDetailsModal = ({
     };
     
     fetchPortfolioItems();
-  }, [member, open]);
+  }, [member, open, initialPortfolioItems]);
 
   // Fetch member's featured moodboard
   useEffect(() => {
@@ -886,7 +900,7 @@ const MemberDetailsModal = ({
             }}>
               <WorkIcon fontSize="small" />
             </Box>
-            Portfolio Items {portfolioItems.length > 0 && `(${portfolioItems.length})`}
+            Portfolio Items {memberPortfolioItems.length > 0 && `(${memberPortfolioItems.length})`}
           </Typography>
           
           {loading ? (
@@ -897,10 +911,10 @@ const MemberDetailsModal = ({
             <Typography color="error" sx={{ p: 2 }}>
               {error}
             </Typography>
-          ) : portfolioItems.length > 0 ? (
+          ) : memberPortfolioItems.length > 0 ? (
             <>
               <Grid container spacing={2}>
-                {portfolioItems.slice(0, 3).map(item => (
+                {memberPortfolioItems.slice(0, 3).map(item => (
                   <Grid item xs={12} sm={6} md={4} key={item.id}>
                     <Paper 
                       elevation={2} 
@@ -985,7 +999,7 @@ const MemberDetailsModal = ({
                 ))}
               </Grid>
               
-              {portfolioItems.length > 3 && (
+              {memberPortfolioItems.length > 3 && (
                 <Box sx={{ mt: 2, textAlign: 'center' }}>
                   <Button
                     component={Link}
@@ -995,7 +1009,7 @@ const MemberDetailsModal = ({
                       color: darkMode ? '#90caf9' : undefined 
                     }}
                   >
-                    View All {portfolioItems.length} Portfolio Items
+                    View All {memberPortfolioItems.length} Portfolio Items
                   </Button>
                 </Box>
               )}

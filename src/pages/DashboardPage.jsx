@@ -7,7 +7,11 @@ import PersonalMoodboardWidget from '../components/PersonalMoodboardWidget';
 import { 
   AttachMoney as AttachMoneyIcon,
   Star as StarIcon,
-  HourglassEmpty as HourglassEmptyIcon
+  HourglassEmpty as HourglassEmptyIcon,
+  Add as AddIcon,
+  Image as ImageIcon,
+  Language as LanguageIcon,
+  Delete as DeleteIcon
 } from '@mui/icons-material';
 import { 
   CircularProgress, 
@@ -33,7 +37,8 @@ import {
   Fade,
   Tab,
   Tabs,
-  Badge
+  Badge,
+  TextField
 } from '@mui/material';
 import { 
   Person as PersonIcon, 
@@ -163,6 +168,15 @@ function DashboardPage() {
   const [activeTab, setActiveTab] = useState(0);
   const [recentEvents, setRecentEvents] = useState([]);
   const [loadingEvents, setLoadingEvents] = useState(true);
+  
+  // State for Create New Post widget
+  const [newPostTitle, setNewPostTitle] = useState('');
+  const [newPostContent, setNewPostContent] = useState('');
+  const [newPostLink, setNewPostLink] = useState('');
+  const [newPostImage, setNewPostImage] = useState(null);
+  const [newPostImagePreview, setNewPostImagePreview] = useState('');
+  const [publishingPost, setPublishingPost] = useState(false);
+  const [postMessage, setPostMessage] = useState('');
 
   console.log("Component render cycle. States:", { 
     loadingProfile, 
@@ -363,6 +377,100 @@ function DashboardPage() {
       } finally {
         setLoadingNetworkDetails(false);
       }
+    }
+  };
+  
+  // Handle new post image change
+  const handleNewPostImageChange = (e) => {
+    if (!e.target.files || e.target.files.length === 0) {
+      return;
+    }
+    
+    const file = e.target.files[0];
+    setNewPostImage(file);
+    setNewPostImagePreview(URL.createObjectURL(file));
+    
+    console.log("New post image selected:", file.name);
+  };
+  
+  // Handle publishing a new post
+  const handlePublishNewPost = async () => {
+    // Validate the form
+    if (!newPostTitle.trim()) {
+      setPostMessage('Post title is required');
+      return;
+    }
+    
+    try {
+      setPublishingPost(true);
+      console.log("Publishing post:", newPostTitle);
+      
+      // First, upload the image if any
+      let fileUrl = null;
+      if (newPostImage) {
+        // Upload new image
+        const fileExt = newPostImage.name.split('.').pop();
+        const fileName = `${user.id}-${Date.now()}-post.${fileExt}`;
+        const filePath = `portfolios/${fileName}`;
+
+        console.log('Uploading post image:', filePath);
+        
+        const { error: uploadError } = await supabase.storage
+          .from('profiles')
+          .upload(filePath, newPostImage);
+
+        if (uploadError) {
+          console.error('Error uploading post image:', uploadError);
+          throw uploadError;
+        }
+
+        const { data: urlData } = supabase.storage
+          .from('profiles')
+          .getPublicUrl(filePath);
+        
+        fileUrl = urlData.publicUrl;
+        console.log('Generated image URL:', fileUrl);
+      }
+      
+      // Save post directly to the database
+      const newPost = {
+        profile_id: user.id,
+        title: newPostTitle,
+        description: newPostContent,
+        url: newPostLink,
+        image_url: fileUrl
+      };
+      
+      console.log('Saving post to portfolio_items table:', newPost);
+      
+      const { error, data } = await supabase
+        .from('portfolio_items')
+        .insert(newPost)
+        .select()
+        .single();
+        
+      if (error) {
+        throw error;
+      }
+      
+      console.log('Post saved successfully:', data);
+      
+      // Reset the form
+      setNewPostTitle('');
+      setNewPostContent('');
+      setNewPostLink('');
+      setNewPostImage(null);
+      setNewPostImagePreview('');
+      
+      // Show success message
+      setPostMessage('Post published successfully!');
+      setTimeout(() => setPostMessage(''), 3000);
+      
+    } catch (err) {
+      console.error('Error publishing post:', err);
+      setPostMessage('Failed to publish post. Please try again.');
+    } finally {
+      setPublishingPost(false);
     }
   };
 
@@ -1038,6 +1146,136 @@ function DashboardPage() {
                       )}
                     </CardContent>
                   </Card>
+                  
+                  {/* Create New Post Widget */}
+                  <Card sx={{ 
+                    borderRadius: 2, 
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                    mb: 3
+                  }}>
+                    <CardHeader
+                      title="Create New Post"
+                      titleTypographyProps={{ variant: 'h6' }}
+                      avatar={<AddIcon color="primary" />}
+                      sx={{ bgcolor: 'rgba(25, 118, 210, 0.05)' }}
+                    />
+                    <CardContent>
+                      {postMessage && (
+                        <Alert 
+                          severity={postMessage.includes('successfully') ? "success" : "error"} 
+                          sx={{ mb: 2 }}
+                          onClose={() => setPostMessage('')}
+                        >
+                          {postMessage}
+                        </Alert>
+                      )}
+                      
+                      <Box sx={{ mb: 3 }}>
+                        <TextField
+                          fullWidth
+                          label="Post Title"
+                          placeholder="What's on your mind?"
+                          variant="outlined"
+                          sx={{ mb: 2 }}
+                          value={newPostTitle}
+                          onChange={(e) => setNewPostTitle(e.target.value)}
+                          required
+                        />
+                        
+                        <TextField
+                          fullWidth
+                          label="Post Content"
+                          placeholder="Share your thoughts with the community..."
+                          multiline
+                          rows={3}
+                          variant="outlined"
+                          sx={{ mb: 2 }}
+                          value={newPostContent}
+                          onChange={(e) => setNewPostContent(e.target.value)}
+                        />
+                        
+                        {/* Display image preview if available */}
+                        {newPostImagePreview && (
+                          <Box sx={{ mb: 2, position: 'relative', width: '100%', maxHeight: '200px', overflow: 'hidden', borderRadius: 1 }}>
+                            <img 
+                              src={newPostImagePreview} 
+                              alt="Post preview" 
+                              style={{ 
+                                width: '100%', 
+                                objectFit: 'cover',
+                                maxHeight: '200px'
+                              }} 
+                            />
+                            <IconButton
+                              size="small"
+                              sx={{
+                                position: 'absolute',
+                                top: 8,
+                                right: 8,
+                                bgcolor: 'rgba(0,0,0,0.5)',
+                                color: 'white',
+                                '&:hover': {
+                                  bgcolor: 'rgba(0,0,0,0.7)'
+                                }
+                              }}
+                              onClick={() => {
+                                setNewPostImage(null);
+                                setNewPostImagePreview('');
+                              }}
+                            >
+                              <DeleteIcon />
+                            </IconButton>
+                          </Box>
+                        )}
+                        
+                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                          <label htmlFor="quick-post-image">
+                            <input
+                              accept="image/*"
+                              type="file"
+                              id="quick-post-image"
+                              hidden
+                              onChange={handleNewPostImageChange}
+                            />
+                            <Button 
+                              variant="outlined" 
+                              component="span"
+                              startIcon={<ImageIcon />}
+                              sx={{ mr: 2 }}
+                            >
+                              {newPostImage ? 'Change Image' : 'Add Image'}
+                            </Button>
+                          </label>
+                          
+                          <TextField
+                            label="Add Link (Optional)"
+                            placeholder="https://example.com"
+                            variant="outlined"
+                            size="small"
+                            sx={{ flexGrow: 1 }}
+                            value={newPostLink}
+                            onChange={(e) => setNewPostLink(e.target.value)}
+                            InputProps={{
+                              startAdornment: <LanguageIcon color="action" sx={{ mr: 1 }} fontSize="small" />
+                            }}
+                          />
+                        </Box>
+                      </Box>
+                      
+                      <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                        <Button
+                          variant="contained" 
+                          color="primary"
+                          onClick={handlePublishNewPost}
+                          disabled={!newPostTitle.trim() || publishingPost}
+                          startIcon={publishingPost ? <CircularProgress size={20} color="inherit" /> : null}
+                        >
+                          {publishingPost ? 'Publishing...' : 'Publish Post'}
+                        </Button>
+                      </Box>
+                    </CardContent>
+                  </Card>
+                  
                   <PersonalMoodboardWidget user={user} />
 
                   {/* Admin Controls Card */}

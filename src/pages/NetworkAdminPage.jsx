@@ -44,6 +44,7 @@ import EventsTab from '../components/admin/EventsTab';
 import NewsTab from '../components/admin/Newstab';
 import AdminLayout from '../components/admin/AdminLayout';
 import AdminBreadcrumbs from '../components/admin/AdminBreadcrumbs';
+import NetworkHeader from '../components/NetworkHeader';
 
 // Helper component for tab panels
 function TabPanel(props) {
@@ -160,84 +161,92 @@ function NetworkAdminPage() {
   if (loading) {
     // Show a more engaging loading state with the AdminLayout
     return (
-      <AdminLayout
-        darkMode={darkMode}
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        network={null}
-      >
-        <Box 
-          sx={{ 
-            display: 'flex', 
-            flexDirection: 'column',
-            justifyContent: 'center', 
-            alignItems: 'center', 
-            height: '70vh',
-            color: muiTheme.palette.custom.lightText
-          }}
+      <>
+        {/* <NetworkHeader /> */}
+        <AdminLayout
+          darkMode={darkMode}
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          network={null}
         >
-          <CircularProgress size={60} sx={{ mb: 3 }} />
-          <Typography variant="h6">
-            Loading admin panel...
-          </Typography>
-        </Box>
-      </AdminLayout>
+          <Box 
+            sx={{ 
+              display: 'flex', 
+              flexDirection: 'column',
+              justifyContent: 'center', 
+              alignItems: 'center', 
+              height: '70vh',
+              color: muiTheme.palette.custom.lightText
+            }}
+          >
+            <CircularProgress size={60} sx={{ mb: 3 }} />
+            <Typography variant="h6">
+              Loading admin panel...
+            </Typography>
+          </Box>
+        </AdminLayout>
+      </>
     );
   }
 
   if (error) {
     return (
-      <AdminLayout
-        darkMode={darkMode}
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        network={null}
-      >
-        <Paper 
-          sx={{ 
-            p: 4, 
-            mb: 3,
-            bgcolor: muiTheme.palette.background.paper,
-            color: muiTheme.palette.custom.lightText,
-            borderRadius: 2,
-            textAlign: 'center',
-            border: `1px solid ${muiTheme.palette.error.light}`
-          }}
+      <>
+        {/* <NetworkHeader /> */}
+        <AdminLayout
+          darkMode={darkMode}
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          network={null}
         >
-          <Typography variant="h5" component="h1" gutterBottom sx={{ color: muiTheme.palette.error.main }}>
-            Admin Panel Access Error
-          </Typography>
-          
-          <Alert severity="error" sx={{ mb: 4, justifyContent: 'center' }}>
-            {error}
-          </Alert>
-          
-          <Box sx={{ mt: 3 }}>
-            <Button 
-              variant="contained" 
-              component={Link}
-              to="/dashboard"
-              startIcon={<ArrowBackIcon />}
-              size="large"
-            >
-              Return to Dashboard
-            </Button>
-          </Box>
-        </Paper>
-      </AdminLayout>
+          <Paper 
+            sx={{ 
+              p: 4, 
+              mb: 3,
+              bgcolor: muiTheme.palette.background.paper,
+              color: muiTheme.palette.custom.lightText,
+              borderRadius: 2,
+              textAlign: 'center',
+              border: `1px solid ${muiTheme.palette.error.light}`
+            }}
+          >
+            <Typography variant="h5" component="h1" gutterBottom sx={{ color: muiTheme.palette.error.main }}>
+              Admin Panel Access Error
+            </Typography>
+            
+            <Alert severity="error" sx={{ mb: 4, justifyContent: 'center' }}>
+              {error}
+            </Alert>
+            
+            <Box sx={{ mt: 3 }}>
+              <Button 
+                variant="contained" 
+                component={Link}
+                to="/dashboard"
+                startIcon={<ArrowBackIcon />}
+                size="large"
+              >
+                Return to Dashboard
+              </Button>
+            </Box>
+          </Paper>
+        </AdminLayout>
+      </>
     );
   }
 
   // Use our new AdminLayout component
   return (
-    <AdminLayout 
-      darkMode={darkMode} 
-      activeTab={activeTab} 
-      setActiveTab={setActiveTab} 
-      network={network}
-      message={message}
-      clearMessage={() => setMessage('')}
-    >
+    <>
+      {/* <NetworkHeader /> */}
+      <AdminLayout 
+        darkMode={darkMode} 
+        activeTab={activeTab} 
+        setActiveTab={setActiveTab} 
+        network={network}
+        message={message}
+        clearMessage={() => setMessage('')}
+      >
       {/* Breadcrumbs navigation */}
       <AdminBreadcrumbs 
         activeTab={activeTab} 
@@ -343,6 +352,7 @@ function NetworkAdminPage() {
         )}
       </Paper>
     </AdminLayout>
+    </>
   );
 }
 

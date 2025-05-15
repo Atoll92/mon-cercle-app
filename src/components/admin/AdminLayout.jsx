@@ -206,7 +206,7 @@ const AdminLayout = ({
 
   return (
     <Box sx={{ display: 'flex' }}>
-      {/* Mobile app bar */}
+      {/* Mobile app bar - only visible on mobile */}
       <AppBar
         position="fixed"
         sx={{
@@ -279,6 +279,9 @@ const AdminLayout = ({
               boxShadow: darkMode 
                 ? '0 4px 20px rgba(0,0,0,0.3)' 
                 : '0 1px 3px rgba(0,0,0,0.1)',
+              height: 'calc(100% - 100px)', // Adjust for NetworkHeader height
+              top: 100, // Positioned below NetworkHeader
+              borderTop: `1px solid ${muiTheme.palette.custom.border}`,
             },
           }}
           open
@@ -293,14 +296,13 @@ const AdminLayout = ({
         sx={{
           flexGrow: 1,
           p: { xs: 2, sm: 3 },
+          // pt: { xs: 2, md: 3 },
           mt: { xs: 8, md: 0 }, // Account for app bar on mobile
+          // ml: { md: `${drawerWidth}px` },
           width: { xs: '100%', md: `calc(100% - ${drawerWidth}px)` },
           overflow: 'auto',
         }}
       >
-        {/* This toolbar provides spacing at the top on desktop */}
-        <Toolbar sx={{ display: { xs: 'none', md: 'block' } }} />
-        
         {children}
       </Box>
     </Box>

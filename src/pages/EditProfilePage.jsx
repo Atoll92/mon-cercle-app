@@ -41,7 +41,10 @@ import {
   LinkedIn as LinkedInIcon,
   Language as LanguageIcon,
   Mail as MailIcon,
-  Badge as BadgeIcon
+  Badge as BadgeIcon,
+  PictureAsPdf as PdfIcon,
+  Image as ImageIcon,
+  FileUpload as FileUploadIcon
 } from '@mui/icons-material';
 
 function EditProfilePage() {
@@ -62,6 +65,13 @@ function EditProfilePage() {
   const [activeTab, setActiveTab] = useState(0);
   const [isDraggingAvatar, setIsDraggingAvatar] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  
+  // New state for the "Create New Post" form
+  const [newPostTitle, setNewPostTitle] = useState('');
+  const [newPostContent, setNewPostContent] = useState('');
+  const [newPostLink, setNewPostLink] = useState('');
+  const [newPostImage, setNewPostImage] = useState(null);
+  const [newPostImagePreview, setNewPostImagePreview] = useState('');
   
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -90,11 +100,21 @@ function EditProfilePage() {
   
         if (portfolioError) throw portfolioError;
         
-        // Add image preview URLs for existing images
-        const portfolioWithPreviews = portfolioData ? portfolioData.map(item => ({
-          ...item,
-          imageUrl: item.image_url || ''
-        })) : [];
+        // Process portfolio items to handle both images and PDFs
+        const portfolioWithPreviews = portfolioData ? portfolioData.map(item => {
+          // Determine file type - backward compatibility with old data
+          const fileType = item.file_type || (item.image_url ? 'image' : 'pdf');
+          
+          return {
+            ...item,
+            fileType: fileType,
+            // For images
+            imageUrl: fileType === 'image' ? (item.file_url || item.image_url || '') : '',
+            // For PDFs
+            pdfUrl: fileType === 'pdf' ? (item.file_url || '') : '',
+            pdfThumbnail: fileType === 'pdf' ? (item.pdf_thumbnail || '') : ''
+          };
+        }) : [];
         
         setPortfolioItems(portfolioWithPreviews);
         setInitialPortfolioItems(portfolioWithPreviews);
@@ -171,9 +191,112 @@ function EditProfilePage() {
       title: '',
       description: '',
       url: '',
+      fileType: 'image', // Default to image type
       imageFile: null,
-      imageUrl: ''
+      imageUrl: '',
+      pdfFile: null,
+      pdfUrl: '',
+      pdfThumbnail: ''
     }]);
+  };
+  
+  // Handle new post image change
+  const handleNewPostImageChange = (e) => {
+    if (!e.target.files || e.target.files.length === 0) {
+      return;
+    }
+    
+    const file = e.target.files[0];
+    setNewPostImage(file);
+    setNewPostImagePreview(URL.createObjectURL(file));
+    
+    console.log("New post image selected:", file.name);
+  };
+  
+  // Handle publishing a new post - immediately saves to database
+  const handlePublishNewPost = async () => {
+    // Validate the form
+    if (!newPostTitle.trim()) {
+      setError('Post title is required');
+      return;
+    }
+    
+    try {
+      setSaving(true);
+      console.log("Publishing and saving new post:", newPostTitle);
+      console.log("Saving directly to portfolio_items table in the database");
+      
+      // First, upload the image if any
+      let fileUrl = null;
+      if (newPostImage) {
+        // Upload new image
+        const fileExt = newPostImage.name.split('.').pop();
+        const fileName = `${user.id}-${Date.now()}-post.${fileExt}`;
+        const filePath = `portfolios/${fileName}`;
+
+        console.log('Uploading post image:', filePath);
+        
+        const { error: uploadError } = await supabase.storage
+          .from('profiles')
+          .upload(filePath, newPostImage);
+
+        if (uploadError) {
+          console.error('Error uploading post image:', uploadError);
+          throw uploadError;
+        }
+
+        const { data: urlData } = supabase.storage
+          .from('profiles')
+          .getPublicUrl(filePath);
+        
+        fileUrl = urlData.publicUrl;
+        console.log('Generated image URL:', fileUrl);
+      }
+      
+      // Save post directly to the database
+      // Using the correct schema from portfolio_items table
+      const newPost = {
+        profile_id: user.id,
+        title: newPostTitle,
+        description: newPostContent,
+        url: newPostLink,
+        // The only image field in the schema is image_url
+        image_url: fileUrl
+      };
+      
+      console.log('Saving post to portfolio_items table:', newPost);
+      
+      const { error, data } = await supabase
+        .from('portfolio_items')
+        .insert(newPost)
+        .select()
+        .single();
+        
+      if (error) {
+        throw error;
+      }
+      
+      console.log('Post saved successfully:', data);
+      
+      // Add the new item to the local state for immediate UI update
+      setPortfolioItems([...portfolioItems, data]);
+      
+      // Reset the form
+      setNewPostTitle('');
+      setNewPostContent('');
+      setNewPostLink('');
+      setNewPostImage(null);
+      setNewPostImagePreview('');
+      
+      // Show success message
+      setMessage('Post published successfully!');
+      
+    } catch (err) {
+      console.error('Error publishing post:', err);
+      setError('Failed to publish post. Please try again.');
+    } finally {
+      setSaving(false);
+    }
   };
   
   const handlePortfolioItemChange = (index, field, value) => {
@@ -188,9 +311,42 @@ function EditProfilePage() {
     const updatedItems = [...portfolioItems];
     updatedItems[index] = {
       ...updatedItems[index],
+      fileType: 'image',
       imageFile: file,
-      imageUrl: URL.createObjectURL(file)
+      imageUrl: URL.createObjectURL(file),
+      pdfFile: null,
+      pdfUrl: '',
+      pdfThumbnail: ''
     };
+    setPortfolioItems(updatedItems);
+  };
+  
+  const handlePortfolioPdfChange = async (index, file) => {
+    if (!file) return;
+    
+    // Validate file size (20MB max)
+    if (file.size > 20 * 1024 * 1024) {
+      setError('PDF file size must be less than 20MB');
+      return;
+    }
+    
+    const updatedItems = [...portfolioItems];
+    
+    // For the PDF thumbnail, we'll use a standard PDF icon for now
+    // In a production app, you might want to generate a real thumbnail from the first page
+    
+    updatedItems[index] = {
+      ...updatedItems[index],
+      fileType: 'pdf',
+      pdfFile: file,
+      pdfUrl: URL.createObjectURL(file),
+      // We'll set the thumbnail to empty string. A proper thumbnail would be generated on the server
+      // or we could use pdf.js to generate one on the client
+      pdfThumbnail: '',
+      imageFile: null,
+      imageUrl: ''
+    };
+    
     setPortfolioItems(updatedItems);
   };
   
@@ -291,15 +447,17 @@ function EditProfilePage() {
         // Skip empty items
         if (!item.title.trim()) continue;
         
-        let imageUrl = item.image_url;
+        // According to the schema, we only have image_url field
+      let fileUrl = item.image_url || null;
         
-        // Upload new image
+        // Upload new file (only support images per schema)
         if (item.imageFile) {
+          // Upload new image
           const fileExt = item.imageFile.name.split('.').pop();
           const fileName = `${user.id}-${Date.now()}-${index}.${fileExt}`;
           const filePath = `portfolios/${fileName}`;
 
-          console.log('Uploading portfolio image:', filePath); // Debug log
+          console.log('Uploading portfolio image:', filePath);
           
           const { error: uploadError } = await supabase.storage
             .from('profiles')
@@ -314,18 +472,18 @@ function EditProfilePage() {
             .from('profiles')
             .getPublicUrl(filePath);
           
-          imageUrl = urlData.publicUrl;
-          console.log('Generated image URL:', imageUrl); // Debug log
+          fileUrl = urlData.publicUrl;
+          console.log('Generated image URL:', fileUrl);
         }
 
-        console.log('Saving portfolio item:', {
+        console.log('Saving post to portfolio_items table:', {
           id: item.id || undefined,
           profile_id: user.id,
           title: item.title,
           description: item.description,
           url: item.url,
-          image_url: imageUrl
-        }); // Debug log
+          image_url: fileUrl
+        });
         
         const { error, data } = await supabase
           .from('portfolio_items')
@@ -335,7 +493,8 @@ function EditProfilePage() {
             title: item.title,
             description: item.description,
             url: item.url,
-            image_url: imageUrl
+            // Per schema, image_url is the only image field
+            image_url: fileUrl
           }, { returning: 'minimal' });
 
         if (error) {
@@ -487,7 +646,7 @@ function EditProfilePage() {
             iconPosition="start"
           />
           <Tab 
-            label="Portfolio" 
+            label="Posts" 
             icon={<LanguageIcon />} 
             iconPosition="start"
           />
@@ -768,169 +927,371 @@ function EditProfilePage() {
               </Grid>
             )}
             
-            {/* Portfolio Tab */}
+            {/* Posts Tab */}
             {activeTab === 1 && (
               <Box>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
                   <Typography variant="h6">
-                    Portfolio Items
+                    Your Posts
+                  </Typography>
+                </Box>
+
+                {/* New Post Entry - Always at the top */}
+                <Paper 
+                  sx={{ 
+                    p: 3, 
+                    mb: 4, 
+                    borderRadius: 2,
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                    border: '1px solid #e0e0e0'
+                  }}
+                >
+                  <Typography variant="h6" sx={{ mb: 3, display: 'flex', alignItems: 'center' }}>
+                    <AddIcon sx={{ mr: 1, color: 'primary.main' }} />
+                    Create New Post
                   </Typography>
                   
-                  <Button
-                    variant="contained"
-                    onClick={handleAddPortfolioItem}
-                    startIcon={<AddIcon />}
-                    color="primary"
-                  >
-                    Add Portfolio Item
-                  </Button>
-                </Box>
-                
-                {portfolioItems.length === 0 ? (
-                  <Paper 
-                    variant="outlined"
-                    sx={{ 
-                      p: 4, 
-                      textAlign: 'center',
-                      borderRadius: 2,
-                      borderStyle: 'dashed',
-                      bgcolor: 'grey.50'
-                    }}
-                  >
-                    <Typography variant="body1" color="text.secondary" paragraph>
-                      You haven't added any portfolio items yet.
-                    </Typography>
-                    <Button
+                  <Box sx={{ mb: 3 }}>
+                    <TextField
+                      fullWidth
+                      label="Post Title"
+                      placeholder="What's on your mind?"
                       variant="outlined"
-                      onClick={handleAddPortfolioItem}
-                      startIcon={<AddIcon />}
-                    >
-                      Add Your First Portfolio Item
-                    </Button>
-                  </Paper>
-                ) : (
-                  <Grid container spacing={3}>
-                    {portfolioItems.map((item, index) => (
-                      <Grid item xs={12} md={6} key={item.id || index}>
-                        <Card 
-                          sx={{ 
-                            height: '100%',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            borderRadius: 2,
-                            transition: 'all 0.2s ease',
+                      sx={{ mb: 2 }}
+                      value={newPostTitle}
+                      onChange={(e) => setNewPostTitle(e.target.value)}
+                      required
+                    />
+                    
+                    <TextField
+                      fullWidth
+                      label="Post Content"
+                      placeholder="Share your thoughts with the community..."
+                      multiline
+                      rows={3}
+                      variant="outlined"
+                      sx={{ mb: 2 }}
+                      value={newPostContent}
+                      onChange={(e) => setNewPostContent(e.target.value)}
+                    />
+                    
+                    {/* Display image preview if available */}
+                    {newPostImagePreview && (
+                      <Box sx={{ mb: 2, position: 'relative', width: '100%', maxHeight: '200px', overflow: 'hidden', borderRadius: 1 }}>
+                        <img 
+                          src={newPostImagePreview} 
+                          alt="Post preview" 
+                          style={{ 
+                            width: '100%', 
+                            objectFit: 'cover',
+                            maxHeight: '200px'
+                          }} 
+                        />
+                        <IconButton
+                          size="small"
+                          sx={{
+                            position: 'absolute',
+                            top: 8,
+                            right: 8,
+                            bgcolor: 'rgba(0,0,0,0.5)',
+                            color: 'white',
                             '&:hover': {
-                              boxShadow: '0 8px 24px rgba(0,0,0,0.12)'
+                              bgcolor: 'rgba(0,0,0,0.7)'
                             }
                           }}
+                          onClick={() => {
+                            setNewPostImage(null);
+                            setNewPostImagePreview('');
+                          }}
                         >
-                          <Box sx={{ position: 'relative' }}>
-                            {item.imageUrl ? (
-                              <CardMedia
-                                component="img"
-                                height="180"
-                                image={item.imageUrl}
-                                alt={item.title || 'Portfolio item'}
-                                sx={{ objectFit: 'cover' }}
-                              />
-                            ) : (
+                          <DeleteIcon />
+                        </IconButton>
+                      </Box>
+                    )}
+                    
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                      <label htmlFor="quick-post-image">
+                        <input
+                          accept="image/*"
+                          type="file"
+                          id="quick-post-image"
+                          hidden
+                          onChange={handleNewPostImageChange}
+                        />
+                        <Button 
+                          variant="outlined" 
+                          component="span"
+                          startIcon={<ImageIcon />}
+                          sx={{ mr: 2 }}
+                        >
+                          {newPostImage ? 'Change Image' : 'Add Image'}
+                        </Button>
+                      </label>
+                      
+                      <TextField
+                        label="Add Link (Optional)"
+                        placeholder="https://example.com"
+                        variant="outlined"
+                        size="small"
+                        sx={{ flexGrow: 1 }}
+                        value={newPostLink}
+                        onChange={(e) => setNewPostLink(e.target.value)}
+                        InputProps={{
+                          startAdornment: <LanguageIcon color="action" sx={{ mr: 1 }} fontSize="small" />
+                        }}
+                      />
+                    </Box>
+                  </Box>
+                  
+                  <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                    <Button
+                      variant="contained" 
+                      color="primary"
+                      onClick={handlePublishNewPost}
+                      disabled={!newPostTitle.trim() || saving}
+                      startIcon={saving ? <CircularProgress size={20} color="inherit" /> : null}
+                    >
+                      {saving ? 'Publishing...' : 'Publish Post'}
+                    </Button>
+                  </Box>
+                </Paper>
+                
+                {/* Previously Published Posts Section */}
+                <Box sx={{ mb: 3 }}>
+                  <Typography variant="h6" sx={{ mb: 2, borderBottom: '1px solid #e0e0e0', pb: 1 }}>
+                    Previously Published Posts
+                  </Typography>
+                  
+                  {portfolioItems.length === 0 ? (
+                    <Paper 
+                      variant="outlined"
+                      sx={{ 
+                        p: 4, 
+                        textAlign: 'center',
+                        borderRadius: 2,
+                        borderStyle: 'dashed',
+                        bgcolor: 'grey.50'
+                      }}
+                    >
+                      <Typography variant="body1" color="text.secondary" paragraph>
+                        You haven't created any posts yet.
+                      </Typography>
+                    </Paper>
+                  ) : (
+                    <Grid container spacing={3}>
+                      {portfolioItems.map((item, index) => (
+                        <Grid item xs={12} md={6} key={item.id || index}>
+                          <Card 
+                            sx={{ 
+                              height: '100%',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              borderRadius: 2,
+                              transition: 'all 0.2s ease',
+                              '&:hover': {
+                                boxShadow: '0 8px 24px rgba(0,0,0,0.12)'
+                              }
+                            }}
+                          >
+                            <Box sx={{ position: 'relative' }}>
+                              {/* Image Preview */}
+                              {item.fileType === 'image' && item.imageUrl ? (
+                                <CardMedia
+                                  component="img"
+                                  height="180"
+                                  image={item.imageUrl}
+                                  alt={item.title || 'Portfolio item'}
+                                  sx={{ objectFit: 'cover' }}
+                                />
+                              ) : item.fileType === 'pdf' && item.pdfUrl ? (
+                                /* PDF Preview */
+                                <Box 
+                                  sx={{ 
+                                    height: 180, 
+                                    bgcolor: '#f5f9ff',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    flexDirection: 'column',
+                                    p: 2,
+                                    position: 'relative'
+                                  }}
+                                >
+                                  <PdfIcon fontSize="large" color="primary" sx={{ mb: 1, fontSize: 60 }} />
+                                  <Typography variant="body2" sx={{ mt: 1, fontWeight: 'medium' }}>
+                                    {item.pdfFile ? item.pdfFile.name : 'PDF Document'}
+                                  </Typography>
+                                  {item.pdfUrl && (
+                                    <Box 
+                                      sx={{ 
+                                        position: 'absolute', 
+                                        top: 8, 
+                                        left: 8,
+                                        bgcolor: 'primary.main',
+                                        color: 'white',
+                                        borderRadius: 1,
+                                        px: 1,
+                                        py: 0.5,
+                                        fontSize: '0.75rem',
+                                        fontWeight: 'bold'
+                                      }}
+                                    >
+                                      PDF
+                                    </Box>
+                                  )}
+                                </Box>
+                              ) : (
+                                /* No File Uploaded Yet */
+                                <Box 
+                                  sx={{ 
+                                    height: 180, 
+                                    bgcolor: 'grey.100',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    flexDirection: 'column',
+                                    p: 2
+                                  }}
+                                >
+                                  <FileUploadIcon fontSize="large" color="action" sx={{ mb: 1, opacity: 0.5 }} />
+                                  <Typography variant="body2" color="text.secondary" align="center">
+                                    Upload an image or PDF
+                                  </Typography>
+                                </Box>
+                              )}
+                              
+                              {/* Upload Controls */}
                               <Box 
                                 sx={{ 
-                                  height: 180, 
-                                  bgcolor: 'grey.100',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  flexDirection: 'column',
-                                  p: 2
-                                }}
-                              >
-                                <UploadIcon fontSize="large" color="action" sx={{ mb: 1, opacity: 0.5 }} />
-                                <Typography variant="body2" color="text.secondary" align="center">
-                                  No image uploaded
-                                </Typography>
-                              </Box>
-                            )}
-                            
-                            <label htmlFor={`portfolio-image-${index}`}>
-                              <input
-                                accept="image/*"
-                                type="file"
-                                onChange={(e) => handlePortfolioImageChange(index, e.target.files[0])}
-                                id={`portfolio-image-${index}`}
-                                hidden
-                              />
-                              <IconButton
-                                component="span"
-                                sx={{
                                   position: 'absolute',
                                   bottom: 8,
                                   right: 8,
-                                  bgcolor: 'white',
-                                  boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-                                  '&:hover': {
-                                    bgcolor: 'grey.100'
-                                  }
+                                  display: 'flex',
+                                  gap: 1
                                 }}
                               >
-                                <UploadIcon />
-                              </IconButton>
-                            </label>
-                          </Box>
-                          
-                          <CardContent sx={{ flexGrow: 1, p: 3 }}>
-                            <TextField
-                              fullWidth
-                              label="Project Title"
-                              value={item.title}
-                              onChange={(e) => handlePortfolioItemChange(index, 'title', e.target.value)}
-                              placeholder="What did you create?"
-                              variant="outlined"
-                              sx={{ mb: 2 }}
-                              required
-                            />
+                                {/* Image Upload Button */}
+                                <label htmlFor={`portfolio-image-${index}`}>
+                                  <input
+                                    accept="image/*"
+                                    type="file"
+                                    onChange={(e) => handlePortfolioImageChange(index, e.target.files[0])}
+                                    id={`portfolio-image-${index}`}
+                                    hidden
+                                  />
+                                  <Tooltip title="Upload Image">
+                                    <IconButton
+                                      component="span"
+                                      sx={{
+                                        bgcolor: 'white',
+                                        boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                                        '&:hover': {
+                                          bgcolor: 'grey.100'
+                                        }
+                                      }}
+                                    >
+                                      <ImageIcon />
+                                    </IconButton>
+                                  </Tooltip>
+                                </label>
+                                
+                                {/* PDF Upload Button */}
+                                <label htmlFor={`portfolio-pdf-${index}`}>
+                                  <input
+                                    accept="application/pdf"
+                                    type="file"
+                                    onChange={(e) => handlePortfolioPdfChange(index, e.target.files[0])}
+                                    id={`portfolio-pdf-${index}`}
+                                    hidden
+                                  />
+                                  <Tooltip title="Upload PDF">
+                                    <IconButton
+                                      component="span"
+                                      sx={{
+                                        bgcolor: 'white',
+                                        boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                                        '&:hover': {
+                                          bgcolor: 'grey.100'
+                                        }
+                                      }}
+                                    >
+                                      <PdfIcon />
+                                    </IconButton>
+                                  </Tooltip>
+                                </label>
+                              </Box>
+                            </Box>
                             
-                            <TextField
-                              fullWidth
-                              label="Description"
-                              value={item.description}
-                              onChange={(e) => handlePortfolioItemChange(index, 'description', e.target.value)}
-                              placeholder="Describe your project"
-                              multiline
-                              rows={3}
-                              variant="outlined"
-                              sx={{ mb: 2 }}
-                            />
+                            <CardContent sx={{ flexGrow: 1, p: 3 }}>
+                              <TextField
+                                fullWidth
+                                label="Post Title"
+                                value={item.title}
+                                onChange={(e) => handlePortfolioItemChange(index, 'title', e.target.value)}
+                                placeholder="Give your post a title"
+                                variant="outlined"
+                                sx={{ mb: 2 }}
+                                required
+                              />
+                              
+                              <TextField
+                                fullWidth
+                                label="Post Content"
+                                value={item.description}
+                                onChange={(e) => handlePortfolioItemChange(index, 'description', e.target.value)}
+                                placeholder="Share your thoughts with the community..."
+                                multiline
+                                rows={4}
+                                variant="outlined"
+                                sx={{ mb: 2 }}
+                              />
+                              
+                              <TextField
+                                fullWidth
+                                label="Link (Optional)"
+                                value={item.url}
+                                onChange={(e) => handlePortfolioItemChange(index, 'url', e.target.value)}
+                                placeholder="https://example.com"
+                                variant="outlined"
+                                helperText="Add a link to your post (optional)"
+                                InputProps={{
+                                  startAdornment: <LanguageIcon color="action" sx={{ mr: 1 }} />
+                                }}
+                              />
+                            </CardContent>
                             
-                            <TextField
-                              fullWidth
-                              label="Project URL"
-                              value={item.url}
-                              onChange={(e) => handlePortfolioItemChange(index, 'url', e.target.value)}
-                              placeholder="https://example.com"
-                              variant="outlined"
-                              InputProps={{
-                                startAdornment: <LanguageIcon color="action" sx={{ mr: 1 }} />
-                              }}
-                            />
-                          </CardContent>
-                          
-                          <CardActions sx={{ p: 2, pt: 0 }}>
-                            <Button
-                              variant="outlined"
-                              color="error"
-                              startIcon={<DeleteIcon />}
-                              onClick={() => handlePortfolioItemRemove(index)}
-                              size="small"
-                            >
-                              Remove
-                            </Button>
-                          </CardActions>
-                        </Card>
-                      </Grid>
-                    ))}
-                  </Grid>
-                )}
+                            <CardActions sx={{ p: 2, pt: 0, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <Box>
+                                <Button
+                                  variant="outlined"
+                                  color="error"
+                                  startIcon={<DeleteIcon />}
+                                  onClick={() => handlePortfolioItemRemove(index)}
+                                  size="small"
+                                >
+                                  Delete Post
+                                </Button>
+                              </Box>
+                              
+                              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                <Chip 
+                                  size="small" 
+                                  label="Published" 
+                                  color="success" 
+                                  variant="outlined"
+                                  sx={{ mr: 1 }}
+                                />
+                                <Typography variant="caption" color="text.secondary">
+                                  {item.created_at ? new Date(item.created_at).toLocaleDateString() : 'Draft'}
+                                </Typography>
+                              </Box>
+                            </CardActions>
+                          </Card>
+                        </Grid>
+                      ))}
+                    </Grid>
+                  )}
+                </Box>
               </Box>
             )}
             

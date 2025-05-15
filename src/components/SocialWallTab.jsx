@@ -28,7 +28,8 @@ import {
   ArrowUpward as ArrowUpwardIcon,
   ExpandMore as ExpandMoreIcon,
   ExpandLess as ExpandLessIcon,
-  ReadMore as ReadMoreIcon
+  ReadMore as ReadMoreIcon,
+  PictureAsPdf as PdfIcon
 } from '@mui/icons-material';
 
 // Number of items to display initially
@@ -41,12 +42,12 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
   // Debug log for items received
   React.useEffect(() => {
     console.log('SocialWallTab received items:', socialWallItems);
-    // Log portfolio items specifically
-    const portfolioItems = socialWallItems.filter(item => item.itemType === 'portfolio');
-    console.log('Portfolio items:', portfolioItems);
-    // Log if there are portfolio items with images
-    const portfolioItemsWithImages = portfolioItems.filter(item => item.image_url);
-    console.log('Portfolio items with images:', portfolioItemsWithImages);
+    // Log post items specifically
+    const postItems = socialWallItems.filter(item => item.itemType === 'post');
+    console.log('Post items:', postItems);
+    // Log if there are post items with images
+    const postItemsWithImages = postItems.filter(item => item.image_url);
+    console.log('Post items with images:', postItemsWithImages);
   }, [socialWallItems]);
   
   // When using theme.palette.custom, check first if it exists
@@ -368,10 +369,10 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                   <CardHeader
                     avatar={
                       <Avatar
-                        src={item.itemType === 'portfolio' ? item.memberAvatar : 
+                        src={item.itemType === 'post' ? item.memberAvatar : 
                             networkMembers.find(m => m.id === item.created_by)?.profile_picture_url}
                         component={Link}
-                        to={item.itemType === 'portfolio' ? 
+                        to={item.itemType === 'post' ? 
                           `/profile/${item.memberId}` : 
                           `/profile/${item.created_by}`}
                         sx={{ 
@@ -385,7 +386,7 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                           }
                         }}
                       >
-                        {item.itemType === 'portfolio' ? 
+                        {item.itemType === 'post' ? 
                           (item.memberName ? item.memberName.charAt(0).toUpperCase() : 'U') : 
                           (networkMembers.find(m => m.id === item.created_by)?.full_name?.charAt(0).toUpperCase() || 'U')}
                       </Avatar>
@@ -393,8 +394,8 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                     action={
                       <Chip 
                         size="small" 
-                        label={item.itemType === 'portfolio' ? 'Portfolio' : 'News'} 
-                        color={item.itemType === 'portfolio' ? 'secondary' : 'primary'}
+                        label={item.itemType === 'post' ? 'Post' : 'News'} 
+                        color={item.itemType === 'post' ? 'secondary' : 'primary'}
                         sx={{ 
                           height: 24,
                           mt: 1,
@@ -405,7 +406,7 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                     }
                     title={
                       <Link
-                        to={item.itemType === 'portfolio' ? 
+                        to={item.itemType === 'post' ? 
                           `/profile/${item.memberId}` : 
                           `/profile/${item.created_by}`}
                         style={{ textDecoration: 'none' }}
@@ -423,7 +424,7 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                             transition: 'color 0.2s ease'
                           }}
                         >
-                          {item.itemType === 'portfolio' ? 
+                          {item.itemType === 'post' ? 
                             item.memberName : 
                             networkMembers.find(m => m.id === item.created_by)?.full_name || 'Network Admin'}
                         </Typography>
@@ -439,8 +440,112 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                     }
                   />
                   
-                  {/* Image for portfolio or news items */}
-                  {item.image_url && (
+                  {/* Display media based on type - images, PDFs, etc. */}
+                  {item.file_type === 'pdf' && item.file_url ? (
+                    // PDF Preview
+                    <Box 
+                      sx={{ 
+                        position: 'relative', 
+                        width: '100%', 
+                        pt: '56.25%', /* 16:9 aspect ratio container */
+                        bgcolor: darkMode ? 'rgba(30, 41, 59, 0.8)' : 'rgba(240, 249, 255, 0.8)',
+                        borderTop: darkMode ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.1)',
+                        borderBottom: darkMode ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.1)',
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          width: '100%',
+                          height: '100%',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          p: 2
+                        }}
+                      >
+                        {/* PDF Icon with Shadow */}
+                        <Box 
+                          sx={{ 
+                            position: 'relative',
+                            width: 80,
+                            height: 100,
+                            mb: 2,
+                            '&::before': {
+                              content: '""',
+                              position: 'absolute',
+                              top: 0,
+                              left: 0,
+                              right: 0,
+                              bottom: 0,
+                              bgcolor: darkMode ? 'primary.dark' : 'primary.light',
+                              borderRadius: 1,
+                              transform: 'rotate(-2deg)',
+                              zIndex: 0
+                            },
+                            '&::after': {
+                              content: '""',
+                              position: 'absolute',
+                              top: 2,
+                              left: 2,
+                              right: -2,
+                              bottom: -2,
+                              bgcolor: 'white',
+                              borderRadius: 1,
+                              boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
+                              zIndex: 1
+                            }
+                          }}
+                        >
+                          <Box
+                            sx={{
+                              position: 'absolute',
+                              top: 0,
+                              left: 0,
+                              width: '100%',
+                              height: '100%',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              zIndex: 2
+                            }}
+                          >
+                            <PdfIcon color="primary" sx={{ fontSize: 48 }} />
+                          </Box>
+                        </Box>
+                        
+                        {/* PDF File Name */}
+                        <Typography 
+                          variant="subtitle1" 
+                          fontWeight="medium" 
+                          textAlign="center"
+                          sx={{ color: darkMode ? 'white' : 'text.primary' }}
+                        >
+                          {item.title || "PDF Document"}
+                        </Typography>
+                        
+                        {/* View PDF Button */}
+                        <Button
+                          component="a"
+                          href={item.file_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          variant="outlined"
+                          color="primary"
+                          size="small"
+                          startIcon={<PdfIcon />}
+                          sx={{ mt: 2 }}
+                          onClick={(e) => e.stopPropagation()} // Prevent card expansion
+                        >
+                          View PDF
+                        </Button>
+                      </Box>
+                    </Box>
+                  ) : item.image_url && (
+                    // Image Preview (same as before)
                     <Box sx={{ position: 'relative', width: '100%', pt: '56.25%' /* 16:9 aspect ratio container */ }}>
                       <CardMedia
                         component="img"
@@ -480,7 +585,7 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                       {item.title}
                     </Typography>
                     
-                    {item.itemType === 'portfolio' ? (
+                    {item.itemType === 'post' ? (
                       <>
                         <Box 
                           sx={{
@@ -615,9 +720,9 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                     
                     <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', mt: 1 }}>
                       <Box>
-                        {item.itemType === 'portfolio' && item.url ? (
+                        {item.itemType === 'post' && (item.url || (item.file_type === 'pdf' && item.file_url)) ? (
                           <a 
-                            href={item.url}
+                            href={item.url || (item.file_type === 'pdf' ? item.file_url : undefined)}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="view-project-btn"
@@ -633,18 +738,18 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                             }}
                             onClick={(e) => e.stopPropagation()} // Prevent card expansion
                           >
-                            View Project
+                            {item.file_type === 'pdf' && !item.url ? 'View PDF' : 'View Link'}
                           </a>
                         ) : (
                           <Link 
-                            to={item.itemType === 'portfolio' ? 
+                            to={item.itemType === 'post' ? 
                               `/profile/${item.memberId}` : 
                               `/news/${item.id}`}
                             className="view-project-btn"
                             style={{ 
                               display: 'inline-block',
                               padding: '6px 12px',
-                              backgroundColor: item.itemType === 'portfolio' ? 
+                              backgroundColor: item.itemType === 'post' ? 
                                 muiTheme.palette.secondary.main : muiTheme.palette.primary.main,
                               color: '#ffffff',
                               textDecoration: 'none',
@@ -654,7 +759,7 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                             }}
                             onClick={(e) => e.stopPropagation()} // Prevent card expansion
                           >
-                            {item.itemType === 'portfolio' ? 'View Profile' : 'Read Full Post'}
+                            {item.itemType === 'post' ? 'View Profile' : 'Read Full Post'}
                           </Link>
                         )}
                       </Box>

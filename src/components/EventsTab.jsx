@@ -60,6 +60,28 @@ const EventsTab = ({
   const [calendarDate, setCalendarDate] = useState(new Date());
   const [calendarView, setCalendarView] = useState('month');
 
+  // Debug: Log props on mount and when they change
+  React.useEffect(() => {
+    console.log('=== EventsTab PROPS DEBUG ===');
+    console.log('User:', user?.id);
+    console.log('Events count:', events.length);
+    console.log('UserParticipations count:', userParticipations.length);
+    console.log('UserParticipations data:', userParticipations);
+    
+    // Map each event to its participation status for easier debugging
+    const eventParticipationMap = events.map(event => {
+      const participation = userParticipations.find(p => p.event_id === event.id);
+      return {
+        event_id: event.id,
+        event_title: event.title,
+        event_date: new Date(event.date).toLocaleDateString(),
+        participation_status: participation ? participation.status : 'none',
+      };
+    });
+    console.log('Event participation mapping:', eventParticipationMap);
+    console.log('=== END DEBUG ===');
+  }, [events, userParticipations, user]);
+
   const handleEventSelect = (event) => {
     if (event.resource) {
       setSelectedEvent(event.resource);
@@ -206,22 +228,23 @@ const EventsTab = ({
                       const isToday = new Date().toDateString() === eventDate.toDateString();
                       const isTomorrow = new Date(new Date().setDate(new Date().getDate() + 1)).toDateString() === eventDate.toDateString();
                       
+                      
                       let dateLabel = eventDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
                       if (isToday) dateLabel = 'Today';
                       if (isTomorrow) dateLabel = 'Tomorrow';
                       
-                      // Color to use for the date badge - converting to CSS classes for better rendering
+                      // Color to use for the date badge
+                      const dateBadgeColor = participation ? 
+                        (participation.status === 'attending' ? '#4caf50' : 
+                         participation.status === 'maybe' ? '#ff9800' : '#f44336') : 
+                        (isToday ? '#2196f3' : '#757575');
+                        
+                      // Also add CSS class for better rendering
                       const dateBadgeClass = participation ? 
                         (participation.status === 'attending' ? 'event-attending' : 
                          participation.status === 'maybe' ? 'event-maybe' : 
                          'event-declined') : 
                         (isToday ? 'event-today' : 'event-default');
-                      
-                      // Also keep the color for backward compatibility
-                      const dateBadgeColor = participation ? 
-                        (participation.status === 'attending' ? '#4caf50' : 
-                         participation.status === 'maybe' ? '#ff9800' : '#f44336') : 
-                        (isToday ? '#2196f3' : '#757575');
                       
                       return (
                         <Box 
@@ -322,7 +345,7 @@ const EventsTab = ({
                                       position: 'absolute',
                                       inset: 0,
                                       borderRadius: 'inherit',
-                                      backgroundColor: 'inherit',
+                                      backgroundColor: 'inherit !important',
                                       zIndex: -1
                                     }
                                   }}
@@ -617,63 +640,53 @@ const EventsTab = ({
     }
   },
   // Individual color styles to force proper initial rendering for calendar events
-  '& .rbc-event.event-attending': {
+  '& .event-attending, & div.event-attending, & .rbc-event.event-attending': {
     backgroundColor: '#4caf50 !important',
-    '&::before': {
-      backgroundColor: '#4caf50 !important'
-    }
+    borderColor: '#4caf50 !important'
   },
-  '& .rbc-event.event-maybe': {
+  '& .event-maybe, & div.event-maybe, & .rbc-event.event-maybe': {
     backgroundColor: '#ff9800 !important',
-    '&::before': {
-      backgroundColor: '#ff9800 !important'
-    }
+    borderColor: '#ff9800 !important'
   },
-  '& .rbc-event.event-declined': {
+  '& .event-declined, & div.event-declined, & .rbc-event.event-declined': {
     backgroundColor: '#f44336 !important',
-    '&::before': {
-      backgroundColor: '#f44336 !important'
-    }
+    borderColor: '#f44336 !important'
   },
-  '& .rbc-event.event-default': {
-    backgroundColor: '#2196f3 !important',
-    '&::before': {
-      backgroundColor: '#2196f3 !important'
-    }
+  '& .event-default, & div.event-default, & .rbc-event.event-default': {
+    backgroundColor: '#757575 !important',
+    borderColor: '#757575 !important'
   },
-  '& .rbc-event.event-today': {
+  '& .event-today, & div.event-today, & .rbc-event.event-today': {
     backgroundColor: '#2196f3 !important',
-    '&::before': {
-      backgroundColor: '#2196f3 !important'
-    }
+    borderColor: '#2196f3 !important'
   },
   
   // Color styles for date badges
-  '& .date-badge.event-attending': {
+  '& .date-badge.event-attending, & Box.date-badge.event-attending, & .event-attending.date-badge': {
     backgroundColor: '#4caf50 !important',
     '&::before': {
       backgroundColor: '#4caf50 !important'
     }
   },
-  '& .date-badge.event-maybe': {
+  '& .date-badge.event-maybe, & Box.date-badge.event-maybe, & .event-maybe.date-badge': {
     backgroundColor: '#ff9800 !important',
     '&::before': {
       backgroundColor: '#ff9800 !important'
     }
   },
-  '& .date-badge.event-declined': {
+  '& .date-badge.event-declined, & Box.date-badge.event-declined, & .event-declined.date-badge': {
     backgroundColor: '#f44336 !important',
     '&::before': {
       backgroundColor: '#f44336 !important'
     }
   },
-  '& .date-badge.event-default': {
+  '& .date-badge.event-default, & Box.date-badge.event-default, & .event-default.date-badge': {
     backgroundColor: '#757575 !important',
     '&::before': {
       backgroundColor: '#757575 !important'
     }
   },
-  '& .date-badge.event-today': {
+  '& .date-badge.event-today, & Box.date-badge.event-today, & .event-today.date-badge': {
     backgroundColor: '#2196f3 !important',
     '&::before': {
       backgroundColor: '#2196f3 !important'
@@ -770,31 +783,44 @@ const EventsTab = ({
     events={events.map(event => {
       // Find if user is participating in this event
       const participation = userParticipations.find(p => p.event_id === event.id);
+      const eventDate = new Date(event.date);
+      const isToday = new Date().toDateString() === eventDate.toDateString();
       
       // Enhanced color coding for better dark mode visibility
       let eventColor;
       let eventClass = 'event-default';
       
+      console.log(`Creating calendar event for "${event.title}" (ID: ${event.id}):`);
+      console.log('  - Event date:', eventDate.toLocaleDateString());
+      console.log('  - Is today:', isToday);
+      console.log('  - Participation found:', participation ? 'YES' : 'NO');
+      
       if (participation) {
+        console.log('  - Participation status:', participation.status);
+        
         // More saturated colors for dark mode visibility
         if (participation.status === 'attending') {
           eventColor = '#4caf50'; // Green - unchanged
           eventClass = 'event-attending';
+          console.log('  → Assigning attending class and color (GREEN)');
         }
         else if (participation.status === 'maybe') {
           eventColor = '#ff9800'; // Orange - unchanged
           eventClass = 'event-maybe';
+          console.log('  → Assigning maybe class and color (ORANGE)');
         }
         else if (participation.status === 'declined') {
           eventColor = '#f44336'; // Red - unchanged
-          eventClass = 'event-declined';
+          eventClass = 'event-declined'; 
+          console.log('  → Assigning declined class and color (RED)');
         }
       } else {
-        eventColor = '#2196f3'; // Default blue - unchanged
-        eventClass = 'event-default';
+        eventColor = isToday ? '#2196f3' : '#757575'; // Blue for today, gray for other days
+        eventClass = isToday ? 'event-today' : 'event-default';
+        console.log(`  → No participation: Assigning ${isToday ? 'today' : 'default'} class and color (${isToday ? 'BLUE' : 'GRAY'})`);
       }
       
-      return {
+      const calendarEvent = {
         title: event.title,
         start: new Date(event.date),
         end: new Date(event.date),
@@ -805,6 +831,11 @@ const EventsTab = ({
         coverImage: event.cover_image_url,
         hasLink: !!event.event_link
       };
+      
+      console.log('  - Created calendar event with className:', calendarEvent.className);
+      console.log('  - Created calendar event with color:', calendarEvent.color);
+      
+      return calendarEvent;
     })}
     date={calendarDate}
     view={calendarView}
@@ -814,16 +845,114 @@ const EventsTab = ({
     endAccessor="end"
     style={{ flex: '1 1 auto', minHeight: '500px', width: '100%' }}
     onSelectEvent={handleEventSelect}
-    eventPropGetter={(event) => ({
-      style: {
-        backgroundColor: event.color,
-        borderRadius: '8px',
-        border: 'none',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-        color: 'white',
-        position: 'relative'
+    eventPropGetter={(event) => {
+      // Initialize with default gray
+      let bgColor = '#757575';
+      let className = event.className || 'event-default';
+      
+      console.log(`Event prop getter for "${event.title}":`);
+      console.log('  - className from event:', event.className);
+      console.log('  - color prop from event:', event.color);
+      
+      // Try multiple sources to determine participation status
+      let participationStatus = null;
+      
+      // Check direct resource reference first
+      if (event.resource && event.resource.id) {
+        const participation = userParticipations.find(p => p.event_id === event.resource.id);
+        if (participation) {
+          participationStatus = participation.status;
+          console.log('  - Found participation from resource.id:', participationStatus);
+        }
       }
-    })}
+      
+      // Look for participation based on date (fallback for single-day events)
+      if (!participationStatus && event.start) {
+        const sameDay = (date1, date2) => {
+          return date1.getFullYear() === date2.getFullYear() &&
+                 date1.getMonth() === date2.getMonth() &&
+                 date1.getDate() === date2.getDate();
+        };
+        
+        // Find events on this date
+        const eventsOnSameDay = events.filter(e => 
+          sameDay(new Date(e.date), event.start)
+        );
+        
+        // If there's just one event on this day, it's likely the one we want
+        if (eventsOnSameDay.length === 1) {
+          const participation = userParticipations.find(p => p.event_id === eventsOnSameDay[0].id);
+          if (participation) {
+            participationStatus = participation.status;
+            console.log('  - Found participation by date match:', participationStatus);
+          }
+        }
+      }
+      
+      // EXPLICITLY determine color and className based on participation status
+      if (participationStatus === 'attending') {
+        bgColor = '#4caf50'; // Green
+        className = 'event-attending';
+        console.log('  → Explicitly setting GREEN color (attending)');
+      } else if (participationStatus === 'maybe') {
+        bgColor = '#ff9800'; // Orange
+        className = 'event-maybe';
+        console.log('  → Explicitly setting ORANGE color (maybe)');
+      } else if (participationStatus === 'declined') {
+        bgColor = '#f44336'; // Red
+        className = 'event-declined';
+        console.log('  → Explicitly setting RED color (declined)');
+      } 
+      // If we have no participation status, fall back to className or today check
+      else {
+        // Check if this event is for today
+        const isToday = event.start ? 
+          new Date().toDateString() === event.start.toDateString() : false;
+        
+        if (isToday) {
+          bgColor = '#2196f3'; // Blue for today
+          className = 'event-today';
+          console.log('  → Explicitly setting BLUE color (today event)');
+        } 
+        // As a last resort, use the className from the event
+        else if (event.className) {
+          if (event.className === 'event-attending') {
+            bgColor = '#4caf50'; // Green
+            console.log('  → Using class-based GREEN color (attending)');
+          } else if (event.className === 'event-maybe') {
+            bgColor = '#ff9800'; // Orange
+            console.log('  → Using class-based ORANGE color (maybe)');
+          } else if (event.className === 'event-declined') {
+            bgColor = '#f44336'; // Red
+            console.log('  → Using class-based RED color (declined)');
+          } else if (event.className === 'event-today') {
+            bgColor = '#2196f3'; // Blue
+            console.log('  → Using class-based BLUE color (today)');
+          } else {
+            console.log('  → Using class-based DEFAULT GRAY color');
+          }
+        } else {
+          console.log('  → Fallback DEFAULT GRAY color');
+        }
+      }
+      
+      const result = {
+        className: className, // Use our determined className
+        style: {
+          backgroundColor: bgColor + ' !important', // Add !important for CSS priority
+          borderColor: bgColor + ' !important',     // Match border color
+          borderRadius: '8px',
+          border: 'none',
+          boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+          color: 'white',
+          position: 'relative'
+        }
+      };
+      
+      console.log('  - Final className:', result.className);
+      console.log('  - Final style color:', result.style.backgroundColor);
+      return result;
+    }}
     dayPropGetter={(date) => ({
       style: {
         backgroundColor: new Date().toDateString() === date.toDateString() 
@@ -992,7 +1121,7 @@ const EventsTab = ({
                                 position: 'absolute',
                                 inset: 0,
                                 borderRadius: 'inherit',
-                                backgroundColor: 'inherit',
+                                backgroundColor: 'inherit !important',
                                 zIndex: -1
                               }
                             }}>
