@@ -18,15 +18,18 @@ import {
   DialogContentText,
   DialogActions,
   Alert,
-  CircularProgress
+  CircularProgress,
+  Tooltip
 } from '@mui/material';
 import {
   PersonAdd as PersonAddIcon,
   AdminPanelSettings as AdminIcon,
-  PersonRemove as PersonRemoveIcon
+  PersonRemove as PersonRemoveIcon,
+  GroupAdd as GroupAddIcon
 } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
 import { inviteUserToNetwork, toggleMemberAdmin, removeMemberFromNetwork } from '../../api/networks';
+import BatchInviteModal from './BatchInviteModal';
 
 const MembersTab = ({ members, user, network, onMembersChange, darkMode = false }) => {
   const [inviteEmail, setInviteEmail] = useState('');
@@ -36,6 +39,7 @@ const MembersTab = ({ members, user, network, onMembersChange, darkMode = false 
   const [openDialog, setOpenDialog] = useState(false);
   const [dialogAction, setDialogAction] = useState(null);
   const [dialogMember, setDialogMember] = useState(null);
+  const [batchInviteOpen, setBatchInviteOpen] = useState(false);
 
   const handleInvite = async (e) => {
     e.preventDefault();
@@ -167,6 +171,17 @@ const MembersTab = ({ members, user, network, onMembersChange, darkMode = false 
             >
               {inviting ? 'Sending...' : 'Invite'}
             </Button>
+            <Tooltip title="Invite multiple members from a CSV, Excel, or text file">
+              <Button
+                variant="outlined"
+                color="primary"
+                startIcon={<GroupAddIcon />}
+                onClick={() => setBatchInviteOpen(true)}
+                sx={{ whiteSpace: 'nowrap' }}
+              >
+                Batch Invite
+              </Button>
+            </Tooltip>
           </Box>
         </form>
       </Box>
@@ -288,6 +303,15 @@ const MembersTab = ({ members, user, network, onMembersChange, darkMode = false 
           </Button>
         </DialogActions>
       </Dialog>
+      
+      {/* Batch Invite Modal */}
+      <BatchInviteModal
+        open={batchInviteOpen}
+        onClose={() => setBatchInviteOpen(false)}
+        onInvite={inviteUserToNetwork}
+        network={network}
+        user={user}
+      />
     </>
   );
 };

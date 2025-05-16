@@ -42,6 +42,7 @@ import NetworkInfoPanel from '../components/admin/NetworkInfoPanel';
 import ThemeTab from '../components/admin/ThemeTab';
 import EventsTab from '../components/admin/EventsTab';
 import NewsTab from '../components/admin/Newstab';
+import ModerationTab from '../components/admin/ModerationTab';
 import AdminLayout from '../components/admin/AdminLayout';
 import AdminBreadcrumbs from '../components/admin/AdminBreadcrumbs';
 import NetworkHeader from '../components/NetworkHeader';
@@ -283,6 +284,7 @@ function NetworkAdminPage() {
             {activeTab === 2 && "News Management"}
             {activeTab === 3 && "Events Management"}
             {activeTab === 4 && "Theme & Branding"}
+            {activeTab === 5 && "Moderation Tools"}
           </Typography>
         </Box>
 
@@ -347,6 +349,16 @@ function NetworkAdminPage() {
           <ThemeTab 
             network={network} 
             onNetworkUpdate={updateNetworkState}
+            darkMode={darkMode} // Pass dark mode to component
+          />
+        )}
+        
+        {activeTab === 5 && (
+          /* Moderation Tools Component */
+          <ModerationTab
+            network={network}
+            user={user}
+            members={members}
             darkMode={darkMode} // Pass dark mode to component
           />
         )}

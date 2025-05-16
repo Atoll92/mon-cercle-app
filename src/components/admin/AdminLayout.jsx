@@ -28,7 +28,8 @@ import {
   Article as ArticleIcon,
   ArrowBack as ArrowBackIcon,
   Dashboard as DashboardIcon,
-  ChevronLeft as ChevronLeftIcon
+  ChevronLeft as ChevronLeftIcon,
+  Security as SecurityIcon
 } from '@mui/icons-material';
 
 // Drawer width for desktop view
@@ -85,6 +86,11 @@ const AdminLayout = ({
       name: 'Theme & Branding', 
       icon: <PaletteIcon />, 
       index: 4 
+    },
+    { 
+      name: 'Moderation', 
+      icon: <SecurityIcon />, 
+      index: 5 
     }
   ];
 
