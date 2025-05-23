@@ -24,6 +24,7 @@ import EditProfilePage from './pages/EditProfilePage';
 import NetworkAdminPage from './pages/NetworkAdminPage';
 import NotFoundPage from './pages/NotFoundPage';
 import LandingPage from './pages/LandingPage';
+import SimpleLandingPage from './pages/SimpleLandingPage';
 //import components/context
 import ThemeProvider from './components/ThemeProvider';
 // Import Protected Route Component
@@ -144,13 +145,14 @@ function App() {
     <DirectMessagesProvider>
       <div className="App" style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
         {/* Pass the network name to the header */}
-        {window.location.pathname !== "/" && window.location.pathname !== "/pricing" && (
+        {window.location.pathname !== "/" && window.location.pathname !== "/pricing" && window.location.pathname !== "/simple" && (
           <NetworkHeader/>
         )}
         <Box component="main" sx={{ flex: 1 }}>
           <Routes>
             {/* Public Routes */}
             <Route path="/" element={<LandingPage/>}/>
+            <Route path="/simple" element={<SimpleLandingPage/>}/>
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignupPage />} />
             <Route path="/password-reset" element={<PasswordResetPage />} />
