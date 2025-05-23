@@ -328,35 +328,6 @@ function DashboardPage() {
     }
   }, [user, retryCount, navigate]);
 
-  const handleCreateNetwork = async () => {
-    try {
-      // Create a new network
-      const { data: network, error: networkError } = await supabase
-        .from('networks')
-        .insert([{ name: 'My Network', created_by: user.id }])
-        .select()
-        .single();
-      
-      if (networkError) throw networkError;
-      
-      // Update the user's profile with the new network_id
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .update({ network_id: network.id, role: 'admin' })
-        .eq('id', user.id);
-      
-      if (profileError) throw profileError;
-      
-      // Refresh the profile data
-      setProfile({ ...profile, network_id: network.id, role: 'admin' });
-      
-      alert('Network created successfully!');
-    } catch (error) {
-      console.error("Error creating network:", error);
-      alert('Failed to create network. Please try again.');
-    }
-  };
-
   const handleRefresh = () => {
     window.location.reload();
   };
@@ -1106,8 +1077,9 @@ function DashboardPage() {
                             <Button 
                               variant="contained" 
                               color="primary" 
+                              component={Link}
                               startIcon={<CreateNewFolderIcon />}
-                              onClick={handleCreateNetwork}
+                              to="/create-network"
                               fullWidth
                               sx={{ mb: 1 }}
                             >
