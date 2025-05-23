@@ -230,30 +230,61 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
     document.documentElement.style.setProperty('--half-vertical-height', `${dvh()/2}`);
   }, []);
   
-  // Apply subtle shrink animation to cards
+  // Apply shrink and slinky animations to cards
   const applyAnimations = useCallback(() => {
     const verticalCenter = window.scrollY + dvh() / 2;
     const halfVerticalHeight = dvh() / 2;
+    const viewportBottom = window.scrollY + dvh();
     
     cardRefs.current.forEach((element) => {
       if (!element) return;
       
-      const elementCenter = element.getBoundingClientRect().top + window.scrollY + (element.offsetHeight / 2);
+      const elementRect = element.getBoundingClientRect();
+      const elementTop = elementRect.top + window.scrollY;
+      const elementCenter = elementTop + (element.offsetHeight / 2);
+      
+      // Shrink animation for center focus
       const distanceFromCenter = Math.abs(verticalCenter - elementCenter);
-      
-      // Use a larger threshold for smoother, more accessible animation
-      const threshold = halfVerticalHeight * 1.5;
-      const normalizedDistance = Math.min(distanceFromCenter / threshold, 1);
-      
-      // Subtle scale effect - only shrink to 0.95 minimum for accessibility
-      // Use ease-out curve for smooth transitions
-      const easeOut = 1 - Math.pow(normalizedDistance, 2);
+      const centerThreshold = halfVerticalHeight * 1.5;
+      const normalizedCenterDistance = Math.min(distanceFromCenter / centerThreshold, 1);
+      const easeOut = 1 - Math.pow(normalizedCenterDistance, 2);
       const scale = 0.95 + (easeOut * 0.05);
-      
-      // Subtle opacity effect for depth without affecting readability
       const opacity = 0.85 + (easeOut * 0.15);
       
-      element.style.transform = `scale(${scale})`;
+      // Slinky animation for bottom viewport - make it much more obvious
+      let slinkyTranslateY = 0;
+      let slinkyScale = 1;
+      
+      // Apply to cards below viewport center or approaching from below
+      if (elementCenter > verticalCenter - halfVerticalHeight * 0.3) {
+        const distanceFromBottom = elementTop - viewportBottom;
+        
+        // Expanded range: affect cards within 1.2x viewport height below
+        if (distanceFromBottom > -200 && distanceFromBottom < halfVerticalHeight * 1.2) {
+          const bottomThreshold = halfVerticalHeight * 1.2;
+          const normalizedBottomDistance = Math.max(0, Math.min(distanceFromBottom / bottomThreshold, 1));
+          
+          // More dramatic slinky effect with bounce
+          const slinkyProgress = 1 - normalizedBottomDistance;
+          
+          // Ease-out-back for subtle bounce effect
+          const bounceEase = slinkyProgress < 0.5 
+            ? 2 * slinkyProgress * slinkyProgress 
+            : 1 - Math.pow(-2 * slinkyProgress + 2, 3) / 2;
+            
+          // Much larger translation: 120px maximum
+          slinkyTranslateY = normalizedBottomDistance * 120;
+          
+          // Slight scale effect for more dramatic appearance
+          slinkyScale = 0.9 + (bounceEase * 0.1);
+        }
+      }
+      
+      // Combine transformations with more obvious effects
+      const combinedScale = scale * slinkyScale;
+      const combinedTransform = `scale(${combinedScale}) translateY(${slinkyTranslateY}px)`;
+      
+      element.style.transform = combinedTransform;
       element.style.opacity = opacity;
       element.style.filter = '';
     });

@@ -257,38 +257,102 @@ const SimpleLandingPage = () => {
       </Container>
 
       {/* Core Features */}
-      <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 2, pb: 8 }}>
-        <Grid container spacing={4}>
+      <Container maxWidth="xl" sx={{ position: 'relative', zIndex: 2, pb: 8 }}>
+        <Box sx={{ textAlign: 'center', mb: 8 }}>
+          <Typography variant="h3" sx={{ fontWeight: 700, mb: 2 }}>
+            Why Choose Simple?
+          </Typography>
+          <Typography variant="h6" color="text.secondary" sx={{ maxWidth: 500, mx: 'auto' }}>
+            Four pillars that make your network work
+          </Typography>
+        </Box>
+        
+        <Grid container spacing={{ xs: 3, md: 4 }} sx={{ mb: 6 }}>
           {features.map((feature, index) => (
-            <Grid item xs={12} sm={6} md={3} key={feature.id}>
+            <Grid item xs={12} sm={6} lg={3} key={feature.id}>
               <Zoom in timeout={800 + index * 200}>
                 <Card
+                  elevation={0}
                   sx={{
                     height: '100%',
                     textAlign: 'center',
-                    p: 3,
-                    border: `1px solid ${alpha(feature.color, 0.1)}`,
-                    backgroundColor: alpha(feature.color, 0.02),
+                    p: { xs: 3, md: 4 },
+                    border: `2px solid transparent`,
+                    background: `linear-gradient(white, white) padding-box, linear-gradient(135deg, ${alpha(feature.color, 0.2)}, ${alpha(feature.color, 0.05)}) border-box`,
+                    borderRadius: 3,
                     cursor: 'pointer',
-                    transition: 'all 0.3s ease',
+                    transition: 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    '&::before': {
+                      content: '""',
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      background: `linear-gradient(135deg, ${alpha(feature.color, 0.03)}, transparent)`,
+                      opacity: hoveredFeature === feature.id ? 1 : 0,
+                      transition: 'opacity 0.3s ease',
+                      borderRadius: 3
+                    },
                     '&:hover': {
-                      transform: 'translateY(-8px)',
-                      boxShadow: `0 16px 40px ${alpha(feature.color, 0.15)}`,
-                      backgroundColor: alpha(feature.color, 0.05)
+                      transform: 'translateY(-12px) scale(1.02)',
+                      boxShadow: `0 20px 60px ${alpha(feature.color, 0.15)}, 0 8px 20px ${alpha(feature.color, 0.1)}`,
+                      border: `2px solid ${alpha(feature.color, 0.2)}`
                     }
                   }}
                   onMouseEnter={() => setHoveredFeature(feature.id)}
                   onMouseLeave={() => setHoveredFeature(null)}
                 >
-                  <Box sx={{ color: feature.color, mb: 2 }}>
-                    {feature.icon}
+                  <Box 
+                    sx={{ 
+                      position: 'relative',
+                      zIndex: 1,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      height: '100%'
+                    }}
+                  >
+                    <Box 
+                      sx={{ 
+                        color: feature.color, 
+                        mb: 3,
+                        p: 2,
+                        borderRadius: '50%',
+                        backgroundColor: alpha(feature.color, 0.08),
+                        transition: 'all 0.3s ease',
+                        transform: hoveredFeature === feature.id ? 'scale(1.1) rotate(5deg)' : 'scale(1)',
+                      }}
+                    >
+                      {feature.icon}
+                    </Box>
+                    <Typography 
+                      variant="h5" 
+                      sx={{ 
+                        fontWeight: 700, 
+                        mb: 2,
+                        color: theme.palette.text.primary,
+                        fontSize: { xs: '1.25rem', md: '1.4rem' }
+                      }}
+                    >
+                      {feature.title}
+                    </Typography>
+                    <Typography 
+                      variant="body1" 
+                      color="text.secondary"
+                      sx={{
+                        lineHeight: 1.6,
+                        fontSize: { xs: '0.95rem', md: '1rem' },
+                        flex: 1,
+                        display: 'flex',
+                        alignItems: 'center'
+                      }}
+                    >
+                      {feature.description}
+                    </Typography>
                   </Box>
-                  <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
-                    {feature.title}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {feature.description}
-                  </Typography>
                 </Card>
               </Zoom>
             </Grid>
@@ -297,167 +361,366 @@ const SimpleLandingPage = () => {
       </Container>
 
       {/* Use Cases */}
-      <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 2, py: 8 }}>
-        <Typography 
-          variant="h3" 
-          textAlign="center" 
-          sx={{ mb: 6, fontWeight: 700 }}
-        >
-          Perfect For
-        </Typography>
-        <Grid container spacing={3}>
-          {useCases.map((useCase, index) => (
-            <Grid item xs={12} sm={6} md={3} key={index}>
-              <Card 
-                sx={{ 
-                  p: 3, 
-                  textAlign: 'center',
-                  height: '100%',
-                  backgroundColor: alpha(theme.palette.background.paper, 0.8),
-                  backdropFilter: 'blur(10px)',
-                  border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
-                  '&:hover': {
-                    backgroundColor: alpha(theme.palette.primary.main, 0.05)
-                  },
-                  transition: 'all 0.3s ease'
-                }}
-              >
-                <Box sx={{ color: theme.palette.primary.main, mb: 2 }}>
-                  {React.cloneElement(useCase.icon, { sx: { fontSize: 32 } })}
-                </Box>
-                <Typography variant="h6" sx={{ mb: 1, fontWeight: 600 }}>
-                  {useCase.title}
-                </Typography>
-                <Chip 
-                  label={useCase.users} 
-                  size="small" 
-                  color="primary" 
-                  variant="outlined"
-                />
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
-      </Container>
+      <Box 
+        sx={{ 
+          background: `linear-gradient(135deg, ${alpha(theme.palette.background.default, 0.98)}, ${alpha(theme.palette.primary.main, 0.02)})`,
+          py: { xs: 6, md: 10 },
+          position: 'relative',
+          zIndex: 2 
+        }}
+      >
+        <Container maxWidth="xl">
+          <Box sx={{ textAlign: 'center', mb: { xs: 6, md: 8 } }}>
+            <Typography 
+              variant="h3" 
+              sx={{ 
+                mb: 3, 
+                fontWeight: 700,
+                background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text'
+              }}
+            >
+              Perfect For Every Circle
+            </Typography>
+            <Typography variant="h6" color="text.secondary" sx={{ maxWidth: 600, mx: 'auto' }}>
+              From intimate family groups to thriving creative communities
+            </Typography>
+          </Box>
+          
+          <Grid container spacing={{ xs: 3, md: 4 }} justifyContent="center">
+            {useCases.map((useCase, index) => (
+              <Grid item xs={12} sm={6} lg={3} key={index}>
+                <Card 
+                  elevation={0}
+                  sx={{ 
+                    p: { xs: 3, md: 4 }, 
+                    textAlign: 'center',
+                    height: '100%',
+                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                    backdropFilter: 'blur(20px)',
+                    border: `1px solid ${alpha(theme.palette.primary.main, 0.08)}`,
+                    borderRadius: 3,
+                    transition: 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+                    '&:hover': {
+                      backgroundColor: 'rgba(255, 255, 255, 1)',
+                      transform: 'translateY(-8px)',
+                      boxShadow: `0 20px 40px ${alpha(theme.palette.primary.main, 0.12)}`,
+                      border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`
+                    }
+                  }}
+                >
+                  <Box 
+                    sx={{ 
+                      color: theme.palette.primary.main, 
+                      mb: 3,
+                      p: 2,
+                      borderRadius: '50%',
+                      backgroundColor: alpha(theme.palette.primary.main, 0.08),
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
+                  >
+                    {React.cloneElement(useCase.icon, { sx: { fontSize: 32 } })}
+                  </Box>
+                  <Typography variant="h6" sx={{ mb: 2, fontWeight: 600, fontSize: '1.3rem' }}>
+                    {useCase.title}
+                  </Typography>
+                  <Chip 
+                    label={useCase.users} 
+                    size="medium" 
+                    sx={{
+                      backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                      color: theme.palette.primary.main,
+                      fontWeight: 600,
+                      border: 'none'
+                    }}
+                  />
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+        </Container>
+      </Box>
 
       {/* Tools Overview */}
-      <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 2, py: 8 }}>
-        <Box sx={{ textAlign: 'center', mb: 6 }}>
-          <Typography variant="h3" sx={{ fontWeight: 700, mb: 2 }}>
+      <Container maxWidth="xl" sx={{ position: 'relative', zIndex: 2, py: { xs: 6, md: 10 } }}>
+        <Box sx={{ textAlign: 'center', mb: { xs: 6, md: 8 } }}>
+          <Typography 
+            variant="h3" 
+            sx={{ 
+              fontWeight: 700, 
+              mb: 3,
+              background: `linear-gradient(45deg, ${theme.palette.text.primary}, ${theme.palette.primary.main})`,
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text'
+            }}
+          >
             Everything You Need
           </Typography>
-          <Typography variant="h6" color="text.secondary">
+          <Typography variant="h6" color="text.secondary" sx={{ maxWidth: 600, mx: 'auto' }}>
             All the tools for private collaboration, beautifully simple
           </Typography>
         </Box>
 
-        <Grid container spacing={2}>
+        <Grid container spacing={{ xs: 2, md: 3 }} sx={{ maxWidth: 1000, mx: 'auto' }}>
           {tools.map((tool, index) => (
             <Grid item xs={12} sm={6} md={4} key={index}>
-              <Card 
-                sx={{ 
-                  p: 2,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 2,
-                  backgroundColor: alpha(theme.palette.background.paper, 0.6),
-                  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                  '&:hover': {
-                    backgroundColor: alpha(theme.palette.primary.main, 0.03),
-                    borderColor: alpha(theme.palette.primary.main, 0.2)
-                  },
-                  transition: 'all 0.3s ease'
-                }}
-              >
-                <Box sx={{ color: theme.palette.primary.main }}>
-                  {React.cloneElement(tool.icon, { sx: { fontSize: 24 } })}
-                </Box>
-                <Box>
-                  <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                    {tool.name}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {tool.description}
-                  </Typography>
-                </Box>
-              </Card>
+              <Zoom in timeout={600 + index * 100}>
+                <Card 
+                  elevation={0}
+                  sx={{ 
+                    p: { xs: 3, md: 3.5 },
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'flex-start',
+                    gap: 2,
+                    height: '100%',
+                    backgroundColor: alpha(theme.palette.background.paper, 0.8),
+                    border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+                    borderRadius: 2,
+                    backdropFilter: 'blur(10px)',
+                    transition: 'all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+                    '&:hover': {
+                      backgroundColor: alpha(theme.palette.primary.main, 0.04),
+                      borderColor: alpha(theme.palette.primary.main, 0.15),
+                      transform: 'translateY(-4px)',
+                      boxShadow: `0 12px 30px ${alpha(theme.palette.primary.main, 0.08)}`
+                    }
+                  }}
+                >
+                  <Box 
+                    sx={{ 
+                      color: theme.palette.primary.main,
+                      p: 1.5,
+                      borderRadius: 2,
+                      backgroundColor: alpha(theme.palette.primary.main, 0.08)
+                    }}
+                  >
+                    {React.cloneElement(tool.icon, { sx: { fontSize: 26 } })}
+                  </Box>
+                  <Box sx={{ flex: 1 }}>
+                    <Typography 
+                      variant="h6" 
+                      sx={{ 
+                        fontWeight: 600, 
+                        mb: 1,
+                        fontSize: '1.1rem',
+                        color: theme.palette.text.primary
+                      }}
+                    >
+                      {tool.name}
+                    </Typography>
+                    <Typography 
+                      variant="body2" 
+                      color="text.secondary"
+                      sx={{ 
+                        lineHeight: 1.5,
+                        fontSize: '0.9rem'
+                      }}
+                    >
+                      {tool.description}
+                    </Typography>
+                  </Box>
+                </Card>
+              </Zoom>
             </Grid>
           ))}
         </Grid>
       </Container>
 
       {/* Security Promise */}
-      <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 2, py: 8 }}>
-        <Card 
-          sx={{ 
-            p: 6, 
-            textAlign: 'center',
-            background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.05)}, ${alpha(theme.palette.secondary.main, 0.05)})`,
-            border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`
-          }}
-        >
-          <Box sx={{ color: theme.palette.primary.main, mb: 3 }}>
-            <CheckCircleIcon sx={{ fontSize: 64 }} />
-          </Box>
-          <Typography variant="h4" sx={{ fontWeight: 700, mb: 3 }}>
-            Complexity-Free Collaboration
-          </Typography>
-          <Typography variant="h6" color="text.secondary" sx={{ mb: 4, maxWidth: 600, mx: 'auto' }}>
-            Everything you need, nothing you don't. Clean interfaces and smart defaults that just work.
-          </Typography>
-          
-          <Stack direction={{ xs: 'column', md: 'row' }} spacing={4} justifyContent="center">
-            <Box>
-              <Typography variant="h6" sx={{ fontWeight: 600, color: theme.palette.primary.main }}>
-                ✓ Setup in 2 Minutes
+      <Box 
+        sx={{ 
+          background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.03)}, ${alpha(theme.palette.secondary.main, 0.03)})`,
+          py: { xs: 6, md: 10 },
+          position: 'relative',
+          zIndex: 2
+        }}
+      >
+        <Container maxWidth="lg">
+          <Card 
+            elevation={0}
+            sx={{ 
+              p: { xs: 4, md: 8 }, 
+              textAlign: 'center',
+              background: `linear-gradient(135deg, rgba(255,255,255,0.95), rgba(255,255,255,0.85))`,
+              backdropFilter: 'blur(20px)',
+              border: `2px solid ${alpha(theme.palette.primary.main, 0.08)}`,
+              borderRadius: 4,
+              position: 'relative',
+              overflow: 'hidden',
+              '&::before': {
+                content: '""',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                background: `conic-gradient(from 0deg at 50% 50%, ${alpha(theme.palette.primary.main, 0.1)}, transparent, ${alpha(theme.palette.secondary.main, 0.1)}, transparent)`,
+                opacity: 0.3
+              }
+            }}
+          >
+            <Box sx={{ position: 'relative', zIndex: 1 }}>
+              <Box 
+                sx={{ 
+                  color: theme.palette.primary.main, 
+                  mb: 4,
+                  p: 3,
+                  borderRadius: '50%',
+                  backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
+                <CheckCircleIcon sx={{ fontSize: 72 }} />
+              </Box>
+              <Typography 
+                variant="h3" 
+                sx={{ 
+                  fontWeight: 700, 
+                  mb: 4,
+                  background: `linear-gradient(45deg, ${theme.palette.text.primary}, ${theme.palette.primary.main})`,
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                  fontSize: { xs: '2rem', md: '2.5rem' }
+                }}
+              >
+                Complexity-Free Collaboration
               </Typography>
-            </Box>
-            <Box>
-              <Typography variant="h6" sx={{ fontWeight: 600, color: theme.palette.primary.main }}>
-                ✓ Zero Learning Curve
+              <Typography 
+                variant="h6" 
+                color="text.secondary" 
+                sx={{ 
+                  mb: 6, 
+                  maxWidth: 700, 
+                  mx: 'auto',
+                  lineHeight: 1.6,
+                  fontSize: { xs: '1.1rem', md: '1.25rem' }
+                }}
+              >
+                Everything you need, nothing you don't. Clean interfaces and smart defaults that just work.
               </Typography>
+              
+              <Grid container spacing={4} justifyContent="center" sx={{ maxWidth: 800, mx: 'auto' }}>
+                {[
+                  { text: 'Setup in 2 Minutes', icon: '⚡' },
+                  { text: 'Zero Learning Curve', icon: '🎯' },
+                  { text: 'Works Out of the Box', icon: '✨' }
+                ].map((item, index) => (
+                  <Grid item xs={12} sm={4} key={index}>
+                    <Box 
+                      sx={{
+                        p: 3,
+                        borderRadius: 2,
+                        backgroundColor: alpha(theme.palette.primary.main, 0.04),
+                        border: `1px solid ${alpha(theme.palette.primary.main, 0.08)}`
+                      }}
+                    >
+                      <Typography 
+                        sx={{ 
+                          fontSize: '2rem',
+                          mb: 1,
+                          display: 'block'
+                        }}
+                      >
+                        {item.icon}
+                      </Typography>
+                      <Typography 
+                        variant="h6" 
+                        sx={{ 
+                          fontWeight: 600, 
+                          color: theme.palette.primary.main,
+                          fontSize: { xs: '1rem', md: '1.1rem' }
+                        }}
+                      >
+                        {item.text}
+                      </Typography>
+                    </Box>
+                  </Grid>
+                ))}
+              </Grid>
             </Box>
-            <Box>
-              <Typography variant="h6" sx={{ fontWeight: 600, color: theme.palette.primary.main }}>
-                ✓ Works Out of the Box
-              </Typography>
-            </Box>
-          </Stack>
-        </Card>
-      </Container>
+          </Card>
+        </Container>
+      </Box>
 
       {/* Final CTA */}
-      <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 2, py: 8 }}>
-        <Box sx={{ textAlign: 'center' }}>
-          <Typography variant="h3" sx={{ fontWeight: 700, mb: 3 }}>
+      <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 2, py: { xs: 8, md: 12 } }}>
+        <Box 
+          sx={{ 
+            textAlign: 'center',
+            p: { xs: 4, md: 6 },
+            borderRadius: 4,
+            background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.02)}, ${alpha(theme.palette.secondary.main, 0.02)})`,
+            border: `1px solid ${alpha(theme.palette.primary.main, 0.08)}`
+          }}
+        >
+          <Typography 
+            variant="h3" 
+            sx={{ 
+              fontWeight: 700, 
+              mb: 3,
+              background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+              fontSize: { xs: '2rem', md: '2.5rem' }
+            }}
+          >
             Ready to Keep It Simple?
           </Typography>
-          <Typography variant="h6" color="text.secondary" sx={{ mb: 4 }}>
+          <Typography 
+            variant="h6" 
+            color="text.secondary" 
+            sx={{ 
+              mb: 6,
+              maxWidth: 600,
+              mx: 'auto',
+              lineHeight: 1.6,
+              fontSize: { xs: '1.1rem', md: '1.25rem' }
+            }}
+          >
             Launch your private network in under 2 minutes. No setup headaches, no credit card required.
           </Typography>
           
-          <Button
-            component={RouterLink}
-            to="/signup"
-            variant="contained"
-            size="large"
-            sx={{
-              py: 2,
-              px: 6,
-              borderRadius: 4,
-              fontSize: '1.1rem',
-              fontWeight: 600,
-              boxShadow: `0 12px 40px ${alpha(theme.palette.primary.main, 0.3)}`,
-              '&:hover': {
-                transform: 'translateY(-3px)',
-                boxShadow: `0 16px 50px ${alpha(theme.palette.primary.main, 0.4)}`
-              },
-              transition: 'all 0.3s ease'
-            }}
-            endIcon={<ArrowForwardIcon />}
-          >
-            Start Building Your Network
-          </Button>
+          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 3, justifyContent: 'center', alignItems: 'center' }}>
+            <Button
+              component={RouterLink}
+              to="/signup"
+              variant="contained"
+              size="large"
+              sx={{
+                py: 2.5,
+                px: 8,
+                borderRadius: 50,
+                fontSize: { xs: '1rem', md: '1.2rem' },
+                fontWeight: 700,
+                textTransform: 'none',
+                background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
+                boxShadow: `0 12px 40px ${alpha(theme.palette.primary.main, 0.3)}`,
+                '&:hover': {
+                  transform: 'translateY(-4px) scale(1.02)',
+                  boxShadow: `0 20px 60px ${alpha(theme.palette.primary.main, 0.4)}`,
+                  background: `linear-gradient(135deg, ${theme.palette.primary.dark}, ${theme.palette.primary.main})`
+                },
+                transition: 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
+              }}
+              endIcon={<ArrowForwardIcon sx={{ ml: 1 }} />}
+            >
+              Start Building Your Network
+            </Button>
+            
+            <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>
+              Free forever • No credit card needed
+            </Typography>
+          </Box>
         </Box>
       </Container>
 

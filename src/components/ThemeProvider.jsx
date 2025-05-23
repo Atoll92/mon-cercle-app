@@ -19,7 +19,11 @@ const ThemeProvider = ({ children }) => {
   
   // Add darkMode state
   const [darkMode, setDarkMode] = useState(() => {
-    // Check localStorage for user preference
+    // If user is not logged in, default to light mode
+    if (!session) {
+      return false;
+    }
+    // Check localStorage for user preference only if logged in
     const savedMode = localStorage.getItem('darkMode');
     return savedMode === 'true';
   });
@@ -28,7 +32,10 @@ const ThemeProvider = ({ children }) => {
   const toggleDarkMode = () => {
     const newMode = !darkMode;
     setDarkMode(newMode);
-    localStorage.setItem('darkMode', newMode.toString());
+    // Only save to localStorage if user is logged in
+    if (session) {
+      localStorage.setItem('darkMode', newMode.toString());
+    }
   };
   
   // Create MUI theme based on darkMode state
@@ -48,6 +55,14 @@ const theme = createTheme({
     }
   },
 });
+  // Effect to reset theme when session changes
+  useEffect(() => {
+    if (!session && darkMode) {
+      // Reset to light mode when user logs out
+      setDarkMode(false);
+    }
+  }, [session, darkMode]);
+
   useEffect(() => {
     const loadNetworkTheme = async () => {
       // Only attempt to load theme if user is logged in
