@@ -63,6 +63,7 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
   const [loading, setLoading] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [scrollPosition, setScrollPosition] = useState(0);
+  const [animationType, setAnimationType] = useState('shrink'); // Always use subtle shrink animation
   
   // State for expanded cards
   const [expandedCardId, setExpandedCardId] = useState(null);
@@ -70,6 +71,8 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
   // Refs for scroll and animations
   const observer = useRef();
   const expandedCardRef = useRef(null);
+  const animationFrameRef = useRef();
+  const cardRefs = useRef(new Map());
   
   // Toggle card expansion with improved scroll handling
   const handleExpandCard = (id) => {
@@ -209,6 +212,82 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
     });
   };
   
+  // Animation utilities
+  const dvh = () => window.visualViewport?.height || document.documentElement.clientHeight;
+  
+  const seededRandom = (seed) => {
+    let x = Math.sin(seed) * 10000;
+    return (x - Math.floor(x)) * 2 - 1;
+  };
+  
+  const fmod = (a, b) => {
+    return a - b * Math.floor(a / b);
+  };
+  
+  // Update CSS variables for animations
+  const updateAnimationVariables = useCallback(() => {
+    document.documentElement.style.setProperty('--vertical-center', `${window.scrollY + dvh()/2}`);
+    document.documentElement.style.setProperty('--half-vertical-height', `${dvh()/2}`);
+  }, []);
+  
+  // Apply subtle shrink animation to cards
+  const applyAnimations = useCallback(() => {
+    const verticalCenter = window.scrollY + dvh() / 2;
+    const halfVerticalHeight = dvh() / 2;
+    
+    cardRefs.current.forEach((element) => {
+      if (!element) return;
+      
+      const elementCenter = element.getBoundingClientRect().top + window.scrollY + (element.offsetHeight / 2);
+      const distanceFromCenter = Math.abs(verticalCenter - elementCenter);
+      
+      // Use a larger threshold for smoother, more accessible animation
+      const threshold = halfVerticalHeight * 1.5;
+      const normalizedDistance = Math.min(distanceFromCenter / threshold, 1);
+      
+      // Subtle scale effect - only shrink to 0.95 minimum for accessibility
+      // Use ease-out curve for smooth transitions
+      const easeOut = 1 - Math.pow(normalizedDistance, 2);
+      const scale = 0.95 + (easeOut * 0.05);
+      
+      // Subtle opacity effect for depth without affecting readability
+      const opacity = 0.85 + (easeOut * 0.15);
+      
+      element.style.transform = `scale(${scale})`;
+      element.style.opacity = opacity;
+      element.style.filter = '';
+    });
+  }, []);
+  
+  // Animation loop
+  const animationLoop = useCallback(() => {
+    updateAnimationVariables();
+    applyAnimations();
+    animationFrameRef.current = requestAnimationFrame(animationLoop);
+  }, [updateAnimationVariables, applyAnimations]);
+  
+  // Start animation loop
+  useEffect(() => {
+    updateAnimationVariables();
+    applyAnimations();
+    animationFrameRef.current = requestAnimationFrame(animationLoop);
+    
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
+  }, [animationLoop, updateAnimationVariables, applyAnimations]);
+  
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
+  }, []);
+
   // Format date in a user-friendly way
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -328,6 +407,7 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                 md: '3'
               },
               gap: 3,
+              perspective: '2000px', // Enable 3D perspective for animations
               '& > *': {
                 breakInside: 'avoid',
                 marginBottom: 3
@@ -340,28 +420,48 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
               const isRefItem = index === displayItems.length - 1 || 
                                (displayItems.length > 10 && index % 10 === 0 && index > displayItems.length - 10);
               
+              const cardId = `${item.itemType}-${item.id}`;
+              
               return (
                 <Card 
-                  key={`${item.itemType}-${item.id}`}
-                  ref={isRefItem ? lastItemRef : (expandedCardId === `${item.itemType}-${item.id}` ? expandedCardRef : null)}
+                  key={cardId}
+                  ref={(el) => {
+                    // Store card ref for animations
+                    if (el) {
+                      cardRefs.current.set(index, el);
+                    } else {
+                      cardRefs.current.delete(index);
+                    }
+                    
+                    // Handle other refs
+                    if (isRefItem && lastItemRef) {
+                      lastItemRef(el);
+                    }
+                    if (expandedCardId === cardId && expandedCardRef) {
+                      expandedCardRef.current = el;
+                    }
+                  }}
                   sx={{ 
                     mb: 3,
                     height: getCardHeight(item),
                     borderRadius: 2,
                     overflow: 'hidden',
-                    transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+                    // Smooth transitions for all transform and opacity changes
+                    transition: 'transform 0.15s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.15s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease',
                     '&:hover': {
-                      transform: expandedCardId === `${item.itemType}-${item.id}` ? 'none' : 'translateY(-4px)',
-                      boxShadow: darkMode ? '0 8px 24px rgba(0,0,0,0.3)' : '0 8px 24px rgba(0,0,0,0.1)'
+                      // Only apply hover transform if not expanded and not actively animating
+                      ...(!expandedCardId || expandedCardId !== cardId ? {
+                        transform: 'translateY(-2px) !important', // Subtle hover lift
+                        boxShadow: darkMode ? '0 6px 20px rgba(0,0,0,0.25)' : '0 6px 20px rgba(0,0,0,0.08)'
+                      } : {})
                     },
                     bgcolor: darkMode ? alpha('#1e1e1e', 0.5) : 'background.paper',
                     backdropFilter: 'blur(10px)',
                     border: `1px solid ${customBorder}`,
                     // Apply special styles when expanded
-                    ...(expandedCardId === `${item.itemType}-${item.id}` && {
+                    ...(expandedCardId === cardId && {
                       zIndex: 10,
                       boxShadow: darkMode ? '0 12px 40px rgba(0,0,0,0.6)' : '0 12px 40px rgba(0,0,0,0.2)',
-                      transform: 'scale(1.03)',
                       position: 'relative'
                     })
                   }}
