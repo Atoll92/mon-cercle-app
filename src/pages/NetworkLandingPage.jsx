@@ -128,6 +128,7 @@ function NetworkLandingPage() {
 
   // State to hold post items for all members (stored as portfolio_items in database)
   const [postItems, setPostItems] = useState([]);
+  const [loadingPosts, setLoadingPosts] = useState(false);
   
   // Fetch user's event participations on component mount
   useEffect(() => {
