@@ -182,14 +182,14 @@ export const getUserMoodboardItems = async (userId, offset = 0, limit = 20) => {
     // First get all moodboards created by the user
     const { data: moodboards, error: moodboardsError } = await supabase
       .from('moodboards')
-      .select('id')
+      .select('id, background_color')
       .eq('created_by', userId)
       .eq('is_personal', true);
     
     if (moodboardsError) throw moodboardsError;
     
     if (!moodboards || moodboards.length === 0) {
-      return [];
+      return { items: [], backgroundColor: null };
     }
     
     // Get all items from user's moodboards
@@ -203,9 +203,13 @@ export const getUserMoodboardItems = async (userId, offset = 0, limit = 20) => {
     
     if (itemsError) throw itemsError;
     
-    return items || [];
+    // Return items and the background color from the first moodboard
+    return {
+      items: items || [],
+      backgroundColor: moodboards[0]?.background_color || null
+    };
   } catch (error) {
     console.error('Error fetching user moodboard items:', error);
-    return [];
+    return { items: [], backgroundColor: null };
   }
 };
