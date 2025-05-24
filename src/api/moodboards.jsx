@@ -169,3 +169,43 @@ export const uploadMoodboardImage = async (file, moodboardId) => {
     
   return publicUrl;
 };
+
+/**
+ * Fetch all personal moodboard items for a user
+ * @param {string} userId - The user ID
+ * @param {number} offset - Pagination offset
+ * @param {number} limit - Number of items to fetch
+ * @returns {Promise<Array>} Array of moodboard items
+ */
+export const getUserMoodboardItems = async (userId, offset = 0, limit = 20) => {
+  try {
+    // First get all moodboards created by the user
+    const { data: moodboards, error: moodboardsError } = await supabase
+      .from('moodboards')
+      .select('id')
+      .eq('created_by', userId)
+      .eq('is_personal', true);
+    
+    if (moodboardsError) throw moodboardsError;
+    
+    if (!moodboards || moodboards.length === 0) {
+      return [];
+    }
+    
+    // Get all items from user's moodboards
+    const moodboardIds = moodboards.map(mb => mb.id);
+    const { data: items, error: itemsError } = await supabase
+      .from('moodboard_items')
+      .select('*')
+      .in('moodboard_id', moodboardIds)
+      .order('created_at', { ascending: false })
+      .range(offset, offset + limit - 1);
+    
+    if (itemsError) throw itemsError;
+    
+    return items || [];
+  } catch (error) {
+    console.error('Error fetching user moodboard items:', error);
+    return [];
+  }
+};

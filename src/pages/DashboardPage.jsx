@@ -13,7 +13,8 @@ import {
   Add as AddIcon,
   Image as ImageIcon,
   Language as LanguageIcon,
-  Delete as DeleteIcon
+  Delete as DeleteIcon,
+  Preview as PreviewIcon
 } from '@mui/icons-material';
 import { 
   CircularProgress, 
@@ -758,7 +759,7 @@ function DashboardPage() {
                       
                       <Box sx={{ flexGrow: 1 }} />
                       
-                      <CardActions sx={{ p: 1, justifyContent: 'space-between' }}>
+                      <CardActions sx={{ p: 1, justifyContent: 'space-between', flexWrap: 'wrap', gap: 0.5 }}>
                         <Button 
                           size="small" 
                           startIcon={<EditIcon />}
@@ -778,6 +779,18 @@ function DashboardPage() {
                           color="secondary"
                         >
                           View Profile
+                        </Button>
+                        
+                        <Button 
+                          size="small" 
+                          startIcon={<PreviewIcon />}
+                          component={Link} 
+                          to={`/micro-conclav/${user.id}`}
+                          target="_blank"
+                          variant="outlined"
+                          color="primary"
+                        >
+                          Micro Conclav
                         </Button>
                       </CardActions>
                     </Card>

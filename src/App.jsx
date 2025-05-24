@@ -38,6 +38,7 @@ import ShimmeringTextPage from './pages/ShimmeringTextPage';
 import PersonalMoodboardsPage from './pages/PersonalMoodboardPage';
 import PasswordUpdatePage from './pages/PasswordUpdatePage';
 import NetworkOnboardingPage from './pages/NetworkOnboardingPage';
+import MicroConclavPage from './pages/MicroConclavPage';
 
 function App() {
   const { loading, session, user } = useAuth();
@@ -145,7 +146,7 @@ function App() {
     <DirectMessagesProvider>
       <div className="App" style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
         {/* Pass the network name to the header */}
-        {window.location.pathname !== "/" && window.location.pathname !== "/pricing" && window.location.pathname !== "/simple" && (
+        {window.location.pathname !== "/" && window.location.pathname !== "/pricing" && window.location.pathname !== "/simple" && !window.location.pathname.startsWith("/micro-conclav/") && (
           <NetworkHeader/>
         )}
         <Box component="main" sx={{ flex: 1 }}>
@@ -161,6 +162,9 @@ function App() {
             <Route path="/pricing" element={<PricingPage />} />
             <Route path="/payment-success" element={<PaymentSuccessPage />} />
             <Route path="/shimmer" element={<ShimmeringTextPage />} />
+            
+            {/* Micro Conclav routes */}
+            <Route path="/micro-conclav/:userId" element={<MicroConclavPage />} />
             
             {/* Public Wiki routes */}
             <Route path="/network/:networkId/wiki" element={<WikiListPage />} />
