@@ -152,7 +152,7 @@ const handlePlanSelect = async (plan) => {
 
   const plans = [
     {
-      name: 'Free',
+      name: 'Family',
       price: 0,
       description: 'For personal networks and small groups',
       features: [
