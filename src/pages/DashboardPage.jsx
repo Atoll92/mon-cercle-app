@@ -1,5 +1,5 @@
 // src/pages/DashboardPage.jsx
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../context/authcontext';
 import { supabase } from '../supabaseclient';
 import { useNavigate, Link } from 'react-router-dom';
@@ -8,7 +8,7 @@ import LatestNewsWidget from '../components/LatestNewsWidget';
 import LatestPostsWidget from '../components/LatestPostsWidget';
 import TestNotificationSystem from '../components/TestNotificationSystem';
 import { useFadeIn, useStaggeredAnimation, ANIMATION_DURATION } from '../hooks/useAnimation';
-import { CardSkeleton, ProfileSkeleton, GridSkeleton } from '../components/LoadingSkeleton';
+import { ProfileSkeleton, GridSkeleton } from '../components/LoadingSkeleton';
 import { 
   AttachMoney as AttachMoneyIcon,
   Star as StarIcon,
@@ -37,13 +37,8 @@ import {
   IconButton,
   Stack,
   Tooltip,
-  LinearProgress,
   CardMedia,
   CardHeader,
-  Fade,
-  Tab,
-  Tabs,
-  Badge,
   TextField
 } from '@mui/material';
 import { 
@@ -52,11 +47,7 @@ import {
   AdminPanelSettings as AdminIcon,
   ArrowForward as ArrowForwardIcon,
   Dashboard as DashboardIcon,
-  Groups as GroupsIcon,
-  Mail as MailIcon,
   Event as EventIcon,
-  Article as ArticleIcon,
-  MenuBook as MenuBookIcon,
   Refresh as RefreshIcon,
   NetworkWifi as NetworkIcon,
   LocationOn as LocationOnIcon,
@@ -162,7 +153,7 @@ const fetchNetworkDetails = async (networkId) => {
 };
 
 function DashboardPage() {
-  const { user, session, signOut } = useAuth();
+  const { user, session } = useAuth();
   const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
   const [networkMembers, setNetworkMembers] = useState([]);
@@ -172,7 +163,6 @@ function DashboardPage() {
   const [loadingNetworkDetails, setLoadingNetworkDetails] = useState(true);
   const [error, setError] = useState(null);
   const [retryCount, setRetryCount] = useState(0);
-  const [activeTab, setActiveTab] = useState(0);
   const [recentEvents, setRecentEvents] = useState([]);
   const [loadingEvents, setLoadingEvents] = useState(true);
   
@@ -341,25 +331,6 @@ function DashboardPage() {
 
   const handleRefresh = () => {
     window.location.reload();
-  };
-
-  const handleTabChange = (event, newValue) => {
-    setActiveTab(newValue);
-  };
-  
-  const refreshNetworkDetails = async () => {
-    if (profile?.network_id) {
-      setLoadingNetworkDetails(true);
-      try {
-        const details = await fetchNetworkDetails(profile.network_id);
-        console.log('Refreshed network details:', details);
-        setNetworkDetails(details);
-      } catch (error) {
-        console.error("Error refreshing network details:", error);
-      } finally {
-        setLoadingNetworkDetails(false);
-      }
-    }
   };
   
   // Handle new post image change
@@ -545,7 +516,7 @@ function DashboardPage() {
             Profile Setup in Progress
           </Typography>
           <CircularProgress size={30} sx={{ my: 2 }} />
-          <Typography variant="body1" paragraph>
+          <Typography variant="body1" sx={{ mb: 2 }}>
             We're setting up your profile. This should only take a moment.
           </Typography>
           <Button 
@@ -636,35 +607,11 @@ function DashboardPage() {
           </Box>
         </Box>
 
-        {/* Tabs Navigation */}
-        <Tabs
-          value={activeTab}
-          onChange={handleTabChange}
-          variant="fullWidth"
-          sx={{ 
-            borderBottom: 1, 
-            borderColor: 'divider'
-          }}
-        >
-          <Tab 
-            label="Overview" 
-            icon={<DashboardIcon />} 
-            iconPosition="start"
-          />
-          <Tab 
-            label="Network" 
-            icon={<GroupsIcon />} 
-            iconPosition="start"
-            disabled={!profile.network_id}
-          />
-        </Tabs>
       </Paper>
 
       {session && profile ? (
         <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', width: '100%' }}>
-          {/* Overview Tab */}
-          {activeTab === 0 && (
-            <Grid container spacing={2} sx={{ width: '100%' }}>
+          <Grid container spacing={2} sx={{ width: '100%' }}>
               {/* Row 1: Profile and Network Management */}
               <Grid item xs={12} sx={{ minHeight: '300px', width: '100%' }}>
                 <Grid container spacing={2} sx={{ height: '100%', width: '100%' }}>
@@ -842,8 +789,7 @@ function DashboardPage() {
                        
                       >
                         <CardHeader
-                          title="Network Management"
-                          titleTypographyProps={{ variant: 'subtitle1' }}
+                          title={<Typography variant="subtitle1">Network Management</Typography>}
                           avatar={<NetworkIcon color="primary" />}
                           sx={{ 
                             py: 1,
@@ -1111,8 +1057,7 @@ function DashboardPage() {
                         boxShadow: '0 4px 12px rgba(0,0,0,0.08)'
                       }}>
                         <CardHeader
-                          title="Create Network"
-                          titleTypographyProps={{ variant: 'subtitle1' }}
+                          title={<Typography variant="subtitle1">Create Network</Typography>}
                           avatar={<CreateNewFolderIcon color="primary" />}
                           sx={{ 
                             py: 1,
@@ -1122,7 +1067,7 @@ function DashboardPage() {
                         
                         <CardContent sx={{ py: 1 }}>
                           <Box sx={{ textAlign: 'center', py: 1 }}>
-                            <Typography variant="body2" color="text.secondary" paragraph>
+                            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                               Create your own network to connect with friends, colleagues, or community members.
                             </Typography>
                             
@@ -1167,8 +1112,7 @@ function DashboardPage() {
                       flexDirection: 'column'
                     }}>
                       <CardHeader
-                        title="Create New Post"
-                        titleTypographyProps={{ variant: 'subtitle1' }}
+                        title={<Typography variant="subtitle1">Create New Post</Typography>}
                         avatar={<AddIcon color="primary" />}
                         sx={{ 
                           bgcolor: 'rgba(25, 118, 210, 0.05)',
@@ -1283,8 +1227,10 @@ function DashboardPage() {
                               sx={{ flexGrow: 1, minWidth: { xs: '100%', sm: 'auto' }, mt: { xs: 1, sm: 0 } }}
                               value={newPostLink}
                               onChange={(e) => setNewPostLink(e.target.value)}
-                              InputProps={{
-                                startAdornment: <LanguageIcon color="action" sx={{ mr: 1 }} fontSize="small" />
+                              slotProps={{
+                                input: {
+                                  startAdornment: <LanguageIcon color="action" sx={{ mr: 1 }} fontSize="small" />
+                                }
                               }}
                             />
                           </Box>
@@ -1305,8 +1251,7 @@ function DashboardPage() {
                         flexDirection: 'column'
                       }}>
                         <CardHeader
-                          title="Upcoming Events"
-                          titleTypographyProps={{ variant: 'subtitle1' }}
+                          title={<Typography variant="subtitle1">Upcoming Events</Typography>}
                           avatar={<EventIcon color="primary" />}
                           action={
                             <Button 
@@ -1418,8 +1363,7 @@ function DashboardPage() {
                         flexDirection: 'column'
                       }}>
                         <CardHeader
-                          title="Upcoming Events"
-                          titleTypographyProps={{ variant: 'subtitle1' }}
+                          title={<Typography variant="subtitle1">Upcoming Events</Typography>}
                           avatar={<EventIcon color="primary" />}
                           sx={{ 
                             bgcolor: 'rgba(25, 118, 210, 0.05)',
@@ -1471,131 +1415,10 @@ function DashboardPage() {
                 </Grid>
               </Grid>
             </Grid>
-          )}
 
           {/* Test Notification System (temporary) */}
           {process.env.NODE_ENV === 'development' && (
             <TestNotificationSystem />
-          )}
-          
-          {/* Network Tab */}
-          {activeTab === 1 && profile.network_id && (
-            <Card sx={{ 
-              borderRadius: 2, 
-              boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-            }}>
-              <CardHeader
-                title="Network Members"
-                titleTypographyProps={{ variant: 'subtitle1' }}
-                avatar={<GroupsIcon color="primary" />}
-                action={
-                  <Button 
-                    component={Link}
-                    to={`/network/${profile.network_id}`}
-                    endIcon={<ArrowForwardIcon />}
-                    size="small"
-                  >
-                    Network Page
-                  </Button>
-                }
-                sx={{ 
-                  py: 1,
-                  bgcolor: 'rgba(25, 118, 210, 0.05)'
-                }}
-              />
-              
-              <Divider />
-              
-              <CardContent sx={{ py: 1.5 }}>
-                {(loadingMembers && networkMembers.length === 0) ? (
-                  <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
-                    <CircularProgress size={30} />
-                  </Box>
-                ) : networkMembers.length > 0 ? (
-                  <Grid container spacing={2} sx={{ height: '100%', width: '100%' }}>
-                    {networkMembers.map(member => (
-                      <Grid item xs={12} sm={6} md={4} key={member.id}>
-                        <Paper
-                          elevation={1}
-                          sx={{
-                            p: 1.5,
-                            borderRadius: 2,
-                            display: 'flex',
-                            alignItems: 'center',
-                            bgcolor: member.id === user.id ? 'rgba(33, 150, 243, 0.05)' : 'inherit',
-                            border: member.id === user.id ? '1px solid rgba(33, 150, 243, 0.2)' : '1px solid transparent',
-                            transition: 'all 0.2s ease',
-                            '&:hover': {
-                              boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
-                              transform: 'translateY(-2px)'
-                            }
-                          }}
-                        >
-                          <Avatar
-                            sx={{ mr: 2, width: 40, height: 40 }}
-                            src={member.profile_picture_url}
-                          >
-                            {member.full_name ? member.full_name.charAt(0).toUpperCase() : '?'}
-                          </Avatar>
-                          
-                          <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-                            <Typography variant="subtitle2" noWrap>
-                              {member.full_name || 'Unnamed User'}
-                              {member.id === user.id && ' (You)'}
-                            </Typography>
-                            
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                              {member.role === 'admin' && (
-                                <Chip
-                                  label="Admin"
-                                  color="primary"
-                                  size="small"
-                                  sx={{ height: 20 }}
-                                />
-                              )}
-                              
-                              <Typography variant="caption" color="text.secondary" noWrap>
-                                {member.contact_email || member.id.substring(0, 8) + '...'}
-                              </Typography>
-                            </Box>
-                          </Box>
-                          
-                          <Stack direction="row" spacing={1}>
-                            <Tooltip title="View Profile">
-                              <IconButton
-                                size="small"
-                                component={Link}
-                                to={`/profile/${member.id}`}
-                                color="primary"
-                              >
-                                <PersonIcon fontSize="small" />
-                              </IconButton>
-                            </Tooltip>
-                            
-                            {member.id !== user.id && (
-                              <Tooltip title="Message">
-                                <IconButton
-                                  size="small"
-                                  component={Link}
-                                  to={`/messages/${member.id}`}
-                                  color="primary"
-                                >
-                                  <MailIcon fontSize="small" />
-                                </IconButton>
-                              </Tooltip>
-                            )}
-                          </Stack>
-                        </Paper>
-                      </Grid>
-                    ))}
-                  </Grid>
-                ) : (
-                  <Alert severity="info">
-                    No other members found in your network.
-                  </Alert>
-                )}
-              </CardContent>
-            </Card>
           )}
         </Box>
       ) : (
@@ -1607,7 +1430,7 @@ function DashboardPage() {
             boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
           }}
         >
-          <Typography paragraph>
+          <Typography sx={{ mb: 2 }}>
             You're not logged in or your session has expired.
           </Typography>
           <Button 
