@@ -210,32 +210,18 @@ const PersonalMoodboardWidget = ({ user }) => {
         {/* Widget Header */}
         <Box 
           sx={{ 
-            p: 2, 
+            p: 1.5, 
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
             borderBottom: '1px solid',
             borderColor: 'divider',
-            bgcolor: theme => alpha(theme.palette.primary.main, 0.05)
+            bgcolor: 'rgba(25, 118, 210, 0.05)'
           }}
         >
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <Box 
-              sx={{ 
-                bgcolor: 'primary.main',
-                color: 'white',
-                width: 36,
-                height: 36,
-                borderRadius: '50%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                mr: 1.5
-              }}
-            >
-              <DashboardIcon />
-            </Box>
-            <Typography variant="h6">
+            <DashboardIcon color="primary" sx={{ mr: 1.5 }} />
+            <Typography variant="subtitle1">
               My Moodboards
             </Typography>
           </Box>

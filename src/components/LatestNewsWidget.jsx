@@ -123,7 +123,11 @@ const LatestNewsWidget = ({ networkId, maxHeight = 350 }) => {
         <CardHeader
           avatar={<NewsIcon color="primary" />}
           title="Latest News"
-          titleTypographyProps={{ variant: 'h6', fontWeight: 600 }}
+          titleTypographyProps={{ variant: 'subtitle1' }}
+          sx={{ 
+            bgcolor: 'rgba(25, 118, 210, 0.05)',
+            py: 1
+          }}
         />
         <CardContent sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <Alert severity="error" sx={{ width: '100%' }}>
@@ -140,7 +144,11 @@ const LatestNewsWidget = ({ networkId, maxHeight = 350 }) => {
         <CardHeader
           avatar={<NewsIcon color="primary" />}
           title="Latest News"
-          titleTypographyProps={{ variant: 'h6', fontWeight: 600 }}
+          titleTypographyProps={{ variant: 'subtitle1' }}
+          sx={{ 
+            bgcolor: 'rgba(25, 118, 210, 0.05)',
+            py: 1
+          }}
         />
         <CardContent sx={{ 
           flex: 1, 
@@ -178,7 +186,7 @@ const LatestNewsWidget = ({ networkId, maxHeight = 350 }) => {
       <CardHeader
         avatar={<NewsIcon color="primary" />}
         title="Latest News"
-        titleTypographyProps={{ variant: 'h6', fontWeight: 600 }}
+        titleTypographyProps={{ variant: 'subtitle1' }}
         action={
           <Button
             component={Link}
@@ -194,6 +202,10 @@ const LatestNewsWidget = ({ networkId, maxHeight = 350 }) => {
             View All
           </Button>
         }
+        sx={{ 
+          bgcolor: 'rgba(25, 118, 210, 0.05)',
+          py: 1
+        }}
       />
       
       <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column', pt: 0 }}>

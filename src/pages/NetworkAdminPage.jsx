@@ -1,11 +1,10 @@
 // File: src/pages/NetworkAdminPage.jsx - Updated for dark mode with theme constants
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/authcontext';
 import { useTheme } from '../components/ThemeProvider'; // Import useTheme hook
 import { supabase } from '../supabaseclient';
 import {
-  Container,
   Box,
   Typography,
   Button,
@@ -13,18 +12,10 @@ import {
   CircularProgress,
   Grid,
   Alert,
-  Tabs,
-  Tab,
-  alpha,
   useTheme as useMuiTheme
 } from '@mui/material';
 import {
-  ArrowBack as ArrowBackIcon,
-  PersonAdd as PersonAddIcon,
-  AdminPanelSettings as AdminIcon,
-  Event as EventIcon,
-  Palette as PaletteIcon,
-  Article as ArticleIcon
+  ArrowBack as ArrowBackIcon
 } from '@mui/icons-material';
 
 // Import our API functions
@@ -43,32 +34,14 @@ import ThemeTab from '../components/admin/ThemeTab';
 import EventsTab from '../components/admin/EventsTab';
 import NewsTab from '../components/admin/Newstab';
 import ModerationTab from '../components/admin/ModerationTab';
+import PollsTab from '../components/admin/PollsTab';
 import AdminLayout from '../components/admin/AdminLayout';
 import AdminBreadcrumbs from '../components/admin/AdminBreadcrumbs';
-import NetworkHeader from '../components/NetworkHeader';
-
-// Helper component for tab panels
-function TabPanel(props) {
-  const { children, value, index, ...other } = props;
-
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`admin-tabpanel-${index}`}
-      aria-labelledby={`admin-tab-${index}`}
-      {...other}
-    >
-      {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
-    </div>
-  );
-}
 
 function NetworkAdminPage() {
   const { user } = useAuth();
   const { darkMode } = useTheme(); // Get darkMode from theme context
   const muiTheme = useMuiTheme(); // Get the MUI theme for accessing custom colors
-  const navigate = useNavigate();
   
   // State variables
   const [profile, setProfile] = useState(null);
@@ -138,10 +111,6 @@ function NetworkAdminPage() {
     
     fetchData();
   }, [user]);
-
-  const handleTabChange = (event, newValue) => {
-    setActiveTab(newValue);
-  };
 
   const refreshMembers = async () => {
     if (!profile || !profile.network_id) return;
@@ -283,8 +252,9 @@ function NetworkAdminPage() {
             {activeTab === 1 && "Members Management"}
             {activeTab === 2 && "News Management"}
             {activeTab === 3 && "Events Management"}
-            {activeTab === 4 && "Theme & Branding"}
-            {activeTab === 5 && "Moderation Tools"}
+            {activeTab === 4 && "Polls Management"}
+            {activeTab === 5 && "Theme & Branding"}
+            {activeTab === 6 && "Moderation Tools"}
           </Typography>
         </Box>
 
@@ -345,6 +315,15 @@ function NetworkAdminPage() {
         )}
 
         {activeTab === 4 && (
+          /* Polls Management Component */
+          <PollsTab
+            networkId={network.id}
+            userId={user.id}
+            darkMode={darkMode} // Pass dark mode to component
+          />
+        )}
+
+        {activeTab === 5 && (
           /* Theme Settings Component */
           <ThemeTab 
             network={network} 
@@ -353,7 +332,7 @@ function NetworkAdminPage() {
           />
         )}
         
-        {activeTab === 5 && (
+        {activeTab === 6 && (
           /* Moderation Tools Component */
           <ModerationTab
             network={network}

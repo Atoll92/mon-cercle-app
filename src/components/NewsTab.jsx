@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/authcontext';
 import { useNetwork } from '../context/networkContext';
 import { supabase } from '../supabaseclient';
@@ -28,11 +28,14 @@ import {
   Save as SaveIcon,
   Delete as DeleteIcon,
   Cancel as CancelIcon,
-  Visibility as VisibilityIcon
+  Visibility as VisibilityIcon,
+  Poll as PollIcon
 } from '@mui/icons-material';
 import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { createNewsPost, deleteNewsPost } from '../api/networks';
+import { getActivePolls } from '../api/polls';
+import PollCard from './PollCard';
 
 // Enhanced News Tab component with image upload support and admin editing
 const NewsTab = ({ darkMode }) => {
@@ -48,7 +51,34 @@ const NewsTab = ({ darkMode }) => {
   const [imagePreview, setImagePreview] = useState(null);
   const [updating, setUpdating] = useState(false);
   const [error, setError] = useState(null);
+  
+  // State for polls
+  const [activePolls, setActivePolls] = useState([]);
+  const [loadingPolls, setLoadingPolls] = useState(true);
   const [message, setMessage] = useState('');
+
+  // Fetch active polls
+  useEffect(() => {
+    if (network?.id) {
+      fetchActivePolls();
+    }
+  }, [network?.id]);
+
+  const fetchActivePolls = async () => {
+    if (!network?.id) return;
+    
+    setLoadingPolls(true);
+    const { data, error } = await getActivePolls(network.id);
+    if (!error && data) {
+      setActivePolls(data);
+    }
+    setLoadingPolls(false);
+  };
+
+  const handlePollVoteSubmit = (pollId) => {
+    // Refresh polls after voting
+    fetchActivePolls();
+  };
 
   // TipTap editor instance
   const editor = useEditor({
@@ -358,6 +388,30 @@ const NewsTab = ({ darkMode }) => {
       )}
       
       {isCreating && renderNewsForm()}
+      
+      {/* Active Polls Section */}
+      {!loadingPolls && activePolls.length > 0 && (
+        <Box sx={{ mb: 4 }}>
+          <Typography variant="h5" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <PollIcon color="primary" />
+            Active Polls
+          </Typography>
+          <Divider sx={{ mb: 2 }} />
+          {activePolls.map(poll => (
+            <PollCard 
+              key={poll.id} 
+              poll={poll} 
+              onVoteSubmit={handlePollVoteSubmit}
+            />
+          ))}
+        </Box>
+      )}
+      
+      {/* News Posts Section */}
+      <Typography variant="h5" gutterBottom sx={{ mb: 2 }}>
+        News & Updates
+      </Typography>
+      <Divider sx={{ mb: 3 }} />
       
       {networkNews.length === 0 ? (
         <Box sx={{ textAlign: 'center', py: 4 }}>

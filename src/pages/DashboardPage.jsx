@@ -810,11 +810,11 @@ function DashboardPage() {
                       }}>
                         <CardHeader
                           title="Network Management"
-                          titleTypographyProps={{ variant: 'h6' }}
+                          titleTypographyProps={{ variant: 'subtitle1' }}
                           avatar={<NetworkIcon color="primary" />}
                           sx={{ 
                             py: 1,
-                            bgcolor: 'rgba(33, 150, 243, 0.05)'
+                            bgcolor: 'rgba(25, 118, 210, 0.05)'
                           }}
                         />
                         
@@ -1079,9 +1079,12 @@ function DashboardPage() {
                       }}>
                         <CardHeader
                           title="Create Network"
-                          titleTypographyProps={{ variant: 'h6' }}
+                          titleTypographyProps={{ variant: 'subtitle1' }}
                           avatar={<CreateNewFolderIcon color="primary" />}
-                          sx={{ py: 1 }}
+                          sx={{ 
+                            py: 1,
+                            bgcolor: 'rgba(25, 118, 210, 0.05)'
+                          }}
                         />
                         
                         <CardContent sx={{ py: 1 }}>
@@ -1270,7 +1273,7 @@ function DashboardPage() {
                       }}>
                         <CardHeader
                           title="Upcoming Events"
-                          titleTypographyProps={{ variant: 'h6' }}
+                          titleTypographyProps={{ variant: 'subtitle1' }}
                           avatar={<EventIcon color="primary" />}
                           action={
                             <Button 
@@ -1282,7 +1285,10 @@ function DashboardPage() {
                               View All
                             </Button>
                           }
-                          sx={{ py: 1 }}
+                          sx={{ 
+                            bgcolor: 'rgba(25, 118, 210, 0.05)',
+                            py: 1
+                          }}
                         />
                         
                         {loadingEvents ? (
@@ -1380,9 +1386,12 @@ function DashboardPage() {
                       }}>
                         <CardHeader
                           title="Upcoming Events"
-                          titleTypographyProps={{ variant: 'h6' }}
+                          titleTypographyProps={{ variant: 'subtitle1' }}
                           avatar={<EventIcon color="primary" />}
-                          sx={{ py: 1 }}
+                          sx={{ 
+                            bgcolor: 'rgba(25, 118, 210, 0.05)',
+                            py: 1
+                          }}
                         />
                         <CardContent sx={{ py: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexGrow: 1 }}>
                           <Box sx={{ textAlign: 'center', py: 2 }}>
@@ -1444,7 +1453,7 @@ function DashboardPage() {
             }}>
               <CardHeader
                 title="Network Members"
-                titleTypographyProps={{ variant: 'h6' }}
+                titleTypographyProps={{ variant: 'subtitle1' }}
                 avatar={<GroupsIcon color="primary" />}
                 action={
                   <Button 
@@ -1456,7 +1465,10 @@ function DashboardPage() {
                     Network Page
                   </Button>
                 }
-                sx={{ py: 1 }}
+                sx={{ 
+                  py: 1,
+                  bgcolor: 'rgba(25, 118, 210, 0.05)'
+                }}
               />
               
               <Divider />

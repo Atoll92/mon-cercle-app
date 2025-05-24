@@ -29,7 +29,8 @@ import {
   ArrowBack as ArrowBackIcon,
   Dashboard as DashboardIcon,
   ChevronLeft as ChevronLeftIcon,
-  Security as SecurityIcon
+  Security as SecurityIcon,
+  Poll as PollIcon
 } from '@mui/icons-material';
 
 // Drawer width for desktop view
@@ -83,14 +84,19 @@ const AdminLayout = ({
       index: 3 
     },
     { 
+      name: 'Polls', 
+      icon: <PollIcon />, 
+      index: 4 
+    },
+    { 
       name: 'Theme & Branding', 
       icon: <PaletteIcon />, 
-      index: 4 
+      index: 5 
     },
     { 
       name: 'Moderation', 
       icon: <SecurityIcon />, 
-      index: 5 
+      index: 6 
     }
   ];
 
