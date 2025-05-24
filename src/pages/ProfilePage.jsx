@@ -86,13 +86,13 @@ function ProfilePage() {
           
         if (error) throw error;
         
-        // Fetch portfolio items for this profile
-        const { data: portfolioItems, error: portfolioError } = await supabase
+        // Fetch posts for this profile
+        const { data: postItems, error: postError } = await supabase
           .from('portfolio_items')
           .select('*')
           .eq('profile_id', userId);
           
-        if (portfolioError) throw portfolioError;
+        if (postError) throw postError;
         
         // Fetch event participations for this profile
         const { data: participations, error: participationsError } = await supabase
@@ -130,7 +130,7 @@ function ProfilePage() {
         
         setProfile({
           ...data,
-          projects: portfolioItems || [] // Add portfolio items to the profile object
+          posts: postItems || [] // Add posts to the profile object
         });
       } catch (error) {
         console.error('Error fetching profile:', error);
@@ -328,7 +328,7 @@ function ProfilePage() {
     iconPosition="start"
   />
           <Tab 
-            label="Portfolio" 
+            label="Posts" 
             icon={<LanguageIcon />} 
             iconPosition="start"
           />
@@ -713,8 +713,8 @@ function ProfilePage() {
 </Box>
 
                   
-                  {/* Portfolio Preview Section */}
-                  {profile.projects && profile.projects.length > 0 && (
+                  {/* Posts Preview Section */}
+                  {profile.posts && profile.posts.length > 0 && (
                     <Box>
                       <Box sx={{ 
                         display: 'flex', 
@@ -734,7 +734,7 @@ function ProfilePage() {
                           }}
                         >
                           <LanguageIcon fontSize="small" color="primary" />
-                          Portfolio Highlights
+                          Recent Posts
                         </Typography>
                         
                         <Button 
@@ -747,8 +747,8 @@ function ProfilePage() {
                       </Box>
                       
                       <Grid container spacing={2}>
-                        {profile.projects.slice(0, 2).map(project => (
-                          <Grid item xs={12} sm={6} key={project.id}>
+                        {profile.posts.slice(0, 2).map(post => (
+                          <Grid item xs={12} sm={6} key={post.id}>
                             <Card 
                               sx={{ 
                                 height: '100%',
@@ -762,12 +762,12 @@ function ProfilePage() {
                                 }
                               }}
                             >
-                              {project.image_url ? (
+                              {post.image_url ? (
                                 <CardMedia
                                   component="img"
                                   height="140"
-                                  image={project.image_url}
-                                  alt={project.title}
+                                  image={post.image_url}
+                                  alt={post.title}
                                 />
                               ) : (
                                 <Box 
@@ -785,10 +785,10 @@ function ProfilePage() {
                               
                               <CardContent sx={{ flexGrow: 1 }}>
                                 <Typography variant="h6" gutterBottom>
-                                  {project.title}
+                                  {post.title}
                                 </Typography>
                                 
-                                {project.description && (
+                                {post.description && (
                                   <Typography 
                                     variant="body2" 
                                     color="text.secondary"
@@ -800,21 +800,21 @@ function ProfilePage() {
                                       WebkitBoxOrient: 'vertical'
                                     }}
                                   >
-                                    {project.description}
+                                    {post.description}
                                   </Typography>
                                 )}
                               </CardContent>
                               
-                              {project.url && (
+                              {post.url && (
                                 <CardActions>
                                   <Button 
                                     size="small" 
-                                    href={project.url} 
+                                    href={post.url} 
                                     target="_blank" 
                                     rel="noopener noreferrer"
                                     endIcon={<LaunchIcon />}
                                   >
-                                    View Project
+                                    View Post
                                   </Button>
                                 </CardActions>
                               )}
@@ -829,17 +829,17 @@ function ProfilePage() {
             </Grid>
           )}
           
-          {/* Portfolio Tab */}
+          {/* Posts Tab */}
           {activeTab === 2 && (
             <Box sx={{ p: 3 }}>
               <Typography variant="h5" gutterBottom>
-                Portfolio Projects
+                User Posts
               </Typography>
               
-              {profile.projects && profile.projects.length > 0 ? (
+              {profile.posts && profile.posts.length > 0 ? (
                 <Grid container spacing={3}>
-                  {profile.projects.map(project => (
-                    <Grid item xs={12} sm={6} md={4} key={project.id}>
+                  {profile.posts.map(post => (
+                    <Grid item xs={12} sm={6} md={4} key={post.id}>
                       <Card 
                         sx={{ 
                           height: '100%',
@@ -853,12 +853,12 @@ function ProfilePage() {
                           }
                         }}
                       >
-                        {project.image_url ? (
+                        {post.image_url ? (
                           <CardMedia
                             component="img"
                             height="180"
-                            image={project.image_url}
-                            alt={project.title}
+                            image={post.image_url}
+                            alt={post.title}
                           />
                         ) : (
                           <Box 
@@ -876,30 +876,30 @@ function ProfilePage() {
                         
                         <CardContent sx={{ flexGrow: 1 }}>
                           <Typography variant="h6" gutterBottom>
-                            {project.title}
+                            {post.title}
                           </Typography>
                           
-                          {project.description && (
+                          {post.description && (
                             <Typography 
                               variant="body2" 
                               color="text.secondary"
                               paragraph
                             >
-                              {project.description}
+                              {post.description}
                             </Typography>
                           )}
                         </CardContent>
                         
-                        {project.url && (
+                        {post.url && (
                           <CardActions>
                             <Button 
                               size="small" 
-                              href={project.url} 
+                              href={post.url} 
                               target="_blank" 
                               rel="noopener noreferrer"
                               endIcon={<LaunchIcon />}
                             >
-                              View Project
+                              View Post
                             </Button>
                           </CardActions>
                         )}
@@ -909,7 +909,7 @@ function ProfilePage() {
                 </Grid>
               ) : (
                 <Alert severity="info" variant="outlined" sx={{ mt: 2 }}>
-                  No portfolio projects have been shared yet.
+                  No posts have been shared yet.
                 </Alert>
               )}
             </Box>

@@ -39,7 +39,7 @@ const MemberDetailsModal = ({
   open, 
   onClose, 
   member, 
-  portfolioItems: initialPortfolioItems = [], // Rename prop to avoid conflict with state
+  posts: initialPosts = [], // Changed from portfolioItems to posts
   isCurrentUser,
   darkMode = false
 }) => {
@@ -51,7 +51,7 @@ const MemberDetailsModal = ({
   const customFadedText = muiTheme.palette.custom?.fadedText || (darkMode ? alpha('#ffffff', 0.7) : alpha('#000000', 0.7));
   const customBorder = muiTheme.palette.custom?.border || (darkMode ? alpha('#ffffff', 0.1) : alpha('#000000', 0.1));
   
-  const [memberPortfolioItems, setMemberPortfolioItems] = useState(initialPortfolioItems || []);
+  const [memberPosts, setMemberPosts] = useState(initialPosts || []);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   
@@ -68,12 +68,12 @@ const MemberDetailsModal = ({
   // Ref for cover canvas
   const canvasRef = useRef(null);
   
-  // Fetch portfolio items only if not provided through props
+  // Fetch posts only if not provided through props
   useEffect(() => {
     // Initialize with provided items if available
-    if (initialPortfolioItems && initialPortfolioItems.length > 0) {
-      console.log("Using provided initialPortfolioItems:", initialPortfolioItems);
-      setMemberPortfolioItems(initialPortfolioItems);
+    if (initialPosts && initialPosts.length > 0) {
+      console.log("Using provided posts:", initialPosts);
+      setMemberPosts(initialPosts);
       setLoading(false);
       return;
     }
@@ -83,12 +83,12 @@ const MemberDetailsModal = ({
       return;
     }
 
-    const fetchPortfolioItems = async () => {
+    const fetchPosts = async () => {
       try {
         setLoading(true);
         setError(null);
         
-        console.log("Fetching portfolioItems for member:", member.id);
+        console.log("Fetching posts for member:", member.id);
         const { data, error } = await supabase
           .from('portfolio_items')
           .select('*')
@@ -97,18 +97,18 @@ const MemberDetailsModal = ({
           
         if (error) throw error;
         
-        console.log("Fetched portfolioItems:", data);
-        setMemberPortfolioItems(data || []);
+        console.log("Fetched posts:", data);
+        setMemberPosts(data || []);
       } catch (err) {
-        console.error('Error fetching portfolio items:', err);
-        setError('Failed to load portfolio items');
+        console.error('Error fetching posts:', err);
+        setError('Failed to load posts');
       } finally {
         setLoading(false);
       }
     };
     
-    fetchPortfolioItems();
-  }, [member, open, initialPortfolioItems]);
+    fetchPosts();
+  }, [member, open, initialPosts]);
 
   // Fetch member's featured moodboard
   useEffect(() => {
@@ -886,7 +886,7 @@ const MemberDetailsModal = ({
           </Box>
         )}
         
-        {/* Portfolio preview */}
+        {/* Posts preview */}
         <Divider sx={{ mx: 3 }} />
         <Box sx={{ p: 3 }}>
           <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
@@ -900,7 +900,7 @@ const MemberDetailsModal = ({
             }}>
               <WorkIcon fontSize="small" />
             </Box>
-            Portfolio Items {memberPortfolioItems.length > 0 && `(${memberPortfolioItems.length})`}
+            Posts {memberPosts.length > 0 && `(${memberPosts.length})`}
           </Typography>
           
           {loading ? (
@@ -911,10 +911,10 @@ const MemberDetailsModal = ({
             <Typography color="error" sx={{ p: 2 }}>
               {error}
             </Typography>
-          ) : memberPortfolioItems.length > 0 ? (
+          ) : memberPosts.length > 0 ? (
             <>
               <Grid container spacing={2}>
-                {memberPortfolioItems.slice(0, 3).map(item => (
+                {memberPosts.slice(0, 3).map(item => (
                   <Grid item xs={12} sm={6} md={4} key={item.id}>
                     <Paper 
                       elevation={2} 
@@ -999,7 +999,7 @@ const MemberDetailsModal = ({
                 ))}
               </Grid>
               
-              {memberPortfolioItems.length > 3 && (
+              {memberPosts.length > 3 && (
                 <Box sx={{ mt: 2, textAlign: 'center' }}>
                   <Button
                     component={Link}
@@ -1009,7 +1009,7 @@ const MemberDetailsModal = ({
                       color: darkMode ? '#90caf9' : undefined 
                     }}
                   >
-                    View All {memberPortfolioItems.length} Portfolio Items
+                    View All {memberPosts.length} Posts
                   </Button>
                 </Box>
               )}
@@ -1020,7 +1020,7 @@ const MemberDetailsModal = ({
               color={customFadedText}
               sx={{ p: 1, fontStyle: 'italic' }}
             >
-              No portfolio items yet
+              No posts yet
             </Typography>
           )}
         </Box>

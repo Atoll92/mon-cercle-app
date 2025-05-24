@@ -22,16 +22,11 @@ import {
   Tab,
   TextField,
   IconButton,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   alpha,
   useTheme as useMuiTheme
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
-  PersonAdd as PersonAddIcon,
   AdminPanelSettings as AdminIcon,
   ContentCopy as ContentCopyIcon,
   Groups as GroupsIcon,
@@ -89,7 +84,7 @@ function NetworkLandingPage() {
   // Use the global darkMode state for members tab
   const membersTabDarkMode = darkMode;
   
-  const handleTabChange = (event, newValue) => {
+  const handleTabChange = (_, newValue) => {
     setActiveTab(newValue);
   };
   
@@ -133,7 +128,6 @@ function NetworkLandingPage() {
 
   // State to hold post items for all members (stored as portfolio_items in database)
   const [postItems, setPostItems] = useState([]);
-  const [loadingPosts, setLoadingPosts] = useState(false);
   
   // Fetch user's event participations on component mount
   useEffect(() => {
@@ -206,14 +200,14 @@ function NetworkLandingPage() {
           
         if (error) throw error;
         
-        console.log('Fetched portfolio items (to be displayed as posts):', data); // Debug log
+        console.log('Fetched posts from database:', data); // Debug log
         
         // Add member info to each post item
         const itemsWithMemberInfo = data.map(item => {
           const member = networkMembers.find(m => m.id === item.profile_id);
           return {
             ...item,
-            itemType: 'post', // Using 'post' for UI display, but item is from portfolio_items table
+            itemType: 'post', // Item from portfolio_items table displayed as post
             createdAt: item.created_at,
             memberName: member?.full_name || 'Network Member',
             memberAvatar: member?.profile_picture_url || '',
@@ -312,7 +306,7 @@ function NetworkLandingPage() {
           <Typography variant="h5" component="h1" gutterBottom>
             Network Not Found
           </Typography>
-          <Typography variant="body1" paragraph>
+          <Typography variant="body1" gutterBottom>
             The network you're looking for doesn't exist or you don't have permission to view it.
           </Typography>
           <Button 
@@ -439,9 +433,13 @@ function NetworkLandingPage() {
                 size="small"
                 fullWidth
                 variant="outlined"
-                InputProps={{
-                  readOnly: true,
-                  sx: {
+                slotProps={{
+                  input: {
+                    readOnly: true
+                  }
+                }}
+                sx={{
+                  '& .MuiInputBase-root': {
                     bgcolor: 'rgba(255,255,255,0.9)',
                     '&:hover': {
                       bgcolor: 'rgba(255,255,255,1)',
@@ -473,7 +471,7 @@ function NetworkLandingPage() {
           {network.description && (
             <Typography 
               variant="body1" 
-              paragraph 
+              gutterBottom 
               sx={{ 
                 mt: 2, 
                 color: '#ffffff',
@@ -632,7 +630,7 @@ function NetworkLandingPage() {
           <Typography variant="h6" gutterBottom>
             You're not a member of this network
           </Typography>
-          <Typography variant="body1" paragraph>
+          <Typography variant="body1" gutterBottom>
             Contact a network administrator to request joining this network.
           </Typography>
         </Paper>

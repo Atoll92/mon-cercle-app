@@ -286,7 +286,7 @@ const VirtualizedMemberList = ({ members, user, darkMode, onMemberSelect }) => {
                           onClick={(e) => e.stopPropagation()}
                           style={{ color: darkMode ? '#90caf9' : '#1976d2' }}
                         >
-                          Portfolio
+                          Posts
                         </a>
                       </Typography>
                     )}

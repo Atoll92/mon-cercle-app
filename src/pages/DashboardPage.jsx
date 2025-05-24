@@ -5,6 +5,7 @@ import { supabase } from '../supabaseclient';
 import { useNavigate, Link } from 'react-router-dom';
 import PersonalMoodboardWidget from '../components/PersonalMoodboardWidget';
 import LatestNewsWidget from '../components/LatestNewsWidget';
+import LatestPostsWidget from '../components/LatestPostsWidget';
 import TestNotificationSystem from '../components/TestNotificationSystem';
 import { 
   AttachMoney as AttachMoneyIcon,
@@ -562,7 +563,7 @@ function DashboardPage() {
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 3, display: 'flex', flexDirection: 'column', minHeight: 'calc(100vh - 80px)' }}>
+    <Container maxWidth="lg" sx={{ py: 3, display: 'flex', flexDirection: 'column' }}>
       {/* Header Card */}
       <Paper 
         elevation={3} 
@@ -640,7 +641,7 @@ function DashboardPage() {
         <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', width: '100%' }}>
           {/* Overview Tab */}
           {activeTab === 0 && (
-            <Grid container spacing={2} alignItems="stretch" sx={{ height: '100%', width: '100%', flexGrow: 1 }}>
+            <Grid container spacing={2} sx={{ width: '100%' }}>
               {/* Row 1: Profile and Network Management */}
               <Grid item xs={12} sx={{ minHeight: '300px', width: '100%' }}>
                 <Grid container spacing={2} sx={{ height: '100%', width: '100%' }}>
@@ -1117,7 +1118,7 @@ function DashboardPage() {
               </Grid>
               
               {/* Row 2: Create Post and Events */}
-              <Grid item xs={12} sx={{ minHeight: '300px', width:'100%' }}>
+                         <Grid item xs={12} sx={{ minHeight: '300px', width:'100%' }}>
                 <Grid container spacing={2} sx={{ height: '100%', width: '100%' }}>
                   {/* Left Column: Create Post */}
                   <Grid item xs={12} md={4} sx={{ display: 'flex' }}>
@@ -1409,16 +1410,21 @@ function DashboardPage() {
                 </Grid>
               </Grid>
               
-              {/* Row 3: Moodboard and Latest News */}
-              <Grid item xs={12} sx={{ minHeight: '350px', width: '100%' }}>
-                <Grid container spacing={2} sx={{ height: '100%', width: '100%' }}>
-                  <Grid item xs={12} md={8} sx={{ display: 'flex', height: '100%' }}>
+              {/* Row 3: Moodboard, Latest News, and Latest Posts */}
+              <Grid item xs={12}>
+                <Grid container spacing={2}>
+                  <Grid item xs={12} md={profile.network_id ? 6 : 12}>
                     <PersonalMoodboardWidget user={user} />
                   </Grid>
                   {profile.network_id && (
-                    <Grid item xs={12} md={4} sx={{ display: 'flex', height: '100%' }}>
-                      <LatestNewsWidget networkId={profile.network_id} maxHeight={350} />
-                    </Grid>
+                    <>
+                      <Grid item xs={12} sm={6} md={3} sx={{ maxWidth: { md: '40%' } }}>
+                        <LatestNewsWidget networkId={profile.network_id} maxHeight={350} />
+                      </Grid>
+                      <Grid item xs={12} sm={6} md={3}>
+                        <LatestPostsWidget networkId={profile.network_id} />
+                      </Grid>
+                    </>
                   )}
                 </Grid>
               </Grid>

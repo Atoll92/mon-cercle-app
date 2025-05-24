@@ -62,8 +62,8 @@ function EditProfilePage() {
   const [skillOptions, setSkillOptions] = useState([]);
   const [avatar, setAvatar] = useState(null);
   const [avatarUrl, setAvatarUrl] = useState('');
-  const [portfolioItems, setPortfolioItems] = useState([]);
-  const [initialPortfolioItems, setInitialPortfolioItems] = useState([]);
+  const [postItems, setPostItems] = useState([]);
+  const [initialPostItems, setInitialPostItems] = useState([]);
   const [activeTab, setActiveTab] = useState(0);
   const [isDraggingAvatar, setIsDraggingAvatar] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -95,15 +95,15 @@ function EditProfilePage() {
       if (!user) return;
 
       try {
-        const { data: portfolioData, error: portfolioError } = await supabase
+        const { data: postData, error: postError } = await supabase
           .from('portfolio_items')
           .select('*')
           .eq('profile_id', user.id);
   
-        if (portfolioError) throw portfolioError;
+        if (postError) throw postError;
         
-        // Process portfolio items to handle both images and PDFs
-        const portfolioWithPreviews = portfolioData ? portfolioData.map(item => {
+        // Process post items to handle both images and PDFs
+        const postsWithPreviews = postData ? postData.map(item => {
           // Determine file type - backward compatibility with old data
           const fileType = item.file_type || (item.image_url ? 'image' : 'pdf');
           
@@ -118,11 +118,11 @@ function EditProfilePage() {
           };
         }) : [];
         
-        setPortfolioItems(portfolioWithPreviews);
-        setInitialPortfolioItems(portfolioWithPreviews);
+        setPostItems(postsWithPreviews);
+        setInitialPostItems(postsWithPreviews);
       } catch (error) {
-        console.error('Error loading portfolio items:', error);
-        setError('Failed to load portfolio items');
+        console.error('Error loading posts:', error);
+        setError('Failed to load posts');
       }
       
       try {
@@ -188,8 +188,8 @@ function EditProfilePage() {
     setActiveTab(newValue);
   };
 
-  const handleAddPortfolioItem = () => {
-    setPortfolioItems([...portfolioItems, {
+  const handleAddPostItem = () => {
+    setPostItems([...postItems, {
       title: '',
       description: '',
       url: '',
@@ -281,7 +281,7 @@ function EditProfilePage() {
       console.log('Post saved successfully:', data);
       
       // Add the new item to the local state for immediate UI update
-      setPortfolioItems([...portfolioItems, data]);
+      setPostItems([...postItems, data]);
       
       // Reset the form
       setNewPostTitle('');
@@ -301,16 +301,16 @@ function EditProfilePage() {
     }
   };
   
-  const handlePortfolioItemChange = (index, field, value) => {
-    const updatedItems = [...portfolioItems];
+  const handlePostItemChange = (index, field, value) => {
+    const updatedItems = [...postItems];
     updatedItems[index] = { ...updatedItems[index], [field]: value };
-    setPortfolioItems(updatedItems);
+    setPostItems(updatedItems);
   };
   
-  const handlePortfolioImageChange = async (index, file) => {
+  const handlePostImageChange = async (index, file) => {
     if (!file) return;
     
-    const updatedItems = [...portfolioItems];
+    const updatedItems = [...postItems];
     updatedItems[index] = {
       ...updatedItems[index],
       fileType: 'image',
@@ -320,10 +320,10 @@ function EditProfilePage() {
       pdfUrl: '',
       pdfThumbnail: ''
     };
-    setPortfolioItems(updatedItems);
+    setPostItems(updatedItems);
   };
   
-  const handlePortfolioPdfChange = async (index, file) => {
+  const handlePostPdfChange = async (index, file) => {
     if (!file) return;
     
     // Validate file size (20MB max)
@@ -332,7 +332,7 @@ function EditProfilePage() {
       return;
     }
     
-    const updatedItems = [...portfolioItems];
+    const updatedItems = [...postItems];
     
     // For the PDF thumbnail, we'll use a standard PDF icon for now
     // In a production app, you might want to generate a real thumbnail from the first page
@@ -349,12 +349,12 @@ function EditProfilePage() {
       imageUrl: ''
     };
     
-    setPortfolioItems(updatedItems);
+    setPostItems(updatedItems);
   };
   
-  const handlePortfolioItemRemove = (index) => {
-    const updatedItems = portfolioItems.filter((_, i) => i !== index);
-    setPortfolioItems(updatedItems);
+  const handlePostItemRemove = (index) => {
+    const updatedItems = postItems.filter((_, i) => i !== index);
+    setPostItems(updatedItems);
   };
   
   const handleAvatarChange = (e) => {
@@ -431,10 +431,10 @@ function EditProfilePage() {
       setError(null);
       setMessage('');
       
-      // Process portfolio items
+      // Process post items
       // Delete removed items
-      const currentIds = portfolioItems.map(item => item.id).filter(Boolean);
-      const deletedItems = initialPortfolioItems.filter(item => !currentIds.includes(item.id));
+      const currentIds = postItems.map(item => item.id).filter(Boolean);
+      const deletedItems = initialPostItems.filter(item => !currentIds.includes(item.id));
       
       for (const item of deletedItems) {
         const { error } = await supabase
@@ -444,8 +444,8 @@ function EditProfilePage() {
         if (error) throw error;
       }
 
-      // Upsert portfolio items
-      for (const [index, item] of portfolioItems.entries()) {
+      // Upsert post items
+      for (const [index, item] of postItems.entries()) {
         // Skip empty items
         if (!item.title.trim()) continue;
         
@@ -459,14 +459,14 @@ function EditProfilePage() {
           const fileName = `${user.id}-${Date.now()}-${index}.${fileExt}`;
           const filePath = `portfolios/${fileName}`;
 
-          console.log('Uploading portfolio image:', filePath);
+          console.log('Uploading post image:', filePath);
           
           const { error: uploadError } = await supabase.storage
             .from('profiles')
             .upload(filePath, item.imageFile);
 
           if (uploadError) {
-            console.error('Error uploading portfolio image:', uploadError);
+            console.error('Error uploading post image:', uploadError);
             throw uploadError;
           }
 
@@ -504,7 +504,7 @@ function EditProfilePage() {
           throw error;
         }
         
-        console.log('Portfolio item saved successfully');
+        console.log('Post saved successfully');
       }
       
       // Upload avatar if changed
@@ -1069,7 +1069,7 @@ function EditProfilePage() {
                     Previously Published Posts
                   </Typography>
                   
-                  {portfolioItems.length === 0 ? (
+                  {postItems.length === 0 ? (
                     <Paper 
                       variant="outlined"
                       sx={{ 
@@ -1086,7 +1086,7 @@ function EditProfilePage() {
                     </Paper>
                   ) : (
                     <Grid container spacing={3}>
-                      {portfolioItems.map((item, index) => (
+                      {postItems.map((item, index) => (
                         <Grid item xs={12} md={6} key={item.id || index}>
                           <Card 
                             sx={{ 
@@ -1107,7 +1107,7 @@ function EditProfilePage() {
                                   component="img"
                                   height="180"
                                   image={item.imageUrl}
-                                  alt={item.title || 'Portfolio item'}
+                                  alt={item.title || 'Post image'}
                                   sx={{ objectFit: 'cover' }}
                                 />
                               ) : item.fileType === 'pdf' && item.pdfUrl ? (
@@ -1182,7 +1182,7 @@ function EditProfilePage() {
                                   <input
                                     accept="image/*"
                                     type="file"
-                                    onChange={(e) => handlePortfolioImageChange(index, e.target.files[0])}
+                                    onChange={(e) => handlePostImageChange(index, e.target.files[0])}
                                     id={`portfolio-image-${index}`}
                                     hidden
                                   />
@@ -1207,7 +1207,7 @@ function EditProfilePage() {
                                   <input
                                     accept="application/pdf"
                                     type="file"
-                                    onChange={(e) => handlePortfolioPdfChange(index, e.target.files[0])}
+                                    onChange={(e) => handlePostPdfChange(index, e.target.files[0])}
                                     id={`portfolio-pdf-${index}`}
                                     hidden
                                   />
@@ -1234,7 +1234,7 @@ function EditProfilePage() {
                                 fullWidth
                                 label="Post Title"
                                 value={item.title}
-                                onChange={(e) => handlePortfolioItemChange(index, 'title', e.target.value)}
+                                onChange={(e) => handlePostItemChange(index, 'title', e.target.value)}
                                 placeholder="Give your post a title"
                                 variant="outlined"
                                 sx={{ mb: 2 }}
@@ -1245,7 +1245,7 @@ function EditProfilePage() {
                                 fullWidth
                                 label="Post Content"
                                 value={item.description}
-                                onChange={(e) => handlePortfolioItemChange(index, 'description', e.target.value)}
+                                onChange={(e) => handlePostItemChange(index, 'description', e.target.value)}
                                 placeholder="Share your thoughts with the community..."
                                 multiline
                                 rows={4}
@@ -1257,7 +1257,7 @@ function EditProfilePage() {
                                 fullWidth
                                 label="Link (Optional)"
                                 value={item.url}
-                                onChange={(e) => handlePortfolioItemChange(index, 'url', e.target.value)}
+                                onChange={(e) => handlePostItemChange(index, 'url', e.target.value)}
                                 placeholder="https://example.com"
                                 variant="outlined"
                                 helperText="Add a link to your post (optional)"
@@ -1273,7 +1273,7 @@ function EditProfilePage() {
                                   variant="outlined"
                                   color="error"
                                   startIcon={<DeleteIcon />}
-                                  onClick={() => handlePortfolioItemRemove(index)}
+                                  onClick={() => handlePostItemRemove(index)}
                                   size="small"
                                 >
                                   Delete Post
