@@ -94,6 +94,12 @@ const handlePlanSelect = async (plan) => {
     return;
   }
 
+  // Handle free plan
+  if (plan.price === 0) {
+    navigate('/signup');
+    return;
+  }
+  
   // For now, only handle the Organization plan (€97)
   if (plan.price === 97) {
     try {
@@ -146,8 +152,32 @@ const handlePlanSelect = async (plan) => {
 
   const plans = [
     {
+      name: 'Free',
+      price: 0,
+      description: 'For personal networks and small groups',
+      features: [
+        { name: 'Members', value: '20', icon: <GroupsIcon color="primary" /> },
+        { name: 'Storage', value: '2GB', icon: <StorageIcon color="primary" /> },
+        { name: 'Admin accounts', value: '1', icon: <AdminIcon color="primary" /> },
+        { name: 'White label', value: false, icon: <PaletteIcon color="primary" /> },
+        { name: 'Wiki', value: true, icon: <BookmarkIcon color="primary" /> },
+        { name: 'Events', value: true, icon: <EventIcon color="primary" /> },
+        { name: 'Zero tracking by design', value: true, icon: <VisibilityOffIcon color="primary" /> },
+        { name: 'Support', value: 'Community', icon: <SupportIcon color="primary" /> },
+        { name: 'API Access', value: false, icon: <CodeIcon color="primary" /> },
+      ],
+      popular: false,
+      color: 'default',
+      buttonVariant: 'outlined',
+      buttonText: 'Get Started Free',
+      icon: <Groups color="primary" sx={{ fontSize: 40 }} />,
+      addOns: [
+        { name: 'White Label', price: 99 }
+      ]
+    },
+    {
       name: 'Community',
-      price: 8,
+      price: 17,
       description: 'For small teams and family groups',
       features: [
         { name: 'Members', value: '100', icon: <GroupsIcon color="primary" /> },
@@ -188,7 +218,7 @@ const handlePlanSelect = async (plan) => {
       color: 'success',
       buttonVariant: 'outlined',
       buttonText: 'Verify & Start',
-      icon: <School color="success" sx={{ fontSize: 40 }} />,
+      icon: <SchoolIcon color="success" sx={{ fontSize: 40 }} />,
       badge: 'SPECIAL RATE',
       addOns: []
     },
@@ -495,7 +525,7 @@ const handlePlanSelect = async (plan) => {
                     <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'baseline', mt: 3, mb: 2 }}>
                       <Typography variant="h3" fontWeight="bold" color={`${plan.color}.main`}>
                         {typeof plan.price === 'number' ? 
-                          `€${annual ? getAnnualPrice(plan.price) : plan.price}` : 
+                          (plan.price === 0 ? 'Free' : `€${annual ? getAnnualPrice(plan.price) : plan.price}`) : 
                           plan.price}
                       </Typography>
                       {typeof plan.price === 'number' && plan.price > 0 && (
@@ -595,7 +625,7 @@ const handlePlanSelect = async (plan) => {
                     align="center"
                     sx={{ fontWeight: 500 }}
                   >
-                    {plan.name === 'Enterprise' ? 'Included' : '€2/member/month'}
+                    {plan.name === 'Enterprise' ? 'Included' : (plan.name === 'Free' ? 'Not available' : '€2/member/month')}
                   </TableCell>
                 ))}
               </TableRow>
@@ -699,7 +729,7 @@ const handlePlanSelect = async (plan) => {
                       color={`${plan.color}.main`}
                     >
                       {typeof plan.price === 'number' ? 
-                        `€${annual ? getAnnualPrice(plan.price) : plan.price}` : 
+                        (plan.price === 0 ? 'Free' : `€${annual ? getAnnualPrice(plan.price) : plan.price}`) : 
                         plan.price}
                     </Typography>
                     
@@ -749,7 +779,7 @@ const handlePlanSelect = async (plan) => {
                       </ListItemIcon>
                       <ListItemText 
                         primary="Additional members" 
-                        secondary={plan.name === 'Enterprise' ? 'Included' : '€2/member/month'}
+                        secondary={plan.name === 'Enterprise' ? 'Included' : (plan.name === 'Free' ? 'Not available' : '€2/member/month')}
                         primaryTypographyProps={{ fontWeight: 500 }}
                       />
                     </ListItem>
@@ -821,8 +851,13 @@ const handlePlanSelect = async (plan) => {
             </TableHead>
             <TableBody>
               <TableRow>
+                <TableCell>Free Tier</TableCell>
+                <TableCell align="center" sx={{ fontWeight: 'bold', color: 'primary.main' }}>20 members, 2GB storage</TableCell>
+                <TableCell align="center">Usually no free tier</TableCell>
+              </TableRow>
+              <TableRow>
                 <TableCell>Members in Starter Tier</TableCell>
-                <TableCell align="center" sx={{ fontWeight: 'bold', color: 'primary.main' }}>100 (€8/mo)</TableCell>
+                <TableCell align="center" sx={{ fontWeight: 'bold', color: 'primary.main' }}>100 (€17/mo)</TableCell>
                 <TableCell align="center">20-50 (€15-30/mo)</TableCell>
               </TableRow>
               <TableRow>
@@ -981,5 +1016,5 @@ const handlePlanSelect = async (plan) => {
     </>
   );
 };
-import { School } from '@mui/icons-material';
+
 export default PricingPage;
