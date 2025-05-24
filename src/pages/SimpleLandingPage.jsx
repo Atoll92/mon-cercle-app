@@ -101,10 +101,26 @@ const SimpleLandingPage = () => {
   ];
 
   const useCases = [
-    { title: 'Creative Teams', icon: <PaletteIcon />, users: '50+ members' },
-    { title: 'Family Networks', icon: <GroupAddIcon />, users: '10-20 members' },
-    { title: 'Student Groups', icon: <DescriptionIcon />, users: '25+ members' },
-    { title: 'Professional Communities', icon: <SecurityIcon />, users: '100+ members' }
+    { 
+      title: 'Creative Teams', 
+      icon: <PaletteIcon />, 
+      description: 'Share portfolios, collaborate on projects, and showcase work in a private, branded space'
+    },
+    { 
+      title: 'Family Networks', 
+      icon: <GroupAddIcon />, 
+      description: 'Keep family memories, photos, and updates secure and private, away from social media'
+    },
+    { 
+      title: 'Student Groups', 
+      icon: <DescriptionIcon />, 
+      description: 'Organize study materials, coordinate events, and build lasting connections beyond graduation'
+    },
+    { 
+      title: 'Professional Communities', 
+      icon: <SecurityIcon />, 
+      description: 'Network privately, share industry insights, and foster meaningful professional relationships'
+    }
   ];
 
   const tools = [
@@ -414,6 +430,8 @@ const SimpleLandingPage = () => {
                     p: { xs: 3, md: 4 }, 
                     textAlign: 'center',
                     height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
                     backgroundColor: 'rgba(255, 255, 255, 0.9)',
                     backdropFilter: 'blur(20px)',
                     border: `1px solid ${alpha(theme.palette.primary.main, 0.08)}`,
@@ -444,16 +462,16 @@ const SimpleLandingPage = () => {
                   <Typography variant="h6" sx={{ mb: 2, fontWeight: 600, fontSize: '1.3rem' }}>
                     {useCase.title}
                   </Typography>
-                  <Chip 
-                    label={useCase.users} 
-                    size="medium" 
+                  <Typography 
+                    variant="body2" 
+                    color="text.secondary"
                     sx={{
-                      backgroundColor: alpha(theme.palette.primary.main, 0.1),
-                      color: theme.palette.primary.main,
-                      fontWeight: 600,
-                      border: 'none'
+                      lineHeight: 1.6,
+                      fontSize: '0.95rem'
                     }}
-                  />
+                  >
+                    {useCase.description}
+                  </Typography>
                 </Card>
               </Grid>
             ))}
