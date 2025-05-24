@@ -88,12 +88,6 @@ const PricingPage = () => {
 const [loadingPlan, setLoadingPlan] = useState(null);
 
 const handlePlanSelect = async (plan) => {
-  // If it's the free Community plan
-  if (plan.price === 0) {
-    navigate('/dashboard');
-    return;
-  }
-
   // If user not logged in, redirect to signup
   if (!user) {
     navigate('/signup');
@@ -153,7 +147,7 @@ const handlePlanSelect = async (plan) => {
   const plans = [
     {
       name: 'Community',
-      price: 0,
+      price: 8,
       description: 'For small teams and family groups',
       features: [
         { name: 'Members', value: '100', icon: <GroupsIcon color="primary" /> },
@@ -169,7 +163,7 @@ const handlePlanSelect = async (plan) => {
       popular: false,
       color: 'default',
       buttonVariant: 'outlined',
-      buttonText: 'Start for Free',
+      buttonText: 'Start 14-Day Trial',
       icon: <Groups color="primary" sx={{ fontSize: 40 }} />,
       addOns: [
         { name: 'White Label', price: 99 }
@@ -288,13 +282,14 @@ const handlePlanSelect = async (plan) => {
     }
   ];
 
+  // Filter out Network and Business tiers
+  const visiblePlans = plans.filter(plan => plan.name !== 'Network' && plan.name !== 'Business');
+  
   // For desktop view, we'll determine the number of plans to show based on screen size
-  const desktopPlans = isLargeScreen 
-    ? plans 
-    : [plans[0], plans[2], plans[3], plans[5]]; // When not large screen, show core plans
+  const desktopPlans = visiblePlans;
 
   // For mobile/tablet view, show all plans
-  const mobilePlans = plans;
+  const mobilePlans = visiblePlans;
 
   const FeatureRow = ({ feature, value }) => (
     <ListItem>
@@ -767,13 +762,19 @@ const handlePlanSelect = async (plan) => {
                     color={plan.color === 'default' ? 'primary' : plan.color}
                     size="large"
                     fullWidth
+                    onClick={() => handlePlanSelect(plan)}
+                    disabled={loadingPlan === plan.name}
                     sx={{ 
                       py: 1.5, 
                       borderRadius: 2,
                       fontWeight: 500
                     }}
                   >
-                    {plan.buttonText}
+                    {loadingPlan === plan.name ? (
+                      <CircularProgress size={24} color="inherit" />
+                    ) : (
+                      plan.buttonText
+                    )}
                   </Button>
                 </CardActions>
               </Card>
@@ -811,7 +812,7 @@ const handlePlanSelect = async (plan) => {
                   Feature
                 </TableCell>
                 <TableCell align="center" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
-                  ÜNIO
+                  Conclav
                 </TableCell>
                 <TableCell align="center">
                   Competitors
@@ -820,9 +821,9 @@ const handlePlanSelect = async (plan) => {
             </TableHead>
             <TableBody>
               <TableRow>
-                <TableCell>Members in Free Tier</TableCell>
-                <TableCell align="center" sx={{ fontWeight: 'bold', color: 'primary.main' }}>100</TableCell>
-                <TableCell align="center">20-50</TableCell>
+                <TableCell>Members in Starter Tier</TableCell>
+                <TableCell align="center" sx={{ fontWeight: 'bold', color: 'primary.main' }}>100 (€8/mo)</TableCell>
+                <TableCell align="center">20-50 (€15-30/mo)</TableCell>
               </TableRow>
               <TableRow>
                 <TableCell>White Label Option</TableCell>
@@ -841,7 +842,7 @@ const handlePlanSelect = async (plan) => {
               </TableRow>
               <TableRow>
                 <TableCell>5-Year Total Cost (500 Members)</TableCell>
-                <TableCell align="center" sx={{ fontWeight: 'bold', color: 'primary.main' }}>€4,656 (annual billing)</TableCell>
+                <TableCell align="center" sx={{ fontWeight: 'bold', color: 'primary.main' }}>€4,400 (Organization annual)</TableCell>
                 <TableCell align="center">€9,000-12,000</TableCell>
               </TableRow>
             </TableBody>
@@ -934,12 +935,13 @@ const handlePlanSelect = async (plan) => {
           Ready to get started?
         </Typography>
         <Typography variant="h6" sx={{ mb: 4, maxWidth: 700, mx: 'auto', opacity: 0.9 }}>
-          Try ÜNIO free for 14 days. No credit card required. Cancel anytime.
+          Try Conclav free for 14 days. No credit card required. Cancel anytime.
         </Typography>
         <Button
           variant="contained"
           color="secondary"
           size="large"
+          onClick={() => navigate('/signup')}
           sx={{ 
             px: 6, 
             py: 1.5, 

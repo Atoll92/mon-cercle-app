@@ -17,7 +17,13 @@ import {
   useTheme,
   alpha,
   Fade,
-  Zoom
+  Zoom,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Switch,
+  FormControlLabel
 } from '@mui/material';
 import ThreeJSBackground from '../components/ThreeJSBackground';
 import {
@@ -35,7 +41,16 @@ import {
   CloudUpload as CloudUploadIcon,
   ArrowForward as ArrowForwardIcon,
   CheckCircle as CheckCircleIcon,
-  Close as CloseIcon
+  Close as CloseIcon,
+  Groups as GroupsIcon,
+  Storage as StorageIcon,
+  AdminPanelSettings as AdminIcon,
+  Headset as SupportIcon,
+  Code as CodeIcon,
+  Bookmark as BookmarkIcon,
+  School as SchoolIcon,
+  Business as BusinessIcon,
+  Check as CheckIcon
 } from '@mui/icons-material';
 
 const SimpleLandingPage = () => {
@@ -43,6 +58,7 @@ const SimpleLandingPage = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const navigate = useNavigate();
   const [hoveredFeature, setHoveredFeature] = useState(null);
+  const [annual, setAnnual] = useState(false);
 
   // Sample user avatars for the preview
   const sampleUsers = [
@@ -650,6 +666,472 @@ const SimpleLandingPage = () => {
           </Card>
         </Container>
       </Box>
+
+      {/* Pricing Section */}
+      <Container maxWidth="xl" sx={{ position: 'relative', zIndex: 2, py: { xs: 8, md: 12 } }}>
+        <Box sx={{ textAlign: 'center', mb: 8 }}>
+          <Typography 
+            variant="h3" 
+            sx={{ 
+              fontWeight: 700, 
+              mb: 3,
+              background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text'
+            }}
+          >
+            Simple, Transparent Pricing
+          </Typography>
+          <Typography variant="h6" color="text.secondary" sx={{ maxWidth: 600, mx: 'auto', mb: 4 }}>
+            Choose the plan that works best for your community
+          </Typography>
+          
+          {/* Billing toggle */}
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center',
+            mb: 6
+          }}>
+            <Typography 
+              sx={{ 
+                fontWeight: !annual ? 600 : 400,
+                color: !annual ? 'primary.main' : 'text.secondary'
+              }}
+            >
+              Monthly
+            </Typography>
+            
+            <Switch
+              checked={annual}
+              onChange={(e) => setAnnual(e.target.checked)}
+              color="primary"
+              sx={{ mx: 2 }}
+            />
+            
+            <Typography 
+              sx={{ 
+                fontWeight: annual ? 600 : 400,
+                color: annual ? 'primary.main' : 'text.secondary'
+              }}
+            >
+              Annual
+            </Typography>
+            
+            <Chip 
+              label="Save up to €194/yr" 
+              color="success" 
+              size="small" 
+              sx={{ ml: 1, display: annual ? 'inline-flex' : 'none' }}
+            />
+          </Box>
+        </Box>
+
+        <Grid container spacing={4} justifyContent="center" alignItems="stretch">
+          {/* Community Plan */}
+          <Grid item xs={12} sm={6} lg={3}>
+            <Card 
+              elevation={0}
+              sx={{ 
+                height: '100%',
+                p: 4,
+                border: `2px solid ${alpha(theme.palette.divider, 0.1)}`,
+                borderRadius: 3,
+                position: 'relative',
+                backgroundColor: alpha(theme.palette.background.paper, 0.8),
+                backdropFilter: 'blur(10px)',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  transform: 'translateY(-8px)',
+                  boxShadow: `0 20px 40px ${alpha(theme.palette.primary.main, 0.1)}`,
+                  borderColor: alpha(theme.palette.primary.main, 0.2)
+                }
+              }}
+            >
+              <Box sx={{ textAlign: 'center', mb: 4 }}>
+                <GroupsIcon sx={{ fontSize: 48, color: theme.palette.primary.main, mb: 2 }} />
+                <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
+                  Community
+                </Typography>
+                <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+                  For small teams and family groups
+                </Typography>
+                <Box sx={{ my: 3 }}>
+                  <Typography variant="h2" sx={{ fontWeight: 700, color: theme.palette.primary.main }}>
+                    €{annual ? Math.round((11 * 10) / 12) : '11'}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    per month
+                  </Typography>
+                  {annual && (
+                    <Typography variant="caption" color="success.main" sx={{ display: 'block', mt: 1, fontWeight: 'bold' }}>
+                      Save €{Math.round(11 * 12 - 11 * 10)}/year
+                    </Typography>
+                  )}
+                </Box>
+              </Box>
+              
+              <List sx={{ mb: 4 }}>
+                {[
+                  { text: 'Up to 100 members', included: true },
+                  { text: '10GB storage', included: true },
+                  { text: '1 admin account', included: true },
+                  { text: 'Wiki & Events', included: true },
+                  { text: 'Community support', included: true },
+                  { text: 'White label', included: false },
+                  { text: 'API access', included: false }
+                ].map((feature, index) => (
+                  <ListItem key={index} sx={{ py: 1 }}>
+                    <ListItemIcon sx={{ minWidth: 32 }}>
+                      {feature.included ? (
+                        <CheckIcon sx={{ color: 'success.main' }} />
+                      ) : (
+                        <CloseIcon sx={{ color: 'text.disabled' }} />
+                      )}
+                    </ListItemIcon>
+                    <ListItemText 
+                      primary={
+                        <Typography
+                          sx={{
+                            fontSize: '0.95rem',
+                            color: feature.included ? 'text.primary' : 'text.disabled'
+                          }}
+                        >
+                          {feature.text}
+                        </Typography>
+                      }
+                    />
+                  </ListItem>
+                ))}
+              </List>
+              
+              <Button
+                variant="outlined"
+                fullWidth
+                size="large"
+                onClick={() => navigate('/signup')}
+                sx={{ 
+                  py: 1.5,
+                  borderRadius: 2,
+                  fontWeight: 600
+                }}
+              >
+                Start 14-Day Trial
+              </Button>
+            </Card>
+          </Grid>
+
+          {/* Non-Profit Plan */}
+          <Grid item xs={12} sm={6} lg={3}>
+            <Card 
+              elevation={0}
+              sx={{ 
+                height: '100%',
+                p: 4,
+                border: `2px solid ${alpha(theme.palette.success.main, 0.3)}`,
+                borderRadius: 3,
+                position: 'relative',
+                backgroundColor: alpha(theme.palette.success.main, 0.02),
+                backdropFilter: 'blur(10px)',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  transform: 'translateY(-8px)',
+                  boxShadow: `0 20px 40px ${alpha(theme.palette.success.main, 0.15)}`,
+                  borderColor: alpha(theme.palette.success.main, 0.4)
+                }
+              }}
+            >
+              <Chip 
+                label="SPECIAL RATE" 
+                color="success" 
+                size="small" 
+                sx={{ 
+                  position: 'absolute',
+                  top: -12,
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  fontWeight: 700
+                }}
+              />
+              
+              <Box sx={{ textAlign: 'center', mb: 4 }}>
+                <SchoolIcon sx={{ fontSize: 48, color: theme.palette.success.main, mb: 2 }} />
+                <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
+                  Non-Profit
+                </Typography>
+                <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+                  For educational & non-profits
+                </Typography>
+                <Box sx={{ my: 3 }}>
+                  <Typography variant="h2" sx={{ fontWeight: 700, color: theme.palette.success.main }}>
+                    €{annual ? Math.round((49 * 10) / 12) : '49'}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    per month
+                  </Typography>
+                  {annual && (
+                    <Typography variant="caption" color="success.main" sx={{ display: 'block', mt: 1, fontWeight: 'bold' }}>
+                      Save €{Math.round(49 * 12 - 49 * 10)}/year
+                    </Typography>
+                  )}
+                </Box>
+              </Box>
+              
+              <List sx={{ mb: 4 }}>
+                {[
+                  { text: 'Up to 500 members', included: true },
+                  { text: '50GB storage', included: true },
+                  { text: '3 admin accounts', included: true },
+                  { text: 'Wiki & Events', included: true },
+                  { text: 'Email support', included: true },
+                  { text: 'White label included', included: true },
+                  { text: 'API access', included: false }
+                ].map((feature, index) => (
+                  <ListItem key={index} sx={{ py: 1 }}>
+                    <ListItemIcon sx={{ minWidth: 32 }}>
+                      {feature.included ? (
+                        <CheckIcon sx={{ color: 'success.main' }} />
+                      ) : (
+                        <CloseIcon sx={{ color: 'text.disabled' }} />
+                      )}
+                    </ListItemIcon>
+                    <ListItemText 
+                      primary={
+                        <Typography
+                          sx={{
+                            fontSize: '0.95rem',
+                            color: feature.included ? 'text.primary' : 'text.disabled'
+                          }}
+                        >
+                          {feature.text}
+                        </Typography>
+                      }
+                    />
+                  </ListItem>
+                ))}
+              </List>
+              
+              <Button
+                variant="outlined"
+                color="success"
+                fullWidth
+                size="large"
+                onClick={() => navigate('/signup')}
+                sx={{ 
+                  py: 1.5,
+                  borderRadius: 2,
+                  fontWeight: 600
+                }}
+              >
+                Verify & Start
+              </Button>
+            </Card>
+          </Grid>
+
+          {/* Organization Plan */}
+          <Grid item xs={12} sm={6} lg={3}>
+            <Card 
+              elevation={0}
+              sx={{ 
+                height: '100%',
+                p: 4,
+                border: `2px solid ${theme.palette.primary.main}`,
+                borderRadius: 3,
+                position: 'relative',
+                backgroundColor: alpha(theme.palette.primary.main, 0.02),
+                backdropFilter: 'blur(10px)',
+                transition: 'all 0.3s ease',
+                transform: 'scale(1.02)',
+                boxShadow: `0 10px 30px ${alpha(theme.palette.primary.main, 0.15)}`,
+                '&:hover': {
+                  transform: 'translateY(-8px) scale(1.02)',
+                  boxShadow: `0 20px 40px ${alpha(theme.palette.primary.main, 0.2)}`
+                }
+              }}
+            >
+              <Chip 
+                label="MOST POPULAR" 
+                color="primary" 
+                size="small" 
+                sx={{ 
+                  position: 'absolute',
+                  top: -12,
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  fontWeight: 700
+                }}
+              />
+              
+              <Box sx={{ textAlign: 'center', mb: 4 }}>
+                <BusinessIcon sx={{ fontSize: 48, color: theme.palette.primary.main, mb: 2 }} />
+                <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
+                  Organization
+                </Typography>
+                <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+                  For growing organizations
+                </Typography>
+                <Box sx={{ my: 3 }}>
+                  <Typography variant="h2" sx={{ fontWeight: 700, color: theme.palette.primary.main }}>
+                    €{annual ? Math.round((97 * 10) / 12) : '97'}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    per month
+                  </Typography>
+                  {annual && (
+                    <Typography variant="caption" color="success.main" sx={{ display: 'block', mt: 1, fontWeight: 'bold' }}>
+                      Save €{Math.round(97 * 12 - 97 * 10)}/year
+                    </Typography>
+                  )}
+                </Box>
+              </Box>
+              
+              <List sx={{ mb: 4 }}>
+                {[
+                  { text: 'Up to 500 members', included: true },
+                  { text: '100GB storage', included: true },
+                  { text: '5 admin accounts', included: true },
+                  { text: 'Wiki & Events', included: true },
+                  { text: 'Priority support', included: true },
+                  { text: 'White label included', included: true },
+                  { text: 'API access', included: false }
+                ].map((feature, index) => (
+                  <ListItem key={index} sx={{ py: 1 }}>
+                    <ListItemIcon sx={{ minWidth: 32 }}>
+                      {feature.included ? (
+                        <CheckIcon sx={{ color: 'primary.main' }} />
+                      ) : (
+                        <CloseIcon sx={{ color: 'text.disabled' }} />
+                      )}
+                    </ListItemIcon>
+                    <ListItemText 
+                      primary={
+                        <Typography
+                          sx={{
+                            fontSize: '0.95rem',
+                            color: feature.included ? 'text.primary' : 'text.disabled'
+                          }}
+                        >
+                          {feature.text}
+                        </Typography>
+                      }
+                    />
+                  </ListItem>
+                ))}
+              </List>
+              
+              <Button
+                variant="contained"
+                fullWidth
+                size="large"
+                onClick={() => navigate('/signup')}
+                sx={{ 
+                  py: 1.5,
+                  borderRadius: 2,
+                  fontWeight: 600,
+                  boxShadow: 2,
+                  '&:hover': {
+                    boxShadow: 4
+                  }
+                }}
+              >
+                Start 14-Day Trial
+              </Button>
+            </Card>
+          </Grid>
+
+          {/* Enterprise Plan */}
+          <Grid item xs={12} sm={6} lg={3}>
+            <Card 
+              elevation={0}
+              sx={{ 
+                height: '100%',
+                p: 4,
+                border: `2px solid ${alpha(theme.palette.divider, 0.1)}`,
+                borderRadius: 3,
+                position: 'relative',
+                backgroundColor: alpha(theme.palette.background.paper, 0.8),
+                backdropFilter: 'blur(10px)',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  transform: 'translateY(-8px)',
+                  boxShadow: `0 20px 40px ${alpha(theme.palette.error.main, 0.1)}`,
+                  borderColor: alpha(theme.palette.error.main, 0.2)
+                }
+              }}
+            >
+              <Box sx={{ textAlign: 'center', mb: 4 }}>
+                <SecurityIcon sx={{ fontSize: 48, color: theme.palette.error.main, mb: 2 }} />
+                <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
+                  Enterprise
+                </Typography>
+                <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+                  Custom solution with bespoke features
+                </Typography>
+                <Box sx={{ my: 3 }}>
+                  <Typography variant="h2" sx={{ fontWeight: 700, color: theme.palette.error.main }}>
+                    Custom
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    pricing
+                  </Typography>
+                </Box>
+              </Box>
+              
+              <List sx={{ mb: 4 }}>
+                {[
+                  { text: 'Unlimited members', included: true },
+                  { text: 'Unlimited storage', included: true },
+                  { text: 'Unlimited admin accounts', included: true },
+                  { text: 'Wiki & Events', included: true },
+                  { text: 'VIP Concierge support', included: true },
+                  { text: 'White label included', included: true },
+                  { text: 'Full API access', included: true }
+                ].map((feature, index) => (
+                  <ListItem key={index} sx={{ py: 1 }}>
+                    <ListItemIcon sx={{ minWidth: 32 }}>
+                      <CheckIcon sx={{ color: 'error.main' }} />
+                    </ListItemIcon>
+                    <ListItemText 
+                      primary={
+                        <Typography
+                          sx={{
+                            fontSize: '0.95rem',
+                            color: 'text.primary'
+                          }}
+                        >
+                          {feature.text}
+                        </Typography>
+                      }
+                    />
+                  </ListItem>
+                ))}
+              </List>
+              
+              <Button
+                variant="outlined"
+                color="error"
+                fullWidth
+                size="large"
+                onClick={() => window.location.href = 'mailto:sales@conclav.com'}
+                sx={{ 
+                  py: 1.5,
+                  borderRadius: 2,
+                  fontWeight: 600
+                }}
+              >
+                Contact Sales
+              </Button>
+            </Card>
+          </Grid>
+        </Grid>
+
+        <Box sx={{ textAlign: 'center', mt: 6 }}>
+          <Typography variant="body2" color="text.secondary">
+            All plans include €2/additional member beyond your plan limit • Educational & non-profits receive 30% off
+          </Typography>
+        </Box>
+      </Container>
 
       {/* Final CTA */}
       <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 2, py: { xs: 8, md: 12 } }}>

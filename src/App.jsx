@@ -146,14 +146,14 @@ function App() {
     <DirectMessagesProvider>
       <div className="App" style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
         {/* Pass the network name to the header */}
-        {window.location.pathname !== "/" && window.location.pathname !== "/pricing" && window.location.pathname !== "/simple" && !window.location.pathname.startsWith("/micro-conclav/") && (
+        {window.location.pathname !== "/" && window.location.pathname !== "/pricing" && window.location.pathname !== "/old" && !window.location.pathname.startsWith("/micro-conclav/") && (
           <NetworkHeader/>
         )}
         <Box component="main" sx={{ flex: 1 }}>
           <Routes>
             {/* Public Routes */}
-            <Route path="/" element={<LandingPage/>}/>
-            <Route path="/simple" element={<SimpleLandingPage/>}/>
+            <Route path="/" element={<SimpleLandingPage/>}/>
+            <Route path="/old" element={<LandingPage/>}/>
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignupPage />} />
             <Route path="/password-reset" element={<PasswordResetPage />} />
