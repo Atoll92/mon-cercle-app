@@ -26,6 +26,11 @@ const handler = async (request: Request): Promise<Response> => {
     return new Response('ok', { headers: corsHeaders });
   }
 
+  console.log('🚀 [EDGE FUNCTION DEBUG] Request received:', {
+    method: request.method,
+    headers: Object.fromEntries(request.headers.entries())
+  });
+
   try {
     // Validate request
     if (!request.body) {
@@ -36,7 +41,19 @@ const handler = async (request: Request): Promise<Response> => {
     }
 
     // Parse the request body
-    const { toEmail, networkName, inviterName, type, inviteLink, subject, content, relatedItemId } = await request.json() as InviteData;
+    const requestBody = await request.json() as InviteData;
+    const { toEmail, networkName, inviterName, type, inviteLink, subject, content, relatedItemId } = requestBody;
+    
+    console.log('🚀 [EDGE FUNCTION DEBUG] Parsed request body:', {
+      toEmail,
+      networkName,
+      inviterName,
+      type,
+      hasInviteLink: !!inviteLink,
+      hasSubject: !!subject,
+      hasContent: !!content,
+      relatedItemId
+    });
 
     // Validate required fields
     if (!toEmail || !networkName || !inviterName || !type) {
@@ -63,6 +80,7 @@ const handler = async (request: Request): Promise<Response> => {
     }
 
     // Prepare email content based on invitation type
+    console.log('🚀 [EDGE FUNCTION DEBUG] Preparing email content for type:', type);
     let emailSubject = '';
     let html = '';
 
@@ -103,6 +121,11 @@ const handler = async (request: Request): Promise<Response> => {
         </div>
       `;
     } else if (type === 'news_notification') {
+      console.log('🚀 [EDGE FUNCTION DEBUG] Creating news notification email with:', {
+        subject,
+        content: content?.substring(0, 100) + '...',
+        networkName
+      });
       emailSubject = subject;
       html = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; line-height: 1.6;">
@@ -136,18 +159,27 @@ const handler = async (request: Request): Promise<Response> => {
     }
 
     // Send email using Resend API
+    const emailPayload = {
+      from: Deno.env.get('FROM_EMAIL') || 'noreply@your-domain.com',
+      to: toEmail,
+      subject: emailSubject,
+      html: html,
+    };
+    
+    console.log('🚀 [EDGE FUNCTION DEBUG] Sending email to Resend:', {
+      to: emailPayload.to,
+      from: emailPayload.from,
+      subject: emailPayload.subject,
+      htmlPreview: emailPayload.html.substring(0, 200) + '...'
+    });
+    
     const resendResponse = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${RESEND_API_KEY}`,
       },
-      body: JSON.stringify({
-        from: Deno.env.get('FROM_EMAIL') || 'noreply@your-domain.com',
-        to: toEmail,
-        subject: emailSubject,
-        html: html,
-      }),
+      body: JSON.stringify(emailPayload),
     });
 
     const resendData = await resendResponse.json();

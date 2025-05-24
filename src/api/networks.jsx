@@ -526,7 +526,9 @@ export const createNewsPost = async (networkId, userId, title, content, imageUrl
     
     // Queue email notifications for network members
     try {
-      console.log('Queuing email notifications for news post...');
+      console.log('📰 [NEWS DEBUG] Starting to queue email notifications for news post...');
+      console.log('📰 [NEWS DEBUG] News post created:', data[0]);
+      
       const notificationResult = await queueNewsNotifications(
         networkId,
         data[0].id,
@@ -535,14 +537,16 @@ export const createNewsPost = async (networkId, userId, title, content, imageUrl
         content
       );
       
+      console.log('📰 [NEWS DEBUG] Notification queueing result:', notificationResult);
+      
       if (notificationResult.success) {
-        console.log(`Email notifications queued successfully: ${notificationResult.message}`);
+        console.log(`📰 [NEWS DEBUG] Email notifications queued successfully: ${notificationResult.message}`);
       } else {
-        console.error('Failed to queue email notifications:', notificationResult.error);
+        console.error('📰 [NEWS DEBUG] Failed to queue email notifications:', notificationResult.error);
         // Don't fail the news post creation if notification queueing fails
       }
     } catch (notificationError) {
-      console.error('Error queueing email notifications:', notificationError);
+      console.error('📰 [NEWS DEBUG] Error queueing email notifications:', notificationError);
       // Don't fail the news post creation if notification queueing fails
     }
     
