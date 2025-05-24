@@ -21,6 +21,12 @@ npm run preview
 
 # Run tests
 npm run test
+
+# Run tests in watch mode
+npm run test:watch
+
+# Run tests with coverage report
+npm run test:coverage
 ```
 
 ## Architecture Overview
@@ -28,7 +34,6 @@ npm run test
 ### Tech Stack
 
 - **Frontend**: React with Vite
-
 - **Backend**: Supabase (PostgreSQL, Auth, Storage, Edge Functions)
 - **Authentication**: Supabase Auth
 - **Styling**: Material UI (MUI), CSS
@@ -36,6 +41,10 @@ npm run test
 - **State Management**: Context API
 - **Payments**: Stripe integration
 - **Realtime Communication**: Supabase Realtime
+- **Testing**: Vitest, React Testing Library
+- **Rich Text Editing**: TipTap, React Quill, MD Editor
+- **3D Graphics**: Three.js
+- **Virtualization**: React Window
 
 ### Core Components
 
@@ -54,11 +63,20 @@ Supabase integration is set up in `src/supabaseclient.jsx`, which initializes th
 
 #### API Layer
 
-- API functions are organized in the `src/api/` directory:
-  - `auth.jsx`: Authentication-related functions
-  - `networks.jsx`: Network management (users, events, news)
-  - `directMessages.js`: Direct messaging system
-  - `moodboards.jsx`: Moodboard functionality
+API functions are organized in the `src/api/` directory:
+- `auth.jsx`: Authentication-related functions
+- `networks.jsx`: Network management (users, events, news, moderation)
+- `directMessages.js`: Direct messaging system
+- `moodboards.jsx`: Moodboard functionality
+
+#### Services Layer
+
+Service functions are organized in the `src/services/` directory:
+- `emailNotificationService.js`: Email notification queue management
+- `networkFiles.js`: File upload and management
+- `opengraphService.js`: Link preview generation
+- `stripeService.js`: Stripe payment processing
+- `subscriptionService.js`: Subscription management
 
 #### Context Providers
 
@@ -66,7 +84,6 @@ The app uses React Context for state management:
 - `AuthProvider` (`context/authcontext.jsx`): Manages user authentication state
 - `NetworkProvider` (`context/networkContext.jsx`): Manages network data
 - `DirectMessagesProvider` (`context/directMessagesContext.jsx`): Manages direct messaging state
-- `NavigationProvider` (`context/navigationContext.jsx`): Unified navigation system
 
 #### Routing
 
@@ -79,26 +96,24 @@ Supabase Edge Functions handle server-side operations:
 - `stripe-webhook`: Processes Stripe webhook events
 - `network-invite`: Sends network invitations to users
 - `manage-subscription`: Handles subscription management
+- `test-stripe`: Testing Stripe integration
 
 ### Data Model
 
 Key entities in the Supabase database:
-- `profiles`: User profiles linked to auth users
-- `networks`: User networks/communities
+- `profiles`: User profiles with notification preferences and moderation status
+- `networks`: User networks/communities with configuration options
 - `network_events`: Events within networks
-- `network_news`: News/posts within networks
+- `network_news`: News/posts within networks with image support
 - `direct_conversations`: Direct message conversations
 - `direct_messages`: Individual messages in conversations
 - `portfolio_items`: User portfolio projects
 - `wiki_pages`: Network wiki content
 - `network_files`: Shared network files
+- `moderation_logs`: Content and user moderation history
+- `notification_queue`: Email notification queue
 
 ## UI Components
-
-### Layout Components
-- `GlobalNavbar`: Main navigation component
-- `MainLayout`: Layout wrapper for all pages
-- `SideMenu`: Side navigation menu
 
 ### Feature Components
 - `Chat`: Handles network chat interaction
@@ -108,11 +123,29 @@ Key entities in the Supabase database:
 - `SocialWallTab`: Combined news and portfolio social feed
 - `WikiTab`: Wiki content display
 - `FilesTab`: Shared files management
+- `NewsTab`: Network news feed
+- `MoonboardTab`: Network moodboard display
+- `NotificationSettings`: User email notification preferences
+- `NetworkOnboardingWizard`: Step-by-step network setup
+- `LinkPreview`: URL preview component
+- `LatestNewsWidget`: News display widget
+- `PersonalMoodboardWidget`: Personal moodboard display
+- `VirtualizedMemberList`: Performance-optimized member list
+- `ThreeJSBackground`: 3D animated background
+
+### Admin Components
+- `AdminLayout`: Admin interface layout
+- `ModerationTab`: Content and user moderation
+- `NotificationQueueTab`: Email queue monitoring
+- `NetworkSettingsTab`: Network configuration
+- `ThemeTab`: Theme customization
+- `BatchInviteModal`: Bulk user invitations
 
 ### Theme Support
 - Dark mode and light mode support
-- ThemeProvider component
+- `ThemeProvider` component for theme management
 - Custom theme extensions via MUI theme provider
+- Network-specific theme colors
 
 ## Database Schema
 
@@ -140,6 +173,17 @@ profiles
 - portfolio_url (varchar)
 - linkedin_url (varchar)
 - skills (text[])
+- is_suspended (boolean)
+- suspension_reason (text)
+- suspension_end_date (timestamp)
+- restriction_level (varchar)
+- restriction_reason (text)
+- last_active (timestamp)
+- email_notifications_enabled (boolean)
+- notify_on_news (boolean)
+- notify_on_events (boolean)
+- notify_on_mentions (boolean)
+- notify_on_direct_messages (boolean)
 - updated_at (timestamp)
 
 portfolio_items
@@ -158,6 +202,11 @@ networks
 - description (text)
 - logo_url (varchar)
 - background_image_url (varchar)
+- privacy_level (varchar) - 'public', 'private', 'invite-only'
+- purpose (varchar) - 'community', 'professional', 'educational', 'hobby', 'other'
+- theme_color (varchar)
+- features_config (jsonb) - Feature toggles
+- default_tabs (text[]) - Default visible tabs
 - subscription_status (varchar)
 - subscription_plan (varchar)
 - subscription_end_date (timestamp)
@@ -205,6 +254,9 @@ network_news
 - content (text)
 - image_url (varchar)
 - image_caption (varchar)
+- is_hidden (boolean)
+- is_flagged (boolean)
+- flag_reason (text)
 - created_by (uuid, FK to profiles.id)
 - created_at (timestamp)
 - updated_at (timestamp)
@@ -244,6 +296,9 @@ messages
 - network_id (uuid, FK to networks.id)
 - user_id (uuid, FK to profiles.id)
 - content (text)
+- is_hidden (boolean)
+- is_flagged (boolean)
+- flag_reason (text)
 - created_at (timestamp)
 
 moodboards
@@ -288,6 +343,32 @@ opengraph_cache
 - site_name (varchar)
 - created_at (timestamp)
 - updated_at (timestamp)
+
+moderation_logs
+- id (uuid, PK)
+- network_id (uuid, FK to networks.id)
+- moderator_id (uuid, FK to profiles.id)
+- target_user_id (uuid, FK to profiles.id, nullable)
+- target_content_id (uuid, nullable)
+- target_content_type (varchar) - 'message', 'news', 'profile'
+- action (varchar) - 'hide', 'flag', 'suspend', 'restrict', 'unsuspend', 'unrestrict'
+- reason (text)
+- created_at (timestamp)
+
+notification_queue
+- id (uuid, PK)
+- recipient_email (varchar)
+- recipient_name (varchar)
+- subject (varchar)
+- template_id (varchar)
+- template_data (jsonb)
+- status (varchar) - 'pending', 'sent', 'failed'
+- attempts (integer, default 0)
+- last_attempt_at (timestamp)
+- sent_at (timestamp)
+- error_message (text)
+- created_at (timestamp)
+- updated_at (timestamp)
 ```
 
 ## Supabase Row-Level Security Policies
@@ -304,6 +385,8 @@ The following tables have Row-Level Security (RLS) enabled:
 - network_files
 - opengraph_cache
 - wiki_pages
+- moderation_logs
+- notification_queue
 ```
 
 ### Key RLS Policies
@@ -340,6 +423,14 @@ The following tables have Row-Level Security (RLS) enabled:
 - Users can manage their own participations
 - Network admins can view all participations in their network
 
+#### Moderation Logs
+- Network admins can view moderation logs for their network
+- Network admins can create moderation logs
+
+#### Notification Queue
+- Only system can insert into notification queue
+- Network admins can view notifications for their network users
+
 ## Environment Setup
 
 The application requires the following environment variables:
@@ -355,6 +446,8 @@ Networks are the core social structure:
 - Networks contain members with different roles (admin, member)
 - Networks have events, news, and shared files
 - Network admins can invite users, manage members, and customize settings
+- Networks can be configured with different privacy levels and purposes
+- Networks support custom theme colors and feature toggles
 
 ### Messaging
 
@@ -375,15 +468,17 @@ Network events system to:
 
 Content management features:
 - Wiki pages with categories
-- Shared files system
+- Shared files system with download tracking
 - Moodboards for visual content
+- Rich text editing with multiple editor options
 
 ### Social Wall
 
 Combined social feed that includes:
-- Network news posts
+- Network news posts with image support
 - Member portfolio projects
 - Interactive content with media support
+- Link previews for URLs
 
 ### Portfolio
 
@@ -399,6 +494,7 @@ Real-time network chat:
 - User presence indicators
 - Support for fullscreen mode
 - Link previews
+- Content moderation support
 
 ### Subscription & Billing
 
@@ -406,3 +502,29 @@ Stripe integration for subscription management:
 - Payment processing
 - Subscription status tracking
 - Billing information management
+
+### Email Notifications
+
+Queue-based email notification system:
+- User notification preferences
+- Email templates for different notification types
+- Retry mechanism for failed sends
+- Admin monitoring of notification queue
+
+### Moderation System
+
+Content and user moderation features:
+- Hide or flag inappropriate content
+- Suspend or restrict user accounts
+- Moderation logging for audit trail
+- Admin moderation interface
+
+### Network Configuration
+
+Network setup and customization:
+- Onboarding wizard for new networks
+- Privacy level settings
+- Purpose categorization
+- Feature toggles
+- Default tab configuration
+- Custom theme colors
