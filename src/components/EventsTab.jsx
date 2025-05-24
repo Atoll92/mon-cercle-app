@@ -271,19 +271,22 @@ const EventsTab = ({
                           {/* Event details */}
                           <Box sx={{ 
                             display: 'flex', 
-                            flex: '1 1 auto',
+                            width: '100%',
                             position: 'relative',
-                            overflow: 'hidden'
+                            overflow: 'hidden',
+                            minHeight: '120px' // Ensure consistent height
                           }}>
                             {/* Event image with overlaid date badge - with animation on hover */}
                             <Box sx={{ 
-                              width: '50%', // 50% of the column width as requested
+                              width: '200px', // Fixed width instead of percentage
+                              minWidth: '200px',
                               position: 'relative',
                               overflow: 'hidden',
                               transition: 'all 0.3s ease',
-                              flexShrink: 0, // Prevent shrinking by default
+                              flexShrink: 0, // Prevent shrinking
                               '.parent-event-row:hover &': {
-                                width: '30%', // Shrink to 30% on hover
+                                width: '150px', // Slight shrink on hover
+                                minWidth: '150px',
                               }
                             }}>
                               {event.cover_image_url ? (
@@ -388,11 +391,8 @@ const EventsTab = ({
                               zIndex: 2,
                               position: 'relative',
                               transition: 'all 0.3s ease',
-                              width: '50%', // Start at 50%
-                              '.parent-event-row:hover &': {
-                                width: '70%', // Expand to 70% on hover
-                              },
-                              overflow: 'hidden'
+                              overflow: 'hidden',
+                              width: '100%'
                             }}>
                               <Typography variant="subtitle1" sx={{ 
                                 fontWeight: 'medium', 
@@ -461,10 +461,8 @@ const EventsTab = ({
                                     variant={event.event_link ? "text" : "outlined"}
                                     color="primary"
                                     endIcon={<ArrowForwardIcon fontSize="small" />}
-                                    onClick={() => {
-                                      setSelectedEvent(event);
-                                      setShowEventDialog(true);
-                                    }}
+                                    component={Link}
+                                    to={`/network/${event.network_id}/event/${event.id}`}
                                   >
                                     Details
                                   </Button>

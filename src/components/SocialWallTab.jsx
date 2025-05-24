@@ -875,7 +875,7 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                           <Link 
                             to={item.itemType === 'post' ? 
                               `/profile/${item.memberId}` : 
-                              `/news/${item.id}`}
+                              `/network/${item.network_id}/news/${item.id}`}
                             className="view-project-btn"
                             style={{ 
                               display: 'inline-block',

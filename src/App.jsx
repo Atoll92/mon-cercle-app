@@ -42,6 +42,8 @@ import NetworkOnboardingPage from './pages/NetworkOnboardingPage';
 import MicroConclavPage from './pages/MicroConclavPage';
 import SuperAdminDashboard from './pages/SuperAdminDashboard';
 import JoinNetworkPage from './pages/JoinNetworkPage';
+import NewsPostPage from './pages/NewsPostPage';
+import EventPage from './pages/EventPage';
 
 function App() {
   const { loading, session, user } = useAuth();
@@ -220,6 +222,8 @@ function App() {
             
             {/* Networks routes */}
             <Route path="/network/:networkId" element={<NetworkLandingPage />} />
+            <Route path="/network/:networkId/news/:newsId" element={<NewsPostPage />} />
+            <Route path="/network/:networkId/event/:eventId" element={<EventPage />} />
             
             {/* Join network via invitation link */}
             <Route path="/join/:code" element={<JoinNetworkPage />} />

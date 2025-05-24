@@ -53,7 +53,6 @@ export default function EventsMap({ events = [], onEventSelect, initialCoordinat
           
           // If we have initialCoordinates, add a single marker
           if (initialCoordinates && initialCoordinates.latitude && initialCoordinates.longitude) {
-            const mapboxgl = require('mapbox-gl');
             const marker = new mapboxgl.Marker({ draggable: false })
               .setLngLat([initialCoordinates.longitude, initialCoordinates.latitude])
               .addTo(mapRef.current);

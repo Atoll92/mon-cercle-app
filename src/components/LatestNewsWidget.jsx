@@ -291,7 +291,7 @@ const LatestNewsWidget = ({ networkId }) => {
         <Box sx={{ pt: 2, mt: 'auto' }}>
           <Button
             component={Link}
-            to="/dashboard"
+            to={`/network/${networkId}/news/${latestNews.id}`}
             variant="text"
             size="small"
             fullWidth
