@@ -5,6 +5,7 @@ import { supabase } from '../supabaseclient';
 import { useNavigate, Link } from 'react-router-dom';
 import PersonalMoodboardWidget from '../components/PersonalMoodboardWidget';
 import LatestNewsWidget from '../components/LatestNewsWidget';
+import TestNotificationSystem from '../components/TestNotificationSystem';
 import { 
   AttachMoney as AttachMoneyIcon,
   Star as StarIcon,
@@ -1409,6 +1410,11 @@ function DashboardPage() {
                 </Grid>
               </Grid>
             </Grid>
+          )}
+
+          {/* Test Notification System (temporary) */}
+          {process.env.NODE_ENV === 'development' && (
+            <TestNotificationSystem />
           )}
           
           {/* Network Tab */}
