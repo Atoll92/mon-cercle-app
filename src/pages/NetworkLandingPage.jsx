@@ -349,13 +349,13 @@ function NetworkLandingPage() {
         
         {/* Content with increased z-index to be above the overlay */}
         <Box sx={{ position: 'relative', zIndex: 2 }}>
+          {/* Top row with back button */}
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
             <Button
               component={Link}
               to="/dashboard"
               startIcon={<ArrowBackIcon />}
               sx={{ 
-                mr: 2, 
                 bgcolor: 'rgba(255, 255, 255, 0.2)', 
                 color: '#ffffff',
                 '&:hover': {
@@ -365,17 +365,67 @@ function NetworkLandingPage() {
             >
               Dashboard
             </Button>
+          </Box>
+          
+          {/* Title and action buttons row */}
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'space-between', 
+            flexWrap: 'wrap', 
+            gap: 2,
+            width: '100%'
+          }}>
+            <Typography 
+              variant="h4" 
+              component="h1" 
+              sx={{ 
+                color: '#ffffff',
+                textShadow: '1px 1px 3px rgba(0,0,0,0.7)',
+                mb: 0,
+                flexGrow: { xs: 1, sm: 0 }
+              }}
+            >
+              {network.name}
+            </Typography>
             
-            {isUserAdmin && (
+            {/* Action buttons aligned together */}
+            <Box sx={{ 
+              display: 'flex', 
+              gap: 1, 
+              alignItems: 'center',
+              flexWrap: 'wrap'
+            }}>
+              {isUserAdmin && (
+                <Button
+                  component={Link}
+                  to="/admin"
+                  startIcon={<AdminIcon />}
+                  color="primary"
+                  variant="contained"
+                  sx={{ 
+                    bgcolor: 'rgba(255, 255, 255, 0.85)',
+                    color: 'primary.dark',
+                    fontWeight: 'medium',
+                    '&:hover': {
+                      bgcolor: 'rgba(255, 255, 255, 0.95)',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+                    },
+                    backdropFilter: 'blur(8px)',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                    transition: 'all 0.2s ease-in-out'
+                  }}
+                >
+                  Admin Panel
+                </Button>
+              )}
+              
               <Button
-                component={Link}
-                to="/admin"
-                startIcon={<AdminIcon />}
-                color="primary"
                 variant="contained"
+                color="primary"
+                onClick={() => setShowShareLink(!showShareLink)}
+                startIcon={<ContentCopyIcon />}
                 sx={{ 
-                  ml: 'auto', 
-                  mr: 1,
                   bgcolor: 'rgba(255, 255, 255, 0.85)',
                   color: 'primary.dark',
                   fontWeight: 'medium',
@@ -387,35 +437,6 @@ function NetworkLandingPage() {
                   boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
                   transition: 'all 0.2s ease-in-out'
                 }}
-              >
-                Admin Panel
-              </Button>
-            )}
-          </Box>
-          
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' }}>
-            <Typography 
-              variant="h4" 
-              component="h1" 
-              gutterBottom 
-              sx={{ 
-                mr: 2, 
-                flexGrow: 1, 
-                color: '#ffffff',
-                textShadow: '1px 1px 3px rgba(0,0,0,0.7)'
-              }}
-            >
-              {network.name}
-            </Typography>
-            
-            <Box>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={() => setShowShareLink(!showShareLink)}
-                startIcon={<ContentCopyIcon />}
-                size="small"
-                sx={{ mb: { xs: 1, sm: 0 } }}
               >
                 Share Network
               </Button>
@@ -465,21 +486,21 @@ function NetworkLandingPage() {
           )}
           
           {network.description && (
-            <Typography 
-              variant="body1" 
-              gutterBottom 
-              sx={{ 
-                mt: 2, 
-                color: '#ffffff',
-                textShadow: '0px 1px 2px rgba(0,0,0,0.6)',
-                maxWidth: '800px',
-                bgcolor: 'rgba(0,0,0,0.3)',
-                p: 2,
-                borderRadius: 1
-              }}
-            >
-              {network.description}
-            </Typography>
+            <Box sx={{ mt: 3, width: '100%' }}>
+              <Typography 
+                variant="body1" 
+                sx={{ 
+                  color: '#ffffff',
+                  textShadow: '0px 1px 2px rgba(0,0,0,0.6)',
+                  bgcolor: 'rgba(0,0,0,0.3)',
+                  p: 2,
+                  borderRadius: 1,
+                  width: '100%'
+                }}
+              >
+                {network.description}
+              </Typography>
+            </Box>
           )}
         </Box>
       </Paper>
