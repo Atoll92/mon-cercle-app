@@ -66,7 +66,8 @@ import {
   WorkspacePremium as PremiumIcon,
   Verified as VerifiedIcon,
   Business as BusinessIcon,
-  School as SchoolIcon
+  School as SchoolIcon,
+  SupervisorAccount as SuperAdminIcon
 } from '@mui/icons-material';
 import { fetchNetworkMembers } from '../api/networks';
 
@@ -592,25 +593,47 @@ function DashboardPage() {
             </Typography>
           </Box>
 
-          {profile.network_id && (
-            <Button
-              variant="contained" 
-              color="error" 
-              component={Link}
-              to={`/network/${profile.network_id}`}
-              endIcon={<ArrowForwardIcon />}
-              sx={{ 
-                bgcolor: 'rgba(255,255,255,0.15)', 
-                '&:hover': { 
-                  bgcolor: 'rgba(255,255,255,0.25)'
-                },
-                color: 'white'
-              }}
-              size="small"
-            >
-              Go to Network
-            </Button>
-          )}
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            {/* Super Admin Button */}
+            {(user?.email === 'admin@conclav.com' || user?.app_metadata?.role === 'super_admin') && (
+              <Button
+                variant="contained"
+                component={Link}
+                to="/super-admin"
+                startIcon={<SuperAdminIcon />}
+                sx={{ 
+                  bgcolor: 'rgba(255,255,255,0.15)', 
+                  '&:hover': { 
+                    bgcolor: 'rgba(255,255,255,0.25)'
+                  },
+                  color: 'white'
+                }}
+                size="small"
+              >
+                Super Admin
+              </Button>
+            )}
+            
+            {profile.network_id && (
+              <Button
+                variant="contained" 
+                color="error" 
+                component={Link}
+                to={`/network/${profile.network_id}`}
+                endIcon={<ArrowForwardIcon />}
+                sx={{ 
+                  bgcolor: 'rgba(255,255,255,0.15)', 
+                  '&:hover': { 
+                    bgcolor: 'rgba(255,255,255,0.25)'
+                  },
+                  color: 'white'
+                }}
+                size="small"
+              >
+                Go to Network
+              </Button>
+            )}
+          </Box>
         </Box>
 
         {/* Tabs Navigation */}
@@ -1431,16 +1454,16 @@ function DashboardPage() {
               
               {/* Row 3: Moodboard, Latest News, and Latest Posts */}
               <Grid item xs={12}>
-                <Grid container spacing={2}>
-                  <Grid item xs={12} md={profile.network_id ? 6 : 12}>
+                <Grid container spacing={2} sx={{ minHeight: 400 }}>
+                  <Grid item xs={12} md={profile.network_id ? 6 : 12} sx={{ display: 'flex' , flexGrow: '1'}}>
                     <PersonalMoodboardWidget user={user} />
                   </Grid>
                   {profile.network_id && (
                     <>
-                      <Grid item xs={12} sm={6} md={3} sx={{ maxWidth: { md: '40%' } }}>
-                        <LatestNewsWidget networkId={profile.network_id} maxHeight={350} />
+                      <Grid item xs={12} sm={6} md={3} sx={{ maxWidth: { md: '40%' }, display: 'flex' }}>
+                        <LatestNewsWidget networkId={profile.network_id} />
                       </Grid>
-                      <Grid item xs={12} sm={6} md={3}>
+                      <Grid item xs={12} sm={6} md={3} sx={{ display: 'flex' }}>
                         <LatestPostsWidget networkId={profile.network_id} />
                       </Grid>
                     </>

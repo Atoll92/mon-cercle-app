@@ -23,7 +23,7 @@ import {
 } from '@mui/icons-material';
 import { supabase } from '../supabaseclient';
 
-const LatestNewsWidget = ({ networkId, maxHeight = 350 }) => {
+const LatestNewsWidget = ({ networkId }) => {
   const [latestNews, setLatestNews] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -102,11 +102,15 @@ const LatestNewsWidget = ({ networkId, maxHeight = 350 }) => {
 
   if (loading) {
     return (
-      <Card sx={{ height: maxHeight, display: 'flex', flexDirection: 'column' }}>
+      <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}>
         <CardHeader
           avatar={<Skeleton variant="circular" width={40} height={40} />}
           title={<Skeleton width="60%" />}
           subheader={<Skeleton width="40%" />}
+          sx={{ 
+            bgcolor: 'rgba(25, 118, 210, 0.05)',
+            py: 1
+          }}
         />
         <CardContent sx={{ flex: 1 }}>
           <Skeleton variant="rectangular" height={60} sx={{ mb: 2 }} />
@@ -119,7 +123,7 @@ const LatestNewsWidget = ({ networkId, maxHeight = 350 }) => {
 
   if (error) {
     return (
-      <Card sx={{ height: maxHeight, display: 'flex', flexDirection: 'column' }}>
+      <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}>
         <CardHeader
           avatar={<NewsIcon color="primary" />}
           title="Latest News"
@@ -140,7 +144,7 @@ const LatestNewsWidget = ({ networkId, maxHeight = 350 }) => {
 
   if (!latestNews) {
     return (
-      <Card sx={{ height: maxHeight, display: 'flex', flexDirection: 'column' }}>
+      <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}>
         <CardHeader
           avatar={<NewsIcon color="primary" />}
           title="Latest News"
@@ -172,9 +176,10 @@ const LatestNewsWidget = ({ networkId, maxHeight = 350 }) => {
 
   return (
     <Card sx={{ 
-      height: maxHeight, 
+      height: '100%', 
       display: 'flex', 
       flexDirection: 'column',
+      boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
       '&:hover': {
         boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
         '& .view-all-button': {

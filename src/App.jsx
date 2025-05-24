@@ -40,6 +40,7 @@ import PersonalMoodboardsPage from './pages/PersonalMoodboardPage';
 import PasswordUpdatePage from './pages/PasswordUpdatePage';
 import NetworkOnboardingPage from './pages/NetworkOnboardingPage';
 import MicroConclavPage from './pages/MicroConclavPage';
+import SuperAdminDashboard from './pages/SuperAdminDashboard';
 
 function App() {
   const { loading, session, user } = useAuth();
@@ -212,6 +213,7 @@ function App() {
               <Route path="/profile/:userId" element={<ProfilePage />} />
               <Route path="/profile/edit" element={<EditProfilePage />} />
               <Route path="/admin" element={<NetworkAdminPage />} />
+              <Route path="/super-admin" element={<SuperAdminDashboard />} />
               <Route path="/create-network" element={<NetworkOnboardingPage />} />
             </Route>
             
