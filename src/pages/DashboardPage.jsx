@@ -7,6 +7,8 @@ import PersonalMoodboardWidget from '../components/PersonalMoodboardWidget';
 import LatestNewsWidget from '../components/LatestNewsWidget';
 import LatestPostsWidget from '../components/LatestPostsWidget';
 import TestNotificationSystem from '../components/TestNotificationSystem';
+import { useFadeIn, useStaggeredAnimation, ANIMATION_DURATION } from '../hooks/useAnimation';
+import { CardSkeleton, ProfileSkeleton, GridSkeleton } from '../components/LoadingSkeleton';
 import { 
   AttachMoney as AttachMoneyIcon,
   Star as StarIcon,
@@ -181,6 +183,10 @@ function DashboardPage() {
   const [newPostImagePreview, setNewPostImagePreview] = useState('');
   const [publishingPost, setPublishingPost] = useState(false);
   const [postMessage, setPostMessage] = useState('');
+
+  // Animation setup - must be at top level, not conditional
+  const headerRef = useFadeIn(0, ANIMATION_DURATION.normal);
+  const getItemRef = useStaggeredAnimation(10, 100, 50);
 
   console.log("Component render cycle. States:", { 
     loadingProfile, 
@@ -451,20 +457,12 @@ function DashboardPage() {
 
   if (loadingProfile) {
     return (
-      <Box 
-        sx={{ 
-          display: 'flex', 
-          flexDirection: 'column',
-          alignItems: 'center', 
-          justifyContent: 'center', 
-          height: '100vh' 
-        }}
-      >
-        <CircularProgress size={40} color="primary" />
-        <Typography variant="body1" sx={{ mt: 2 }}>
-          Loading your dashboard...
-        </Typography>
-      </Box>
+      <Container maxWidth="lg" sx={{ py: 3 }}>
+        <ProfileSkeleton />
+        <Box sx={{ mt: 3 }}>
+          <GridSkeleton items={4} columns={2} />
+        </Box>
+      </Container>
     );
   }
 
@@ -566,6 +564,7 @@ function DashboardPage() {
     <Container maxWidth="lg" sx={{ py: 3, display: 'flex', flexDirection: 'column' }}>
       {/* Header Card */}
       <Paper 
+        ref={headerRef}
         elevation={3} 
         sx={{ 
           borderRadius: 2,
@@ -573,6 +572,7 @@ function DashboardPage() {
           boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
           mb: 2
         }}
+       
       >
         {/* Blue header banner */}
         <Box 
@@ -647,14 +647,19 @@ function DashboardPage() {
                 <Grid container spacing={2} sx={{ height: '100%', width: '100%' }}>
                   {/* Profile Card - Left Column */}
                   <Grid item xs={12} md={4} sx={{ display: 'flex' }}>
-                    <Card sx={{ 
-                      borderRadius: 2, 
-                      boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      height: '100%',
-                      width: '100%'
-                    }}>
+                    <Card 
+                      ref={getItemRef(0)}
+                      sx={{ 
+                        borderRadius: 2, 
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        height: '100%',
+                        width: '100%',
+                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+                      }}
+                     
+                    >
                       <CardMedia
                         sx={{ 
                           height: 100, 
@@ -800,14 +805,19 @@ function DashboardPage() {
                   {/* Network Management Widget */}
                   <Grid item xs={12} md={8} sx={{flexGrow:2}}>
                     {profile.network_id ? (
-                      <Card sx={{ 
-                        borderRadius: 2, 
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-                        height: '100%',
-                        width: '100%',
-                        display: 'flex',
-                        flexDirection: 'column',
-                      }}>
+                      <Card 
+                        ref={getItemRef(1)}
+                        sx={{ 
+                          borderRadius: 2, 
+                          boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                          height: '100%',
+                          width: '100%',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+                        }}
+                       
+                      >
                         <CardHeader
                           title="Network Management"
                           titleTypographyProps={{ variant: 'subtitle1' }}

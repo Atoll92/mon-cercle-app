@@ -4,6 +4,8 @@ import { useAuth } from '../context/authcontext';
 import { useTheme } from '../components/ThemeProvider';
 import { useNetwork, NetworkProviderWithParams } from '../context/networkContext';
 import { supabase } from '../supabaseclient';
+import { useFadeIn, useStaggeredAnimation } from '../hooks/useAnimation';
+import { GridSkeleton, ListItemSkeleton } from '../components/LoadingSkeleton';
 import ArticleIcon from '@mui/icons-material/Article';
 import ChatIcon from '@mui/icons-material/Chat';
 import TimelineIcon from '@mui/icons-material/Timeline';
@@ -77,6 +79,10 @@ function NetworkLandingPage() {
   const [selectedMember, setSelectedMember] = useState(null);
   const [showMemberModal, setShowMemberModal] = useState(false);
   const [userParticipations, setUserParticipations] = useState([]);
+  
+  // Animation setup - must be at top level, not conditional
+  const headerRef = useFadeIn(0);
+  const contentRef = useFadeIn(200);
   
   // Generate shareable link
   const shareableLink = network ? `${window.location.origin}/network/${network.id}` : '';
@@ -256,21 +262,9 @@ function NetworkLandingPage() {
 
   if (loading) {
     return (
-      <Box 
-        sx={{ 
-          display: 'flex', 
-          flexDirection: 'column',
-          alignItems: 'center', 
-          justifyContent: 'center', 
-          height: '50vh',
-          color: muiTheme.palette.custom.lightText
-        }}
-      >
-        <CircularProgress size={40} />
-        <Typography variant="body1" sx={{ mt: 2 }}>
-          Loading network...
-        </Typography>
-      </Box>
+      <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+        <GridSkeleton items={6} columns={3} />
+      </Container>
     );
   }
   
@@ -321,10 +315,11 @@ function NetworkLandingPage() {
       </Container>
     );
   }
-  
+
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       <Paper 
+        ref={headerRef}
         sx={{ 
           p: 3, 
           mb: 3,
@@ -490,6 +485,7 @@ function NetworkLandingPage() {
       </Paper>
       
       <Paper 
+        ref={contentRef}
         sx={{ 
           width: '100%', 
           mb: 3, 
@@ -498,7 +494,8 @@ function NetworkLandingPage() {
           // Add a subtle border in dark mode to improve visibility
           border: `1px solid ${muiTheme.palette.custom.border}`,
           // Add shadow for better separation in dark mode
-          boxShadow: darkMode ? '0 4px 20px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.1)'
+          boxShadow: darkMode ? '0 4px 20px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.1)',
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
         }}
       >
         <Tabs

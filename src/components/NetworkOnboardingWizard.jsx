@@ -55,6 +55,7 @@ import {
   FolderShared as SharedFolderIcon,
   Image as ImageIcon,
   NotificationsActive as NotificationsIcon,
+  Close as CloseIcon,
 } from '@mui/icons-material';
 
 const NetworkOnboardingWizard = ({ profile }) => {
@@ -122,8 +123,8 @@ const NetworkOnboardingWizard = ({ profile }) => {
       )
     },
     {
-      label: 'Navigation & Layout',
-      description: 'Configure the default tabs and layout for your network',
+      label: 'Branding & Layout',
+      description: 'Configure your network logo, theme, and navigation',
       component: (
         <NavigationStep 
           networkData={networkData} 
@@ -605,6 +606,8 @@ const FeaturesStep = ({ networkData, setNetworkData }) => {
 // Step 4: Navigation configuration
 const NavigationStep = ({ networkData, setNetworkData }) => {
   const theme = useTheme();
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState(null);
   
   const availableTabs = [
     { id: 'news', label: 'News', icon: <ArticleIcon fontSize="small" /> },
@@ -615,6 +618,69 @@ const NavigationStep = ({ networkData, setNetworkData }) => {
     { id: 'wiki', label: 'Wiki', icon: <WikiIcon fontSize="small" /> },
     { id: 'moodboards', label: 'Moodboards', icon: <ImageIcon fontSize="small" /> }
   ];
+  
+  // Handle logo upload
+  const handleLogoUpload = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Check file type
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      setUploadError('Please upload a valid image file (JPEG, PNG, GIF, or WebP)');
+      return;
+    }
+
+    // Check file size (max 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      setUploadError('Image size must be less than 2MB');
+      return;
+    }
+
+    try {
+      setUploading(true);
+      setUploadError(null);
+
+      // Create a unique file name
+      const fileExt = file.name.split('.').pop();
+      const fileName = `temp-logos/${Date.now()}-network-logo.${fileExt}`;
+
+      // Upload to Supabase storage
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('networks')
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: true,
+          contentType: file.type
+        });
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('networks')
+        .getPublicUrl(fileName);
+
+      // Update network data with logo URL
+      setNetworkData(prev => ({
+        ...prev,
+        logoUrl: publicUrl
+      }));
+    } catch (error) {
+      console.error('Error uploading logo:', error);
+      setUploadError('Failed to upload logo. Please try again.');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  // Handle logo removal
+  const handleRemoveLogo = () => {
+    setNetworkData(prev => ({
+      ...prev,
+      logoUrl: ''
+    }));
+  };
   
   // Handle theme color change
   const handleColorChange = (e) => {
@@ -647,6 +713,78 @@ const NavigationStep = ({ networkData, setNetworkData }) => {
 
   return (
     <Stack spacing={3}>
+      <Paper 
+        elevation={0} 
+        sx={{ 
+          p: 3, 
+          borderRadius: 2, 
+          border: '1px solid',
+          borderColor: 'divider'
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+          <ImageIcon sx={{ mr: 1, color: 'primary.main' }} />
+          <Typography variant="subtitle1" fontWeight="medium">
+            Network Logo
+          </Typography>
+        </Box>
+        
+        <Typography variant="body2" color="text.secondary" paragraph>
+          Upload a logo for your network. This will appear in the header and represent your network.
+        </Typography>
+
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          {networkData.logoUrl ? (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Box
+                component="img"
+                src={networkData.logoUrl}
+                alt="Network Logo"
+                sx={{
+                  width: 80,
+                  height: 80,
+                  objectFit: 'contain',
+                  borderRadius: 1,
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  bgcolor: 'background.paper'
+                }}
+              />
+              <Button
+                variant="outlined"
+                color="error"
+                size="small"
+                onClick={handleRemoveLogo}
+                startIcon={<CloseIcon />}
+              >
+                Remove
+              </Button>
+            </Box>
+          ) : (
+            <Button
+              variant="outlined"
+              component="label"
+              startIcon={uploading ? <CircularProgress size={20} /> : <UploadIcon />}
+              disabled={uploading}
+            >
+              {uploading ? 'Uploading...' : 'Upload Logo'}
+              <input
+                type="file"
+                hidden
+                accept="image/*"
+                onChange={handleLogoUpload}
+              />
+            </Button>
+          )}
+        </Box>
+
+        {uploadError && (
+          <Alert severity="error" sx={{ mt: 2 }}>
+            {uploadError}
+          </Alert>
+        )}
+      </Paper>
+
       <Paper 
         elevation={0} 
         sx={{ 
@@ -762,9 +900,25 @@ const ReviewStep = ({ networkData }) => {
       </Alert>
       
       <Paper elevation={0} sx={{ p: 3, borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
-        <Typography variant="h5" gutterBottom sx={{ color: theme.palette.primary.main }}>
-          {networkData.name}
-        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+          {networkData.logoUrl && (
+            <Box
+              component="img"
+              src={networkData.logoUrl}
+              alt="Network Logo"
+              sx={{
+                width: 60,
+                height: 60,
+                objectFit: 'contain',
+                borderRadius: 1,
+                mr: 2
+              }}
+            />
+          )}
+          <Typography variant="h5" sx={{ color: theme.palette.primary.main }}>
+            {networkData.name}
+          </Typography>
+        </Box>
         
         {networkData.description && (
           <Typography variant="body1" paragraph>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../supabaseclient';
+import { useFadeIn } from '../hooks/useAnimation';
 import {
   Dialog,
   DialogContent,
@@ -18,7 +19,9 @@ import {
   Stack,
   CircularProgress,
   Tooltip,
-  useTheme
+  useTheme,
+  Fade,
+  Zoom
 } from '@mui/material';
 import {
   Close as CloseIcon,
@@ -387,6 +390,10 @@ const MemberDetailsModal = ({
       onClose={onClose} 
       maxWidth="md" 
       fullWidth
+      TransitionComponent={Zoom}
+      TransitionProps={{
+        timeout: 300
+      }}
       PaperProps={{
         sx: {
           bgcolor: darkMode ? '#121212' : 'background.paper',

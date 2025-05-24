@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { AnimatedCard, StaggeredListItem, PageTransition } from './AnimatedComponents';
 import {
   Box,
   Typography,
@@ -15,7 +16,9 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogActions
+  DialogActions,
+  Fade,
+  Zoom
 } from '@mui/material';
 import {
   Event as EventIcon,
@@ -95,11 +98,12 @@ const EventsTab = ({
   };
 
   return (
-    <Paper sx={{ p: 3 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h5" component="h2" gutterBottom>
-          Events
-        </Typography>
+    <PageTransition>
+      <Paper sx={{ p: 3 }} className="hover-lift">
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+          <Typography variant="h5" component="h2" gutterBottom>
+            Events
+          </Typography>
         
         {isUserAdmin && (
           <Button
@@ -247,8 +251,9 @@ const EventsTab = ({
                         (isToday ? 'event-today' : 'event-default');
                       
                       return (
-                        <Box 
+                        <StaggeredListItem
                           key={event.id}
+                          index={index}
                           className="parent-event-row" 
                           sx={{ 
                             display: 'flex',
@@ -467,7 +472,7 @@ const EventsTab = ({
                               </Box>
                             </Box>
                           </Box>
-                        </Box>
+                        </StaggeredListItem>
                       );
                     })}
                 </Box>
@@ -1371,7 +1376,8 @@ const EventsTab = ({
           </>
         )}
       </Dialog>
-    </Paper>
+      </Paper>
+    </PageTransition>
   );
 };
 

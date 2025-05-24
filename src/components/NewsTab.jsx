@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/authcontext';
 import { useNetwork } from '../context/networkContext';
 import { supabase } from '../supabaseclient';
+import { AnimatedCard, StaggeredListItem, PageTransition } from './AnimatedComponents';
+import { NewsItemSkeleton } from './LoadingSkeleton';
 import {
   Typography,
   Paper,
@@ -20,7 +22,9 @@ import {
   Alert,
   CircularProgress,
   IconButton,
-  Chip
+  Chip,
+  Fade,
+  Zoom
 } from '@mui/material';
 import {
   Edit as EditIcon,
@@ -355,11 +359,12 @@ const NewsTab = ({ darkMode }) => {
 
   // Main component render
   return (
-    <Paper sx={{ p: 3, bgcolor: darkMode ? 'background.paper' : undefined }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-        <Typography variant="h5" gutterBottom>
-          Network News
-        </Typography>
+    <PageTransition>
+      <Paper sx={{ p: 3, bgcolor: darkMode ? 'background.paper' : undefined }} className="hover-lift">
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+          <Typography variant="h5" gutterBottom>
+            Network News
+          </Typography>
         
         {isAdmin && !isCreating && (
           <Button 
@@ -413,7 +418,15 @@ const NewsTab = ({ darkMode }) => {
       </Typography>
       <Divider sx={{ mb: 3 }} />
       
-      {networkNews.length === 0 ? (
+      {!network ? (
+        <Box>
+          {[1, 2, 3].map((_, index) => (
+            <Box key={index} sx={{ mb: 3 }}>
+              <NewsItemSkeleton />
+            </Box>
+          ))}
+        </Box>
+      ) : networkNews.length === 0 ? (
         <Box sx={{ textAlign: 'center', py: 4 }}>
           <Typography variant="body1" color="text.secondary">
             No news posts available
@@ -431,17 +444,18 @@ const NewsTab = ({ darkMode }) => {
           )}
         </Box>
       ) : (
-        networkNews.map(post => (
-          <Card key={post.id} sx={{ mb: 3, overflow: 'hidden' }}>
-            {post.image_url && (
-              <CardMedia
-                component="img"
-                height="240"
-                image={post.image_url}
-                alt={post.title}
-                sx={{ objectFit: 'cover' }}
-              />
-            )}
+        networkNews.map((post, index) => (
+          <StaggeredListItem key={post.id} index={index}>
+            <AnimatedCard sx={{ mb: 3, overflow: 'hidden' }}>
+              {post.image_url && (
+                <CardMedia
+                  component="img"
+                  height="240"
+                  image={post.image_url}
+                  alt={post.title}
+                  sx={{ objectFit: 'cover' }}
+                />
+              )}
             <CardContent>
               <Typography variant="h6" gutterBottom>
                 {post.title}
@@ -487,10 +501,12 @@ const NewsTab = ({ darkMode }) => {
                 </Button>
               </CardActions>
             )}
-          </Card>
+            </AnimatedCard>
+          </StaggeredListItem>
         ))
       )}
-    </Paper>
+      </Paper>
+    </PageTransition>
   );
 };
 

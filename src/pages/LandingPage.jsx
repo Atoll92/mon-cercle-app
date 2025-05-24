@@ -20,6 +20,8 @@ import Divider from '@mui/material/Divider';
 import Paper from '@mui/material/Paper';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTheme } from '@mui/material/styles';
+import { useScrollAnimation } from '../hooks/useScrollAnimation';
+import { AnimatedCard, PageTransition } from '../components/AnimatedComponents';
 import MicroLogo from '../assets/micro.svg';
 
 
@@ -702,20 +704,21 @@ const DGLogo = () => (
 
   // --- JSX Structure ---
   return (
-    <Box sx={{ 
-      flexGrow: 1,
-      position: 'relative',
-      minHeight: '100vh',
-      overflow: 'hidden',
-            // backgroundColor: '#f3f3f3'
+    <PageTransition>
+      <Box sx={{ 
+        flexGrow: 1,
+        position: 'relative',
+        minHeight: '100vh',
+        overflow: 'hidden',
+              // backgroundColor: '#f3f3f3'
 
-      backgroundColor: '#eef4f9'
-    }}>
-      {/* Three.js Background Animation */}
-      <ThreeJSBackground />
-      
-      {/* Content positioned above the background */}
-      <Box sx={{ position: 'relative', zIndex: 1 }}>
+        backgroundColor: '#eef4f9'
+      }}>
+        {/* Three.js Background Animation */}
+        <ThreeJSBackground />
+        
+        {/* Content positioned above the background */}
+        <Box sx={{ position: 'relative', zIndex: 1 }}>
         {/* --- Navigation AppBar --- */}
         <AppBar 
           position="relative"
@@ -1009,7 +1012,7 @@ const DGLogo = () => (
         sm={6}  // Half width on small screens and up
         md={4}  // One-third width on medium screens and up
       >
-        <Card
+        <AnimatedCard
           sx={{
             height: '100%', // Makes card fill the Grid item height (works with alignItems="stretch" on container)
             display: 'flex',
@@ -1020,13 +1023,20 @@ const DGLogo = () => (
             // width: '100%', // Correct: Card fills its Grid item horizontally
             overflow: 'hidden',
             boxShadow: '0 4px 8px rgba(0, 0, 0, 0.08)',
-            transition: 'all 0.2s ease-in-out',
             textAlign: 'center',
-            '&:hover': {
-              transform: 'translateY(-4px)',
-              boxShadow: '0 8px 16px rgba(0, 0, 0, 0.12)'
-            },
             backgroundColor: 'rgba(255, 255, 255, 0.9)',
+            animation: `fadeInUp 0.4s ease-out ${index * 100}ms forwards`,
+            opacity: 0,
+            '@keyframes fadeInUp': {
+              from: {
+                opacity: 0,
+                transform: 'translateY(30px)',
+              },
+              to: {
+                opacity: 1,
+                transform: 'translateY(0)',
+              },
+            },
             // maxHeight: '140px' // Consider removing maxHeight if height: '100%' and alignItems="stretch" work better
           }}
         >
@@ -1070,7 +1080,7 @@ const DGLogo = () => (
               {feature.description}
             </Typography>
           </CardContent>
-        </Card>
+        </AnimatedCard>
       </Grid>
     ))}
   </Grid>
@@ -1212,6 +1222,7 @@ const DGLogo = () => (
         </Container>
       </Box>
     </Box>
+    </PageTransition>
   );
 }
 

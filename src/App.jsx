@@ -6,6 +6,7 @@ import { CircularProgress, Box } from '@mui/material';
 import NetworkHeader from './components/NetworkHeader';
 import Footer from './components/Footer';
 import { supabase } from './supabaseclient';
+import { preventResizeAnimations } from './utils/animationHelpers';
 import WikiListPage from './pages/WikiListPage';
 import WikiPage from './pages/WikiPage';
 import WikiEditPage from './pages/WikiEditPage';
@@ -46,6 +47,12 @@ function App() {
   const location = useLocation();
   const [networkName, setNetworkName] = useState('');
   const [fetchingNetwork, setFetchingNetwork] = useState(false);
+
+  // Initialize resize animation prevention
+  useEffect(() => {
+    const cleanup = preventResizeAnimations();
+    return cleanup;
+  }, []);
 
   // Fetch user's network info when user changes
   useEffect(() => {

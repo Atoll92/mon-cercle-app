@@ -521,7 +521,18 @@ const renderMessageContent = (message) => {
                   transition: 'all 0.2s ease',
                   border: darkMode 
                     ? 'none' 
-                    : `1px solid ${message.user_id === user.id ? '#bbdefb' : '#e0e0e0'}`
+                    : `1px solid ${message.user_id === user.id ? '#bbdefb' : '#e0e0e0'}`,
+                  animation: 'fadeInUp 0.3s ease-out',
+                  '@keyframes fadeInUp': {
+                    from: {
+                      opacity: 0,
+                      transform: `translateY(10px) ${message.user_id === user.id ? 'translateX(4%)' : 'translateX(-4%)'}`
+                    },
+                    to: {
+                      opacity: 1,
+                      transform: `translateY(0) ${message.user_id === user.id ? 'translateX(4%)' : 'translateX(-4%)'}`
+                    }
+                  }
                 }}
               >
                 <ListItemAvatar sx={{ minWidth: 42 }}> {/* Reduced avatar area width */}

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { PageTransition } from './AnimatedComponents';
 import {
   Typography,
   Paper,
@@ -9,7 +10,9 @@ import {
   AppBar,
   Toolbar,
   Box,
-  Slide
+  Slide,
+  Fade,
+  Zoom
 } from '@mui/material';
 import {
   Fullscreen as FullscreenIcon,
@@ -35,11 +38,14 @@ const ChatTab = ({ networkId, isUserMember, darkMode = false }) => {
   };
 
   return (
-    <Paper sx={{ p: 3, mt: 2, position: 'relative' }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-        <Typography variant="h5">
-          Network Chat
-        </Typography>
+    <PageTransition>
+      <Paper sx={{ p: 3, mt: 2, position: 'relative' }} className="hover-lift">
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+          <Fade in timeout={500}>
+            <Typography variant="h5">
+              Network Chat
+            </Typography>
+          </Fade>
         
         {isUserMember && (
           <IconButton 
@@ -125,7 +131,8 @@ const ChatTab = ({ networkId, isUserMember, darkMode = false }) => {
           <Chat networkId={networkId} isFullscreen={true} />
         </Box>
       </Dialog>
-    </Paper>
+      </Paper>
+    </PageTransition>
   );
 };
 

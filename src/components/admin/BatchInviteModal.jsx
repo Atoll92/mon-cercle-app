@@ -17,6 +17,8 @@ import {
   IconButton,
   LinearProgress,
   Tooltip,
+  Zoom,
+  Fade
 } from '@mui/material';
 import {
   CloudUpload as CloudUploadIcon,
@@ -475,6 +477,10 @@ const BatchInviteModal = ({ open, onClose, onInvite, network, user }) => {
       maxWidth="md"
       fullWidth
       aria-labelledby="batch-invite-dialog-title"
+      TransitionComponent={Zoom}
+      TransitionProps={{
+        timeout: 300
+      }}
     >
       <DialogTitle id="batch-invite-dialog-title">
         Batch Invite Members
