@@ -1,4 +1,5 @@
 import { supabase } from '../supabaseclient';
+import { queueNewsNotifications } from '../services/emailNotificationService';
 
 const fetchNetworkMembers = async (networkId) => {
     try {
@@ -522,6 +523,28 @@ export const createNewsPost = async (networkId, userId, title, content, imageUrl
       .select();
       
     if (error) throw error;
+    
+    // Queue email notifications for network members
+    try {
+      console.log('Queuing email notifications for news post...');
+      const notificationResult = await queueNewsNotifications(
+        networkId,
+        data[0].id,
+        userId,
+        title,
+        content
+      );
+      
+      if (notificationResult.success) {
+        console.log(`Email notifications queued successfully: ${notificationResult.message}`);
+      } else {
+        console.error('Failed to queue email notifications:', notificationResult.error);
+        // Don't fail the news post creation if notification queueing fails
+      }
+    } catch (notificationError) {
+      console.error('Error queueing email notifications:', notificationError);
+      // Don't fail the news post creation if notification queueing fails
+    }
     
     return {
       success: true,

@@ -6,8 +6,11 @@ interface InviteData {
   toEmail: string;
   networkName: string;
   inviterName: string;
-  type: 'existing_user' | 'new_user';
+  type: 'existing_user' | 'new_user' | 'news_notification';
   inviteLink?: string;
+  subject?: string;
+  content?: string;
+  relatedItemId?: string;
 }
 
 const handler = async (request: Request): Promise<Response> => {
@@ -33,7 +36,7 @@ const handler = async (request: Request): Promise<Response> => {
     }
 
     // Parse the request body
-    const { toEmail, networkName, inviterName, type, inviteLink } = await request.json() as InviteData;
+    const { toEmail, networkName, inviterName, type, inviteLink, subject, content, relatedItemId } = await request.json() as InviteData;
 
     // Validate required fields
     if (!toEmail || !networkName || !inviterName || !type) {
@@ -51,12 +54,20 @@ const handler = async (request: Request): Promise<Response> => {
       );
     }
 
+    // For news notifications, subject and content are required
+    if (type === 'news_notification' && (!subject || !content)) {
+      return new Response(
+        JSON.stringify({ error: 'Subject and content are required for news notifications' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Prepare email content based on invitation type
-    let subject = '';
+    let emailSubject = '';
     let html = '';
 
     if (type === 'existing_user') {
-      subject = `You've been added to the ${networkName} network`;
+      emailSubject = `You've been added to the ${networkName} network`;
       html = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2>Welcome to ${networkName}</h2>
@@ -73,8 +84,8 @@ const handler = async (request: Request): Promise<Response> => {
           <p>Best regards,<br>The Team</p>
         </div>
       `;
-    } else {
-      subject = `You're invited to join ${networkName}`;
+    } else if (type === 'new_user') {
+      emailSubject = `You're invited to join ${networkName}`;
       html = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2>You're invited to join ${networkName}</h2>
@@ -91,6 +102,37 @@ const handler = async (request: Request): Promise<Response> => {
           <p>Best regards,<br>The Team</p>
         </div>
       `;
+    } else if (type === 'news_notification') {
+      emailSubject = subject;
+      html = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; line-height: 1.6;">
+          <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+            <h2 style="color: #2196f3; margin: 0 0 10px 0;">📰 New Post in ${networkName}</h2>
+            <p style="margin: 0; color: #666; font-size: 14px;">Stay connected with your network</p>
+          </div>
+          
+          <div style="background-color: white; padding: 24px; border: 1px solid #e0e0e0; border-radius: 8px;">
+            <p style="margin: 0 0 16px 0; color: #333;">${content}</p>
+            
+            <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid #f0f0f0;">
+              <a href="${Deno.env.get('APP_URL') || 'https://your-app-url.com'}/dashboard" 
+                 style="display: inline-block; background-color: #2196f3; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 500;">
+                View Full Post
+              </a>
+            </div>
+          </div>
+          
+          <div style="margin-top: 20px; padding: 16px; background-color: #f8f9fa; border-radius: 6px; font-size: 12px; color: #666;">
+            <p style="margin: 0 0 8px 0;">You're receiving this because you're subscribed to notifications for ${networkName}.</p>
+            <p style="margin: 0;">
+              <a href="${Deno.env.get('APP_URL') || 'https://your-app-url.com'}/profile/edit" 
+                 style="color: #2196f3; text-decoration: none;">
+                Manage your notification preferences
+              </a>
+            </p>
+          </div>
+        </div>
+      `;
     }
 
     // Send email using Resend API
@@ -103,7 +145,7 @@ const handler = async (request: Request): Promise<Response> => {
       body: JSON.stringify({
         from: Deno.env.get('FROM_EMAIL') || 'noreply@your-domain.com',
         to: toEmail,
-        subject: subject,
+        subject: emailSubject,
         html: html,
       }),
     });

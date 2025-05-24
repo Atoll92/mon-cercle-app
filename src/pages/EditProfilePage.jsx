@@ -44,8 +44,10 @@ import {
   Badge as BadgeIcon,
   PictureAsPdf as PdfIcon,
   Image as ImageIcon,
-  FileUpload as FileUploadIcon
+  FileUpload as FileUploadIcon,
+  Notifications as NotificationsIcon
 } from '@mui/icons-material';
+import NotificationSettings from '../components/NotificationSettings';
 
 function EditProfilePage() {
   const { user } = useAuth();
@@ -648,6 +650,11 @@ function EditProfilePage() {
           <Tab 
             label="Posts" 
             icon={<LanguageIcon />} 
+            iconPosition="start"
+          />
+          <Tab 
+            label="Notifications" 
+            icon={<NotificationsIcon />} 
             iconPosition="start"
           />
         </Tabs>
@@ -1292,6 +1299,13 @@ function EditProfilePage() {
                     </Grid>
                   )}
                 </Box>
+              </Box>
+            )}
+            
+            {/* Notifications Tab */}
+            {activeTab === 2 && (
+              <Box>
+                <NotificationSettings />
               </Box>
             )}
             

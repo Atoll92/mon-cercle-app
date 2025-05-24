@@ -4,6 +4,7 @@ import { useAuth } from '../context/authcontext';
 import { supabase } from '../supabaseclient';
 import { useNavigate, Link } from 'react-router-dom';
 import PersonalMoodboardWidget from '../components/PersonalMoodboardWidget';
+import LatestNewsWidget from '../components/LatestNewsWidget';
 import { 
   AttachMoney as AttachMoneyIcon,
   Star as StarIcon,
@@ -1394,12 +1395,17 @@ function DashboardPage() {
                 </Grid>
               </Grid>
               
-              {/* Row 3: Moodboard (Full Width) */}
+              {/* Row 3: Moodboard and Latest News */}
               <Grid item xs={12} sx={{ minHeight: '350px', width: '100%' }}>
                 <Grid container spacing={2} sx={{ height: '100%', width: '100%' }}>
-                  <Grid item xs={12} sx={{ display: 'flex', height: '100%', width: '100%' }}>
+                  <Grid item xs={12} md={8} sx={{ display: 'flex', height: '100%' }}>
                     <PersonalMoodboardWidget user={user} />
                   </Grid>
+                  {profile.network_id && (
+                    <Grid item xs={12} md={4} sx={{ display: 'flex', height: '100%' }}>
+                      <LatestNewsWidget networkId={profile.network_id} maxHeight={350} />
+                    </Grid>
+                  )}
                 </Grid>
               </Grid>
             </Grid>
