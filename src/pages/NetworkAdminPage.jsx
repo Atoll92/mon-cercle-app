@@ -35,6 +35,7 @@ import EventsTab from '../components/admin/EventsTab';
 import NewsTab from '../components/admin/Newstab';
 import ModerationTab from '../components/admin/ModerationTab';
 import PollsTab from '../components/admin/PollsTab';
+import InvitationLinksTab from '../components/admin/InvitationLinksTab';
 import AdminLayout from '../components/admin/AdminLayout';
 import AdminBreadcrumbs from '../components/admin/AdminBreadcrumbs';
 
@@ -255,6 +256,7 @@ function NetworkAdminPage() {
             {activeTab === 4 && "Polls Management"}
             {activeTab === 5 && "Theme & Branding"}
             {activeTab === 6 && "Moderation Tools"}
+            {activeTab === 7 && "Invitation Links"}
           </Typography>
         </Box>
 
@@ -338,6 +340,14 @@ function NetworkAdminPage() {
             network={network}
             user={user}
             members={members}
+            darkMode={darkMode} // Pass dark mode to component
+          />
+        )}
+        
+        {activeTab === 7 && (
+          /* Invitation Links Component */
+          <InvitationLinksTab
+            networkId={network.id}
             darkMode={darkMode} // Pass dark mode to component
           />
         )}

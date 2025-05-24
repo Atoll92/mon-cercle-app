@@ -56,24 +56,27 @@ function SignupPage() {
   const location = useLocation(); // Added to access URL params
 
   // Invitation data states
-  const [inviteToken, setInviteToken] = useState(null);
+  const [inviteCode, setInviteCode] = useState(null);
+  const [invitationData, setInvitationData] = useState(null);
   const [networkName, setNetworkName] = useState('');
-  const [invitationId, setInvitationId] = useState(null);
-  const [networkId, setNetworkId] = useState(null);
   const [invitationLoading, setInvitationLoading] = useState(false);
   const [invitationError, setInvitationError] = useState(null);
 
-  // Extract invite token from URL when component mounts
+  // Extract redirect URL from query params
+  const searchParams = new URLSearchParams(location.search);
+  const redirectUrl = searchParams.get('redirect');
+
+  // Extract invite code from redirect URL when component mounts
   useEffect(() => {
-    const searchParams = new URLSearchParams(location.search);
-    const invite = searchParams.get('invite');
-    
-    if (invite) {
-      setInviteToken(invite);
-      // Fetch network info based on the invite token
-      fetchNetworkInfo(invite);
+    if (redirectUrl && redirectUrl.includes('/join/')) {
+      const code = redirectUrl.split('/join/')[1];
+      if (code) {
+        setInviteCode(code);
+        // Fetch invitation info based on the code
+        fetchInvitationInfo(code);
+      }
     }
-  }, [location]);
+  }, [redirectUrl]);
 
   
   const ensureProfile = async (userId, email, networkId = null) => {
@@ -135,84 +138,23 @@ function SignupPage() {
     }
   };
   
-  // Fetch network info based on the invite token
-  const fetchNetworkInfo = async (token) => {
-    if (!token) return;
+  // Fetch invitation info based on the code
+  const fetchInvitationInfo = async (code) => {
+    if (!code) return;
     
     setInvitationLoading(true);
     setInvitationError(null);
     
     try {
-      // Decode the token - use try/catch for decoding to handle potential errors
-      let decoded;
-      try {
-        decoded = atob(token);
-      } catch (decodeError) {
-        console.error('Failed to decode token:', decodeError);
-        throw new Error('Invalid invitation format: Could not decode token');
-      }
+      // Import the API function
+      const { getInvitationByCode } = await import('../api/invitations');
+      const invitation = await getInvitationByCode(code);
       
-      const parts = decoded.split(':');
-      
-      // Check if token has a valid format
-      if (parts.length !== 3 || parts[0] !== 'invite') {
-        throw new Error('Invalid invitation format: Incorrect structure');
-      }
-      
-      const invId = parts[1];
-      const netId = parts[2];
-      
-      if (!invId || !netId) {
-        throw new Error('Invalid invitation: Missing required data');
-      }
-      
-      setInvitationId(invId);
-      setNetworkId(netId);
-      
-      // Fetch network name
-      const { data: network, error } = await supabase
-        .from('networks')
-        .select('name')
-        .eq('id', netId)
-        .single();
-        
-      if (error) {
-        console.error('Error fetching network:', error);
-        throw new Error(`Network error: ${error.message}`);
-      }
-      
-      if (network) {
-        setNetworkName(network.name);
-        
-        // Check if the invitation is still valid
-const { data: invitation, error: inviteError } = await supabase
-.from('invitations')
-.select('status')
-.eq('id', invId)
-.single();
-
-if (inviteError) {
-console.error('Error fetching invitation:', inviteError);
-throw new Error(`Invitation error: ${inviteError.message}`);
-}
-
-if (!invitation) {
-throw new Error('Invitation not found');
-}
-
-// Check invitation status (keep this check)
-if (invitation.status !== 'pending') {
-throw new Error(`This invitation has already been ${invitation.status}.`);
-}
-
-// Remove the expiration check block entirely
-        
-        // Check if invitation has expired (if expires_at is set)
-        // if (invitation.expires_at && new Date(invitation.expires_at) < new Date()) {
-        //   throw new Error('This invitation has expired.');
-        // }
+      if (invitation) {
+        setInvitationData(invitation);
+        setNetworkName(invitation.networks?.name || '');
       } else {
-        throw new Error('Network not found');
+        setInvitationError('Invalid or expired invitation');
       }
     } catch (error) {
       console.error('Error processing invitation:', error);
@@ -261,27 +203,21 @@ throw new Error(`This invitation has already been ${invitation.status}.`);
       }
   
       // 2. Process invitation if present
-      if (inviteToken && networkId && invitationId && !invitationError) {
+      if (inviteCode && invitationData && !invitationError) {
         try {
           // Make sure there's a delay to allow Supabase to create any default records
           await new Promise(resolve => setTimeout(resolve, 1000));
           
           // Use the ensureProfile function instead of manual update/insert
-          const profileCreated = await ensureProfile(data.user.id, email, networkId);
+          const profileCreated = await ensureProfile(data.user.id, email, invitationData.network_id);
           
           if (!profileCreated) {
             throw new Error("Failed to create or update profile with network information");
           }
           
-          // Update invitation status
-          const { error: inviteError } = await supabase
-            .from('invitations')
-            .update({ status: 'accepted' })
-            .eq('id', invitationId);
-            
-          if (inviteError) {
-            console.error('Error updating invitation status:', inviteError);
-          }
+          // Join the network via invitation
+          const { joinNetworkViaInvitation } = await import('../api/invitations');
+          await joinNetworkViaInvitation(inviteCode);
           
           setMessage(`Signup successful! You have been added to ${networkName}. Please check your email to confirm your account.`);
         } catch (inviteError) {
@@ -320,9 +256,15 @@ throw new Error(`This invitation has already been ${invitation.status}.`);
       setPassword('');
       setConfirmPassword('');
   
-      // Wait a bit before redirecting to login
+      // Wait a bit before redirecting
       setTimeout(() => {
-        navigate('/login');
+        if (inviteCode && invitationData) {
+          // If coming from invitation, redirect to the network page
+          navigate(`/network/${invitationData.network_id}`);
+        } else {
+          // Otherwise redirect to login
+          navigate('/login');
+        }
       }, 3000);
   
     } catch (error) {
@@ -395,18 +337,17 @@ throw new Error(`This invitation has already been ${invitation.status}.`);
                     backgroundColor: 'rgba(25, 118, 210, 0.08)'
                   }}
                 >
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                    <GroupAddIcon color="primary" sx={{ mr: 1 }} />
-                    <Typography variant="subtitle1">
-                      Network Invitation
+                  <Stack direction="row" alignItems="center" spacing={1}>
+                    <GroupAddIcon color="primary" />
+                    <Typography variant="body1">
+                      You're invited to join <strong>{networkName}</strong>
                     </Typography>
-                  </Box>
-                  <Typography variant="body2">
-                    You're signing up to join: <Chip label={networkName} size="small" sx={{ fontWeight: 'bold' }} />
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ mt: 1, fontSize: '0.85rem' }}>
-                    Your account will be automatically added to this network when you register.
-                  </Typography>
+                  </Stack>
+                  {invitationData?.description && (
+                    <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                      {invitationData.description}
+                    </Typography>
+                  )}
                 </Box>
               )}
 
@@ -518,7 +459,7 @@ throw new Error(`This invitation has already been ${invitation.status}.`);
                     fullWidth
                     variant="contained"
                     size="large"
-                    disabled={loading || (inviteToken && (invitationLoading || invitationError))}
+                    disabled={loading || (inviteCode && (invitationLoading || invitationError))}
                     sx={{
                       mt: 2, // Margin top consistent with login
                       py: 1.2, // Padding vertical consistent with login

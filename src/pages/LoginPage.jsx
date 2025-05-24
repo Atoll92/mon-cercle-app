@@ -1,7 +1,7 @@
 // src/pages/LoginPage.jsx
 import React, { useState } from 'react';
 import { supabase } from '../supabaseclient';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import {
   Box,
   Button,
@@ -49,6 +49,11 @@ function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const location = useLocation();
+  
+  // Get redirect URL from query params
+  const searchParams = new URLSearchParams(location.search);
+  const redirectUrl = searchParams.get('redirect');
 
   const handleClickShowPassword = () => {
     setShowPassword(!showPassword);
@@ -63,8 +68,13 @@ function LoginPage() {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
       // AuthProvider's onAuthStateChange will handle setting session state
-      navigate('/dashboard', { replace: true }); // <-- CHANGE HERE (Redirect to /dashboard)
-      //     } catch (error) {
+      // Check if there's a redirect URL, otherwise go to dashboard
+      if (redirectUrl) {
+        navigate(redirectUrl, { replace: true });
+      } else {
+        navigate('/dashboard', { replace: true });
+      }
+    } catch (error) {
       setError(error.message || "Failed to log in");
       console.error("Login error:", error);
     } finally {
@@ -117,6 +127,16 @@ function LoginPage() {
             </Box>
             
             <CardContent sx={{ p: 4 }}>
+              {/* Show invitation notice if coming from join page */}
+              {redirectUrl && redirectUrl.includes('/join/') && (
+                <Alert 
+                  severity="info" 
+                  sx={{ mb: 3 }}
+                >
+                  Please sign in with your existing account to join the network
+                </Alert>
+              )}
+              
               {error && (
                 <Alert 
                   severity="error" 

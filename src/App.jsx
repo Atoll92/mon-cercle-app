@@ -41,6 +41,7 @@ import PasswordUpdatePage from './pages/PasswordUpdatePage';
 import NetworkOnboardingPage from './pages/NetworkOnboardingPage';
 import MicroConclavPage from './pages/MicroConclavPage';
 import SuperAdminDashboard from './pages/SuperAdminDashboard';
+import JoinNetworkPage from './pages/JoinNetworkPage';
 
 function App() {
   const { loading, session, user } = useAuth();
@@ -219,6 +220,9 @@ function App() {
             
             {/* Networks routes */}
             <Route path="/network/:networkId" element={<NetworkLandingPage />} />
+            
+            {/* Join network via invitation link */}
+            <Route path="/join/:code" element={<JoinNetworkPage />} />
             
             {/* Catch-all Route for 404 Not Found */}
             <Route path="*" element={<NotFoundPage />} />
