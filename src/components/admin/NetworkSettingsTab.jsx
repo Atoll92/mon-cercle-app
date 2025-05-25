@@ -200,12 +200,12 @@ const NetworkSettingsTab = ({ network, onNetworkUpdate, darkMode }) => {
       )}
       
       <form onSubmit={handleUpdateNetwork}>
-        {/* Basic Settings */}
+        {/* Network Information */}
         <Accordion defaultExpanded>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography sx={{ display: 'flex', alignItems: 'center', fontWeight: 'medium' }}>
               <SettingsIcon sx={{ mr: 1 }} />
-              Basic Settings
+              Network Information
             </Typography>
           </AccordionSummary>
           <AccordionDetails>
@@ -380,17 +380,17 @@ const NetworkSettingsTab = ({ network, onNetworkUpdate, darkMode }) => {
           </AccordionDetails>
         </Accordion>
 
-        {/* Default Navigation Tabs */}
+        {/* Navigation Tabs */}
         <Accordion defaultExpanded sx={{ mt: 2 }}>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography sx={{ display: 'flex', alignItems: 'center', fontWeight: 'medium' }}>
               <ViewModuleIcon sx={{ mr: 1 }} />
-              Default Navigation Tabs
+              Navigation Tabs
             </Typography>
           </AccordionSummary>
           <AccordionDetails>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              Select which tabs will appear by default in your network navigation.
+              Select which tabs will appear in your network navigation.
             </Typography>
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
               {availableTabs

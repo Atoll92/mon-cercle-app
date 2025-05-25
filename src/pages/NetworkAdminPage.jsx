@@ -261,25 +261,23 @@ function NetworkAdminPage() {
         </Box>
 
         {activeTab === 0 && (
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={6}>
-              {/* Network Settings Component */}
-              <NetworkSettingsTab 
-                network={network} 
-                onNetworkUpdate={updateNetworkState}
-                darkMode={darkMode} // Pass dark mode to component
-              />
-            </Grid>
-            
-            <Grid item xs={12} md={6}>
-              {/* Network Info Component */}
+          <Box>
+            {/* Network Info Component - at the top */}
+            <Box sx={{ mb: 3 }}>
               <NetworkInfoPanel 
                 network={network} 
                 members={members}
                 darkMode={darkMode} // Pass dark mode to component
               />
-            </Grid>
-          </Grid>
+            </Box>
+            
+            {/* Network Settings Component - full width below */}
+            <NetworkSettingsTab 
+              network={network} 
+              onNetworkUpdate={updateNetworkState}
+              darkMode={darkMode} // Pass dark mode to component
+            />
+          </Box>
         )}
 
         {activeTab === 1 && (
