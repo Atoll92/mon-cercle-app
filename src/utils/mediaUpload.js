@@ -1,4 +1,5 @@
 import { supabase } from '../supabaseclient';
+import imageCompression from 'browser-image-compression';
 
 // Supported file types
 export const MEDIA_TYPES = {
@@ -78,8 +79,37 @@ export const validateFile = (file, allowedTypes = ['IMAGE', 'VIDEO', 'AUDIO']) =
   return { valid: true, mediaType };
 };
 
+// Compress image file
+export const compressImage = async (file, options = {}) => {
+  const defaultOptions = {
+    maxSizeMB: 1, // Max file size in MB
+    maxWidthOrHeight: 1920, // Max width or height
+    useWebWorker: true,
+    initialQuality: 0.8,
+    ...options
+  };
+
+  try {
+    // Only compress if file is larger than target size
+    if (file.size <= defaultOptions.maxSizeMB * 1024 * 1024) {
+      return file;
+    }
+
+    const compressedFile = await imageCompression(file, defaultOptions);
+    
+    // Log compression results
+    console.log(`Image compressed: ${(file.size / 1024 / 1024).toFixed(2)}MB -> ${(compressedFile.size / 1024 / 1024).toFixed(2)}MB`);
+    
+    return compressedFile;
+  } catch (error) {
+    console.error('Error compressing image:', error);
+    // Return original file if compression fails
+    return file;
+  }
+};
+
 // Upload media file to Supabase Storage
-export const uploadMediaFile = async (file, bucket, path) => {
+export const uploadMediaFile = async (file, bucket, path, options = {}) => {
   try {
     // Validate file
     const validation = validateFile(file);
@@ -87,16 +117,23 @@ export const uploadMediaFile = async (file, bucket, path) => {
       throw new Error(validation.error);
     }
 
+    let fileToUpload = file;
+
+    // Compress image if enabled and file is an image
+    if (options.compress !== false && validation.mediaType === 'IMAGE') {
+      fileToUpload = await compressImage(file, options.compressionOptions);
+    }
+
     // Generate unique filename
     const timestamp = Date.now();
     const randomString = Math.random().toString(36).substring(2, 15);
-    const extension = file.name.split('.').pop();
+    const extension = fileToUpload.name.split('.').pop();
     const fileName = `${path}/${timestamp}_${randomString}.${extension}`;
 
     // Upload to Supabase Storage
     const { data, error } = await supabase.storage
       .from(bucket)
-      .upload(fileName, file);
+      .upload(fileName, fileToUpload);
 
     if (error) throw error;
 
@@ -110,8 +147,10 @@ export const uploadMediaFile = async (file, bucket, path) => {
       path: data.path,
       mediaType: validation.mediaType,
       fileName: file.name,
-      fileSize: file.size,
-      mimeType: file.type
+      originalSize: file.size,
+      uploadedSize: fileToUpload.size,
+      mimeType: fileToUpload.type,
+      wasCompressed: fileToUpload !== file
     };
   } catch (error) {
     console.error('Error uploading media:', error);

@@ -252,7 +252,10 @@ function NetworkLandingPage() {
   // Fetch post items for all network members (stored as portfolio_items in database)
   useEffect(() => {
     const fetchPostItems = async () => {
-      if (!networkMembers || networkMembers.length === 0) return;
+      if (!networkMembers || !Array.isArray(networkMembers) || networkMembers.length === 0) {
+        console.log("Skipping post fetch - networkMembers not ready:", networkMembers);
+        return;
+      }
       
       setLoadingPosts(true);
       try {
@@ -268,8 +271,8 @@ function NetworkLandingPage() {
         console.log('Fetched posts from database:', data); // Debug log
         
         // Add member info to each post item
-        const itemsWithMemberInfo = data.map(item => {
-          const member = networkMembers.find(m => m.id === item.profile_id);
+        const itemsWithMemberInfo = (data || []).map(item => {
+          const member = Array.isArray(networkMembers) ? networkMembers.find(m => m.id === item.profile_id) : null;
           return {
             ...item,
             itemType: 'post', // Item from portfolio_items table displayed as post

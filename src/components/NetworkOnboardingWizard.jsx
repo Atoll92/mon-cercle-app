@@ -283,6 +283,10 @@ const NetworkOnboardingWizard = ({ profile }) => {
 
       if (profileError) throw profileError;
 
+      // Refresh the user session to ensure the profile update is reflected
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError) console.error('Error refreshing session:', sessionError);
+
       setSuccess(true);
       
       // Redirect to the network page after 2 seconds
@@ -1123,7 +1127,7 @@ const ReviewStep = ({ networkData }) => {
               Default Navigation Tabs
             </Typography>
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-              {networkData.defaultTabs.map((tab) => (
+              {networkData.enabledTabs.map((tab) => (
                 <Chip 
                   key={tab}
                   label={tab.charAt(0).toUpperCase() + tab.slice(1)}

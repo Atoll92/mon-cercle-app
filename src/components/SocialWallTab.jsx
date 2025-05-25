@@ -32,6 +32,7 @@ import {
   PictureAsPdf as PdfIcon
 } from '@mui/icons-material';
 import MediaPlayer from './MediaPlayer';
+import LazyImage from './LazyImage';
 
 // Number of items to display initially
 const ITEMS_PER_FETCH = 6;
@@ -696,20 +697,19 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                         if (mediaType === 'image') {
                           return (
                             <Box sx={{ position: 'relative', width: '100%', pt: '56.25%' }}>
-                              <CardMedia
-                                component="img"
-                                image={item.media_url}
+                              <LazyImage
+                                src={item.media_url}
                                 alt={item.title}
-                                sx={{ 
+                                style={{ 
                                   position: 'absolute',
                                   top: 0,
                                   left: 0,
                                   width: '100%',
                                   height: '100%',
-                                  objectFit: 'contain',
-                                  bgcolor: darkMode ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.05)',
-                                  p: 1
+                                  backgroundColor: darkMode ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.05)',
+                                  padding: '8px'
                                 }}
+                                objectFit="contain"
                               />
                             </Box>
                           );
@@ -728,20 +728,19 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                   ) : item.image_url && (
                     // Legacy image format
                     <Box sx={{ position: 'relative', width: '100%', pt: '56.25%' /* 16:9 aspect ratio container */ }}>
-                      <CardMedia
-                        component="img"
-                        image={item.image_url}
+                      <LazyImage
+                        src={item.image_url}
                         alt={item.title}
-                        sx={{ 
+                        style={{ 
                           position: 'absolute',
                           top: 0,
                           left: 0,
                           width: '100%',
                           height: '100%',
-                          objectFit: 'contain', // Never crop the image
-                          bgcolor: darkMode ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.05)',
-                          p: 1 // Add slight padding around the image
+                          backgroundColor: darkMode ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.05)',
+                          padding: '8px'
                         }}
+                        objectFit="contain"
                         onError={(e) => {
                           console.error("Error loading image:", item.image_url);
                           e.target.onerror = null; // Prevent infinite error loop

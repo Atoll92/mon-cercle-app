@@ -104,9 +104,11 @@ describe('Network API Functions', () => {
         { id: 'user2', full_name: 'User Two' },
       ];
 
-      // Setup the supabase mock
-      const mockResponse = { data: mockMembers, error: null };
-      const mockEq = vi.fn().mockResolvedValue(mockResponse);
+      // Setup the supabase mock with pagination support
+      const mockResponse = { data: mockMembers, error: null, count: 2 };
+      const mockRange = vi.fn().mockResolvedValue(mockResponse);
+      const mockOrder = vi.fn().mockReturnValue({ range: mockRange });
+      const mockEq = vi.fn().mockReturnValue({ order: mockOrder });
       const mockSelect = vi.fn().mockReturnValue({ eq: mockEq });
       
       supabase.from.mockReturnValue({
@@ -118,15 +120,25 @@ describe('Network API Functions', () => {
 
       // Assertions
       expect(supabase.from).toHaveBeenCalledWith('profiles');
-      expect(mockSelect).toHaveBeenCalledWith('id, full_name, contact_email, role, profile_picture_url');
+      expect(mockSelect).toHaveBeenCalledWith('id, full_name, contact_email, role, profile_picture_url', { count: 'exact' });
       expect(mockEq).toHaveBeenCalledWith('network_id', mockNetworkId);
-      expect(result).toEqual(mockMembers);
+      expect(mockOrder).toHaveBeenCalledWith('full_name', { ascending: true });
+      expect(mockRange).toHaveBeenCalledWith(0, 49); // Default page size is 50
+      expect(result).toEqual({
+        members: mockMembers,
+        totalCount: 2,
+        currentPage: 1,
+        totalPages: 1,
+        hasMore: false
+      });
     });
 
     it('should handle errors when fetching network members', async () => {
       // Setup the mock error response
       const mockError = { message: 'Database error' };
-      const mockEq = vi.fn().mockResolvedValue({ data: null, error: mockError });
+      const mockRange = vi.fn().mockResolvedValue({ data: null, error: mockError, count: 0 });
+      const mockOrder = vi.fn().mockReturnValue({ range: mockRange });
+      const mockEq = vi.fn().mockReturnValue({ order: mockOrder });
       const mockSelect = vi.fn().mockReturnValue({ eq: mockEq });
       
       supabase.from.mockReturnValue({
@@ -141,7 +153,13 @@ describe('Network API Functions', () => {
 
       // Assertions
       expect(consoleErrorSpy).toHaveBeenCalled();
-      expect(result).toEqual([]);
+      expect(result).toEqual({
+        members: [],
+        totalCount: 0,
+        currentPage: 1,
+        totalPages: 0,
+        hasMore: false
+      });
       
       // Restore console.error
       consoleErrorSpy.mockRestore();

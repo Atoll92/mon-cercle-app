@@ -29,6 +29,7 @@ import {
 import { supabase } from '../supabaseclient';
 import { format } from 'date-fns';
 import MediaPlayer from '../components/MediaPlayer';
+import { sanitizeRichText } from '../utils/sanitizeHtml';
 
 function NewsPostPage() {
   const { networkId, newsId } = useParams();
@@ -349,7 +350,7 @@ function NewsPostPage() {
               my: 2
             }
           }}
-          dangerouslySetInnerHTML={{ __html: newsPost.content }}
+          dangerouslySetInnerHTML={{ __html: sanitizeRichText(newsPost.content) }}
         />
 
         {/* Footer */}

@@ -271,7 +271,9 @@ function DashboardPage() {
         // Once profile is fetched, fetch members of the same network
         if (data?.network_id) {
           // Fetch network members
-          fetchNetworkMembers(data.network_id).then(members => {
+          fetchNetworkMembers(data.network_id).then(response => {
+            // Handle both old array format and new paginated format
+            const members = Array.isArray(response) ? response : response.members || [];
             setNetworkMembers(members);
             setLoadingMembers(false);
           });

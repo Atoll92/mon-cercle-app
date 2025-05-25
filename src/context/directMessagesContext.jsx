@@ -1,7 +1,8 @@
-import React, { createContext, useState, useEffect, useRef, useCallback, useContext } from 'react';
+import React, { createContext, useState, useEffect, useRef, useCallback, useContext, useMemo } from 'react';
 import { useAuth } from './authcontext';
 import { supabase } from '../supabaseclient';
 import { getUserConversations } from '../api/directMessages';
+import useRealtimeChannel from '../hooks/useRealtimeChannel';
 
 const DirectMessagesContext = createContext(null);
 

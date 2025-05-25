@@ -91,16 +91,20 @@ function NetworkAdminPage() {
         setNetwork(networkData);
         
         // Get members using our API function
-        const membersData = await fetchNetworkMembers(profileData.network_id);
-        setMembers(membersData || []);
+        const membersResponse = await fetchNetworkMembers(profileData.network_id);
+        // Handle both old array format and new paginated format
+        const membersData = Array.isArray(membersResponse) ? membersResponse : membersResponse.members || [];
+        setMembers(membersData);
         
         // Get events using our API function
         const eventsData = await fetchNetworkEvents(profileData.network_id);
         setEvents(eventsData || []);
         
         // Get news posts using our API function
-        const newsData = await fetchNetworkNews(profileData.network_id);
-        setNewsPosts(newsData || []);
+        const newsResponse = await fetchNetworkNews(profileData.network_id);
+        // Handle both old array format and new paginated format
+        const newsData = Array.isArray(newsResponse) ? newsResponse : newsResponse.news || [];
+        setNewsPosts(newsData);
         
       } catch (error) {
         console.error('Error loading data:', error);
@@ -117,8 +121,10 @@ function NetworkAdminPage() {
     if (!profile || !profile.network_id) return;
     
     try {
-      const membersData = await fetchNetworkMembers(profile.network_id);
-      setMembers(membersData || []);
+      const membersResponse = await fetchNetworkMembers(profile.network_id);
+      // Handle both old array format and new paginated format
+      const membersData = Array.isArray(membersResponse) ? membersResponse : membersResponse.members || [];
+      setMembers(membersData);
     } catch (error) {
       console.error('Error refreshing members:', error);
       setError('Failed to refresh members list');

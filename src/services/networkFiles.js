@@ -49,8 +49,14 @@ export const fetchNetworkFiles = async (networkId) => {
  */
 export const uploadNetworkFile = async (networkId, userId, file, description = '') => {
   try {
+    // Sanitize filename to avoid issues with special characters
+    const sanitizedFileName = file.name
+      .replace(/[^a-zA-Z0-9.-]/g, '_') // Replace special chars with underscore
+      .replace(/_{2,}/g, '_') // Replace multiple underscores with single
+      .replace(/^_|_$/g, ''); // Remove leading/trailing underscores
+    
     // Create a unique file path in the 'shared' bucket
-    const filePath = `${networkId}/${Date.now()}-${file.name}`;
+    const filePath = `${networkId}/${Date.now()}_${sanitizedFileName}`;
     
     // Upload the file to storage
     const { error: uploadError } = await supabase.storage

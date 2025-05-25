@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { supabase } from '../../supabaseclient';
@@ -10,12 +10,12 @@ import {
   Card,
   CardContent,
   CardActions,
-  CardMedia,
   Divider,
   Paper,
   Alert,
   CircularProgress,
-  IconButton
+  IconButton,
+  Chip
 } from '@mui/material';
 import {
   Save as SaveIcon,

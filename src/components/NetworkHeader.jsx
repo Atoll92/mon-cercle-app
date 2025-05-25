@@ -11,7 +11,7 @@ import BusinessIcon from '@mui/icons-material/Business'; // Icon for network
 import { useAuth } from '../context/authcontext';
 import { useTheme } from '../components/ThemeProvider'; // Import directly from ThemeProvider
 import { supabase } from '../supabaseclient';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useDirectMessages } from '../context/directMessagesContext';
 import { fetchNetworkDetails } from '../api/networks';
 import { logout } from '../api/auth';
@@ -53,21 +53,22 @@ const MessageBadge = React.memo(() => {
 const NetworkHeader = () => {
   const { user } = useAuth();
   const { darkMode, toggleDarkMode } = useTheme(); // Get theme context
+  const location = useLocation();
   const [networkInfo, setNetworkInfo] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  function getNetworkIdFromUrl() {
-    const urlParts = window.location.pathname.split('/');
+  function getNetworkIdFromUrl(pathname) {
+    const urlParts = pathname.split('/');
     const networkPartIndex = urlParts.indexOf('network');
     if (networkPartIndex !== -1 && urlParts[networkPartIndex + 1]) {
       return urlParts[networkPartIndex + 1];
     }
     return null;
   }
-  const networkIdFromUrl = getNetworkIdFromUrl();
   
   useEffect(() => {
     const getNetworkInfo = async () => {
+      const networkIdFromUrl = getNetworkIdFromUrl(location.pathname);
       if (!user && !networkIdFromUrl) return;
       
       try {
@@ -102,7 +103,7 @@ const NetworkHeader = () => {
     };
     
     getNetworkInfo();
-  }, [user]);
+  }, [user, location.pathname]);
   
   if (!networkInfo) return null;
   

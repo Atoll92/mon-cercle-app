@@ -20,6 +20,7 @@ import {
   TextField,
   Typography,
   Chip, // Added for showing invitation info
+  LinearProgress,
 } from '@mui/material';
 import {
   Visibility,
@@ -30,6 +31,7 @@ import {
 } from '@mui/icons-material';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import ThreeJSBackground from '../components/ThreeJSBackground';
+import { validatePassword, getPasswordStrength, getPasswordStrengthLabel, getPasswordRequirementsText } from '../utils/passwordValidation';
 
 // Reuse or import the same theme as LoginPage
 const theme = createTheme({
@@ -52,6 +54,8 @@ function SignupPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [message, setMessage] = useState(''); // For success message
+  const [passwordErrors, setPasswordErrors] = useState([]);
+  const [passwordStrength, setPasswordStrength] = useState(0);
   const navigate = useNavigate();
   const location = useLocation(); // Added to access URL params
 
@@ -177,6 +181,13 @@ function SignupPage() {
     setError(null);
     setMessage('');
   
+    // Validate password strength
+    const passwordValidation = validatePassword(password);
+    if (!passwordValidation.isValid) {
+      setError(passwordValidation.errors.join(' '));
+      return;
+    }
+
     // Password Confirmation Check
     if (password !== confirmPassword) {
       setError("Passwords do not match.");
@@ -402,7 +413,18 @@ function SignupPage() {
                       id="password"
                       type={showPassword ? 'text' : 'password'}
                       value={password}
-                      onChange={(e) => setPassword(e.target.value)}
+                      onChange={(e) => {
+                        const newPassword = e.target.value;
+                        setPassword(newPassword);
+                        
+                        // Validate password
+                        const validation = validatePassword(newPassword);
+                        setPasswordErrors(validation.errors);
+                        
+                        // Get password strength
+                        const strength = getPasswordStrength(newPassword);
+                        setPasswordStrength(strength);
+                      }}
                       inputProps={{ minLength: 6 }} // Enforce minimum length visually
                       startAdornment={
                         <InputAdornment position="start">
@@ -422,8 +444,29 @@ function SignupPage() {
                       }
                       label="Password"
                     />
-                     {/* Optional: Add helper text for password requirements */}
-                     <FormHelperText>Minimum 6 characters</FormHelperText>
+                     {/* Password strength indicator */}
+                     {password && (
+                       <Box sx={{ mt: 1 }}>
+                         <LinearProgress 
+                           variant="determinate" 
+                           value={(passwordStrength / 5) * 100}
+                           sx={{ 
+                             height: 8, 
+                             borderRadius: 1,
+                             backgroundColor: '#e0e0e0',
+                             '& .MuiLinearProgress-bar': {
+                               backgroundColor: getPasswordStrengthLabel(passwordStrength).color
+                             }
+                           }}
+                         />
+                         <Typography variant="caption" sx={{ color: getPasswordStrengthLabel(passwordStrength).color, mt: 0.5 }}>
+                           {getPasswordStrengthLabel(passwordStrength).label}
+                         </Typography>
+                       </Box>
+                     )}
+                     <FormHelperText>
+                       {passwordErrors.length > 0 ? passwordErrors[0] : getPasswordRequirementsText()}
+                     </FormHelperText>
                   </FormControl>
 
                   {/* --- Confirm Password Field --- */}

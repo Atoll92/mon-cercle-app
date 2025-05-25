@@ -1,5 +1,5 @@
 // src/pages/PasswordResetPage.jsx
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { supabase } from '../supabaseclient';
 import { Link } from 'react-router-dom';
 import {
@@ -24,10 +24,9 @@ function PasswordResetPage() {
     setError('');
 
     try {
-      // Use VITE_SITE_URL if set, otherwise use current origin
-      const redirectUrl = import.meta.env.VITE_SITE_URL 
-        ? `${import.meta.env.VITE_SITE_URL}/update-password`
-        : window.location.origin + '/update-password';
+      // Use configured base URL for redirect
+      const { config } = await import('../config/environment');
+      const redirectUrl = `${config.app.baseUrl}/update-password`;
         
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: redirectUrl,

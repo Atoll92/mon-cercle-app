@@ -97,51 +97,75 @@ export const getUserConversations = async (userId) => {
       return { conversations: [], error: null };
     }
     
-    // For each conversation, get the partner's info and the last message
-    const enhancedConversations = await Promise.all(userConversations.map(async (conversation) => {
-      // Get partner ID (the other user in the conversation)
+    // Extract all unique partner IDs
+    const partnerIds = userConversations
+      .map(conv => conv.participants.find(id => id !== userId))
+      .filter(id => id != null);
+    
+    // Batch fetch all partner profiles
+    const { data: partners, error: partnersError } = await supabase
+      .from('profiles')
+      .select('id, full_name, profile_picture_url')
+      .in('id', partnerIds);
+      
+    if (partnersError) {
+      console.error('Error fetching partner profiles:', partnersError);
+    }
+    
+    // Create a map for quick partner lookup
+    const partnerMap = new Map();
+    partners?.forEach(partner => {
+      partnerMap.set(partner.id, partner);
+    });
+    
+    // Batch fetch last messages for all conversations
+    const conversationIds = userConversations.map(conv => conv.id);
+    const { data: allMessages, error: messagesError } = await supabase
+      .from('direct_messages')
+      .select('*')
+      .in('conversation_id', conversationIds)
+      .order('created_at', { ascending: false });
+      
+    if (messagesError) {
+      console.error('Error fetching messages:', messagesError);
+    }
+    
+    // Group messages by conversation
+    const messagesByConversation = new Map();
+    allMessages?.forEach(msg => {
+      if (!messagesByConversation.has(msg.conversation_id)) {
+        messagesByConversation.set(msg.conversation_id, []);
+      }
+      messagesByConversation.get(msg.conversation_id).push(msg);
+    });
+    
+    // Build enhanced conversations
+    const enhancedConversations = userConversations.map(conversation => {
       const partnerId = conversation.participants.find(id => id !== userId);
       
       if (!partnerId) {
         console.log('No partner found in conversation:', conversation.id);
-        return null; // Skip conversations with no valid partner
+        return null;
       }
       
-      // Get partner profile
-      const { data: partner, error: partnerError } = await supabase
-        .from('profiles')
-        .select('id, full_name, profile_picture_url')
-        .eq('id', partnerId)
-        .single();
-        
-      if (partnerError) {
-        console.error('Error fetching partner profile:', partnerError);
-      }
+      const partner = partnerMap.get(partnerId) || { 
+        id: partnerId, 
+        full_name: 'Unknown User', 
+        profile_picture_url: null 
+      };
       
-      // Get last message and unread count
-      const { data: messages, error: messagesError } = await supabase
-        .from('direct_messages')
-        .select('*')
-        .eq('conversation_id', conversation.id)
-        .order('created_at', { ascending: false })
-        .limit(10);
-        
-      if (messagesError) {
-        console.error('Error fetching messages:', messagesError);
-      }
-      
-      // Calculate unread count
-      const unreadCount = messages 
-        ? messages.filter(msg => msg.sender_id !== userId && msg.read_at === null).length 
-        : 0;
+      const messages = messagesByConversation.get(conversation.id) || [];
+      const unreadCount = messages.filter(msg => 
+        msg.sender_id !== userId && msg.read_at === null
+      ).length;
       
       return {
         ...conversation,
-        partner: partner || { id: partnerId, full_name: 'Unknown User', profile_picture_url: null },
-        last_message: messages && messages.length > 0 ? messages[0] : null,
+        partner,
+        last_message: messages[0] || null,
         unread_count: unreadCount
       };
-    }));
+    });
     
     // Filter out null conversations and sort by last message date
     const validConversations = enhancedConversations
@@ -166,30 +190,33 @@ export const getUserConversations = async (userId) => {
  */
 export const getConversationMessages = async (conversationId) => {
   try {
-    // First get all messages for this conversation
-    const { data: rawMessages, error } = await supabase
+    // Fetch messages with sender information in a single query using join
+    const { data: messagesWithSenders, error } = await supabase
       .from('direct_messages')
-      .select('*')
+      .select(`
+        *,
+        sender:profiles!sender_id (
+          id,
+          full_name,
+          profile_picture_url
+        )
+      `)
       .eq('conversation_id', conversationId)
       .order('created_at', { ascending: true });
       
     if (error) throw error;
     
-    // For each message, get the sender info
-    const messagesWithSenders = await Promise.all(rawMessages.map(async (message) => {
-      const { data: sender } = await supabase
-        .from('profiles')
-        .select('id, full_name, profile_picture_url')
-        .eq('id', message.sender_id)
-        .single();
-        
-      return {
-        ...message,
-        sender: sender || { id: message.sender_id, full_name: 'Unknown User' }
-      };
+    // Handle cases where sender profile might be null
+    const messages = messagesWithSenders.map(message => ({
+      ...message,
+      sender: message.sender || { 
+        id: message.sender_id, 
+        full_name: 'Unknown User',
+        profile_picture_url: null
+      }
     }));
     
-    return { messages: messagesWithSenders, error: null };
+    return { messages, error: null };
   } catch (error) {
     console.error('Error fetching conversation messages:', error);
     return { messages: [], error };

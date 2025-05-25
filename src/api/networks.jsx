@@ -1,21 +1,55 @@
 import { supabase } from '../supabaseclient';
 import { queueNewsNotifications } from '../services/emailNotificationService';
 
-const fetchNetworkMembers = async (networkId) => {
+const fetchNetworkMembers = async (networkId, options = {}) => {
     try {
-        console.log('Fetching network members for network:', networkId);
-        const { data, error } = await supabase
-        .from('profiles')
-        .select('id, full_name, contact_email, role, profile_picture_url')
-        .eq('network_id', networkId);
+        const { 
+            page = 1, 
+            limit = 50,
+            orderBy = 'full_name',
+            ascending = true,
+            search = null
+        } = options;
+        
+        console.log('Fetching network members for network:', networkId, 'with options:', options);
+        
+        // Calculate offset for pagination
+        const offset = (page - 1) * limit;
+        
+        // Build query
+        let query = supabase
+            .from('profiles')
+            .select('id, full_name, contact_email, role, profile_picture_url', { count: 'exact' })
+            .eq('network_id', networkId)
+            .order(orderBy, { ascending })
+            .range(offset, offset + limit - 1);
+            
+        // Add search filter if provided
+        if (search) {
+            query = query.or(`full_name.ilike.%${search}%,contact_email.ilike.%${search}%`);
+        }
+        
+        const { data, error, count } = await query;
     
         if (error) throw error;
-        console.log(`Found ${data?.length || 0} network members`);
+        console.log(`Found ${data?.length || 0} network members (total: ${count})`);
 
-        return data || [];
+        return {
+            members: data || [],
+            totalCount: count || 0,
+            currentPage: page,
+            totalPages: Math.ceil((count || 0) / limit),
+            hasMore: offset + limit < (count || 0)
+        };
     } catch (error) {
         console.error("Error fetching network members:", error);
-        return [];
+        return {
+            members: [],
+            totalCount: 0,
+            currentPage: 1,
+            totalPages: 0,
+            hasMore: false
+        };
     }
 };
 
@@ -105,9 +139,8 @@ export const inviteUserToNetwork = async (email, networkId, inviterId) => {
       if (inviteError) throw inviteError;
       
       const inviteToken = btoa(`invite:${invitation.id}:${networkId}`);
-      const baseUrl = process.env.NODE_ENV === 'production' 
-        ? 'https://mon-cercle-app.vercel.app' 
-        : window.location.origin;
+      const { getBaseUrl } = await import('../config/environment');
+      const baseUrl = getBaseUrl();
       const inviteLink = `${baseUrl}/signup?invite=${inviteToken}`;
 
       try {
@@ -189,19 +222,50 @@ export const fetchNetworkEvents = async (networkId) => {
   }
 };
 
-export const fetchNetworkNews = async (networkId) => {
+export const fetchNetworkNews = async (networkId, options = {}) => {
   try {
-    const { data, error } = await supabase
+    const { 
+      page = 1, 
+      limit = 20,
+      includeHidden = false
+    } = options;
+    
+    // Calculate offset for pagination
+    const offset = (page - 1) * limit;
+    
+    // Build query
+    let query = supabase
       .from('network_news')
-      .select('*')
+      .select('*', { count: 'exact' })
       .eq('network_id', networkId)
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .range(offset, offset + limit - 1);
       
+    // Exclude hidden posts unless specifically requested
+    if (!includeHidden) {
+      query = query.eq('is_hidden', false);
+    }
+      
+    const { data, error, count } = await query;
+    
     if (error) throw error;
-    return data || [];
+    
+    return {
+      news: data || [],
+      totalCount: count || 0,
+      currentPage: page,
+      totalPages: Math.ceil((count || 0) / limit),
+      hasMore: offset + limit < (count || 0)
+    };
   } catch (error) {
     console.error('Error fetching news:', error);
-    return [];
+    return {
+      news: [],
+      totalCount: 0,
+      currentPage: 1,
+      totalPages: 0,
+      hasMore: false
+    };
   }
 };
 

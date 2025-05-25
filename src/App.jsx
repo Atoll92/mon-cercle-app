@@ -1,5 +1,5 @@
 // src/App.jsx - Updated version with shared files routes
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from './context/authcontext';
 import { CircularProgress, Box } from '@mui/material';
@@ -7,44 +7,52 @@ import NetworkHeader from './components/NetworkHeader';
 import Footer from './components/Footer';
 import { supabase } from './supabaseclient';
 import { preventResizeAnimations } from './utils/animationHelpers';
-import WikiListPage from './pages/WikiListPage';
-import WikiPage from './pages/WikiPage';
-import WikiEditPage from './pages/WikiEditPage';
-import PaymentSuccessPage from './pages/PaymentSuccessPage';
-import BillingPage from './pages/BillingPage';
-import SharedFilesPage from './pages/SharedFilesPage'; // Import the SharedFilesPage
-import MoodboardPage from './pages/MoodboardPage';
+import ThemeProvider from './components/ThemeProvider';
+import ProtectedRoute from './components/ProtectedRoute';
+import { DirectMessagesProvider } from './context/directMessagesContext';
+import ErrorBoundary from './components/ErrorBoundary';
 
-// Import Pages
+// Eagerly loaded pages (small, frequently accessed)
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
-import PasswordResetPage from './pages/PasswordResetPage';
-import DashboardPage from './pages/DashboardPage';
-import ProfilePage from './pages/ProfilePage';
-import EditProfilePage from './pages/EditProfilePage';
-import NetworkAdminPage from './pages/NetworkAdminPage';
-import NotFoundPage from './pages/NotFoundPage';
-import LandingPage from './pages/LandingPage';
 import SimpleLandingPage from './pages/SimpleLandingPage';
-//import components/context
-import ThemeProvider from './components/ThemeProvider';
-// Import Protected Route Component
-import ProtectedRoute from './components/ProtectedRoute';
-import NetworkLandingPage from './pages/NetworkLandingPage';
-import DemoPage from './pages/DemoPage';
-import DirectMessagesPage from './pages/DirectMessagesPage';
-import { DirectMessagesProvider } from './context/directMessagesContext';
-import PricingPage from './pages/PricingPage';
-import ShimmeringTextPage from './pages/ShimmeringTextPage';
-import PersonalMoodboardsPage from './pages/PersonalMoodboardPage';
-import PasswordUpdatePage from './pages/PasswordUpdatePage';
-import NetworkOnboardingPage from './pages/NetworkOnboardingPage';
-import MicroConclavPage from './pages/MicroConclavPage';
-import SuperAdminDashboard from './pages/SuperAdminDashboard';
-import JoinNetworkPage from './pages/JoinNetworkPage';
-import NewsPostPage from './pages/NewsPostPage';
-import EventPage from './pages/EventPage';
-import MediaTest from './pages/MediaTest';
+import NotFoundPage from './pages/NotFoundPage';
+
+// Lazy loaded pages (larger, less frequently accessed)
+const PasswordResetPage = lazy(() => import('./pages/PasswordResetPage'));
+const DashboardPage = lazy(() => import('./pages/DashboardPage'));
+const ProfilePage = lazy(() => import('./pages/ProfilePage'));
+const EditProfilePage = lazy(() => import('./pages/EditProfilePage'));
+const NetworkAdminPage = lazy(() => import('./pages/NetworkAdminPage'));
+const LandingPage = lazy(() => import('./pages/LandingPage'));
+const WikiListPage = lazy(() => import('./pages/WikiListPage'));
+const WikiPage = lazy(() => import('./pages/WikiPage'));
+const WikiEditPage = lazy(() => import('./pages/WikiEditPage'));
+const PaymentSuccessPage = lazy(() => import('./pages/PaymentSuccessPage'));
+const BillingPage = lazy(() => import('./pages/BillingPage'));
+const SharedFilesPage = lazy(() => import('./pages/SharedFilesPage'));
+const MoodboardPage = lazy(() => import('./pages/MoodboardPage'));
+const NetworkLandingPage = lazy(() => import('./pages/NetworkLandingPage'));
+const DemoPage = lazy(() => import('./pages/DemoPage'));
+const DirectMessagesPage = lazy(() => import('./pages/DirectMessagesPage'));
+const PricingPage = lazy(() => import('./pages/PricingPage'));
+const ShimmeringTextPage = lazy(() => import('./pages/ShimmeringTextPage'));
+const PersonalMoodboardsPage = lazy(() => import('./pages/PersonalMoodboardPage'));
+const PasswordUpdatePage = lazy(() => import('./pages/PasswordUpdatePage'));
+const NetworkOnboardingPage = lazy(() => import('./pages/NetworkOnboardingPage'));
+const MicroConclavPage = lazy(() => import('./pages/MicroConclavPage'));
+const SuperAdminDashboard = lazy(() => import('./pages/SuperAdminDashboard'));
+const JoinNetworkPage = lazy(() => import('./pages/JoinNetworkPage'));
+const NewsPostPage = lazy(() => import('./pages/NewsPostPage'));
+const EventPage = lazy(() => import('./pages/EventPage'));
+const MediaTest = lazy(() => import('./pages/MediaTest'));
+
+// Loading component for lazy loaded routes
+const PageLoader = () => (
+  <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+    <CircularProgress />
+  </Box>
+);
 
 function App() {
   const { loading, session, user } = useAuth();
@@ -154,15 +162,17 @@ function App() {
   }
 
   return (
-    <ThemeProvider>
-    <DirectMessagesProvider>
-      <div className="App" style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-        {/* Pass the network name to the header */}
-        {window.location.pathname !== "/" && window.location.pathname !== "/pricing" && window.location.pathname !== "/old" && !window.location.pathname.startsWith("/micro-conclav/") && (
-          <NetworkHeader/>
-        )}
-        <Box component="main" sx={{ flex: 1 }}>
-          <Routes>
+    <ErrorBoundary>
+      <ThemeProvider>
+        <DirectMessagesProvider>
+          <div className="App" style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+            {/* Pass the network name to the header */}
+            {window.location.pathname !== "/" && window.location.pathname !== "/pricing" && window.location.pathname !== "/old" && !window.location.pathname.startsWith("/micro-conclav/") && (
+              <NetworkHeader/>
+            )}
+            <Box component="main" sx={{ flex: 1 }}>
+              <Suspense fallback={<PageLoader />}>
+                <Routes>
             {/* Public Routes */}
             <Route path="/" element={<SimpleLandingPage/>}/>
             <Route path="/old" element={<LandingPage/>}/>
@@ -234,12 +244,14 @@ function App() {
             
             {/* Catch-all Route for 404 Not Found */}
             <Route path="*" element={<NotFoundPage />} />
-          </Routes>
+            </Routes>
+          </Suspense>
         </Box>
-        <Footer />
-      </div>
-      </DirectMessagesProvider>
-    </ThemeProvider>
+            <Footer />
+          </div>
+        </DirectMessagesProvider>
+      </ThemeProvider>
+    </ErrorBoundary>
   );
 }
 
