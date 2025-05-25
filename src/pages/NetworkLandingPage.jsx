@@ -84,6 +84,53 @@ function NetworkLandingPage() {
   const headerRef = useFadeIn(0);
   const contentRef = useFadeIn(200);
   
+  // Parse enabled tabs from network configuration
+  const enabledTabs = React.useMemo(() => {
+    if (!network?.enabled_tabs) {
+      return ['news', 'members', 'events', 'chat', 'files', 'wiki', 'social'];
+    }
+    
+    try {
+      // Handle both new format (array) and legacy format (stringified array)
+      let tabs;
+      if (Array.isArray(network.enabled_tabs)) {
+        // New format: already an array
+        tabs = network.enabled_tabs;
+      } else if (typeof network.enabled_tabs === 'string') {
+        // Legacy format: stringified array
+        tabs = JSON.parse(network.enabled_tabs);
+      } else {
+        // Fallback
+        tabs = ['news', 'members', 'events', 'chat', 'files', 'wiki', 'social'];
+      }
+      return Array.isArray(tabs) && tabs.length > 0 ? tabs : ['news', 'members', 'events', 'chat', 'files', 'wiki', 'social'];
+    } catch (e) {
+      console.error('Error parsing enabled tabs:', e);
+      return ['news', 'members', 'events', 'chat', 'files', 'wiki', 'social'];
+    }
+  }, [network?.enabled_tabs]);
+
+  // Define all available tabs with their properties (matching admin panel IDs)
+  const allTabs = [
+    { id: 'news', icon: <ArticleIcon />, label: 'News' },
+    { id: 'members', icon: <GroupsIcon />, label: 'Members' },
+    { id: 'events', icon: <EventIcon />, label: 'Events' },
+    { id: 'chat', icon: <ChatIcon />, label: 'Chat' },
+    { id: 'files', icon: <AttachmentIcon />, label: 'Files' },
+    { id: 'wiki', icon: <MenuBookIcon />, label: 'Wiki' },
+    { id: 'social', icon: <TimelineIcon />, label: 'Social Wall' },
+    // Always show About tab regardless of config
+    { id: 'about', icon: <InfoIcon />, label: 'About' }
+  ];
+
+  // Filter tabs based on network configuration, always include About
+  const visibleTabs = React.useMemo(() => {
+    const configTabs = allTabs.filter(tab => 
+      tab.id === 'about' || enabledTabs.includes(tab.id)
+    );
+    return configTabs.length > 0 ? configTabs : allTabs;
+  }, [enabledTabs]);
+  
   // Generate shareable link
   const shareableLink = network ? `${window.location.origin}/network/${network.id}` : '';
   
@@ -93,6 +140,9 @@ function NetworkLandingPage() {
   const handleTabChange = (_, newValue) => {
     setActiveTab(newValue);
   };
+  
+  // Get the current tab ID based on the active tab index
+  const currentTabId = visibleTabs[activeTab]?.id || 'members';
   
   const copyToClipboard = () => {
     navigator.clipboard.writeText(shareableLink).then(() => {
@@ -541,19 +591,14 @@ function NetworkLandingPage() {
             }
           }}
         >
-          <Tab icon={<GroupsIcon />} label="Members" />
-          <Tab icon={<EventIcon />} label="Events" />
-          <Tab icon={<ArticleIcon />} label="News" />
-          <Tab icon={<ChatIcon />} label="Chat" />
-          <Tab icon={<TimelineIcon />} label="Social Wall" />
-          <Tab icon={<MenuBookIcon />} label="Wiki" />
-          <Tab icon={<AttachmentIcon />} label="Files" /> {/* Files tab */}
-          <Tab icon={<InfoIcon />} label="About" />
+          {visibleTabs.map((tab, index) => (
+            <Tab key={tab.id} icon={tab.icon} label={tab.label} />
+          ))}
         </Tabs>
       </Paper>
 
       {/* Conditionally render the appropriate tab component */}
-      {activeTab === 0 && (
+      {currentTabId === 'members' && (
         <MembersTab 
           networkMembers={networkMembers}
           user={user}
@@ -565,7 +610,7 @@ function NetworkLandingPage() {
         />
       )}
 
-      {activeTab === 1 && (
+      {currentTabId === 'events' && (
         <EventsTab
           events={events}
           user={user}
@@ -576,7 +621,7 @@ function NetworkLandingPage() {
         />
       )}
 
-      {activeTab === 2 && (
+      {currentTabId === 'news' && (
         <NewsTab
           networkNews={networkNews}
           networkMembers={networkMembers}
@@ -584,7 +629,7 @@ function NetworkLandingPage() {
         />
       )}
 
-      {activeTab === 3 && (
+      {currentTabId === 'chat' && (
         <ChatTab
           networkId={network.id}
           isUserMember={isUserMember}
@@ -592,7 +637,7 @@ function NetworkLandingPage() {
         />
       )}
 
-      {activeTab === 4 && (
+      {currentTabId === 'social' && (
         <SocialWallTab
           socialWallItems={socialWallItems}
           networkMembers={networkMembers}
@@ -600,7 +645,7 @@ function NetworkLandingPage() {
         />
       )}
 
-      {activeTab === 5 && (
+      {currentTabId === 'wiki' && (
         <WikiTab
           networkId={network.id}
           isUserMember={isUserMember}
@@ -608,7 +653,7 @@ function NetworkLandingPage() {
         />
       )}
 
-      {activeTab === 7 && (
+      {currentTabId === 'about' && (
         <AboutTab
           network={network}
           networkMembers={networkMembers}
@@ -617,7 +662,7 @@ function NetworkLandingPage() {
         />
       )}
 
-      {activeTab === 6 && (
+      {currentTabId === 'files' && (
         <FilesTab
           networkId={network.id}
           isUserMember={isUserMember}

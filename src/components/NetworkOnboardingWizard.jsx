@@ -86,7 +86,7 @@ const NetworkOnboardingWizard = ({ profile }) => {
       location: false,
       notifications: true
     },
-    defaultTabs: ['news', 'members', 'events', 'chat', 'files', 'wiki'],
+    enabledTabs: ['news', 'members', 'events', 'chat', 'files', 'wiki', 'social'],
     themeColor: theme.palette.primary.main
   });
 
@@ -188,7 +188,7 @@ const NetworkOnboardingWizard = ({ profile }) => {
           }),
           privacy_level: networkData.privacyLevel,
           purpose: networkData.purpose,
-          default_tabs: JSON.stringify(networkData.defaultTabs),
+          enabled_tabs: networkData.enabledTabs,
           theme_color: networkData.themeColor,
           background_image_url: null
         }])
@@ -616,7 +616,7 @@ const NavigationStep = ({ networkData, setNetworkData }) => {
     { id: 'chat', label: 'Chat', icon: <ForumIcon fontSize="small" /> },
     { id: 'files', label: 'Files', icon: <FileIcon fontSize="small" /> },
     { id: 'wiki', label: 'Wiki', icon: <WikiIcon fontSize="small" /> },
-    { id: 'moodboards', label: 'Moodboards', icon: <ImageIcon fontSize="small" /> }
+    { id: 'social', label: 'Social Wall', icon: <ImageIcon fontSize="small" /> }
   ];
   
   // Handle logo upload
@@ -693,19 +693,19 @@ const NavigationStep = ({ networkData, setNetworkData }) => {
   // Handle tab order change (add/remove/reorder)
   const handleTabToggle = (tabId) => {
     setNetworkData(prev => {
-      const currentTabs = [...prev.defaultTabs];
+      const currentTabs = [...prev.enabledTabs];
       
       if (currentTabs.includes(tabId)) {
         // Remove tab if it's already selected
         return {
           ...prev,
-          defaultTabs: currentTabs.filter(id => id !== tabId)
+          enabledTabs: currentTabs.filter(id => id !== tabId)
         };
       } else {
         // Add tab if it's not selected
         return {
           ...prev,
-          defaultTabs: [...currentTabs, tabId]
+          enabledTabs: [...currentTabs, tabId]
         };
       }
     });
@@ -795,10 +795,10 @@ const NavigationStep = ({ networkData, setNetworkData }) => {
         }}
       >
         <Typography variant="subtitle1" fontWeight="medium" gutterBottom>
-          Default Navigation Tabs
+          Navigation Tabs
         </Typography>
         <Typography variant="body2" color="text.secondary" paragraph>
-          Select which tabs will appear by default in your network.
+          Select which tabs will appear in your network navigation.
         </Typography>
         
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 3 }}>
@@ -810,8 +810,8 @@ const NavigationStep = ({ networkData, setNetworkData }) => {
                 icon={tab.icon}
                 label={tab.label}
                 clickable
-                color={networkData.defaultTabs.includes(tab.id) ? 'primary' : 'default'}
-                variant={networkData.defaultTabs.includes(tab.id) ? 'filled' : 'outlined'}
+                color={networkData.enabledTabs.includes(tab.id) ? 'primary' : 'default'}
+                variant={networkData.enabledTabs.includes(tab.id) ? 'filled' : 'outlined'}
                 onClick={() => handleTabToggle(tab.id)}
                 sx={{ pl: 0.5 }}
               />

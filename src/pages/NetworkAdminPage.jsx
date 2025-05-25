@@ -10,7 +10,6 @@ import {
   Button,
   Paper,
   CircularProgress,
-  Grid,
   Alert,
   useTheme as useMuiTheme
 } from '@mui/material';

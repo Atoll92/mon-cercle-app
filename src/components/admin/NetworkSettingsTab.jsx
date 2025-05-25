@@ -37,7 +37,8 @@ import {
   MenuBook as WikiIcon,
   Image as ImageIcon,
   LocationOn as LocationIcon,
-  NotificationsActive as NotificationsIcon
+  NotificationsActive as NotificationsIcon,
+  Timeline as TimelineIcon
 } from '@mui/icons-material';
 import { updateNetworkDetails } from '../../api/networks';
 
@@ -85,16 +86,25 @@ const NetworkSettingsTab = ({ network, onNetworkUpdate, darkMode }) => {
     };
   });
   
-  // Default tabs
-  const [defaultTabs, setDefaultTabs] = useState(() => {
-    if (network?.default_tabs) {
+  // Enabled tabs
+  const [enabledTabs, setEnabledTabs] = useState(() => {
+    if (network?.enabled_tabs) {
       try {
-        const tabs = typeof network.default_tabs === 'string' 
-          ? JSON.parse(network.default_tabs) 
-          : network.default_tabs;
+        // Handle both new format (array) and legacy format (stringified array)
+        let tabs;
+        if (Array.isArray(network.enabled_tabs)) {
+          // New format: already an array
+          tabs = network.enabled_tabs;
+        } else if (typeof network.enabled_tabs === 'string') {
+          // Legacy format: stringified array
+          tabs = JSON.parse(network.enabled_tabs);
+        } else {
+          // Fallback
+          tabs = ['news', 'members', 'events', 'chat', 'files', 'wiki'];
+        }
         return Array.isArray(tabs) ? tabs : ['news', 'members', 'events', 'chat', 'files', 'wiki'];
       } catch (e) {
-        console.error('Error parsing default tabs:', e);
+        console.error('Error parsing enabled tabs:', e);
       }
     }
     return ['news', 'members', 'events', 'chat', 'files', 'wiki'];
@@ -131,7 +141,7 @@ const NetworkSettingsTab = ({ network, onNetworkUpdate, darkMode }) => {
         location_sharing: features.location,
         notifications: features.notifications
       }),
-      default_tabs: JSON.stringify(defaultTabs)
+      enabled_tabs: enabledTabs
     };
     
     const result = await updateNetworkDetails(network.id, updates);
@@ -155,7 +165,7 @@ const NetworkSettingsTab = ({ network, onNetworkUpdate, darkMode }) => {
   };
   
   const handleTabToggle = (tabId) => {
-    setDefaultTabs(prev => {
+    setEnabledTabs(prev => {
       if (prev.includes(tabId)) {
         return prev.filter(id => id !== tabId);
       } else {
@@ -171,7 +181,7 @@ const NetworkSettingsTab = ({ network, onNetworkUpdate, darkMode }) => {
     { id: 'chat', label: 'Chat', icon: <ForumIcon fontSize="small" /> },
     { id: 'files', label: 'Files', icon: <FileIcon fontSize="small" /> },
     { id: 'wiki', label: 'Wiki', icon: <WikiIcon fontSize="small" /> },
-    { id: 'moodboards', label: 'Moodboards', icon: <ImageIcon fontSize="small" /> }
+    { id: 'social', label: 'Social Wall', icon: <TimelineIcon fontSize="small" /> }
   ];
   
   const featuresList = [
@@ -401,8 +411,8 @@ const NetworkSettingsTab = ({ network, onNetworkUpdate, darkMode }) => {
                     icon={tab.icon}
                     label={tab.label}
                     clickable
-                    color={defaultTabs.includes(tab.id) ? 'primary' : 'default'}
-                    variant={defaultTabs.includes(tab.id) ? 'filled' : 'outlined'}
+                    color={enabledTabs.includes(tab.id) ? 'primary' : 'default'}
+                    variant={enabledTabs.includes(tab.id) ? 'filled' : 'outlined'}
                     onClick={() => handleTabToggle(tab.id)}
                   />
                 ))}
