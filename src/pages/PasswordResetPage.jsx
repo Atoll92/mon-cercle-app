@@ -24,8 +24,13 @@ function PasswordResetPage() {
     setError('');
 
     try {
+      // Use VITE_SITE_URL if set, otherwise use current origin
+      const redirectUrl = import.meta.env.VITE_SITE_URL 
+        ? `${import.meta.env.VITE_SITE_URL}/update-password`
+        : window.location.origin + '/update-password';
+        
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: window.location.origin + '/update-password',
+        redirectTo: redirectUrl,
       });
 
       if (error) throw error;

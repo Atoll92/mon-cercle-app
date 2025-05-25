@@ -192,7 +192,9 @@ function SignupPage() {
         password,
         // Add site URL to ensure correct redirect in production
         options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`
+          emailRedirectTo: import.meta.env.VITE_SITE_URL 
+            ? `${import.meta.env.VITE_SITE_URL}/auth/callback`
+            : `${window.location.origin}/auth/callback`
         }
       });
   

@@ -18,6 +18,7 @@ import FormControl from '@mui/material/FormControl';
 import LanguageIcon from '@mui/icons-material/Language';
 import Divider from '@mui/material/Divider';
 import Paper from '@mui/material/Paper';
+import Chip from '@mui/material/Chip';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTheme } from '@mui/material/styles';
 import { useScrollAnimation } from '../hooks/useScrollAnimation';
@@ -187,7 +188,10 @@ const DGLogo = () => (
         }
       ],
       privacy: 'Privacy Policy',
-      terms: 'Terms of Service'
+      terms: 'Terms of Service',
+      gdprCompliant: 'GDPR Compliant',
+      madeInFrance: 'Designed in France',
+      dataProtection: 'Your data stays in Europe'
     },
     fr: {
       appName: 'Conclav',
@@ -238,7 +242,10 @@ const DGLogo = () => (
         }
       ],
       privacy: 'Politique de Confidentialité',
-      terms: 'Conditions d\'Utilisation'
+      terms: 'Conditions d\'Utilisation',
+      gdprCompliant: 'Conforme RGPD',
+      madeInFrance: 'Conçu en France',
+      dataProtection: 'Vos données restent en Europe'
     },
     es: {
       appName: 'Mon Cercle App',
@@ -886,7 +893,7 @@ const DGLogo = () => (
       lineHeight: 1.6,
       fontWeight: 'medium',
       color: 'rgb(4, 13, 22)',
-      mb: { xs: 4, md: 12 },
+      mb: 2,
       // mx: 'auto',
       maxWidth: '90%',
       px: 2
@@ -894,6 +901,28 @@ const DGLogo = () => (
   >
     {t.heroSubtitle}
   </Typography>
+  
+  {/* Privacy Badge */}
+  <Box sx={{ 
+    display: 'flex', 
+    alignItems: 'center', 
+    gap: 2,
+    mb: { xs: 4, md: 8 },
+    px: 2
+  }}>
+    <Chip 
+      icon={<LockIcon />} 
+      label={t.gdprCompliant}
+      size="small"
+      sx={{ 
+        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+        '& .MuiChip-icon': { fontSize: 16 }
+      }}
+    />
+    <Typography variant="caption" sx={{ color: 'rgba(0, 0, 0, 0.6)' }}>
+      {t.dataProtection}
+    </Typography>
+  </Box>
 
 
           <Stack
@@ -1086,6 +1115,52 @@ const DGLogo = () => (
   </Grid>
 </Container>
 
+{/* GDPR and European Origin Section */}
+<Container sx={{ 
+  py: 4,
+  position: 'relative',
+  zIndex: 2,
+  my: 4
+}}>
+  <Box sx={{ 
+    display: 'flex', 
+    justifyContent: 'center', 
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 3,
+    opacity: 0.8
+  }}>
+    <Box sx={{ 
+      display: 'flex', 
+      alignItems: 'center', 
+      gap: 1,
+      color: 'white'
+    }}>
+      <Box 
+        component="img"
+        src={EuFlag}
+        alt="European Union"
+        sx={{ 
+          height: 20,
+          opacity: 0.7
+        }}
+      />
+      <Typography variant="body2">
+        {t.madeInFrance}
+      </Typography>
+    </Box>
+    
+    <Typography variant="body2" sx={{ color: 'white', display: 'flex', alignItems: 'center', gap: 1 }}>
+      <LockIcon sx={{ fontSize: 18 }} />
+      {t.gdprCompliant}
+    </Typography>
+    
+    <Typography variant="body2" sx={{ color: 'white' }}>
+      {t.dataProtection}
+    </Typography>
+  </Box>
+</Container>
+
 <Container sx={{ 
   py: 8,
   position: 'relative',
@@ -1161,16 +1236,20 @@ const DGLogo = () => (
         >
 <Grid container spacing={3} alignItems="center" justifyContent="center">
   <Grid item xs={12} sm="auto">
-    <Box 
-      component="img"
-      src={EuFlag}
-      alt="European Union Flag"
-      sx={{ 
-        height: 40,
-        display: 'block',
-        mx: 'auto'
-      }}
-    />
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+      <Box 
+        component="img"
+        src={EuFlag}
+        alt="European Union Flag"
+        sx={{ 
+          height: 20,
+          opacity: 0.6
+        }}
+      />
+      <Typography variant="caption" sx={{ color: '#0c3f9c', opacity: 0.8 }}>
+        {t.gdprCompliant}
+      </Typography>
+    </Box>
   </Grid>
   
   {/* Add Double Geste logo */}
