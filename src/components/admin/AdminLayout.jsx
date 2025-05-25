@@ -31,7 +31,8 @@ import {
   ChevronLeft as ChevronLeftIcon,
   Security as SecurityIcon,
   Poll as PollIcon,
-  Link as LinkIcon
+  Link as LinkIcon,
+  MonetizationOn as MonetizationIcon
 } from '@mui/icons-material';
 
 // Drawer width for desktop view
@@ -103,6 +104,11 @@ const AdminLayout = ({
       name: 'Invitation Links', 
       icon: <LinkIcon />, 
       index: 7 
+    },
+    { 
+      name: 'Monetization', 
+      icon: <MonetizationIcon />, 
+      index: 8 
     }
   ];
 
@@ -287,8 +293,12 @@ const AdminLayout = ({
           variant="permanent"
           sx={{
             display: { xs: 'none', md: 'block' },
+             position: 'sticky',
+              top: 0,
             '& .MuiDrawer-paper': {
               boxSizing: 'border-box',
+               position: 'sticky',
+              
               width: drawerWidth,
               borderRight: `1px solid ${muiTheme.palette.custom.border}`,
               backgroundColor: darkMode 

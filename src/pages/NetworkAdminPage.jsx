@@ -35,6 +35,7 @@ import NewsTab from '../components/admin/Newstab';
 import ModerationTab from '../components/admin/ModerationTab';
 import PollsTab from '../components/admin/PollsTab';
 import InvitationLinksTab from '../components/admin/InvitationLinksTab';
+import MonetizationTab from '../components/admin/MonetizationTab';
 import AdminLayout from '../components/admin/AdminLayout';
 import AdminBreadcrumbs from '../components/admin/AdminBreadcrumbs';
 
@@ -256,6 +257,7 @@ function NetworkAdminPage() {
             {activeTab === 5 && "Theme & Branding"}
             {activeTab === 6 && "Moderation Tools"}
             {activeTab === 7 && "Invitation Links"}
+            {activeTab === 8 && "Monetization"}
           </Typography>
         </Box>
 
@@ -309,6 +311,7 @@ function NetworkAdminPage() {
             setEvents={setEvents}
             user={user}
             networkId={network.id}
+            network={network}
             darkMode={darkMode} // Pass dark mode to component
           />
         )}
@@ -345,6 +348,15 @@ function NetworkAdminPage() {
           /* Invitation Links Component */
           <InvitationLinksTab
             networkId={network.id}
+            darkMode={darkMode} // Pass dark mode to component
+          />
+        )}
+        
+        {activeTab === 8 && (
+          /* Monetization Component */
+          <MonetizationTab
+            networkId={network.id}
+            network={network}
             darkMode={darkMode} // Pass dark mode to component
           />
         )}

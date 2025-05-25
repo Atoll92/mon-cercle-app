@@ -56,7 +56,8 @@ const EventsTab = ({
   user,
   isUserAdmin,
   userParticipations = [],
-  onParticipationChange
+  onParticipationChange,
+  network
 }) => {
   const [showEventDialog, setShowEventDialog] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
@@ -419,6 +420,23 @@ const EventsTab = ({
                                   {event.location}
                                 </Typography>
                               </Box>
+                              
+                              {/* Show pricing if monetization is enabled and event has a price */}
+                              {network?.features_config?.monetization && event.price > 0 && (
+                                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                                  <Typography variant="body2" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
+                                    {new Intl.NumberFormat('en-US', {
+                                      style: 'currency',
+                                      currency: event.currency || 'EUR'
+                                    }).format(event.price)}
+                                  </Typography>
+                                  {event.max_tickets && (
+                                    <Typography variant="caption" sx={{ ml: 1, color: 'text.secondary' }}>
+                                      • {event.tickets_sold || 0}/{event.max_tickets} tickets
+                                    </Typography>
+                                  )}
+                                </Box>
+                              )}
                               
                               {/* Interactive buttons */}
                               <Box sx={{ 

@@ -32,7 +32,7 @@ import AddressSuggestions from '../AddressSuggestions';
 import EventParticipationStats from '../EventParticipationStats';
 import { createEvent, updateEvent, deleteEvent, exportEventParticipantsList } from '../../api/networks';
 
-const EventsTab = ({ events, setEvents, user, networkId, darkMode = false }) => {
+const EventsTab = ({ events, setEvents, user, networkId, network, darkMode = false }) => {
   const [openDialog, setOpenDialog] = useState(false);
   const [dialogMode, setDialogMode] = useState('create');
   const [selectedEvent, setSelectedEvent] = useState(null);
@@ -43,7 +43,10 @@ const EventsTab = ({ events, setEvents, user, networkId, darkMode = false }) => 
     description: '',
     capacity: '',
     coordinates: null,
-    event_link: '' // Add the event_link field
+    event_link: '', // Add the event_link field
+    price: 0,
+    currency: 'EUR',
+    max_tickets: ''
   });
   const [locationSuggestion, setLocationSuggestion] = useState(null);
   const [eventImageFile, setEventImageFile] = useState(null);
@@ -70,7 +73,10 @@ const EventsTab = ({ events, setEvents, user, networkId, darkMode = false }) => 
         description: event.description || '',
         capacity: event.capacity || '',
         coordinates: event.coordinates,
-        event_link: event.event_link || '' // Set the event_link value
+        event_link: event.event_link || '', // Set the event_link value
+        price: event.price || 0,
+        currency: event.currency || 'EUR',
+        max_tickets: event.max_tickets || ''
       });
       
       if (event.location) {
@@ -92,7 +98,10 @@ const EventsTab = ({ events, setEvents, user, networkId, darkMode = false }) => 
         description: '',
         capacity: '',
         coordinates: null,
-        event_link: '' // Reset the event_link field
+        event_link: '', // Reset the event_link field
+        price: 0,
+        currency: 'EUR',
+        max_tickets: ''
       });
       setLocationSuggestion(null);
       setEventImagePreview(null);
@@ -163,11 +172,19 @@ const EventsTab = ({ events, setEvents, user, networkId, darkMode = false }) => 
     setError(null);
     
     try {
+      // Prepare event data with proper type conversions
+      const eventData = {
+        ...eventForm,
+        capacity: eventForm.capacity ? parseInt(eventForm.capacity) : null,
+        price: eventForm.price || 0,
+        max_tickets: eventForm.max_tickets ? parseInt(eventForm.max_tickets) : null
+      };
+      
       if (dialogMode === 'create') {
         const result = await createEvent(
           networkId, 
           user.id, 
-          eventForm, 
+          eventData, 
           eventImageFile
         );
         
@@ -181,7 +198,7 @@ const EventsTab = ({ events, setEvents, user, networkId, darkMode = false }) => 
         const result = await updateEvent(
           selectedEvent.id,
           {
-            ...eventForm,
+            ...eventData,
             network_id: networkId,
             created_by: user.id
           },
@@ -380,6 +397,21 @@ const EventsTab = ({ events, setEvents, user, networkId, darkMode = false }) => 
                   </Typography>
                 )}
                 
+                {/* Show pricing if monetization is enabled and event has a price */}
+                {network?.features_config?.monetization && event.price > 0 && (
+                  <Typography variant="caption" display="block" sx={{ mt: 1, color: 'primary.main', fontWeight: 'bold' }}>
+                    Price: {new Intl.NumberFormat('en-US', {
+                      style: 'currency',
+                      currency: event.currency || 'EUR'
+                    }).format(event.price)}
+                    {event.max_tickets && (
+                      <span style={{ color: 'text.secondary', fontWeight: 'normal' }}>
+                        {' '}• {event.tickets_sold || 0}/{event.max_tickets} sold
+                      </span>
+                    )}
+                  </Typography>
+                )}
+                
                 <EventParticipationStats eventId={event.id} />
               </CardContent>
             </Card>
@@ -472,6 +504,40 @@ const EventsTab = ({ events, setEvents, user, networkId, darkMode = false }) => 
                 onChange={(e) => setEventForm({ ...eventForm, capacity: e.target.value })}
                 sx={{ mb: 2 }}
               />
+              
+              {/* Pricing fields - Only show if monetization is enabled */}
+              {network?.features_config?.monetization && (
+                <>
+                  <TextField
+                    margin="dense"
+                    label="Ticket Price"
+                    type="number"
+                    fullWidth
+                    value={eventForm.price}
+                    onChange={(e) => setEventForm({ ...eventForm, price: parseFloat(e.target.value) || 0 })}
+                    sx={{ mb: 2 }}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          {eventForm.currency === 'EUR' ? '€' : eventForm.currency === 'USD' ? '$' : '£'}
+                        </InputAdornment>
+                      ),
+                    }}
+                    helperText="Set to 0 for free events"
+                  />
+                  
+                  <TextField
+                    margin="dense"
+                    label="Max Tickets (optional)"
+                    type="number"
+                    fullWidth
+                    value={eventForm.max_tickets}
+                    onChange={(e) => setEventForm({ ...eventForm, max_tickets: e.target.value })}
+                    sx={{ mb: 2 }}
+                    helperText="Leave empty for unlimited tickets"
+                  />
+                </>
+              )}
             </Grid>
             
             <Grid item xs={12} md={6}>
