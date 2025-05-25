@@ -293,8 +293,12 @@ const AdminLayout = ({
           variant="permanent"
           sx={{
             display: { xs: 'none', md: 'block' },
+             position: 'sticky',
+              top: 0,
             '& .MuiDrawer-paper': {
               boxSizing: 'border-box',
+               position: 'sticky',
+              
               width: drawerWidth,
               borderRight: `1px solid ${muiTheme.palette.custom.border}`,
               backgroundColor: darkMode 
