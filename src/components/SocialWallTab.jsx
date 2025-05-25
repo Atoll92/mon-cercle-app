@@ -31,6 +31,7 @@ import {
   ReadMore as ReadMoreIcon,
   PictureAsPdf as PdfIcon
 } from '@mui/icons-material';
+import MediaPlayer from './MediaPlayer';
 
 // Number of items to display initially
 const ITEMS_PER_FETCH = 6;
@@ -675,8 +676,57 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                         </Button>
                       </Box>
                     </Box>
+                  ) : item.media_url ? (
+                    // New media format (video/audio/image) - with fallback for missing media_type
+                    <Box sx={{ bgcolor: darkMode ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.05)', p: 2 }}>
+                      {(() => {
+                        // Determine media type from URL if media_type is missing
+                        let mediaType = item.media_type;
+                        if (!mediaType && item.media_url) {
+                          const url = item.media_url.toLowerCase();
+                          if (url.includes('.mp4') || url.includes('.webm') || url.includes('.ogg') || url.includes('.mov')) {
+                            mediaType = 'video';
+                          } else if (url.includes('.mp3') || url.includes('.wav') || url.includes('.m4a') || url.includes('.aac')) {
+                            mediaType = 'audio';
+                          } else if (url.includes('.jpg') || url.includes('.jpeg') || url.includes('.png') || url.includes('.gif') || url.includes('.webp')) {
+                            mediaType = 'image';
+                          }
+                        }
+                        
+                        if (mediaType === 'image') {
+                          return (
+                            <Box sx={{ position: 'relative', width: '100%', pt: '56.25%' }}>
+                              <CardMedia
+                                component="img"
+                                image={item.media_url}
+                                alt={item.title}
+                                sx={{ 
+                                  position: 'absolute',
+                                  top: 0,
+                                  left: 0,
+                                  width: '100%',
+                                  height: '100%',
+                                  objectFit: 'contain',
+                                  bgcolor: darkMode ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.05)',
+                                  p: 1
+                                }}
+                              />
+                            </Box>
+                          );
+                        } else {
+                          return (
+                            <MediaPlayer
+                              src={item.media_url}
+                              type={mediaType === 'video' ? 'video' : 'audio'}
+                              title={item.media_metadata?.fileName || item.title}
+                              darkMode={darkMode}
+                            />
+                          );
+                        }
+                      })()}
+                    </Box>
                   ) : item.image_url && (
-                    // Image Preview (same as before)
+                    // Legacy image format
                     <Box sx={{ position: 'relative', width: '100%', pt: '56.25%' /* 16:9 aspect ratio container */ }}>
                       <CardMedia
                         component="img"

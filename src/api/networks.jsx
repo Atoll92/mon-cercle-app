@@ -499,7 +499,7 @@ export const uploadEventImage = async (eventId, imageFile) => {
 };
 
 // News post functions
-export const createNewsPost = async (networkId, userId, title, content, imageUrl = null, imageCaption = null) => {
+export const createNewsPost = async (networkId, userId, title, content, imageUrl = null, imageCaption = null, mediaUrl = null, mediaType = null, mediaMetadata = {}) => {
   try {
     // Create base post object
     const postData = {
@@ -509,8 +509,19 @@ export const createNewsPost = async (networkId, userId, title, content, imageUrl
       created_by: userId
     };
     
-    // Add image fields if provided
-    if (imageUrl) {
+    // Add media fields if provided
+    if (mediaUrl) {
+      postData.media_url = mediaUrl;
+      postData.media_type = mediaType;
+      postData.media_metadata = mediaMetadata;
+      
+      // For backward compatibility, also set image fields if it's an image
+      if (mediaType === 'image') {
+        postData.image_url = mediaUrl;
+        postData.image_caption = imageCaption;
+      }
+    } else if (imageUrl) {
+      // Legacy image upload support
       postData.image_url = imageUrl;
       if (imageCaption) {
         postData.image_caption = imageCaption;

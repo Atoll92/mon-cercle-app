@@ -24,8 +24,15 @@ import SendIcon from '@mui/icons-material/Send';
 import PersonIcon from '@mui/icons-material/Person';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
+import AttachFileIcon from '@mui/icons-material/AttachFile';
+import PlayCircleIcon from '@mui/icons-material/PlayCircle';
+import AudioFileIcon from '@mui/icons-material/AudioFile';
+import CancelIcon from '@mui/icons-material/Cancel';
 import backgroundImage from '../assets/8-bit-artwork-sky-landscape-wallpaper-preview.jpg';
 import LinkPreview from './LinkPreview'; // Import the LinkPreview component
+import MediaUpload from './MediaUpload';
+import MediaPlayer from './MediaPlayer';
+import { uploadMediaFile } from '../utils/mediaUpload';
 
 // URL regex pattern to detect links in messages
 // const URL_REGEX = /(https?:\/\/[^\s]+)/g;
@@ -40,6 +47,8 @@ const Chat = ({ networkId, isFullscreen = false }) => {
   const messageEndRef = useRef(null);
   const channelRef = useRef(null);
   const [darkMode, setDarkMode] = useState(true);
+  const [showMediaUpload, setShowMediaUpload] = useState(false);
+  const [uploadingMedia, setUploadingMedia] = useState(false);
 
   // Auto-scroll to the bottom when messages change
   useEffect(() => {
@@ -58,12 +67,24 @@ const Chat = ({ networkId, isFullscreen = false }) => {
             content,
             created_at,
             user_id,
+            media_url,
+            media_type,
+            media_metadata,
             profiles:user_id (id, full_name, profile_picture_url)
           `)
           .eq('network_id', networkId)
           .order('created_at', { ascending: true });
 
         if (error) throw error;
+        
+        // Debug: Log messages with media
+        console.log('All messages:', data);
+        const messagesWithMedia = data?.filter(msg => msg.media_url);
+        if (messagesWithMedia?.length > 0) {
+          console.log('Messages with media:', messagesWithMedia);
+          console.log('First media message:', messagesWithMedia[0]);
+        }
+        
         setMessages(data);
         setLoading(false);
       } catch (error) {
@@ -112,6 +133,9 @@ const Chat = ({ networkId, isFullscreen = false }) => {
               created_at,
               user_id,
               network_id,
+              media_url,
+              media_type,
+              media_metadata,
               profiles:user_id (id, full_name, profile_picture_url)
             `)
             .eq('id', payload.new.id)
@@ -178,8 +202,8 @@ const Chat = ({ networkId, isFullscreen = false }) => {
     };
   }, [networkId, user]);
 
-  const handleSend = async () => {
-    if (!newMessage.trim()) return;
+  const handleSend = async (mediaData = null) => {
+    if (!newMessage.trim() && !mediaData) return;
     
     // Prepare optimistic UI update with pending message
     const pendingMessage = {
@@ -201,13 +225,26 @@ const Chat = ({ networkId, isFullscreen = false }) => {
 
     try {
       // Send the message to the database
+      const messageData = {
+        network_id: networkId,
+        user_id: user.id,
+        content: pendingMessage.content
+      };
+      
+      // Add media data if present
+      if (mediaData) {
+        messageData.media_url = mediaData.url;
+        messageData.media_type = mediaData.mediaType.toLowerCase();
+        messageData.media_metadata = {
+          fileName: mediaData.fileName,
+          fileSize: mediaData.fileSize,
+          mimeType: mediaData.mimeType
+        };
+      }
+      
       const { data, error } = await supabase
         .from('messages')
-        .insert({
-          network_id: networkId,
-          user_id: user.id,
-          content: pendingMessage.content
-        })
+        .insert(messageData)
         .select('id')
         .single();
 
@@ -220,6 +257,24 @@ const Chat = ({ networkId, isFullscreen = false }) => {
       // Remove the pending message if it failed
       setMessages(prev => prev.filter(msg => msg.id !== pendingMessage.id));
       setError('Failed to send message');
+    }
+  };
+  
+  // Handle media upload
+  const handleMediaUpload = async (mediaData) => {
+    setUploadingMedia(true);
+    setShowMediaUpload(false);
+    
+    try {
+      // Upload media with a message
+      const mediaMessage = newMessage.trim() || `Shared a ${mediaData.mediaType.toLowerCase()}`;
+      setNewMessage(mediaMessage);
+      await handleSend(mediaData);
+    } catch (error) {
+      console.error('Error uploading media:', error);
+      setError('Failed to upload media');
+    } finally {
+      setUploadingMedia(false);
     }
   };
 
@@ -257,9 +312,85 @@ const extractUrl = (content) => {
   return url;
 };
 
-  // Function to render message content (either plain text or link preview)
+// Function to render media (images, videos, audio)
+const renderMedia = (mediaUrl, mediaType, metadata) => {
+  switch (mediaType) {
+    case 'image':
+      return (
+        <Box 
+          component="img" 
+          src={mediaUrl} 
+          alt={metadata?.fileName || 'Image'}
+          sx={{ 
+            maxWidth: '100%', 
+            maxHeight: 300,
+            borderRadius: 1,
+            mt: 1
+          }}
+        />
+      );
+      
+    case 'video':
+      return (
+        <Box sx={{ mt: 1 }}>
+          <MediaPlayer
+            src={mediaUrl}
+            type="video"
+            title={metadata?.fileName}
+            compact={true}
+            darkMode={darkMode}
+          />
+        </Box>
+      );
+      
+    case 'audio':
+      return (
+        <Box sx={{ mt: 1 }}>
+          <MediaPlayer
+            src={mediaUrl}
+            type="audio"
+            title={metadata?.fileName}
+            compact={true}
+            darkMode={darkMode}
+          />
+        </Box>
+      );
+      
+    default:
+      return null;
+  }
+};
+
+  // Function to render message content (text, link preview, or media)
 const renderMessageContent = (message) => {
-  if (!message || !message.content) {
+  if (!message) {
+    return null;
+  }
+  
+  // Check if message has media
+  if (message.media_url && message.media_type) {
+    return (
+      <Box>
+        {message.content && (
+          <Typography 
+            component="span" 
+            variant="body2" 
+            sx={{ 
+              mb: 0.5, 
+              display: 'block', 
+              fontSize: '0.85rem',
+              lineHeight: 1.4
+            }}
+          >
+            {message.content}
+          </Typography>
+        )}
+        {renderMedia(message.media_url, message.media_type, message.media_metadata)}
+      </Box>
+    );
+  }
+  
+  if (!message.content) {
     return null;
   }
   
@@ -335,6 +466,7 @@ const renderMessageContent = (message) => {
   }
 };
 
+// Render media content
   // Count unique active users
   const activeUserCount = Object.keys(activeUsers).length;
   
@@ -653,6 +785,16 @@ const renderMessageContent = (message) => {
           position: 'relative'
         }}
       >
+        {/* Media upload button */}
+        <IconButton
+          color="primary"
+          onClick={() => setShowMediaUpload(!showMediaUpload)}
+          disabled={uploadingMedia}
+          sx={{ mr: 1 }}
+        >
+          <AttachFileIcon />
+        </IconButton>
+        
         <TextField
           fullWidth
           variant="outlined"
@@ -698,8 +840,8 @@ const renderMessageContent = (message) => {
         />
         <IconButton 
           color="primary" 
-          onClick={handleSend}
-          disabled={!newMessage.trim()}
+          onClick={() => handleSend()}
+          disabled={!newMessage.trim() && !uploadingMedia}
           sx={{ 
             bgcolor: 'primary.main', 
             color: 'white',
@@ -719,6 +861,38 @@ const renderMessageContent = (message) => {
           <SendIcon />
         </IconButton>
       </Box>
+      
+      {/* Media upload dialog */}
+      {showMediaUpload && (
+        <Paper 
+          sx={{ 
+            position: 'absolute', 
+            bottom: 80, 
+            left: 16, 
+            right: 16, 
+            p: 2,
+            bgcolor: darkMode ? 'background.paper' : 'background.default',
+            boxShadow: 3,
+            borderRadius: 2,
+            zIndex: 10
+          }}
+        >
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+            <Typography variant="subtitle2">Upload Media</Typography>
+            <IconButton size="small" onClick={() => setShowMediaUpload(false)}>
+              <CancelIcon />
+            </IconButton>
+          </Box>
+          <MediaUpload
+            onUpload={handleMediaUpload}
+            allowedTypes={['IMAGE', 'VIDEO', 'AUDIO']}
+            bucket="networks"
+            path={`chat/${networkId}`}
+            maxFiles={1}
+            compact={true}
+          />
+        </Paper>
+      )}
     </Paper>
   );
 };

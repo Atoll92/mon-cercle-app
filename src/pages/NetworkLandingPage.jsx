@@ -277,6 +277,10 @@ function NetworkLandingPage() {
             memberName: member?.full_name || 'Network Member',
             memberAvatar: member?.profile_picture_url || '',
             memberId: member?.id,
+            // Preserve all media fields from the database
+            media_url: item.media_url,
+            media_type: item.media_type,
+            media_metadata: item.media_metadata,
             // Ensure image_url is properly used - database field is still image_url
             image_url: item.image_url || item.file_url || ''
           };

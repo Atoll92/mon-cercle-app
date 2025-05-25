@@ -5,6 +5,7 @@ import { useAuth } from '../context/authcontext';
 import { supabase } from '../supabaseclient';
 import MoodboardGallery from '../components/moodboardGallery';
 import EventParticipation from '../components/EventParticipation';
+import MediaPlayer from '../components/MediaPlayer';
 import {
   Button,
   Dialog,
@@ -50,7 +51,8 @@ import {
   Description as DescriptionIcon,
   Dashboard as DashboardIcon,
   Badge as Badge,
-
+  VideoLibrary as VideoIcon,
+  AudioFile as AudioFileIcon
 } from '@mui/icons-material';
 
 function ProfilePage() {
@@ -93,6 +95,13 @@ function ProfilePage() {
           .eq('profile_id', userId);
           
         if (postError) throw postError;
+        
+        // Debug: Log portfolio items
+        console.log('Portfolio items:', postItems);
+        const itemsWithMedia = postItems?.filter(item => item.media_url);
+        if (itemsWithMedia?.length > 0) {
+          console.log('Portfolio items with media:', itemsWithMedia);
+        }
         
         // Fetch event participations for this profile
         const { data: participations, error: participationsError } = await supabase
@@ -762,7 +771,56 @@ function ProfilePage() {
                                 }
                               }}
                             >
-                              {post.image_url ? (
+                              {post.media_url && post.media_type ? (
+                                <Box sx={{ height: 140, bgcolor: 'black', overflow: 'hidden', position: 'relative' }}>
+                                  {post.media_type === 'IMAGE' ? (
+                                    <CardMedia
+                                      component="img"
+                                      height="140"
+                                      image={post.media_url}
+                                      alt={post.title}
+                                      sx={{ objectFit: 'cover' }}
+                                    />
+                                  ) : post.media_type === 'VIDEO' ? (
+                                    <Box sx={{ 
+                                      height: '100%',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      bgcolor: 'black'
+                                    }}>
+                                      <video
+                                        src={post.media_url}
+                                        style={{ 
+                                          width: '100%',
+                                          height: '100%',
+                                          objectFit: 'cover'
+                                        }}
+                                      />
+                                      <Box sx={{
+                                        position: 'absolute',
+                                        inset: 0,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        bgcolor: 'rgba(0,0,0,0.5)'
+                                      }}>
+                                        <VideoIcon sx={{ fontSize: 48, color: 'white' }} />
+                                      </Box>
+                                    </Box>
+                                  ) : (
+                                    <Box sx={{ 
+                                      height: '100%',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      bgcolor: 'grey.200'
+                                    }}>
+                                      <AudioFileIcon sx={{ fontSize: 48, color: 'primary.main' }} />
+                                    </Box>
+                                  )}
+                                </Box>
+                              ) : post.image_url ? (
                                 <CardMedia
                                   component="img"
                                   height="140"
@@ -853,7 +911,26 @@ function ProfilePage() {
                           }
                         }}
                       >
-                        {post.image_url ? (
+                        {post.media_url && post.media_type ? (
+                          post.media_type === 'IMAGE' ? (
+                            <CardMedia
+                              component="img"
+                              height="180"
+                              image={post.media_url}
+                              alt={post.title}
+                            />
+                          ) : (
+                            <Box sx={{ height: 180, bgcolor: 'black', p: 2 }}>
+                              <MediaPlayer
+                                src={post.media_url}
+                                type={post.media_type === 'VIDEO' ? 'video' : 'audio'}
+                                title={post.media_metadata?.fileName || post.title}
+                                compact={true}
+                                darkMode={post.media_type === 'VIDEO'}
+                              />
+                            </Box>
+                          )
+                        ) : post.image_url ? (
                           <CardMedia
                             component="img"
                             height="180"

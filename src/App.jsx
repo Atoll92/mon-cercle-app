@@ -44,6 +44,7 @@ import SuperAdminDashboard from './pages/SuperAdminDashboard';
 import JoinNetworkPage from './pages/JoinNetworkPage';
 import NewsPostPage from './pages/NewsPostPage';
 import EventPage from './pages/EventPage';
+import MediaTest from './pages/MediaTest';
 
 function App() {
   const { loading, session, user } = useAuth();
@@ -224,6 +225,9 @@ function App() {
             <Route path="/network/:networkId" element={<NetworkLandingPage />} />
             <Route path="/network/:networkId/news/:newsId" element={<NewsPostPage />} />
             <Route path="/network/:networkId/event/:eventId" element={<EventPage />} />
+            
+            {/* Test route */}
+            <Route path="/media-test" element={<MediaTest />} />
             
             {/* Join network via invitation link */}
             <Route path="/join/:code" element={<JoinNetworkPage />} />

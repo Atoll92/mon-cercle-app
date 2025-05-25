@@ -68,6 +68,9 @@ API functions are organized in the `src/api/` directory:
 - `networks.jsx`: Network management (users, events, news, moderation)
 - `directMessages.js`: Direct messaging system
 - `moodboards.jsx`: Moodboard functionality
+- `polls.js`: Polling system with voting and statistics
+- `invitations.js`: Enhanced invitation system with links and codes
+- `superAdmin.js`: Super admin dashboard and system management
 
 #### Services Layer
 
@@ -77,6 +80,12 @@ Service functions are organized in the `src/services/` directory:
 - `opengraphService.js`: Link preview generation
 - `stripeService.js`: Stripe payment processing
 - `subscriptionService.js`: Subscription management
+
+#### Utilities
+
+Utility functions are organized in the `src/utils/` directory:
+- `mediaUpload.js`: Media file validation, upload, and processing
+- `animationHelpers.js`: Animation timing, easing, and helper functions
 
 #### Context Providers
 
@@ -104,34 +113,53 @@ Key entities in the Supabase database:
 - `profiles`: User profiles with notification preferences and moderation status
 - `networks`: User networks/communities with configuration options
 - `network_events`: Events within networks
-- `network_news`: News/posts within networks with image support
+- `network_news`: News/posts within networks with media support
+- `network_polls`: Network polls with multiple question types
+- `network_poll_votes`: Poll voting records
 - `direct_conversations`: Direct message conversations
-- `direct_messages`: Individual messages in conversations
-- `portfolio_items`: User portfolio projects
+- `direct_messages`: Individual messages in conversations with media support
+- `portfolio_items`: User portfolio projects with media support
 - `wiki_pages`: Network wiki content
+- `wiki_categories`: Wiki page categorization
+- `wiki_comments`: Comments on wiki pages
+- `wiki_revisions`: Version control for wiki pages
 - `network_files`: Shared network files
+- `media_uploads`: Media file storage and metadata
 - `moderation_logs`: Content and user moderation history
-- `notification_queue`: Email notification queue
+- `notification_queue`: Email notification queue with retry mechanism
+- `opengraph_cache`: URL preview cache
+- `moodboards`: Personal and network moodboards
+- `moodboard_items`: Moodboard content items
 
 ## UI Components
 
 ### Feature Components
-- `Chat`: Handles network chat interaction
+- `Chat`: Handles network chat interaction with media support
 - `DirectMessageChat`: Direct messaging interface
 - `EventsTab`: Network event management and display
 - `MembersTab`: Network member listing and management
-- `SocialWallTab`: Combined news and portfolio social feed
+- `SocialWallTab`: Combined news and portfolio social feed with media
 - `WikiTab`: Wiki content display
 - `FilesTab`: Shared files management
-- `NewsTab`: Network news feed
+- `NewsTab`: Network news feed with media support
 - `MoonboardTab`: Network moodboard display
+- `MediaUpload`: Complete media upload system with validation and preview
+- `MediaPlayer`: Video/audio player with fullscreen and chat integration
+- `PollCard`: Interactive polling component with multiple question types
 - `NotificationSettings`: User email notification preferences
 - `NetworkOnboardingWizard`: Step-by-step network setup
 - `LinkPreview`: URL preview component
 - `LatestNewsWidget`: News display widget
+- `LatestPostsWidget`: Recent posts display widget
 - `PersonalMoodboardWidget`: Personal moodboard display
 - `VirtualizedMemberList`: Performance-optimized member list
 - `ThreeJSBackground`: 3D animated background
+- `AnimatedComponents`: Styled components with animations
+- `ShimmerProvider`: Dynamic shimmer effects
+- `SubscriptionBadge`: Subscription status indicator
+- `EventParticipationStats`: Event analytics and statistics
+- `AddressSuggestions`: Location-based address suggestions
+- `TextCycler`: Animated text cycling component
 
 ### Admin Components
 - `AdminLayout`: Admin interface layout
@@ -140,6 +168,9 @@ Key entities in the Supabase database:
 - `NetworkSettingsTab`: Network configuration
 - `ThemeTab`: Theme customization
 - `BatchInviteModal`: Bulk user invitations
+- `InvitationLinksTab`: Invitation link management with QR codes
+- `PollsTab`: Poll management interface
+- `MonetizationTab`: Subscription and billing management
 
 ### Theme Support
 - Dark mode and light mode support
@@ -453,8 +484,9 @@ Networks are the core social structure:
 
 Direct messaging system allows users to:
 - Start conversations with other users
-- Send/receive messages in real-time using Supabase realtime subscriptions
+- Send/receive messages with media attachments in real-time using Supabase realtime subscriptions
 - See unread message counts
+- Share images, videos, and audio files
 
 ### Events
 
@@ -467,34 +499,37 @@ Network events system to:
 ### Files & Content
 
 Content management features:
-- Wiki pages with categories
+- Wiki pages with categories, comments, and revision control
 - Shared files system with download tracking
-- Moodboards for visual content
+- Moodboards for visual content with personal and collaborative modes
 - Rich text editing with multiple editor options
+- Media upload system supporting images, videos, and audio
 
 ### Social Wall
 
 Combined social feed that includes:
-- Network news posts with image support
-- Member portfolio projects
+- Network news posts with rich media support
+- Member portfolio projects with media
 - Interactive content with media support
 - Link previews for URLs
+- Poll integration for interactive engagement
 
 ### Portfolio
 
 User portfolio system:
-- Users can add portfolio projects
-- Projects can include images and links
-- Portfolio items appear in the social wall
+- Users can add portfolio projects with rich media
+- Projects can include images, videos, and links
+- Portfolio items appear in the social wall with media previews
 
 ### Chat
 
 Real-time network chat:
-- Persistent chat history
+- Persistent chat history with media support
 - User presence indicators
 - Support for fullscreen mode
 - Link previews
 - Content moderation support
+- Media player integration for shared content
 
 ### Subscription & Billing
 
@@ -528,3 +563,32 @@ Network setup and customization:
 - Feature toggles
 - Default tab configuration
 - Custom theme colors
+- Invitation link management with QR codes
+
+### Polls System
+
+Interactive polling features:
+- Multiple choice polls
+- Yes/no polls  
+- Date picker polls
+- Anonymous voting options
+- Real-time vote tracking
+- Poll statistics and analytics
+
+### Super Admin Dashboard
+
+System-wide administration:
+- Network analytics and monitoring
+- User management across all networks
+- System health monitoring
+- Data export capabilities
+- Network suspension and activation
+
+### Animation System
+
+Advanced animation framework:
+- Fade-in and scale animations
+- Staggered list animations
+- Shimmer effects based on scroll and time
+- Custom animation hooks
+- CSS animation utilities

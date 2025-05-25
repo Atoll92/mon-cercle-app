@@ -28,6 +28,7 @@ import {
 } from '@mui/icons-material';
 import { supabase } from '../supabaseclient';
 import { format } from 'date-fns';
+import MediaPlayer from '../components/MediaPlayer';
 
 function NewsPostPage() {
   const { networkId, newsId } = useParams();
@@ -274,8 +275,38 @@ function NewsPostPage() {
 
         <Divider sx={{ mb: 3 }} />
 
-        {/* Featured Image */}
-        {newsPost.image_url && (
+        {/* Featured Media */}
+        {newsPost.media_url && newsPost.media_type ? (
+          <Box sx={{ mb: 3 }}>
+            {newsPost.media_type === 'IMAGE' ? (
+              <>
+                <img
+                  src={newsPost.media_url}
+                  alt={newsPost.title}
+                  style={{
+                    width: '100%',
+                    maxHeight: '500px',
+                    objectFit: 'cover',
+                    borderRadius: '8px'
+                  }}
+                />
+                {newsPost.image_caption && (
+                  <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+                    {newsPost.image_caption}
+                  </Typography>
+                )}
+              </>
+            ) : (
+              <MediaPlayer
+                src={newsPost.media_url}
+                type={newsPost.media_type === 'VIDEO' ? 'video' : 'audio'}
+                title={newsPost.media_metadata?.fileName || newsPost.title}
+                thumbnail={newsPost.media_metadata?.thumbnail}
+                compact={false}
+              />
+            )}
+          </Box>
+        ) : newsPost.image_url && (
           <Box sx={{ mb: 3 }}>
             <img
               src={newsPost.image_url}

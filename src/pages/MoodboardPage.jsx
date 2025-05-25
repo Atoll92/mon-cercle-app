@@ -4,6 +4,8 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/authcontext';
 import { supabase } from '../supabaseclient';
 import LinkPreview from '../components/LinkPreview';
+import MediaUpload from '../components/MediaUpload';
+import MediaPlayer from '../components/MediaPlayer';
 import {
   Box,
   Paper,
@@ -240,6 +242,67 @@ const renderContent = () => {
           />
         </Box>
       );
+    case 'video':
+      return (
+        <Box sx={{ 
+          width: '100%', 
+          height: '100%', 
+          position: 'relative', 
+          overflow: 'hidden',
+          backgroundColor: '#000',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          pointerEvents: selected && !isEditable ? 'auto' : 'none'
+        }}>
+          <MediaPlayer
+            src={item.content}
+            type="video"
+            title={item.metadata?.fileName || item.title || 'Video'}
+            compact={false}
+            darkMode={true}
+          />
+          {isEditable && !selected && (
+            <Box sx={{
+              position: 'absolute',
+              bottom: 8,
+              left: 8,
+              right: 8,
+              bgcolor: 'rgba(0,0,0,0.7)',
+              color: 'white',
+              p: 1,
+              borderRadius: 1,
+              fontSize: '0.75rem',
+              textAlign: 'center'
+            }}>
+              Click to select, then play
+            </Box>
+          )}
+        </Box>
+      );
+    case 'audio':
+      return (
+        <Box sx={{ 
+          width: '100%', 
+          height: '100%', 
+          position: 'relative', 
+          overflow: 'hidden',
+          backgroundColor: '#f0f0f0',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          p: 2,
+          pointerEvents: selected && !isEditable ? 'auto' : 'none'
+        }}>
+          <MediaPlayer
+            src={item.content}
+            type="audio"
+            title={item.metadata?.fileName || item.title || 'Audio'}
+            compact={true}
+            darkMode={false}
+          />
+        </Box>
+      );
     case 'pdf':
       return (
         <Box sx={{ 
@@ -386,23 +449,6 @@ const renderContent = () => {
           >
             {item.content}
           </Typography>
-        </Box>
-      );
-    case 'video':
-      return (
-        <Box sx={{ width: '100%', height: '100%', pointerEvents: selected ? 'auto' : 'none' }}>
-          <video 
-            controls 
-            style={{ 
-              width: '100%', 
-              height: '100%', 
-              objectFit: 'contain', // Changed from cover to contain
-              pointerEvents: selected ? 'auto' : 'none' // Only allow video controls when selected
-            }}
-          >
-            <source src={item.content} type="video/mp4" />
-            Your browser does not support the video tag.
-          </video>
         </Box>
       );
     case 'link':
@@ -2239,7 +2285,7 @@ const handleUpdateItem = async (updatedItem) => {
             setUploadDialogOpen(true);
           }}
         >
-          <ImageIcon sx={{ mr: 1 }} /> Add Image
+          <ImageIcon sx={{ mr: 1 }} /> Add Media
         </MenuItem>
         <MenuItem 
           onClick={() => {
@@ -2267,67 +2313,65 @@ const handleUpdateItem = async (updatedItem) => {
         </MenuItem>
       </Menu>
       
-      {/* Upload Image Dialog */}
+      {/* Upload Media Dialog */}
       <Dialog 
         open={uploadDialogOpen} 
         onClose={() => setUploadDialogOpen(false)}
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle>Upload Image</DialogTitle>
+        <DialogTitle>Upload Media</DialogTitle>
         <DialogContent>
           <Box sx={{ mt: 1, mb: 2 }}>
-            <input
-              accept="image/*"
-              style={{ display: 'none' }}
-              id="upload-image-button"
-              type="file"
-              onChange={handleFileChange}
+            <MediaUpload
+              onUpload={async (mediaData) => {
+                // Handle the uploaded media
+                const newItem = {
+                  // Don't include id - let Supabase generate it
+                  type: mediaData.mediaType.toLowerCase(),
+                  content: mediaData.url,
+                  x: 50,
+                  y: 50,
+                  width: mediaData.mediaType === 'AUDIO' ? 300 : 400,
+                  height: mediaData.mediaType === 'AUDIO' ? 80 : 300,
+                  zIndex: items.length + 1,
+                  metadata: {
+                    fileName: mediaData.fileName,
+                    fileSize: mediaData.fileSize,
+                    mimeType: mediaData.mimeType
+                  }
+                };
+                
+                try {
+                  const { data, error } = await supabase
+                    .from('moodboard_items')
+                    .insert([{
+                      ...newItem,
+                      moodboard_id: moodboardId,
+                      created_by: user.id
+                    }])
+                    .select()
+                    .single();
+                    
+                  if (error) throw error;
+                  
+                  setItems([...items, data]);
+                  setUploadDialogOpen(false);
+                } catch (error) {
+                  console.error('Error adding media:', error);
+                  setError('Failed to add media to moodboard');
+                }
+              }}
+              allowedTypes={['IMAGE', 'VIDEO', 'AUDIO']}
+              bucket="networks"
+              path={`moodboard/${moodboardId}`}
+              maxFiles={1}
+              showPreview={true}
             />
-            <label htmlFor="upload-image-button">
-              <Button
-                variant="outlined"
-                component="span"
-                startIcon={<CloudUploadIcon />}
-                fullWidth
-                sx={{ py: 5, border: '1px dashed' }}
-              >
-                {newImageUrl ? 'Change Image' : 'Select an image to upload'}
-              </Button>
-            </label>
-            
-            {newImageUrl && (
-              <Box sx={{ 
-                mt: 2, 
-                p: 1, 
-                border: '1px solid',
-                borderColor: 'divider',
-                borderRadius: 1,
-                textAlign: 'center'
-              }}>
-                <img 
-                  src={newImageUrl} 
-                  alt="Preview" 
-                  style={{ 
-                    maxWidth: '100%', 
-                    maxHeight: '200px',
-                    objectFit: 'contain' 
-                  }} 
-                />
-              </Box>
-            )}
           </Box>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setUploadDialogOpen(false)}>Cancel</Button>
-          <Button 
-            onClick={handleUploadImage} 
-            variant="contained" 
-            disabled={!newImage || saving}
-            startIcon={saving ? <CircularProgress size={20} /> : <CloudUploadIcon />}
-          >
-            {saving ? 'Uploading...' : 'Upload'}
-          </Button>
         </DialogActions>
       </Dialog>
       

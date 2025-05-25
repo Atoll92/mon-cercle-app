@@ -40,11 +40,26 @@ import StarterKit from '@tiptap/starter-kit';
 import { createNewsPost, deleteNewsPost } from '../api/networks';
 import { getActivePolls } from '../api/polls';
 import PollCard from './PollCard';
+import MediaUpload from './MediaUpload';
+import MediaPlayer from './MediaPlayer';
 
 // Enhanced News Tab component with image upload support and admin editing
 const NewsTab = ({ darkMode }) => {
   const { user } = useAuth();
   const { network, news: networkNews, members: networkMembers, refreshNews, isAdmin } = useNetwork();
+  
+  // Debug: Log the news data to see what we're getting
+  useEffect(() => {
+    console.log('NetworkNews data:', networkNews);
+    if (networkNews && networkNews.length > 0) {
+      console.log('First news item:', networkNews[0]);
+      console.log('Media fields:', {
+        media_url: networkNews[0].media_url,
+        media_type: networkNews[0].media_type,
+        media_metadata: networkNews[0].media_metadata
+      });
+    }
+  }, [networkNews]);
   
   // State for editing/creating news
   const [isCreating, setIsCreating] = useState(false);
@@ -52,7 +67,9 @@ const NewsTab = ({ darkMode }) => {
   const [newsTitle, setNewsTitle] = useState('');
   const [imageFile, setImageFile] = useState(null);
   const [imageCaption, setImageCaption] = useState('');
-  const [imagePreview, setImagePreview] = useState(null);
+  const [mediaUrl, setMediaUrl] = useState(null);
+  const [mediaType, setMediaType] = useState(null);
+  const [mediaMetadata, setMediaMetadata] = useState({});
   const [updating, setUpdating] = useState(false);
   const [error, setError] = useState(null);
   
@@ -95,24 +112,23 @@ const NewsTab = ({ darkMode }) => {
     setNewsTitle('');
     setImageFile(null);
     setImageCaption('');
-    setImagePreview(null);
+    setMediaUrl(null);
+    setMediaType(null);
+    setMediaMetadata({});
     editor?.commands.clearContent();
     editor?.commands.focus();
   };
 
-  // Handle image file selection
-  const handleImageChange = (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      setError('Please select an image file');
-      return;
-    }
-
-    setImageFile(file);
-    setImagePreview(URL.createObjectURL(file));
+  // Handle media upload
+  const handleMediaUpload = (uploadResult) => {
+    console.log("NewsTab media upload result:", uploadResult);
+    setMediaUrl(uploadResult.url);
+    setMediaType(uploadResult.type);
+    setMediaMetadata({
+      fileName: uploadResult.fileName,
+      fileSize: uploadResult.fileSize,
+      mimeType: uploadResult.mimeType
+    });
   };
 
   // Upload image to Supabase Storage
@@ -171,7 +187,7 @@ const NewsTab = ({ darkMode }) => {
         imageUrl = await uploadNewsImage(network.id, imageFile);
       }
       
-      // Create the news post with optional image
+      // Create the news post with optional media
       const newsData = {
         title: newsTitle,
         content,
@@ -179,8 +195,18 @@ const NewsTab = ({ darkMode }) => {
         created_by: user.id
       };
       
-      // Add image fields if an image was uploaded
-      if (imageUrl) {
+      // Add media fields if media was uploaded
+      if (mediaUrl) {
+        newsData.media_url = mediaUrl;
+        newsData.media_type = mediaType;
+        newsData.media_metadata = mediaMetadata;
+        // For backward compatibility, also set image fields if it's an image
+        if (mediaType === 'image') {
+          newsData.image_url = mediaUrl;
+          newsData.image_caption = imageCaption;
+        }
+      } else if (imageUrl) {
+        // Legacy image upload support
         newsData.image_url = imageUrl;
         newsData.image_caption = imageCaption;
       }
@@ -253,24 +279,37 @@ const NewsTab = ({ darkMode }) => {
         sx={{ mb: 2 }}
       />
       
-      {/* Image upload section */}
+      {/* Media upload section */}
       <Box sx={{ mb: 2, p: 2, border: '1px dashed grey', borderRadius: 1 }}>
         <Typography variant="subtitle1" gutterBottom>
-          Featured Image (optional)
+          Featured Media (optional)
         </Typography>
         
-        {imagePreview && (
+        {mediaUrl && (
           <Box sx={{ position: 'relative', mb: 2 }}>
-            <img 
-              src={imagePreview} 
-              alt="Preview" 
-              style={{ maxWidth: '100%', maxHeight: '200px', display: 'block', margin: '0 auto' }} 
-            />
+            {mediaType === 'IMAGE' ? (
+              <img 
+                src={mediaUrl} 
+                alt="Preview" 
+                style={{ maxWidth: '100%', maxHeight: '200px', display: 'block', margin: '0 auto' }} 
+              />
+            ) : (
+              <MediaPlayer
+                src={mediaUrl}
+                type={mediaType === 'VIDEO' ? 'video' : 'audio'}
+                title={newsTitle || 'Media preview'}
+                thumbnail={mediaMetadata?.thumbnail}
+                compact={false}
+                darkMode={darkMode}
+              />
+            )}
             <IconButton 
               sx={{ position: 'absolute', top: 0, right: 0, bgcolor: 'rgba(0,0,0,0.5)', color: 'white' }}
               onClick={() => {
+                setMediaUrl(null);
+                setMediaType(null);
+                setMediaMetadata({});
                 setImageFile(null);
-                setImagePreview(null);
                 setImageCaption('');
               }}
             >
@@ -279,30 +318,17 @@ const NewsTab = ({ darkMode }) => {
           </Box>
         )}
         
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Button
-            variant="outlined"
-            component="label"
-            startIcon={<AddPhotoIcon />}
-          >
-            {imageFile ? 'Change Image' : 'Add Image'}
-            <input 
-              type="file"
-              accept="image/*"
-              hidden
-              onChange={handleImageChange}
-            />
-          </Button>
-          
-          {imageFile && (
-            <Typography variant="body2" color="text.secondary">
-              {imageFile.name} ({(imageFile.size / 1024).toFixed(1)} KB)
-            </Typography>
-          )}
-        </Box>
+        <MediaUpload
+          onUpload={handleMediaUpload}
+          allowedTypes={['IMAGE', 'VIDEO', 'AUDIO']}
+          bucket="networks"
+          path={`news/${network?.id}`}
+          maxFiles={1}
+          showPreview={false}
+        />
         
-        {/* Image caption field, shown only when image is selected */}
-        {imageFile && (
+        {/* Image caption field, shown only when media is an image */}
+        {mediaType === 'image' && (
           <TextField
             fullWidth
             label="Image Caption (optional)"
@@ -447,7 +473,46 @@ const NewsTab = ({ darkMode }) => {
         networkNews.map((post, index) => (
           <StaggeredListItem key={post.id} index={index}>
             <AnimatedCard sx={{ mb: 3, overflow: 'hidden' }}>
-              {post.image_url && (
+              {/* Display media content */}
+              {post.media_url ? (
+                <Box sx={{ p: 2, bgcolor: 'background.default' }}>
+                  {(() => {
+                    // Determine media type from URL if media_type is missing
+                    let mediaType = post.media_type;
+                    if (!mediaType && post.media_url) {
+                      const url = post.media_url.toLowerCase();
+                      if (url.includes('.mp4') || url.includes('.webm') || url.includes('.ogg') || url.includes('.mov')) {
+                        mediaType = 'video';
+                      } else if (url.includes('.mp3') || url.includes('.wav') || url.includes('.m4a') || url.includes('.aac')) {
+                        mediaType = 'audio';
+                      } else if (url.includes('.jpg') || url.includes('.jpeg') || url.includes('.png') || url.includes('.gif') || url.includes('.webp')) {
+                        mediaType = 'image';
+                      }
+                    }
+                    
+                    if (mediaType === 'image') {
+                      return (
+                        <CardMedia
+                          component="img"
+                          height="400"
+                          image={post.media_url}
+                          alt={post.title}
+                          sx={{ objectFit: 'contain', bgcolor: 'black' }}
+                        />
+                      );
+                    } else {
+                      return (
+                        <MediaPlayer
+                          src={post.media_url}
+                          type={mediaType === 'video' ? 'video' : 'audio'}
+                          title={post.media_metadata?.fileName}
+                          darkMode={darkMode}
+                        />
+                      );
+                    }
+                  })()}
+                </Box>
+              ) : post.image_url && (
                 <CardMedia
                   component="img"
                   height="240"
@@ -466,13 +531,14 @@ const NewsTab = ({ darkMode }) => {
                 </Typography>
               </Box>
               
-              {post.image_url && post.image_caption && (
+              {/* Display caption for any media */}
+              {((post.media_url && post.media_metadata?.fileName) || (post.image_url && post.image_caption)) && (
                 <Typography 
                   variant="body2" 
                   color="text.secondary"
                   sx={{ mt: -2, mb: 2, fontStyle: 'italic' }}
                 >
-                  {post.image_caption}
+                  {post.image_caption || post.media_metadata?.fileName}
                 </Typography>
               )}
               

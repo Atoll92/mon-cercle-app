@@ -7,6 +7,7 @@ import PersonalMoodboardWidget from '../components/PersonalMoodboardWidget';
 import LatestNewsWidget from '../components/LatestNewsWidget';
 import LatestPostsWidget from '../components/LatestPostsWidget';
 import TestNotificationSystem from '../components/TestNotificationSystem';
+import MediaUpload from '../components/MediaUpload';
 import { useFadeIn, useStaggeredAnimation, ANIMATION_DURATION } from '../hooks/useAnimation';
 import { ProfileSkeleton, GridSkeleton } from '../components/LoadingSkeleton';
 import { 
@@ -170,8 +171,10 @@ function DashboardPage() {
   const [newPostTitle, setNewPostTitle] = useState('');
   const [newPostContent, setNewPostContent] = useState('');
   const [newPostLink, setNewPostLink] = useState('');
-  const [newPostImage, setNewPostImage] = useState(null);
   const [newPostImagePreview, setNewPostImagePreview] = useState('');
+  const [mediaUrl, setMediaUrl] = useState(null);
+  const [mediaType, setMediaType] = useState(null);
+  const [mediaMetadata, setMediaMetadata] = useState({});
   const [publishingPost, setPublishingPost] = useState(false);
   const [postMessage, setPostMessage] = useState('');
 
@@ -333,18 +336,25 @@ function DashboardPage() {
     window.location.reload();
   };
   
-  // Handle new post image change
-  const handleNewPostImageChange = (e) => {
-    if (!e.target.files || e.target.files.length === 0) {
-      return;
+  // Handle media upload
+  const handleMediaUpload = (uploadResult) => {
+    console.log("Media upload result:", uploadResult);
+    setMediaUrl(uploadResult.url);
+    setMediaType(uploadResult.type);
+    setMediaMetadata({
+      fileName: uploadResult.fileName,
+      fileSize: uploadResult.fileSize,
+      mimeType: uploadResult.mimeType
+    });
+    
+    // For backward compatibility with existing image preview
+    if (uploadResult.type === 'image') {
+      setNewPostImagePreview(uploadResult.url);
+    } else {
+      setNewPostImagePreview('');
     }
-    
-    const file = e.target.files[0];
-    setNewPostImage(file);
-    setNewPostImagePreview(URL.createObjectURL(file));
-    
-    console.log("New post image selected:", file.name);
   };
+
   
   // Handle publishing a new post
   const handlePublishNewPost = async () => {
@@ -358,41 +368,25 @@ function DashboardPage() {
       setPublishingPost(true);
       console.log("Publishing post:", newPostTitle);
       
-      // First, upload the image if any
-      let fileUrl = null;
-      if (newPostImage) {
-        // Upload new image
-        const fileExt = newPostImage.name.split('.').pop();
-        const fileName = `${user.id}-${Date.now()}-post.${fileExt}`;
-        const filePath = `portfolios/${fileName}`;
-
-        console.log('Uploading post image:', filePath);
-        
-        const { error: uploadError } = await supabase.storage
-          .from('profiles')
-          .upload(filePath, newPostImage);
-
-        if (uploadError) {
-          console.error('Error uploading post image:', uploadError);
-          throw uploadError;
-        }
-
-        const { data: urlData } = supabase.storage
-          .from('profiles')
-          .getPublicUrl(filePath);
-        
-        fileUrl = urlData.publicUrl;
-        console.log('Generated image URL:', fileUrl);
-      }
-      
       // Save post directly to the database
       const newPost = {
         profile_id: user.id,
         title: newPostTitle,
         description: newPostContent,
-        url: newPostLink,
-        image_url: fileUrl
+        url: newPostLink
       };
+
+      // Add media fields if media was uploaded via MediaUpload component
+      if (mediaUrl) {
+        newPost.media_url = mediaUrl;
+        newPost.media_type = mediaType;
+        newPost.media_metadata = mediaMetadata;
+        
+        // For backward compatibility, also set image_url if it's an image
+        if (mediaType === 'image') {
+          newPost.image_url = mediaUrl;
+        }
+      }
       
       console.log('Saving post to portfolio_items table:', newPost);
       
@@ -412,8 +406,10 @@ function DashboardPage() {
       setNewPostTitle('');
       setNewPostContent('');
       setNewPostLink('');
-      setNewPostImage(null);
       setNewPostImagePreview('');
+      setMediaUrl(null);
+      setMediaType(null);
+      setMediaMetadata({});
       
       // Show success message
       setPostMessage('Post published successfully!');
@@ -1102,7 +1098,7 @@ function DashboardPage() {
                          <Grid item xs={12} sx={{ minHeight: '300px', width:'100%' }}>
                 <Grid container spacing={2} sx={{ height: '100%', width: '100%' }}>
                   {/* Left Column: Create Post */}
-                  <Grid item xs={12} md={4} sx={{ display: 'flex' }}>
+                  <Grid item xs={12} md={6} sx={{ display: 'flex', maxWidth: { md: '50%' } }}>
                     <Card sx={{ 
                       borderRadius: 2, 
                       boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
@@ -1156,6 +1152,21 @@ function DashboardPage() {
                             size="small"
                           />
                           
+                          <TextField
+                            fullWidth
+                            placeholder="Add link (optional)"
+                            variant="outlined"
+                            size="small"
+                            sx={{ mb: 1.5 }}
+                            value={newPostLink}
+                            onChange={(e) => setNewPostLink(e.target.value)}
+                            slotProps={{
+                              input: {
+                                startAdornment: <LanguageIcon color="action" sx={{ mr: 1 }} fontSize="small" />
+                              }
+                            }}
+                          />
+                          
                           {/* Display image preview if available */}
                           {newPostImagePreview && (
                             <Box sx={{ mb: 1.5, position: 'relative', width: '100%', maxHeight: '120px', overflow: 'hidden', borderRadius: 1 }}>
@@ -1181,8 +1192,10 @@ function DashboardPage() {
                                   }
                                 }}
                                 onClick={() => {
-                                  setNewPostImage(null);
                                   setNewPostImagePreview('');
+                                  setMediaUrl(null);
+                                  setMediaType(null);
+                                  setMediaMetadata({});
                                 }}
                               >
                                 <DeleteIcon fontSize="small" />
@@ -1191,23 +1204,30 @@ function DashboardPage() {
                           )}
                           
                           <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
-                            <label htmlFor="quick-post-image">
-                              <input
-                                accept="image/*"
-                                type="file"
-                                id="quick-post-image"
-                                hidden
-                                onChange={handleNewPostImageChange}
-                              />
-                              <Button 
-                                variant="outlined" 
-                                component="span"
-                                startIcon={<ImageIcon />}
+                            <MediaUpload
+                              onUpload={handleMediaUpload}
+                              allowedTypes={['IMAGE', 'VIDEO', 'AUDIO']}
+                              bucket="profiles"
+                              path={`portfolios/${user.id}`}
+                              maxFiles={1}
+                              showPreview={false}
+                            />
+                            
+                            {/* Media upload feedback */}
+                            {mediaUrl && (
+                              <Chip 
+                                label={`${mediaType?.toUpperCase()}: ${mediaMetadata?.fileName}`}
+                                color="success"
                                 size="small"
-                              >
-                                {newPostImage ? 'Change' : 'Add Image'}
-                              </Button>
-                            </label>
+                                onDelete={() => {
+                                  setMediaUrl(null);
+                                  setMediaType(null);
+                                  setMediaMetadata({});
+                                  setNewPostImagePreview('');
+                                }}
+                              />
+                            )}
+                            
                             
                             <Button
                               variant="contained" 
@@ -1220,27 +1240,14 @@ function DashboardPage() {
                               {publishingPost ? 'Publishing...' : 'Publish'}
                             </Button>
                             
-                            <TextField
-                              placeholder="Add link (optional)"
-                              variant="outlined"
-                              size="small"
-                              sx={{ flexGrow: 1, minWidth: { xs: '100%', sm: 'auto' }, mt: { xs: 1, sm: 0 } }}
-                              value={newPostLink}
-                              onChange={(e) => setNewPostLink(e.target.value)}
-                              slotProps={{
-                                input: {
-                                  startAdornment: <LanguageIcon color="action" sx={{ mr: 1 }} fontSize="small" />
-                                }
-                              }}
-                            />
                           </Box>
                         </Box>
                       </CardContent>
                     </Card>
                   </Grid>
                   
-                  {/* Middle Column: Upcoming Events */}
-                  <Grid item xs={12} md={8} sx={{ display: 'flex', flexGrow: '1' }}>
+                  {/* Right Column: Upcoming Events */}
+                  <Grid item xs={12} md={6} sx={{ display: 'flex', flexGrow: '1', width: { md: '40%' } }}>
                     {profile.network_id && recentEvents.length > 0 ? (
                       <Card sx={{ 
                         borderRadius: 2, 

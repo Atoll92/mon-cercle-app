@@ -24,12 +24,16 @@ import {
   Cancel as CancelIcon
 } from '@mui/icons-material';
 import { createNewsPost, deleteNewsPost } from '../../api/networks';
+import MediaUpload from '../MediaUpload';
 
 const NewsTab = ({ networkId, userId, newsPosts, setNewsPosts, members, darkMode = false }) => {
   const [newsTitle, setNewsTitle] = useState('');
   const [imageFile, setImageFile] = useState(null);
   const [imageCaption, setImageCaption] = useState('');
   const [imagePreview, setImagePreview] = useState(null);
+  const [mediaUrl, setMediaUrl] = useState(null);
+  const [mediaType, setMediaType] = useState(null);
+  const [mediaMetadata, setMediaMetadata] = useState({});
   const [updating, setUpdating] = useState(false);
   const [error, setError] = useState(null);
   const [message, setMessage] = useState('');
@@ -42,7 +46,30 @@ const NewsTab = ({ networkId, userId, newsPosts, setNewsPosts, members, darkMode
     },
   });
 
-  // Handle image file selection
+  // Handle media upload
+  const handleMediaUpload = (uploadResult) => {
+    console.log("Media upload result:", uploadResult);
+    setMediaUrl(uploadResult.url);
+    setMediaType(uploadResult.type);
+    setMediaMetadata({
+      fileName: uploadResult.fileName,
+      fileSize: uploadResult.fileSize,
+      mimeType: uploadResult.mimeType
+    });
+    
+    // For backward compatibility with existing image preview
+    if (uploadResult.type === 'image') {
+      setImagePreview(uploadResult.url);
+    } else {
+      setImagePreview(null);
+    }
+    
+    // Show success message
+    setMessage(`${uploadResult.type.toUpperCase()} uploaded successfully: ${uploadResult.fileName}`);
+    setTimeout(() => setMessage(''), 3000);
+  };
+
+  // Handle image file selection (legacy)
   const handleImageChange = (event) => {
     const file = event.target.files[0];
     if (!file) return;
@@ -112,14 +139,26 @@ const NewsTab = ({ networkId, userId, newsPosts, setNewsPosts, members, darkMode
         imageUrl = await uploadNewsImage(imageFile);
       }
       
-      // Create news post with optional image
+      // Debug log the media parameters
+      console.log('Creating news post with media:', {
+        mediaUrl,
+        mediaType,
+        mediaMetadata,
+        imageUrl,
+        imageCaption
+      });
+      
+      // Create news post with optional media
       const result = await createNewsPost(
         networkId, 
         userId, 
         newsTitle, 
         content, 
         imageUrl, 
-        imageCaption
+        imageCaption,
+        mediaUrl,
+        mediaType,
+        mediaMetadata
       );
     
       if (result.success) {
@@ -128,6 +167,9 @@ const NewsTab = ({ networkId, userId, newsPosts, setNewsPosts, members, darkMode
         setImageFile(null);
         setImageCaption('');
         setImagePreview(null);
+        setMediaUrl(null);
+        setMediaType(null);
+        setMediaMetadata({});
         editor.commands.clearContent();
         setMessage(result.message);
       } else {
@@ -211,13 +253,39 @@ const NewsTab = ({ networkId, userId, newsPosts, setNewsPosts, members, darkMode
             </Box>
           )}
           
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
+            <MediaUpload
+              onUpload={handleMediaUpload}
+              allowedTypes={['IMAGE', 'VIDEO', 'AUDIO']}
+              bucket="networks"
+              path={`news/${networkId}`}
+              maxFiles={1}
+              showPreview={false}
+            />
+            
+            {/* Media upload feedback */}
+            {mediaUrl && (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Chip 
+                  label={`${mediaType?.toUpperCase()} uploaded: ${mediaMetadata?.fileName}`}
+                  color="success"
+                  size="small"
+                  onDelete={() => {
+                    setMediaUrl(null);
+                    setMediaType(null);
+                    setMediaMetadata({});
+                  }}
+                />
+              </Box>
+            )}
+            
             <Button
               variant="outlined"
               component="label"
               startIcon={<AddPhotoIcon />}
+              size="small"
             >
-              {imageFile ? 'Change Image' : 'Add Image'}
+              {imageFile ? 'Change' : 'Add'} Image (Legacy)
               <input 
                 type="file"
                 accept="image/*"
