@@ -329,3 +329,77 @@ export const getNotificationStats = async (userId) => {
     return { success: false, error: error.message };
   }
 };
+
+/**
+ * Queue a mention notification for a specific user
+ * @param {string} mentionedUserId - The ID of the user who was mentioned
+ * @param {string} networkId - The network ID where the mention occurred
+ * @param {string} mentionerName - Name of the user who mentioned them
+ * @param {string} messageContent - The message content containing the mention
+ * @param {string} messageId - The ID of the message
+ */
+export const queueMentionNotification = async (mentionedUserId, networkId, mentionerName, messageContent, messageId) => {
+  try {
+    console.log('🔔 [MENTION DEBUG] Queueing mention notification');
+    console.log('🔔 [MENTION DEBUG] Mentioned user ID:', mentionedUserId);
+    console.log('🔔 [MENTION DEBUG] Network ID:', networkId);
+    console.log('🔔 [MENTION DEBUG] Mentioner:', mentionerName);
+    
+    // Check if the user wants mention notifications
+    const { data: userProfile, error: profileError } = await supabase
+      .from('profiles')
+      .select('full_name, contact_email, email_notifications_enabled, notify_on_mentions')
+      .eq('id', mentionedUserId)
+      .single();
+      
+    if (profileError) {
+      console.error('🔔 [MENTION DEBUG] Error fetching user profile:', profileError);
+      return { success: false, error: profileError.message };
+    }
+    
+    if (!userProfile.email_notifications_enabled || !userProfile.notify_on_mentions) {
+      console.log('🔔 [MENTION DEBUG] User has mention notifications disabled');
+      return { success: true, message: 'User has mention notifications disabled' };
+    }
+    
+    // Get network name
+    const { data: network, error: networkError } = await supabase
+      .from('networks')
+      .select('name')
+      .eq('id', networkId)
+      .single();
+      
+    if (networkError) {
+      console.error('🔔 [MENTION DEBUG] Error fetching network:', networkError);
+      return { success: false, error: networkError.message };
+    }
+    
+    // Create notification
+    const notification = {
+      recipient_id: mentionedUserId,
+      network_id: networkId,
+      notification_type: 'mention',
+      subject_line: `${mentionerName} mentioned you in ${network.name}`,
+      content_preview: messageContent.substring(0, 200) + (messageContent.length > 200 ? '...' : ''),
+      related_item_id: messageId
+    };
+    
+    console.log('🔔 [MENTION DEBUG] Creating notification:', notification);
+    
+    const { error: insertError } = await supabase
+      .from('notification_queue')
+      .insert([notification]);
+      
+    if (insertError) {
+      console.error('🔔 [MENTION DEBUG] Error inserting notification:', insertError);
+      return { success: false, error: insertError.message };
+    }
+    
+    console.log('🔔 [MENTION DEBUG] Successfully queued mention notification');
+    return { success: true, message: 'Mention notification queued' };
+    
+  } catch (error) {
+    console.error('🔔 [MENTION DEBUG] Error in queueMentionNotification:', error);
+    return { success: false, error: error.message };
+  }
+};

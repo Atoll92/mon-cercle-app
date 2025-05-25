@@ -18,7 +18,10 @@ import {
   Badge,
   alpha,
   Switch,
-  FormControlLabel
+  FormControlLabel,
+  Popover,
+  MenuItem,
+  Chip
 } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import PersonIcon from '@mui/icons-material/Person';
@@ -33,6 +36,7 @@ import LinkPreview from './LinkPreview'; // Import the LinkPreview component
 import MediaUpload from './MediaUpload';
 import MediaPlayer from './MediaPlayer';
 import { uploadMediaFile } from '../utils/mediaUpload';
+import { queueMentionNotification } from '../services/emailNotificationService';
 
 // URL regex pattern to detect links in messages
 // const URL_REGEX = /(https?:\/\/[^\s]+)/g;
@@ -50,11 +54,42 @@ const Chat = ({ networkId, isFullscreen = false }) => {
   const [showMediaUpload, setShowMediaUpload] = useState(false);
   const [uploadingMedia, setUploadingMedia] = useState(false);
   const [expandedMedia, setExpandedMedia] = useState({});
+  
+  // Mention system state
+  const [mentionSuggestions, setMentionSuggestions] = useState([]);
+  const [showMentionSuggestions, setShowMentionSuggestions] = useState(false);
+  const [mentionAnchorEl, setMentionAnchorEl] = useState(null);
+  const [mentionSearchTerm, setMentionSearchTerm] = useState('');
+  const [networkMembers, setNetworkMembers] = useState([]);
+  const [cursorPosition, setCursorPosition] = useState(0);
+  const textFieldRef = useRef(null);
 
   // Auto-scroll to the bottom when messages change
   useEffect(() => {
     messageEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+  
+  // Fetch network members for mention suggestions
+  useEffect(() => {
+    const fetchNetworkMembers = async () => {
+      if (!networkId) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('id, full_name, profile_picture_url')
+          .eq('network_id', networkId)
+          .order('full_name');
+          
+        if (error) throw error;
+        setNetworkMembers(data || []);
+      } catch (error) {
+        console.error('Error fetching network members:', error);
+      }
+    };
+    
+    fetchNetworkMembers();
+  }, [networkId]);
 
   useEffect(() => {
     console.log('Initializing chat for network:', networkId);
@@ -203,6 +238,75 @@ const Chat = ({ networkId, isFullscreen = false }) => {
     };
   }, [networkId, user]);
 
+  // Handle message input changes and detect mentions
+  const handleMessageChange = (e) => {
+    const value = e.target.value;
+    const cursorPos = e.target.selectionStart;
+    setNewMessage(value);
+    setCursorPosition(cursorPos);
+    
+    // Check for @ symbol to trigger mention suggestions
+    const textBeforeCursor = value.substring(0, cursorPos);
+    const lastAtIndex = textBeforeCursor.lastIndexOf('@');
+    
+    if (lastAtIndex !== -1) {
+      const textAfterAt = textBeforeCursor.substring(lastAtIndex + 1);
+      
+      // Check if we're still in a mention (no space after @)
+      if (!textAfterAt.includes(' ')) {
+        setMentionSearchTerm(textAfterAt.toLowerCase());
+        const filtered = networkMembers.filter(member => 
+          member.full_name?.toLowerCase().includes(textAfterAt.toLowerCase())
+        );
+        setMentionSuggestions(filtered);
+        setShowMentionSuggestions(true);
+        setMentionAnchorEl(textFieldRef.current);
+      } else {
+        setShowMentionSuggestions(false);
+      }
+    } else {
+      setShowMentionSuggestions(false);
+    }
+  };
+  
+  // Handle mention selection
+  const handleMentionSelect = (member) => {
+    const textBeforeCursor = newMessage.substring(0, cursorPosition);
+    const lastAtIndex = textBeforeCursor.lastIndexOf('@');
+    
+    if (lastAtIndex !== -1) {
+      const textBeforeAt = newMessage.substring(0, lastAtIndex);
+      const textAfterCursor = newMessage.substring(cursorPosition);
+      const newText = `${textBeforeAt}@${member.full_name} ${textAfterCursor}`;
+      setNewMessage(newText);
+      setShowMentionSuggestions(false);
+      
+      // Focus back to text field
+      setTimeout(() => {
+        textFieldRef.current?.focus();
+      }, 0);
+    }
+  };
+  
+  // Extract mentions from message content
+  const extractMentions = (content) => {
+    const mentionRegex = /@([^@\s]+(?:\s+[^@\s]+)*)/g;
+    const mentions = [];
+    let match;
+    
+    while ((match = mentionRegex.exec(content)) !== null) {
+      const mentionedName = match[1].trim();
+      const mentionedUser = networkMembers.find(member => 
+        member.full_name?.toLowerCase() === mentionedName.toLowerCase()
+      );
+      if (mentionedUser) {
+        mentions.push(mentionedUser);
+      }
+    }
+    
+    return mentions;
+  };
+  
   const handleSend = async (mediaData = null) => {
     if (!newMessage.trim() && !mediaData) return;
     
@@ -252,6 +356,27 @@ const Chat = ({ networkId, isFullscreen = false }) => {
       if (error) throw error;
       
       console.log('Message sent successfully with ID:', data.id);
+      
+      // Handle mentions - queue notifications
+      const mentions = extractMentions(pendingMessage.content);
+      if (mentions.length > 0) {
+        for (const mentionedUser of mentions) {
+          if (mentionedUser.id !== user.id) { // Don't notify self
+            try {
+              await queueMentionNotification(
+                mentionedUser.id,
+                networkId,
+                user.user_metadata?.full_name || 'Someone',
+                pendingMessage.content,
+                data.id
+              );
+            } catch (notifError) {
+              console.error('Error queueing mention notification:', notifError);
+            }
+          }
+        }
+      }
+      
       // The realtime subscription will handle adding the confirmed message
     } catch (error) {
       console.error('Error sending message:', error);
@@ -393,26 +518,40 @@ const renderMedia = (mediaUrl, mediaType, metadata, messageId) => {
                   display: 'block'
                 }}
                 alt="Video thumbnail"
-              />
-            ) : (
-              <Box
-                component="video"
-                src={mediaUrl}
-                sx={{
-                  width: '100%',
-                  height: 'auto',
-                  maxHeight: 300,
-                  objectFit: 'contain',
-                  display: 'block'
-                }}
-                muted
-                preload="metadata"
-                onLoadedData={(e) => {
-                  // Set video to first frame
-                  e.target.currentTime = 1;
+                onError={(e) => {
+                  // If thumbnail fails to load, hide it and show video preview
+                  e.target.style.display = 'none';
+                  const videoElement = e.target.nextElementSibling;
+                  if (videoElement) {
+                    videoElement.style.display = 'block';
+                  }
                 }}
               />
-            )}
+            ) : null}
+            
+            {/* Video preview fallback */}
+            <Box
+              component="video"
+              src={mediaUrl}
+              sx={{
+                width: '100%',
+                height: 'auto',
+                maxHeight: 300,
+                objectFit: 'contain',
+                display: metadata?.thumbnail ? 'none' : 'block'
+              }}
+              muted
+              preload="metadata"
+              onLoadedData={(e) => {
+                // Set video to first frame
+                e.target.currentTime = 1;
+              }}
+              onError={(e) => {
+                // If video fails to load, show a placeholder
+                console.error('Video preview failed to load:', mediaUrl);
+                e.target.style.display = 'none';
+              }}
+            />
             
             {/* Play button overlay */}
             <Box
@@ -522,6 +661,10 @@ const renderMedia = (mediaUrl, mediaType, metadata, messageId) => {
                       display: 'block'
                     }}
                     alt="Audio artwork"
+                    onError={(e) => {
+                      // If artwork fails to load, hide the entire paper element
+                      e.target.closest('.MuiPaper-root').style.display = 'none';
+                    }}
                   />
                   
                   {/* Track info overlay */}
@@ -620,6 +763,11 @@ const renderMedia = (mediaUrl, mediaType, metadata, messageId) => {
                     }}
                     alt="Audio artwork"
                     onError={(e) => {
+                      // On error, hide the image and its container
+                      const container = e.target.closest('[class*="MuiBox-root"]');
+                      if (container && container.style.width === '120px') {
+                        container.style.display = 'none';
+                      }
                       e.target.style.display = 'none';
                     }}
                   />
@@ -758,6 +906,84 @@ const renderMedia = (mediaUrl, mediaType, metadata, messageId) => {
   }
 };
 
+  // Function to render text with highlighted mentions
+  const renderTextWithMentions = (text) => {
+    if (!text) return null;
+    
+    const mentionRegex = /@([^@\s]+(?:\s+[^@\s]+)*)/g;
+    const parts = [];
+    let lastIndex = 0;
+    let match;
+    
+    while ((match = mentionRegex.exec(text)) !== null) {
+      // Add text before mention
+      if (match.index > lastIndex) {
+        parts.push(text.substring(lastIndex, match.index));
+      }
+      
+      // Add mention as a chip
+      const mentionedName = match[1].trim();
+      const mentionedUser = networkMembers.find(member => 
+        member.full_name?.toLowerCase() === mentionedName.toLowerCase()
+      );
+      
+      if (mentionedUser) {
+        parts.push(
+          <Chip
+            key={`mention-${match.index}`}
+            label={`@${mentionedName}`}
+            size="small"
+            component={Link}
+            to={`/profile/${mentionedUser.id}`}
+            sx={{
+              cursor: 'pointer',
+              backgroundColor: darkMode 
+                ? alpha('#1976d2', 0.3)
+                : alpha('#1976d2', 0.2),
+              color: darkMode ? '#64b5f6' : '#1976d2',
+              fontWeight: 500,
+              fontSize: '0.85rem',
+              height: 22,
+              mx: 0.3,
+              '&:hover': {
+                backgroundColor: darkMode 
+                  ? alpha('#1976d2', 0.5)
+                  : alpha('#1976d2', 0.3),
+                textDecoration: 'none'
+              }
+            }}
+          />
+        );
+      } else {
+        // If user not found, just show as regular text
+        parts.push(`@${mentionedName}`);
+      }
+      
+      lastIndex = match.index + match[0].length;
+    }
+    
+    // Add remaining text
+    if (lastIndex < text.length) {
+      parts.push(text.substring(lastIndex));
+    }
+    
+    return (
+      <Typography 
+        component="span" 
+        variant="body2" 
+        sx={{ 
+          fontSize: '0.85rem',
+          lineHeight: 1.4,
+          color: darkMode 
+            ? 'rgba(255, 255, 255, 0.9)'
+            : 'rgba(0, 0, 0, 0.7)'
+        }}
+      >
+        {parts}
+      </Typography>
+    );
+  };
+
   // Function to render message content (text, link preview, or media)
 const renderMessageContent = (message) => {
   if (!message) {
@@ -769,18 +995,9 @@ const renderMessageContent = (message) => {
     return (
       <Box>
         {message.content && (
-          <Typography 
-            component="span" 
-            variant="body2" 
-            sx={{ 
-              mb: 0.5, 
-              display: 'block', 
-              fontSize: '0.85rem',
-              lineHeight: 1.4
-            }}
-          >
-            {message.content}
-          </Typography>
+          <Box sx={{ mb: 0.5, display: 'block' }}>
+            {renderTextWithMentions(message.content)}
+          </Box>
         )}
         {renderMedia(message.media_url, message.media_type, message.media_metadata, message.id)}
       </Box>
@@ -815,18 +1032,9 @@ const renderMessageContent = (message) => {
     return (
       <>
         {!isOnlyUrl && (
-          <Typography 
-            component="span" 
-            variant="body2" 
-            sx={{ 
-              mb: 0.5, 
-              display: 'block', 
-              fontSize: '0.85rem', // Smaller font size
-              lineHeight: 1.4   // Tighter line height
-            }}
-          >
-            {message.content}
-          </Typography>
+          <Box sx={{ mb: 0.5, display: 'block' }}>
+            {renderTextWithMentions(message.content)}
+          </Box>
         )}
         
         <Box sx={{ 
@@ -847,19 +1055,8 @@ const renderMessageContent = (message) => {
       </>
     );
   } else {
-    // Render as plain text
-    return (
-      <Typography 
-        component="span" 
-        variant="body2" 
-        sx={{ 
-          fontSize: '0.85rem', // Smaller font size
-          lineHeight: 1.4      // Tighter line height
-        }}
-      >
-        {message.content}
-      </Typography>
-    );
+    // Render as plain text with mentions
+    return renderTextWithMentions(message.content);
   }
 };
 
@@ -1193,11 +1390,12 @@ const renderMessageContent = (message) => {
         </IconButton>
         
         <TextField
+          ref={textFieldRef}
           fullWidth
           variant="outlined"
           placeholder="Type a message or paste a link..."
           value={newMessage}
-          onChange={(e) => setNewMessage(e.target.value)}
+          onChange={handleMessageChange}
           onKeyDown={(e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
               e.preventDefault();
@@ -1290,6 +1488,65 @@ const renderMessageContent = (message) => {
           />
         </Paper>
       )}
+      
+      {/* Mention suggestions popover */}
+      <Popover
+        open={showMentionSuggestions}
+        anchorEl={mentionAnchorEl}
+        onClose={() => setShowMentionSuggestions(false)}
+        anchorOrigin={{
+          vertical: 'top',
+          horizontal: 'left',
+        }}
+        transformOrigin={{
+          vertical: 'bottom',
+          horizontal: 'left',
+        }}
+        disableAutoFocus
+        disableEnforceFocus
+        sx={{
+          pointerEvents: 'none',
+          '& .MuiPaper-root': {
+            pointerEvents: 'auto',
+            maxHeight: 200,
+            minWidth: 200,
+            overflow: 'auto'
+          }
+        }}
+      >
+        <List dense>
+          {mentionSuggestions.length > 0 ? (
+            mentionSuggestions.map((member) => (
+              <MenuItem
+                key={member.id}
+                onClick={() => handleMentionSelect(member)}
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1,
+                  py: 1
+                }}
+              >
+                <Avatar
+                  src={member.profile_picture_url}
+                  sx={{ width: 24, height: 24 }}
+                >
+                  {!member.profile_picture_url && member.full_name?.[0]}
+                </Avatar>
+                <Typography variant="body2">
+                  {member.full_name}
+                </Typography>
+              </MenuItem>
+            ))
+          ) : (
+            <MenuItem disabled>
+              <Typography variant="body2" color="text.secondary">
+                No members found
+              </Typography>
+            </MenuItem>
+          )}
+        </List>
+      </Popover>
     </Paper>
   );
 };
