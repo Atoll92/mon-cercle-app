@@ -56,7 +56,82 @@ import {
   Image as ImageIcon,
   NotificationsActive as NotificationsIcon,
   Close as CloseIcon,
+  DragIndicator as DragIndicatorIcon,
 } from '@mui/icons-material';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable
+} from '@dnd-kit/sortable';
+import {
+  CSS
+} from '@dnd-kit/utilities';
+
+// Sortable Chip Component for the wizard
+const SortableWizardTabChip = ({ tab, isSelected, onToggle }) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: tab.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <Chip
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      icon={
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+          <Box
+            {...listeners}
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              cursor: 'grab',
+              '&:active': { cursor: 'grabbing' },
+              color: 'inherit',
+              '&:hover': { color: 'primary.main' }
+            }}
+          >
+            <DragIndicatorIcon sx={{ fontSize: '0.75rem' }} />
+          </Box>
+          {tab.icon}
+        </Box>
+      }
+      label={tab.label}
+      clickable
+      color={isSelected ? 'primary' : 'default'}
+      variant={isSelected ? 'filled' : 'outlined'}
+      onClick={onToggle}
+      sx={{
+        '& .MuiChip-icon': {
+          gap: 0.5,
+        },
+        cursor: isDragging ? 'grabbing' : 'pointer',
+        pl: 0.5
+      }}
+    />
+  );
+};
 
 const NetworkOnboardingWizard = ({ profile }) => {
   const { user } = useAuth();
@@ -609,6 +684,14 @@ const NavigationStep = ({ networkData, setNetworkData }) => {
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState(null);
   
+  // Drag and drop sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+  
   const availableTabs = [
     { id: 'news', label: 'News', icon: <ArticleIcon fontSize="small" /> },
     { id: 'members', label: 'Members', icon: <GroupsIcon fontSize="small" /> },
@@ -710,6 +793,23 @@ const NavigationStep = ({ networkData, setNetworkData }) => {
       }
     });
   };
+  
+  // Handle drag end for tab reordering
+  const handleDragEnd = (event) => {
+    const { active, over } = event;
+
+    if (active.id !== over?.id) {
+      setNetworkData(prev => {
+        const items = [...prev.enabledTabs];
+        const oldIndex = items.indexOf(active.id);
+        const newIndex = items.indexOf(over.id);
+        return {
+          ...prev,
+          enabledTabs: arrayMove(items, oldIndex, newIndex)
+        };
+      });
+    }
+  };
 
   return (
     <Stack spacing={3}>
@@ -797,25 +897,62 @@ const NavigationStep = ({ networkData, setNetworkData }) => {
         <Typography variant="subtitle1" fontWeight="medium" gutterBottom>
           Navigation Tabs
         </Typography>
-        <Typography variant="body2" color="text.secondary" paragraph>
-          Select which tabs will appear in your network navigation.
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+          Select which tabs will appear in your network navigation. Drag to reorder them.
         </Typography>
         
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 3 }}>
-          {availableTabs
-            .filter(tab => networkData.features[tab.id] !== false) // Only show tabs for enabled features
-            .map((tab) => (
-              <Chip
-                key={tab.id}
-                icon={tab.icon}
-                label={tab.label}
-                clickable
-                color={networkData.enabledTabs.includes(tab.id) ? 'primary' : 'default'}
-                variant={networkData.enabledTabs.includes(tab.id) ? 'filled' : 'outlined'}
-                onClick={() => handleTabToggle(tab.id)}
-                sx={{ pl: 0.5 }}
-              />
-            ))}
+        {/* Enabled Tabs - Sortable */}
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 'medium' }}>
+            Enabled Tabs (Drag to reorder)
+          </Typography>
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={networkData.enabledTabs}
+              strategy={verticalListSortingStrategy}
+            >
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                {networkData.enabledTabs
+                  .map(tabId => availableTabs.find(tab => tab.id === tabId))
+                  .filter(tab => tab && networkData.features[tab.id] !== false)
+                  .map((tab) => (
+                    <SortableWizardTabChip
+                      key={tab.id}
+                      tab={tab}
+                      isSelected={true}
+                      onToggle={() => handleTabToggle(tab.id)}
+                    />
+                  ))}
+              </Box>
+            </SortableContext>
+          </DndContext>
+        </Box>
+        
+        {/* Available Tabs - Not enabled */}
+        <Box>
+          <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 'medium' }}>
+            Available Tabs (Click to enable)
+          </Typography>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+            {availableTabs
+              .filter(tab => !networkData.enabledTabs.includes(tab.id) && networkData.features[tab.id] !== false)
+              .map((tab) => (
+                <Chip
+                  key={tab.id}
+                  icon={tab.icon}
+                  label={tab.label}
+                  clickable
+                  color="default"
+                  variant="outlined"
+                  onClick={() => handleTabToggle(tab.id)}
+                  sx={{ pl: 0.5 }}
+                />
+              ))}
+          </Box>
         </Box>
       </Paper>
       

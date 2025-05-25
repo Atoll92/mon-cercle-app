@@ -21,6 +21,24 @@ import {
   AccordionSummary,
   AccordionDetails
 } from '@mui/material';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable
+} from '@dnd-kit/sortable';
+import {
+  CSS
+} from '@dnd-kit/utilities';
 import { 
   Save as SaveIcon,
   Settings as SettingsIcon,
@@ -38,12 +56,76 @@ import {
   Image as ImageIcon,
   LocationOn as LocationIcon,
   NotificationsActive as NotificationsIcon,
-  Timeline as TimelineIcon
+  Timeline as TimelineIcon,
+  DragIndicator as DragIndicatorIcon
 } from '@mui/icons-material';
 import { updateNetworkDetails } from '../../api/networks';
 
+// Sortable Chip Component
+const SortableTabChip = ({ tab, isSelected, onToggle, darkMode }) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: tab.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <Chip
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      icon={
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+          <Box
+            {...listeners}
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              cursor: 'grab',
+              '&:active': { cursor: 'grabbing' },
+              color: 'inherit',
+              '&:hover': { color: 'primary.main' }
+            }}
+          >
+            <DragIndicatorIcon sx={{ fontSize: '0.875rem' }} />
+          </Box>
+          {tab.icon}
+        </Box>
+      }
+      label={tab.label}
+      clickable
+      color={isSelected ? 'primary' : 'default'}
+      variant={isSelected ? 'filled' : 'outlined'}
+      onClick={onToggle}
+      sx={{
+        '& .MuiChip-icon': {
+          gap: 0.5,
+        },
+        cursor: isDragging ? 'grabbing' : 'pointer',
+      }}
+    />
+  );
+};
+
 const NetworkSettingsTab = ({ network, onNetworkUpdate, darkMode }) => {
   const muiTheme = useMuiTheme();
+  
+  // Drag and drop sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
   
   // Basic settings
   const [networkName, setNetworkName] = useState(network ? network.name : '');
@@ -172,6 +254,19 @@ const NetworkSettingsTab = ({ network, onNetworkUpdate, darkMode }) => {
         return [...prev, tabId];
       }
     });
+  };
+  
+  // Handle drag end for tab reordering
+  const handleDragEnd = (event) => {
+    const { active, over } = event;
+
+    if (active.id !== over?.id) {
+      setEnabledTabs((items) => {
+        const oldIndex = items.indexOf(active.id);
+        const newIndex = items.indexOf(over.id);
+        return arrayMove(items, oldIndex, newIndex);
+      });
+    }
   };
   
   const availableTabs = [
@@ -400,22 +495,61 @@ const NetworkSettingsTab = ({ network, onNetworkUpdate, darkMode }) => {
           </AccordionSummary>
           <AccordionDetails>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              Select which tabs will appear in your network navigation.
+              Select which tabs will appear in your network navigation. Drag to reorder them.
             </Typography>
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-              {availableTabs
-                .filter(tab => features[tab.id] !== false)
-                .map((tab) => (
-                  <Chip
-                    key={tab.id}
-                    icon={tab.icon}
-                    label={tab.label}
-                    clickable
-                    color={enabledTabs.includes(tab.id) ? 'primary' : 'default'}
-                    variant={enabledTabs.includes(tab.id) ? 'filled' : 'outlined'}
-                    onClick={() => handleTabToggle(tab.id)}
-                  />
-                ))}
+            
+            {/* Enabled Tabs - Sortable */}
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 'medium' }}>
+                Enabled Tabs (Drag to reorder)
+              </Typography>
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
+              >
+                <SortableContext
+                  items={enabledTabs}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                    {enabledTabs
+                      .map(tabId => availableTabs.find(tab => tab.id === tabId))
+                      .filter(tab => tab && features[tab.id] !== false)
+                      .map((tab) => (
+                        <SortableTabChip
+                          key={tab.id}
+                          tab={tab}
+                          isSelected={true}
+                          onToggle={() => handleTabToggle(tab.id)}
+                          darkMode={darkMode}
+                        />
+                      ))}
+                  </Box>
+                </SortableContext>
+              </DndContext>
+            </Box>
+            
+            {/* Available Tabs - Not enabled */}
+            <Box>
+              <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 'medium' }}>
+                Available Tabs (Click to enable)
+              </Typography>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                {availableTabs
+                  .filter(tab => !enabledTabs.includes(tab.id) && features[tab.id] !== false)
+                  .map((tab) => (
+                    <Chip
+                      key={tab.id}
+                      icon={tab.icon}
+                      label={tab.label}
+                      clickable
+                      color="default"
+                      variant="outlined"
+                      onClick={() => handleTabToggle(tab.id)}
+                    />
+                  ))}
+              </Box>
             </Box>
           </AccordionDetails>
         </Accordion>

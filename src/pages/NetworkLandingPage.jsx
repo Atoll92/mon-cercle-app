@@ -123,13 +123,21 @@ function NetworkLandingPage() {
     { id: 'about', icon: <InfoIcon />, label: 'About' }
   ];
 
-  // Filter tabs based on network configuration, always include About
+  // Filter tabs based on network configuration, preserving order from enabledTabs
   const visibleTabs = React.useMemo(() => {
-    const configTabs = allTabs.filter(tab => 
-      tab.id === 'about' || enabledTabs.includes(tab.id)
-    );
-    return configTabs.length > 0 ? configTabs : allTabs;
-  }, [enabledTabs]);
+    // Create tabs in the order specified by enabledTabs, then add About at the end
+    const orderedTabs = enabledTabs
+      .map(tabId => allTabs.find(tab => tab.id === tabId))
+      .filter(tab => tab); // Remove any undefined tabs
+    
+    // Always add About tab at the end
+    const aboutTab = allTabs.find(tab => tab.id === 'about');
+    if (aboutTab && !orderedTabs.some(tab => tab.id === 'about')) {
+      orderedTabs.push(aboutTab);
+    }
+    
+    return orderedTabs.length > 0 ? orderedTabs : allTabs;
+  }, [enabledTabs, allTabs]);
   
   // Generate shareable link
   const shareableLink = network ? `${window.location.origin}/network/${network.id}` : '';
