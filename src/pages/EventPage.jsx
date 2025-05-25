@@ -56,10 +56,12 @@ function EventPage() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
   const [updatingStatus, setUpdatingStatus] = useState(false);
+  const [network, setNetwork] = useState(null);
 
   useEffect(() => {
     fetchEventData();
     checkAdminStatus();
+    fetchNetworkData();
   }, [eventId, user]);
 
   const fetchEventData = async () => {
@@ -139,6 +141,22 @@ function EventPage() {
       setIsAdmin(profile?.role === 'admin' && profile?.network_id === networkId);
     } catch (err) {
       console.error('Error checking admin status:', err);
+    }
+  };
+
+  const fetchNetworkData = async () => {
+    try {
+      const { data: networkData, error } = await supabase
+        .from('networks')
+        .select('*')
+        .eq('id', networkId)
+        .single();
+
+      if (!error && networkData) {
+        setNetwork(networkData);
+      }
+    } catch (err) {
+      console.error('Error fetching network:', err);
     }
   };
 
@@ -352,7 +370,7 @@ function EventPage() {
 
             {/* Location */}
             {event.location && (
-              <Box sx={{ mb: 3 }}  sx={{ width: '100%' }}>
+              <Box sx={{ mb: 3, width: '100%' }}>
                 <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 2 }}>
                   <LocationIcon sx={{ mr: 1, mt: 0.5, color: 'text.secondary' }} />
                   <Box>
@@ -391,6 +409,26 @@ function EventPage() {
                       onEventSelect={() => {}}
                     />
                   </Paper>
+                )}
+              </Box>
+            )}
+
+            {/* Pricing - Only show if monetization is enabled */}
+            {network?.features_config?.monetization && event.price > 0 && (
+              <Box sx={{ mb: 3, p: 2, bgcolor: 'background.default', borderRadius: 1 }}>
+                <Typography variant="h6" gutterBottom>
+                  Ticket Price
+                </Typography>
+                <Typography variant="h4" color="primary">
+                  {new Intl.NumberFormat('en-US', {
+                    style: 'currency',
+                    currency: event.currency || 'EUR'
+                  }).format(event.price)}
+                </Typography>
+                {event.max_tickets && (
+                  <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                    {event.tickets_sold || 0} / {event.max_tickets} tickets sold
+                  </Typography>
                 )}
               </Box>
             )}

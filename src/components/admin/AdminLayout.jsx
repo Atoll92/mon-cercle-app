@@ -31,7 +31,8 @@ import {
   ChevronLeft as ChevronLeftIcon,
   Security as SecurityIcon,
   Poll as PollIcon,
-  Link as LinkIcon
+  Link as LinkIcon,
+  MonetizationOn as MonetizationIcon
 } from '@mui/icons-material';
 
 // Drawer width for desktop view
@@ -103,6 +104,11 @@ const AdminLayout = ({
       name: 'Invitation Links', 
       icon: <LinkIcon />, 
       index: 7 
+    },
+    { 
+      name: 'Monetization', 
+      icon: <MonetizationIcon />, 
+      index: 8 
     }
   ];
 

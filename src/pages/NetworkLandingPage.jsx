@@ -572,6 +572,7 @@ function NetworkLandingPage() {
           isUserAdmin={isUserAdmin}
           userParticipations={userParticipations}
           onParticipationChange={handleParticipationChange}
+          network={network}
           darkMode={darkMode} // Pass dark mode to events tab
         />
       )}
