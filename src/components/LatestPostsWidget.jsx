@@ -137,9 +137,9 @@ const LatestPostsWidget = ({ networkId }) => {
         ) : posts[0] && (
           <CardActionArea
             component={posts[0].url ? 'a' : 'div'}
-            href={posts[0].url}
-            target="_blank"
-            rel="noopener noreferrer"
+            href={posts[0].url || undefined}
+            target={posts[0].url ? "_blank" : undefined}
+            rel={posts[0].url ? "noopener noreferrer" : undefined}
             sx={{
               flexGrow: 1,
               display: 'flex',

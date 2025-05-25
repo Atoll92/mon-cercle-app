@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import MediaPlayer from './MediaPlayer';
 import {
   Card,
   CardContent,
@@ -48,6 +49,9 @@ const LatestNewsWidget = ({ networkId }) => {
             content,
             image_url,
             image_caption,
+            media_url,
+            media_type,
+            media_metadata,
             created_at,
             profiles!network_news_created_by_fkey (
               id,
@@ -258,26 +262,82 @@ const LatestNewsWidget = ({ networkId }) => {
             {latestNews.title}
           </Typography>
 
-          {latestNews.image_url && (
-            <CardMedia
-              component="img"
-              height="80"
-              image={latestNews.image_url}
-              alt={latestNews.image_caption || latestNews.title}
-              sx={{ 
-                borderRadius: 1, 
-                mb: 1.5,
-                objectFit: 'cover'
-              }}
-            />
-          )}
+          {(() => {
+            // Determine media type and URL
+            let mediaUrl = latestNews.media_url || latestNews.image_url;
+            let mediaType = latestNews.media_type;
+            
+            // Fallback detection for legacy posts
+            if (!mediaType && mediaUrl) {
+              const url = mediaUrl.toLowerCase();
+              if (url.includes('.mp4') || url.includes('.webm') || url.includes('.mov')) {
+                mediaType = 'video';
+              } else if (url.includes('.mp3') || url.includes('.wav') || url.includes('.ogg')) {
+                mediaType = 'audio';
+              } else {
+                mediaType = 'image';
+              }
+            }
+            
+            if (mediaUrl) {
+              if (mediaType && ['video', 'audio'].includes(mediaType)) {
+                return (
+                  <Box sx={{ 
+                    mb: 1.5, 
+                    aspectRatio: mediaType === 'video' ? '16/9' : 'auto',
+                    minHeight: mediaType === 'audio' ? 60 : 120,
+                    maxHeight: 160,
+                    width: '100%'
+                  }}>
+                    <MediaPlayer
+                      src={mediaUrl}
+                      type={mediaType}
+                      title={latestNews.title}
+                      sx={{
+                        width: '100%',
+                        height: '100%',
+                        borderRadius: 1,
+                        '& video': {
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
+                          borderRadius: 1
+                        },
+                        '& audio': {
+                          width: '100%',
+                          height: '100%',
+                          borderRadius: 1
+                        }
+                      }}
+                    />
+                  </Box>
+                );
+              } else {
+                // Default to image display
+                return (
+                  <CardMedia
+                    component="img"
+                    height="80"
+                    image={mediaUrl}
+                    alt={latestNews.image_caption || latestNews.title}
+                    sx={{ 
+                      borderRadius: 1, 
+                      mb: 1.5,
+                      objectFit: 'cover'
+                    }}
+                  />
+                );
+              }
+            }
+            return null;
+          })()}
 
           <Typography 
             variant="body2" 
             color="text.secondary"
             sx={{
               display: '-webkit-box',
-              WebkitLineClamp: latestNews.image_url ? 2 : 4,
+              WebkitLineClamp: (latestNews.image_url || latestNews.media_url) ? 2 : 4,
               WebkitBoxOrient: 'vertical',
               overflow: 'hidden',
               lineHeight: 1.4

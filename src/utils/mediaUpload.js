@@ -180,3 +180,112 @@ export const formatDuration = (seconds) => {
   }
   return `${minutes}:${secs.toString().padStart(2, '0')}`;
 };
+
+// Extract audio metadata including album art
+export const extractAudioMetadata = async (file) => {
+  try {
+    // Provide Buffer polyfill for music-metadata-browser
+    if (typeof global === 'undefined') {
+      globalThis.global = globalThis;
+    }
+    if (typeof Buffer === 'undefined') {
+      const { Buffer } = await import('buffer');
+      globalThis.Buffer = Buffer;
+    }
+    
+    // Use music-metadata-browser to extract full metadata
+    const { parseBuffer } = await import('music-metadata-browser');
+    
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      
+      reader.onload = async (event) => {
+        try {
+          // Convert ArrayBuffer to Buffer for music-metadata-browser
+          const arrayBuffer = event.target.result;
+          const uint8Array = new Uint8Array(arrayBuffer);
+          const buffer = Buffer.from(uint8Array);
+          
+          const metadata = await parseBuffer(buffer);
+          
+          console.log('Extracted audio metadata:', metadata);
+          
+          const result = {
+            fileName: file.name,
+            fileSize: file.size,
+            mimeType: file.type,
+            duration: metadata.format.duration,
+            title: metadata.common.title,
+            artist: metadata.common.artist,
+            album: metadata.common.album,
+            year: metadata.common.year,
+            genre: metadata.common.genre ? metadata.common.genre.join(', ') : undefined
+          };
+          
+          // Extract album art if available
+          if (metadata.common.picture && metadata.common.picture.length > 0) {
+            const picture = metadata.common.picture[0];
+            const blob = new Blob([picture.data], { type: picture.format });
+            result.albumArt = URL.createObjectURL(blob);
+            result.thumbnail = result.albumArt; // Also set as thumbnail for consistency
+            console.log('Album art extracted:', result.albumArt);
+          }
+          
+          resolve(result);
+        } catch (error) {
+          console.error('Error parsing audio metadata:', error);
+          // Fallback to basic audio element for duration
+          const audio = document.createElement('audio');
+          audio.onloadedmetadata = () => {
+            resolve({
+              fileName: file.name,
+              fileSize: file.size,
+              mimeType: file.type,
+              duration: audio.duration
+            });
+          };
+          audio.onerror = () => {
+            resolve({
+              fileName: file.name,
+              fileSize: file.size,
+              mimeType: file.type
+            });
+          };
+          audio.src = URL.createObjectURL(file);
+        }
+      };
+      
+      reader.onerror = () => {
+        resolve({
+          fileName: file.name,
+          fileSize: file.size,
+          mimeType: file.type
+        });
+      };
+      
+      reader.readAsArrayBuffer(file);
+    });
+  } catch (error) {
+    console.error('Error importing music-metadata-browser:', error);
+    // Fallback implementation with audio element for duration
+    return new Promise((resolve) => {
+      const audio = document.createElement('audio');
+      audio.onloadedmetadata = () => {
+        resolve({
+          fileName: file.name,
+          fileSize: file.size,
+          mimeType: file.type,
+          duration: audio.duration
+        });
+      };
+      audio.onerror = () => {
+        resolve({
+          fileName: file.name,
+          fileSize: file.size,
+          mimeType: file.type
+        });
+      };
+      audio.src = URL.createObjectURL(file);
+    });
+  }
+};

@@ -276,55 +276,63 @@ function NewsPostPage() {
         <Divider sx={{ mb: 3 }} />
 
         {/* Featured Media */}
-        {newsPost.media_url && newsPost.media_type ? (
-          <Box sx={{ mb: 3 }}>
-            {newsPost.media_type === 'IMAGE' ? (
-              <>
-                <img
-                  src={newsPost.media_url}
-                  alt={newsPost.title}
-                  style={{
-                    width: '100%',
-                    maxHeight: '500px',
-                    objectFit: 'cover',
-                    borderRadius: '8px'
-                  }}
-                />
-                {newsPost.image_caption && (
-                  <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
-                    {newsPost.image_caption}
-                  </Typography>
+        {(() => {
+          // Determine media type and URL
+          let mediaUrl = newsPost.media_url || newsPost.image_url;
+          let mediaType = newsPost.media_type;
+          
+          // Fallback detection for legacy posts or case mismatch
+          if (!mediaType && mediaUrl) {
+            const url = mediaUrl.toLowerCase();
+            if (url.includes('.mp4') || url.includes('.webm') || url.includes('.mov')) {
+              mediaType = 'video';
+            } else if (url.includes('.mp3') || url.includes('.wav') || url.includes('.ogg')) {
+              mediaType = 'audio';
+            } else {
+              mediaType = 'image';
+            }
+          }
+          
+          // Handle case variations (normalize to lowercase)
+          if (mediaType) {
+            mediaType = mediaType.toLowerCase();
+          }
+          
+          if (mediaUrl) {
+            return (
+              <Box sx={{ mb: 3 }}>
+                {mediaType === 'image' ? (
+                  <>
+                    <img
+                      src={mediaUrl}
+                      alt={newsPost.title}
+                      style={{
+                        width: '100%',
+                        maxHeight: '500px',
+                        objectFit: 'cover',
+                        borderRadius: '8px'
+                      }}
+                    />
+                    {newsPost.image_caption && (
+                      <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+                        {newsPost.image_caption}
+                      </Typography>
+                    )}
+                  </>
+                ) : (
+                  <MediaPlayer
+                    src={mediaUrl}
+                    type={mediaType}
+                    title={newsPost.media_metadata?.fileName || newsPost.title}
+                    thumbnail={newsPost.media_metadata?.thumbnail}
+                    compact={false}
+                  />
                 )}
-              </>
-            ) : (
-              <MediaPlayer
-                src={newsPost.media_url}
-                type={newsPost.media_type === 'VIDEO' ? 'video' : 'audio'}
-                title={newsPost.media_metadata?.fileName || newsPost.title}
-                thumbnail={newsPost.media_metadata?.thumbnail}
-                compact={false}
-              />
-            )}
-          </Box>
-        ) : newsPost.image_url && (
-          <Box sx={{ mb: 3 }}>
-            <img
-              src={newsPost.image_url}
-              alt={newsPost.title}
-              style={{
-                width: '100%',
-                maxHeight: '500px',
-                objectFit: 'cover',
-                borderRadius: '8px'
-              }}
-            />
-            {newsPost.image_caption && (
-              <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
-                {newsPost.image_caption}
-              </Typography>
-            )}
-          </Box>
-        )}
+              </Box>
+            );
+          }
+          return null;
+        })()}
 
         {/* Content */}
         <Box 

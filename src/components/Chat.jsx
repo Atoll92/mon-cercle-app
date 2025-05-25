@@ -49,6 +49,7 @@ const Chat = ({ networkId, isFullscreen = false }) => {
   const [darkMode, setDarkMode] = useState(true);
   const [showMediaUpload, setShowMediaUpload] = useState(false);
   const [uploadingMedia, setUploadingMedia] = useState(false);
+  const [expandedMedia, setExpandedMedia] = useState({});
 
   // Auto-scroll to the bottom when messages change
   useEffect(() => {
@@ -234,8 +235,8 @@ const Chat = ({ networkId, isFullscreen = false }) => {
       // Add media data if present
       if (mediaData) {
         messageData.media_url = mediaData.url;
-        messageData.media_type = mediaData.mediaType.toLowerCase();
-        messageData.media_metadata = {
+        messageData.media_type = mediaData.type || mediaData.mediaType.toLowerCase();
+        messageData.media_metadata = mediaData.metadata || {
           fileName: mediaData.fileName,
           fileSize: mediaData.fileSize,
           mimeType: mediaData.mimeType
@@ -267,7 +268,8 @@ const Chat = ({ networkId, isFullscreen = false }) => {
     
     try {
       // Upload media with a message
-      const mediaMessage = newMessage.trim() || `Shared a ${mediaData.mediaType.toLowerCase()}`;
+      const mediaType = mediaData.type || mediaData.mediaType?.toLowerCase() || 'file';
+      const mediaMessage = newMessage.trim() || `Shared a ${mediaType}`;
       setNewMessage(mediaMessage);
       await handleSend(mediaData);
     } catch (error) {
@@ -308,12 +310,20 @@ const extractUrl = (content) => {
     return 'https://' + url;
   }
   
-  console.log(`Extracted URL from: "${content}" - URL: ${url}`);
   return url;
 };
 
 // Function to render media (images, videos, audio)
-const renderMedia = (mediaUrl, mediaType, metadata) => {
+const renderMedia = (mediaUrl, mediaType, metadata, messageId) => {
+  const isExpanded = expandedMedia[messageId] || false;
+  
+  const toggleExpanded = () => {
+    setExpandedMedia(prev => ({
+      ...prev,
+      [messageId]: !prev[messageId]
+    }));
+  };
+  
   switch (mediaType) {
     case 'image':
       return (
@@ -331,28 +341,415 @@ const renderMedia = (mediaUrl, mediaType, metadata) => {
       );
       
     case 'video':
+      if (isExpanded) {
+        return (
+          <Box sx={{ mt: 1 }}>
+            <MediaPlayer
+              src={mediaUrl}
+              type="video"
+              title={metadata?.fileName}
+              compact={true}
+              darkMode={darkMode}
+            />
+            <Box sx={{ textAlign: 'center', mt: 1 }}>
+              <IconButton 
+                size="small" 
+                onClick={toggleExpanded}
+                sx={{ color: darkMode ? 'white' : 'text.secondary' }}
+              >
+                <CancelIcon fontSize="small" />
+              </IconButton>
+            </Box>
+          </Box>
+        );
+      }
+      
       return (
         <Box sx={{ mt: 1 }}>
-          <MediaPlayer
-            src={mediaUrl}
-            type="video"
-            title={metadata?.fileName}
-            compact={true}
-            darkMode={darkMode}
-          />
+          <Paper
+            sx={{
+              position: 'relative',
+              width: '100%',
+              backgroundColor: '#000',
+              borderRadius: 1,
+              overflow: 'hidden',
+              cursor: 'pointer',
+              '&:hover .play-overlay': {
+                opacity: 0.9
+              }
+            }}
+            onClick={toggleExpanded}
+          >
+            {/* Video thumbnail/preview */}
+            {metadata?.thumbnail ? (
+              <Box
+                component="img"
+                src={metadata.thumbnail}
+                sx={{
+                  width: '100%',
+                  height: 'auto',
+                  maxHeight: 300,
+                  objectFit: 'contain',
+                  display: 'block'
+                }}
+                alt="Video thumbnail"
+              />
+            ) : (
+              <Box
+                component="video"
+                src={mediaUrl}
+                sx={{
+                  width: '100%',
+                  height: 'auto',
+                  maxHeight: 300,
+                  objectFit: 'contain',
+                  display: 'block'
+                }}
+                muted
+                preload="metadata"
+                onLoadedData={(e) => {
+                  // Set video to first frame
+                  e.target.currentTime = 1;
+                }}
+              />
+            )}
+            
+            {/* Play button overlay */}
+            <Box
+              className="play-overlay"
+              sx={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: 'rgba(0, 0, 0, 0.4)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                opacity: 0.8,
+                transition: 'opacity 0.2s ease'
+              }}
+            >
+              <Box
+                sx={{
+                  backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                  borderRadius: '50%',
+                  width: 60,
+                  height: 60,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
+                }}
+              >
+                <PlayCircleIcon sx={{ fontSize: 36, color: '#1976d2' }} />
+              </Box>
+            </Box>
+            
+            {/* Duration badge */}
+            {metadata?.duration && (
+              <Box
+                sx={{
+                  position: 'absolute',
+                  bottom: 8,
+                  right: 8,
+                  backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                  color: 'white',
+                  px: 1,
+                  py: 0.5,
+                  borderRadius: 1,
+                  fontSize: '0.75rem'
+                }}
+              >
+                {Math.floor(metadata.duration / 60)}:{(metadata.duration % 60).toString().padStart(2, '0')}
+              </Box>
+            )}
+            
+            {/* File info */}
+            <Box
+              sx={{
+                position: 'absolute',
+                bottom: 8,
+                left: 8,
+                right: metadata?.duration ? 60 : 8,
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                color: 'white',
+                px: 1,
+                py: 0.5,
+                borderRadius: 1
+              }}
+            >
+              <Typography variant="caption" noWrap>
+                {metadata?.fileName || 'Video'}
+              </Typography>
+            </Box>
+          </Paper>
         </Box>
       );
       
     case 'audio':
+      if (isExpanded) {
+        const audioImage = metadata?.thumbnail || 
+                          metadata?.albumArt || 
+                          metadata?.artwork || 
+                          metadata?.cover || 
+                          metadata?.image ||
+                          metadata?.picture;
+        
+        return (
+          <Box sx={{ mt: 1 }}>
+            {audioImage ? (
+              <Box sx={{ mb: 2 }}>
+                <Paper
+                  sx={{
+                    position: 'relative',
+                    width: '100%',
+                    maxWidth: 300,
+                    mx: 'auto',
+                    borderRadius: 2,
+                    overflow: 'hidden'
+                  }}
+                >
+                  <Box
+                    component="img"
+                    src={audioImage}
+                    sx={{
+                      width: '100%',
+                      height: 'auto',
+                      aspectRatio: '1',
+                      objectFit: 'cover',
+                      display: 'block'
+                    }}
+                    alt="Audio artwork"
+                  />
+                  
+                  {/* Track info overlay */}
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      background: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%)',
+                      p: 1.5,
+                      color: 'white'
+                    }}
+                  >
+                    {metadata?.title && (
+                      <Typography variant="subtitle2" noWrap sx={{ fontWeight: 500 }}>
+                        {metadata.title}
+                      </Typography>
+                    )}
+                    {metadata?.artist && (
+                      <Typography variant="caption" noWrap sx={{ opacity: 0.9 }}>
+                        {metadata.artist}
+                      </Typography>
+                    )}
+                  </Box>
+                </Paper>
+              </Box>
+            ) : null}
+            
+            <MediaPlayer
+              src={mediaUrl}
+              type="audio"
+              title={metadata?.fileName}
+              compact={true}
+              darkMode={darkMode}
+            />
+            <Box sx={{ textAlign: 'center', mt: 1 }}>
+              <IconButton 
+                size="small" 
+                onClick={toggleExpanded}
+                sx={{ color: darkMode ? 'white' : 'text.secondary' }}
+              >
+                <CancelIcon fontSize="small" />
+              </IconButton>
+            </Box>
+          </Box>
+        );
+      }
+      
+      // Check for various possible image fields in metadata
+      const audioImage = metadata?.thumbnail || 
+                        metadata?.albumArt || 
+                        metadata?.artwork || 
+                        metadata?.cover || 
+                        metadata?.image ||
+                        metadata?.picture;
+      
       return (
         <Box sx={{ mt: 1 }}>
-          <MediaPlayer
-            src={mediaUrl}
-            type="audio"
-            title={metadata?.fileName}
-            compact={true}
-            darkMode={darkMode}
-          />
+          <Paper
+            sx={{
+              position: 'relative',
+              width: '100%',
+              height: audioImage ? 120 : 80,
+              backgroundColor: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
+              borderRadius: 1,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              overflow: 'hidden',
+              '&:hover': {
+                backgroundColor: darkMode ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)'
+              }
+            }}
+            onClick={toggleExpanded}
+          >
+            {/* Album art or thumbnail */}
+            {audioImage ? (
+              <>
+                <Box
+                  sx={{
+                    width: 120,
+                    height: 120,
+                    position: 'relative',
+                    flexShrink: 0
+                  }}
+                >
+                  <Box
+                    component="img"
+                    src={audioImage}
+                    sx={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                      borderRadius: 1
+                    }}
+                    alt="Audio artwork"
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                    }}
+                  />
+                  
+                  {/* Play button overlay */}
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      backgroundColor: 'rgba(0, 0, 0, 0.4)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      opacity: 0.8,
+                      borderRadius: 1
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                        borderRadius: '50%',
+                        width: 44,
+                        height: 44,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
+                      }}
+                    >
+                      <PlayCircleIcon sx={{ fontSize: 26, color: '#1976d2' }} />
+                    </Box>
+                  </Box>
+                </Box>
+                
+                {/* Audio info */}
+                <Box sx={{ flex: 1, minWidth: 0, px: 2 }}>
+                  <Typography 
+                    variant="body2" 
+                    noWrap
+                    sx={{ 
+                      color: darkMode ? 'white' : 'text.primary',
+                      fontWeight: 500,
+                      mb: 0.5
+                    }}
+                  >
+                    {metadata?.title || metadata?.fileName || 'Audio File'}
+                  </Typography>
+                  {metadata?.artist && (
+                    <Typography 
+                      variant="caption" 
+                      noWrap
+                      sx={{ 
+                        color: darkMode ? 'rgba(255,255,255,0.7)' : 'text.secondary',
+                        display: 'block',
+                        mb: 0.5
+                      }}
+                    >
+                      {metadata.artist}
+                    </Typography>
+                  )}
+                  {metadata?.album && (
+                    <Typography 
+                      variant="caption" 
+                      noWrap
+                      sx={{ 
+                        color: darkMode ? 'rgba(255,255,255,0.5)' : 'text.secondary',
+                        display: 'block'
+                      }}
+                    >
+                      {metadata.album}
+                    </Typography>
+                  )}
+                  {metadata?.duration && (
+                    <Typography 
+                      variant="caption" 
+                      sx={{ 
+                        color: darkMode ? 'rgba(255,255,255,0.6)' : 'text.secondary',
+                        display: 'block',
+                        mt: 0.5
+                      }}
+                    >
+                      {Math.floor(metadata.duration / 60)}:{(metadata.duration % 60).toString().padStart(2, '0')}
+                    </Typography>
+                  )}
+                </Box>
+              </>
+            ) : (
+              <>
+                {/* Audio icon */}
+                <AudioFileIcon 
+                  sx={{ 
+                    fontSize: 32, 
+                    color: darkMode ? 'white' : 'primary.main',
+                    ml: 2,
+                    flexShrink: 0
+                  }} 
+                />
+                
+                {/* Audio info */}
+                <Box sx={{ flex: 1, minWidth: 0, px: 2 }}>
+                  <Typography 
+                    variant="body2" 
+                    noWrap
+                    sx={{ color: darkMode ? 'white' : 'text.primary' }}
+                  >
+                    {metadata?.fileName || 'Audio File'}
+                  </Typography>
+                  <Typography 
+                    variant="caption" 
+                    sx={{ color: darkMode ? 'rgba(255,255,255,0.7)' : 'text.secondary' }}
+                  >
+                    Click to play
+                  </Typography>
+                </Box>
+                
+                {/* Play button */}
+                <PlayCircleIcon 
+                  sx={{ 
+                    fontSize: 28, 
+                    color: darkMode ? 'white' : 'primary.main',
+                    mr: 2,
+                    flexShrink: 0
+                  }} 
+                />
+              </>
+            )}
+          </Paper>
         </Box>
       );
       
@@ -385,7 +782,7 @@ const renderMessageContent = (message) => {
             {message.content}
           </Typography>
         )}
-        {renderMedia(message.media_url, message.media_type, message.media_metadata)}
+        {renderMedia(message.media_url, message.media_type, message.media_metadata, message.id)}
       </Box>
     );
   }
@@ -801,7 +1198,7 @@ const renderMessageContent = (message) => {
           placeholder="Type a message or paste a link..."
           value={newMessage}
           onChange={(e) => setNewMessage(e.target.value)}
-          onKeyPress={(e) => {
+          onKeyDown={(e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
               e.preventDefault();
               handleSend();

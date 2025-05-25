@@ -26,6 +26,7 @@ import {
   getMediaType,
   createVideoThumbnail,
   getMediaDuration,
+  extractAudioMetadata,
   formatDuration
 } from '../utils/mediaUpload';
 
@@ -94,6 +95,16 @@ function MediaUpload({
         }
       }
 
+      // Extract metadata for audio files
+      if (mediaType === 'AUDIO') {
+        try {
+          const audioMetadata = await extractAudioMetadata(file);
+          preview = { ...preview, ...audioMetadata };
+        } catch (err) {
+          console.error('Error extracting audio metadata:', err);
+        }
+      }
+
       // Create thumbnail for video
       if (mediaType === 'VIDEO') {
         try {
@@ -134,12 +145,27 @@ function MediaUpload({
     try {
       const uploadedFiles = [];
       
-      for (const file of files) {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const preview = previews[i];
         const result = await uploadMediaFile(file, bucket, path);
-        // Convert media type to lowercase for database compatibility
+        
+        // Combine upload result with preview metadata
         uploadedFiles.push({
           ...result,
-          type: result.mediaType.toLowerCase() // Convert to lowercase for database
+          type: result.mediaType.toLowerCase(), // Convert to lowercase for database
+          metadata: {
+            fileName: result.fileName,
+            fileSize: result.fileSize,
+            mimeType: result.mimeType,
+            duration: preview.duration,
+            thumbnail: preview.thumbnail,
+            // Audio specific metadata
+            title: preview.title,
+            artist: preview.artist,
+            album: preview.album,
+            albumArt: preview.albumArt
+          }
         });
       }
 
@@ -174,7 +200,7 @@ function MediaUpload({
 
   // Render preview
   const renderPreview = (preview, index) => {
-    const { mediaType, url, thumbnail, name, size, duration } = preview;
+    const { mediaType, url, thumbnail, albumArt, name, size, duration, title } = preview;
 
     return (
       <Card key={index} sx={{ position: 'relative', width: compact ? 150 : 200 }}>
@@ -184,6 +210,7 @@ function MediaUpload({
             height={compact ? 100 : 140}
             image={url}
             alt={name}
+            sx={{ objectFit: 'cover' }}
           />
         )}
         
@@ -193,21 +220,34 @@ function MediaUpload({
             height={compact ? 100 : 140}
             image={thumbnail || url}
             alt={name}
+            sx={{ objectFit: 'contain', bgcolor: '#000' }}
           />
         )}
         
         {mediaType === 'AUDIO' && (
-          <Box
-            sx={{
-              height: compact ? 100 : 140,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              bgcolor: 'action.hover'
-            }}
-          >
-            <AudioIcon sx={{ fontSize: compact ? 40 : 60, color: 'action.active' }} />
-          </Box>
+          <>
+            {(albumArt || thumbnail) ? (
+              <CardMedia
+                component="img"
+                height={compact ? 100 : 140}
+                image={albumArt || thumbnail}
+                alt={title || name}
+                sx={{ objectFit: 'cover' }}
+              />
+            ) : (
+              <Box
+                sx={{
+                  height: compact ? 100 : 140,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  bgcolor: 'action.hover'
+                }}
+              >
+                <AudioIcon sx={{ fontSize: compact ? 40 : 60, color: 'action.active' }} />
+              </Box>
+            )}
+          </>
         )}
 
         <Box sx={{ p: 1 }}>
