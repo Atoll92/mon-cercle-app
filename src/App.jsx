@@ -166,12 +166,17 @@ function App() {
     <ErrorBoundary>
       <ThemeProvider>
         <DirectMessagesProvider>
-          <div className="App" style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+          <Box className="App" sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
             {/* Pass the network name to the header */}
             {window.location.pathname !== "/" && window.location.pathname !== "/pricing" && window.location.pathname !== "/old" && !window.location.pathname.startsWith("/micro-conclav/") && (
               <NetworkHeader/>
             )}
-            <Box component="main" sx={{ flex: 1 }}>
+            <Box component="main" sx={{ 
+              flex: 1, 
+              display: 'flex',
+              flexDirection: 'column',
+              overflow: 'auto'
+            }}>
               <Suspense fallback={<PageLoader />}>
                 <Routes>
             {/* Public Routes */}
@@ -247,10 +252,10 @@ function App() {
             <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </Suspense>
-        </Box>
+            </Box>
             <Footer />
             <Analytics />
-          </div>
+          </Box>
         </DirectMessagesProvider>
       </ThemeProvider>
     </ErrorBoundary>

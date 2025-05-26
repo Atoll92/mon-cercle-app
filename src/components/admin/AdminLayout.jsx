@@ -302,8 +302,8 @@ const AdminLayout = ({
               boxShadow: darkMode 
                 ? '0 4px 20px rgba(0,0,0,0.3)' 
                 : '0 1px 3px rgba(0,0,0,0.1)',
-              height: 'calc(100% - 100px)', // Adjust for NetworkHeader height
-              top: 100, // Positioned below NetworkHeader
+              height: 'calc(100vh - 80px)', // Adjust for NetworkHeader height (80px min-height)
+              top: 80, // Positioned below NetworkHeader
               borderTop: `1px solid ${muiTheme.palette.custom.border}`,
             },
           }}

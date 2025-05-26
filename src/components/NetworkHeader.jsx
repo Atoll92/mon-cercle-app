@@ -150,10 +150,13 @@ const NetworkHeader = () => {
         alignItems: 'center',
         justifyContent: 'space-between',
         padding: 2,
+        minHeight: '80px', // Set a consistent minimum height
         backgroundColor: darkMode ? '#1e1e1e' : '#ffffff', // Apply dark/light mode
         borderBottom: `1px solid ${darkMode ? '#333333' : '#eeeeee'}`,
         boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-        color: darkMode ? '#ffffff' : 'inherit' // Apply dark/light mode to text color
+        color: darkMode ? '#ffffff' : 'inherit', // Apply dark/light mode to text color
+        position: 'relative',
+        zIndex: 1200 // Ensure header is above other content
       }}
     >
       <Box sx={{ display: 'flex', alignItems: 'center' }}>
