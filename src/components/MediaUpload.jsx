@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Box,
   Button,
@@ -17,6 +17,7 @@ import {
   VideoLibrary as VideoIcon,
   AudioFile as AudioIcon,
   AttachFile as FileIcon,
+  Warning as WarningIcon,
 } from '@mui/icons-material';
 import { 
   MEDIA_TYPES, 
@@ -24,12 +25,16 @@ import {
   uploadMediaFile, 
   uploadAlbumArt,
   formatFileSize, 
-  getMediaType,
   createVideoThumbnail,
   getMediaDuration,
   extractAudioMetadata,
   formatDuration
 } from '../utils/mediaUpload';
+import { getNetworkStorageInfo } from '../api/networks';
+import { useNetwork } from '../context/networkContext';
+import { useAuth } from '../context/authcontext';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '../supabaseclient';
 
 function MediaUpload({ 
   onUpload, 
@@ -44,6 +49,54 @@ function MediaUpload({
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState(null);
   const [previews, setPreviews] = useState([]);
+  const [storageInfo, setStorageInfo] = useState(null);
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  
+  // Try to use network context, but don't fail if not available
+  let currentNetwork = null;
+  try {
+    const networkContext = useNetwork();
+    currentNetwork = networkContext?.currentNetwork;
+  } catch (error) {
+    // Network context not available, that's okay
+    console.log('MediaUpload: Network context not available');
+  }
+  
+  // Check storage limits when network changes or user changes
+  useEffect(() => {
+    const checkStorage = async () => {
+      let networkId = currentNetwork?.id;
+      
+      // If no network context, try to get network ID from user profile
+      if (!networkId && user?.id) {
+        try {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('network_id')
+            .eq('id', user.id)
+            .single();
+          
+          if (profile?.network_id) {
+            networkId = profile.network_id;
+          }
+        } catch (err) {
+          console.error('Error fetching user profile:', err);
+        }
+      }
+      
+      if (!networkId) return;
+      
+      try {
+        const info = await getNetworkStorageInfo(networkId);
+        setStorageInfo(info);
+      } catch (err) {
+        console.error('Error checking storage:', err);
+      }
+    };
+    
+    checkStorage();
+  }, [currentNetwork?.id, user?.id]);
 
   // Get accept string for file input
   const getAcceptString = () => {
@@ -58,9 +111,16 @@ function MediaUpload({
   const handleFileSelect = async (event) => {
     const selectedFiles = Array.from(event.target.files);
     setError(null);
+    
+    // Check if storage limit is reached
+    if (storageInfo?.isAtLimit) {
+      setError('Storage limit reached. Please upgrade your plan to upload more files.');
+      return;
+    }
 
     // Validate files
     const validFiles = [];
+    let totalSize = 0;
     for (const file of selectedFiles) {
       const validation = validateFile(file, allowedTypes);
       if (!validation.valid) {
@@ -68,6 +128,18 @@ function MediaUpload({
         return;
       }
       validFiles.push({ file, mediaType: validation.mediaType });
+      totalSize += file.size;
+    }
+    
+    // Check if files would exceed storage limit
+    if (storageInfo && !storageInfo.isUnlimited) {
+      const totalSizeInMB = totalSize / (1024 * 1024);
+      const remainingMB = storageInfo.limitMB - storageInfo.usageMB;
+      
+      if (totalSizeInMB > remainingMB) {
+        setError(`Not enough storage space. You have ${remainingMB.toFixed(1)}MB remaining.`);
+        return;
+      }
     }
 
     // Check max files
@@ -310,6 +382,30 @@ function MediaUpload({
           {error}
         </Alert>
       )}
+      
+      {/* Storage warning if at or near limit */}
+      {storageInfo && !storageInfo.isUnlimited && storageInfo.percentageUsed >= 90 && (
+        <Alert 
+          severity={storageInfo.isAtLimit ? "error" : "warning"}
+          sx={{ mb: 2 }}
+          icon={<WarningIcon />}
+          action={
+            <Button 
+              color="inherit" 
+              size="small"
+              onClick={() => navigate('/pricing')}
+            >
+              Upgrade Plan
+            </Button>
+          }
+        >
+          {storageInfo.isAtLimit ? (
+            <>Storage limit reached! Upgrade your plan to continue uploading.</>
+          ) : (
+            <>You're using {storageInfo.percentageUsed}% of your storage. Consider upgrading soon.</>
+          )}
+        </Alert>
+      )}
 
       {files.length < maxFiles && (
         <Box sx={{ mb: 2 }}>
@@ -320,18 +416,26 @@ function MediaUpload({
             multiple={maxFiles > 1}
             onChange={handleFileSelect}
             style={{ display: 'none' }}
+            disabled={storageInfo?.isAtLimit}
           />
           <label htmlFor="media-upload-input">
             <Button
               variant={compact ? "outlined" : "contained"}
               component="span"
               startIcon={<UploadIcon />}
-              disabled={uploading}
+              disabled={uploading || storageInfo?.isAtLimit}
               size={compact ? "small" : "medium"}
             >
               {compact ? "Add Media" : `Add ${allowedTypes.join('/')}`}
             </Button>
           </label>
+          
+          {/* Show remaining storage */}
+          {storageInfo && !storageInfo.isUnlimited && !compact && (
+            <Typography variant="caption" color="text.secondary" sx={{ ml: 2 }}>
+              {storageInfo.limitMB - storageInfo.usageMB}MB remaining
+            </Typography>
+          )}
         </Box>
       )}
 

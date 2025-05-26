@@ -1,5 +1,5 @@
 // File: src/components/admin/NetworkInfoPanel.jsx
-import React from 'react';
+import { useState, useEffect } from 'react';
 import { 
   Box, 
   Typography, 
@@ -8,17 +8,29 @@ import {
   Divider,
   alpha,
   Chip,
-  useTheme as useMuiTheme 
+  useTheme as useMuiTheme,
+  LinearProgress,
+  Button,
+  CircularProgress,
+  Alert
 } from '@mui/material';
 import {
   People as PeopleIcon,
   AdminPanelSettings as AdminIcon,
   CalendarToday as CalendarIcon,
-  FingerprintOutlined as IdIcon
+  FingerprintOutlined as IdIcon,
+  Storage as StorageIcon,
+  TrendingUp as UpgradeIcon,
+  Warning as WarningIcon
 } from '@mui/icons-material';
+import { getNetworkStorageInfo } from '../../api/networks';
+import { useNavigate } from 'react-router-dom';
 
 const NetworkInfoPanel = ({ network, members, darkMode }) => {
   const muiTheme = useMuiTheme();
+  const navigate = useNavigate();
+  const [storageInfo, setStorageInfo] = useState(null);
+  const [storageLoading, setStorageLoading] = useState(true);
   
   // Calculate creation date in a more user-friendly format
   const formatDate = (dateString) => {
@@ -29,6 +41,35 @@ const NetworkInfoPanel = ({ network, members, darkMode }) => {
       day: 'numeric' 
     });
   };
+  
+  // Format storage size
+  const formatStorageSize = (mb) => {
+    if (mb >= 1024 * 1024) {
+      return `${(mb / (1024 * 1024)).toFixed(1)}TB`;
+    } else if (mb >= 1024) {
+      return `${(mb / 1024).toFixed(1)}GB`;
+    }
+    return `${mb}MB`;
+  };
+  
+  // Load storage info
+  useEffect(() => {
+    const loadStorageInfo = async () => {
+      if (!network?.id) return;
+      
+      try {
+        setStorageLoading(true);
+        const info = await getNetworkStorageInfo(network.id);
+        setStorageInfo(info);
+      } catch (error) {
+        console.error('Error loading storage info:', error);
+      } finally {
+        setStorageLoading(false);
+      }
+    };
+    
+    loadStorageInfo();
+  }, [network?.id]);
   
   return (
     <Card 
@@ -143,6 +184,114 @@ const NetworkInfoPanel = ({ network, members, darkMode }) => {
                   sx={{ fontWeight: 'medium' }}
                 />
               </Box>
+            </Box>
+          </Box>
+          
+          <Divider sx={{ my: 1 }} />
+          
+          {/* Storage Usage Section */}
+          <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
+            <Box 
+              sx={{ 
+                width: 40, 
+                height: 40, 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center',
+                bgcolor: alpha(muiTheme.palette.primary.main, 0.1),
+                borderRadius: 1,
+                mr: 2
+              }}
+            >
+              <StorageIcon color="primary" />
+            </Box>
+            <Box sx={{ flex: 1 }}>
+              <Typography variant="body2" color="text.secondary">
+                Storage Usage
+              </Typography>
+              
+              {storageLoading ? (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
+                  <CircularProgress size={16} />
+                  <Typography variant="body2">Calculating...</Typography>
+                </Box>
+              ) : storageInfo ? (
+                <Box sx={{ mt: 1 }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
+                    <Typography variant="body1">
+                      {formatStorageSize(storageInfo.usageMB)} / {storageInfo.isUnlimited ? 'Unlimited' : formatStorageSize(storageInfo.limitMB)}
+                    </Typography>
+                    {!storageInfo.isUnlimited && (
+                      <Typography variant="body2" color={storageInfo.percentageUsed >= 90 ? 'error' : 'text.secondary'}>
+                        {storageInfo.percentageUsed}%
+                      </Typography>
+                    )}
+                  </Box>
+                  
+                  {!storageInfo.isUnlimited && (
+                    <LinearProgress 
+                      variant="determinate" 
+                      value={Math.min(storageInfo.percentageUsed, 100)}
+                      color={storageInfo.percentageUsed >= 100 ? 'error' : storageInfo.percentageUsed >= 90 ? 'warning' : 'primary'}
+                      sx={{ height: 8, borderRadius: 1, mb: 1 }}
+                    />
+                  )}
+                  
+                  <Chip 
+                    label={storageInfo.plan.charAt(0).toUpperCase() + storageInfo.plan.slice(1) + ' Plan'}
+                    size="small"
+                    color="default"
+                    sx={{ fontWeight: 'medium' }}
+                  />
+                  
+                  {/* Show upgrade prompt if at or near limit */}
+                  {storageInfo.isAtLimit && (
+                    <Alert 
+                      severity="error" 
+                      sx={{ mt: 2 }}
+                      action={
+                        <Button 
+                          color="inherit" 
+                          size="small"
+                          startIcon={<UpgradeIcon />}
+                          onClick={() => navigate('/pricing')}
+                        >
+                          Upgrade
+                        </Button>
+                      }
+                    >
+                      <Typography variant="body2">
+                        <strong>Storage limit reached!</strong> Upgrade your plan to continue uploading files.
+                      </Typography>
+                    </Alert>
+                  )}
+                  
+                  {!storageInfo.isAtLimit && storageInfo.percentageUsed >= 90 && (
+                    <Alert 
+                      severity="warning" 
+                      sx={{ mt: 2 }}
+                      icon={<WarningIcon />}
+                      action={
+                        <Button 
+                          color="inherit" 
+                          size="small"
+                          onClick={() => navigate('/pricing')}
+                        >
+                          View Plans
+                        </Button>
+                      }
+                    >
+                      <Typography variant="body2">
+                        You're using {storageInfo.percentageUsed}% of your storage.
+                      </Typography>
+                    </Alert>
+                  )}
+                </Box>
+              ) : (
+                <Typography variant="body2" color="error">
+                  Unable to load storage info
+                </Typography>
+              )}
             </Box>
           </Box>
         </Box>
