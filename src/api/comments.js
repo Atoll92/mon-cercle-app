@@ -3,22 +3,15 @@ import { supabase } from '../supabaseclient';
 // Get comments for a social wall item
 export const getItemComments = async (itemType, itemId) => {
   try {
-    const { data, error } = await supabase
+    // First get top-level comments
+    const { data: topLevelComments, error: topLevelError } = await supabase
       .from('social_wall_comments')
       .select(`
         *,
-        profile:profiles!social_wall_comments_profile_id_fkey(
+        profile:profiles(
           id,
           full_name,
           profile_picture_url
-        ),
-        replies:social_wall_comments!social_wall_comments_parent_comment_id_fkey(
-          *,
-          profile:profiles!social_wall_comments_profile_id_fkey(
-            id,
-            full_name,
-            profile_picture_url
-          )
         )
       `)
       .eq('item_type', itemType)
@@ -26,8 +19,34 @@ export const getItemComments = async (itemType, itemId) => {
       .is('parent_comment_id', null)
       .order('created_at', { ascending: false });
 
-    if (error) throw error;
-    return { data, error: null };
+    if (topLevelError) throw topLevelError;
+
+    // Then get replies for each comment
+    const commentsWithReplies = await Promise.all(
+      topLevelComments.map(async (comment) => {
+        const { data: replies, error: repliesError } = await supabase
+          .from('social_wall_comments')
+          .select(`
+            *,
+            profile:profiles(
+              id,
+              full_name,
+              profile_picture_url
+            )
+          `)
+          .eq('parent_comment_id', comment.id)
+          .order('created_at', { ascending: true });
+
+        if (repliesError) {
+          console.error('Error fetching replies:', repliesError);
+          return { ...comment, replies: [] };
+        }
+
+        return { ...comment, replies: replies || [] };
+      })
+    );
+
+    return { data: commentsWithReplies, error: null };
   } catch (error) {
     console.error('Error fetching comments:', error);
     return { data: null, error: error.message };
@@ -48,7 +67,7 @@ export const addComment = async (itemType, itemId, profileId, content, parentCom
       }])
       .select(`
         *,
-        profile:profiles!social_wall_comments_profile_id_fkey(
+        profile:profiles(
           id,
           full_name,
           profile_picture_url

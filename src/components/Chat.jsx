@@ -483,6 +483,7 @@ const Chat = ({ networkId, isFullscreen = false }) => {
   // Handle reply to message
   const handleReplyToMessage = () => {
     const messageToReply = messages.find(msg => msg.id === selectedMessageId);
+    console.log('Reply to message:', selectedMessageId, messageToReply);
     if (messageToReply) {
       setReplyingTo(messageToReply);
       handleMessageMenuClose();
@@ -490,6 +491,8 @@ const Chat = ({ networkId, isFullscreen = false }) => {
       setTimeout(() => {
         textFieldRef.current?.focus();
       }, 100);
+    } else {
+      console.error('Message not found:', selectedMessageId);
     }
   };
   
