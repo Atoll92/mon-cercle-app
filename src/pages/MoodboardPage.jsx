@@ -497,6 +497,10 @@ const renderContent = () => {
           border: selected ? '2px solid #2196f3' : 'none',
           transition: isDragging || isResizing ? 'none' : 'box-shadow 0.2s ease',
           zIndex: selected ? 100 : item.zIndex || 1,
+          opacity: item.opacity !== undefined ? item.opacity : 1,
+          backgroundColor: item.backgroundColor || 'transparent',
+          borderRadius: `${item.border_radius || 0}px`,
+          transform: `rotate(${item.rotation || 0}deg)`,
           '&:hover': {
             boxShadow: isEditable ? '0 6px 12px rgba(0,0,0,0.15)' : 'none'
           }
@@ -618,7 +622,8 @@ const EditItemDialog = ({
       // Common properties
       setEditedTitle(currentItem.title || '');
       setEditedBackgroundColor(currentItem.backgroundColor || 'transparent');
-      setEditedOpacity(currentItem.opacity || 100);
+      // Convert opacity from 0-1 range to 0-100 percentage
+      setEditedOpacity(currentItem.opacity !== undefined ? currentItem.opacity * 100 : 100);
       setEditedBorder_radius(currentItem.border_radius || 0);
       setEditedRotation(currentItem.rotation || 0);
       setEditedZIndex(currentItem.zIndex || 1);
@@ -654,7 +659,8 @@ const EditItemDialog = ({
         ...currentItem,
         title: editedTitle,
         backgroundColor: editedBackgroundColor,
-        opacity: editedOpacity !== undefined ? editedOpacity : 100,
+        // Convert opacity from 0-100 percentage back to 0-1 range
+        opacity: editedOpacity !== undefined ? editedOpacity / 100 : 1,
         border_radius: editedBorder_radius,
         rotation: editedRotation,
         zIndex: editedZIndex
@@ -1966,7 +1972,7 @@ const handleUpdateItem = async (updatedItem) => {
   }
   
   return (
-    <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+    <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden', position: 'relative' }}>
       {/* Toolbar */}
       <Box 
         sx={{ 
@@ -2202,69 +2208,6 @@ const handleUpdateItem = async (updatedItem) => {
   </Box>
 </Box>
 
-      
-      {/* Floating action buttons when item is selected */}
-      <Box
-        sx={{
-          position: 'fixed',
-          bottom: 16,
-          right: 16,
-          zIndex: 1000,
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 1
-        }}
-      >
-        {selectedItemId && (
-          <Zoom in={true}>
-            <Paper
-              elevation={4}
-              sx={{
-                p: 1,
-                display: 'flex',
-                alignItems: 'center',
-                bgcolor: alpha(theme.palette.primary.main, 0.1),
-                border: '1px solid',
-                borderColor: 'primary.light',
-                borderRadius: 2
-              }}
-            >
-              <Typography variant="body2" color="primary" sx={{ ml: 1, mr: 2 }}>
-                Item selected
-              </Typography>
-              {isEditable && (
-                <>
-                  <Button
-                    size="small"
-                    variant="outlined"
-                    color="primary"
-                    startIcon={<EditIcon />}
-                    onClick={() => {
-                      const item = items.find(i => i.id === selectedItemId);
-                      if (item) handleEditItem(item);
-                    }}
-                    sx={{ mr: 1 }}
-                  >
-                    Edit
-                  </Button>
-                  <Button
-                    size="small"
-                    variant="outlined"
-                    color="error"
-                    startIcon={<DeleteIcon />}
-                    onClick={() => {
-                      if (selectedItemId) handleDeleteItem(selectedItemId);
-                    }}
-                  >
-                    Delete
-                  </Button>
-                </>
-              )}
-            </Paper>
-          </Zoom>
-        )}
-      </Box>
-      
       {/* Add Item Menu */}
       <Menu
         anchorEl={addMenuAnchor}
