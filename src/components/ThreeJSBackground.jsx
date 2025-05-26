@@ -246,8 +246,8 @@ const ThreeJSBackground = () => {
       
       // Update FPS counter every 500ms
       if (currentTime - lastFpsUpdateTime > fpsUpdateInterval) {
-        const fps = Math.round((frameCount * 1000) / (currentTime - lastFpsUpdateTime));
-        setFps(fps);
+        // const fps = Math.round((frameCount * 1000) / (currentTime - lastFpsUpdateTime));
+        // FPS counter removed for performance
         frameCount = 0;
         lastFpsUpdateTime = currentTime;
       }

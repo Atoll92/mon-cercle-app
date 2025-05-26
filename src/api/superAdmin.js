@@ -1,6 +1,102 @@
 // src/api/superAdmin.js
 import { supabase } from '../supabaseclient';
 
+// Calculate storage size for a network by estimating from media URLs
+const calculateNetworkStorage = async (networkId) => {
+  try {
+    let totalSize = 0;
+    
+    // 1. Get network_files table data (these have explicit file sizes)
+    const { data: dbFiles, error: dbError } = await supabase
+      .from('network_files')
+      .select('file_size')
+      .eq('network_id', networkId);
+    
+    if (!dbError && dbFiles) {
+      const dbFileSize = dbFiles.reduce((sum, file) => sum + (file.file_size || 0), 0);
+      totalSize += dbFileSize;
+    }
+    
+    // 2. Get all network members
+    const { data: networkMembers } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('network_id', networkId);
+    
+    if (networkMembers && networkMembers.length > 0) {
+      const memberIds = networkMembers.map(m => m.id);
+      
+      // 3. Count portfolio items with media from network members
+      const { count: portfolioMediaCount } = await supabase
+        .from('portfolio_items')
+        .select('*', { count: 'exact', head: true })
+        .in('profile_id', memberIds)
+        .or('media_url.not.is.null,image_url.not.is.null');
+      
+      // 4. Count member profile pictures
+      const { count: profilePicCount } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true })
+        .in('id', memberIds)
+        .not('profile_picture_url', 'is', null);
+      
+      // Add portfolio media (avg 2MB per item)
+      totalSize += (portfolioMediaCount || 0) * 2 * 1024 * 1024;
+      
+      // Add profile pictures (avg 500KB per profile)
+      totalSize += (profilePicCount || 0) * 500 * 1024;
+    }
+    
+    // 5. Count network news media
+    const { count: newsMediaCount } = await supabase
+      .from('network_news')
+      .select('*', { count: 'exact', head: true })
+      .eq('network_id', networkId)
+      .or('media_url.not.is.null,image_url.not.is.null');
+    
+    // 6. Count messages with media in network chat
+    const { count: messageMediaCount } = await supabase
+      .from('messages')
+      .select('*', { count: 'exact', head: true })
+      .eq('network_id', networkId)
+      .not('media_url', 'is', null);
+    
+    // 7. Count wiki pages with content (estimate 100KB per page for embedded images)
+    const { count: wikiPageCount } = await supabase
+      .from('wiki_pages')
+      .select('*', { count: 'exact', head: true })
+      .eq('network_id', networkId)
+      .eq('is_published', true);
+    
+    // 8. Count moodboard items (images, etc)
+    const { count: moodboardItemCount } = await supabase
+      .from('moodboard_items')
+      .select('moodboards!inner(network_id)', { count: 'exact', head: true })
+      .eq('moodboards.network_id', networkId)
+      .eq('type', 'image');
+    
+    // Add news media (avg 1.5MB per item - mix of images and videos)
+    totalSize += (newsMediaCount || 0) * 1.5 * 1024 * 1024;
+    
+    // Add message media (avg 2MB per item - could be images, videos, audio)
+    totalSize += (messageMediaCount || 0) * 2 * 1024 * 1024;
+    
+    // Add wiki content (avg 100KB per page for embedded content)
+    totalSize += (wikiPageCount || 0) * 100 * 1024;
+    
+    // Add moodboard items (avg 1MB per image)
+    totalSize += (moodboardItemCount || 0) * 1 * 1024 * 1024;
+    
+    // 9. Add estimate for network logo and background images (5MB total)
+    totalSize += 5 * 1024 * 1024;
+    
+    return totalSize;
+  } catch (error) {
+    console.error('Error calculating network storage:', error);
+    return 0;
+  }
+};
+
 // Fetch all networks with analytics
 export const fetchAllNetworks = async () => {
   try {
@@ -12,7 +108,7 @@ export const fetchAllNetworks = async () => {
 
     if (networksError) throw networksError;
 
-    // For each network, get member count and file sizes separately
+    // For each network, get member count and storage size
     const processedData = await Promise.all(
       networks.map(async (network) => {
         try {
@@ -22,20 +118,28 @@ export const fetchAllNetworks = async () => {
             .select('*', { count: 'exact', head: true })
             .eq('network_id', network.id);
 
-          // Get file sizes
-          const { data: files } = await supabase
-            .from('network_files')
-            .select('file_size')
-            .eq('network_id', network.id);
-
-          const totalFileSize = files?.reduce((sum, file) => sum + (file.file_size || 0), 0) || 0;
+          // Calculate total storage used with error handling
+          let totalStorageBytes = 0;
+          try {
+            totalStorageBytes = await calculateNetworkStorage(network.id);
+          } catch (storageErr) {
+            console.warn(`Error calculating storage for network ${network.id}:`, storageErr);
+            totalStorageBytes = 0;
+          }
+          
+          // Fix subscription plan display names
+          let displayPlan = network.subscription_plan;
+          if (!displayPlan || displayPlan === 'free') {
+            displayPlan = 'family'; // Free plan is called "Family"
+          }
 
           return {
             ...network,
             member_count: memberCount || 0,
-            storage_used_mb: Math.round(totalFileSize / (1024 * 1024)),
+            storage_used_mb: Math.round(totalStorageBytes / (1024 * 1024)),
             storage_limit_mb: getStorageLimit(network.subscription_plan),
-            status: network.status || 'active'
+            status: network.status || 'active',
+            subscription_plan: displayPlan // Use display plan name
           };
         } catch (err) {
           console.warn(`Error processing network ${network.id}:`, err);
@@ -44,7 +148,8 @@ export const fetchAllNetworks = async () => {
             member_count: 0,
             storage_used_mb: 0,
             storage_limit_mb: getStorageLimit(network.subscription_plan),
-            status: network.status || 'active'
+            status: network.status || 'active',
+            subscription_plan: network.subscription_plan || 'family'
           };
         }
       })
@@ -105,22 +210,71 @@ export const getNetworkAnalytics = async () => {
         .from('networks')
         .select('*', { count: 'exact', head: true })
         .not('subscription_plan', 'is', null)
-        .neq('subscription_plan', 'free');
+        .neq('subscription_plan', 'free')
+        .neq('subscription_plan', 'family');
       activeSubscriptions = subscriptionsCount || 0;
     } catch (err) {
       console.warn('Error fetching subscriptions count:', err);
     }
 
     try {
-      // Get total storage usage
+      // Get total storage usage - comprehensive estimation
+      // 1. Get network_files total
       const { data: storageData } = await supabase
         .from('network_files')
         .select('file_size');
 
+      let totalStorageBytes = 0;
       if (storageData) {
-        const totalStorageBytes = storageData.reduce((sum, file) => sum + (file.file_size || 0), 0);
-        totalStorageGB = Math.round(totalStorageBytes / (1024 * 1024 * 1024));
+        totalStorageBytes = storageData.reduce((sum, file) => sum + (file.file_size || 0), 0);
       }
+      
+      // 2. Count all media across the platform
+      const { count: newsMediaCount } = await supabase
+        .from('network_news')
+        .select('*', { count: 'exact', head: true })
+        .or('media_url.not.is.null,image_url.not.is.null');
+      
+      const { count: messageMediaCount } = await supabase
+        .from('messages')
+        .select('*', { count: 'exact', head: true })
+        .not('media_url', 'is', null);
+      
+      const { count: portfolioMediaCount } = await supabase
+        .from('portfolio_items')
+        .select('*', { count: 'exact', head: true })
+        .or('media_url.not.is.null,image_url.not.is.null');
+      
+      const { count: profilePicCount } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true })
+        .not('profile_picture_url', 'is', null);
+      
+      const { count: wikiPageCount } = await supabase
+        .from('wiki_pages')
+        .select('*', { count: 'exact', head: true })
+        .eq('is_published', true);
+      
+      const { count: moodboardItemCount } = await supabase
+        .from('moodboard_items')
+        .select('*', { count: 'exact', head: true })
+        .eq('type', 'image');
+      
+      const { count: networkCount } = await supabase
+        .from('networks')
+        .select('*', { count: 'exact', head: true })
+        .or('logo_url.not.is.null,background_image_url.not.is.null');
+      
+      // Calculate estimated storage
+      totalStorageBytes += (newsMediaCount || 0) * 1.5 * 1024 * 1024; // 1.5MB avg
+      totalStorageBytes += (messageMediaCount || 0) * 2 * 1024 * 1024; // 2MB avg
+      totalStorageBytes += (portfolioMediaCount || 0) * 2 * 1024 * 1024; // 2MB avg
+      totalStorageBytes += (profilePicCount || 0) * 500 * 1024; // 500KB avg
+      totalStorageBytes += (wikiPageCount || 0) * 100 * 1024; // 100KB avg for embedded content
+      totalStorageBytes += (moodboardItemCount || 0) * 1 * 1024 * 1024; // 1MB avg
+      totalStorageBytes += (networkCount || 0) * 5 * 1024 * 1024; // 5MB avg for logos/backgrounds
+      
+      totalStorageGB = (totalStorageBytes / (1024 * 1024 * 1024)).toFixed(3);
     } catch (err) {
       console.warn('Error fetching storage data:', err);
     }

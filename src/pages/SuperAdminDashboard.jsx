@@ -175,7 +175,16 @@ const SuperAdminDashboard = () => {
     const matchesSearch = network.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          network.id.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = filterStatus === 'all' || network.status === filterStatus;
-    const matchesPlan = filterPlan === 'all' || network.subscription_plan === filterPlan;
+    
+    // Handle both 'free' and 'family' plan names
+    let matchesPlan = false;
+    if (filterPlan === 'all') {
+      matchesPlan = true; // "all" should match everything
+    } else if (filterPlan === 'family') {
+      matchesPlan = network.subscription_plan === 'family' || network.subscription_plan === 'free' || !network.subscription_plan;
+    } else {
+      matchesPlan = network.subscription_plan === filterPlan;
+    }
     
     return matchesSearch && matchesStatus && matchesPlan;
   });
@@ -191,11 +200,23 @@ const SuperAdminDashboard = () => {
 
   const getPlanColor = (plan) => {
     switch (plan) {
+      case 'family': return 'default';
       case 'free': return 'default';
       case 'community': return 'primary';
       case 'organization': return 'secondary';
       case 'business': return 'info';
       default: return 'default';
+    }
+  };
+
+  const getPlanDisplayName = (plan) => {
+    switch (plan) {
+      case 'family': return 'Family (Free)';
+      case 'free': return 'Family (Free)';
+      case 'community': return 'Community (€17)';
+      case 'organization': return 'Organization';
+      case 'business': return 'Business';
+      default: return 'Family (Free)';
     }
   };
 
@@ -345,8 +366,8 @@ const SuperAdminDashboard = () => {
                     onChange={(e) => setFilterPlan(e.target.value)}
                   >
                     <MenuItem value="all">All Plans</MenuItem>
-                    <MenuItem value="free">Free</MenuItem>
-                    <MenuItem value="community">Community</MenuItem>
+                    <MenuItem value="family">Family (Free)</MenuItem>
+                    <MenuItem value="community">Community (€17)</MenuItem>
                     <MenuItem value="organization">Organization</MenuItem>
                     <MenuItem value="business">Business</MenuItem>
                   </Select>
@@ -413,7 +434,7 @@ const SuperAdminDashboard = () => {
                     </TableCell>
                     <TableCell>
                       <Chip
-                        label={network.subscription_plan || 'Free'}
+                        label={getPlanDisplayName(network.subscription_plan)}
                         color={getPlanColor(network.subscription_plan)}
                         size="small"
                       />
@@ -433,7 +454,7 @@ const SuperAdminDashboard = () => {
                     <TableCell>
                       <Box>
                         <Typography variant="body2">
-                          {network.storage_used_mb ? `${(network.storage_used_mb / 1024).toFixed(1)}GB` : '0GB'}
+                          {network.storage_used_mb ? `${(network.storage_used_mb / 1024).toFixed(3)}GB` : '0.000GB'}
                         </Typography>
                         <LinearProgress
                           variant="determinate"
