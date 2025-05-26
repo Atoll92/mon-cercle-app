@@ -4,13 +4,10 @@ import MediaPlayer from './MediaPlayer';
 import {
   Card,
   CardContent,
-  CardHeader,
   CardMedia,
   Typography,
   Box,
   Avatar,
-  Chip,
-  IconButton,
   Skeleton,
   Alert,
   Button,
@@ -107,15 +104,22 @@ const LatestNewsWidget = ({ networkId }) => {
   if (loading) {
     return (
       <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}>
-        <CardHeader
-          avatar={<Skeleton variant="circular" width={40} height={40} />}
-          title={<Skeleton width="60%" />}
-          subheader={<Skeleton width="40%" />}
+        <Box 
           sx={{ 
-            bgcolor: 'rgba(25, 118, 210, 0.05)',
-            py: 1
+            p: 1.5, 
+            display: 'flex',
+            alignItems: 'center',
+            borderBottom: '1px solid',
+            borderColor: 'divider',
+            bgcolor: 'rgba(25, 118, 210, 0.05)'
           }}
-        />
+        >
+          <Skeleton variant="circular" width={40} height={40} sx={{ mr: 1.5 }} />
+          <Box>
+            <Skeleton width={120} height={24} />
+            <Skeleton width={80} height={16} />
+          </Box>
+        </Box>
         <CardContent sx={{ flex: 1 }}>
           <Skeleton variant="rectangular" height={60} sx={{ mb: 2 }} />
           <Skeleton width="80%" />
@@ -128,15 +132,21 @@ const LatestNewsWidget = ({ networkId }) => {
   if (error) {
     return (
       <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}>
-        <CardHeader
-          avatar={<NewsIcon color="primary" />}
-          title="Latest News"
-          titleTypographyProps={{ variant: 'subtitle1' }}
+        <Box 
           sx={{ 
-            bgcolor: 'rgba(25, 118, 210, 0.05)',
-            py: 1
+            p: 1.5, 
+            display: 'flex',
+            alignItems: 'center',
+            borderBottom: '1px solid',
+            borderColor: 'divider',
+            bgcolor: 'rgba(25, 118, 210, 0.05)'
           }}
-        />
+        >
+          <NewsIcon color="primary" sx={{ mr: 1.5 }} />
+          <Typography variant="subtitle1">
+            Latest News
+          </Typography>
+        </Box>
         <CardContent sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <Alert severity="error" sx={{ width: '100%' }}>
             {error}
@@ -149,15 +159,21 @@ const LatestNewsWidget = ({ networkId }) => {
   if (!latestNews) {
     return (
       <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}>
-        <CardHeader
-          avatar={<NewsIcon color="primary" />}
-          title="Latest News"
-          titleTypographyProps={{ variant: 'subtitle1' }}
+        <Box 
           sx={{ 
-            bgcolor: 'rgba(25, 118, 210, 0.05)',
-            py: 1
+            p: 1.5, 
+            display: 'flex',
+            alignItems: 'center',
+            borderBottom: '1px solid',
+            borderColor: 'divider',
+            bgcolor: 'rgba(25, 118, 210, 0.05)'
           }}
-        />
+        >
+          <NewsIcon color="primary" sx={{ mr: 1.5 }} />
+          <Typography variant="subtitle1">
+            Latest News
+          </Typography>
+        </Box>
         <CardContent sx={{ 
           flex: 1, 
           display: 'flex', 
@@ -192,37 +208,45 @@ const LatestNewsWidget = ({ networkId }) => {
       },
       transition: 'all 0.3s ease'
     }}>
-      <CardHeader
-        avatar={<NewsIcon color="primary" />}
-        title="Latest News"
-        titleTypographyProps={{ variant: 'subtitle1' }}
-        action={
-          <Button
-            component={Link}
-            to="/dashboard"
-            size="small"
-            endIcon={<ArrowForwardIcon />}
-            className="view-all-button"
-            sx={{ 
-              transition: 'transform 0.2s ease',
-              textTransform: 'none'
-            }}
-          >
-            View All
-          </Button>
-        }
+      <Box 
         sx={{ 
-          bgcolor: 'rgba(25, 118, 210, 0.05)',
-          py: 1
+          p: 1.5, 
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          borderBottom: '1px solid',
+          borderColor: 'divider',
+          bgcolor: 'rgba(25, 118, 210, 0.05)'
         }}
-      />
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <NewsIcon color="primary" sx={{ mr: 1.5 }} />
+          <Typography variant="subtitle1">
+            Latest News
+          </Typography>
+        </Box>
+        
+        <Button
+          component={Link}
+          to="/dashboard"
+          size="small"
+          endIcon={<ArrowForwardIcon />}
+          className="view-all-button"
+          sx={{ 
+            transition: 'transform 0.2s ease',
+            textTransform: 'none'
+          }}
+        >
+          View All
+        </Button>
+      </Box>
       
-      <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column', pt: 0 }}>
+      <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column', p: 3 }}>
         {/* Author info */}
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5 }}>
           <Avatar
             src={latestNews.profiles?.profile_picture_url}
-            sx={{ width: 32, height: 32, mr: 1.5 }}
+            sx={{ width: 28, height: 28, mr: 1 }}
           >
             {latestNews.profiles?.full_name ? 
               latestNews.profiles.full_name.charAt(0).toUpperCase() : 
@@ -230,24 +254,24 @@ const LatestNewsWidget = ({ networkId }) => {
             }
           </Avatar>
           <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Typography variant="body2" fontWeight={500} noWrap>
+            <Typography variant="body2" fontWeight={500} noWrap sx={{ lineHeight: 1.2 }}>
               {latestNews.profiles?.full_name || 'Unknown Author'}
             </Typography>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-              <ScheduleIcon sx={{ fontSize: 14, color: 'text.secondary' }} />
-              <Typography variant="caption" color="text.secondary">
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.3 }}>
+              <ScheduleIcon sx={{ fontSize: 12, color: 'text.secondary' }} />
+              <Typography variant="caption" color="text.secondary" sx={{ lineHeight: 1 }}>
                 {formatTimeAgo(latestNews.created_at)}
               </Typography>
             </Box>
           </Box>
         </Box>
 
-        <Divider sx={{ mb: 2 }} />
+        <Divider sx={{ mb: 1.5 }} />
 
         {/* News content */}
         <Box sx={{ flex: 1, overflow: 'hidden' }}>
           <Typography 
-            variant="subtitle1" 
+            variant="h6" 
             fontWeight={600} 
             gutterBottom
             sx={{
@@ -255,8 +279,9 @@ const LatestNewsWidget = ({ networkId }) => {
               WebkitLineClamp: 2,
               WebkitBoxOrient: 'vertical',
               overflow: 'hidden',
-              lineHeight: 1.3,
-              mb: 1
+              lineHeight: 1.4,
+              mb: 2,
+              fontSize: '1.25rem'
             }}
           >
             {latestNews.title}
@@ -317,12 +342,12 @@ const LatestNewsWidget = ({ networkId }) => {
                 return (
                   <CardMedia
                     component="img"
-                    height="80"
+                    height="200"
                     image={mediaUrl}
                     alt={latestNews.image_caption || latestNews.title}
                     sx={{ 
                       borderRadius: 1, 
-                      mb: 1.5,
+                      mb: 2,
                       objectFit: 'cover'
                     }}
                   />
@@ -333,17 +358,17 @@ const LatestNewsWidget = ({ networkId }) => {
           })()}
 
           <Typography 
-            variant="body2" 
+            variant="body1" 
             color="text.secondary"
             sx={{
               display: '-webkit-box',
-              WebkitLineClamp: (latestNews.image_url || latestNews.media_url) ? 2 : 4,
+              WebkitLineClamp: (latestNews.image_url || latestNews.media_url) ? 3 : 5,
               WebkitBoxOrient: 'vertical',
               overflow: 'hidden',
-              lineHeight: 1.4
+              lineHeight: 1.6
             }}
           >
-            {truncateContent(latestNews.content)}
+            {truncateContent(latestNews.content, 200)}
           </Typography>
         </Box>
 

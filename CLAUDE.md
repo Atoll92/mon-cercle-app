@@ -183,6 +183,9 @@ mon-cercle-app/
 - Integrated Vercel Analytics
 - Created Terms of Service page (CGU) compliant with French/EU law
 - Integrated Stripe Community plan (€17/month) with price ID: price_1RSy002KqNIKpvjTG7YyuZZ6
+- Harmonized LatestPostsWidget and LatestNewsWidget with consistent author/date displays
+- Enhanced widget visuals: larger text, images (200px), avatars (40px), and increased padding
+- Unified widget headers to match PersonalMoodboardWidget style with consistent Box layout
 
 ## Commands
 

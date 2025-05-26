@@ -8,12 +8,16 @@ import {
   Box,
   CircularProgress,
   CardActionArea,
-  Avatar
+  Avatar,
+  Button,
+  Divider
 } from '@mui/material';
 import {
   Work as WorkIcon,
   OpenInNew as OpenInNewIcon,
-  Person as PersonIcon
+  Person as PersonIcon,
+  Schedule as ScheduleIcon,
+  ArrowForward as ArrowForwardIcon
 } from '@mui/icons-material';
 
 const LatestPostsWidget = ({ networkId }) => {
@@ -72,6 +76,22 @@ const LatestPostsWidget = ({ networkId }) => {
     fetchLatestPosts();
   }, [networkId]);
 
+  const formatTimeAgo = (dateString) => {
+    const now = new Date();
+    const postDate = new Date(dateString);
+    const diffInHours = Math.floor((now - postDate) / (1000 * 60 * 60));
+    
+    if (diffInHours < 1) {
+      const diffInMinutes = Math.floor((now - postDate) / (1000 * 60));
+      return diffInMinutes <= 1 ? 'Just now' : `${diffInMinutes}m ago`;
+    } else if (diffInHours < 24) {
+      return `${diffInHours}h ago`;
+    } else {
+      const diffInDays = Math.floor(diffInHours / 24);
+      return diffInDays === 1 ? '1 day ago' : `${diffInDays} days ago`;
+    }
+  };
+
   if (loading) {
     return (
       <Card sx={{ 
@@ -95,31 +115,48 @@ const LatestPostsWidget = ({ networkId }) => {
       flexDirection: 'column',
       boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
       overflow: 'hidden',
-      flexGrow:'1',
+      '&:hover': {
+        boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+        '& .view-all-button': {
+          transform: 'translateX(4px)'
+        }
+      },
+      transition: 'all 0.3s ease'
     }}>
-      {/* Header */}
-      <Box sx={{ 
-        p: 1.5, 
-        display: 'flex',
-        alignItems: 'center',
-        borderBottom: '1px solid',
-        borderColor: 'divider',
-        bgcolor: 'rgba(25, 118, 210, 0.05)'
-      }}>
-        <WorkIcon color="primary" sx={{ mr: 1.5 }} />
-        <Typography variant="subtitle1">
-          Latest Post
-        </Typography>
+      <Box 
+        sx={{ 
+          p: 1.5, 
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          borderBottom: '1px solid',
+          borderColor: 'divider',
+          bgcolor: 'rgba(25, 118, 210, 0.05)'
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <WorkIcon color="primary" sx={{ mr: 1.5 }} />
+          <Typography variant="subtitle1">
+            Latest Post
+          </Typography>
+        </Box>
+        
+        <Button
+          component={Link}
+          to="/dashboard"
+          size="small"
+          endIcon={<ArrowForwardIcon />}
+          className="view-all-button"
+          sx={{ 
+            transition: 'transform 0.2s ease',
+            textTransform: 'none'
+          }}
+        >
+          View All
+        </Button>
       </Box>
       
-      {/* Content */}
-      <CardContent sx={{ 
-        p: 2, 
-        flexGrow: 1, 
-        display: 'flex',
-        flexDirection: 'column',
-        '&:last-child': { pb: 2 }
-      }}>
+      <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column', p: 3 }}>
         {posts.length === 0 ? (
           <Box sx={{ 
             display: 'flex', 
@@ -127,98 +164,133 @@ const LatestPostsWidget = ({ networkId }) => {
             alignItems: 'center', 
             justifyContent: 'center',
             height: '100%',
-            p: 3
+            p: 3,
+            textAlign: 'center'
           }}>
-            <WorkIcon sx={{ fontSize: 40, color: 'text.secondary', mb: 1 }} />
-            <Typography variant="body2" color="text.secondary" align="center">
-              No posts with images yet
+            <WorkIcon sx={{ fontSize: 48, color: 'text.disabled', mb: 2 }} />
+            <Typography variant="body2" color="text.secondary" gutterBottom>
+              No portfolio posts yet
+            </Typography>
+            <Typography variant="caption" color="text.secondary">
+              Be the first to share your work!
             </Typography>
           </Box>
         ) : posts[0] && (
-          <CardActionArea
-            component={posts[0].url ? 'a' : 'div'}
-            href={posts[0].url || undefined}
-            target={posts[0].url ? "_blank" : undefined}
-            rel={posts[0].url ? "noopener noreferrer" : undefined}
-            sx={{
-              flexGrow: 1,
-              display: 'flex',
-              flexDirection: 'column',
-              borderRadius: 1,
-              overflow: 'hidden',
-              '&:hover .portfolio-image': {
-                transform: 'scale(1.05)'
-              }
-            }}
-          >
-            {/* Thumbnail */}
-            <Box
+          <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+            {/* Author info */}
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5 }}>
+              <Avatar
+                src={posts[0].profiles?.profile_picture_url}
+                sx={{ width: 28, height: 28, mr: 1 }}
+              >
+                {posts[0].profiles?.full_name ? 
+                  posts[0].profiles.full_name.charAt(0).toUpperCase() : 
+                  <PersonIcon fontSize="small" />
+                }
+              </Avatar>
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                <Typography variant="body2" fontWeight={500} noWrap sx={{ lineHeight: 1.2 }}>
+                  {posts[0].profiles?.full_name || 'Unknown Author'}
+                </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.3 }}>
+                  <ScheduleIcon sx={{ fontSize: 12, color: 'text.secondary' }} />
+                  <Typography variant="caption" color="text.secondary" sx={{ lineHeight: 1 }}>
+                    {formatTimeAgo(posts[0].created_at)}
+                  </Typography>
+                </Box>
+              </Box>
+            </Box>
+
+            <Divider sx={{ mb: 1.5 }} />
+
+            {/* Post content */}
+            <CardActionArea
+              component={posts[0].url ? 'a' : 'div'}
+              href={posts[0].url || undefined}
+              target={posts[0].url ? "_blank" : undefined}
+              rel={posts[0].url ? "noopener noreferrer" : undefined}
               sx={{
-                width: '100%',
-                height: 180,
+                flexGrow: 1,
+                display: 'flex',
+                flexDirection: 'column',
+                borderRadius: 1,
                 overflow: 'hidden',
-                bgcolor: 'grey.100',
-                mb: 2
+                '&:hover .portfolio-image': {
+                  transform: 'scale(1.05)'
+                }
               }}
             >
-              <img 
-                src={posts[0].image_url} 
-                alt={posts[0].title}
-                className="portfolio-image"
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'cover',
-                  transition: 'transform 0.3s ease'
+              {/* Post Title */}
+              <Typography 
+                variant="h6" 
+                fontWeight={600} 
+                gutterBottom
+                sx={{
+                  display: '-webkit-box',
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: 'vertical',
+                  overflow: 'hidden',
+                  lineHeight: 1.4,
+                  mb: 2,
+                  fontSize: '1.25rem'
                 }}
-              />
-            </Box>
-            
-            {/* Content */}
-            <Box sx={{ flexGrow: 1 }}>
-              <Typography variant="h6" gutterBottom sx={{ fontSize: '1rem' }}>
+              >
                 {posts[0].title}
               </Typography>
+
+              {/* Thumbnail */}
+              {posts[0].image_url && (
+                <Box
+                  sx={{
+                    width: '100%',
+                    height: 200,
+                    overflow: 'hidden',
+                    bgcolor: 'grey.100',
+                    mb: 2,
+                    borderRadius: 1
+                  }}
+                >
+                  <img 
+                    src={posts[0].image_url} 
+                    alt={posts[0].title}
+                    className="portfolio-image"
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                      transition: 'transform 0.3s ease'
+                    }}
+                  />
+                </Box>
+              )}
               
+              {/* Description */}
               {posts[0].description && (
                 <Typography 
-                  variant="body2" 
+                  variant="body1" 
                   color="text.secondary"
                   sx={{
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
                     display: '-webkit-box',
-                    WebkitLineClamp: 2,
+                    WebkitLineClamp: posts[0].image_url ? 3 : 5,
                     WebkitBoxOrient: 'vertical',
-                    mb: 2
+                    overflow: 'hidden',
+                    lineHeight: 1.6
                   }}
                 >
                   {posts[0].description}
                 </Typography>
               )}
               
-              {/* Author info */}
-              <Box sx={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: 1,
-                mt: 'auto'
-              }}>
-                <Avatar
-                  src={posts[0].profiles?.profile_picture_url}
-                  sx={{ width: 24, height: 24 }}
-                >
-                  <PersonIcon sx={{ fontSize: 16 }} />
-                </Avatar>
-                <Typography variant="body2" color="text.secondary">
-                  {posts[0].profiles?.full_name || 'Unknown'}
-                </Typography>
-                {posts[0].url && (
-                  <OpenInNewIcon sx={{ fontSize: 16, color: 'text.secondary', ml: 'auto' }} />
-                )}
-              </Box>
-            </Box>
-          </CardActionArea>
+              {posts[0].url && (
+                <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
+                  <OpenInNewIcon sx={{ fontSize: 14, color: 'text.secondary', mr: 0.5 }} />
+                  <Typography variant="caption" color="text.secondary">
+                    External link
+                  </Typography>
+                </Box>
+              )}
+            </CardActionArea>
+          </Box>
         )}
       </CardContent>
     </Card>
