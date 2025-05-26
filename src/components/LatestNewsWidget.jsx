@@ -318,6 +318,9 @@ const LatestNewsWidget = ({ networkId }) => {
                       src={mediaUrl}
                       type={mediaType}
                       title={latestNews.title}
+                      thumbnail={latestNews.media_metadata?.thumbnail || latestNews.media_metadata?.albumArt || latestNews.image_url}
+                      darkMode={true}
+                      compact={false}
                       sx={{
                         width: '100%',
                         height: '100%',
