@@ -408,7 +408,7 @@ function MediaUpload({
       )}
 
       {files.length < maxFiles && (
-        <Box sx={{ mb: 2 }}>
+        <Box>
           <input
             accept={getAcceptString()}
             id="media-upload-input"

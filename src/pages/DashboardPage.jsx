@@ -1220,7 +1220,6 @@ function DashboardPage() {
                               bucket="profiles"
                               path={`portfolios/${user.id}`}
                               maxFiles={1}
-                              showPreview={false}
                             />
                             
                             {/* Media upload feedback */}
