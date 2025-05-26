@@ -1392,6 +1392,18 @@ function MoodboardPage() {
   const [isDraggingCanvas, setIsDraggingCanvas] = useState(false);
   const [startDragPos, setStartDragPos] = useState({ x: 0, y: 0 });
   
+  // Refs for stable access in event handlers
+  const scaleRef = useRef(scale);
+  const positionRef = useRef(position);
+  
+  useEffect(() => {
+    scaleRef.current = scale;
+  }, [scale]);
+  
+  useEffect(() => {
+    positionRef.current = position;
+  }, [position]);
+  
   // State for UI controls
   const [addMenuAnchor, setAddMenuAnchor] = useState(null);
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
@@ -1471,67 +1483,80 @@ function MoodboardPage() {
   
   // Add wheel event listener with passive: false for Chrome
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const wheelHandler = (e) => {
-      // Always prevent default to stop page scroll
-      e.preventDefault();
-      e.stopPropagation();
+    console.log('Setting up wheel listener, canvas ref:', canvasRef.current);
+    
+    // Use a timeout to ensure DOM is ready
+    const timer = setTimeout(() => {
+      const canvas = canvasRef.current;
+      console.log('Canvas after timeout:', canvas);
       
-      // Debug logging
-      console.log('Wheel event (native):', {
-        deltaX: e.deltaX,
-        deltaY: e.deltaY,
-        deltaMode: e.deltaMode,
-        ctrlKey: e.ctrlKey,
-        metaKey: e.metaKey,
-        wheelDelta: e.wheelDelta,
-        detail: e.detail
-      });
-      
-      // Check if it's a pinch zoom gesture
-      if (e.ctrlKey || e.metaKey) {
-        // Pinch zoom (Ctrl/Cmd + scroll)
-        const zoomDelta = -e.deltaY * 0.01;
-        const newScale = Math.min(Math.max(scale + zoomDelta, 0.3), 3);
-        
-        // Get mouse position relative to canvas
-        const rect = canvas.getBoundingClientRect();
-        const mouseX = e.clientX - rect.left;
-        const mouseY = e.clientY - rect.top;
-        
-        // Calculate zoom towards cursor position
-        const scaleRatio = newScale / scale;
-        const newX = mouseX - (mouseX - position.x) * scaleRatio;
-        const newY = mouseY - (mouseY - position.y) * scaleRatio;
-        
-        setScale(newScale);
-        setPosition({ x: newX, y: newY });
-      } else {
-        // Two-finger scroll (trackpad pan)
-        const deltaX = e.deltaX;
-        const deltaY = e.deltaY;
-        
-        // Invert the scroll direction for more natural panning
-        setPosition(prev => ({
-          x: prev.x - deltaX,
-          y: prev.y - deltaY
-        }));
+      if (!canvas) {
+        console.log('Canvas is still null after timeout');
+        return;
       }
-    };
 
-    // Try multiple event types to ensure we catch the right one
-    canvas.addEventListener('wheel', wheelHandler, { passive: false });
-    canvas.addEventListener('mousewheel', wheelHandler, { passive: false });
-    canvas.addEventListener('DOMMouseScroll', wheelHandler, { passive: false });
+      const wheelHandler = (e) => {
+        // Always prevent default to stop page scroll
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // Debug logging
+        console.log('Wheel event (native):', {
+          deltaX: e.deltaX,
+          deltaY: e.deltaY,
+          deltaMode: e.deltaMode,
+          ctrlKey: e.ctrlKey,
+          metaKey: e.metaKey
+        });
+        
+        // Check if it's a pinch zoom gesture
+        if (e.ctrlKey || e.metaKey) {
+          // Pinch zoom (Ctrl/Cmd + scroll) - use refs for current values
+          const currentScale = scaleRef.current;
+          const currentPosition = positionRef.current;
+          const zoomDelta = -e.deltaY * 0.01;
+          const newScale = Math.min(Math.max(currentScale + zoomDelta, 0.3), 3);
+          
+          // Get mouse position relative to canvas
+          const rect = canvas.getBoundingClientRect();
+          const mouseX = e.clientX - rect.left;
+          const mouseY = e.clientY - rect.top;
+          
+          // Calculate zoom towards cursor position
+          const scaleRatio = newScale / currentScale;
+          const newX = mouseX - (mouseX - currentPosition.x) * scaleRatio;
+          const newY = mouseY - (mouseY - currentPosition.y) * scaleRatio;
+          
+          setScale(newScale);
+          setPosition({ x: newX, y: newY });
+        } else {
+          // Two-finger scroll (trackpad pan)
+          const deltaX = e.deltaX;
+          const deltaY = e.deltaY;
+          
+          // Invert the scroll direction for more natural panning
+          setPosition(prev => ({
+            x: prev.x - deltaX,
+            y: prev.y - deltaY
+          }));
+        }
+      };
+
+      console.log('Adding wheel event listener');
+      // Add wheel event listener with passive: false to allow preventDefault
+      canvas.addEventListener('wheel', wheelHandler, { passive: false });
+
+      // Store cleanup function
+      return () => {
+        console.log('Cleanup: removing wheel event listener');
+        canvas.removeEventListener('wheel', wheelHandler);
+      };
+    }, 200); // Longer delay
 
     return () => {
-      canvas.removeEventListener('wheel', wheelHandler);
-      canvas.removeEventListener('mousewheel', wheelHandler);
-      canvas.removeEventListener('DOMMouseScroll', wheelHandler);
+      clearTimeout(timer);
     };
-  }, [scale, position]);
+  }, [moodboard]); // Depend on moodboard to ensure it runs after loading
   
   // Canvas dragging handlers
   const handleCanvasMouseDown = (e) => {
@@ -1574,55 +1599,6 @@ function MoodboardPage() {
     setScale(1);
     setPosition({ x: 0, y: 0 });
   };
-  
-  // Handle wheel events for trackpad scrolling and pinch zoom
-  const handleWheel = useCallback((e) => {
-    // Always prevent default to stop page scroll
-    e.preventDefault();
-    e.stopPropagation();
-    
-    // Debug logging
-    console.log('Wheel event:', {
-      deltaX: e.deltaX,
-      deltaY: e.deltaY,
-      deltaMode: e.deltaMode,
-      ctrlKey: e.ctrlKey,
-      metaKey: e.metaKey,
-      shiftKey: e.shiftKey
-    });
-    
-    // Check if it's a pinch zoom gesture
-    if (e.ctrlKey || e.metaKey) {
-      // Pinch zoom (Ctrl/Cmd + scroll)
-      const zoomDelta = -e.deltaY * 0.01;
-      const newScale = Math.min(Math.max(scale + zoomDelta, 0.3), 3);
-      
-      // Get mouse position relative to canvas
-      const rect = canvasRef.current.getBoundingClientRect();
-      const mouseX = e.clientX - rect.left;
-      const mouseY = e.clientY - rect.top;
-      
-      // Calculate zoom towards cursor position
-      const scaleRatio = newScale / scale;
-      const newX = mouseX - (mouseX - position.x) * scaleRatio;
-      const newY = mouseY - (mouseY - position.y) * scaleRatio;
-      
-      setScale(newScale);
-      setPosition({ x: newX, y: newY });
-    } else {
-      // Two-finger scroll (trackpad pan)
-      // deltaMode: 0 = pixels, 1 = lines, 2 = pages
-      const multiplier = e.deltaMode === 1 ? 40 : e.deltaMode === 2 ? 800 : 1;
-      const deltaX = e.deltaX * multiplier;
-      const deltaY = e.deltaY * multiplier;
-      
-      // Invert the scroll direction for more natural panning
-      setPosition(prev => ({
-        x: prev.x - deltaX,
-        y: prev.y - deltaY
-      }));
-    }
-  }, [scale, position]);
   
   // Handle item selection and deselection
   const handleSelectItem = (itemId) => {
