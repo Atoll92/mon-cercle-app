@@ -124,21 +124,24 @@ mon-cercle-app/
 
 ##### Widgets & Cards
 - `PollCard.jsx` - Poll display/voting
-- `LatestNewsWidget.jsx` - News widget
-- `LatestPostsWidget.jsx` - Posts widget
+- `LatestNewsWidget.jsx` - News widget (with media support)
+- `LatestPostsWidget.jsx` - Posts widget (with media support)
 - `PersonalMoodboardWidget.jsx` - Moodboard widget
 - `InvitationLinkWidget.jsx` - Invitation links
 - `SubscriptionBadge.jsx` - Subscription status
+- `UserBadges.jsx` - User badge display component
 
 ##### Admin Components (`src/components/admin/`)
 - `AdminLayout.jsx` - Admin interface layout (80px header)
 - `AdminBreadcrumbs.jsx` - Navigation breadcrumbs
-- `MembersTab.jsx` - Member management (integrated invitations)
+- `MembersTab.jsx` - Member management (integrated invitations, badges display)
 - `EventsTab.jsx` - Event administration
 - `InvitationLinksTab.jsx` - Invitation link management
 - `ModerationTab.jsx` - Content moderation
 - `MonetizationTab.jsx` - Billing management
-- `NetworkInfoPanel.jsx` - Network statistics
+- `BillingTab.jsx` - Subscription and billing management panel
+- `BadgesTab.jsx` - Engagement badges management and user activity tracking
+- `NetworkInfoPanel.jsx` - Network statistics (with storage tracking)
 - `NetworkSettingsTab.jsx` - Network configuration
 - `Newstab.jsx` - News administration
 - `NotificationQueueTab.jsx` - Email queue monitoring
@@ -186,6 +189,33 @@ mon-cercle-app/
 - Harmonized LatestPostsWidget and LatestNewsWidget with consistent author/date displays
 - Enhanced widget visuals: larger text, images (200px), avatars (40px), and increased padding
 - Unified widget headers to match PersonalMoodboardWidget style with consistent Box layout
+
+### Latest Updates (January 2025)
+- **Storage Management System**: Added comprehensive storage tracking for network admins
+  - Real-time storage usage monitoring with visual progress bars
+  - Storage limits by subscription plan (2GB to 5TB)
+  - Automatic storage prevention when limits reached
+  - Storage usage breakdown including all network member files
+  - SuperAdmin dashboard with detailed storage analytics
+- **Billing & Plan Management**: New admin panel for subscription management
+  - Current plan overview with usage statistics
+  - Payment history and invoice management
+  - Quick upgrade/downgrade options
+  - Integration with Stripe customer portal
+  - Real-time subscription status monitoring
+- **Enhanced Media Player**: Improved audio/video display across all widgets
+  - Added artwork/thumbnail support for audio files
+  - Consistent media display in LatestNewsWidget and LatestPostsWidget
+  - Automatic media type detection and fallback handling
+  - Dark mode compatibility and responsive design
+- **Engagement & Badges System**: Comprehensive user engagement tracking
+  - Customizable badge creation with Material UI icons and colors
+  - Automatic badge awarding based on activity metrics
+  - Manual badge awarding by admins with bulk assignment
+  - User engagement statistics (posts, events, messages, etc.)
+  - Badge display on profiles and member cards
+  - Default badge set for new networks (Early Adopter, Active Contributor, etc.)
+  - Top contributors leaderboard with activity breakdown
 
 ## Commands
 
@@ -250,12 +280,13 @@ Supabase integration is set up in `src/supabaseclient.jsx`, which initializes th
 
 API functions are organized in the `src/api/` directory:
 - `auth.jsx`: Authentication-related functions
-- `networks.jsx`: Network management (users, events, news, moderation)
+- `networks.jsx`: Network management (users, events, news, moderation, storage tracking)
 - `directMessages.js`: Direct messaging system
 - `moodboards.jsx`: Moodboard functionality
 - `polls.js`: Polling system with voting and statistics
 - `invitations.js`: Enhanced invitation system with links and codes
 - `superAdmin.js`: Super admin dashboard and system management
+- `badges.js`: Engagement badges system (create, award, track user stats)
 
 #### Services Layer
 
