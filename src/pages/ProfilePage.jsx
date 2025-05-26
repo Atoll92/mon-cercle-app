@@ -6,6 +6,7 @@ import { supabase } from '../supabaseclient';
 import MoodboardGallery from '../components/moodboardGallery';
 import EventParticipation from '../components/EventParticipation';
 import MediaPlayer from '../components/MediaPlayer';
+import UserBadges from '../components/UserBadges';
 import {
   Button,
   Dialog,
@@ -412,6 +413,16 @@ function ProfilePage() {
                       />
                     )}
                   </Stack>
+                  
+                  {/* User Badges */}
+                  <Box sx={{ mb: 2 }}>
+                    <UserBadges 
+                      userId={userId} 
+                      displayMode="chips"
+                      maxDisplay={3}
+                      showTotal={true}
+                    />
+                  </Box>
                   
                   <Paper
                     elevation={0}

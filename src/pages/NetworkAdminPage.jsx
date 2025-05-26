@@ -36,6 +36,7 @@ import ModerationTab from '../components/admin/ModerationTab';
 import PollsTab from '../components/admin/PollsTab';
 import MonetizationTab from '../components/admin/MonetizationTab';
 import BillingTab from '../components/admin/BillingTab';
+import BadgesTab from '../components/admin/BadgesTab';
 import AdminLayout from '../components/admin/AdminLayout';
 import AdminBreadcrumbs from '../components/admin/AdminBreadcrumbs';
 
@@ -264,6 +265,7 @@ function NetworkAdminPage() {
             {activeTab === 6 && "Moderation Tools"}
             {activeTab === 7 && "Monetization"}
             {activeTab === 8 && "Billing & Plan"}
+            {activeTab === 9 && "Badges & Engagement"}
           </Typography>
         </Box>
 
@@ -362,6 +364,15 @@ function NetworkAdminPage() {
         {activeTab === 8 && (
           /* Billing & Plan Component */
           <BillingTab
+            darkMode={darkMode} // Pass dark mode to component
+          />
+        )}
+        
+        {activeTab === 9 && (
+          /* Badges & Engagement Component */
+          <BadgesTab
+            networkId={network.id}
+            members={members}
             darkMode={darkMode} // Pass dark mode to component
           />
         )}

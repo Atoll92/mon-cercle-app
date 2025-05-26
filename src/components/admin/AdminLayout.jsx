@@ -33,7 +33,8 @@ import {
   Poll as PollIcon,
   Link as LinkIcon,
   MonetizationOn as MonetizationIcon,
-  CreditCard as CreditCardIcon
+  CreditCard as CreditCardIcon,
+  EmojiEvents as BadgeIcon
 } from '@mui/icons-material';
 
 // Drawer width for desktop view
@@ -110,6 +111,11 @@ const AdminLayout = ({
       name: 'Billing & Plan', 
       icon: <CreditCardIcon />, 
       index: 8 
+    },
+    { 
+      name: 'Badges & Engagement', 
+      icon: <BadgeIcon />, 
+      index: 9 
     }
   ];
 

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
+import UserBadges from './UserBadges';
 import {
   Box,
   Button,
@@ -796,6 +797,18 @@ const MembersTab = ({
                         </Tooltip>
                       )}
                     </Box>
+                    
+                    {/* User Badges */}
+                    {member.badge_count > 0 && (
+                      <Box sx={{ mb: 1.5, width: '100%', display: 'flex', justifyContent: 'center' }}>
+                        <UserBadges 
+                          userId={member.id} 
+                          displayMode="icons"
+                          maxDisplay={2}
+                          showTotal={true}
+                        />
+                      </Box>
+                    )}
                     
                     {/* Social Media Links */}
                     <Box sx={{ 
