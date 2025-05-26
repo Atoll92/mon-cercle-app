@@ -57,6 +57,7 @@ import {
   PersonAdd as PersonAddIcon,
   WorkspacePremium as PremiumIcon,
   Verified as VerifiedIcon,
+  Groups as GroupsIcon,
   Business as BusinessIcon,
   School as SchoolIcon,
   SupervisorAccount as SuperAdminIcon
@@ -66,13 +67,20 @@ import { fetchNetworkMembers } from '../api/networks';
 // Subscription Badge Component
 const SubscriptionBadge = ({ plan, status }) => {
   // Only show badge for active subscriptions
-  if (status !== 'active' || plan === 'community' || !plan) {
+  if (status !== 'active' || !plan) {
     return null;
   }
   
   // Helper function to determine icon and color based on plan
   const getPlanDetails = (plan) => {
     switch (plan) {
+      case 'community':
+        return {
+          label: 'Community Plan',
+          icon: <GroupsIcon fontSize="small" />,
+          color: 'primary',
+          tooltip: 'Community Plan: Up to 100 members & 10GB storage'
+        };
       case 'organization':
         return {
           label: 'Organization Plan',

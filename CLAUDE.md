@@ -181,6 +181,8 @@ mon-cercle-app/
 - Added comprehensive mention system in Chat component
 - Added message deletion functionality
 - Integrated Vercel Analytics
+- Created Terms of Service page (CGU) compliant with French/EU law
+- Integrated Stripe Community plan (€17/month) with price ID: price_1RSy002KqNIKpvjTG7YyuZZ6
 
 ## Commands
 
