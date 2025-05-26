@@ -720,6 +720,9 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                               type={mediaType === 'video' ? 'video' : 'audio'}
                               title={item.media_metadata?.fileName || item.title}
                               darkMode={darkMode}
+                              autoplay={mediaType === 'video'}
+                              muted={mediaType === 'video'}
+                              hideControlsUntilInteraction={mediaType === 'video'}
                             />
                           );
                         }

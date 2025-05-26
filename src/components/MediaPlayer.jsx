@@ -25,6 +25,8 @@ function MediaPlayer({
   title,
   thumbnail,
   autoplay = false,
+  muted = false,
+  hideControlsUntilInteraction = false,
   compact = false,
   darkMode = false
 }) {
@@ -38,10 +40,18 @@ function MediaPlayer({
   const [isLoading, setIsLoading] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [error, setError] = useState(null);
+  const [showControls, setShowControls] = useState(!hideControlsUntilInteraction);
+  const [hasInteracted, setHasInteracted] = useState(false);
 
   useEffect(() => {
     const media = mediaRef.current;
     if (!media) return;
+
+    // Set muted state if specified
+    if (muted) {
+      media.muted = true;
+      setIsMuted(true);
+    }
 
     const handleLoadedMetadata = () => {
       setDuration(media.duration);
@@ -84,14 +94,25 @@ function MediaPlayer({
       media.removeEventListener('ended', handleEnded);
       media.removeEventListener('error', handleError);
     };
-  }, [autoplay]);
+  }, [autoplay, muted]);
 
   const togglePlayPause = () => {
     const media = mediaRef.current;
+    if (!hasInteracted && hideControlsUntilInteraction) {
+      setHasInteracted(true);
+      setShowControls(true);
+    }
     if (isPlaying) {
       media.pause();
     } else {
       media.play();
+    }
+  };
+
+  const handleVideoClick = () => {
+    if (!hasInteracted && hideControlsUntilInteraction) {
+      setHasInteracted(true);
+      setShowControls(true);
     }
   };
 
@@ -274,24 +295,28 @@ function MediaPlayer({
         style={{
           width: '100%',
           height: 'auto',
-          display: 'block'
+          display: 'block',
+          cursor: hideControlsUntilInteraction && !hasInteracted ? 'pointer' : 'default'
         }}
         poster={thumbnail}
         preload="metadata"
+        muted={muted}
+        onClick={handleVideoClick}
       />
 
       {/* Video controls overlay */}
-      <Box
-        sx={{
-          position: 'absolute',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          background: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%)',
-          p: 2,
-          color: 'white'
-        }}
-      >
+      {showControls && (
+        <Box
+          sx={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            background: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%)',
+            p: 2,
+            color: 'white'
+          }}
+        >
         <Slider
           value={currentTime}
           max={duration}
@@ -362,9 +387,10 @@ function MediaPlayer({
           </IconButton>
         </Box>
       </Box>
+      )}
 
-      {/* Center play button overlay when paused */}
-      {!isPlaying && !isLoading && (
+      {/* Center play button overlay when paused - only show after interaction */}
+      {!isPlaying && !isLoading && hasInteracted && (
         <Box
           sx={{
             position: 'absolute',
