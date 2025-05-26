@@ -21,7 +21,8 @@ import {
   FormControlLabel,
   Popover,
   MenuItem,
-  Chip
+  Chip,
+  Menu
 } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import PersonIcon from '@mui/icons-material/Person';
@@ -31,6 +32,8 @@ import AttachFileIcon from '@mui/icons-material/AttachFile';
 import PlayCircleIcon from '@mui/icons-material/PlayCircle';
 import AudioFileIcon from '@mui/icons-material/AudioFile';
 import CancelIcon from '@mui/icons-material/Cancel';
+import DeleteIcon from '@mui/icons-material/Delete';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
 import backgroundImage from '../assets/8-bit-artwork-sky-landscape-wallpaper-preview.jpg';
 import LinkPreview from './LinkPreview'; // Import the LinkPreview component
 import MediaUpload from './MediaUpload';
@@ -63,6 +66,10 @@ const Chat = ({ networkId, isFullscreen = false }) => {
   const [networkMembers, setNetworkMembers] = useState([]);
   const [cursorPosition, setCursorPosition] = useState(0);
   const textFieldRef = useRef(null);
+  
+  // State for message menu
+  const [messageMenuAnchor, setMessageMenuAnchor] = useState(null);
+  const [selectedMessageId, setSelectedMessageId] = useState(null);
 
   // Auto-scroll to the bottom when messages change
   useEffect(() => {
@@ -402,6 +409,44 @@ const Chat = ({ networkId, isFullscreen = false }) => {
       setError('Failed to upload media');
     } finally {
       setUploadingMedia(false);
+    }
+  };
+  
+  // Handle message menu
+  const handleMessageMenuOpen = (event, messageId) => {
+    event.stopPropagation();
+    setMessageMenuAnchor(event.currentTarget);
+    setSelectedMessageId(messageId);
+  };
+  
+  const handleMessageMenuClose = () => {
+    setMessageMenuAnchor(null);
+    setSelectedMessageId(null);
+  };
+  
+  // Handle message deletion
+  const handleDeleteMessage = async () => {
+    if (!selectedMessageId) return;
+    
+    try {
+      const { error } = await supabase
+        .from('messages')
+        .delete()
+        .eq('id', selectedMessageId)
+        .eq('user_id', user.id); // Ensure users can only delete their own messages
+        
+      if (error) throw error;
+      
+      // Remove the message from local state
+      setMessages(prev => prev.filter(msg => msg.id !== selectedMessageId));
+      
+      // Close the menu
+      handleMessageMenuClose();
+      
+      console.log('Message deleted successfully');
+    } catch (error) {
+      console.error('Error deleting message:', error);
+      setError('Failed to delete message');
     }
   };
 
@@ -1249,6 +1294,10 @@ const renderMessageContent = (message) => {
                     ? 'none' 
                     : `1px solid ${message.user_id === user.id ? '#bbdefb' : '#e0e0e0'}`,
                   animation: 'fadeInUp 0.3s ease-out',
+                  position: 'relative',
+                  '&:hover .message-menu-button': {
+                    opacity: 1
+                  },
                   '@keyframes fadeInUp': {
                     from: {
                       opacity: 0,
@@ -1355,6 +1404,32 @@ const renderMessageContent = (message) => {
                     width: containsLink ? '100%' : 'auto'
                   }}
                 />
+                
+                {/* Menu button for message options */}
+                {message.user_id === user.id && !message.pending && (
+                  <IconButton
+                    className="message-menu-button"
+                    size="small"
+                    onClick={(e) => handleMessageMenuOpen(e, message.id)}
+                    sx={{
+                      position: 'absolute',
+                      top: 4,
+                      right: 4,
+                      opacity: 0,
+                      transition: 'opacity 0.2s',
+                      backgroundColor: darkMode 
+                        ? 'rgba(255, 255, 255, 0.1)' 
+                        : 'rgba(0, 0, 0, 0.05)',
+                      '&:hover': {
+                        backgroundColor: darkMode 
+                          ? 'rgba(255, 255, 255, 0.2)' 
+                          : 'rgba(0, 0, 0, 0.1)',
+                      }
+                    }}
+                  >
+                    <MoreVertIcon sx={{ fontSize: 16 }} />
+                  </IconButton>
+                )}
               </ListItem>
             );
           })
@@ -1547,6 +1622,26 @@ const renderMessageContent = (message) => {
           )}
         </List>
       </Popover>
+      
+      {/* Message options menu */}
+      <Menu
+        anchorEl={messageMenuAnchor}
+        open={Boolean(messageMenuAnchor)}
+        onClose={handleMessageMenuClose}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+      >
+        <MenuItem onClick={handleDeleteMessage}>
+          <DeleteIcon fontSize="small" sx={{ mr: 1 }} />
+          Delete Message
+        </MenuItem>
+      </Menu>
     </Paper>
   );
 };

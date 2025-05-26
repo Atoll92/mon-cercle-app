@@ -11,6 +11,7 @@ import ThemeProvider from './components/ThemeProvider';
 import ProtectedRoute from './components/ProtectedRoute';
 import { DirectMessagesProvider } from './context/directMessagesContext';
 import ErrorBoundary from './components/ErrorBoundary';
+import { Analytics } from '@vercel/analytics/react';
 
 // Eagerly loaded pages (small, frequently accessed)
 import LoginPage from './pages/LoginPage';
@@ -248,6 +249,7 @@ function App() {
           </Suspense>
         </Box>
             <Footer />
+            <Analytics />
           </div>
         </DirectMessagesProvider>
       </ThemeProvider>
