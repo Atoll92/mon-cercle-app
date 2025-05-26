@@ -205,6 +205,7 @@ function getPlanFromPriceId(amount: number | null, priceId: string | undefined):
   
   // Map price IDs to plan names
   const priceToPlans: Record<string, string> = {
+    'price_1RSy002KqNIKpvjTG7YyuZZ6': 'community', // Community plan €17/month
     'price_1RK6Vk2KqNIKpvjTKgFNpV0y': 'organization',
     'price_1RK6qr2KqNIKpvjTZh47uSJO': 'organization', // Added based on your PricingPage.jsx
     'price_nonprofit': 'nonprofit',
@@ -220,11 +221,12 @@ function getPlanFromPriceId(amount: number | null, priceId: string | undefined):
     return priceToPlans[priceId]
   }
   
-  // Fallback to matching by amount
-  if (amount === 4900) return 'nonprofit'
-  if (amount === 9700) return 'organization'
-  if (amount === 24700) return 'network'
-  if (amount === 49700) return 'business'
+  // Fallback to matching by amount (in cents)
+  if (amount === 1700) return 'community'  // €17
+  if (amount === 4900) return 'nonprofit'  // €49
+  if (amount === 9700) return 'organization'  // €97
+  if (amount === 24700) return 'network'  // €247
+  if (amount === 49700) return 'business'  // €497
   
   console.log(`No matching plan found, defaulting to community. Amount: ${amount}, PriceID: ${priceId}`)
   return 'community'

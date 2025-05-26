@@ -83,13 +83,13 @@ import {
 const planDetails = {
   community: {
     name: 'Community',
-    price: 0,
-    description: 'Free tier with basic features',
+    price: 17,
+    description: 'Perfect for small communities',
     icon: <GroupsIcon color="primary" />,
-    color: 'default',
+    color: 'primary',
     members: '100',
     storage: '10GB',
-    admins: '1'
+    admins: '2'
   },
   nonprofit: {
     name: 'Non-Profit',
@@ -724,8 +724,8 @@ const BillingPage = () => {
                 </>
               )}
               
-              {/* Actions for free-tier subscriptions */}
-              {(!networkDetails?.subscription_status || currentPlan.price === 0) && (
+              {/* Actions for subscriptions */}
+              {(!networkDetails?.subscription_status) && (
                 <Button 
                   variant="contained" 
                   color="primary"
@@ -834,7 +834,7 @@ const BillingPage = () => {
                     No payment history found.
                   </Typography>
                   
-                  {(!networkDetails?.subscription_status || currentPlan.price === 0) && (
+                  {(!networkDetails?.subscription_status) && (
                     <Button 
                       variant="contained" 
                       color="primary"
@@ -868,8 +868,7 @@ const BillingPage = () => {
       
       {/* Upgrade Options Section */}
       {(networkDetails?.subscription_status === 'canceled' || 
-        !networkDetails?.subscription_status || 
-        currentPlan.price === 0) && upgradePlans.length > 0 && (
+        !networkDetails?.subscription_status) && upgradePlans.length > 0 && (
         <Card 
           sx={{ 
             borderRadius: 2, 
@@ -1083,7 +1082,7 @@ const BillingPage = () => {
             <AccordionDetails>
               <Typography>
                 If you cancel your subscription, you'll still have access to all premium features until the end of your current billing period.
-                After that, your plan will be downgraded to the Community (free) plan. You can upgrade again at any time.
+                After that, your plan will be downgraded to the Family plan. You can upgrade again at any time.
               </Typography>
             </AccordionDetails>
           </Accordion>
@@ -1128,7 +1127,7 @@ const BillingPage = () => {
         </DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Are you sure you want to cancel your subscription? You'll still have access to premium features until the end of your current billing period on <strong>{networkDetails?.subscription_end_date && new Date(networkDetails.subscription_end_date).toLocaleDateString()}</strong>. After that, your plan will be downgraded to the Community (free) plan.
+            Are you sure you want to cancel your subscription? You'll still have access to premium features until the end of your current billing period on <strong>{networkDetails?.subscription_end_date && new Date(networkDetails.subscription_end_date).toLocaleDateString()}</strong>. After that, your plan will be downgraded to the Family plan.
           </DialogContentText>
         </DialogContent>
         <DialogActions>

@@ -102,7 +102,7 @@ const handlePlanSelect = async (plan) => {
   
   // Define price mappings for all paid plans
   const priceMappings = {
-    17: PRICE_IDS.family, // Family plan €17
+    17: PRICE_IDS.community, // Community plan €17 (was family)
     49: PRICE_IDS.nonprofit, // Non-profit plan €49
     97: 'price_1RK6qr2KqNIKpvjTZh47uSJO', // Organization plan €97 (using existing ID)
     247: PRICE_IDS.network, // Network plan €247
@@ -159,7 +159,7 @@ const handlePlanSelect = async (plan) => {
 
   const plans = [
     {
-      name: 'Community',
+      name: 'Family',
       price: 0,
       description: 'For personal networks and small groups',
       features: [
@@ -178,14 +178,12 @@ const handlePlanSelect = async (plan) => {
       buttonVariant: 'outlined',
       buttonText: 'Get Started Free',
       icon: <Groups color="primary" sx={{ fontSize: 40 }} />,
-      addOns: [
-        { name: 'White Label', price: 99 }
-      ]
+      addOns: []
     },
     {
-      name: 'Family',
+      name: 'Community',
       price: 17,
-      description: 'For families and close-knit groups',
+      description: 'For small communities and groups',
       features: [
         { name: 'Members', value: '100', icon: <GroupsIcon color="primary" /> },
         { name: 'Storage', value: '10GB', icon: <StorageIcon color="primary" /> },
@@ -202,7 +200,7 @@ const handlePlanSelect = async (plan) => {
       buttonVariant: 'outlined',
       buttonText: 'Start 14-Day Trial',
       icon: <Groups color="primary" sx={{ fontSize: 40 }} />,
-      badge: 'NEW',
+      badge: 'POPULAR',
       addOns: [
         { name: 'White Label', price: 99 }
       ]
