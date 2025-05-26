@@ -48,7 +48,7 @@ const NewsTab = ({ networkId, userId, newsPosts, setNewsPosts, members, darkMode
 
   // Handle media upload
   const handleMediaUpload = (uploadResult) => {
-    console.log("Media upload result:", uploadResult);
+    console.log("[Admin NewsTab] Media upload result:", uploadResult);
     setMediaUrl(uploadResult.url);
     setMediaType(uploadResult.type);
     // Include all metadata from the upload result, including thumbnail for audio
@@ -257,11 +257,12 @@ const NewsTab = ({ networkId, userId, newsPosts, setNewsPosts, members, darkMode
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
             <MediaUpload
               onUpload={handleMediaUpload}
-              allowedTypes={['IMAGE', 'VIDEO', 'AUDIO']}
+              allowedTypes={['IMAGE', 'VIDEO', 'AUDIO', 'PDF']}
               bucket="networks"
               path={`news/${networkId}`}
               maxFiles={1}
               showPreview={false}
+              autoUpload={true}
             />
             
             {/* Media upload feedback */}

@@ -301,29 +301,70 @@ function NetworkLandingPage() {
     fetchPostItems();
   }, [networkMembers]);
 
+  // Store initial order of items to prevent reordering after load
+  const [initialItemOrder, setInitialItemOrder] = useState(null);
+  
   // Prepare social wall items
   const socialWallItems = React.useMemo(() => {
     // Create arrays for news and post items
     const newsItems = networkNews ? networkNews.map(item => ({
       ...item,
       itemType: 'news',
-      createdAt: item.created_at
+      createdAt: item.created_at,
+      stableId: `news-${item.id}` // Add stable ID
     })) : [];
     
     // Log the post items before combining
     console.log('Using post items in socialWallItems:', postItems);
     
-    // Combine news and post items
-    const combinedFeed = [...newsItems, ...postItems];
+    // Add stable IDs to post items
+    const postItemsWithIds = postItems.map(item => ({
+      ...item,
+      stableId: `post-${item.id}` // Add stable ID
+    }));
     
-    // Sort by creation date
-    combinedFeed.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    // Combine news and post items
+    let combinedFeed = [...newsItems, ...postItemsWithIds];
+    
+    // If we have an initial order, use it to maintain stable ordering
+    if (initialItemOrder && initialItemOrder.length > 0) {
+      // Create a map for quick lookup
+      const itemMap = new Map();
+      combinedFeed.forEach(item => {
+        itemMap.set(item.stableId, item);
+      });
+      
+      // First, add items in their original order
+      const orderedItems = [];
+      initialItemOrder.forEach(stableId => {
+        const item = itemMap.get(stableId);
+        if (item) {
+          orderedItems.push(item);
+          itemMap.delete(stableId); // Remove from map to track what's left
+        }
+      });
+      
+      // Then add any new items at the beginning (they'll be the newest)
+      const newItems = Array.from(itemMap.values());
+      newItems.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      
+      combinedFeed = [...newItems, ...orderedItems];
+    } else {
+      // Initial sort by creation date
+      combinedFeed.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      
+      // Store the initial order
+      if (combinedFeed.length > 0) {
+        const order = combinedFeed.map(item => item.stableId);
+        setInitialItemOrder(order);
+      }
+    }
     
     // Log the final combined feed
     console.log('Final social wall items:', combinedFeed);
     
     return combinedFeed;
-  }, [networkNews, postItems]);
+  }, [networkNews, postItems, initialItemOrder]);
 
   if (loading) {
     return (
@@ -658,6 +699,7 @@ function NetworkLandingPage() {
           socialWallItems={socialWallItems}
           networkMembers={networkMembers}
           darkMode={darkMode} // Pass dark mode to social wall tab
+          isAdmin={isUserAdmin}
         />
       )}
 

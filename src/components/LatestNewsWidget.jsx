@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import MediaPlayer from './MediaPlayer';
+import ImageViewerModal from './ImageViewerModal';
 import {
   Card,
   CardContent,
@@ -25,6 +26,8 @@ const LatestNewsWidget = ({ networkId }) => {
   const [latestNews, setLatestNews] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [imageViewerOpen, setImageViewerOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState({ url: '', title: '' });
 
   useEffect(() => {
     const fetchLatestNews = async () => {
@@ -76,6 +79,11 @@ const LatestNewsWidget = ({ networkId }) => {
 
     fetchLatestNews();
   }, [networkId]);
+
+  const handleImageClick = (imageUrl, title) => {
+    setSelectedImage({ url: imageUrl, title });
+    setImageViewerOpen(true);
+  };
 
   const formatTimeAgo = (dateString) => {
     const now = new Date();
@@ -299,25 +307,32 @@ const LatestNewsWidget = ({ networkId }) => {
                 mediaType = 'video';
               } else if (url.includes('.mp3') || url.includes('.wav') || url.includes('.ogg')) {
                 mediaType = 'audio';
+              } else if (url.includes('.pdf')) {
+                mediaType = 'pdf';
               } else {
                 mediaType = 'image';
               }
             }
             
             if (mediaUrl) {
-              if (mediaType && ['video', 'audio'].includes(mediaType)) {
+              if (mediaType && ['video', 'audio', 'pdf'].includes(mediaType)) {
                 return (
                   <Box sx={{ 
                     mb: 1.5, 
-                    aspectRatio: mediaType === 'video' ? '16/9' : 'auto',
-                    minHeight: mediaType === 'audio' ? 60 : 120,
-                    maxHeight: 160,
-                    width: '100%'
+                    aspectRatio: mediaType === 'video' ? '16/9' : mediaType === 'pdf' ? '3/4' : 'auto',
+                    minHeight: mediaType === 'audio' ? 60 : mediaType === 'pdf' ? 250 : 120,
+                    maxHeight: mediaType === 'pdf' ? 250 : 160,
+                    width: '100%',
+                    overflow: 'hidden'
                   }}>
                     <MediaPlayer
                       src={mediaUrl}
                       type={mediaType}
                       title={latestNews.title}
+                      fileName={latestNews.media_metadata?.fileName}
+                      fileSize={latestNews.media_metadata?.fileSize}
+                      numPages={latestNews.media_metadata?.numPages}
+                      author={latestNews.media_metadata?.author}
                       thumbnail={latestNews.media_metadata?.thumbnail || latestNews.media_metadata?.albumArt || latestNews.image_url}
                       darkMode={true}
                       compact={false}
@@ -348,10 +363,16 @@ const LatestNewsWidget = ({ networkId }) => {
                     height="200"
                     image={mediaUrl}
                     alt={latestNews.image_caption || latestNews.title}
+                    onClick={() => handleImageClick(mediaUrl, latestNews.title)}
                     sx={{ 
                       borderRadius: 1, 
                       mb: 2,
-                      objectFit: 'cover'
+                      objectFit: 'cover',
+                      cursor: 'pointer',
+                      transition: 'opacity 0.2s ease',
+                      '&:hover': {
+                        opacity: 0.9
+                      }
                     }}
                   />
                 );
@@ -393,6 +414,13 @@ const LatestNewsWidget = ({ networkId }) => {
           </Button>
         </Box>
       </CardContent>
+
+      <ImageViewerModal
+        open={imageViewerOpen}
+        onClose={() => setImageViewerOpen(false)}
+        imageUrl={selectedImage.url}
+        title={selectedImage.title}
+      />
     </Card>
   );
 };

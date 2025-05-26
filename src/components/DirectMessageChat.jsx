@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback, Fragment } from 'react';
+import { useState, useEffect, useRef, Fragment } from 'react';
 import { useAuth } from '../context/authcontext';
 import { useDirectMessages } from '../context/directMessagesContext';
 import { getConversationMessages, sendDirectMessage, markMessagesAsRead } from '../api/directMessages';
@@ -10,7 +10,6 @@ import {
   TextField,
   IconButton,
   Paper,
-  Divider,
   CircularProgress,
   Badge,
   Chip,
@@ -20,9 +19,10 @@ import {
   Send as SendIcon,
   ArrowBack as ArrowBackIcon,
   MoreVert as MoreVertIcon,
-  CircleOutlined as StatusOfflineIcon,
   Circle as StatusOnlineIcon
 } from '@mui/icons-material';
+import MediaPlayer from './MediaPlayer';
+import ImageViewerModal from './ImageViewerModal';
 
 function DirectMessageChat({ conversationId, partner, onBack }) {
   const { user } = useAuth();
@@ -34,9 +34,10 @@ function DirectMessageChat({ conversationId, partner, onBack }) {
   const [error, setError] = useState(null);
   const [partnerStatus, setPartnerStatus] = useState('offline');
   const [sending, setSending] = useState(false);
+  const [imageViewerOpen, setImageViewerOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState({ url: '', title: '' });
   const messagesEndRef = useRef(null);
   const messageContainerRef = useRef(null);
-  const lastMessageDateRef = useRef(null);
   const channelRef = useRef(null);
   const fetchingRef = useRef(false);
   const lastFetchedConversationId = useRef(null);
@@ -238,7 +239,7 @@ if (refreshConversations) {
     setMessages(prev => [...prev, pendingMessage]);
     
     try {
-      const { message, error } = await sendDirectMessage(
+      const { error } = await sendDirectMessage(
         conversationId,
         user.id,
         messageContent
@@ -297,6 +298,12 @@ if (refreshConversations) {
     const currentMessageDate = new Date(messageDate).toDateString();
     
     return prevMessageDate !== currentMessageDate;
+  };
+  
+  // Handle image click
+  const handleImageClick = (imageUrl, imageTitle = 'Image') => {
+    setSelectedImage({ url: imageUrl, title: imageTitle });
+    setImageViewerOpen(true);
   };
   
   if (!conversationId || !partner) {
@@ -490,16 +497,67 @@ if (refreshConversations) {
                         mr: isUser ? 0.5 : 0
                       }}
                     >
-                      <Typography 
-                        variant="body2"
-                        sx={{ 
-                          wordBreak: 'break-word',
-                          whiteSpace: 'pre-wrap',
-                          lineHeight: 1.5
-                        }}
-                      >
-                        {message.content}
-                      </Typography>
+                      {/* Message content */}
+                      {message.content && (
+                        <Typography 
+                          variant="body2"
+                          sx={{ 
+                            wordBreak: 'break-word',
+                            whiteSpace: 'pre-wrap',
+                            lineHeight: 1.5
+                          }}
+                        >
+                          {message.content}
+                        </Typography>
+                      )}
+                      
+                      {/* Media attachment */}
+                      {message.media_url && (
+                        <Box sx={{ mt: message.content ? 1 : 0 }}>
+                          {message.media_type === 'image' ? (
+                            <Box
+                              onClick={() => handleImageClick(message.media_url, message.media_metadata?.fileName || 'Image')}
+                              sx={{
+                                cursor: 'pointer',
+                                borderRadius: 1,
+                                overflow: 'hidden',
+                                maxWidth: '300px',
+                                '&:hover': {
+                                  opacity: 0.9
+                                }
+                              }}
+                            >
+                              <img
+                                src={message.media_url}
+                                alt={message.media_metadata?.fileName || 'Shared image'}
+                                style={{
+                                  width: '100%',
+                                  height: 'auto',
+                                  display: 'block'
+                                }}
+                                onError={(e) => {
+                                  e.target.onerror = null;
+                                  e.target.src = '/placeholder-image.png';
+                                }}
+                              />
+                            </Box>
+                          ) : (
+                            <MediaPlayer
+                              src={message.media_url}
+                              type={message.media_type}
+                              title={message.media_metadata?.fileName || `Shared ${message.media_type}`}
+                              thumbnail={message.media_metadata?.thumbnail}
+                              compact
+                              darkMode
+                              // PDF specific props
+                              fileName={message.media_metadata?.fileName}
+                              fileSize={message.media_metadata?.fileSize}
+                              numPages={message.media_metadata?.numPages}
+                              author={message.media_metadata?.author}
+                            />
+                          )}
+                        </Box>
+                      )}
                       <Box sx={{ 
                         display: 'flex', 
                         justifyContent: 'flex-end',
@@ -559,7 +617,7 @@ if (refreshConversations) {
             onChange={(e) => setNewMessage(e.target.value)}
             autoComplete="off"
             disabled={sending}
-            onKeyPress={(e) => {
+            onKeyDown={(e) => {
               if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
                 handleSendMessage(e);
@@ -584,6 +642,14 @@ if (refreshConversations) {
           </IconButton>
         </Box>
       </Box>
+      
+      {/* Image Viewer Modal */}
+      <ImageViewerModal
+        open={imageViewerOpen}
+        onClose={() => setImageViewerOpen(false)}
+        imageUrl={selectedImage.url}
+        title={selectedImage.title}
+      />
     </Box>
   );
 }

@@ -39,11 +39,13 @@ import {
 } from '@mui/icons-material';
 import MediaPlayer from './MediaPlayer';
 import LazyImage from './LazyImage';
+import ImageViewerModal from './ImageViewerModal';
+import CommentSection from './CommentSection';
 
 // Number of items to display initially
 const ITEMS_PER_FETCH = 6;
 
-const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = false }) => {
+const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = false, isAdmin = false }) => {
   const muiTheme = useTheme();
   const isMobile = useMediaQuery(muiTheme.breakpoints.down('sm'));
   
@@ -85,6 +87,10 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
   // State for audio playback
   const [playingAudioId, setPlayingAudioId] = useState(null);
   const audioRefs = useRef({});
+  
+  // State for image viewer modal
+  const [imageViewerOpen, setImageViewerOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState({ url: '', title: '' });
   
   // Toggle card expansion with improved scroll handling
   const handleExpandCard = (id) => {
@@ -434,6 +440,12 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
     return 'auto';
   };
   
+  // Handle image click
+  const handleImageClick = (url, title) => {
+    setSelectedImage({ url, title });
+    setImageViewerOpen(true);
+  };
+  
   return (
     <Paper 
       sx={{ 
@@ -535,7 +547,7 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
               const isRefItem = index === displayItems.length - 1 || 
                                (displayItems.length > 10 && index % 10 === 0 && index > displayItems.length - 10);
               
-              const cardId = `${item.itemType}-${item.id}`;
+              const cardId = item.stableId || `${item.itemType}-${item.id}`;
               
               return (
                 <Card 
@@ -676,107 +688,15 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                   
                   {/* Display media based on type - images, PDFs, etc. */}
                   {item.file_type === 'pdf' && item.file_url ? (
-                    // PDF Preview
-                    <Box 
-                      sx={{ 
-                        position: 'relative', 
-                        width: '100%', 
-                        pt: '56.25%', /* 16:9 aspect ratio container */
-                        bgcolor: darkMode ? 'rgba(30, 41, 59, 0.8)' : 'rgba(240, 249, 255, 0.8)',
-                        borderTop: darkMode ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.1)',
-                        borderBottom: darkMode ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.1)',
-                      }}
-                    >
-                      <Box
-                        sx={{
-                          position: 'absolute',
-                          top: 0,
-                          left: 0,
-                          width: '100%',
-                          height: '100%',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          p: 2
-                        }}
-                      >
-                        {/* PDF Icon with Shadow */}
-                        <Box 
-                          sx={{ 
-                            position: 'relative',
-                            width: 80,
-                            height: 100,
-                            mb: 2,
-                            '&::before': {
-                              content: '""',
-                              position: 'absolute',
-                              top: 0,
-                              left: 0,
-                              right: 0,
-                              bottom: 0,
-                              bgcolor: darkMode ? 'primary.dark' : 'primary.light',
-                              borderRadius: 1,
-                              transform: 'rotate(-2deg)',
-                              zIndex: 0
-                            },
-                            '&::after': {
-                              content: '""',
-                              position: 'absolute',
-                              top: 2,
-                              left: 2,
-                              right: -2,
-                              bottom: -2,
-                              bgcolor: 'white',
-                              borderRadius: 1,
-                              boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
-                              zIndex: 1
-                            }
-                          }}
-                        >
-                          <Box
-                            sx={{
-                              position: 'absolute',
-                              top: 0,
-                              left: 0,
-                              width: '100%',
-                              height: '100%',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              zIndex: 2
-                            }}
-                          >
-                            <PdfIcon color="primary" sx={{ fontSize: 48 }} />
-                          </Box>
-                        </Box>
-                        
-                        {/* PDF File Name */}
-                        <Typography 
-                          variant="subtitle1" 
-                          fontWeight="medium" 
-                          textAlign="center"
-                          sx={{ color: darkMode ? 'white' : 'text.primary' }}
-                        >
-                          {item.title || "PDF Document"}
-                        </Typography>
-                        
-                        {/* View PDF Button */}
-                        <Button
-                          component="a"
-                          href={item.file_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          variant="outlined"
-                          color="primary"
-                          size="small"
-                          startIcon={<PdfIcon />}
-                          sx={{ mt: 2 }}
-                          onClick={(e) => e.stopPropagation()} // Prevent card expansion
-                        >
-                          View PDF
-                        </Button>
-                      </Box>
+                    // PDF Preview using MediaPlayer
+                    <Box sx={{ bgcolor: darkMode ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.05)', p: 2 }}>
+                      <MediaPlayer
+                        src={item.file_url}
+                        type="pdf"
+                        title={item.title || "PDF Document"}
+                        fileName={item.title || "PDF Document"}
+                        darkMode={darkMode}
+                      />
                     </Box>
                   ) : item.media_url ? (
                     // New media format (video/audio/image) - with fallback for missing media_type
@@ -790,6 +710,8 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                             mediaType = 'video';
                           } else if (url.includes('.mp3') || url.includes('.wav') || url.includes('.m4a') || url.includes('.aac')) {
                             mediaType = 'audio';
+                          } else if (url.includes('.pdf')) {
+                            mediaType = 'pdf';
                           } else if (url.includes('.jpg') || url.includes('.jpeg') || url.includes('.png') || url.includes('.gif') || url.includes('.webp')) {
                             mediaType = 'image';
                           }
@@ -797,7 +719,18 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                         
                         if (mediaType === 'image') {
                           return (
-                            <Box sx={{ position: 'relative', width: '100%', pt: '56.25%' }}>
+                            <Box 
+                              sx={{ 
+                                position: 'relative', 
+                                width: '100%', 
+                                pt: '56.25%',
+                                cursor: 'pointer',
+                                '&:hover': {
+                                  opacity: 0.9
+                                }
+                              }}
+                              onClick={() => handleImageClick(item.media_url, item.title)}
+                            >
                               <LazyImage
                                 src={item.media_url}
                                 alt={item.title}
@@ -906,6 +839,21 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                               )}
                             </Box>
                           );
+                        } else if (mediaType === 'pdf') {
+                          // PDF viewer
+                          return (
+                            <MediaPlayer
+                              src={item.media_url}
+                              type="pdf"
+                              title={item.media_metadata?.fileName || item.title}
+                              fileName={item.media_metadata?.fileName}
+                              fileSize={item.media_metadata?.fileSize}
+                              numPages={item.media_metadata?.numPages}
+                              author={item.media_metadata?.author}
+                              thumbnail={item.media_metadata?.thumbnail}
+                              darkMode={darkMode}
+                            />
+                          );
                         } else {
                           // Video player
                           return (
@@ -925,7 +873,18 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                     </Box>
                   ) : item.image_url && (
                     // Legacy image format
-                    <Box sx={{ position: 'relative', width: '100%', pt: '56.25%' /* 16:9 aspect ratio container */ }}>
+                    <Box 
+                      sx={{ 
+                        position: 'relative', 
+                        width: '100%', 
+                        pt: '56.25%', /* 16:9 aspect ratio container */
+                        cursor: 'pointer',
+                        '&:hover': {
+                          opacity: 0.9
+                        }
+                      }}
+                      onClick={() => handleImageClick(item.image_url, item.title)}
+                    >
                       <LazyImage
                         src={item.image_url}
                         alt={item.title}
@@ -1142,6 +1101,14 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                         )}
                       </Box>
                     </Box>
+                    
+                    {/* Comments Section */}
+                    <CommentSection
+                      itemType={item.itemType}
+                      itemId={item.id}
+                      darkMode={darkMode}
+                      isAdmin={isAdmin}
+                    />
                   </CardContent>
                 </Card>
               );
@@ -1173,6 +1140,14 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
           )}
         </>
       )}
+      
+      {/* Image Viewer Modal */}
+      <ImageViewerModal
+        open={imageViewerOpen}
+        onClose={() => setImageViewerOpen(false)}
+        imageUrl={selectedImage.url}
+        title={selectedImage.title}
+      />
     </Paper>
   );
 };

@@ -18,17 +18,23 @@ import {
   AudioFile as AudioIcon
 } from '@mui/icons-material';
 import { formatDuration } from '../utils/mediaUpload';
+import PDFPreviewEnhanced from './PDFPreviewEnhanced';
 
 function MediaPlayer({ 
   src, 
-  type = 'audio', // 'audio' or 'video'
+  type = 'audio', // 'audio', 'video', or 'pdf'
   title,
   thumbnail,
   autoplay = false,
   muted = false,
   hideControlsUntilInteraction = false,
   compact = false,
-  darkMode = false
+  darkMode = false,
+  // PDF specific props
+  fileName,
+  fileSize,
+  numPages,
+  author
 }) {
   const mediaRef = useRef(null);
   const containerRef = useRef(null);
@@ -45,6 +51,9 @@ function MediaPlayer({
 
 
   useEffect(() => {
+    // Skip media setup for PDFs
+    if (type === 'pdf') return;
+    
     const media = mediaRef.current;
     if (!media) return;
 
@@ -163,6 +172,20 @@ function MediaPlayer({
       <Box sx={{ p: 2, textAlign: 'center' }}>
         <Typography color="error">{error}</Typography>
       </Box>
+    );
+  }
+
+  // PDF handling
+  if (type === 'pdf') {
+    return (
+      <PDFPreviewEnhanced
+        url={src}
+        fileName={fileName || title}
+        title={title}
+        height={compact ? 200 : 400}
+        showFileName={!compact}
+        thumbnail={thumbnail}
+      />
     );
   }
 

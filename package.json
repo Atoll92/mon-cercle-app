@@ -34,6 +34,7 @@
     "dompurify": "^3.2.6",
     "mapbox-gl": "^3.11.0",
     "music-metadata-browser": "^2.5.11",
+    "pdfjs-dist": "^5.2.133",
     "qrcode": "^1.5.4",
     "react": "^19.0.0",
     "react-big-calendar": "^1.18.0",

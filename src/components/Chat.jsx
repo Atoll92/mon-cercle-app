@@ -34,10 +34,13 @@ import AudioFileIcon from '@mui/icons-material/AudioFile';
 import CancelIcon from '@mui/icons-material/Cancel';
 import DeleteIcon from '@mui/icons-material/Delete';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
+import ReplyIcon from '@mui/icons-material/Reply';
+import CloseIcon from '@mui/icons-material/Close';
 import backgroundImage from '../assets/8-bit-artwork-sky-landscape-wallpaper-preview.jpg';
 import LinkPreview from './LinkPreview'; // Import the LinkPreview component
 import MediaUpload from './MediaUpload';
 import MediaPlayer from './MediaPlayer';
+import ImageViewerModal from './ImageViewerModal';
 import { uploadMediaFile } from '../utils/mediaUpload';
 import { queueMentionNotification } from '../services/emailNotificationService';
 
@@ -58,6 +61,10 @@ const Chat = ({ networkId, isFullscreen = false }) => {
   const [uploadingMedia, setUploadingMedia] = useState(false);
   const [expandedMedia, setExpandedMedia] = useState({});
   
+  // Image viewer modal state
+  const [imageViewerOpen, setImageViewerOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState({ url: '', title: '' });
+  
   // Mention system state
   const [mentionSuggestions, setMentionSuggestions] = useState([]);
   const [showMentionSuggestions, setShowMentionSuggestions] = useState(false);
@@ -70,6 +77,9 @@ const Chat = ({ networkId, isFullscreen = false }) => {
   // State for message menu
   const [messageMenuAnchor, setMessageMenuAnchor] = useState(null);
   const [selectedMessageId, setSelectedMessageId] = useState(null);
+  
+  // State for replies
+  const [replyingTo, setReplyingTo] = useState(null);
 
   // Auto-scroll to the bottom when messages change
   useEffect(() => {
@@ -113,7 +123,11 @@ const Chat = ({ networkId, isFullscreen = false }) => {
             media_url,
             media_type,
             media_metadata,
-            profiles:user_id (id, full_name, profile_picture_url)
+            parent_message_id,
+            reply_to_user_id,
+            reply_to_content,
+            profiles:user_id (id, full_name, profile_picture_url),
+            reply_to_profile:reply_to_user_id (id, full_name)
           `)
           .eq('network_id', networkId)
           .order('created_at', { ascending: true });
@@ -328,6 +342,13 @@ const Chat = ({ networkId, isFullscreen = false }) => {
         full_name: user.user_metadata?.full_name || 'You',
         profile_picture_url: user.user_metadata?.avatar_url
       },
+      parent_message_id: replyingTo?.id || null,
+      reply_to_user_id: replyingTo?.user_id || null,
+      reply_to_content: replyingTo?.content || null,
+      reply_to_profile: replyingTo ? { 
+        id: replyingTo.user_id, 
+        full_name: replyingTo.profiles?.full_name 
+      } : null,
       pending: true
     };
 
@@ -342,6 +363,13 @@ const Chat = ({ networkId, isFullscreen = false }) => {
         user_id: user.id,
         content: pendingMessage.content
       };
+      
+      // Add reply data if present
+      if (replyingTo) {
+        messageData.parent_message_id = replyingTo.id;
+        messageData.reply_to_user_id = replyingTo.user_id;
+        messageData.reply_to_content = replyingTo.content?.substring(0, 100);
+      }
       
       // Add media data if present
       if (mediaData) {
@@ -385,6 +413,8 @@ const Chat = ({ networkId, isFullscreen = false }) => {
       }
       
       // The realtime subscription will handle adding the confirmed message
+      // Clear reply state after successful send
+      setReplyingTo(null);
     } catch (error) {
       console.error('Error sending message:', error);
       // Remove the pending message if it failed
@@ -449,6 +479,25 @@ const Chat = ({ networkId, isFullscreen = false }) => {
       setError('Failed to delete message');
     }
   };
+  
+  // Handle reply to message
+  const handleReplyToMessage = () => {
+    const messageToReply = messages.find(msg => msg.id === selectedMessageId);
+    if (messageToReply) {
+      setReplyingTo(messageToReply);
+      handleMessageMenuClose();
+      // Focus on input field
+      setTimeout(() => {
+        textFieldRef.current?.focus();
+      }, 100);
+    }
+  };
+  
+  // Handle image click
+  const handleImageClick = (imageUrl, title = 'Chat Image') => {
+    setSelectedImage({ url: imageUrl, title });
+    setImageViewerOpen(true);
+  };
 
  // Better URL regex pattern that can match URLs with or without the http/https prefix
 const URL_REGEX = /(https?:\/\/)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/gi;
@@ -465,23 +514,6 @@ const containsUrl = (content) => {
   return hasMatch;
 };
 
-// Fixed extractUrl function that resets the regex state
-const extractUrl = (content) => {
-  if (!content) return null;
-  
-  // Reset the regex before matching
-  URL_REGEX.lastIndex = 0;
-  
-  const matches = content.match(URL_REGEX);
-  const url = matches ? matches[0] : null;
-  
-  // If we found a URL without http/https, add it
-  if (url && !url.startsWith('http')) {
-    return 'https://' + url;
-  }
-  
-  return url;
-};
 
 // Function to render media (images, videos, audio)
 const renderMedia = (mediaUrl, mediaType, metadata, messageId) => {
@@ -501,11 +533,17 @@ const renderMedia = (mediaUrl, mediaType, metadata, messageId) => {
           component="img" 
           src={mediaUrl} 
           alt={metadata?.fileName || 'Image'}
+          onClick={() => handleImageClick(mediaUrl, metadata?.fileName || 'Chat Image')}
           sx={{ 
             maxWidth: '100%', 
             maxHeight: 300,
             borderRadius: 1,
-            mt: 1
+            mt: 1,
+            cursor: 'pointer',
+            transition: 'opacity 0.2s',
+            '&:hover': {
+              opacity: 0.9
+            }
           }}
         />
       );
@@ -698,12 +736,18 @@ const renderMedia = (mediaUrl, mediaType, metadata, messageId) => {
                   <Box
                     component="img"
                     src={audioImage}
+                    onClick={() => handleImageClick(audioImage, metadata?.title || 'Audio Artwork')}
                     sx={{
                       width: '100%',
                       height: 'auto',
                       aspectRatio: '1',
                       objectFit: 'cover',
-                      display: 'block'
+                      display: 'block',
+                      cursor: 'pointer',
+                      transition: 'opacity 0.2s',
+                      '&:hover': {
+                        opacity: 0.9
+                      }
                     }}
                     alt="Audio artwork"
                     onError={(e) => {
@@ -800,11 +844,20 @@ const renderMedia = (mediaUrl, mediaType, metadata, messageId) => {
                   <Box
                     component="img"
                     src={audioImage}
+                    onClick={(e) => {
+                      e.stopPropagation(); // Prevent triggering the audio player expansion
+                      handleImageClick(audioImage, metadata?.title || 'Audio Artwork');
+                    }}
                     sx={{
                       width: '100%',
                       height: '100%',
                       objectFit: 'cover',
-                      borderRadius: 1
+                      borderRadius: 1,
+                      cursor: 'pointer',
+                      transition: 'opacity 0.2s',
+                      '&:hover': {
+                        opacity: 0.9
+                      }
                     }}
                     alt="Audio artwork"
                     onError={(e) => {
@@ -1378,6 +1431,53 @@ const renderMessageContent = (message) => {
                   }
                   secondary={
                     <>
+                      {/* Show reply context if this is a reply */}
+                      {message.parent_message_id && message.reply_to_content && (
+                        <Box
+                          sx={{
+                            borderLeft: '3px solid',
+                            borderLeftColor: darkMode 
+                              ? 'rgba(255, 255, 255, 0.3)' 
+                              : 'rgba(0, 0, 0, 0.2)',
+                            pl: 1.5,
+                            mb: 0.5,
+                            py: 0.5,
+                            bgcolor: darkMode 
+                              ? 'rgba(255, 255, 255, 0.05)' 
+                              : 'rgba(0, 0, 0, 0.02)',
+                            borderRadius: '0 4px 4px 0'
+                          }}
+                        >
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              color: darkMode 
+                                ? 'rgba(255, 255, 255, 0.6)' 
+                                : 'rgba(0, 0, 0, 0.5)',
+                              fontSize: '0.7rem',
+                              fontWeight: 500
+                            }}
+                          >
+                            Replying to {message.reply_to_profile?.full_name || 'Unknown'}
+                          </Typography>
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              display: 'block',
+                              color: darkMode 
+                                ? 'rgba(255, 255, 255, 0.5)' 
+                                : 'rgba(0, 0, 0, 0.4)',
+                              fontSize: '0.75rem',
+                              fontStyle: 'italic',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap'
+                            }}
+                          >
+                            {message.reply_to_content}
+                          </Typography>
+                        </Box>
+                      )}
                       {renderMessageContent(message)}
                       <Typography
                         component="span"
@@ -1406,7 +1506,7 @@ const renderMessageContent = (message) => {
                 />
                 
                 {/* Menu button for message options */}
-                {message.user_id === user.id && !message.pending && (
+                {!message.pending && (
                   <IconButton
                     className="message-menu-button"
                     size="small"
@@ -1437,6 +1537,77 @@ const renderMessageContent = (message) => {
         <div ref={messageEndRef} />
       </List>
       
+      {/* Reply Preview */}
+      {replyingTo && (
+        <Box
+          sx={{
+            px: 2,
+            pt: 1,
+            bgcolor: darkMode 
+              ? 'rgba(0, 0, 0, 0.6)'
+              : 'rgba(245, 245, 245, 0.9)',
+            backdropFilter: 'blur(10px)',
+            borderTop: darkMode
+              ? '1px solid rgba(255,255,255,0.1)'
+              : '1px solid rgba(0,0,0,0.08)',
+            zIndex: 1,
+            position: 'relative'
+          }}
+        >
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              p: 1,
+              bgcolor: darkMode 
+                ? 'rgba(255, 255, 255, 0.1)' 
+                : 'rgba(0, 0, 0, 0.05)',
+              borderRadius: 1,
+              mb: 1
+            }}
+          >
+            <Box sx={{ flex: 1 }}>
+              <Typography
+                variant="caption"
+                sx={{
+                  color: 'primary.main',
+                  fontWeight: 500,
+                  fontSize: '0.75rem'
+                }}
+              >
+                Replying to {replyingTo.profiles?.full_name}
+              </Typography>
+              <Typography
+                variant="caption"
+                sx={{
+                  display: 'block',
+                  color: darkMode 
+                    ? 'rgba(255, 255, 255, 0.6)' 
+                    : 'rgba(0, 0, 0, 0.6)',
+                  fontSize: '0.7rem',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap'
+                }}
+              >
+                {replyingTo.content}
+              </Typography>
+            </Box>
+            <IconButton
+              size="small"
+              onClick={() => setReplyingTo(null)}
+              sx={{
+                p: 0.5,
+                color: darkMode ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)'
+              }}
+            >
+              <CloseIcon sx={{ fontSize: 16 }} />
+            </IconButton>
+          </Box>
+        </Box>
+      )}
+      
       {/* Message Input */}
       <Box 
         sx={{ 
@@ -1447,9 +1618,9 @@ const renderMessageContent = (message) => {
             ? 'rgba(0, 0, 0, 0.6)'
             : 'rgba(245, 245, 245, 0.9)',
           backdropFilter: 'blur(10px)',
-          borderTop: darkMode
+          borderTop: replyingTo ? 'none' : (darkMode
             ? '1px solid rgba(255,255,255,0.1)'
-            : '1px solid rgba(0,0,0,0.08)',
+            : '1px solid rgba(0,0,0,0.08)'),
           zIndex: 1,
           position: 'relative'
         }}
@@ -1637,11 +1808,25 @@ const renderMessageContent = (message) => {
           horizontal: 'right',
         }}
       >
-        <MenuItem onClick={handleDeleteMessage}>
-          <DeleteIcon fontSize="small" sx={{ mr: 1 }} />
-          Delete Message
+        <MenuItem onClick={handleReplyToMessage}>
+          <ReplyIcon fontSize="small" sx={{ mr: 1 }} />
+          Reply
         </MenuItem>
+        {messages.find(msg => msg.id === selectedMessageId)?.user_id === user.id && (
+          <MenuItem onClick={handleDeleteMessage}>
+            <DeleteIcon fontSize="small" sx={{ mr: 1 }} />
+            Delete Message
+          </MenuItem>
+        )}
       </Menu>
+      
+      {/* Image Viewer Modal */}
+      <ImageViewerModal
+        open={imageViewerOpen}
+        onClose={() => setImageViewerOpen(false)}
+        imageUrl={selectedImage.url}
+        title={selectedImage.title}
+      />
     </Paper>
   );
 };

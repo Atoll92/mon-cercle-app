@@ -1216,10 +1216,11 @@ function DashboardPage() {
                           <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
                             <MediaUpload
                               onUpload={handleMediaUpload}
-                              allowedTypes={['IMAGE', 'VIDEO', 'AUDIO']}
+                              allowedTypes={['IMAGE', 'VIDEO', 'AUDIO', 'PDF']}
                               bucket="profiles"
                               path={`portfolios/${user.id}`}
                               maxFiles={1}
+                              autoUpload={true}
                             />
                             
                             {/* Media upload feedback */}
@@ -1412,15 +1413,12 @@ function DashboardPage() {
                 </Grid>
               </Grid>
               
-              {/* Row 3: Moodboard, Latest News, and Latest Posts */}
-              <Grid item xs={12}>
-                <Grid container spacing={2} sx={{ minHeight: 400 }}>
-                  <Grid item xs={12} md={profile.network_id ? 6 : 12} sx={{ display: 'flex' , flexGrow: '1'}}>
-                    <PersonalMoodboardWidget user={user} />
-                  </Grid>
+              {/* Row 3: Latest News, Latest Posts, and Moodboard */}
+              <Grid item xs={12} sx={{ width: '100%' }}>
+                <Grid container spacing={2} sx={{ minHeight: 400}}>
                   {profile.network_id && (
                     <>
-                      <Grid item xs={12} sm={6} md={3} sx={{ maxWidth: { md: '40%' }, display: 'flex' }}>
+                      <Grid item xs={12} sm={6} md={3} sx={{ display: 'flex' }}>
                         <LatestNewsWidget networkId={profile.network_id} />
                       </Grid>
                       <Grid item xs={12} sm={6} md={3} sx={{ display: 'flex' }}>
@@ -1428,6 +1426,9 @@ function DashboardPage() {
                       </Grid>
                     </>
                   )}
+                  <Grid item xs={12} md={profile.network_id ? 6 : 12} sx={{ display: 'flex', flexGrow: 1 }}>
+                    <PersonalMoodboardWidget user={user} />
+                  </Grid>
                 </Grid>
               </Grid>
             </Grid>

@@ -21,8 +21,14 @@ export const MEDIA_TYPES = {
     mimeTypes: ['audio/mpeg', 'audio/wav', 'audio/ogg', 'audio/mp4', 'audio/aac'],
     maxSize: 50 * 1024 * 1024, // 50MB
   },
+  PDF: {
+    accept: 'application/pdf',
+    extensions: ['.pdf'],
+    mimeTypes: ['application/pdf'],
+    maxSize: 25 * 1024 * 1024, // 25MB
+  },
   ALL: {
-    accept: 'image/*,video/*,audio/*',
+    accept: 'image/*,video/*,audio/*,application/pdf',
     extensions: [], // Combined from above
     mimeTypes: [], // Combined from above
     maxSize: 100 * 1024 * 1024, // 100MB
@@ -33,12 +39,14 @@ export const MEDIA_TYPES = {
 MEDIA_TYPES.ALL.extensions = [
   ...MEDIA_TYPES.IMAGE.extensions,
   ...MEDIA_TYPES.VIDEO.extensions,
-  ...MEDIA_TYPES.AUDIO.extensions
+  ...MEDIA_TYPES.AUDIO.extensions,
+  ...MEDIA_TYPES.PDF.extensions
 ];
 MEDIA_TYPES.ALL.mimeTypes = [
   ...MEDIA_TYPES.IMAGE.mimeTypes,
   ...MEDIA_TYPES.VIDEO.mimeTypes,
-  ...MEDIA_TYPES.AUDIO.mimeTypes
+  ...MEDIA_TYPES.AUDIO.mimeTypes,
+  ...MEDIA_TYPES.PDF.mimeTypes
 ];
 
 // Get media type from file
@@ -48,19 +56,24 @@ export const getMediaType = (file) => {
   if (MEDIA_TYPES.IMAGE.mimeTypes.includes(mimeType)) return 'IMAGE';
   if (MEDIA_TYPES.VIDEO.mimeTypes.includes(mimeType)) return 'VIDEO';
   if (MEDIA_TYPES.AUDIO.mimeTypes.includes(mimeType)) return 'AUDIO';
+  if (MEDIA_TYPES.PDF.mimeTypes.includes(mimeType)) return 'PDF';
   
   // Check by extension as fallback
   const extension = '.' + file.name.split('.').pop().toLowerCase();
   if (MEDIA_TYPES.IMAGE.extensions.includes(extension)) return 'IMAGE';
   if (MEDIA_TYPES.VIDEO.extensions.includes(extension)) return 'VIDEO';
   if (MEDIA_TYPES.AUDIO.extensions.includes(extension)) return 'AUDIO';
+  if (MEDIA_TYPES.PDF.extensions.includes(extension)) return 'PDF';
   
   return null;
 };
 
 // Validate file
 export const validateFile = (file, allowedTypes = ['IMAGE', 'VIDEO', 'AUDIO']) => {
+  console.log('validateFile: file=', file.name, 'type=', file.type, 'allowedTypes=', allowedTypes);
+  console.log('validateFile: Called from:', new Error().stack.split('\n')[2]);
   const mediaType = getMediaType(file);
+  console.log('validateFile: detected mediaType=', mediaType);
   
   if (!mediaType) {
     return { valid: false, error: 'Unsupported file type' };
@@ -77,6 +90,50 @@ export const validateFile = (file, allowedTypes = ['IMAGE', 'VIDEO', 'AUDIO']) =
   }
   
   return { valid: true, mediaType };
+};
+
+// Generate PDF preview/thumbnail using PDF.js
+export const generatePDFThumbnail = async (file) => {
+  try {
+    // For now, skip PDF thumbnail generation due to worker issues
+    // This can be re-enabled once PDF.js worker is properly configured
+    console.log('PDF thumbnail generation skipped (worker configuration needed)');
+    return null;
+  } catch (error) {
+    console.error('Error generating PDF thumbnail:', error);
+    return null;
+  }
+};
+
+// Get PDF metadata
+export const getPDFMetadata = async (file) => {
+  try {
+    // For now, return basic metadata due to worker issues
+    // Full metadata extraction can be re-enabled once PDF.js worker is properly configured
+    console.log('PDF metadata extraction limited (worker configuration needed)');
+    return {
+      fileName: file.name,
+      fileSize: file.size,
+      mimeType: file.type,
+      // Placeholder values
+      numPages: null,
+      title: file.name,
+      author: null,
+      subject: null,
+      creator: null,
+      producer: null,
+      creationDate: null,
+      modificationDate: null
+    };
+  } catch (error) {
+    console.error('Error extracting PDF metadata:', error);
+    return {
+      fileName: file.name,
+      fileSize: file.size,
+      mimeType: file.type,
+      numPages: 1
+    };
+  }
 };
 
 // Compress image file
@@ -112,7 +169,7 @@ export const compressImage = async (file, options = {}) => {
 export const uploadMediaFile = async (file, bucket, path, options = {}) => {
   try {
     // Validate file
-    const validation = validateFile(file);
+    const validation = validateFile(file, options.allowedTypes);
     if (!validation.valid) {
       throw new Error(validation.error);
     }
@@ -131,7 +188,7 @@ export const uploadMediaFile = async (file, bucket, path, options = {}) => {
     const fileName = `${path}/${timestamp}_${randomString}.${extension}`;
 
     // Upload to Supabase Storage
-    const { data, error } = await supabase.storage
+    const { error } = await supabase.storage
       .from(bucket)
       .upload(fileName, fileToUpload);
 
@@ -144,7 +201,7 @@ export const uploadMediaFile = async (file, bucket, path, options = {}) => {
 
     return {
       url: publicUrl,
-      path: data.path,
+      path: fileName,
       mediaType: validation.mediaType,
       fileName: file.name,
       originalSize: file.size,

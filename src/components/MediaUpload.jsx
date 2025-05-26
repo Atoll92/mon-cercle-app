@@ -16,6 +16,7 @@ import {
   Image as ImageIcon,
   VideoLibrary as VideoIcon,
   AudioFile as AudioIcon,
+  PictureAsPdf as PdfIcon,
   AttachFile as FileIcon,
   Warning as WarningIcon,
 } from '@mui/icons-material';
@@ -28,7 +29,9 @@ import {
   createVideoThumbnail,
   getMediaDuration,
   extractAudioMetadata,
-  formatDuration
+  formatDuration,
+  generatePDFThumbnail,
+  getPDFMetadata
 } from '../utils/mediaUpload';
 import { getNetworkStorageInfo } from '../api/networks';
 import { useNetwork } from '../context/networkContext';
@@ -43,7 +46,8 @@ function MediaUpload({
   path = 'general',
   maxFiles = 1,
   showPreview = true,
-  compact = false
+  compact = false,
+  autoUpload = false
 }) {
   const [files, setFiles] = useState([]);
   const [uploading, setUploading] = useState(false);
@@ -104,12 +108,15 @@ function MediaUpload({
     if (allowedTypes.includes('IMAGE')) types.push(MEDIA_TYPES.IMAGE.accept);
     if (allowedTypes.includes('VIDEO')) types.push(MEDIA_TYPES.VIDEO.accept);
     if (allowedTypes.includes('AUDIO')) types.push(MEDIA_TYPES.AUDIO.accept);
+    if (allowedTypes.includes('PDF')) types.push(MEDIA_TYPES.PDF.accept);
     return types.join(',');
   };
 
   // Handle file selection
   const handleFileSelect = async (event) => {
     const selectedFiles = Array.from(event.target.files);
+    console.log('MediaUpload: Files selected:', selectedFiles);
+    console.log('MediaUpload: Allowed types:', allowedTypes);
     setError(null);
     
     // Check if storage limit is reached
@@ -123,7 +130,9 @@ function MediaUpload({
     let totalSize = 0;
     for (const file of selectedFiles) {
       const validation = validateFile(file, allowedTypes);
+      console.log('MediaUpload: File validation for', file.name, ':', validation);
       if (!validation.valid) {
+        console.error('MediaUpload: Validation failed:', validation.error);
         setError(validation.error);
         return;
       }
@@ -188,11 +197,34 @@ function MediaUpload({
         }
       }
 
+      // Generate thumbnail and extract metadata for PDF
+      if (mediaType === 'PDF') {
+        try {
+          const pdfMetadata = await getPDFMetadata(file);
+          preview = { ...preview, ...pdfMetadata };
+          
+          const thumbnailBlob = await generatePDFThumbnail(file);
+          if (thumbnailBlob) {
+            preview.thumbnail = URL.createObjectURL(thumbnailBlob);
+          }
+        } catch (err) {
+          console.error('Error processing PDF:', err);
+        }
+      }
+
       newPreviews.push(preview);
     }
 
     setFiles([...files, ...validFiles.map(v => v.file)]);
     setPreviews([...previews, ...newPreviews]);
+    
+    // Auto upload if enabled
+    if (autoUpload && validFiles.length > 0) {
+      // Set a timeout to allow state to update
+      setTimeout(() => {
+        handleUpload([...files, ...validFiles.map(v => v.file)], [...previews, ...newPreviews]);
+      }, 100);
+    }
   };
 
   // Remove file
@@ -209,8 +241,9 @@ function MediaUpload({
   };
 
   // Upload files
-  const handleUpload = async () => {
-    if (files.length === 0) return;
+  const handleUpload = async (filesToUpload = files, previewsToUpload = previews) => {
+    console.log('MediaUpload: handleUpload called with', filesToUpload.length, 'files');
+    if (filesToUpload.length === 0) return;
 
     setUploading(true);
     setError(null);
@@ -218,10 +251,10 @@ function MediaUpload({
     try {
       const uploadedFiles = [];
       
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        const preview = previews[i];
-        const result = await uploadMediaFile(file, bucket, path);
+      for (let i = 0; i < filesToUpload.length; i++) {
+        const file = filesToUpload[i];
+        const preview = previewsToUpload[i];
+        const result = await uploadMediaFile(file, bucket, path, { allowedTypes });
         
         // Upload album art if it exists for audio files
         let permanentAlbumArtUrl = null;
@@ -243,7 +276,15 @@ function MediaUpload({
             title: preview.title,
             artist: preview.artist,
             album: preview.album,
-            albumArt: permanentAlbumArtUrl
+            albumArt: permanentAlbumArtUrl,
+            // PDF specific metadata
+            numPages: preview.numPages,
+            author: preview.author,
+            subject: preview.subject,
+            creator: preview.creator,
+            producer: preview.producer,
+            creationDate: preview.creationDate,
+            modificationDate: preview.modificationDate
           }
         };
         
@@ -251,7 +292,7 @@ function MediaUpload({
       }
 
       // Clean up previews
-      previews.forEach(preview => {
+      previewsToUpload.forEach(preview => {
         if (preview.url) URL.revokeObjectURL(preview.url);
         if (preview.thumbnail) URL.revokeObjectURL(preview.thumbnail);
       });
@@ -275,13 +316,14 @@ function MediaUpload({
       case 'IMAGE': return <ImageIcon />;
       case 'VIDEO': return <VideoIcon />;
       case 'AUDIO': return <AudioIcon />;
+      case 'PDF': return <PdfIcon />;
       default: return <FileIcon />;
     }
   };
 
   // Render preview
   const renderPreview = (preview, index) => {
-    const { mediaType, url, thumbnail, albumArt, name, size, duration, title } = preview;
+    const { mediaType, url, thumbnail, albumArt, name, size, duration, title, numPages } = preview;
 
     return (
       <Card key={index} sx={{ position: 'relative', width: compact ? 150 : 200 }}>
@@ -330,6 +372,32 @@ function MediaUpload({
             )}
           </>
         )}
+        
+        {mediaType === 'PDF' && (
+          <>
+            {thumbnail ? (
+              <CardMedia
+                component="img"
+                height={compact ? 100 : 140}
+                image={thumbnail}
+                alt={title || name}
+                sx={{ objectFit: 'contain', bgcolor: '#f5f5f5' }}
+              />
+            ) : (
+              <Box
+                sx={{
+                  height: compact ? 100 : 140,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  bgcolor: 'action.hover'
+                }}
+              >
+                <PdfIcon sx={{ fontSize: compact ? 40 : 60, color: 'error.main' }} />
+              </Box>
+            )}
+          </>
+        )}
 
         <Box sx={{ p: 1 }}>
           <Typography variant="caption" noWrap>{name}</Typography>
@@ -348,6 +416,13 @@ function MediaUpload({
             {duration && (
               <Chip
                 label={formatDuration(duration)}
+                size="small"
+                sx={{ fontSize: '0.7rem' }}
+              />
+            )}
+            {numPages && (
+              <Chip
+                label={`${numPages} pages`}
                 size="small"
                 sx={{ fontSize: '0.7rem' }}
               />
@@ -447,7 +522,7 @@ function MediaUpload({
         </Box>
       )}
 
-      {files.length > 0 && (
+      {files.length > 0 && !autoUpload && (
         <Button
           variant="contained"
           color="primary"

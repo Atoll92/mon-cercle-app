@@ -42,6 +42,7 @@ import { getActivePolls } from '../api/polls';
 import PollCard from './PollCard';
 import MediaUpload from './MediaUpload';
 import MediaPlayer from './MediaPlayer';
+import ImageViewerModal from './ImageViewerModal';
 
 // Enhanced News Tab component with image upload support and admin editing
 const NewsTab = ({ darkMode }) => {
@@ -77,6 +78,10 @@ const NewsTab = ({ darkMode }) => {
   const [activePolls, setActivePolls] = useState([]);
   const [loadingPolls, setLoadingPolls] = useState(true);
   const [message, setMessage] = useState('');
+  
+  // State for image viewer modal
+  const [imageViewerOpen, setImageViewerOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState({ url: '', title: '' });
 
   // Fetch active polls
   useEffect(() => {
@@ -100,6 +105,12 @@ const NewsTab = ({ darkMode }) => {
     // Refresh polls after voting
     fetchActivePolls();
   };
+  
+  // Handle image click
+  const handleImageClick = (imageUrl, title = '') => {
+    setSelectedImage({ url: imageUrl, title });
+    setImageViewerOpen(true);
+  };
 
   // TipTap editor instance
   const editor = useEditor({
@@ -121,7 +132,7 @@ const NewsTab = ({ darkMode }) => {
 
   // Handle media upload
   const handleMediaUpload = (uploadResult) => {
-    console.log("NewsTab media upload result:", uploadResult);
+    console.log("[Regular NewsTab] Media upload result:", uploadResult);
     setMediaUrl(uploadResult.url);
     setMediaType(uploadResult.type);
     // Include all metadata from the upload result, including thumbnail for audio
@@ -292,14 +303,28 @@ const NewsTab = ({ darkMode }) => {
               <img 
                 src={mediaUrl} 
                 alt="Preview" 
-                style={{ maxWidth: '100%', maxHeight: '200px', display: 'block', margin: '0 auto' }} 
+                style={{ 
+                  maxWidth: '100%', 
+                  maxHeight: '200px', 
+                  display: 'block', 
+                  margin: '0 auto',
+                  cursor: 'pointer',
+                  transition: 'opacity 0.2s'
+                }}
+                onClick={() => handleImageClick(mediaUrl, newsTitle || 'Preview')}
+                onMouseEnter={(e) => e.target.style.opacity = '0.9'}
+                onMouseLeave={(e) => e.target.style.opacity = '1'}
               />
             ) : (
               <MediaPlayer
                 src={mediaUrl}
-                type={mediaType === 'VIDEO' ? 'video' : 'audio'}
+                type={mediaType === 'VIDEO' ? 'video' : mediaType === 'PDF' ? 'pdf' : 'audio'}
                 title={newsTitle || 'Media preview'}
                 thumbnail={mediaMetadata?.thumbnail}
+                fileName={mediaMetadata?.fileName}
+                fileSize={mediaMetadata?.fileSize}
+                numPages={mediaMetadata?.numPages}
+                author={mediaMetadata?.author}
                 compact={false}
                 darkMode={darkMode}
               />
@@ -321,11 +346,12 @@ const NewsTab = ({ darkMode }) => {
         
         <MediaUpload
           onUpload={handleMediaUpload}
-          allowedTypes={['IMAGE', 'VIDEO', 'AUDIO']}
+          allowedTypes={['IMAGE', 'VIDEO', 'AUDIO', 'PDF']}
           bucket="networks"
           path={`news/${network?.id}`}
           maxFiles={1}
           showPreview={false}
+          autoUpload={true}
         />
         
         {/* Image caption field, shown only when media is an image */}
@@ -498,15 +524,29 @@ const NewsTab = ({ darkMode }) => {
                           height="400"
                           image={post.media_url}
                           alt={post.title}
-                          sx={{ objectFit: 'contain', bgcolor: 'black' }}
+                          sx={{ 
+                            objectFit: 'contain', 
+                            bgcolor: 'black',
+                            cursor: 'pointer',
+                            transition: 'opacity 0.2s',
+                            '&:hover': {
+                              opacity: 0.9
+                            }
+                          }}
+                          onClick={() => handleImageClick(post.media_url, post.title)}
                         />
                       );
                     } else {
                       return (
                         <MediaPlayer
                           src={post.media_url}
-                          type={mediaType === 'video' ? 'video' : 'audio'}
+                          type={mediaType === 'video' ? 'video' : mediaType === 'pdf' ? 'pdf' : 'audio'}
                           title={post.media_metadata?.fileName}
+                          fileName={post.media_metadata?.fileName}
+                          fileSize={post.media_metadata?.fileSize}
+                          numPages={post.media_metadata?.numPages}
+                          author={post.media_metadata?.author}
+                          thumbnail={post.media_metadata?.thumbnail}
                           darkMode={darkMode}
                         />
                       );
@@ -519,7 +559,15 @@ const NewsTab = ({ darkMode }) => {
                   height="240"
                   image={post.image_url}
                   alt={post.title}
-                  sx={{ objectFit: 'cover' }}
+                  sx={{ 
+                    objectFit: 'cover',
+                    cursor: 'pointer',
+                    transition: 'opacity 0.2s',
+                    '&:hover': {
+                      opacity: 0.9
+                    }
+                  }}
+                  onClick={() => handleImageClick(post.image_url, post.title)}
                 />
               )}
             <CardContent>
@@ -573,6 +621,14 @@ const NewsTab = ({ darkMode }) => {
         ))
       )}
       </Paper>
+      
+      {/* Image Viewer Modal */}
+      <ImageViewerModal
+        open={imageViewerOpen}
+        onClose={() => setImageViewerOpen(false)}
+        imageUrl={selectedImage.url}
+        title={selectedImage.title}
+      />
     </PageTransition>
   );
 };
