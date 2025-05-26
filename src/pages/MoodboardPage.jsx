@@ -1983,7 +1983,7 @@ const handleUpdateItem = async (updatedItem) => {
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Button
             startIcon={<ArrowBackIcon />}
-            onClick={() => navigate('/network/' + moodboard.network_id)}
+            onClick={() => navigate('/dashboard/')}
             size="small"
           >
             Back
