@@ -47,6 +47,7 @@ const JoinNetworkPage = lazy(() => import('./pages/JoinNetworkPage'));
 const NewsPostPage = lazy(() => import('./pages/NewsPostPage'));
 const EventPage = lazy(() => import('./pages/EventPage'));
 const MediaTest = lazy(() => import('./pages/MediaTest'));
+const TermsPage = lazy(() => import('./pages/TermsPage'));
 
 // Loading component for lazy loaded routes
 const PageLoader = () => (
@@ -168,7 +169,7 @@ function App() {
         <DirectMessagesProvider>
           <Box className="App" sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
             {/* Pass the network name to the header */}
-            {window.location.pathname !== "/" && window.location.pathname !== "/pricing" && window.location.pathname !== "/old" && !window.location.pathname.startsWith("/micro-conclav/") && (
+            {window.location.pathname !== "/" && window.location.pathname !== "/pricing" && window.location.pathname !== "/terms" && window.location.pathname !== "/old" && !window.location.pathname.startsWith("/micro-conclav/") && (
               <NetworkHeader/>
             )}
             <Box component="main" sx={{ 
@@ -190,6 +191,7 @@ function App() {
             <Route path="/pricing" element={<PricingPage />} />
             <Route path="/payment-success" element={<PaymentSuccessPage />} />
             <Route path="/shimmer" element={<ShimmeringTextPage />} />
+            <Route path="/terms" element={<TermsPage />} />
             
             {/* Micro Conclav routes */}
             <Route path="/micro-conclav/:userId" element={<MicroConclavPage />} />

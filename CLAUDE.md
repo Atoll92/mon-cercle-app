@@ -2,6 +2,186 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## App Map
+
+### Project Structure Overview
+```
+mon-cercle-app/
+├── public/                    # Static assets
+├── src/                       # Source code
+│   ├── __mocks__/             # Mock implementations for testing
+│   ├── api/                   # API layer functions
+│   ├── assets/                # Images, icons, and static resources
+│   ├── components/            # Reusable React components
+│   │   ├── admin/             # Admin-specific components
+│   │   └── [feature components]
+│   ├── context/               # React Context providers
+│   ├── hooks/                 # Custom React hooks
+│   ├── mocks/                 # MSW mock handlers
+│   ├── pages/                 # Page components (routes)
+│   ├── services/              # Business logic and external services
+│   ├── stripe/                # Stripe configuration
+│   ├── styles/                # CSS files
+│   └── utils/                 # Utility functions
+├── supabase/                  # Supabase backend
+│   ├── functions/             # Edge functions
+│   └── migrations/            # Database migrations
+└── [config files]            # Various configuration files
+```
+
+### Key Files by Category
+
+#### Entry Points
+- `src/main.jsx` - React app entry point
+- `src/App.jsx` - Main app component with routing
+- `index.html` - HTML template
+
+#### Configuration
+- `vite.config.js` - Vite bundler configuration
+- `package.json` - Dependencies and scripts
+- `vercel.json` - Vercel deployment settings
+- `eslint.config.js` - Linting rules
+- `.env` - Environment variables (not tracked)
+
+#### Core Application Files
+- `src/supabaseclient.jsx` - Supabase client initialization
+
+#### Context Providers
+- `src/context/authcontext.jsx` - Authentication state management
+- `src/context/networkContext.jsx` - Network data management
+- `src/context/directMessagesContext.jsx` - Direct messaging state
+
+#### API Layer (`src/api/`)
+- `auth.jsx` - Authentication functions
+- `networks.jsx` - Network CRUD operations
+- `directMessages.js` - Direct messaging API (fixed for dark mode)
+- `moodboards.jsx` - Moodboard operations
+- `polls.js` - Polling system
+- `invitations.js` - Invitation management
+- `superAdmin.js` - Admin dashboard API
+
+#### Services (`src/services/`)
+- `emailNotificationService.js` - Email notification queue
+- `networkFiles.js` - File management
+- `opengraphService.js` - URL preview generation
+- `stripeService.js` - Payment processing
+- `subscriptionService.js` - Subscription management
+
+#### Pages (`src/pages/`)
+- `LandingPage.jsx` - Public landing page
+- `LoginPage.jsx` - User authentication
+- `SignupPage.jsx` - User registration
+- `DashboardPage.jsx` - User dashboard
+- `DirectMessagesPage.jsx` - Direct messaging interface (dark mode ready)
+- `NetworkLandingPage.jsx` - Network-specific landing
+- `NetworkAdminPage.jsx` - Network administration
+- `ProfilePage.jsx` - User profile management
+- `EditProfilePage.jsx` - Profile editing
+- `EventPage.jsx` - Event details
+- `WikiPage.jsx` - Wiki content display
+- `MoodboardPage.jsx` - Moodboard interface
+- `SuperAdminDashboard.jsx` - System administration
+- `PricingPage.jsx` - Subscription plans
+- `BillingPage.jsx` - Billing management
+
+#### Components (`src/components/`)
+
+##### Chat & Messaging
+- `Chat.jsx` - Network chat with mentions
+- `DirectMessageChat.jsx` - DM interface (dark mode ready)
+- `DirectMessagesList.jsx` - Conversation list (dark mode ready)
+
+##### Network Features
+- `NetworkHeader.jsx` - Network header (80px height)
+- `NetworkOnboardingWizard.jsx` - Setup wizard
+- `NetworkDetailsModal.jsx` - Network info display
+- `EventsTab.jsx` - Events management
+- `MembersTab.jsx` - Member management (includes invitations)
+- `NewsTab.jsx` - News feed
+- `SocialWallTab.jsx` - Combined social feed
+- `WikiTab.jsx` - Wiki content
+- `FilesTab.jsx` - File sharing
+- `MoonboardTab.jsx` - Moodboard display
+- `AboutTab.jsx` - Network about section
+- `ChatTab.jsx` - Chat interface wrapper
+
+##### Media & Content
+- `MediaUpload.jsx` - File upload system
+- `MediaPlayer.jsx` - Video/audio playback
+- `LinkPreview.jsx` - URL preview cards
+- `QuillEditor.jsx` - Rich text editor
+- `moodboardGallery.jsx` - Moodboard gallery
+
+##### UI Components
+- `AnimatedComponents.jsx` - Animation wrappers
+- `ShimmerProvider.jsx` - Shimmer effects
+- `ShimmeryText.jsx` - Text animations
+- `TextCycler.jsx` - Cycling text display
+- `ThreeJSBackground.jsx` - 3D background
+- `LoadingSkeleton.jsx` - Loading states
+- `ThemeProvider.jsx` - Theme management
+- `ProtectedRoute.jsx` - Route protection
+
+##### Widgets & Cards
+- `PollCard.jsx` - Poll display/voting
+- `LatestNewsWidget.jsx` - News widget
+- `LatestPostsWidget.jsx` - Posts widget
+- `PersonalMoodboardWidget.jsx` - Moodboard widget
+- `InvitationLinkWidget.jsx` - Invitation links
+- `SubscriptionBadge.jsx` - Subscription status
+
+##### Admin Components (`src/components/admin/`)
+- `AdminLayout.jsx` - Admin interface layout (80px header)
+- `AdminBreadcrumbs.jsx` - Navigation breadcrumbs
+- `MembersTab.jsx` - Member management (integrated invitations)
+- `EventsTab.jsx` - Event administration
+- `InvitationLinksTab.jsx` - Invitation link management
+- `ModerationTab.jsx` - Content moderation
+- `MonetizationTab.jsx` - Billing management
+- `NetworkInfoPanel.jsx` - Network statistics
+- `NetworkSettingsTab.jsx` - Network configuration
+- `Newstab.jsx` - News administration
+- `NotificationQueueTab.jsx` - Email queue monitoring
+- `PollsTab.jsx` - Poll management
+- `ThemeTab.jsx` - Theme customization
+- `BatchInviteModal.jsx` - Bulk invitations
+
+#### Utilities (`src/utils/`)
+- `mediaUpload.js` - Media file handling
+- `animationHelpers.js` - Animation utilities
+
+#### Hooks (`src/hooks/`)
+- `useAnimation.js` - Animation hook
+- `useScrollAnimation.js` - Scroll-based animations
+
+#### Styles (`src/styles/`)
+- `animations.css` - Animation definitions
+- Component-specific CSS files
+
+#### Testing
+- `src/setupTests.js` - Test configuration
+- `src/test-utils.jsx` - Testing utilities
+- `src/__mocks__/` - Component mocks
+- `src/mocks/` - MSW mock handlers
+
+#### Supabase Backend (`supabase/`)
+- `supabase/functions/` - Edge functions
+  - `create-checkout-session/` - Stripe checkout
+  - `stripe-webhook/` - Payment webhooks
+  - `network-invite/` - Invitation emails
+  - `manage-subscription/` - Subscription logic
+- `supabase/migrations/` - Database migrations
+- `supabase_schema.sql` - Database schema
+
+### Recent Changes
+- Fixed direct messages foreign key relationship issue
+- Updated DirectMessagesPage, DirectMessagesList, and DirectMessageChat for dark mode support
+- Integrated invitation links into MembersTab instead of separate tab
+- Fixed header height consistency (80px)
+- Added comprehensive mention system in Chat component
+- Added message deletion functionality
+- Integrated Vercel Analytics
+
 ## Commands
 
 ### Development

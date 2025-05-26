@@ -100,8 +100,18 @@ const handlePlanSelect = async (plan) => {
     return;
   }
   
-  // For now, only handle the Organization plan (€97)
-  if (plan.price === 97) {
+  // Define price mappings for all paid plans
+  const priceMappings = {
+    17: PRICE_IDS.family, // Family plan €17
+    49: PRICE_IDS.nonprofit, // Non-profit plan €49
+    97: 'price_1RK6qr2KqNIKpvjTZh47uSJO', // Organization plan €97 (using existing ID)
+    247: PRICE_IDS.network, // Network plan €247
+    497: PRICE_IDS.business, // Business plan €497
+  };
+  
+  const priceId = priceMappings[plan.price];
+  
+  if (priceId && priceId !== 'price_community' && !priceId.includes('price_test')) {
     try {
       setLoadingPlan(plan.name);
       
@@ -126,10 +136,7 @@ const handlePlanSelect = async (plan) => {
         return;
       }
 
-      // Use the direct price ID from your config or directly from Stripe
-      const priceId = 'price_1RK6qr2KqNIKpvjTZh47uSJO'; // Your actual price ID
-      
-      console.log('Starting checkout with:', { priceId, networkId: profile.network_id });
+      console.log('Starting checkout with:', { priceId, networkId: profile.network_id, plan: plan.name });
       await createCheckoutSession(priceId, profile.network_id);
     } catch (error) {
       console.error('Error starting checkout:', error);
@@ -138,8 +145,8 @@ const handlePlanSelect = async (plan) => {
       setLoadingPlan(null);
     }
   } else {
-    // For other plans, you can show a message
-    alert('This plan is coming soon!');
+    // For plans without proper price IDs configured
+    alert('This plan is not yet available. Please contact support.');
   }
 };
   // Calculate annual savings in euros
@@ -152,7 +159,7 @@ const handlePlanSelect = async (plan) => {
 
   const plans = [
     {
-      name: 'Family',
+      name: 'Community',
       price: 0,
       description: 'For personal networks and small groups',
       features: [
@@ -176,18 +183,18 @@ const handlePlanSelect = async (plan) => {
       ]
     },
     {
-      name: 'Community',
+      name: 'Family',
       price: 17,
-      description: 'For small teams and family groups',
+      description: 'For families and close-knit groups',
       features: [
         { name: 'Members', value: '100', icon: <GroupsIcon color="primary" /> },
         { name: 'Storage', value: '10GB', icon: <StorageIcon color="primary" /> },
-        { name: 'Admin accounts', value: '1', icon: <AdminIcon color="primary" /> },
+        { name: 'Admin accounts', value: '2', icon: <AdminIcon color="primary" /> },
         { name: 'White label', value: false, icon: <PaletteIcon color="primary" /> },
         { name: 'Wiki', value: true, icon: <BookmarkIcon color="primary" /> },
         { name: 'Events', value: true, icon: <EventIcon color="primary" /> },
         { name: 'Zero tracking by design', value: true, icon: <VisibilityOffIcon color="primary" /> },
-        { name: 'Support', value: 'Community', icon: <SupportIcon color="primary" /> },
+        { name: 'Support', value: 'Email', icon: <SupportIcon color="primary" /> },
         { name: 'API Access', value: false, icon: <CodeIcon color="primary" /> },
       ],
       popular: false,
@@ -195,6 +202,7 @@ const handlePlanSelect = async (plan) => {
       buttonVariant: 'outlined',
       buttonText: 'Start 14-Day Trial',
       icon: <Groups color="primary" sx={{ fontSize: 40 }} />,
+      badge: 'NEW',
       addOns: [
         { name: 'White Label', price: 99 }
       ]

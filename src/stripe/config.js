@@ -8,6 +8,7 @@ const envPriceIds = getPriceIds();
 
 // Price IDs for different plans
 export const PRICE_IDS = {
+  family: envPriceIds.family || 'price_1RSy002KqNIKpvjTG7YyuZZ6', // €17/month - New Family plan
   community: 'price_community', // Free plan, no price ID needed
   nonprofit: envPriceIds.nonprofit || 'price_nonprofit', // €49/month
   organization: envPriceIds.organization || 'price_organization', // €97/month  
@@ -20,6 +21,7 @@ export const PRICE_ID = envPriceIds.organization || 'price_1RK6Vk2KqNIKpvjTKgFNp
 
 // Annual Price IDs (discounted)
 export const ANNUAL_PRICE_IDS = {
+  family: 'price_family_annual', // €14/month (billed annually) - To be created in Stripe
   nonprofit: 'price_nonprofit_annual', // €41/month (billed annually)
   organization: 'price_organization_annual', // €81/month (billed annually)
   network: 'price_network_annual', // €206/month (billed annually)
