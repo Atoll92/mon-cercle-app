@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../supabaseclient';
+import MediaPlayer from './MediaPlayer';
 import {
   Card,
   CardContent,
@@ -46,7 +47,7 @@ const LatestPostsWidget = ({ networkId }) => {
         
         const memberIds = members.map(m => m.id);
         
-        // Then get latest post with image from these members
+        // Then get latest post with media (image, video, or audio) from these members
         const { data, error } = await supabase
           .from('portfolio_items')
           .select(`
@@ -57,8 +58,7 @@ const LatestPostsWidget = ({ networkId }) => {
             )
           `)
           .in('profile_id', memberIds)
-          .not('image_url', 'is', null)
-          .neq('image_url', '')
+          .or('media_url.not.is.null,image_url.not.is.null')
           .order('created_at', { ascending: false })
           .limit(1);
           
@@ -238,31 +238,86 @@ const LatestPostsWidget = ({ networkId }) => {
                 {posts[0].title}
               </Typography>
 
-              {/* Thumbnail */}
-              {posts[0].image_url && (
-                <Box
-                  sx={{
-                    width: '100%',
-                    height: 200,
-                    overflow: 'hidden',
-                    bgcolor: 'grey.100',
-                    mb: 2,
-                    borderRadius: 1
-                  }}
-                >
-                  <img 
-                    src={posts[0].image_url} 
-                    alt={posts[0].title}
-                    className="portfolio-image"
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'cover',
-                      transition: 'transform 0.3s ease'
-                    }}
-                  />
-                </Box>
-              )}
+              {/* Media content */}
+              {(() => {
+                // Determine media type and URL
+                let mediaUrl = posts[0].media_url || posts[0].image_url;
+                let mediaType = posts[0].media_type;
+                
+                // Fallback detection for legacy posts
+                if (!mediaType && mediaUrl) {
+                  const url = mediaUrl.toLowerCase();
+                  if (url.includes('.mp4') || url.includes('.webm') || url.includes('.mov')) {
+                    mediaType = 'video';
+                  } else if (url.includes('.mp3') || url.includes('.wav') || url.includes('.ogg')) {
+                    mediaType = 'audio';
+                  } else {
+                    mediaType = 'image';
+                  }
+                }
+                
+                if (mediaUrl) {
+                  if (mediaType && ['video', 'audio'].includes(mediaType)) {
+                    return (
+                      <Box sx={{ 
+                        mb: 2, 
+                        aspectRatio: mediaType === 'video' ? '16/9' : 'auto',
+                        minHeight: mediaType === 'audio' ? 60 : 120,
+                        maxHeight: 200,
+                        width: '100%',
+                        borderRadius: 1,
+                        overflow: 'hidden'
+                      }}>
+                        <MediaPlayer
+                          src={mediaUrl}
+                          type={mediaType}
+                          title={posts[0].title}
+                          thumbnail={posts[0].media_metadata?.thumbnail || posts[0].media_metadata?.albumArt || posts[0].image_url}
+                          darkMode={true}
+                          compact={false}
+                          autoplay={false}
+                          sx={{
+                            width: '100%',
+                            height: '100%',
+                            '& video': {
+                              width: '100%',
+                              height: '100%',
+                              objectFit: 'cover'
+                            }
+                          }}
+                        />
+                      </Box>
+                    );
+                  } else {
+                    // Default to image display
+                    return (
+                      <Box
+                        sx={{
+                          width: '100%',
+                          height: 200,
+                          overflow: 'hidden',
+                          bgcolor: 'grey.100',
+                          mb: 2,
+                          borderRadius: 1
+                        }}
+                      >
+                        <img 
+                          src={mediaUrl} 
+                          alt={posts[0].title}
+                          className="portfolio-image"
+                          style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover',
+                            transition: 'transform 0.3s ease'
+                          }}
+                        />
+                      </Box>
+                    );
+                  }
+                }
+                return null;
+              })()}
               
               {/* Description */}
               {posts[0].description && (
@@ -271,7 +326,7 @@ const LatestPostsWidget = ({ networkId }) => {
                   color="text.secondary"
                   sx={{
                     display: '-webkit-box',
-                    WebkitLineClamp: posts[0].image_url ? 3 : 5,
+                    WebkitLineClamp: (posts[0].media_url || posts[0].image_url) ? 3 : 5,
                     WebkitBoxOrient: 'vertical',
                     overflow: 'hidden',
                     lineHeight: 1.6

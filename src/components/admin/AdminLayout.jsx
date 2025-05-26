@@ -32,7 +32,8 @@ import {
   Security as SecurityIcon,
   Poll as PollIcon,
   Link as LinkIcon,
-  MonetizationOn as MonetizationIcon
+  MonetizationOn as MonetizationIcon,
+  CreditCard as CreditCardIcon
 } from '@mui/icons-material';
 
 // Drawer width for desktop view
@@ -104,6 +105,11 @@ const AdminLayout = ({
       name: 'Monetization', 
       icon: <MonetizationIcon />, 
       index: 7 
+    },
+    { 
+      name: 'Billing & Plan', 
+      icon: <CreditCardIcon />, 
+      index: 8 
     }
   ];
 
