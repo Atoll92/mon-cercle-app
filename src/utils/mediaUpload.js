@@ -158,6 +158,40 @@ export const uploadMediaFile = async (file, bucket, path, options = {}) => {
   }
 };
 
+// Upload album art from blob URL
+export const uploadAlbumArt = async (blobUrl, bucket, path) => {
+  try {
+    // Fetch blob from URL
+    const response = await fetch(blobUrl);
+    const blob = await response.blob();
+    
+    // Convert blob to file
+    const file = new File([blob], 'album-art.jpg', { type: blob.type || 'image/jpeg' });
+    
+    // Generate unique filename
+    const timestamp = Date.now();
+    const randomString = Math.random().toString(36).substring(2, 15);
+    const fileName = `${path}/album-art-${timestamp}_${randomString}.jpg`;
+    
+    // Upload to Supabase Storage
+    const { data, error } = await supabase.storage
+      .from(bucket)
+      .upload(fileName, file);
+    
+    if (error) throw error;
+    
+    // Get public URL
+    const { data: { publicUrl } } = supabase.storage
+      .from(bucket)
+      .getPublicUrl(fileName);
+    
+    return publicUrl;
+  } catch (error) {
+    console.error('Error uploading album art:', error);
+    return null;
+  }
+};
+
 // Create thumbnail for video (returns first frame as image)
 export const createVideoThumbnail = (file) => {
   return new Promise((resolve, reject) => {
@@ -247,8 +281,6 @@ export const extractAudioMetadata = async (file) => {
           
           const metadata = await parseBuffer(buffer);
           
-          console.log('Extracted audio metadata:', metadata);
-          
           const result = {
             fileName: file.name,
             fileSize: file.size,
@@ -267,7 +299,6 @@ export const extractAudioMetadata = async (file) => {
             const blob = new Blob([picture.data], { type: picture.format });
             result.albumArt = URL.createObjectURL(blob);
             result.thumbnail = result.albumArt; // Also set as thumbnail for consistency
-            console.log('Album art extracted:', result.albumArt);
           }
           
           resolve(result);

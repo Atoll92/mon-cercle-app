@@ -22,6 +22,7 @@ import {
   MEDIA_TYPES, 
   validateFile, 
   uploadMediaFile, 
+  uploadAlbumArt,
   formatFileSize, 
   getMediaType,
   createVideoThumbnail,
@@ -150,8 +151,14 @@ function MediaUpload({
         const preview = previews[i];
         const result = await uploadMediaFile(file, bucket, path);
         
+        // Upload album art if it exists for audio files
+        let permanentAlbumArtUrl = null;
+        if (result.mediaType === 'AUDIO' && preview.albumArt) {
+          permanentAlbumArtUrl = await uploadAlbumArt(preview.albumArt, bucket, path);
+        }
+        
         // Combine upload result with preview metadata
-        uploadedFiles.push({
+        const uploadedFile = {
           ...result,
           type: result.mediaType.toLowerCase(), // Convert to lowercase for database
           metadata: {
@@ -159,14 +166,16 @@ function MediaUpload({
             fileSize: result.fileSize,
             mimeType: result.mimeType,
             duration: preview.duration,
-            thumbnail: preview.thumbnail,
+            thumbnail: permanentAlbumArtUrl || preview.thumbnail,
             // Audio specific metadata
             title: preview.title,
             artist: preview.artist,
             album: preview.album,
-            albumArt: preview.albumArt
+            albumArt: permanentAlbumArtUrl
           }
-        });
+        };
+        
+        uploadedFiles.push(uploadedFile);
       }
 
       // Clean up previews

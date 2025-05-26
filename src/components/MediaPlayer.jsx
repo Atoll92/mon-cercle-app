@@ -43,6 +43,7 @@ function MediaPlayer({
   const [showControls, setShowControls] = useState(!hideControlsUntilInteraction);
   const [hasInteracted, setHasInteracted] = useState(false);
 
+
   useEffect(() => {
     const media = mediaRef.current;
     if (!media) return;
@@ -57,8 +58,8 @@ function MediaPlayer({
       setDuration(media.duration);
       setIsLoading(false);
       if (autoplay) {
-        media.play().catch(err => {
-          console.log('Autoplay prevented:', err);
+        media.play().catch(() => {
+          // Autoplay prevented by browser
         });
       }
     };
@@ -73,8 +74,7 @@ function MediaPlayer({
       setIsPlaying(false);
       setCurrentTime(0);
     };
-    const handleError = (e) => {
-      console.error('Media error:', e);
+    const handleError = () => {
       setError('Failed to load media');
       setIsLoading(false);
     };
@@ -226,7 +226,45 @@ function MediaPlayer({
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-          <AudioIcon sx={{ fontSize: 48, mr: 2, color: 'primary.main' }} />
+          {thumbnail ? (
+            <Box
+              sx={{
+                width: 80,
+                height: 80,
+                mr: 2,
+                borderRadius: 1,
+                overflow: 'hidden',
+                flexShrink: 0,
+                bgcolor: darkMode ? 'grey.800' : 'grey.200'
+              }}
+            >
+              <img
+                src={thumbnail}
+                alt={title || 'Audio artwork'}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover'
+                }}
+              />
+            </Box>
+          ) : (
+            <Box
+              sx={{
+                width: 80,
+                height: 80,
+                mr: 2,
+                borderRadius: 1,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                bgcolor: darkMode ? 'grey.800' : 'grey.200',
+                flexShrink: 0
+              }}
+            >
+              <AudioIcon sx={{ fontSize: 48, color: 'primary.main' }} />
+            </Box>
+          )}
           <Box sx={{ flex: 1 }}>
             {title && (
               <Typography variant="subtitle1" gutterBottom>

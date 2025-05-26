@@ -29,7 +29,13 @@ import {
   ExpandMore as ExpandMoreIcon,
   ExpandLess as ExpandLessIcon,
   ReadMore as ReadMoreIcon,
-  PictureAsPdf as PdfIcon
+  PictureAsPdf as PdfIcon,
+  Image as ImageIcon,
+  VideoLibrary as VideoIcon,
+  AudioFile as AudioIcon,
+  Article as ArticleIcon,
+  PlayCircleFilled as PlayIcon,
+  Pause as PauseIcon
 } from '@mui/icons-material';
 import MediaPlayer from './MediaPlayer';
 import LazyImage from './LazyImage';
@@ -75,6 +81,10 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
   const expandedCardRef = useRef(null);
   const animationFrameRef = useRef();
   const cardRefs = useRef(new Map());
+  
+  // State for audio playback
+  const [playingAudioId, setPlayingAudioId] = useState(null);
+  const audioRefs = useRef({});
   
   // Toggle card expansion with improved scroll handling
   const handleExpandCard = (id) => {
@@ -345,6 +355,78 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
       });
     }
   };
+
+  // Cleanup audio on unmount
+  useEffect(() => {
+    return () => {
+      // Clean up audio elements
+      Object.values(audioRefs.current).forEach(audio => {
+        audio.pause();
+        audio.src = '';
+      });
+    };
+  }, []);
+
+  // Handle audio playback
+  const handleAudioPlay = (itemId, audioUrl) => {
+    // If clicking the same audio, toggle play/pause
+    if (playingAudioId === itemId) {
+      const audio = audioRefs.current[itemId];
+      if (audio) {
+        if (audio.paused) {
+          audio.play();
+        } else {
+          audio.pause();
+        }
+      }
+    } else {
+      // Stop any currently playing audio
+      if (playingAudioId && audioRefs.current[playingAudioId]) {
+        audioRefs.current[playingAudioId].pause();
+      }
+      
+      // Create or get audio element for this item
+      if (!audioRefs.current[itemId]) {
+        const audio = new Audio(audioUrl);
+        audio.addEventListener('ended', () => {
+          setPlayingAudioId(null);
+        });
+        audioRefs.current[itemId] = audio;
+      }
+      
+      // Play the new audio
+      audioRefs.current[itemId].play();
+      setPlayingAudioId(itemId);
+    }
+  };
+
+  // Get content type icon
+  const getContentTypeIcon = (item) => {
+    // Check for PDF
+    if (item.file_type === 'pdf') {
+      return { icon: <PdfIcon fontSize="small" />, label: 'PDF', color: 'error' };
+    }
+    
+    // Check for media
+    if (item.media_url && item.media_type) {
+      switch (item.media_type) {
+        case 'image':
+          return { icon: <ImageIcon fontSize="small" />, label: 'Image', color: 'success' };
+        case 'video':
+          return { icon: <VideoIcon fontSize="small" />, label: 'Video', color: 'info' };
+        case 'audio':
+          return { icon: <AudioIcon fontSize="small" />, label: 'Audio', color: 'warning' };
+      }
+    }
+    
+    // Check for legacy image
+    if (item.image_url) {
+      return { icon: <ImageIcon fontSize="small" />, label: 'Image', color: 'success' };
+    }
+    
+    // Default to article/text
+    return { icon: <ArticleIcon fontSize="small" />, label: 'Text', color: 'default' };
+  };
   
   // Get height for masonry layout
   const getCardHeight = (item) => {
@@ -525,17 +607,36 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                       </Avatar>
                     }
                     action={
-                      <Chip 
-                        size="small" 
-                        label={item.itemType === 'post' ? 'Post' : 'News'} 
-                        color={item.itemType === 'post' ? 'secondary' : 'primary'}
-                        sx={{ 
-                          height: 24,
-                          mt: 1,
-                          mr: 1,
-                          fontWeight: 500
-                        }}
-                      />
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1, mr: 1 }}>
+                        {(() => {
+                          const contentType = getContentTypeIcon(item);
+                          return (
+                            <Chip
+                              size="small"
+                              icon={contentType.icon}
+                              label={contentType.label}
+                              color={contentType.color}
+                              variant="outlined"
+                              sx={{ 
+                                height: 24,
+                                fontWeight: 500,
+                                '& .MuiChip-icon': {
+                                  fontSize: 16
+                                }
+                              }}
+                            />
+                          );
+                        })()}
+                        <Chip 
+                          size="small" 
+                          label={item.itemType === 'post' ? 'Post' : 'News'} 
+                          color={item.itemType === 'post' ? 'secondary' : 'primary'}
+                          sx={{ 
+                            height: 24,
+                            fontWeight: 500
+                          }}
+                        />
+                      </Box>
                     }
                     title={
                       <Link
@@ -713,16 +814,110 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                               />
                             </Box>
                           );
+                        } else if (mediaType === 'audio') {
+                          // Custom audio display with large artwork
+                          const audioThumbnail = item.media_metadata?.thumbnail || item.image_url;
+                          
+                          return (
+                            <Box sx={{ position: 'relative', width: '100%' }}>
+                              {audioThumbnail ? (
+                                // Audio with artwork
+                                <Box sx={{ position: 'relative', width: '100%', pt: '100%' /* Square aspect ratio */ }}>
+                                  <LazyImage
+                                    src={audioThumbnail}
+                                    alt={item.media_metadata?.title || item.title}
+                                    style={{ 
+                                      position: 'absolute',
+                                      top: 0,
+                                      left: 0,
+                                      width: '100%',
+                                      height: '100%',
+                                      objectFit: 'cover'
+                                    }}
+                                  />
+                                  {/* Overlay gradient */}
+                                  <Box
+                                    sx={{
+                                      position: 'absolute',
+                                      bottom: 0,
+                                      left: 0,
+                                      right: 0,
+                                      height: '60%',
+                                      background: 'linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 100%)',
+                                    }}
+                                  />
+                                  {/* Play button overlay */}
+                                  <IconButton
+                                    onClick={() => handleAudioPlay(item.id, item.media_url)}
+                                    sx={{
+                                      position: 'absolute',
+                                      top: '50%',
+                                      left: '50%',
+                                      transform: 'translate(-50%, -50%)',
+                                      bgcolor: 'rgba(255,255,255,0.9)',
+                                      color: 'primary.main',
+                                      '&:hover': {
+                                        bgcolor: 'rgba(255,255,255,1)',
+                                        transform: 'translate(-50%, -50%) scale(1.1)',
+                                      },
+                                      transition: 'all 0.2s ease',
+                                      width: 64,
+                                      height: 64,
+                                    }}
+                                  >
+                                    {playingAudioId === item.id && audioRefs.current[item.id] && !audioRefs.current[item.id].paused ? (
+                                      <PauseIcon sx={{ fontSize: 36 }} />
+                                    ) : (
+                                      <PlayIcon sx={{ fontSize: 36 }} />
+                                    )}
+                                  </IconButton>
+                                  {/* Audio info overlay */}
+                                  <Box
+                                    sx={{
+                                      position: 'absolute',
+                                      bottom: 0,
+                                      left: 0,
+                                      right: 0,
+                                      p: 2,
+                                      color: 'white',
+                                    }}
+                                  >
+                                    <Typography variant="subtitle1" fontWeight="medium" noWrap>
+                                      {item.media_metadata?.title || item.title}
+                                    </Typography>
+                                    {item.media_metadata?.artist && (
+                                      <Typography variant="body2" sx={{ opacity: 0.8 }} noWrap>
+                                        {item.media_metadata.artist}
+                                      </Typography>
+                                    )}
+                                  </Box>
+                                </Box>
+                              ) : (
+                                // Audio without artwork - use compact player
+                                <Box sx={{ p: 2 }}>
+                                  <MediaPlayer
+                                    src={item.media_url}
+                                    type="audio"
+                                    title={item.media_metadata?.fileName || item.title}
+                                    darkMode={darkMode}
+                                    compact={true}
+                                  />
+                                </Box>
+                              )}
+                            </Box>
+                          );
                         } else {
+                          // Video player
                           return (
                             <MediaPlayer
                               src={item.media_url}
-                              type={mediaType === 'video' ? 'video' : 'audio'}
+                              type="video"
                               title={item.media_metadata?.fileName || item.title}
+                              thumbnail={item.media_metadata?.thumbnail || item.image_url}
                               darkMode={darkMode}
-                              autoplay={mediaType === 'video'}
-                              muted={mediaType === 'video'}
-                              hideControlsUntilInteraction={mediaType === 'video'}
+                              autoplay={true}
+                              muted={true}
+                              hideControlsUntilInteraction={true}
                             />
                           );
                         }

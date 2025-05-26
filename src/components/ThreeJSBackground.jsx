@@ -8,7 +8,7 @@ import { GammaCorrectionShader } from 'three/examples/jsm/shaders/GammaCorrectio
 
 const ThreeJSBackground = () => {
   const mountRef = useRef(null);
-  const [fps, setFps] = useState(0);
+  const [webGLFailed, setWebGLFailed] = useState(false);
   
   useEffect(() => {
     // Initialize Three.js scene
@@ -31,11 +31,19 @@ const ThreeJSBackground = () => {
     camera.position.z = 5;
     
     // Create a renderer with better performance settings
-    const renderer = new THREE.WebGLRenderer({ 
-      antialias: true, 
-      alpha: true,
-      powerPreference: 'high-performance'
-    });
+    let renderer;
+    try {
+      renderer = new THREE.WebGLRenderer({ 
+        antialias: true, 
+        alpha: true,
+        powerPreference: 'high-performance',
+        failIfMajorPerformanceCaveat: false
+      });
+    } catch (error) {
+      console.warn('WebGL not available, falling back to simple background');
+      setWebGLFailed(true);
+      return () => {}; // Return empty cleanup function
+    }
     renderer.setSize(width, height);
     
     // Set background color to match fog color
@@ -337,6 +345,24 @@ const ThreeJSBackground = () => {
     };
   }, []);
   
+  // If WebGL failed, show a simple gradient background
+  if (webGLFailed) {
+    return (
+      <div 
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          zIndex: 0,
+          pointerEvents: 'none',
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+        }}
+      />
+    );
+  }
+
   return (
     <>
       <div 

@@ -51,7 +51,8 @@ const NewsTab = ({ networkId, userId, newsPosts, setNewsPosts, members, darkMode
     console.log("Media upload result:", uploadResult);
     setMediaUrl(uploadResult.url);
     setMediaType(uploadResult.type);
-    setMediaMetadata({
+    // Include all metadata from the upload result, including thumbnail for audio
+    setMediaMetadata(uploadResult.metadata || {
       fileName: uploadResult.fileName,
       fileSize: uploadResult.fileSize,
       mimeType: uploadResult.mimeType

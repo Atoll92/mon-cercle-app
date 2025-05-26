@@ -104,7 +104,9 @@ export const NetworkProvider = ({ networkId, children }) => {
     // Add utility functions for updating network data
     refreshMembers: async () => {
       try {
-        const membersData = await fetchNetworkMembers(networkId);
+        const membersResponse = await fetchNetworkMembers(networkId);
+        // Handle both old array format and new paginated format
+        const membersData = Array.isArray(membersResponse) ? membersResponse : membersResponse.members || [];
         setMembers(membersData);
         return { success: true };
       } catch (error) {
@@ -124,7 +126,9 @@ export const NetworkProvider = ({ networkId, children }) => {
     },
     refreshNews: async () => {
       try {
-        const newsData = await fetchNetworkNews(networkId);
+        const newsResponse = await fetchNetworkNews(networkId);
+        // Handle both old array format and new paginated format
+        const newsData = Array.isArray(newsResponse) ? newsResponse : newsResponse.news || [];
         setNews(newsData);
         return { success: true };
       } catch (error) {
