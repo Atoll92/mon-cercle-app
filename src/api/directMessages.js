@@ -195,7 +195,7 @@ export const getConversationMessages = async (conversationId) => {
       .from('direct_messages')
       .select(`
         *,
-        sender:profiles!sender_id (
+        sender:profiles!direct_messages_sender_id_fkey (
           id,
           full_name,
           profile_picture_url

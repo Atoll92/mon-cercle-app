@@ -138,7 +138,7 @@ function DirectMessagesList({ onSelectConversation }) {
   }
   
   return (
-    <Box sx={{ width: '100%', bgcolor: 'background.paper', display: 'flex', flexDirection: 'column', height: '100%' }}>
+    <Box sx={{ width: '100%', bgcolor: 'background.paper', color: 'text.primary', display: 'flex', flexDirection: 'column', height: '100%' }}>
       {/* Search and filter bar */}
       <Box sx={{ p: 2, pb: 1 }}>
         <TextField
@@ -163,6 +163,7 @@ function DirectMessagesList({ onSelectConversation }) {
             size="small"
             onClick={() => handleFilterChange('all')}
             sx={{ minWidth: 0, px: 1 }}
+            color={quickFilter === 'all' ? "primary" : "inherit"}
           >
             All
           </Button>
@@ -171,6 +172,7 @@ function DirectMessagesList({ onSelectConversation }) {
             size="small"
             onClick={() => handleFilterChange('unread')}
             sx={{ minWidth: 0, px: 1 }}
+            color={quickFilter === 'unread' ? "primary" : "inherit"}
           >
             Unread
           </Button>
@@ -179,6 +181,7 @@ function DirectMessagesList({ onSelectConversation }) {
             size="small"
             onClick={() => handleFilterChange('recent')}
             sx={{ minWidth: 0, px: 1 }}
+            color={quickFilter === 'recent' ? "primary" : "inherit"}
           >
             Recent
           </Button>
@@ -215,7 +218,7 @@ function DirectMessagesList({ onSelectConversation }) {
             )}
           </Box>
         ) : (
-          <List sx={{ width: '100%', bgcolor: 'background.paper', pt: 0 }}>
+          <List sx={{ width: '100%', bgcolor: 'background.paper', color: 'text.primary', pt: 0 }}>
             {filteredConversations.map((conversation) => {
               const partner = conversation.partner || {};
               const lastMessage = conversation.last_message;
@@ -229,9 +232,9 @@ function DirectMessagesList({ onSelectConversation }) {
                     sx={{ 
                       py: 1.5,
                       px: 2,
-                      backgroundColor: conversation.unread_count > 0 ? 'rgba(25, 118, 210, 0.08)' : 'transparent',
+                      backgroundColor: conversation.unread_count > 0 ? (theme) => theme.palette.mode === 'dark' ? 'rgba(144, 202, 249, 0.08)' : 'rgba(25, 118, 210, 0.08)' : 'transparent',
                       '&:hover': {
-                        backgroundColor: 'rgba(0, 0, 0, 0.04)',
+                        backgroundColor: (theme) => theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.04)',
                       }
                     }}
                   >
@@ -331,6 +334,12 @@ function DirectMessagesList({ onSelectConversation }) {
         open={Boolean(anchorEl)}
         onClose={handleMenuClose}
         onClick={handleMenuClose}
+        PaperProps={{
+          sx: {
+            bgcolor: 'background.paper',
+            color: 'text.primary'
+          }
+        }}
       >
         <MenuItem>
           <ListItemIcon>

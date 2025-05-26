@@ -260,11 +260,11 @@ function DirectMessagesPage() {
       {showChat ? (
         // Chat view for mobile
         <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-          <Box sx={{ p: 1, borderBottom: 1, borderColor: 'divider', display: 'flex', alignItems: 'center' }}>
+          <Box sx={{ p: 1, borderBottom: 1, borderColor: 'divider', display: 'flex', alignItems: 'center', bgcolor: 'background.paper' }}>
             <IconButton edge="start" onClick={handleBackToList} sx={{ mr: 1 }}>
               <ArrowBackIcon />
             </IconButton>
-            <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+            <Typography variant="h6" component="div" sx={{ flexGrow: 1, color: 'text.primary' }}>
               {partner ? partner.full_name : 'Messages'}
             </Typography>
             <IconButton edge="end" onClick={toggleDrawer}>
@@ -279,7 +279,7 @@ function DirectMessagesPage() {
                 onBack={handleBackToList}
               />
             ) : (
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', bgcolor: 'background.default' }}>
                 <Typography variant="body1" color="text.secondary">
                   Select a conversation to start messaging
                 </Typography>
@@ -292,7 +292,7 @@ function DirectMessagesPage() {
             anchor="right"
             open={drawerOpen}
             onClose={() => setDrawerOpen(false)}
-            PaperProps={{ sx: { width: '80%', maxWidth: 360 } }}
+            PaperProps={{ sx: { width: '80%', maxWidth: 360, bgcolor: 'background.paper', color: 'text.primary' } }}
           >
             <Box sx={{ display: 'flex', alignItems: 'center', p: 2, borderBottom: 1, borderColor: 'divider' }}>
               <Typography variant="h6" sx={{ flexGrow: 1 }}>
@@ -309,12 +309,12 @@ function DirectMessagesPage() {
         </Box>
       ) : (
         // Conversation list view for mobile
-        <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-          <Box sx={{ p: 1, borderBottom: 1, borderColor: 'divider', display: 'flex', alignItems: 'center' }}>
+        <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', bgcolor: 'background.default' }}>
+          <Box sx={{ p: 1, borderBottom: 1, borderColor: 'divider', display: 'flex', alignItems: 'center', bgcolor: 'background.paper' }}>
             <IconButton edge="start" component={Link} to="/dashboard" sx={{ mr: 1 }}>
               <ArrowBackIcon />
             </IconButton>
-            <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+            <Typography variant="h6" component="div" sx={{ flexGrow: 1, color: 'text.primary' }}>
               Messages
             </Typography>
             <IconButton edge="end" onClick={handleNewConversation}>
@@ -335,7 +335,9 @@ function DirectMessagesPage() {
       overflow: 'hidden', 
       height: '80vh', 
       display: 'flex', 
-      width: '100%' 
+      width: '100%',
+      bgcolor: 'background.paper',
+      color: 'text.primary'
     }}>
       {/* Sidebar with conversation list */}
       <Box 
@@ -390,7 +392,8 @@ function DirectMessagesPage() {
               alignItems: 'center', 
               justifyContent: 'center', 
               height: '100%', 
-              p: 3
+              p: 3,
+              bgcolor: 'background.default'
             }}
           >
             <Typography variant="h6" sx={{ mb: 2 }}>
@@ -414,7 +417,7 @@ function DirectMessagesPage() {
       height: isMobile ? 'calc(100vh - 56px)' : undefined,  
       display: 'flex', 
       flexDirection: 'column',
-      bgcolor: '#f5f7f9'
+      bgcolor: 'background.default'
     }}>
       {!isMobile && (
         <Container maxWidth="xl" sx={{ mt: 4, mb: 2 }}>
@@ -459,7 +462,18 @@ function DirectMessagesPage() {
       )}
 
       {/* New Chat Dialog */}
-      <Dialog open={newChatDialogOpen} onClose={() => setNewChatDialogOpen(false)} maxWidth="sm" fullWidth>
+      <Dialog 
+        open={newChatDialogOpen} 
+        onClose={() => setNewChatDialogOpen(false)} 
+        maxWidth="sm" 
+        fullWidth
+        PaperProps={{
+          sx: {
+            bgcolor: 'background.paper',
+            color: 'text.primary'
+          }
+        }}
+      >
         <DialogTitle>Start New Conversation</DialogTitle>
         <DialogContent>
           <TextField

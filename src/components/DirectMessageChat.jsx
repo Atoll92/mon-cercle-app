@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, Fragment } from 'react';
 import { useAuth } from '../context/authcontext';
 import { useDirectMessages } from '../context/directMessagesContext';
 import { getConversationMessages, sendDirectMessage, markMessagesAsRead } from '../api/directMessages';
@@ -336,7 +336,9 @@ if (refreshConversations) {
           alignItems: 'center', 
           p: 1.5,
           borderBottom: 1,
-          borderColor: 'divider'
+          borderColor: 'divider',
+          bgcolor: 'background.paper',
+          color: 'text.primary'
         }}
       >
         <IconButton 
@@ -387,7 +389,7 @@ if (refreshConversations) {
           p: 2,
           display: 'flex',
           flexDirection: 'column',
-          bgcolor: '#f5f7f9',
+          bgcolor: (theme) => theme.palette.mode === 'dark' ? 'grey.900' : '#f5f7f9',
         }}
       >
         {loading ? (
@@ -431,7 +433,7 @@ if (refreshConversations) {
               const showDateHeader = shouldShowDateHeader(message.created_at, index);
               
               return (
-                <React.Fragment key={message.id}>
+                <Fragment key={message.id}>
                   {showDateHeader && (
                     <Box
                       sx={{
@@ -444,7 +446,7 @@ if (refreshConversations) {
                         label={formatMessageDate(message.created_at)}
                         size="small"
                         sx={{ 
-                          bgcolor: 'rgba(0, 0, 0, 0.08)', 
+                          bgcolor: (theme) => theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)', 
                           color: 'text.secondary',
                           fontWeight: 500,
                           fontSize: '0.7rem'
@@ -475,13 +477,13 @@ if (refreshConversations) {
                     
                     <Box
                       sx={{
-                        bgcolor: isUser ? 'primary.main' : 'background.paper',
+                        bgcolor: isUser ? 'primary.main' : (theme) => theme.palette.mode === 'dark' ? 'grey.800' : 'background.paper',
                         color: isUser ? 'primary.contrastText' : 'text.primary',
                         borderRadius: 2,
                         px: 2,
                         py: 1,
                         maxWidth: '70%',
-                        boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
+                        boxShadow: (theme) => theme.palette.mode === 'dark' ? '0 1px 2px rgba(0,0,0,0.3)' : '0 1px 2px rgba(0,0,0,0.1)',
                         borderTopLeftRadius: !isUser && !showAvatar ? 1 : undefined,
                         borderTopRightRadius: isUser && index > 0 && messages[index - 1].sender_id === user?.id ? 1 : undefined,
                         ml: isUser ? 0 : 0.5,
@@ -528,7 +530,7 @@ if (refreshConversations) {
                       </Box>
                     </Box>
                   </Box>
-                </React.Fragment>
+                </Fragment>
               );
             })}
             <div ref={messagesEndRef} />
@@ -566,7 +568,7 @@ if (refreshConversations) {
             sx={{
               '& .MuiOutlinedInput-root': {
                 borderRadius: 4,
-                backgroundColor: '#f5f7f9',
+                backgroundColor: (theme) => theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : '#f5f7f9',
               }
             }}
             multiline
