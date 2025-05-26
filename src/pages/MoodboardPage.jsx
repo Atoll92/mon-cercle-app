@@ -201,7 +201,7 @@ const renderContent = () => {
           height: '100%', 
           position: 'relative', 
           overflow: 'hidden',
-          backgroundColor: '#f5f5f5', // Add background to make loading more visible
+          backgroundColor: item.backgroundColor || 'transparent',
         }}>
           {/* Loading indicator */}
           {!imageLoaded && item.content && (
@@ -249,35 +249,51 @@ const renderContent = () => {
           height: '100%', 
           position: 'relative', 
           overflow: 'hidden',
-          backgroundColor: '#000',
+          backgroundColor: item.backgroundColor || 'transparent',
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'center',
-          pointerEvents: selected && !isEditable ? 'auto' : 'none'
+          justifyContent: 'center'
         }}>
-          <MediaPlayer
-            src={item.content}
-            type="video"
-            title={item.metadata?.fileName || item.title || 'Video'}
-            compact={false}
-            darkMode={true}
-          />
-          {isEditable && !selected && (
-            <Box sx={{
-              position: 'absolute',
-              bottom: 8,
-              left: 8,
-              right: 8,
-              bgcolor: 'rgba(0,0,0,0.7)',
-              color: 'white',
-              p: 1,
-              borderRadius: 1,
-              fontSize: '0.75rem',
-              textAlign: 'center'
+          <Box 
+            sx={{ 
+              maxWidth: '100%',
+              maxHeight: '100%',
+              position: 'relative',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+            onMouseDown={(e) => {
+              // Only stop propagation if clicking on actual interactive elements
+              const target = e.target;
+              const isControl = target.tagName === 'BUTTON' || 
+                               target.closest('button') ||
+                               target.closest('[role="slider"]') ||
+                               target.closest('.media-controls') ||
+                               target.type === 'range';
+              
+              if (isControl) {
+                e.stopPropagation();
+              }
+              // Otherwise, allow the drag to proceed
+            }}
+          >
+            <Box sx={{ 
+              '& video': {
+                maxWidth: '100%',
+                maxHeight: '100%',
+                objectFit: 'contain'
+              }
             }}>
-              Click to select, then play
+              <MediaPlayer
+                src={item.content}
+                type="video"
+                title={item.metadata?.fileName || item.title || 'Video'}
+                compact={false}
+                darkMode={true}
+              />
             </Box>
-          )}
+          </Box>
         </Box>
       );
     case 'audio':
@@ -291,16 +307,36 @@ const renderContent = () => {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          p: 2,
-          pointerEvents: selected && !isEditable ? 'auto' : 'none'
+          p: 2
         }}>
-          <MediaPlayer
-            src={item.content}
-            type="audio"
-            title={item.metadata?.fileName || item.title || 'Audio'}
-            compact={true}
-            darkMode={false}
-          />
+          <Box 
+            sx={{ 
+              width: '100%', 
+              height: '100%'
+            }}
+            onMouseDown={(e) => {
+              // Only stop propagation if clicking on actual interactive elements
+              const target = e.target;
+              const isControl = target.tagName === 'BUTTON' || 
+                               target.closest('button') ||
+                               target.closest('[role="slider"]') ||
+                               target.closest('.media-controls') ||
+                               target.type === 'range';
+              
+              if (isControl) {
+                e.stopPropagation();
+              }
+              // Otherwise, allow the drag to proceed
+            }}
+          >
+            <MediaPlayer
+              src={item.content}
+              type="audio"
+              title={item.metadata?.fileName || item.title || 'Audio'}
+              compact={true}
+              darkMode={false}
+            />
+          </Box>
         </Box>
       );
     case 'pdf':
@@ -604,7 +640,7 @@ const EditItemDialog = ({
     const [editedContent, setEditedContent] = useState('');
     const [editedTitle, setEditedTitle] = useState('');
     const [editedTextColor, setEditedTextColor] = useState('#000000');
-    const [editedBackgroundColor, setEditedBackgroundColor] = useState('transparent');
+    const [editedBackgroundColor, setEditedBackgroundColor] = useState('#ffffff');
     const [editedFont_family, setEditedFont_family] = useState('');
     const [editedFont_size, setEditedFont_size] = useState('');
     const [editedFont_weight, setEditedFont_weight] = useState('');
@@ -753,7 +789,7 @@ const EditItemDialog = ({
                   <TextField
                     type="color"
                     value={editedBackgroundColor === 'transparent' ? '#ffffff' : editedBackgroundColor}
-                    onChange={(e) => setEditedBackgroundColor(e.target.value === '#ffffff' ? 'transparent' : e.target.value)}
+                    onChange={(e) => setEditedBackgroundColor(e.target.value)}
                     fullWidth
                     size="small"
                     InputProps={{ sx: { height: '36px' } }}
@@ -1371,7 +1407,7 @@ function MoodboardPage() {
   const [newImageUrl, setNewImageUrl] = useState('');
   const [newText, setNewText] = useState('');
   const [newTextColor, setNewTextColor] = useState('#000000');
-  const [newTextBgColor, setNewTextBgColor] = useState('transparent');
+  const [newTextBgColor, setNewTextBgColor] = useState('#ffffff');
   const [newLink, setNewLink] = useState('');
   const [newLinkTitle, setNewLinkTitle] = useState('');
   const [newVideoUrl, setNewVideoUrl] = useState('');
@@ -1572,6 +1608,7 @@ function MoodboardPage() {
         moodboard_id: moodboardId,
         type: 'image',
         content: publicUrl,
+        backgroundColor: '#ffffff',
         x: centerX - 150, // Center the item in view
         y: centerY - 100,
         width: 300,
@@ -1647,7 +1684,7 @@ function MoodboardPage() {
       // Reset form and close dialog
       setNewText('');
       setNewTextColor('#000000');
-      setNewTextBgColor('transparent');
+      setNewTextBgColor('#ffffff');
       setTextDialogOpen(false);
       
       setSuccess('Text added successfully');
@@ -1678,6 +1715,7 @@ function MoodboardPage() {
         type: 'link',
         content: newLink,
         title: newLinkTitle || newLink,
+        backgroundColor: '#ffffff',
         x: centerX - 100, // Center the item in view
         y: centerY - 60,
         width: 200,
@@ -1749,6 +1787,7 @@ function MoodboardPage() {
         type: 'pdf',
         content: publicUrl,
         title: newPdfTitle || newPdf.name.replace(/\.[^/.]+$/, ''), // Remove extension
+        backgroundColor: '#ffffff',
         x: centerX - 150, // Center the item in view
         y: centerY - 100,
         width: 300,
@@ -2273,6 +2312,7 @@ const handleUpdateItem = async (updatedItem) => {
                   // Don't include id - let Supabase generate it
                   type: mediaData.mediaType.toLowerCase(),
                   content: mediaData.url,
+                  backgroundColor: '#ffffff',
                   x: 50,
                   y: 50,
                   width: mediaData.mediaType === 'AUDIO' ? 300 : 400,
@@ -2353,7 +2393,7 @@ const handleUpdateItem = async (updatedItem) => {
               label="Background Color"
               type="color"
               value={newTextBgColor === 'transparent' ? '#ffffff' : newTextBgColor}
-              onChange={(e) => setNewTextBgColor(e.target.value === '#ffffff' ? 'transparent' : e.target.value)}
+              onChange={(e) => setNewTextBgColor(e.target.value)}
               fullWidth
               margin="normal"
               InputProps={{ sx: { height: '56px' } }}
