@@ -101,14 +101,9 @@ const AdminLayout = ({
       index: 6 
     },
     { 
-      name: 'Invitation Links', 
-      icon: <LinkIcon />, 
-      index: 7 
-    },
-    { 
       name: 'Monetization', 
       icon: <MonetizationIcon />, 
-      index: 8 
+      index: 7 
     }
   ];
 

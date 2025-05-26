@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -19,17 +19,34 @@ import {
   DialogActions,
   Alert,
   CircularProgress,
-  Tooltip
+  Tooltip,
+  Tabs,
+  Tab,
+  Paper,
+  IconButton,
+  Snackbar,
+  Stack,
+  Card,
+  CardContent,
+  Grid
 } from '@mui/material';
 import {
   PersonAdd as PersonAddIcon,
   AdminPanelSettings as AdminIcon,
   PersonRemove as PersonRemoveIcon,
-  GroupAdd as GroupAddIcon
+  GroupAdd as GroupAddIcon,
+  Link as LinkIcon,
+  ContentCopy as CopyIcon,
+  Delete as DeleteIcon,
+  QrCode as QrCodeIcon,
+  Check as CheckIcon,
+  AccessTime as TimeIcon,
+  Groups as GroupsIcon2
 } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
 import { inviteUserToNetwork, toggleMemberAdmin, removeMemberFromNetwork } from '../../api/networks';
 import BatchInviteModal from './BatchInviteModal';
+import InvitationLinksTab from './InvitationLinksTab';
 
 const MembersTab = ({ members, user, network, onMembersChange, darkMode = false }) => {
   const [inviteEmail, setInviteEmail] = useState('');
@@ -40,6 +57,7 @@ const MembersTab = ({ members, user, network, onMembersChange, darkMode = false 
   const [dialogAction, setDialogAction] = useState(null);
   const [dialogMember, setDialogMember] = useState(null);
   const [batchInviteOpen, setBatchInviteOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState(0);
 
   const handleInvite = async (e) => {
     e.preventDefault();
@@ -103,7 +121,7 @@ const MembersTab = ({ members, user, network, onMembersChange, darkMode = false 
     setError(null);
     setMessage('');
     
-    const result = await removeMemberFromNetwork(memberId);
+    const result = await removeMemberFromNetwork(memberId, network.id);
     
     if (result.success) {
       setMessage(result.message);
@@ -146,137 +164,168 @@ const MembersTab = ({ members, user, network, onMembersChange, darkMode = false 
         </Alert>
       )}
 
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="h5" component="h2" gutterBottom>
-          Invite Members
-        </Typography>
-        <form onSubmit={handleInvite}>
-          <Box sx={{ display: 'flex', gap: 2 }}>
-            <TextField
-              fullWidth
-              label="Email Address"
-              type="email"
-              value={inviteEmail}
-              onChange={(e) => setInviteEmail(e.target.value)}
-              required
-              variant="outlined"
-            />
-            <Button 
-              type="submit" 
-              variant="contained"
-              color="primary"
-              startIcon={<PersonAddIcon />}
-              disabled={inviting}
-              sx={{ whiteSpace: 'nowrap' }}
-            >
-              {inviting ? 'Sending...' : 'Invite'}
-            </Button>
-            <Tooltip title="Invite multiple members from a CSV, Excel, or text file">
-              <Button
-                variant="outlined"
-                color="primary"
-                startIcon={<GroupAddIcon />}
-                onClick={() => setBatchInviteOpen(true)}
-                sx={{ whiteSpace: 'nowrap' }}
-              >
-                Batch Invite
-              </Button>
-            </Tooltip>
-          </Box>
-        </form>
+      {/* Tabs for switching between members list and invitations */}
+      <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
+        <Tabs value={activeTab} onChange={(e, newValue) => setActiveTab(newValue)}>
+          <Tab label="Current Members" />
+          <Tab label="Invite Members" />
+        </Tabs>
       </Box>
 
-      <Typography variant="h5" component="h2" gutterBottom>
-        Network Members ({members.length})
-      </Typography>
-      
-      {members.length > 0 ? (
-        <TableContainer>
-          <Table aria-label="members table">
-            <TableHead>
-              <TableRow>
-                <TableCell>Name</TableCell>
-                <TableCell>Role</TableCell>
-                <TableCell>Actions</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {members.map(member => (
-                <TableRow 
-                  key={member.id}
-                  sx={member.id === user.id ? { 
-                    backgroundColor: 'rgba(25, 118, 210, 0.08)' 
-                  } : {}}
+      {/* Tab Panel 0: Current Members */}
+      {activeTab === 0 && (
+        <Box>
+          <Typography variant="h5" component="h2" gutterBottom>
+            Network Members ({members.length})
+          </Typography>
+          
+          {members.length > 0 ? (
+            <TableContainer>
+              <Table aria-label="members table">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Name</TableCell>
+                    <TableCell>Role</TableCell>
+                    <TableCell>Actions</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {members.map(member => (
+                    <TableRow 
+                      key={member.id}
+                      sx={member.id === user.id ? { 
+                        backgroundColor: 'rgba(25, 118, 210, 0.08)' 
+                      } : {}}
+                    >
+                      <TableCell>
+                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                          <Avatar 
+                            src={member.profile_picture_url} 
+                            alt={member.full_name}
+                            sx={{ mr: 2 }}
+                          >
+                            {member.full_name?.[0] || '?'}
+                          </Avatar>
+                          <Box>
+                            <Typography variant="body1">
+                              {member.full_name || 'Unnamed User'}
+                              {member.id === user.id && ' (You)'}
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary">
+                              {member.contact_email}
+                            </Typography>
+                          </Box>
+                        </Box>
+                      </TableCell>
+                      <TableCell>
+                        <Chip 
+                          label={member.role || 'member'} 
+                          color={member.role === 'admin' ? 'primary' : 'default'}
+                          size="small"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Box sx={{ display: 'flex', gap: 1 }}>
+                          <Button
+                            variant="outlined"
+                            size="small"
+                            component={Link}
+                            to={`/profile/${member.id}`}
+                          >
+                            View
+                          </Button>
+                          {member.id !== user.id && (
+                            <>
+                              <Button 
+                                size="small"
+                                variant="outlined"
+                                color={member.role === 'admin' ? 'warning' : 'info'}
+                                startIcon={<AdminIcon />}
+                                onClick={() => confirmAction('toggleAdmin', member)}
+                              >
+                                {member.role === 'admin' ? 'Remove Admin' : 'Make Admin'}
+                              </Button>
+                              <Button 
+                                size="small"
+                                variant="outlined"
+                                color="error"
+                                startIcon={<PersonRemoveIcon />}
+                                onClick={() => confirmAction('remove', member)}
+                              >
+                                Remove
+                              </Button>
+                            </>
+                          )}
+                        </Box>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          ) : (
+            <Typography align="center" sx={{ py: 3 }}>
+              No members found in your network.
+            </Typography>
+          )}
+        </Box>
+      )}
+
+      {/* Tab Panel 1: Invite Members */}
+      {activeTab === 1 && (
+        <Box>
+          <Box sx={{ mb: 4 }}>
+            <Typography variant="h5" component="h2" gutterBottom>
+              Invite via Email
+            </Typography>
+            <form onSubmit={handleInvite}>
+              <Box sx={{ display: 'flex', gap: 2 }}>
+                <TextField
+                  fullWidth
+                  label="Email Address"
+                  type="email"
+                  value={inviteEmail}
+                  onChange={(e) => setInviteEmail(e.target.value)}
+                  required
+                  variant="outlined"
+                />
+                <Button 
+                  type="submit" 
+                  variant="contained"
+                  color="primary"
+                  startIcon={<PersonAddIcon />}
+                  disabled={inviting}
+                  sx={{ whiteSpace: 'nowrap' }}
                 >
-                  <TableCell>
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <Avatar 
-                        src={member.profile_picture_url}
-                        sx={{ mr: 2, width: 32, height: 32 }}
-                      >
-                        {member.full_name?.charAt(0).toUpperCase() || '?'}
-                      </Avatar>
-                      <Box>
-                        <Typography variant="body1">
-                          {member.full_name || 'Unnamed User'}
-                          {member.id === user.id && ' (You)'}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {member.contact_email}
-                        </Typography>
-                      </Box>
-                    </Box>
-                  </TableCell>
-                  <TableCell>
-                    <Chip 
-                      label={member.role || 'member'} 
-                      color={member.role === 'admin' ? 'primary' : 'default'}
-                      size="small"
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Box sx={{ display: 'flex', gap: 1 }}>
-                      <Button
-                        variant="outlined"
-                        size="small"
-                        component={Link}
-                        to={`/profile/${member.id}`}
-                      >
-                        View
-                      </Button>
-                      {member.id !== user.id && (
-                        <>
-                          <Button 
-                            size="small"
-                            variant="outlined"
-                            color={member.role === 'admin' ? 'warning' : 'info'}
-                            startIcon={<AdminIcon />}
-                            onClick={() => confirmAction('toggleAdmin', member)}
-                          >
-                            {member.role === 'admin' ? 'Remove Admin' : 'Make Admin'}
-                          </Button>
-                          <Button 
-                            size="small"
-                            variant="outlined"
-                            color="error"
-                            startIcon={<PersonRemoveIcon />}
-                            onClick={() => confirmAction('remove', member)}
-                          >
-                            Remove
-                          </Button>
-                        </>
-                      )}
-                    </Box>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      ) : (
-        <Typography align="center" sx={{ py: 3 }}>
-          No members found in your network.
-        </Typography>
+                  {inviting ? 'Sending...' : 'Invite'}
+                </Button>
+                <Tooltip title="Invite multiple members from a CSV, Excel, or text file">
+                  <Button
+                    variant="outlined"
+                    color="primary"
+                    startIcon={<GroupAddIcon />}
+                    onClick={() => setBatchInviteOpen(true)}
+                    sx={{ whiteSpace: 'nowrap' }}
+                  >
+                    Batch Invite
+                  </Button>
+                </Tooltip>
+              </Box>
+            </form>
+          </Box>
+
+          <Box sx={{ mt: 4 }}>
+            <Typography variant="h5" component="h2" gutterBottom>
+              Invitation Links
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+              Create reusable invitation links that anyone can use to join your network
+            </Typography>
+            
+            {/* Embed the InvitationLinksTab component here */}
+            <InvitationLinksTab networkId={network.id} darkMode={darkMode} />
+          </Box>
+        </Box>
       )}
 
       {/* Confirmation Dialog */}
