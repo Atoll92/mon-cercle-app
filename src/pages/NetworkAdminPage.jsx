@@ -37,6 +37,7 @@ import PollsTab from '../components/admin/PollsTab';
 import MonetizationTab from '../components/admin/MonetizationTab';
 import BillingTab from '../components/admin/BillingTab';
 import BadgesTab from '../components/admin/BadgesTab';
+import SupportTicketsTab from '../components/admin/SupportTicketsTab';
 import AdminLayout from '../components/admin/AdminLayout';
 import AdminBreadcrumbs from '../components/admin/AdminBreadcrumbs';
 
@@ -266,6 +267,7 @@ function NetworkAdminPage() {
             {activeTab === 7 && "Monetization"}
             {activeTab === 8 && "Billing & Plan"}
             {activeTab === 9 && "Badges & Engagement"}
+            {activeTab === 10 && "Support Tickets"}
           </Typography>
         </Box>
 
@@ -374,6 +376,15 @@ function NetworkAdminPage() {
             networkId={network.id}
             members={members}
             darkMode={darkMode} // Pass dark mode to component
+          />
+        )}
+        
+        {activeTab === 10 && (
+          /* Support Tickets Component */
+          <SupportTicketsTab 
+            network={network}
+            user={user}
+            darkMode={darkMode}
           />
         )}
       </Paper>

@@ -34,7 +34,9 @@ import {
   Tooltip,
   Badge,
   LinearProgress,
-  Divider
+  Divider,
+  Tabs,
+  Tab
 } from '@mui/material';
 import {
   Dashboard as DashboardIcon,
@@ -48,6 +50,7 @@ import {
   Delete as DeleteIcon,
   Block as SuspendIcon,
   CheckCircle as ActiveIcon,
+  Support as SupportIcon,
   Warning as WarningIcon,
   Refresh as RefreshIcon,
   Download as ExportIcon,
@@ -62,6 +65,7 @@ import {
 } from '../api/superAdmin';
 import { PageTransition } from '../components/AnimatedComponents';
 import NetworkDetailsModal from '../components/NetworkDetailsModal';
+import TicketsManagement from '../components/superadmin/TicketsManagement';
 
 const SuperAdminDashboard = () => {
   const { user } = useAuth();
@@ -78,6 +82,7 @@ const SuperAdminDashboard = () => {
   const [filterStatus, setFilterStatus] = useState('all');
   const [filterPlan, setFilterPlan] = useState('all');
   const [detailsModal, setDetailsModal] = useState({ open: false, networkId: null });
+  const [activeTab, setActiveTab] = useState(0);
 
   // Check if user is super admin
   useEffect(() => {
@@ -249,8 +254,18 @@ const SuperAdminDashboard = () => {
           </Alert>
         )}
 
-        {/* Analytics Cards */}
-        {analytics && (
+        {/* Tabs */}
+        <Paper sx={{ mb: 3 }}>
+          <Tabs value={activeTab} onChange={(e, v) => setActiveTab(v)} variant="fullWidth">
+            <Tab icon={<DashboardIcon />} label="Networks" />
+            <Tab icon={<SupportIcon />} label="Support Tickets" />
+          </Tabs>
+        </Paper>
+
+        {activeTab === 0 && (
+          <>
+            {/* Analytics Cards */}
+            {analytics && (
           <Grid container spacing={3} sx={{ mb: 4 }}>
             <Grid item xs={12} sm={6} md={3}>
               <Card>
@@ -558,6 +573,12 @@ const SuperAdminDashboard = () => {
           onClose={() => setDetailsModal({ open: false, networkId: null })}
           networkId={detailsModal.networkId}
         />
+          </>
+        )}
+        
+        {activeTab === 1 && (
+          <TicketsManagement />
+        )}
       </Container>
     </PageTransition>
   );

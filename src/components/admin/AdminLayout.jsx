@@ -34,7 +34,8 @@ import {
   Link as LinkIcon,
   MonetizationOn as MonetizationIcon,
   CreditCard as CreditCardIcon,
-  EmojiEvents as BadgeIcon
+  EmojiEvents as BadgeIcon,
+  Support as SupportIcon
 } from '@mui/icons-material';
 
 // Drawer width for desktop view
@@ -116,6 +117,11 @@ const AdminLayout = ({
       name: 'Badges & Engagement', 
       icon: <BadgeIcon />, 
       index: 9 
+    },
+    { 
+      name: 'Support Tickets', 
+      icon: <SupportIcon />, 
+      index: 10 
     }
   ];
 
