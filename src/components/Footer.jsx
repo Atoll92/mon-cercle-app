@@ -67,6 +67,8 @@ const Footer = () => {
             <Box component="span" sx={{ mx: 1.5 }}>|</Box>
             <Link to="/pricing" style={{ color: 'inherit', textDecoration: 'none' }}>Pricing</Link>
             <Box component="span" sx={{ mx: 1 }}>•</Box>
+            <Link to="/documentation" style={{ color: 'inherit', textDecoration: 'none' }}>Documentation</Link>
+            <Box component="span" sx={{ mx: 1 }}>•</Box>
             <Link to="/terms" style={{ color: 'inherit', textDecoration: 'none' }}>CGU</Link>
             <Box component="span" sx={{ mx: 1 }}>•</Box>
             <Link to="/privacy" style={{ color: 'inherit', textDecoration: 'none' }}>Confidentialité</Link>

@@ -60,6 +60,7 @@ mon-cercle-app/
 - `invitations.js` - Invitation management
 - `superAdmin.js` - Admin dashboard API
 - `comments.js` - Social wall comments system (add, fetch, delete, toggle visibility)
+- `tickets.js` - Support ticket system (create, update, view, message)
 
 #### Services (`src/services/`)
 - `emailNotificationService.js` - Email notification queue
@@ -101,6 +102,7 @@ mon-cercle-app/
 - `MicroConclavPage.jsx` - Micro-conclav feature page
 - `ShimmeringTextPage.jsx` - Text animation demo
 - `SimpleLandingPage.jsx` - Alternative landing page
+- `DocumentationPage.jsx` - Help center with FAQ and user guides
 
 #### Components (`src/components/`)
 
@@ -165,6 +167,9 @@ mon-cercle-app/
 - `NewsPostPage.jsx` - Individual news post page
 - `TestNotificationSystem.jsx` - Notification testing component
 
+##### SuperAdmin Components (`src/components/superadmin/`)
+- `TicketsManagement.jsx` - Super admin ticket dashboard and management
+
 ##### Admin Components (`src/components/admin/`)
 - `AdminLayout.jsx` - Admin interface layout (80px header)
 - `AdminBreadcrumbs.jsx` - Navigation breadcrumbs
@@ -182,6 +187,7 @@ mon-cercle-app/
 - `PollsTab.jsx` - Poll management
 - `ThemeTab.jsx` - Theme customization
 - `BatchInviteModal.jsx` - Bulk invitations
+- `SupportTicketsTab.jsx` - Support ticket management for network admins
 
 #### Utilities (`src/utils/`)
 - `mediaUpload.js` - Media file handling
@@ -276,6 +282,15 @@ mon-cercle-app/
   - Badge display on profiles and member cards
   - Default badge set for new networks (Early Adopter, Active Contributor, etc.)
   - Top contributors leaderboard with activity breakdown
+- **Support Ticket System**: Comprehensive help desk for network admins
+  - Network admins can submit support tickets to super admins
+  - Ticket categorization (technical, billing, feature request, bug report)
+  - Priority levels (low, medium, high, urgent)
+  - Ticket status tracking (open, in progress, waiting response, resolved, closed)
+  - Threaded conversation system with internal notes
+  - Super admin dashboard with statistics and filters
+  - Automatic assignment and response tracking
+  - Email notifications for ticket updates
 
 ## Commands
 
@@ -414,6 +429,8 @@ Key entities in the Supabase database:
 - `network_badges`: Badge definitions for networks
 - `user_badges`: Badge assignments to users
 - `network_invitation_links`: Shareable invitation links with QR codes
+- `support_tickets`: Support ticket system for network admins
+- `ticket_messages`: Threaded messages for support tickets
 
 ## UI Components
 
@@ -751,6 +768,28 @@ media_uploads
 - file_size (bigint)
 - metadata (jsonb) - Dimensions, duration, thumbnails, etc.
 - created_at (timestamp)
+
+support_tickets
+- id (uuid, PK)
+- network_id (uuid, FK to networks.id)
+- submitted_by (uuid, FK to profiles.id)
+- assigned_to (uuid, FK to profiles.id, nullable)
+- title (varchar)
+- description (text)
+- category (varchar) - 'technical', 'billing', 'feature', 'bug', 'other'
+- priority (varchar) - 'low', 'medium', 'high', 'urgent'
+- status (varchar) - 'open', 'in_progress', 'waiting_response', 'resolved', 'closed'
+- created_at (timestamp)
+- updated_at (timestamp)
+- resolved_at (timestamp, nullable)
+
+ticket_messages
+- id (uuid, PK)
+- ticket_id (uuid, FK to support_tickets.id)
+- sender_id (uuid, FK to profiles.id)
+- message (text)
+- is_internal (boolean) - For internal notes between super admins
+- created_at (timestamp)
 ```
 
 ## Supabase Row-Level Security Policies
@@ -774,6 +813,8 @@ The following tables have Row-Level Security (RLS) enabled:
 - user_badges
 - network_invitation_links
 - media_uploads
+- support_tickets
+- ticket_messages
 ```
 
 ### Key RLS Policies
@@ -835,6 +876,18 @@ The following tables have Row-Level Security (RLS) enabled:
 - Network admins can manage badge definitions
 - Network admins can award badges to users
 - Users can view their own badges
+
+#### Support Tickets
+- Network admins can view and create tickets for their network
+- Network admins can update their own tickets
+- Super admins can view and update all tickets
+- Only super admins can access ticket statistics
+
+#### Ticket Messages
+- Users can view messages for tickets they have access to
+- Users can send messages to tickets they have access to
+- Super admins can create internal notes
+- Network admins cannot see internal notes
 
 ## Environment Setup
 
@@ -963,6 +1016,9 @@ System-wide administration:
 - System health monitoring
 - Data export capabilities
 - Network suspension and activation
+- Support ticket management with statistics
+- Ticket assignment and prioritization
+- Internal notes for ticket collaboration
 
 ### Animation System
 

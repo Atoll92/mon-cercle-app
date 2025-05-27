@@ -48,6 +48,7 @@ const NewsPostPage = lazy(() => import('./pages/NewsPostPage'));
 const EventPage = lazy(() => import('./pages/EventPage'));
 const MediaTest = lazy(() => import('./pages/MediaTest'));
 const TermsPage = lazy(() => import('./pages/TermsPage'));
+const DocumentationPage = lazy(() => import('./pages/DocumentationPage'));
 
 // Loading component for lazy loaded routes
 const PageLoader = () => (
@@ -192,6 +193,12 @@ function App() {
             <Route path="/payment-success" element={<PaymentSuccessPage />} />
             <Route path="/shimmer" element={<ShimmeringTextPage />} />
             <Route path="/terms" element={<TermsPage />} />
+            
+            {/* Documentation Routes */}
+            <Route path="/documentation" element={<DocumentationPage />} />
+            <Route path="/docs" element={<DocumentationPage />} />
+            <Route path="/help" element={<DocumentationPage />} />
+            <Route path="/faq" element={<DocumentationPage />} />
             
             {/* Micro Conclav routes */}
             <Route path="/micro-conclav/:userId" element={<MicroConclavPage />} />
