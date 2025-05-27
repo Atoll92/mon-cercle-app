@@ -59,6 +59,7 @@ mon-cercle-app/
 - `polls.js` - Polling system
 - `invitations.js` - Invitation management
 - `superAdmin.js` - Admin dashboard API
+- `comments.js` - Social wall comments system (add, fetch, delete, toggle visibility)
 
 #### Services (`src/services/`)
 - `emailNotificationService.js` - Email notification queue
@@ -79,17 +80,35 @@ mon-cercle-app/
 - `EditProfilePage.jsx` - Profile editing
 - `EventPage.jsx` - Event details
 - `WikiPage.jsx` - Wiki content display
+- `WikiEditPage.jsx` - Wiki page editor
+- `WikiListPage.jsx` - Wiki page listing
 - `MoodboardPage.jsx` - Moodboard interface
+- `PersonalMoodboardPage.jsx` - Personal moodboard page
 - `SuperAdminDashboard.jsx` - System administration
 - `PricingPage.jsx` - Subscription plans
 - `BillingPage.jsx` - Billing management
+- `PaymentSuccessPage.jsx` - Payment confirmation page
+- `JoinNetworkPage.jsx` - Network joining flow
+- `NetworkOnboardingPage.jsx` - Network setup flow
+- `NewsPostPage.jsx` - Individual news post view
+- `PasswordResetPage.jsx` - Password reset flow
+- `PasswordUpdatePage.jsx` - Password update form
+- `SharedFilesPage.jsx` - Shared files browser
+- `TermsPage.jsx` - Terms of service page
+- `NotFoundPage.jsx` - 404 error page
+- `DemoPage.jsx` - Feature demo page
+- `MediaTest.jsx` - Media feature testing
+- `MicroConclavPage.jsx` - Micro-conclav feature page
+- `ShimmeringTextPage.jsx` - Text animation demo
+- `SimpleLandingPage.jsx` - Alternative landing page
 
 #### Components (`src/components/`)
 
 ##### Chat & Messaging
-- `Chat.jsx` - Network chat with mentions
+- `Chat.jsx` - Network chat with mentions and reply functionality
 - `DirectMessageChat.jsx` - DM interface (dark mode ready)
 - `DirectMessagesList.jsx` - Conversation list (dark mode ready)
+- `CommentSection.jsx` - Comment system for social wall items with threaded replies
 
 ##### Network Features
 - `NetworkHeader.jsx` - Network header (80px height)
@@ -107,10 +126,17 @@ mon-cercle-app/
 
 ##### Media & Content
 - `MediaUpload.jsx` - File upload system
-- `MediaPlayer.jsx` - Video/audio playback
+- `MediaPlayer.jsx` - Video/audio playback with artwork support
 - `LinkPreview.jsx` - URL preview cards
 - `QuillEditor.jsx` - Rich text editor
 - `moodboardGallery.jsx` - Moodboard gallery
+- `ImageViewerModal.jsx` - Full-screen image viewer with zoom and gallery navigation
+- `PDFReader.jsx` - PDF document reader with page navigation
+- `PDFModal.jsx` - PDF viewer modal wrapper
+- `PDFPreview.jsx` - PDF preview component
+- `PDFPreviewEnhanced.jsx` - Enhanced PDF preview with metadata
+- `PDFFirstPageViewer.jsx` - PDF first page thumbnail generator
+- `SimplePDFViewer.jsx` - Lightweight PDF viewer
 
 ##### UI Components
 - `AnimatedComponents.jsx` - Animation wrappers
@@ -130,6 +156,14 @@ mon-cercle-app/
 - `InvitationLinkWidget.jsx` - Invitation links
 - `SubscriptionBadge.jsx` - Subscription status
 - `UserBadges.jsx` - User badge display component
+- `ErrorBoundary.jsx` - Error handling wrapper
+- `EventParticipation.jsx` - Event participation widget
+- `LazyImage.jsx` - Lazy loading image component
+- `MembersDetailModal.jsx` - Member details popup
+- `MoodboardItem.jsx` - Individual moodboard item component
+- `NetworkDetailsModal.jsx` - Network information modal
+- `NewsPostPage.jsx` - Individual news post page
+- `TestNotificationSystem.jsx` - Notification testing component
 
 ##### Admin Components (`src/components/admin/`)
 - `AdminLayout.jsx` - Admin interface layout (80px header)
@@ -152,10 +186,16 @@ mon-cercle-app/
 #### Utilities (`src/utils/`)
 - `mediaUpload.js` - Media file handling
 - `animationHelpers.js` - Animation utilities
+- `logger.js` - Application logging utility
+- `moodboardHelpers.js` - Moodboard manipulation helpers
+- `passwordValidation.js` - Password strength validation
+- `sanitizeHtml.js` - HTML sanitization for user content
 
 #### Hooks (`src/hooks/`)
 - `useAnimation.js` - Animation hook
 - `useScrollAnimation.js` - Scroll-based animations
+- `useMoodboardCanvas.js` - Moodboard canvas interaction hook
+- `useRealtimeChannel.js` - Supabase realtime subscription hook
 
 #### Styles (`src/styles/`)
 - `animations.css` - Animation definitions
@@ -189,6 +229,26 @@ mon-cercle-app/
 - Harmonized LatestPostsWidget and LatestNewsWidget with consistent author/date displays
 - Enhanced widget visuals: larger text, images (200px), avatars (40px), and increased padding
 - Unified widget headers to match PersonalMoodboardWidget style with consistent Box layout
+- **PDF Support System**: Complete PDF rendering and preview capabilities
+  - PDF viewer components for various use cases (full reader, preview, thumbnails)
+  - PDF support in messages, network news, portfolio items, and direct messages
+  - Integration with pdfjs-dist library for browser-based rendering
+- **Social Wall Comments**: Threaded comment system for social content
+  - Comments on news posts and portfolio items with nested replies
+  - Real-time comment updates and moderation tools
+  - Comment visibility controls for admins
+- **Chat Reply System**: Message reply functionality in network chat
+  - Reply to specific messages with context preservation
+  - Visual reply indicators and navigation
+  - Reply content preview in message threads
+- **Enhanced Image Viewer**: Full-screen image viewing experience
+  - Zoom controls and pan functionality
+  - Gallery navigation for multiple images
+  - Keyboard shortcuts for navigation
+- **Enhanced Media Metadata**: Rich media file information
+  - Audio file artwork extraction using music-metadata-browser
+  - Automatic thumbnail generation for videos
+  - Media type detection and appropriate player selection
 
 ### Latest Updates (January 2025)
 - **Storage Management System**: Added comprehensive storage tracking for network admins
@@ -260,6 +320,10 @@ npm run test:coverage
 - **Rich Text Editing**: TipTap, React Quill, MD Editor
 - **3D Graphics**: Three.js
 - **Virtualization**: React Window
+- **PDF Rendering**: pdfjs-dist
+- **Media Processing**: music-metadata-browser, browser-image-compression
+- **Analytics**: Vercel Analytics
+- **Utilities**: buffer (polyfill)
 
 ### Core Components
 
@@ -346,6 +410,10 @@ Key entities in the Supabase database:
 - `opengraph_cache`: URL preview cache
 - `moodboards`: Personal and network moodboards
 - `moodboard_items`: Moodboard content items
+- `social_wall_comments`: Comments on social wall items (news and portfolio)
+- `network_badges`: Badge definitions for networks
+- `user_badges`: Badge assignments to users
+- `network_invitation_links`: Shareable invitation links with QR codes
 
 ## UI Components
 
@@ -440,6 +508,8 @@ portfolio_items
 - description (text)
 - url (varchar)
 - image_url (varchar)
+- media_urls (text[], nullable) - Array of media file URLs
+- media_types (text[], nullable) - Array of media MIME types
 - created_at (timestamp)
 - updated_at (timestamp)
 
@@ -501,6 +571,8 @@ network_news
 - content (text)
 - image_url (varchar)
 - image_caption (varchar)
+- media_urls (text[], nullable) - Array of media file URLs
+- media_types (text[], nullable) - Array of media MIME types  
 - is_hidden (boolean)
 - is_flagged (boolean)
 - flag_reason (text)
@@ -534,6 +606,8 @@ direct_messages
 - conversation_id (uuid, FK to direct_conversations.id)
 - sender_id (uuid, FK to profiles.id)
 - content (text)
+- media_urls (text[], nullable) - Array of media file URLs
+- media_types (text[], nullable) - Array of media MIME types
 - read_at (timestamp)
 - created_at (timestamp)
 - updated_at (timestamp)
@@ -546,6 +620,11 @@ messages
 - is_hidden (boolean)
 - is_flagged (boolean)
 - flag_reason (text)
+- parent_message_id (uuid, FK to messages.id, nullable) - For reply threads
+- reply_to_user_id (uuid, FK to profiles.id, nullable) - User being replied to
+- reply_to_content (text, nullable) - Preview of replied message
+- media_urls (text[], nullable) - Array of media file URLs
+- media_types (text[], nullable) - Array of media MIME types
 - created_at (timestamp)
 
 moodboards
@@ -616,6 +695,62 @@ notification_queue
 - error_message (text)
 - created_at (timestamp)
 - updated_at (timestamp)
+
+social_wall_comments
+- id (uuid, PK)
+- item_id (uuid) - References news or portfolio item
+- item_type (varchar) - 'news' or 'portfolio'
+- user_id (uuid, FK to profiles.id)
+- content (text)
+- parent_comment_id (uuid, FK to social_wall_comments.id, nullable)
+- is_hidden (boolean)
+- created_at (timestamp)
+- updated_at (timestamp)
+
+network_badges  
+- id (uuid, PK)
+- network_id (uuid, FK to networks.id)
+- name (varchar)
+- description (text)
+- icon (varchar) - Material UI icon name
+- color (varchar) - Hex color code
+- criteria_type (varchar) - 'manual' or 'automatic'
+- criteria_config (jsonb) - Automatic awarding rules
+- created_at (timestamp)
+- updated_at (timestamp)
+
+user_badges
+- id (uuid, PK)
+- user_id (uuid, FK to profiles.id)
+- badge_id (uuid, FK to network_badges.id)
+- awarded_by (uuid, FK to profiles.id, nullable)
+- awarded_at (timestamp)
+- reason (text, nullable)
+
+network_invitation_links
+- id (uuid, PK)
+- network_id (uuid, FK to networks.id)
+- code (varchar, unique)
+- created_by (uuid, FK to profiles.id)
+- name (varchar)
+- role (varchar) - 'admin' or 'member'
+- max_uses (integer, nullable)
+- uses_count (integer, default 0)
+- expires_at (timestamp, nullable)
+- is_active (boolean, default true)
+- created_at (timestamp)
+- updated_at (timestamp)
+
+media_uploads
+- id (uuid, PK)
+- user_id (uuid, FK to profiles.id)
+- network_id (uuid, FK to networks.id, nullable)
+- file_path (varchar)
+- file_url (varchar)
+- file_type (varchar)
+- file_size (bigint)
+- metadata (jsonb) - Dimensions, duration, thumbnails, etc.
+- created_at (timestamp)
 ```
 
 ## Supabase Row-Level Security Policies
@@ -634,6 +769,11 @@ The following tables have Row-Level Security (RLS) enabled:
 - wiki_pages
 - moderation_logs
 - notification_queue
+- social_wall_comments
+- network_badges
+- user_badges
+- network_invitation_links
+- media_uploads
 ```
 
 ### Key RLS Policies
@@ -677,6 +817,24 @@ The following tables have Row-Level Security (RLS) enabled:
 #### Notification Queue
 - Only system can insert into notification queue
 - Network admins can view notifications for their network users
+
+#### Social Wall Comments
+- Users can view comments on public items or items in their network
+- Users can create comments on items in their network
+- Users can update/delete their own comments
+- Network admins can moderate all comments in their network
+
+#### Media Uploads
+- Users can view their own uploads
+- Users can view uploads in their network
+- Users can create uploads
+- Users can delete their own uploads
+
+#### Network Badges & User Badges
+- Network members can view badges in their network
+- Network admins can manage badge definitions
+- Network admins can award badges to users
+- Users can view their own badges
 
 ## Environment Setup
 
@@ -729,6 +887,10 @@ Combined social feed that includes:
 - Interactive content with media support
 - Link previews for URLs
 - Poll integration for interactive engagement
+- Threaded comment system with nested replies
+- Comment moderation for admins
+- Full-screen image viewer for media
+- PDF document preview and reading
 
 ### Portfolio
 
@@ -741,11 +903,13 @@ User portfolio system:
 
 Real-time network chat:
 - Persistent chat history with media support
+- Message reply functionality with context preservation
 - User presence indicators
 - Support for fullscreen mode
 - Link previews
 - Content moderation support
 - Media player integration for shared content
+- PDF document sharing and preview
 
 ### Subscription & Billing
 
@@ -808,3 +972,15 @@ Advanced animation framework:
 - Shimmer effects based on scroll and time
 - Custom animation hooks
 - CSS animation utilities
+
+### Media System
+
+Comprehensive media handling:
+- Image optimization with browser-image-compression
+- Audio metadata extraction with music-metadata-browser
+- PDF rendering with pdfjs-dist
+- Full-screen image viewer with zoom
+- Video/audio player with custom controls
+- Media type detection and validation
+- Automatic thumbnail generation
+- Storage quota management

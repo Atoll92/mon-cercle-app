@@ -16,9 +16,9 @@ This guide outlines how to test the new storage usage monitoring feature in the 
   - Error alert and upgrade prompt at 100% usage
 
 ### 2. Storage Limits by Plan
-- **Family (Free)**: 2GB
+- **Family**: 2GB
 - **Community**: 10GB
-- **Non-Profit**: 100GB
+- **Non-Profit**: 50GB
 - **Organization**: 100GB
 - **Network**: 1TB
 - **Business**: 5TB

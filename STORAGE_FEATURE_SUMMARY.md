@@ -30,9 +30,9 @@ Added comprehensive storage usage monitoring to the network admin interface with
 ## Key Features
 
 ### Storage Limits by Plan
-- Family (Free): 2GB
+- Family: 2GB
 - Community: 10GB
-- Non-Profit: 100GB
+- Non-Profit: 50GB
 - Organization: 100GB
 - Network: 1TB
 - Business: 5TB

@@ -25,21 +25,42 @@ This guide documents all the animations implemented across the Mon Cercle App.
    - `StaggeredListItem` - List items with stagger animation
    - `PageTransition` - Page-level transitions
 
-4. **`src/components/LoadingSkeleton.jsx`** - Loading skeleton components
+4. **`src/components/ShimmerProvider.jsx`** - Dynamic shimmer effects
+   - Provides context for shimmer animations
+   - Tracks scroll position and elapsed time
+   - Controls shimmer effect timing across components
+
+5. **`src/components/ShimmeryText.jsx`** - Animated text with shimmer
+   - Text with dynamic shimmer effect
+   - Responds to scroll and time from ShimmerProvider
+   - Customizable colors and animation speed
+
+6. **`src/components/TextCycler.jsx`** - Text cycling animations
+   - Cycles through array of text strings
+   - Smooth fade transitions between texts
+   - Configurable timing and effects
+
+7. **`src/components/ThreeJSBackground.jsx`** - 3D animated background
+   - WebGL particle system using Three.js
+   - Interactive mouse movement effects
+   - Performance-optimized rendering
+   - Dynamic color transitions
+
+8. **`src/components/LoadingSkeleton.jsx`** - Loading skeleton components
    - `CardSkeleton` - Card loading state
    - `ListItemSkeleton` - List item loading state
    - `NewsItemSkeleton` - News item loading state
    - `ProfileSkeleton` - Profile loading state
    - And more...
 
-5. **`src/hooks/useScrollAnimation.js`** - Scroll-triggered animations
+9. **`src/hooks/useScrollAnimation.js`** - Scroll-triggered animations
    - `useScrollAnimation` - Intersection Observer based animations
    - `useParallax` - Parallax scroll effects
 
-6. **`src/utils/animationHelpers.js`** - Animation utilities
-   - `preventResizeAnimations` - Prevents janky animations during resize
-   - `smoothScrollTo` - Smooth scroll to element
-   - `observeEntranceAnimations` - Add animations when elements enter viewport
+10. **`src/utils/animationHelpers.js`** - Animation utilities
+    - `preventResizeAnimations` - Prevents janky animations during resize
+    - `smoothScrollTo` - Smooth scroll to element
+    - `observeEntranceAnimations` - Add animations when elements enter viewport
 
 ## Animation Implementations
 
@@ -77,6 +98,29 @@ This guide documents all the animations implemented across the Mon Cercle App.
 - Input fields: Focus transitions with border color
 - Submit buttons: Loading state animations
 - Error/success messages: Fade in/out
+
+### 8. Shimmer Effects
+- Dynamic shimmer based on scroll position
+- Time-based shimmer animations
+- Used in landing pages and text highlights
+- Synchronized across multiple components
+
+### 9. Text Cycling
+- Smooth text transitions in headers
+- Fade effect between text changes
+- Used for dynamic content display
+
+### 10. 3D Background
+- Particle system with WebGL
+- Mouse-responsive animations
+- Continuous motion effects
+- Performance optimized with Three.js
+
+### 11. Media Viewers
+- Image viewer with zoom animations
+- Smooth transitions between images
+- PDF page turn animations
+- Modal open/close effects
 
 ## Usage Examples
 
@@ -120,6 +164,47 @@ import { AnimatedCard, StaggeredListItem } from '../components/AnimatedComponent
 <div className="animate-fade-in-up stagger-3">Third item</div>
 ```
 
+### Using Shimmer Effects
+```jsx
+import { ShimmerProvider } from '../components/ShimmerProvider';
+import ShimmeryText from '../components/ShimmeryText';
+
+// Wrap your app or component
+<ShimmerProvider>
+  <ShimmeryText 
+    text="Shimmering Text"
+    baseColor="#333"
+    shimmerColor="#fff"
+  />
+</ShimmerProvider>
+```
+
+### Using Text Cycler
+```jsx
+import TextCycler from '../components/TextCycler';
+
+const texts = ["Welcome", "Bienvenue", "Willkommen"];
+
+<TextCycler 
+  texts={texts}
+  interval={3000}
+  className="hero-text"
+/>
+```
+
+### Using 3D Background
+```jsx
+import ThreeJSBackground from '../components/ThreeJSBackground';
+
+// Add as background layer
+<div style={{ position: 'relative' }}>
+  <ThreeJSBackground />
+  <div style={{ position: 'relative', zIndex: 1 }}>
+    Your content here
+  </div>
+</div>
+```
+
 ## Animation Timing Guidelines
 
 - **Fast animations**: 200ms (hover effects, small transitions)
@@ -150,6 +235,24 @@ All animations use standard CSS3 and modern JavaScript features:
 - CSS Animations: All modern browsers
 - Intersection Observer: Chrome 51+, Firefox 55+, Safari 12.1+
 
+## Component-Specific Animations
+
+### ImageViewerModal
+- Zoom in/out transitions
+- Pan animations for large images
+- Smooth gallery navigation
+- Fade effects for modal backdrop
+
+### PDFReader
+- Page transition effects
+- Smooth zoom animations
+- Loading states for page rendering
+
+### ShimmerProvider
+- Centralized shimmer timing
+- Scroll-position tracking
+- Performance optimized with RAF
+
 ## Future Enhancements
 
 1. Add `prefers-reduced-motion` support
@@ -157,3 +260,6 @@ All animations use standard CSS3 and modern JavaScript features:
 3. Add more complex page transitions
 4. Implement gesture-based animations
 5. Add loading progress indicators
+6. Enhance 3D background with more effects
+7. Add spring-based animations
+8. Implement drag-and-drop animations
