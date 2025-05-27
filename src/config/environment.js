@@ -80,14 +80,16 @@ export const STRIPE_PRICE_IDS = {
   development: {
     community: 'price_1RSy002KqNIKpvjTG7YyuZZ6', // Community plan €17/month (was Family)
     nonprofit: 'price_test_nonprofit',
-    organization: 'price_1RK6Vk2KqNIKpvjTKgFNpV0y',
+    organization: 'price_1RK6qr2KqNIKpvjTZh47uSJO',
+        // organization: 'price_1RK6Vk2KqNIKpvjTKgFNpV0y',old tested prod price id ? 
+
     network: 'price_test_network',
     business: 'price_test_business',
   },
   production: {
-    community: 'price_1RSy002KqNIKpvjTG7YyuZZ6', // Community plan €17/month (was Family)
+    community: 'price_1RSxxQ2KqNIKpvjTYs9cYDin', // Community plan €17/month (was Family)
     nonprofit: 'price_prod_nonprofit',
-    organization: 'price_prod_organization',
+    organization: 'price_1RK6Vk2KqNIKpvjTKgFNpV0y', // Professional 97€/month
     network: 'price_prod_network',
     business: 'price_prod_business',
   },

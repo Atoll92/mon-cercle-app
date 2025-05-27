@@ -49,6 +49,7 @@ const EventPage = lazy(() => import('./pages/EventPage'));
 const MediaTest = lazy(() => import('./pages/MediaTest'));
 const TermsPage = lazy(() => import('./pages/TermsPage'));
 const DocumentationPage = lazy(() => import('./pages/DocumentationPage'));
+const EnhancedLandingPage = lazy(() => import('./pages/EnhancedLandingPage'));
 
 // Loading component for lazy loaded routes
 const PageLoader = () => (
@@ -182,7 +183,8 @@ function App() {
               <Suspense fallback={<PageLoader />}>
                 <Routes>
             {/* Public Routes */}
-            <Route path="/" element={<SimpleLandingPage/>}/>
+            <Route path="/" element={<EnhancedLandingPage/>}/>
+            <Route path="/simple" element={<SimpleLandingPage/>}/>
             <Route path="/old" element={<LandingPage/>}/>
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignupPage />} />

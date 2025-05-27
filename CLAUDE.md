@@ -103,6 +103,7 @@ mon-cercle-app/
 - `ShimmeringTextPage.jsx` - Text animation demo
 - `SimpleLandingPage.jsx` - Alternative landing page
 - `DocumentationPage.jsx` - Help center with FAQ and user guides
+- `EnhancedLandingPage.jsx` - Modern privacy-focused landing page with advanced animations
 
 #### Components (`src/components/`)
 
