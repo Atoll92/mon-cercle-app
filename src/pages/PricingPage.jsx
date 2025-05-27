@@ -158,35 +158,35 @@ const handlePlanSelect = async (plan) => {
   };
 
   const plans = [
-    {
-      name: 'Family',
-      price: 0,
-      description: 'For personal networks and small groups',
-      features: [
-        { name: 'Members', value: '20', icon: <GroupsIcon color="primary" /> },
-        { name: 'Storage', value: '2GB', icon: <StorageIcon color="primary" /> },
-        { name: 'Admin accounts', value: '1', icon: <AdminIcon color="primary" /> },
-        { name: 'White label', value: false, icon: <PaletteIcon color="primary" /> },
-        { name: 'Wiki', value: true, icon: <BookmarkIcon color="primary" /> },
-        { name: 'Events', value: true, icon: <EventIcon color="primary" /> },
-        { name: 'Zero tracking by design', value: true, icon: <VisibilityOffIcon color="primary" /> },
-        { name: 'Support', value: 'Community', icon: <SupportIcon color="primary" /> },
-        { name: 'API Access', value: false, icon: <CodeIcon color="primary" /> },
-      ],
-      popular: false,
-      color: 'default',
-      buttonVariant: 'outlined',
-      buttonText: 'Get Started Free',
-      icon: <Groups color="primary" sx={{ fontSize: 40 }} />,
-      addOns: []
-    },
+    // {
+    //   name: 'Family',
+    //   price: 0,
+    //   description: 'For personal networks and small groups',
+    //   features: [
+    //     { name: 'Members', value: '20', icon: <GroupsIcon color="primary" /> },
+    //     { name: 'Storage', value: '2GB', icon: <StorageIcon color="primary" /> },
+    //     { name: 'Admin accounts', value: '1', icon: <AdminIcon color="primary" /> },
+    //     { name: 'White label', value: false, icon: <PaletteIcon color="primary" /> },
+    //     { name: 'Wiki', value: true, icon: <BookmarkIcon color="primary" /> },
+    //     { name: 'Events', value: true, icon: <EventIcon color="primary" /> },
+    //     { name: 'Zero tracking by design', value: true, icon: <VisibilityOffIcon color="primary" /> },
+    //     { name: 'Support', value: 'Community', icon: <SupportIcon color="primary" /> },
+    //     { name: 'API Access', value: false, icon: <CodeIcon color="primary" /> },
+    //   ],
+    //   popular: false,
+    //   color: 'default',
+    //   buttonVariant: 'outlined',
+    //   buttonText: 'Get Started Free',
+    //   icon: <Groups color="primary" sx={{ fontSize: 40 }} />,
+    //   addOns: []
+    // },
     {
       name: 'Community',
       price: 17,
       description: 'For small communities and groups',
       features: [
         { name: 'Members', value: '100', icon: <GroupsIcon color="primary" /> },
-        { name: 'Storage', value: '10GB', icon: <StorageIcon color="primary" /> },
+        { name: 'Storage', value: '20GB', icon: <StorageIcon color="primary" /> },
         { name: 'Admin accounts', value: '2', icon: <AdminIcon color="primary" /> },
         { name: 'White label', value: false, icon: <PaletteIcon color="primary" /> },
         { name: 'Wiki', value: true, icon: <BookmarkIcon color="primary" /> },
@@ -198,7 +198,7 @@ const handlePlanSelect = async (plan) => {
       popular: false,
       color: 'default',
       buttonVariant: 'outlined',
-      buttonText: 'Start 14-Day Trial',
+      buttonText: 'Get Started',
       icon: <Groups color="primary" sx={{ fontSize: 40 }} />,
       badge: 'POPULAR',
       addOns: [
@@ -211,7 +211,7 @@ const handlePlanSelect = async (plan) => {
       description: 'For educational and non-profit organizations',
       features: [
         { name: 'Members', value: '500', icon: <GroupsIcon color="primary" /> },
-        { name: 'Storage', value: '50GB', icon: <StorageIcon color="primary" /> },
+        { name: 'Storage', value: '100GB', icon: <StorageIcon color="primary" /> },
         { name: 'Admin accounts', value: '3', icon: <AdminIcon color="primary" /> },
         { name: 'White label', value: true, icon: <PaletteIcon color="primary" /> },
         { name: 'Wiki', value: true, icon: <BookmarkIcon color="primary" /> },
@@ -234,7 +234,7 @@ const handlePlanSelect = async (plan) => {
       description: 'For growing organizations and associations',
       features: [
         { name: 'Members', value: '500', icon: <GroupsIcon color="primary" /> },
-        { name: 'Storage', value: '100GB', icon: <StorageIcon color="primary" /> },
+        { name: 'Storage', value: '200GB', icon: <StorageIcon color="primary" /> },
         { name: 'Admin accounts', value: '5', icon: <AdminIcon color="primary" /> },
         { name: 'White label', value: true, icon: <PaletteIcon color="primary" /> },
         { name: 'Wiki', value: true, icon: <BookmarkIcon color="primary" /> },
@@ -246,7 +246,7 @@ const handlePlanSelect = async (plan) => {
       popular: true,
       color: 'primary',
       buttonVariant: 'contained',
-      buttonText: 'Start 14-Day Trial',
+      buttonText: 'Get Started',
       icon: <Business color="primary" sx={{ fontSize: 40 }} />,
       addOns: []
     },
@@ -268,7 +268,7 @@ const handlePlanSelect = async (plan) => {
       popular: false,
       color: 'secondary',
       buttonVariant: 'outlined',
-      buttonText: 'Start 14-Day Trial',
+      buttonText: 'Get Started',
       icon: <BusinessIcon color="secondary" sx={{ fontSize: 40 }} />,
       addOns: []
     },
@@ -290,7 +290,7 @@ const handlePlanSelect = async (plan) => {
       popular: false,
       color: 'info',
       buttonVariant: 'outlined',
-      buttonText: 'Start 14-Day Trial',
+      buttonText: 'Get Started',
       icon: <Security color="info" sx={{ fontSize: 40 }} />,
       addOns: []
     },
