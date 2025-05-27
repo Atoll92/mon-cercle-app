@@ -46,6 +46,7 @@ import WikiTab from '../components/WikiTab';
 import AboutTab from '../components/AboutTab';
 import MemberDetailsModal from '../components/MembersDetailModal';
 import FilesTab from '../components/FilesTab';
+import OnboardingGuide, { WithOnboardingHighlight } from '../components/OnboardingGuide';
 
 // Create wrapper component that uses NetworkProviderWithParams
 const NetworkLandingPageWrapper = () => (
@@ -79,6 +80,7 @@ function NetworkLandingPage() {
   const [selectedMember, setSelectedMember] = useState(null);
   const [showMemberModal, setShowMemberModal] = useState(false);
   const [userParticipations, setUserParticipations] = useState([]);
+  const [memberCount, setMemberCount] = useState(0);
   
   // Animation setup - must be at top level, not conditional
   const headerRef = useFadeIn(0);
@@ -503,27 +505,32 @@ function NetworkLandingPage() {
               flexWrap: 'wrap'
             }}>
               {isUserAdmin && (
-                <Button
-                  component={Link}
-                  to="/admin"
-                  startIcon={<AdminIcon />}
-                  color="primary"
-                  variant="contained"
-                  sx={{ 
-                    bgcolor: 'rgba(255, 255, 255, 0.85)',
-                    color: 'primary.dark',
-                    fontWeight: 'medium',
-                    '&:hover': {
-                      bgcolor: 'rgba(255, 255, 255, 0.95)',
-                      boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
-                    },
-                    backdropFilter: 'blur(8px)',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                    transition: 'all 0.2s ease-in-out'
-                  }}
+                <WithOnboardingHighlight 
+                  shouldHighlight={isUserAdmin && memberCount <= 2}
+                  highlightType="glow"
                 >
-                  Admin Panel
-                </Button>
+                  <Button
+                    component={Link}
+                    to={`/admin/${network?.id}`}
+                    startIcon={<AdminIcon />}
+                    color="primary"
+                    variant="contained"
+                    sx={{ 
+                      bgcolor: 'rgba(255, 255, 255, 0.85)',
+                      color: 'primary.dark',
+                      fontWeight: 'medium',
+                      '&:hover': {
+                        bgcolor: 'rgba(255, 255, 255, 0.95)',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+                      },
+                      backdropFilter: 'blur(8px)',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                      transition: 'all 0.2s ease-in-out'
+                    }}
+                  >
+                    Admin Panel
+                  </Button>
+                </WithOnboardingHighlight>
               )}
               
               <Button
@@ -663,6 +670,7 @@ function NetworkLandingPage() {
           loading={loading}
           darkMode={membersTabDarkMode}
           onMemberSelect={handleMemberSelect}
+          onMemberCountChange={setMemberCount}
         />
       )}
 
@@ -757,6 +765,14 @@ function NetworkLandingPage() {
           </Typography>
         </Paper>
       )}
+      
+      {/* Onboarding Guide */}
+      <OnboardingGuide
+        networkId={network?.id}
+        isNetworkAdmin={isUserAdmin}
+        memberCount={memberCount}
+        currentPage="network"
+      />
     </Container>
   );
 }

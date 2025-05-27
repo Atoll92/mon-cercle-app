@@ -60,7 +60,8 @@ import {
   Groups as GroupsIcon,
   Business as BusinessIcon,
   School as SchoolIcon,
-  SupervisorAccount as SuperAdminIcon
+  SupervisorAccount as SuperAdminIcon,
+  AccessTime as AccessTimeIcon
 } from '@mui/icons-material';
 import { fetchNetworkMembers } from '../api/networks';
 
@@ -866,6 +867,59 @@ function DashboardPage() {
                                 <CircularProgress size={20} sx={{ mr: 1 }} />
                                 <Typography variant="body2">Loading subscription info...</Typography>
                               </Box>
+                            ) : networkDetails?.subscription_status === 'trial' ? (
+                              <Card variant="outlined" sx={{ 
+                                p: 1, 
+                                borderRadius: 1, 
+                                bgcolor: 'rgba(255, 193, 7, 0.05)',
+                                mb: 1
+                              }}>
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                  <Box>
+                                    <Typography variant="body2" color="warning.main" fontWeight="medium">
+                                      Free Trial Active
+                                    </Typography>
+                                    
+                                    <Typography variant="caption" color="text.secondary">
+                                      {networkDetails.trial_end_date && (() => {
+                                        const now = new Date();
+                                        const trialEnd = new Date(networkDetails.trial_end_date);
+                                        const daysLeft = Math.max(0, Math.ceil((trialEnd.getTime() - now.getTime()) / (1000 * 3600 * 24)));
+                                        return daysLeft > 0 ? `${daysLeft} days remaining` : 'Trial expired';
+                                      })()}
+                                    </Typography>
+                                  </Box>
+                                  
+                                  <Chip 
+                                    icon={<AccessTimeIcon fontSize="small" />}
+                                    label="Trial" 
+                                    color="warning" 
+                                    size="small"
+                                    variant="outlined"
+                                  />
+                                </Box>
+                                
+                                {networkDetails?.trial_end_date && (
+                                  <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.5 }}>
+                                    Trial ends: {new Date(networkDetails.trial_end_date).toLocaleDateString()}
+                                  </Typography>
+                                )}
+
+                                {profile.role === 'admin' && (
+                                  <Button 
+                                    variant="contained" 
+                                    color="primary" 
+                                    fullWidth
+                                    component={Link}
+                                    to="/pricing"
+                                    size="small"
+                                    sx={{ mt: 1 }}
+                                    startIcon={<StarIcon />}
+                                  >
+                                    Upgrade Now
+                                  </Button>
+                                )}
+                              </Card>
                             ) : networkDetails?.subscription_status === 'active' ? (
                               <Card variant="outlined" sx={{ 
                                 p: 1, 

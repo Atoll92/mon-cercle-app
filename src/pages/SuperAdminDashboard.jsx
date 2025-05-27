@@ -45,6 +45,9 @@ import {
   TrendingUp as TrendingUpIcon,
   Storage as StorageIcon,
   MonetizationOn as MoneyIcon,
+  Timer as TimerIcon,
+  TrendingDown as TrendingDownIcon,
+  Assessment as AssessmentIcon,
   Visibility as ViewIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
@@ -205,6 +208,7 @@ const SuperAdminDashboard = () => {
 
   const getPlanColor = (plan) => {
     switch (plan) {
+      case 'Free Trial': return 'warning';
       case 'family': return 'default';
       case 'free': return 'default';
       case 'community': return 'primary';
@@ -216,6 +220,7 @@ const SuperAdminDashboard = () => {
 
   const getPlanDisplayName = (plan) => {
     switch (plan) {
+      case 'Free Trial': return 'Free Trial (14 days)';
       case 'family': return 'Family (Free)';
       case 'free': return 'Family (Free)';
       case 'community': return 'Community (€17)';
@@ -341,6 +346,83 @@ const SuperAdminDashboard = () => {
           </Grid>
         )}
 
+        {/* Trial Analytics Cards */}
+        {analytics && analytics.trials && (
+          <Grid container spacing={3} sx={{ mb: 4 }}>
+            <Grid item xs={12} sm={6} md={3}>
+              <Card>
+                <CardContent>
+                  <Box display="flex" alignItems="center" justifyContent="space-between">
+                    <Box>
+                      <Typography color="text.secondary" gutterBottom variant="overline">
+                        Active Trials
+                      </Typography>
+                      <Typography variant="h4" component="div">
+                        {analytics.trials.active}
+                      </Typography>
+                    </Box>
+                    <TimerIcon color="primary" sx={{ fontSize: 40 }} />
+                  </Box>
+                </CardContent>
+              </Card>
+            </Grid>
+
+            <Grid item xs={12} sm={6} md={3}>
+              <Card>
+                <CardContent>
+                  <Box display="flex" alignItems="center" justifyContent="space-between">
+                    <Box>
+                      <Typography color="text.secondary" gutterBottom variant="overline">
+                        Expired Trials
+                      </Typography>
+                      <Typography variant="h4" component="div">
+                        {analytics.trials.expired}
+                      </Typography>
+                    </Box>
+                    <TrendingDownIcon color="error" sx={{ fontSize: 40 }} />
+                  </Box>
+                </CardContent>
+              </Card>
+            </Grid>
+
+            <Grid item xs={12} sm={6} md={3}>
+              <Card>
+                <CardContent>
+                  <Box display="flex" alignItems="center" justifyContent="space-between">
+                    <Box>
+                      <Typography color="text.secondary" gutterBottom variant="overline">
+                        Trial Conversions
+                      </Typography>
+                      <Typography variant="h4" component="div">
+                        {analytics.trials.conversions}
+                      </Typography>
+                    </Box>
+                    <AssessmentIcon color="success" sx={{ fontSize: 40 }} />
+                  </Box>
+                </CardContent>
+              </Card>
+            </Grid>
+
+            <Grid item xs={12} sm={6} md={3}>
+              <Card>
+                <CardContent>
+                  <Box display="flex" alignItems="center" justifyContent="space-between">
+                    <Box>
+                      <Typography color="text.secondary" gutterBottom variant="overline">
+                        Conversion Rate
+                      </Typography>
+                      <Typography variant="h4" component="div">
+                        {analytics.trials.conversionRate}%
+                      </Typography>
+                    </Box>
+                    <TrendingUpIcon color="warning" sx={{ fontSize: 40 }} />
+                  </Box>
+                </CardContent>
+              </Card>
+            </Grid>
+          </Grid>
+        )}
+
         {/* Controls */}
         <Card sx={{ mb: 3 }}>
           <CardContent>
@@ -424,6 +506,7 @@ const SuperAdminDashboard = () => {
                   <TableCell>Members</TableCell>
                   <TableCell>Plan</TableCell>
                   <TableCell>Status</TableCell>
+                  <TableCell>Trial Status</TableCell>
                   <TableCell>Created</TableCell>
                   <TableCell>Storage</TableCell>
                   <TableCell>Actions</TableCell>
@@ -460,6 +543,33 @@ const SuperAdminDashboard = () => {
                         color={getStatusColor(network.status)}
                         size="small"
                       />
+                    </TableCell>
+                    <TableCell>
+                      {network.is_trial ? (
+                        <Box>
+                          <Chip
+                            label={network.trial_days_remaining > 0 ? 
+                              `${network.trial_days_remaining} days left` : 
+                              'Trial Expired'
+                            }
+                            color={network.trial_days_remaining > 3 ? 'success' : 
+                                   network.trial_days_remaining > 0 ? 'warning' : 'error'}
+                            size="small"
+                            icon={<TimerIcon />}
+                          />
+                          {network.trial_end_date && (
+                            <Typography variant="caption" display="block" color="text.secondary">
+                              Ends: {new Date(network.trial_end_date).toLocaleDateString()}
+                            </Typography>
+                          )}
+                        </Box>
+                      ) : (
+                        <Chip
+                          label="No Trial"
+                          color="default"
+                          size="small"
+                        />
+                      )}
                     </TableCell>
                     <TableCell>
                       <Typography variant="body2">

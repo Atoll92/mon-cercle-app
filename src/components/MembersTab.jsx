@@ -52,7 +52,8 @@ const MembersTab = ({
   networkId, 
   loading = false,
   darkMode = false,
-  onMemberSelect
+  onMemberSelect,
+  onMemberCountChange
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -116,6 +117,13 @@ const MembersTab = ({
     });
     setUniqueSkills(Array.from(skills).sort());
   }, [networkMembers]);
+
+  // Track member count changes for onboarding
+  useEffect(() => {
+    if (onMemberCountChange) {
+      onMemberCountChange(networkMembers.length);
+    }
+  }, [networkMembers.length, onMemberCountChange]);
   
   // Filter and sort members based on criteria
   const filterAndSortMembers = useCallback(() => {

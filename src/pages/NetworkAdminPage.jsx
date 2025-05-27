@@ -40,6 +40,7 @@ import BadgesTab from '../components/admin/BadgesTab';
 import SupportTicketsTab from '../components/admin/SupportTicketsTab';
 import AdminLayout from '../components/admin/AdminLayout';
 import AdminBreadcrumbs from '../components/admin/AdminBreadcrumbs';
+import OnboardingGuide, { WithOnboardingHighlight } from '../components/OnboardingGuide';
 
 function NetworkAdminPage() {
   const { user } = useAuth();
@@ -56,6 +57,7 @@ function NetworkAdminPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [message, setMessage] = useState('');
+  const [memberCount, setMemberCount] = useState(0);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -388,6 +390,15 @@ function NetworkAdminPage() {
           />
         )}
       </Paper>
+      
+      {/* Onboarding Guide */}
+      <OnboardingGuide
+        networkId={network?.id}
+        isNetworkAdmin={profile?.role === 'admin'}
+        memberCount={members?.length || 0}
+        currentPage="admin"
+        currentAdminTab={activeTab}
+      />
     </AdminLayout>
     </>
   );

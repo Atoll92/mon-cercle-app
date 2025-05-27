@@ -129,8 +129,25 @@ export const fetchAllNetworks = async () => {
           
           // Fix subscription plan display names
           let displayPlan = network.subscription_plan;
-          if (!displayPlan || displayPlan === 'free') {
+          if (network.subscription_status === 'trial') {
+            displayPlan = 'Free Trial';
+          } else if (!displayPlan || displayPlan === 'free') {
             displayPlan = 'family'; // Free plan is called "Family"
+          }
+
+          // Calculate trial information
+          let is_trial_expired = false;
+          let trial_days_remaining = 0;
+          
+          if (network.is_trial && network.trial_end_date) {
+            const now = new Date();
+            const trialEnd = new Date(network.trial_end_date);
+            is_trial_expired = now > trialEnd;
+            
+            if (!is_trial_expired) {
+              const timeDiff = trialEnd.getTime() - now.getTime();
+              trial_days_remaining = Math.max(0, Math.ceil(timeDiff / (1000 * 3600 * 24)));
+            }
           }
 
           return {
@@ -139,7 +156,9 @@ export const fetchAllNetworks = async () => {
             storage_used_mb: Math.round(totalStorageBytes / (1024 * 1024)),
             storage_limit_mb: getStorageLimit(network.subscription_plan),
             status: network.status || 'active',
-            subscription_plan: displayPlan // Use display plan name
+            subscription_plan: displayPlan, // Use display plan name
+            is_trial_expired,
+            trial_days_remaining
           };
         } catch (err) {
           console.warn(`Error processing network ${network.id}:`, err);
@@ -149,7 +168,9 @@ export const fetchAllNetworks = async () => {
             storage_used_mb: 0,
             storage_limit_mb: getStorageLimit(network.subscription_plan),
             status: network.status || 'active',
-            subscription_plan: network.subscription_plan || 'family'
+            subscription_plan: network.subscription_plan || 'family',
+            is_trial_expired: false,
+            trial_days_remaining: 0
           };
         }
       })
@@ -183,6 +204,9 @@ export const getNetworkAnalytics = async () => {
     let totalStorageGB = 0;
     let newNetworks = 0;
     let newUsers = 0;
+    let activeTrials = 0;
+    let expiredTrials = 0;
+    let trialConversions = 0;
 
     try {
       // Get total networks
@@ -205,10 +229,11 @@ export const getNetworkAnalytics = async () => {
     }
 
     try {
-      // Get active subscriptions (networks with paid plans)
+      // Get active subscriptions (networks with paid plans, not on trial)
       const { count: subscriptionsCount } = await supabase
         .from('networks')
         .select('*', { count: 'exact', head: true })
+        .eq('subscription_status', 'active')
         .not('subscription_plan', 'is', null)
         .neq('subscription_plan', 'free')
         .neq('subscription_plan', 'family');
@@ -307,6 +332,44 @@ export const getNetworkAnalytics = async () => {
       console.warn('Error fetching new users:', err);
     }
 
+    try {
+      // Get active trials (networks currently on trial)
+      const { count: activeTrialsCount } = await supabase
+        .from('networks')
+        .select('*', { count: 'exact', head: true })
+        .eq('subscription_status', 'trial')
+        .gte('trial_end_date', new Date().toISOString());
+      activeTrials = activeTrialsCount || 0;
+    } catch (err) {
+      console.warn('Error fetching active trials:', err);
+    }
+
+    try {
+      // Get expired trials (networks with trial ended but no paid subscription)
+      const { count: expiredTrialsCount } = await supabase
+        .from('networks')
+        .select('*', { count: 'exact', head: true })
+        .eq('is_trial', true)
+        .lt('trial_end_date', new Date().toISOString())
+        .neq('subscription_status', 'active');
+      expiredTrials = expiredTrialsCount || 0;
+    } catch (err) {
+      console.warn('Error fetching expired trials:', err);
+    }
+
+    try {
+      // Get trial conversions (networks that started as trial and now have paid subscription)
+      const { count: trialConversionsCount } = await supabase
+        .from('networks')
+        .select('*', { count: 'exact', head: true })
+        .not('trial_start_date', 'is', null)
+        .eq('subscription_status', 'active')
+        .not('subscription_plan', 'is', null);
+      trialConversions = trialConversionsCount || 0;
+    } catch (err) {
+      console.warn('Error fetching trial conversions:', err);
+    }
+
     return {
       totalNetworks,
       totalUsers,
@@ -314,9 +377,19 @@ export const getNetworkAnalytics = async () => {
       totalStorageGB,
       newNetworks,
       newUsers,
+      activeTrials,
+      expiredTrials,
+      trialConversions,
       growth: {
         networksGrowth: newNetworks,
         usersGrowth: newUsers
+      },
+      trials: {
+        active: activeTrials,
+        expired: expiredTrials,
+        conversions: trialConversions,
+        conversionRate: activeTrials + expiredTrials + trialConversions > 0 ? 
+          ((trialConversions / (activeTrials + expiredTrials + trialConversions)) * 100).toFixed(1) : 0
       }
     };
   } catch (error) {
@@ -329,9 +402,18 @@ export const getNetworkAnalytics = async () => {
       totalStorageGB: 0,
       newNetworks: 0,
       newUsers: 0,
+      activeTrials: 0,
+      expiredTrials: 0,
+      trialConversions: 0,
       growth: {
         networksGrowth: 0,
         usersGrowth: 0
+      },
+      trials: {
+        active: 0,
+        expired: 0,
+        conversions: 0,
+        conversionRate: 0
       }
     };
   }
