@@ -236,7 +236,8 @@ export const joinNetworkViaInvitation = async (code) => {
       .from('profiles')
       .update({
         network_id: invitation.network_id,
-        role: 'member'
+        role: 'member',
+        updated_at: new Date().toISOString()
       })
       .eq('id', user.id);
     

@@ -183,6 +183,7 @@ mon-cercle-app/
 - `OnboardingGuide.jsx` - Interactive onboarding guide with tooltips
 - `EditItemDialog.jsx` - Dialog for editing moodboard items
 - `Footer.jsx` - Application footer component
+- `WelcomeMessage.jsx` - Welcome dialog for new network members with celebration animation
 
 ##### SuperAdmin Components (`src/components/superadmin/`)
 - `TicketsManagement.jsx` - Super admin ticket dashboard and management
@@ -274,6 +275,17 @@ mon-cercle-app/
   - Audio file artwork extraction using music-metadata-browser
   - Automatic thumbnail generation for videos
   - Media type detection and appropriate player selection
+- **Unified Invitation System**: Streamlined invitation flow for all users
+  - Email invitations now use the same `/join/:code` flow as invitation links
+  - Automatic email prefilling when following invitation links
+  - Single-use invitation codes for email invitations
+  - Consistent user experience regardless of invitation method
+- **Welcome Experience**: Enhanced onboarding for new members
+  - Welcome message dialog with celebration animation (confetti)
+  - Automatic detection of new members (joined within 5 minutes or via invitation)
+  - Overview of key network features
+  - Option to start guided tour from welcome message
+  - Persistent state to avoid repeated displays
 
 ### Latest Updates (January 2025)
 - **Storage Management System**: Added comprehensive storage tracking for network admins
@@ -362,6 +374,7 @@ npm run test:coverage
 - **PDF Rendering**: pdfjs-dist
 - **Media Processing**: music-metadata-browser, browser-image-compression
 - **Analytics**: Vercel Analytics
+- **Animations**: canvas-confetti
 - **Utilities**: buffer (polyfill)
 
 ### Core Components

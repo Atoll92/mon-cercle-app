@@ -66,12 +66,18 @@ function SignupPage() {
   const [invitationLoading, setInvitationLoading] = useState(false);
   const [invitationError, setInvitationError] = useState(null);
 
-  // Extract redirect URL from query params
+  // Extract redirect URL and email from query params
   const searchParams = new URLSearchParams(location.search);
   const redirectUrl = searchParams.get('redirect');
+  const prefillEmail = searchParams.get('email');
 
   // Extract invite code from redirect URL when component mounts
   useEffect(() => {
+    // Prefill email if provided
+    if (prefillEmail) {
+      setEmail(prefillEmail);
+    }
+    
     if (redirectUrl && redirectUrl.includes('/join/')) {
       const code = redirectUrl.split('/join/')[1];
       if (code) {
@@ -80,7 +86,7 @@ function SignupPage() {
         fetchInvitationInfo(code);
       }
     }
-  }, [redirectUrl]);
+  }, [redirectUrl, prefillEmail]);
 
   
   const ensureProfile = async (userId, email, networkId = null) => {
@@ -125,6 +131,8 @@ function SignupPage() {
         network_id: networkId,
         updated_at: new Date()
       };
+      
+      console.log('Creating new profile:', profileData);
   
       const { error: createError } = await supabase
         .from('profiles')
@@ -222,15 +230,15 @@ function SignupPage() {
           await new Promise(resolve => setTimeout(resolve, 1000));
           
           // Use the ensureProfile function instead of manual update/insert
+          console.log('Creating profile with network:', invitationData.network_id);
           const profileCreated = await ensureProfile(data.user.id, email, invitationData.network_id);
           
           if (!profileCreated) {
             throw new Error("Failed to create or update profile with network information");
           }
           
-          // Join the network via invitation
-          const { joinNetworkViaInvitation } = await import('../api/invitations');
-          await joinNetworkViaInvitation(inviteCode);
+          // Increment invitation link usage count
+          await supabase.rpc('increment_invitation_link_uses', { link_code: inviteCode });
           
           setMessage(`Signup successful! You have been added to ${networkName}. Please check your email to confirm your account.`);
         } catch (inviteError) {
@@ -272,8 +280,9 @@ function SignupPage() {
       // Wait a bit before redirecting
       setTimeout(() => {
         if (inviteCode && invitationData) {
-          // If coming from invitation, redirect to the network page
-          navigate(`/network/${invitationData.network_id}`);
+          // If coming from invitation, redirect to dashboard with from_invite flag
+          // Dashboard will handle profile check and redirect appropriately
+          navigate(`/dashboard?from_invite=true`);
         } else {
           // Otherwise redirect to login
           navigate('/login');

@@ -262,20 +262,71 @@ function DashboardPage() {
 
         // Check if profile is incomplete (e.g., no full name or other important fields)
         if (!data.full_name || data.full_name.trim() === '') {
-          console.log('Profile found but incomplete, redirecting to profile edit page');
+          console.log('Profile found but incomplete');
+          
+          // Check if user just joined via invitation (within last 5 minutes)
+          const joinedAt = new Date(data.updated_at);
+          const now = new Date();
+          const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000);
+          const justJoined = joinedAt > fiveMinutesAgo;
+          
+          // Check for from_profile_setup flag in URL
+          const urlParams = new URLSearchParams(window.location.search);
+          const fromProfileSetup = urlParams.get('from_profile_setup') === 'true';
+          const fromInvite = urlParams.get('from_invite') === 'true';
+          
+          console.log('Profile completion check:', {
+            justJoined,
+            fromProfileSetup,
+            fromInvite,
+            joinedAt: joinedAt.toISOString(),
+            now: now.toISOString(),
+            hasNetwork: !!data.network_id
+          });
+          
+          // If user just joined or is coming back from profile setup, don't redirect
+          if (justJoined || fromProfileSetup || fromInvite) {
+            console.log('User just joined or coming from profile setup, showing dashboard');
+            setProfile(data);
+            setLoadingProfile(false);
+            
+            // Clear the flags
+            if (fromProfileSetup) {
+              urlParams.delete('from_profile_setup');
+            }
+            if (fromInvite) {
+              urlParams.delete('from_invite');
+            }
+            if (fromProfileSetup || fromInvite) {
+              const newUrl = `${window.location.pathname}${urlParams.toString() ? '?' + urlParams.toString() : ''}`;
+              window.history.replaceState({}, '', newUrl);
+            }
+          } else {
+            // Otherwise redirect to complete profile
+            console.log('Redirecting to profile edit page');
+            setProfile(data);
+            setLoadingProfile(false);
+            
+            // Check if we have from_invite in the current URL to pass it along
+            const currentUrlParams = new URLSearchParams(window.location.search);
+            const hasFromInvite = currentUrlParams.get('from_invite') === 'true';
+            
+            // Redirect to profile edit page
+            setTimeout(() => {
+              if (hasFromInvite) {
+                navigate('/profile/edit?from_invite=true');
+              } else {
+                navigate('/profile/edit');
+              }
+            }, 1500);
+            return;
+          }
+        } else {
           setProfile(data);
           setLoadingProfile(false);
-          
-          // Redirect to profile edit page
-          setTimeout(() => {
-            navigate('/profile/edit');
-          }, 1500);
-          return;
         }
 
         console.log('Profile loaded successfully:', data);
-        setProfile(data);
-        setLoadingProfile(false);
         setRetryCount(0); // Reset retry count on success
 
         // Once profile is fetched, fetch members of the same network
@@ -802,9 +853,9 @@ function DashboardPage() {
                     </Card>
                   </Grid>
                   
-                  {/* Network Management Widget */}
+                  {/* Network Management Widget - Only for Admins */}
                   <Grid item xs={12} md={8} sx={{flexGrow:2}}>
-                    {profile.network_id ? (
+                    {profile.network_id && profile.role === 'admin' ? (
                       <Card 
                         ref={getItemRef(1)}
                         sx={{ 
@@ -1134,7 +1185,84 @@ function DashboardPage() {
                           </Grid>
                         </CardContent>
                       </Card>
+                    ) : profile.network_id && profile.role !== 'admin' ? (
+                      // Network Info Widget for Non-Admin Members
+                      <Card 
+                        ref={getItemRef(1)}
+                        sx={{ 
+                          borderRadius: 2, 
+                          boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                          height: '100%',
+                          width: '100%',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+                        }}
+                      >
+                        <CardHeader
+                          title={<Typography variant="subtitle1">My Network</Typography>}
+                          avatar={<NetworkIcon color="primary" />}
+                          sx={{ 
+                            py: 1,
+                            bgcolor: 'rgba(25, 118, 210, 0.05)'
+                          }}
+                        />
+                        
+                        <CardContent sx={{ py: 1, flexGrow: 1 }}>
+                          {/* Network Name */}
+                          <Typography variant="h6" color="primary.main" fontWeight="medium" gutterBottom>
+                            {networkDetails?.name || 'Loading...'}
+                          </Typography>
+                          
+                          {/* Network Stats */}
+                          <Grid container spacing={2} sx={{ mb: 2 }}>
+                            <Grid item xs={6}>
+                              <Paper sx={{ 
+                                p: 2, 
+                                textAlign: 'center',
+                                bgcolor: 'rgba(33, 150, 243, 0.1)',
+                                borderRadius: 2
+                              }}>
+                                <Typography variant="h4" fontWeight="500" color="primary.main">
+                                  {networkMembers.length}
+                                </Typography>
+                                <Typography variant="body2" color="text.secondary">
+                                  Members
+                                </Typography>
+                              </Paper>
+                            </Grid>
+                            
+                            <Grid item xs={6}>
+                              <Paper sx={{ 
+                                p: 2, 
+                                textAlign: 'center',
+                                bgcolor: 'rgba(76, 175, 80, 0.1)',
+                                borderRadius: 2
+                              }}>
+                                <Typography variant="h4" fontWeight="500" color="success.main">
+                                  {recentEvents.length}
+                                </Typography>
+                                <Typography variant="body2" color="text.secondary">
+                                  Upcoming Events
+                                </Typography>
+                              </Paper>
+                            </Grid>
+                          </Grid>
+                          
+                          {/* View Network Button */}
+                          <Button 
+                            variant="contained" 
+                            fullWidth
+                            component={Link}
+                            to={`/network/${profile.network_id}`}
+                            startIcon={<ArrowForwardIcon />}
+                          >
+                            Go to Network
+                          </Button>
+                        </CardContent>
+                      </Card>
                     ) : (
+                      // Create Network Widget for Users without Network
                       <Card sx={{ 
                         borderRadius: 2, 
                         boxShadow: '0 4px 12px rgba(0,0,0,0.08)'

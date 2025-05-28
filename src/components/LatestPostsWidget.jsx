@@ -263,8 +263,7 @@ const LatestPostsWidget = ({ networkId }) => {
               size="small"
               sx={{ mt: 2 }}
             >
-              View Project
-            </Button>
+Open Link            </Button>
           )}
         </Box>
       </CardContent>

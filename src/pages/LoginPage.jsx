@@ -1,5 +1,5 @@
 // src/pages/LoginPage.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseclient';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import {
@@ -51,9 +51,17 @@ function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
   
-  // Get redirect URL from query params
+  // Get redirect URL and email from query params
   const searchParams = new URLSearchParams(location.search);
   const redirectUrl = searchParams.get('redirect');
+  const prefillEmail = searchParams.get('email');
+  
+  // Prefill email if provided
+  useEffect(() => {
+    if (prefillEmail) {
+      setEmail(prefillEmail);
+    }
+  }, [prefillEmail]);
 
   const handleClickShowPassword = () => {
     setShowPassword(!showPassword);

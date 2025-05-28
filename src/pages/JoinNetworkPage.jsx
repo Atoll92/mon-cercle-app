@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/authcontext';
 import {
   Box,
@@ -29,6 +29,7 @@ import { supabase } from '../supabaseclient';
 function JoinNetworkPage() {
   const { code } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [joining, setJoining] = useState(false);
@@ -37,6 +38,10 @@ function JoinNetworkPage() {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
   const [userProfile, setUserProfile] = useState(null);
+  
+  // Extract email from query params if present
+  const searchParams = new URLSearchParams(location.search);
+  const inviteeEmail = searchParams.get('email');
 
   useEffect(() => {
     const fetchInvitationData = async () => {
@@ -91,8 +96,11 @@ function JoinNetworkPage() {
 
   const handleJoin = async () => {
     if (!user) {
-      // Redirect to signup with return URL for new users
-      navigate(`/signup?redirect=/join/${code}`);
+      // Redirect to signup with return URL and email if present
+      const signupUrl = inviteeEmail 
+        ? `/signup?redirect=/join/${code}&email=${encodeURIComponent(inviteeEmail)}`
+        : `/signup?redirect=/join/${code}`;
+      navigate(signupUrl);
       return;
     }
 
@@ -103,9 +111,9 @@ function JoinNetworkPage() {
       await joinNetworkViaInvitation(code);
       setSuccess(true);
 
-      // Redirect to network page after 2 seconds
+      // Redirect to network page after 2 seconds with from_invite flag
       setTimeout(() => {
-        navigate(`/network/${network.id}`);
+        navigate(`/network/${network.id}?from_invite=true`);
       }, 2000);
     } catch (err) {
       console.error('Error joining network:', err);
@@ -279,7 +287,9 @@ function JoinNetworkPage() {
                 size="large"
                 fullWidth
                 component={Link}
-                to={`/login?redirect=/join/${code}`}
+                to={inviteeEmail 
+                  ? `/login?redirect=/join/${code}&email=${encodeURIComponent(inviteeEmail)}`
+                  : `/login?redirect=/join/${code}`}
               >
                 Already have an account? Sign In
               </Button>

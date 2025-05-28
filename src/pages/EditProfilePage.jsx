@@ -80,6 +80,7 @@ function EditProfilePage() {
   const [error, setError] = useState(null);
   const [message, setMessage] = useState('');
   const [isNewProfile, setIsNewProfile] = useState(false);
+  const [profile, setProfile] = useState(null);
 
   // Common skill suggestions
   const commonSkills = [
@@ -147,6 +148,9 @@ function EditProfilePage() {
           setLoading(false);
           return;
         }
+        
+        // Store the profile data
+        setProfile(data);
         
         // Set the form data
         setFullName(data.full_name || '');
@@ -557,11 +561,48 @@ function EditProfilePage() {
       
       if (result.error) throw result.error;
       
+      // Fetch the updated profile to get network_id
+      const { data: updatedProfile, error: fetchError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+        
+      if (fetchError) {
+        console.error('Error fetching updated profile:', fetchError);
+      }
+      
       setMessage(isNewProfile ? 'Profile created successfully!' : 'Profile updated successfully!');
       
       // Redirect after a short delay
       setTimeout(() => {
-        navigate('/dashboard');
+        // Use updated profile or fall back to existing profile
+        const currentProfile = updatedProfile || profile;
+        
+        // If user has a network, redirect to network page, otherwise dashboard
+        if (currentProfile?.network_id) {
+          // Check if this is the first profile setup (coming from invitation)
+          const urlParams = new URLSearchParams(window.location.search);
+          const fromInvite = urlParams.get('from_invite') === 'true';
+          
+          console.log('Redirecting to network:', {
+            networkId: currentProfile.network_id,
+            fromInvite,
+            isNewProfile
+          });
+          
+          if (fromInvite || isNewProfile) {
+            // Redirect to network page with welcome flag
+            navigate(`/network/${currentProfile.network_id}?from_invite=true`);
+          } else {
+            // Regular redirect to network page
+            navigate(`/network/${currentProfile.network_id}`);
+          }
+        } else {
+          console.log('No network_id found, redirecting to dashboard');
+          // No network, go to dashboard
+          navigate('/dashboard?from_profile_setup=true');
+        }
       }, 2000);
       
     } catch (error) {

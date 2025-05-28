@@ -281,7 +281,31 @@ export const inviteUserToNetwork = async (email, networkId, inviterId) => {
         message: `User ${email} added to your network! Email notification sent.`
       };
     } else {
-      const { data: invitation, error: inviteError } = await supabase
+      // For new users, create an invitation link with the email
+      const { data: codeResult, error: codeError } = await supabase
+        .rpc('generate_invitation_code');
+      
+      if (codeError) throw codeError;
+      
+      // Create invitation link with email-specific metadata
+      const { error: linkError } = await supabase
+        .from('network_invitation_links')
+        .insert([{
+          network_id: networkId,
+          created_by: inviterId,
+          code: codeResult,
+          name: `Email invitation for ${email}`,
+          description: `Invitation sent via email to ${email}`,
+          max_uses: 1, // Single use for specific email
+          is_active: true
+        }])
+        .select()
+        .single();
+      
+      if (linkError) throw linkError;
+      
+      // Store the email in invitations table for tracking
+      const { error: inviteError } = await supabase
         .from('invitations')
         .insert([{ 
           email, 
@@ -289,16 +313,13 @@ export const inviteUserToNetwork = async (email, networkId, inviterId) => {
           invited_by: inviterId,
           status: 'pending',
           role: 'member'
-        }])
-        .select()
-        .single();
+        }]);
           
-      if (inviteError) throw inviteError;
+      if (inviteError) console.error('Error storing invitation record:', inviteError);
       
-      const inviteToken = btoa(`invite:${invitation.id}:${networkId}`);
       const { getBaseUrl } = await import('../config/environment');
       const baseUrl = getBaseUrl();
-      const inviteLink = `${baseUrl}/signup?invite=${inviteToken}`;
+      const inviteLink = `${baseUrl}/join/${codeResult}?email=${encodeURIComponent(email)}`;
 
       try {
         await supabase.functions.invoke('network-invite', {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/authcontext';
 import { useTheme } from '../components/ThemeProvider';
 import { useNetwork, NetworkProviderWithParams } from '../context/networkContext';
@@ -47,6 +47,7 @@ import AboutTab from '../components/AboutTab';
 import MemberDetailsModal from '../components/MembersDetailModal';
 import FilesTab from '../components/FilesTab';
 import OnboardingGuide, { WithOnboardingHighlight } from '../components/OnboardingGuide';
+import WelcomeMessage from '../components/WelcomeMessage';
 
 // Create wrapper component that uses NetworkProviderWithParams
 const NetworkLandingPageWrapper = () => (
@@ -60,6 +61,7 @@ function NetworkLandingPage() {
   const { darkMode } = useTheme();
   const muiTheme = useMuiTheme();
   const navigate = useNavigate();
+  const location = useLocation();
   
   // Use the network context instead of local state and API calls
   const {
@@ -81,6 +83,8 @@ function NetworkLandingPage() {
   const [showMemberModal, setShowMemberModal] = useState(false);
   const [userParticipations, setUserParticipations] = useState([]);
   const [memberCount, setMemberCount] = useState(0);
+  const [showWelcomeMessage, setShowWelcomeMessage] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
   
   // Animation setup - must be at top level, not conditional
   const headerRef = useFadeIn(0);
@@ -196,6 +200,130 @@ function NetworkLandingPage() {
   const [postItems, setPostItems] = useState([]);
   const [loadingPosts, setLoadingPosts] = useState(false);
   
+  // Check if user just joined the network (within last 5 minutes) or came from invitation
+  useEffect(() => {
+    if (!user || !network) {
+      console.log('[Welcome] Waiting for user and network data');
+      return;
+    }
+    
+    const checkNewMember = async () => {
+      // Check if we came from an invitation link first
+      const searchParams = new URLSearchParams(location.search);
+      const fromInvite = searchParams.get('from_invite') === 'true';
+      
+      console.log('[Welcome] Checking welcome conditions:', {
+        fromInvite,
+        user: user?.id,
+        network: network?.id,
+        networkMembersCount: networkMembers.length
+      });
+      
+      // If coming from invite, show welcome immediately
+      if (fromInvite) {
+        const welcomeShownKey = `welcome_shown_${network.id}_${user.id}`;
+        const hasShownWelcome = localStorage.getItem(welcomeShownKey);
+        
+        console.log('[Welcome] From invite - checking if already shown:', {
+          welcomeShownKey,
+          hasShownWelcome
+        });
+        
+        if (!hasShownWelcome) {
+          console.log('[Welcome] Showing welcome message from invite!');
+          // Add a small delay to ensure page is fully loaded
+          setTimeout(() => {
+            setShowWelcomeMessage(true);
+            localStorage.setItem(welcomeShownKey, 'true');
+          }, 1500);
+          
+          // Clear the from_invite parameter from URL
+          searchParams.delete('from_invite');
+          const newUrl = `${location.pathname}${searchParams.toString() ? '?' + searchParams.toString() : ''}`;
+          window.history.replaceState({}, '', newUrl);
+        }
+        return;
+      }
+      
+      // Wait for network members to load before checking recent join
+      if (!networkMembers || networkMembers.length === 0) {
+        console.log('[Welcome] Waiting for network members to load');
+        return;
+      }
+      
+      // Find current user's profile
+      const currentUserProfile = networkMembers.find(m => m.id === user.id);
+      if (!currentUserProfile) {
+        console.log('[Welcome] Current user profile not found in network members');
+        // Try to fetch the user's profile directly
+        try {
+          const { data: profileData, error } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', user.id)
+            .single();
+            
+          if (error || !profileData) {
+            console.log('[Welcome] Could not fetch user profile');
+            return;
+          }
+          
+          // Check if the user joined within the last 5 minutes
+          const joinedAt = new Date(profileData.updated_at);
+          const now = new Date();
+          const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000);
+          
+          if (joinedAt > fiveMinutesAgo && profileData.network_id === network.id) {
+            const welcomeShownKey = `welcome_shown_${network.id}_${user.id}`;
+            const hasShownWelcome = localStorage.getItem(welcomeShownKey);
+            
+            if (!hasShownWelcome) {
+              console.log('[Welcome] Showing welcome message for recent join (direct fetch)!');
+              setTimeout(() => {
+                setShowWelcomeMessage(true);
+                localStorage.setItem(welcomeShownKey, 'true');
+              }, 1500);
+            }
+          }
+        } catch (err) {
+          console.error('[Welcome] Error fetching profile:', err);
+        }
+        return;
+      }
+      
+      // Check if the user joined within the last 5 minutes
+      const joinedAt = new Date(currentUserProfile.updated_at);
+      const now = new Date();
+      const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000);
+      
+      console.log('[Welcome] Checking recent join:', {
+        joinedAt: joinedAt.toISOString(),
+        now: now.toISOString(),
+        fiveMinutesAgo: fiveMinutesAgo.toISOString(),
+        isRecent: joinedAt > fiveMinutesAgo,
+        userProfile: currentUserProfile
+      });
+      
+      if (joinedAt > fiveMinutesAgo) {
+        // Check if we've already shown the welcome message
+        const welcomeShownKey = `welcome_shown_${network.id}_${user.id}`;
+        const hasShownWelcome = localStorage.getItem(welcomeShownKey);
+        
+        if (!hasShownWelcome) {
+          console.log('[Welcome] Showing welcome message for recent join!');
+          setTimeout(() => {
+            setShowWelcomeMessage(true);
+            localStorage.setItem(welcomeShownKey, 'true');
+          }, 1500);
+        }
+      }
+    };
+    
+    // Run check after a delay to ensure data is loaded
+    const timer = setTimeout(checkNewMember, 500);
+    return () => clearTimeout(timer);
+  }, [user, network, networkMembers, location]);
+
   // Fetch user's event participations on component mount
   useEffect(() => {
     const fetchUserParticipations = async () => {
@@ -766,13 +894,59 @@ function NetworkLandingPage() {
         </Paper>
       )}
       
+      {/* Welcome Message Dialog */}
+      <WelcomeMessage
+        open={showWelcomeMessage}
+        onClose={() => setShowWelcomeMessage(false)}
+        network={network}
+        user={user}
+        onStartTour={() => {
+          setShowWelcomeMessage(false);
+          setShowOnboarding(true);
+        }}
+      />
+
       {/* Onboarding Guide */}
       <OnboardingGuide
         networkId={network?.id}
         isNetworkAdmin={isUserAdmin}
         memberCount={memberCount}
         currentPage="network"
+        forceShow={showOnboarding}
+        onComplete={() => setShowOnboarding(false)}
       />
+      
+      {/* Debug button for testing - remove in production */}
+      {process.env.NODE_ENV === 'development' && (
+        <Box sx={{ position: 'fixed', bottom: 20, right: 20, zIndex: 9999 }}>
+          <Button
+            variant="contained"
+            size="small"
+            onClick={() => {
+              // Clear welcome shown flag
+              const welcomeShownKey = `welcome_shown_${network?.id}_${user?.id}`;
+              localStorage.removeItem(welcomeShownKey);
+              localStorage.removeItem(`onboarding-dismissed-${network?.id}`);
+              console.log('[Debug] Cleared welcome flags, reloading...');
+              window.location.reload();
+            }}
+            sx={{ mb: 1, display: 'block' }}
+          >
+            Reset Welcome
+          </Button>
+          <Button
+            variant="contained"
+            size="small"
+            color="secondary"
+            onClick={() => {
+              console.log('[Debug] Manually showing welcome message');
+              setShowWelcomeMessage(true);
+            }}
+          >
+            Show Welcome
+          </Button>
+        </Box>
+      )}
     </Container>
   );
 }

@@ -72,7 +72,9 @@ const OnboardingGuide = ({
   memberCount, 
   currentPage = 'network', // 'network', 'admin', 'members'
   currentAdminTab = null,   // admin tab index
-  onGuideComplete 
+  onGuideComplete,
+  forceShow = false,      // Force show the guide
+  onComplete             // Callback when guide is completed or dismissed
 }) => {
   const theme = useTheme();
   const navigate = useNavigate();
@@ -82,6 +84,22 @@ const OnboardingGuide = ({
 
   // Check if this is a new network that needs onboarding
   useEffect(() => {
+    console.log('[OnboardingGuide] Checking conditions:', {
+      forceShow,
+      isNetworkAdmin,
+      memberCount,
+      guideDismissed,
+      showGuide
+    });
+    
+    // Show guide if forced
+    if (forceShow) {
+      console.log('[OnboardingGuide] Force showing guide');
+      setShowGuide(true);
+      setGuideDismissed(false); // Reset dismissed state when forced
+      return;
+    }
+    
     // Only show guide if:
     // 1. User is admin
     // 2. Network has very few members (1-2, likely just the creator)
@@ -89,12 +107,13 @@ const OnboardingGuide = ({
     if (isNetworkAdmin && memberCount <= 2 && !guideDismissed) {
       // Wait 5 seconds before showing the guide
       const timer = setTimeout(() => {
+        console.log('[OnboardingGuide] Auto-showing guide for admin');
         setShowGuide(true);
       }, 5000);
 
       return () => clearTimeout(timer);
     }
-  }, [isNetworkAdmin, memberCount, guideDismissed]);
+  }, [isNetworkAdmin, memberCount, guideDismissed, forceShow]);
 
   // Update step based on current page
   useEffect(() => {
@@ -123,6 +142,9 @@ const OnboardingGuide = ({
     localStorage.setItem(`onboarding-dismissed-${networkId}`, 'true');
     if (onGuideComplete) {
       onGuideComplete();
+    }
+    if (onComplete) {
+      onComplete();
     }
   };
 

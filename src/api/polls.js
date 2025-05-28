@@ -115,10 +115,14 @@ export const getUserVote = withErrorHandling(async (pollId) => {
     .select('*')
     .eq('poll_id', pollId)
     .eq('user_id', userData.user.id)
-    .single();
+    .maybeSingle();
   
-  const data = handleSupabaseResponse(response, 'Failed to fetch user vote');
-  return createApiResponse(data);
+  // Handle case where no vote exists (returns null instead of error)
+  if (response.error && response.error.code !== 'PGRST116') {
+    throw response.error;
+  }
+  
+  return createApiResponse(response.data);
 }, 'Error fetching user vote');
 
 // Update poll status
