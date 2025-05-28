@@ -1,7 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import MediaPlayer from './MediaPlayer';
 import ImageViewerModal from './ImageViewerModal';
+import WidgetHeader from './shared/WidgetHeader';
+import WidgetSkeleton from './shared/WidgetSkeleton';
+import WidgetEmptyState from './shared/WidgetEmptyState';
+import WidgetErrorState from './shared/WidgetErrorState';
+import { useSupabaseQuery } from '../hooks/useSupabaseQuery';
+import { formatTimeAgo } from '../utils/dateFormatting';
+import { truncateContent } from '../utils/textFormatting';
+import { detectMediaType, MEDIA_TYPES, getMediaConfig } from '../utils/mediaDetection';
 import {
   Card,
   CardContent,
@@ -9,196 +17,76 @@ import {
   Typography,
   Box,
   Avatar,
-  Skeleton,
-  Alert,
   Button,
   Divider
 } from '@mui/material';
 import {
   Article as NewsIcon,
-  ArrowForward as ArrowForwardIcon,
   Schedule as ScheduleIcon,
   Person as PersonIcon
 } from '@mui/icons-material';
 import { supabase } from '../supabaseclient';
 
 const LatestNewsWidget = ({ networkId }) => {
-  const [latestNews, setLatestNews] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [imageViewerOpen, setImageViewerOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState({ url: '', title: '' });
 
-  useEffect(() => {
-    const fetchLatestNews = async () => {
-      if (!networkId) {
-        setLoading(false);
-        return;
-      }
-
-      try {
-        setLoading(true);
-        setError(null);
-
-        // Fetch the latest news post with author information
-        const { data, error } = await supabase
-          .from('network_news')
-          .select(`
-            id,
-            title,
-            content,
-            image_url,
-            image_caption,
-            media_url,
-            media_type,
-            media_metadata,
-            created_at,
-            profiles!network_news_created_by_fkey (
-              id,
-              full_name,
-              profile_picture_url
-            )
-          `)
-          .eq('network_id', networkId)
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .single();
-
-        if (error && error.code !== 'PGRST116') { // PGRST116 is "no rows returned"
-          throw error;
-        }
-
-        setLatestNews(data);
-      } catch (err) {
-        console.error('Error fetching latest news:', err);
-        setError('Failed to load latest news');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchLatestNews();
-  }, [networkId]);
+  const { data: latestNews, loading, error } = useSupabaseQuery(
+    () => supabase
+      .from('network_news')
+      .select(`
+        id,
+        title,
+        content,
+        image_url,
+        image_caption,
+        media_url,
+        media_type,
+        media_metadata,
+        created_at,
+        profiles!network_news_created_by_fkey (
+          id,
+          full_name,
+          profile_picture_url
+        )
+      `)
+      .eq('network_id', networkId)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single(),
+    [networkId],
+    { enabled: !!networkId }
+  );
 
   const handleImageClick = (imageUrl, title) => {
     setSelectedImage({ url: imageUrl, title });
     setImageViewerOpen(true);
   };
 
-  const formatTimeAgo = (dateString) => {
-    const now = new Date();
-    const postDate = new Date(dateString);
-    const diffInHours = Math.floor((now - postDate) / (1000 * 60 * 60));
-    
-    if (diffInHours < 1) {
-      const diffInMinutes = Math.floor((now - postDate) / (1000 * 60));
-      return diffInMinutes <= 1 ? 'Just now' : `${diffInMinutes}m ago`;
-    } else if (diffInHours < 24) {
-      return `${diffInHours}h ago`;
-    } else {
-      const diffInDays = Math.floor(diffInHours / 24);
-      return diffInDays === 1 ? '1 day ago' : `${diffInDays} days ago`;
-    }
-  };
-
-  const truncateContent = (content, maxLength = 150) => {
-    if (!content) return '';
-    const strippedContent = content.replace(/<[^>]*>/g, ''); // Remove HTML tags
-    return strippedContent.length > maxLength 
-      ? strippedContent.substring(0, maxLength) + '...'
-      : strippedContent;
-  };
 
   if (loading) {
-    return (
-      <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}>
-        <Box 
-          sx={{ 
-            p: 1.5, 
-            display: 'flex',
-            alignItems: 'center',
-            borderBottom: '1px solid',
-            borderColor: 'divider',
-            bgcolor: 'rgba(25, 118, 210, 0.05)'
-          }}
-        >
-          <Skeleton variant="circular" width={40} height={40} sx={{ mr: 1.5 }} />
-          <Box>
-            <Skeleton width={120} height={24} />
-            <Skeleton width={80} height={16} />
-          </Box>
-        </Box>
-        <CardContent sx={{ flex: 1 }}>
-          <Skeleton variant="rectangular" height={60} sx={{ mb: 2 }} />
-          <Skeleton width="80%" />
-          <Skeleton width="60%" />
-        </CardContent>
-      </Card>
-    );
+    return <WidgetSkeleton showHeader={true} contentLines={3} showImage={true} />;
   }
 
   if (error) {
     return (
-      <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}>
-        <Box 
-          sx={{ 
-            p: 1.5, 
-            display: 'flex',
-            alignItems: 'center',
-            borderBottom: '1px solid',
-            borderColor: 'divider',
-            bgcolor: 'rgba(25, 118, 210, 0.05)'
-          }}
-        >
-          <NewsIcon color="primary" sx={{ mr: 1.5 }} />
-          <Typography variant="subtitle1">
-            Latest News
-          </Typography>
-        </Box>
-        <CardContent sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <Alert severity="error" sx={{ width: '100%' }}>
-            {error}
-          </Alert>
-        </CardContent>
-      </Card>
+      <WidgetErrorState 
+        icon={<NewsIcon color="primary" />}
+        title="Latest News"
+        error={error}
+      />
     );
   }
 
   if (!latestNews) {
     return (
-      <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}>
-        <Box 
-          sx={{ 
-            p: 1.5, 
-            display: 'flex',
-            alignItems: 'center',
-            borderBottom: '1px solid',
-            borderColor: 'divider',
-            bgcolor: 'rgba(25, 118, 210, 0.05)'
-          }}
-        >
-          <NewsIcon color="primary" sx={{ mr: 1.5 }} />
-          <Typography variant="subtitle1">
-            Latest News
-          </Typography>
-        </Box>
-        <CardContent sx={{ 
-          flex: 1, 
-          display: 'flex', 
-          flexDirection: 'column',
-          alignItems: 'center', 
-          justifyContent: 'center',
-          textAlign: 'center'
-        }}>
-          <NewsIcon sx={{ fontSize: 48, color: 'text.disabled', mb: 2 }} />
-          <Typography variant="body2" color="text.secondary" gutterBottom>
-            No news posts yet
-          </Typography>
-          <Typography variant="caption" color="text.secondary">
-            Be the first to share something with your network!
-          </Typography>
-        </CardContent>
-      </Card>
+      <WidgetEmptyState
+        icon={<NewsIcon color="primary" />}
+        title="Latest News"
+        emptyIcon={<NewsIcon />}
+        emptyMessage="No news posts yet"
+        emptySubMessage="Be the first to share something with your network!"
+      />
     );
   }
 
@@ -216,38 +104,11 @@ const LatestNewsWidget = ({ networkId }) => {
       },
       transition: 'all 0.3s ease'
     }}>
-      <Box 
-        sx={{ 
-          p: 1.5, 
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          borderBottom: '1px solid',
-          borderColor: 'divider',
-          bgcolor: 'rgba(25, 118, 210, 0.05)'
-        }}
-      >
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <NewsIcon color="primary" sx={{ mr: 1.5 }} />
-          <Typography variant="subtitle1">
-            Latest News
-          </Typography>
-        </Box>
-        
-        <Button
-          component={Link}
-          to="/dashboard"
-          size="small"
-          endIcon={<ArrowForwardIcon />}
-          className="view-all-button"
-          sx={{ 
-            transition: 'transform 0.2s ease',
-            textTransform: 'none'
-          }}
-        >
-          View All
-        </Button>
-      </Box>
+      <WidgetHeader 
+        icon={<NewsIcon color="primary" />}
+        title="Latest News"
+        viewAllLink="/dashboard"
+      />
       
       <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column', p: 3 }}>
         {/* Author info */}
@@ -297,31 +158,18 @@ const LatestNewsWidget = ({ networkId }) => {
 
           {(() => {
             // Determine media type and URL
-            let mediaUrl = latestNews.media_url || latestNews.image_url;
-            let mediaType = latestNews.media_type;
-            
-            // Fallback detection for legacy posts
-            if (!mediaType && mediaUrl) {
-              const url = mediaUrl.toLowerCase();
-              if (url.includes('.mp4') || url.includes('.webm') || url.includes('.mov')) {
-                mediaType = 'video';
-              } else if (url.includes('.mp3') || url.includes('.wav') || url.includes('.ogg')) {
-                mediaType = 'audio';
-              } else if (url.includes('.pdf')) {
-                mediaType = 'pdf';
-              } else {
-                mediaType = 'image';
-              }
-            }
+            const mediaUrl = latestNews.media_url || latestNews.image_url;
+            const mediaType = detectMediaType(mediaUrl, latestNews.media_type);
+            const mediaConfig = getMediaConfig(mediaType);
             
             if (mediaUrl) {
-              if (mediaType && ['video', 'audio', 'pdf'].includes(mediaType)) {
+              if (mediaType !== MEDIA_TYPES.IMAGE && mediaType !== MEDIA_TYPES.UNKNOWN) {
                 return (
                   <Box sx={{ 
                     mb: 1.5, 
-                    aspectRatio: mediaType === 'video' ? '16/9' : mediaType === 'pdf' ? '3/4' : 'auto',
-                    minHeight: mediaType === 'audio' ? 60 : mediaType === 'pdf' ? 250 : 120,
-                    maxHeight: mediaType === 'pdf' ? 250 : 160,
+                    aspectRatio: mediaConfig.aspectRatio,
+                    minHeight: mediaConfig.minHeight,
+                    maxHeight: Math.min(mediaConfig.maxHeight, 160),
                     width: '100%',
                     overflow: 'hidden'
                   }}>

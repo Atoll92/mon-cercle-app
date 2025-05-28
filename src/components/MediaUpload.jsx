@@ -254,42 +254,53 @@ function MediaUpload({
       for (let i = 0; i < filesToUpload.length; i++) {
         const file = filesToUpload[i];
         const preview = previewsToUpload[i];
-        const result = await uploadMediaFile(file, bucket, path, { allowedTypes });
+        console.log('MediaUpload: Uploading file:', file.name, 'Type:', file.type);
         
-        // Upload album art if it exists for audio files
-        let permanentAlbumArtUrl = null;
-        if (result.mediaType === 'AUDIO' && preview.albumArt) {
-          permanentAlbumArtUrl = await uploadAlbumArt(preview.albumArt, bucket, path);
-        }
-        
-        // Combine upload result with preview metadata
-        const uploadedFile = {
-          ...result,
-          type: result.mediaType.toLowerCase(), // Convert to lowercase for database
-          metadata: {
-            fileName: result.fileName,
-            fileSize: result.fileSize,
-            mimeType: result.mimeType,
-            duration: preview.duration,
-            thumbnail: permanentAlbumArtUrl || preview.thumbnail,
-            // Audio specific metadata
-            title: preview.title,
-            artist: preview.artist,
-            album: preview.album,
-            albumArt: permanentAlbumArtUrl,
-            // PDF specific metadata
-            numPages: preview.numPages,
-            author: preview.author,
-            subject: preview.subject,
-            creator: preview.creator,
-            producer: preview.producer,
-            creationDate: preview.creationDate,
-            modificationDate: preview.modificationDate
+        try {
+          const result = await uploadMediaFile(file, bucket, path, { allowedTypes });
+          console.log('MediaUpload: Upload result:', result);
+          
+          // Upload album art if it exists for audio files
+          let permanentAlbumArtUrl = null;
+          if (result.mediaType === 'AUDIO' && preview.albumArt) {
+            permanentAlbumArtUrl = await uploadAlbumArt(preview.albumArt, bucket, path);
           }
-        };
         
-        uploadedFiles.push(uploadedFile);
+          // Combine upload result with preview metadata
+          const uploadedFile = {
+            ...result,
+            type: result.mediaType.toLowerCase(), // Convert to lowercase for database
+            metadata: {
+              fileName: result.fileName,
+              fileSize: result.fileSize,
+              mimeType: result.mimeType,
+              duration: preview.duration,
+              thumbnail: permanentAlbumArtUrl || preview.thumbnail,
+              // Audio specific metadata
+              title: preview.title,
+              artist: preview.artist,
+              album: preview.album,
+              albumArt: permanentAlbumArtUrl,
+              // PDF specific metadata
+              numPages: preview.numPages,
+              author: preview.author,
+              subject: preview.subject,
+              creator: preview.creator,
+              producer: preview.producer,
+              creationDate: preview.creationDate,
+              modificationDate: preview.modificationDate
+            }
+          };
+          
+          uploadedFiles.push(uploadedFile);
+          console.log('MediaUpload: Added file to uploadedFiles:', uploadedFile);
+        } catch (fileError) {
+          console.error('MediaUpload: Failed to upload file:', file.name, fileError);
+          throw new Error(`Failed to upload ${file.name}: ${fileError.message}`);
+        }
       }
+
+      console.log('MediaUpload: All uploads complete. Total files:', uploadedFiles.length);
 
       // Clean up previews
       previewsToUpload.forEach(preview => {
@@ -301,7 +312,9 @@ function MediaUpload({
       setPreviews([]);
       
       if (onUpload) {
-        onUpload(maxFiles === 1 ? uploadedFiles[0] : uploadedFiles);
+        const result = maxFiles === 1 ? uploadedFiles[0] : uploadedFiles;
+        console.log('MediaUpload: Calling onUpload with:', result);
+        onUpload(result);
       }
     } catch (err) {
       setError(err.message || 'Upload failed');

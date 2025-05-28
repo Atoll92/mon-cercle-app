@@ -1,210 +1,97 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import MediaPlayer from './MediaPlayer';
 import ImageViewerModal from './ImageViewerModal';
+import WidgetHeader from './shared/WidgetHeader';
+import WidgetSkeleton from './shared/WidgetSkeleton';
+import WidgetEmptyState from './shared/WidgetEmptyState';
+import WidgetErrorState from './shared/WidgetErrorState';
+import { useSupabaseQuery } from '../hooks/useSupabaseQuery';
+import { formatTimeAgo } from '../utils/dateFormatting';
+import { truncateContent } from '../utils/textFormatting';
+import { detectMediaType, MEDIA_TYPES, getMediaConfig } from '../utils/mediaDetection';
 import {
   Card,
   CardContent,
   Typography,
   Box,
   Avatar,
-  Skeleton,
-  Alert,
   Button,
   Divider
 } from '@mui/material';
 import {
   Work as WorkIcon,
-  ArrowForward as ArrowForwardIcon,
   Schedule as ScheduleIcon,
   Person as PersonIcon
 } from '@mui/icons-material';
 import { supabase } from '../supabaseclient';
 
 const LatestPostsWidget = ({ networkId }) => {
-  const [latestPost, setLatestPost] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [imageViewerOpen, setImageViewerOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState({ url: '', title: '' });
 
-  useEffect(() => {
-    const fetchLatestPost = async () => {
-      if (!networkId) {
-        setLoading(false);
-        return;
-      }
+  // First fetch network members
+  const { data: members } = useSupabaseQuery(
+    () => supabase
+      .from('profiles')
+      .select('id')
+      .eq('network_id', networkId),
+    [networkId],
+    { enabled: !!networkId }
+  );
 
-      try {
-        setLoading(true);
-        setError(null);
+  const memberIds = members?.map(m => m.id) || [];
+  const memberIdsString = memberIds.length > 0 ? memberIds.sort().join(',') : '';
 
-        // First get members of the network
-        const { data: members, error: membersError } = await supabase
-          .from('profiles')
-          .select('id')
-          .eq('network_id', networkId);
-          
-        if (membersError) throw membersError;
-        
-        if (!members || members.length === 0) {
-          setLatestPost(null);
-          setLoading(false);
-          return;
-        }
-        
-        const memberIds = members.map(m => m.id);
-        
-        // Then get latest post from these members
-        const { data, error } = await supabase
-          .from('portfolio_items')
-          .select(`
-            *,
-            profiles:profile_id (
-              id,
-              full_name,
-              profile_picture_url
-            )
-          `)
-          .in('profile_id', memberIds)
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .single();
-          
-        if (error && error.code !== 'PGRST116') { // PGRST116 is "no rows returned"
-          throw error;
-        }
+  // Then fetch latest post from members
+  const { data: latestPost, loading, error } = useSupabaseQuery(
+    () => memberIds.length > 0 ? supabase
+      .from('portfolio_items')
+      .select(`
+        *,
+        profiles:profile_id (
+          id,
+          full_name,
+          profile_picture_url
+        )
+      `)
+      .in('profile_id', memberIds)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single() : Promise.resolve({ data: null, error: null }),
+    [memberIdsString],
+    { enabled: memberIds.length > 0 }
+  );
 
-        setLatestPost(data);
-      } catch (err) {
-        console.error('Error fetching latest post:', err);
-        setError('Failed to load latest post');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchLatestPost();
-  }, [networkId]);
-
-  const formatTimeAgo = (dateString) => {
-    const now = new Date();
-    const postDate = new Date(dateString);
-    const diffInHours = Math.floor((now - postDate) / (1000 * 60 * 60));
-    
-    if (diffInHours < 1) {
-      const diffInMinutes = Math.floor((now - postDate) / (1000 * 60));
-      return diffInMinutes <= 1 ? 'Just now' : `${diffInMinutes}m ago`;
-    } else if (diffInHours < 24) {
-      return `${diffInHours}h ago`;
-    } else {
-      const diffInDays = Math.floor(diffInHours / 24);
-      return diffInDays === 1 ? '1 day ago' : `${diffInDays} days ago`;
-    }
-  };
-
-  const truncateContent = (content, maxLength = 150) => {
-    if (!content) return '';
-    return content.length > maxLength 
-      ? content.substring(0, maxLength) + '...'
-      : content;
-  };
 
   const handleImageClick = (imageUrl, imageTitle) => {
     setSelectedImage({ url: imageUrl, title: imageTitle });
     setImageViewerOpen(true);
   };
 
-  if (loading) {
-    return (
-      <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}>
-        <Box 
-          sx={{ 
-            p: 1.5, 
-            display: 'flex',
-            alignItems: 'center',
-            borderBottom: '1px solid',
-            borderColor: 'divider',
-            bgcolor: 'rgba(25, 118, 210, 0.05)'
-          }}
-        >
-          <Skeleton variant="circular" width={40} height={40} sx={{ mr: 1.5 }} />
-          <Box>
-            <Skeleton width={120} height={24} />
-            <Skeleton width={80} height={16} />
-          </Box>
-        </Box>
-        <CardContent sx={{ flex: 1 }}>
-          <Skeleton variant="rectangular" height={60} sx={{ mb: 2 }} />
-          <Skeleton width="80%" />
-          <Skeleton width="60%" />
-        </CardContent>
-      </Card>
-    );
+  if (loading || !networkId) {
+    return <WidgetSkeleton showHeader={true} contentLines={3} showImage={true} />;
   }
 
   if (error) {
     return (
-      <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}>
-        <Box 
-          sx={{ 
-            p: 1.5, 
-            display: 'flex',
-            alignItems: 'center',
-            borderBottom: '1px solid',
-            borderColor: 'divider',
-            bgcolor: 'rgba(25, 118, 210, 0.05)'
-          }}
-        >
-          <WorkIcon color="primary" sx={{ mr: 1.5 }} />
-          <Typography variant="subtitle1">
-            Latest Post
-          </Typography>
-        </Box>
-        <CardContent sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <Alert severity="error" sx={{ width: '100%' }}>
-            {error}
-          </Alert>
-        </CardContent>
-      </Card>
+      <WidgetErrorState
+        icon={<WorkIcon color="primary" />}
+        title="Latest Post"
+        error={error}
+      />
     );
   }
 
-  if (!latestPost) {
+  if (!latestPost || memberIds.length === 0) {
     return (
-      <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}>
-        <Box 
-          sx={{ 
-            p: 1.5, 
-            display: 'flex',
-            alignItems: 'center',
-            borderBottom: '1px solid',
-            borderColor: 'divider',
-            bgcolor: 'rgba(25, 118, 210, 0.05)'
-          }}
-        >
-          <WorkIcon color="primary" sx={{ mr: 1.5 }} />
-          <Typography variant="subtitle1">
-            Latest Post
-          </Typography>
-        </Box>
-        <CardContent sx={{ 
-          flex: 1, 
-          display: 'flex', 
-          flexDirection: 'column',
-          alignItems: 'center', 
-          justifyContent: 'center',
-          textAlign: 'center'
-        }}>
-          <WorkIcon sx={{ fontSize: 48, color: 'text.disabled', mb: 2 }} />
-          <Typography variant="body2" color="text.secondary" gutterBottom>
-            No portfolio posts yet
-          </Typography>
-          <Typography variant="caption" color="text.secondary">
-            Be the first to share your work!
-          </Typography>
-        </CardContent>
-      </Card>
+      <WidgetEmptyState
+        icon={<WorkIcon color="primary" />}
+        title="Latest Post"
+        emptyIcon={<WorkIcon />}
+        emptyMessage="No portfolio posts yet"
+        emptySubMessage="Be the first to share your work!"
+      />
     );
   }
 
@@ -222,38 +109,11 @@ const LatestPostsWidget = ({ networkId }) => {
       },
       transition: 'all 0.3s ease'
     }}>
-      <Box 
-        sx={{ 
-          p: 1.5, 
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          borderBottom: '1px solid',
-          borderColor: 'divider',
-          bgcolor: 'rgba(25, 118, 210, 0.05)'
-        }}
-      >
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <WorkIcon color="primary" sx={{ mr: 1.5 }} />
-          <Typography variant="subtitle1">
-            Latest Post
-          </Typography>
-        </Box>
-        
-        <Button
-          component={Link}
-          to="/dashboard"
-          size="small"
-          endIcon={<ArrowForwardIcon />}
-          className="view-all-button"
-          sx={{ 
-            transition: 'transform 0.2s ease',
-            textTransform: 'none'
-          }}
-        >
-          View All
-        </Button>
-      </Box>
+      <WidgetHeader
+        icon={<WorkIcon color="primary" />}
+        title="Latest Post"
+        viewAllLink="/dashboard"
+      />
       
       <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column', p: 3 }}>
         {/* Author info */}
@@ -303,31 +163,18 @@ const LatestPostsWidget = ({ networkId }) => {
 
           {(() => {
             // Determine media type and URL
-            let mediaUrl = latestPost.media_url || latestPost.image_url;
-            let mediaType = latestPost.media_type;
-            
-            // Fallback detection for legacy posts
-            if (!mediaType && mediaUrl) {
-              const url = mediaUrl.toLowerCase();
-              if (url.includes('.mp4') || url.includes('.webm') || url.includes('.mov')) {
-                mediaType = 'video';
-              } else if (url.includes('.mp3') || url.includes('.wav') || url.includes('.ogg')) {
-                mediaType = 'audio';
-              } else if (url.includes('.pdf')) {
-                mediaType = 'pdf';
-              } else {
-                mediaType = 'image';
-              }
-            }
+            const mediaUrl = latestPost.media_url || latestPost.image_url;
+            const mediaType = detectMediaType(mediaUrl, latestPost.media_type);
+            const mediaConfig = getMediaConfig(mediaType);
             
             if (mediaUrl) {
-              if (mediaType && ['video', 'audio', 'pdf'].includes(mediaType)) {
+              if (mediaType !== MEDIA_TYPES.IMAGE && mediaType !== MEDIA_TYPES.UNKNOWN) {
                 return (
                   <Box sx={{ 
                     mb: 2, 
-                    aspectRatio: mediaType === 'video' ? '16/9' : mediaType === 'pdf' ? '3/4' : 'auto',
-                    minHeight: mediaType === 'audio' ? 60 : mediaType === 'pdf' ? 250 : 120,
-                    maxHeight: mediaType === 'pdf' ? 250 : 200,
+                    aspectRatio: mediaConfig.aspectRatio,
+                    minHeight: mediaConfig.minHeight,
+                    maxHeight: Math.min(mediaConfig.maxHeight, 200),
                     width: '100%',
                     borderRadius: 1,
                     overflow: 'hidden'

@@ -2,6 +2,11 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Project Documentation
+
+- **[Application Status](./status.md)** - Current state of the application and production readiness
+- **[Pre-Launch Tasks](./tasks.md)** - Remaining tasks before production launch
+
 ## App Map
 
 ### Project Structure Overview
@@ -14,7 +19,10 @@ mon-cercle-app/
 │   ├── assets/                # Images, icons, and static resources
 │   ├── components/            # Reusable React components
 │   │   ├── admin/             # Admin-specific components
+│   │   ├── superadmin/        # Super admin components
 │   │   └── [feature components]
+│   ├── config/                # Application configuration
+│   ├── constants/             # Application constants
 │   ├── context/               # React Context providers
 │   ├── hooks/                 # Custom React hooks
 │   ├── mocks/                 # MSW mock handlers
@@ -42,6 +50,9 @@ mon-cercle-app/
 - `vercel.json` - Vercel deployment settings
 - `eslint.config.js` - Linting rules
 - `.env` - Environment variables (not tracked)
+- `src/config/cors.js` - CORS configuration for production domains
+- `src/config/environment.js` - Environment configuration and validation
+- `src/constants/moodboard.js` - Moodboard constants and defaults
 
 #### Core Application Files
 - `src/supabaseclient.jsx` - Supabase client initialization
@@ -161,12 +172,17 @@ mon-cercle-app/
 - `UserBadges.jsx` - User badge display component
 - `ErrorBoundary.jsx` - Error handling wrapper
 - `EventParticipation.jsx` - Event participation widget
+- `EventParticipationStats.jsx` - Event analytics and statistics  
+- `EventsMap.jsx` - Map component for displaying events using Mapbox
 - `LazyImage.jsx` - Lazy loading image component
 - `MembersDetailModal.jsx` - Member details popup
 - `MoodboardItem.jsx` - Individual moodboard item component
 - `NetworkDetailsModal.jsx` - Network information modal
 - `NewsPostPage.jsx` - Individual news post page
 - `TestNotificationSystem.jsx` - Notification testing component
+- `OnboardingGuide.jsx` - Interactive onboarding guide with tooltips
+- `EditItemDialog.jsx` - Dialog for editing moodboard items
+- `Footer.jsx` - Application footer component
 
 ##### SuperAdmin Components (`src/components/superadmin/`)
 - `TicketsManagement.jsx` - Super admin ticket dashboard and management
@@ -224,6 +240,8 @@ mon-cercle-app/
 - `supabase_schema.sql` - Database schema
 
 ### Recent Changes
+- Application rebranded from "Mon Cercle" to "Conclav"
+- Production domains configured: conclav.club and conclav.network
 - Fixed direct messages foreign key relationship issue
 - Updated DirectMessagesPage, DirectMessagesList, and DirectMessageChat for dark mode support
 - Integrated invitation links into MembersTab instead of separate tab
@@ -232,7 +250,7 @@ mon-cercle-app/
 - Added message deletion functionality
 - Integrated Vercel Analytics
 - Created Terms of Service page (CGU) compliant with French/EU law
-- Integrated Stripe Community plan (€17/month) with price ID: price_1RSy002KqNIKpvjTG7YyuZZ6
+- Integrated multiple Stripe subscription plans with new price IDs
 - Harmonized LatestPostsWidget and LatestNewsWidget with consistent author/date displays
 - Enhanced widget visuals: larger text, images (200px), avatars (40px), and increased padding
 - Unified widget headers to match PersonalMoodboardWidget style with consistent Box layout
@@ -292,6 +310,11 @@ mon-cercle-app/
   - Super admin dashboard with statistics and filters
   - Automatic assignment and response tracking
   - Email notifications for ticket updates
+- **Free Trial System**: 14-day trial for new networks
+  - Automatic trial period tracking
+  - Trial expiration notifications
+  - Seamless conversion to paid plans
+  - Trial days remaining calculation
 
 ## Commands
 
@@ -459,9 +482,11 @@ Key entities in the Supabase database:
 - `AnimatedComponents`: Styled components with animations
 - `ShimmerProvider`: Dynamic shimmer effects
 - `SubscriptionBadge`: Subscription status indicator
-- `EventParticipationStats`: Event analytics and statistics
 - `AddressSuggestions`: Location-based address suggestions
 - `TextCycler`: Animated text cycling component
+- `EventsMap`: Interactive map for event locations
+- `OnboardingGuide`: Step-by-step user onboarding
+- `Footer`: Application footer with links
 
 ### Admin Components
 - `AdminLayout`: Admin interface layout
@@ -547,6 +572,10 @@ networks
 - subscription_end_date (timestamp)
 - stripe_customer_id (varchar)
 - stripe_subscription_id (varchar)
+- trial_start_date (timestamp)
+- trial_end_date (timestamp)
+- is_trial (boolean)
+- trial_days_used (integer)
 - created_at (timestamp)
 - updated_at (timestamp)
 

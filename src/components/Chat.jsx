@@ -36,6 +36,9 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import ReplyIcon from '@mui/icons-material/Reply';
 import CloseIcon from '@mui/icons-material/Close';
+import VideocamIcon from '@mui/icons-material/Videocam';
+import AudiotrackIcon from '@mui/icons-material/Audiotrack';
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import backgroundImage from '../assets/8-bit-artwork-sky-landscape-wallpaper-preview.jpg';
 import LinkPreview from './LinkPreview'; // Import the LinkPreview component
 import MediaUpload from './MediaUpload';
@@ -58,8 +61,8 @@ const Chat = ({ networkId, isFullscreen = false }) => {
   const channelRef = useRef(null);
   const [darkMode, setDarkMode] = useState(true);
   const [showMediaUpload, setShowMediaUpload] = useState(false);
-  const [uploadingMedia, setUploadingMedia] = useState(false);
   const [expandedMedia, setExpandedMedia] = useState({});
+  const [pendingMedia, setPendingMedia] = useState(null);
   
   // Image viewer modal state
   const [imageViewerOpen, setImageViewerOpen] = useState(false);
@@ -329,7 +332,11 @@ const Chat = ({ networkId, isFullscreen = false }) => {
   };
   
   const handleSend = async (mediaData = null) => {
-    if (!newMessage.trim() && !mediaData) return;
+    // Use passed mediaData or pendingMedia
+    const media = mediaData || pendingMedia;
+    
+    // Allow sending if there's text or media
+    if (!newMessage.trim() && !media) return;
     
     // Prepare optimistic UI update with pending message
     const pendingMessage = {
@@ -351,10 +358,23 @@ const Chat = ({ networkId, isFullscreen = false }) => {
       } : null,
       pending: true
     };
+    
+    // Add media data to pending message if present
+    if (media) {
+      pendingMessage.media_url = media.url;
+      pendingMessage.media_type = media.type || media.mediaType?.toLowerCase();
+      pendingMessage.media_metadata = media.metadata || {
+        fileName: media.fileName,
+        fileSize: media.fileSize,
+        mimeType: media.mimeType
+      };
+    }
 
     // Add the pending message to the UI immediately
     setMessages(prev => [...prev, pendingMessage]);
     setNewMessage('');
+    setPendingMedia(null); // Clear pending media after sending
+    setReplyingTo(null); // Clear reply state
 
     try {
       // Send the message to the database
@@ -372,13 +392,13 @@ const Chat = ({ networkId, isFullscreen = false }) => {
       }
       
       // Add media data if present
-      if (mediaData) {
-        messageData.media_url = mediaData.url;
-        messageData.media_type = mediaData.type || mediaData.mediaType.toLowerCase();
-        messageData.media_metadata = mediaData.metadata || {
-          fileName: mediaData.fileName,
-          fileSize: mediaData.fileSize,
-          mimeType: mediaData.mimeType
+      if (media) {
+        messageData.media_url = media.url;
+        messageData.media_type = media.type || media.mediaType?.toLowerCase();
+        messageData.media_metadata = media.metadata || {
+          fileName: media.fileName,
+          fileSize: media.fileSize,
+          mimeType: media.mimeType
         };
       }
       
@@ -423,23 +443,18 @@ const Chat = ({ networkId, isFullscreen = false }) => {
     }
   };
   
-  // Handle media upload
+  // Handle media upload - just store it, don't send yet
   const handleMediaUpload = async (mediaData) => {
-    setUploadingMedia(true);
-    setShowMediaUpload(false);
+    console.log('Chat: handleMediaUpload called with:', mediaData);
     
-    try {
-      // Upload media with a message
-      const mediaType = mediaData.type || mediaData.mediaType?.toLowerCase() || 'file';
-      const mediaMessage = newMessage.trim() || `Shared a ${mediaType}`;
-      setNewMessage(mediaMessage);
-      await handleSend(mediaData);
-    } catch (error) {
-      console.error('Error uploading media:', error);
-      setError('Failed to upload media');
-    } finally {
-      setUploadingMedia(false);
+    if (!mediaData) {
+      console.error('Chat: mediaData is undefined');
+      setError('Media upload failed: No data received');
+      return;
     }
+    
+    setShowMediaUpload(false);
+    setPendingMedia(mediaData);
   };
   
   // Handle message menu
@@ -1611,6 +1626,144 @@ const renderMessageContent = (message) => {
         </Box>
       )}
       
+      {/* Pending Media Indicator */}
+      {pendingMedia && (
+        <Box
+          sx={{
+            px: 2,
+            py: 1.5,
+            bgcolor: darkMode
+              ? 'rgba(0, 0, 0, 0.6)'
+              : 'rgba(245, 245, 245, 0.9)',
+            borderTop: darkMode
+              ? '1px solid rgba(255,255,255,0.1)'
+              : '1px solid rgba(0,0,0,0.08)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 2
+          }}
+        >
+          {/* Media Preview */}
+          <Box sx={{ position: 'relative', flexShrink: 0 }}>
+            {pendingMedia.type === 'image' && (
+              <Box
+                component="img"
+                src={pendingMedia.url}
+                alt="Pending media"
+                sx={{
+                  width: 80,
+                  height: 80,
+                  objectFit: 'cover',
+                  borderRadius: 1,
+                  border: '1px solid',
+                  borderColor: darkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'
+                }}
+              />
+            )}
+            {pendingMedia.type === 'video' && (
+              <Box
+                sx={{
+                  width: 80,
+                  height: 80,
+                  borderRadius: 1,
+                  bgcolor: 'action.hover',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  border: '1px solid',
+                  borderColor: darkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'
+                }}
+              >
+                <VideocamIcon sx={{ fontSize: 40, color: 'text.secondary' }} />
+              </Box>
+            )}
+            {pendingMedia.type === 'audio' && (
+              <Box
+                sx={{
+                  width: 80,
+                  height: 80,
+                  borderRadius: 1,
+                  bgcolor: 'action.hover',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  border: '1px solid',
+                  borderColor: darkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)',
+                  position: 'relative',
+                  overflow: 'hidden'
+                }}
+              >
+                {pendingMedia.metadata?.thumbnail ? (
+                  <Box
+                    component="img"
+                    src={pendingMedia.metadata.thumbnail}
+                    alt="Album art"
+                    sx={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover'
+                    }}
+                  />
+                ) : (
+                  <AudiotrackIcon sx={{ fontSize: 40, color: 'text.secondary' }} />
+                )}
+              </Box>
+            )}
+            {pendingMedia.type === 'pdf' && (
+              <Box
+                sx={{
+                  width: 80,
+                  height: 80,
+                  borderRadius: 1,
+                  bgcolor: 'action.hover',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  border: '1px solid',
+                  borderColor: darkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'
+                }}
+              >
+                <PictureAsPdfIcon sx={{ fontSize: 40, color: 'text.secondary' }} />
+              </Box>
+            )}
+            {/* Close button overlay */}
+            <IconButton
+              size="small"
+              onClick={() => setPendingMedia(null)}
+              sx={{
+                position: 'absolute',
+                top: -8,
+                right: -8,
+                bgcolor: 'error.main',
+                color: 'white',
+                '&:hover': {
+                  bgcolor: 'error.dark'
+                },
+                width: 24,
+                height: 24
+              }}
+            >
+              <CancelIcon sx={{ fontSize: 16 }} />
+            </IconButton>
+          </Box>
+
+          {/* Media Info */}
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Typography variant="body2" noWrap>
+              {pendingMedia.metadata?.fileName || pendingMedia.fileName || 'Untitled'}
+            </Typography>
+            <Typography variant="caption" color="text.secondary">
+              {pendingMedia.type?.toUpperCase() || 'FILE'} • Ready to send
+            </Typography>
+            {pendingMedia.metadata?.fileSize && (
+              <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+                {(pendingMedia.metadata.fileSize / 1024 / 1024).toFixed(2)} MB
+              </Typography>
+            )}
+          </Box>
+        </Box>
+      )}
+      
       {/* Message Input */}
       <Box 
         sx={{ 
@@ -1632,7 +1785,7 @@ const renderMessageContent = (message) => {
         <IconButton
           color="primary"
           onClick={() => setShowMediaUpload(!showMediaUpload)}
-          disabled={uploadingMedia}
+          disabled={false}
           sx={{ mr: 1 }}
         >
           <AttachFileIcon />
@@ -1685,7 +1838,7 @@ const renderMessageContent = (message) => {
         <IconButton 
           color="primary" 
           onClick={() => handleSend()}
-          disabled={!newMessage.trim() && !uploadingMedia}
+          disabled={!newMessage.trim() && !pendingMedia}
           sx={{ 
             bgcolor: 'primary.main', 
             color: 'white',
@@ -1733,6 +1886,7 @@ const renderMessageContent = (message) => {
             bucket="networks"
             path={`chat/${networkId}`}
             maxFiles={1}
+            autoUpload={true}
             compact={true}
           />
         </Paper>

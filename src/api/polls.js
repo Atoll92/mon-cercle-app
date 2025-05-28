@@ -1,184 +1,149 @@
 import { supabase } from '../supabaseclient';
+import { withErrorHandling, handleSupabaseResponse, createApiResponse } from '../utils/apiHelpers';
 
 // Create a new poll
-export const createPoll = async (pollData) => {
-  try {
-    const { data, error } = await supabase
-      .from('network_polls')
-      .insert([{
-        ...pollData,
-        created_by: (await supabase.auth.getUser()).data.user.id
-      }])
-      .select()
-      .single();
-    
-    if (error) throw error;
-    return { data, error: null };
-  } catch (error) {
-    console.error('Error creating poll:', error);
-    return { data: null, error };
-  }
-};
+export const createPoll = withErrorHandling(async (pollData) => {
+  const { data: userData } = await supabase.auth.getUser();
+  
+  const response = await supabase
+    .from('network_polls')
+    .insert([{
+      ...pollData,
+      created_by: userData.user.id
+    }])
+    .select()
+    .single();
+  
+  const data = handleSupabaseResponse(response, 'Failed to create poll');
+  return createApiResponse(data);
+}, 'Error creating poll');
 
 // Get all polls for a network
-export const getNetworkPolls = async (networkId, status = null) => {
-  try {
-    let query = supabase
-      .from('network_polls')
-      .select(`
-        *,
-        created_by_profile:profiles!network_polls_created_by_fkey(
-          id,
-          full_name,
-          profile_picture_url
-        ),
-        votes:network_poll_votes(count)
-      `)
-      .eq('network_id', networkId)
-      .order('created_at', { ascending: false });
-    
-    if (status) {
-      query = query.eq('status', status);
-    }
-    
-    const { data, error } = await query;
-    
-    if (error) throw error;
-    return { data, error: null };
-  } catch (error) {
-    console.error('Error fetching polls:', error);
-    return { data: null, error };
+export const getNetworkPolls = withErrorHandling(async (networkId, status = null) => {
+  let query = supabase
+    .from('network_polls')
+    .select(`
+      *,
+      created_by_profile:profiles!network_polls_created_by_fkey(
+        id,
+        full_name,
+        profile_picture_url
+      ),
+      votes:network_poll_votes(count)
+    `)
+    .eq('network_id', networkId)
+    .order('created_at', { ascending: false });
+  
+  if (status) {
+    query = query.eq('status', status);
   }
-};
+  
+  const response = await query;
+  const data = handleSupabaseResponse(response, 'Failed to fetch polls');
+  return createApiResponse(data);
+}, 'Error fetching polls');
 
 // Get a single poll with vote details
-export const getPollWithVotes = async (pollId) => {
-  try {
-    const { data: poll, error: pollError } = await supabase
-      .from('network_polls')
-      .select(`
-        *,
-        created_by_profile:profiles!network_polls_created_by_fkey(
-          id,
-          full_name,
-          profile_picture_url
-        )
-      `)
-      .eq('id', pollId)
-      .single();
-    
-    if (pollError) throw pollError;
-    
-    // Get all votes for this poll
-    const { data: votes, error: votesError } = await supabase
-      .from('network_poll_votes')
-      .select(`
-        *,
-        user:profiles!network_poll_votes_user_id_fkey(
-          id,
-          full_name,
-          profile_picture_url
-        )
-      `)
-      .eq('poll_id', pollId);
-    
-    if (votesError) throw votesError;
-    
-    // Calculate vote statistics
-    const voteStats = calculateVoteStats(poll, votes);
-    
-    return { 
-      data: { 
-        ...poll, 
-        votes,
-        stats: voteStats 
-      }, 
-      error: null 
-    };
-  } catch (error) {
-    console.error('Error fetching poll with votes:', error);
-    return { data: null, error };
-  }
-};
+export const getPollWithVotes = withErrorHandling(async (pollId) => {
+  // Fetch poll details
+  const pollResponse = await supabase
+    .from('network_polls')
+    .select(`
+      *,
+      created_by_profile:profiles!network_polls_created_by_fkey(
+        id,
+        full_name,
+        profile_picture_url
+      )
+    `)
+    .eq('id', pollId)
+    .single();
+  
+  const poll = handleSupabaseResponse(pollResponse, 'Failed to fetch poll');
+  
+  // Get all votes for this poll
+  const votesResponse = await supabase
+    .from('network_poll_votes')
+    .select(`
+      *,
+      user:profiles!network_poll_votes_user_id_fkey(
+        id,
+        full_name,
+        profile_picture_url
+      )
+    `)
+    .eq('poll_id', pollId);
+  
+  const votes = handleSupabaseResponse(votesResponse, 'Failed to fetch votes') || [];
+  
+  // Calculate vote statistics
+  const voteStats = calculateVoteStats(poll, votes);
+  
+  return createApiResponse({ 
+    ...poll, 
+    votes,
+    stats: voteStats 
+  });
+}, 'Error fetching poll with votes');
 
 // Submit a vote
-export const submitVote = async (pollId, selectedOptions) => {
-  try {
-    const userId = (await supabase.auth.getUser()).data.user.id;
-    
-    const { data, error } = await supabase
-      .from('network_poll_votes')
-      .upsert({
-        poll_id: pollId,
-        user_id: userId,
-        selected_options: selectedOptions
-      }, {
-        onConflict: 'poll_id,user_id'
-      })
-      .select()
-      .single();
-    
-    if (error) throw error;
-    return { data, error: null };
-  } catch (error) {
-    console.error('Error submitting vote:', error);
-    return { data: null, error };
-  }
-};
+export const submitVote = withErrorHandling(async (pollId, selectedOptions) => {
+  const { data: userData } = await supabase.auth.getUser();
+  
+  const response = await supabase
+    .from('network_poll_votes')
+    .upsert({
+      poll_id: pollId,
+      user_id: userData.user.id,
+      selected_options: selectedOptions
+    }, {
+      onConflict: 'poll_id,user_id'
+    })
+    .select()
+    .single();
+  
+  const data = handleSupabaseResponse(response, 'Failed to submit vote');
+  return createApiResponse(data);
+}, 'Error submitting vote');
 
 // Get user's vote for a poll
-export const getUserVote = async (pollId) => {
-  try {
-    const userId = (await supabase.auth.getUser()).data.user.id;
-    
-    const { data, error } = await supabase
-      .from('network_poll_votes')
-      .select('*')
-      .eq('poll_id', pollId)
-      .eq('user_id', userId)
-      .single();
-    
-    if (error && error.code !== 'PGRST116') throw error;
-    return { data, error: null };
-  } catch (error) {
-    console.error('Error fetching user vote:', error);
-    return { data: null, error };
-  }
-};
+export const getUserVote = withErrorHandling(async (pollId) => {
+  const { data: userData } = await supabase.auth.getUser();
+  
+  const response = await supabase
+    .from('network_poll_votes')
+    .select('*')
+    .eq('poll_id', pollId)
+    .eq('user_id', userData.user.id)
+    .single();
+  
+  const data = handleSupabaseResponse(response, 'Failed to fetch user vote');
+  return createApiResponse(data);
+}, 'Error fetching user vote');
 
 // Update poll status
-export const updatePollStatus = async (pollId, status) => {
-  try {
-    const { data, error } = await supabase
-      .from('network_polls')
-      .update({ status })
-      .eq('id', pollId)
-      .select()
-      .single();
-    
-    if (error) throw error;
-    return { data, error: null };
-  } catch (error) {
-    console.error('Error updating poll status:', error);
-    return { data: null, error };
-  }
-};
+export const updatePollStatus = withErrorHandling(async (pollId, status) => {
+  const response = await supabase
+    .from('network_polls')
+    .update({ status })
+    .eq('id', pollId)
+    .select()
+    .single();
+  
+  const data = handleSupabaseResponse(response, 'Failed to update poll status');
+  return createApiResponse(data);
+}, 'Error updating poll status');
 
 // Delete a poll
-export const deletePoll = async (pollId) => {
-  try {
-    const { error } = await supabase
-      .from('network_polls')
-      .delete()
-      .eq('id', pollId);
-    
-    if (error) throw error;
-    return { error: null };
-  } catch (error) {
-    console.error('Error deleting poll:', error);
-    return { error };
-  }
-};
+export const deletePoll = withErrorHandling(async (pollId) => {
+  const response = await supabase
+    .from('network_polls')
+    .delete()
+    .eq('id', pollId);
+  
+  handleSupabaseResponse(response, 'Failed to delete poll');
+  return createApiResponse(true);
+}, 'Error deleting poll');
 
 // Helper function to calculate vote statistics
 const calculateVoteStats = (poll, votes) => {
@@ -251,28 +216,23 @@ const calculateVoteStats = (poll, votes) => {
 };
 
 // Get active polls for news feed
-export const getActivePolls = async (networkId) => {
-  try {
-    const { data, error } = await supabase
-      .from('network_polls')
-      .select(`
-        *,
-        created_by_profile:profiles!network_polls_created_by_fkey(
-          id,
-          full_name,
-          profile_picture_url
-        ),
-        votes:network_poll_votes(count)
-      `)
-      .eq('network_id', networkId)
-      .eq('status', 'active')
-      .or('ends_at.is.null,ends_at.gt.now()')
-      .order('created_at', { ascending: false });
-    
-    if (error) throw error;
-    return { data, error: null };
-  } catch (error) {
-    console.error('Error fetching active polls:', error);
-    return { data: null, error };
-  }
-};
+export const getActivePolls = withErrorHandling(async (networkId) => {
+  const response = await supabase
+    .from('network_polls')
+    .select(`
+      *,
+      created_by_profile:profiles!network_polls_created_by_fkey(
+        id,
+        full_name,
+        profile_picture_url
+      ),
+      votes:network_poll_votes(count)
+    `)
+    .eq('network_id', networkId)
+    .eq('status', 'active')
+    .or('ends_at.is.null,ends_at.gt.now()')
+    .order('created_at', { ascending: false });
+  
+  const data = handleSupabaseResponse(response, 'Failed to fetch active polls');
+  return createApiResponse(data);
+}, 'Error fetching active polls');

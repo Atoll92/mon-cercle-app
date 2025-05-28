@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
-import { supabase } from '../../supabaseclient';
 import {
   Box,
   Typography,
@@ -20,7 +19,6 @@ import {
 import {
   Save as SaveIcon,
   Delete as DeleteIcon,
-  AddPhotoAlternate as AddPhotoIcon,
   Cancel as CancelIcon
 } from '@mui/icons-material';
 import { createNewsPost, deleteNewsPost } from '../../api/networks';
@@ -28,7 +26,6 @@ import MediaUpload from '../MediaUpload';
 
 const NewsTab = ({ networkId, userId, newsPosts, setNewsPosts, members, darkMode = false }) => {
   const [newsTitle, setNewsTitle] = useState('');
-  const [imageFile, setImageFile] = useState(null);
   const [imageCaption, setImageCaption] = useState('');
   const [imagePreview, setImagePreview] = useState(null);
   const [mediaUrl, setMediaUrl] = useState(null);
@@ -70,57 +67,6 @@ const NewsTab = ({ networkId, userId, newsPosts, setNewsPosts, members, darkMode
     setTimeout(() => setMessage(''), 3000);
   };
 
-  // Handle image file selection (legacy)
-  const handleImageChange = (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      setError('Please select an image file');
-      return;
-    }
-
-    setImageFile(file);
-    setImagePreview(URL.createObjectURL(file));
-  };
-
-  // Upload image to Supabase Storage
-  const uploadNewsImage = async (file) => {
-    try {
-      if (!file) return null;
-      
-      // Sanitize filename
-      const filename = file.name
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "") // Remove accents
-        .replace(/[^a-zA-Z0-9.-]/g, "_"); // Replace special chars
-      
-      // Create a unique path for the image
-      const filePath = `news/${networkId}/${Date.now()}_${filename}`;
-      
-      // Upload the file
-      const { error: uploadError } = await supabase.storage
-        .from('networks')
-        .upload(filePath, file, {
-          cacheControl: '3600',
-          upsert: true
-        });
-        
-      if (uploadError) throw uploadError;
-      
-      // Get the public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('networks')
-        .getPublicUrl(filePath);
-      
-      return publicUrl;
-    } catch (error) {
-      console.error('Error uploading news image:', error);
-      throw error;
-    }
-  };
-
   const handleNewsSubmit = async () => {
     if (!newsTitle.trim() || !editor) {
       setError('Please fill in both title and content');
@@ -133,12 +79,9 @@ const NewsTab = ({ networkId, userId, newsPosts, setNewsPosts, members, darkMode
     
     try {
       const content = editor.getHTML();
-      let imageUrl = null;
       
-      // Upload image if one is selected
-      if (imageFile) {
-        imageUrl = await uploadNewsImage(imageFile);
-      }
+      // Use mediaUrl as imageUrl if it's an image type
+      const imageUrl = mediaType === 'image' ? mediaUrl : null;
       
       // Debug log the media parameters
       console.log('Creating news post with media:', {
@@ -165,7 +108,6 @@ const NewsTab = ({ networkId, userId, newsPosts, setNewsPosts, members, darkMode
       if (result.success) {
         setNewsPosts([result.post, ...newsPosts]);
         setNewsTitle('');
-        setImageFile(null);
         setImageCaption('');
         setImagePreview(null);
         setMediaUrl(null);
@@ -244,9 +186,11 @@ const NewsTab = ({ networkId, userId, newsPosts, setNewsPosts, members, darkMode
               <IconButton 
                 sx={{ position: 'absolute', top: 0, right: 0, bgcolor: 'rgba(0,0,0,0.5)', color: 'white' }}
                 onClick={() => {
-                  setImageFile(null);
                   setImagePreview(null);
                   setImageCaption('');
+                  setMediaUrl(null);
+                  setMediaType(null);
+                  setMediaMetadata({});
                 }}
               >
                 <CancelIcon />
@@ -281,39 +225,21 @@ const NewsTab = ({ networkId, userId, newsPosts, setNewsPosts, members, darkMode
               </Box>
             )}
             
-            <Button
-              variant="outlined"
-              component="label"
-              startIcon={<AddPhotoIcon />}
-              size="small"
-            >
-              {imageFile ? 'Change' : 'Add'} Image (Legacy)
-              <input 
-                type="file"
-                accept="image/*"
-                hidden
-                onChange={handleImageChange}
+            {(imageCaption || mediaUrl) && (
+              <TextField
+                label="Image Caption"
+                value={imageCaption}
+                onChange={(e) => setImageCaption(e.target.value)}
+                size="small"
+                sx={{ flex: 1, minWidth: 200 }}
+                InputProps={{
+                  sx: {
+                    color: darkMode ? 'text.primary' : undefined
+                  }
+                }}
               />
-            </Button>
-            
-            {imageFile && (
-              <Typography variant="body2" color="text.secondary">
-                {imageFile.name} ({(imageFile.size / 1024).toFixed(1)} KB)
-              </Typography>
             )}
           </Box>
-          
-          {/* Image caption field, shown only when image is selected */}
-          {imageFile && (
-            <TextField
-              fullWidth
-              label="Image Caption (optional)"
-              value={imageCaption}
-              onChange={(e) => setImageCaption(e.target.value)}
-              margin="normal"
-              size="small"
-            />
-          )}
         </Box>
         <Paper sx={{ 
           p: 2, 
