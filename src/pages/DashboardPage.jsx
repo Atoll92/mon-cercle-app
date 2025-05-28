@@ -184,6 +184,7 @@ function DashboardPage() {
   const [mediaUrl, setMediaUrl] = useState(null);
   const [mediaType, setMediaType] = useState(null);
   const [mediaMetadata, setMediaMetadata] = useState({});
+  const [mediaUploading, setMediaUploading] = useState(false);
   const [publishingPost, setPublishingPost] = useState(false);
   const [postMessage, setPostMessage] = useState('');
 
@@ -349,14 +350,28 @@ function DashboardPage() {
   
   // Handle media upload
   const handleMediaUpload = (uploadResult) => {
-    console.log("Media upload result:", uploadResult);
+    console.log("=== handleMediaUpload called ===");
+    console.log("Upload result received:", uploadResult);
+    console.log("Upload result URL:", uploadResult.url);
+    console.log("Upload result type:", uploadResult.type);
+    console.log("Upload result metadata:", uploadResult.metadata);
+    
     setMediaUrl(uploadResult.url);
     setMediaType(uploadResult.type);
     setMediaMetadata({
-      fileName: uploadResult.fileName,
-      fileSize: uploadResult.fileSize,
-      mimeType: uploadResult.mimeType
+      fileName: uploadResult.metadata?.fileName || uploadResult.fileName,
+      fileSize: uploadResult.metadata?.fileSize || uploadResult.fileSize,
+      mimeType: uploadResult.metadata?.mimeType || uploadResult.mimeType,
+      duration: uploadResult.metadata?.duration,
+      thumbnail: uploadResult.metadata?.thumbnail,
+      title: uploadResult.metadata?.title,
+      artist: uploadResult.metadata?.artist,
+      album: uploadResult.metadata?.album,
+      albumArt: uploadResult.metadata?.albumArt
     });
+    
+    console.log("State after setting - mediaUrl:", uploadResult.url);
+    console.log("State after setting - mediaType:", uploadResult.type);
     
     // For backward compatibility with existing image preview
     if (uploadResult.type === 'image') {
@@ -378,6 +393,7 @@ function DashboardPage() {
     try {
       setPublishingPost(true);
       console.log("Publishing post:", newPostTitle);
+      console.log("Current media state:", { mediaUrl, mediaType, mediaMetadata });
       
       // Save post directly to the database
       const newPost = {
@@ -397,6 +413,8 @@ function DashboardPage() {
         if (mediaType === 'image') {
           newPost.image_url = mediaUrl;
         }
+      } else {
+        console.log("No media URL found - mediaUrl is:", mediaUrl);
       }
       
       console.log('Saving post to portfolio_items table:', newPost);
@@ -412,6 +430,11 @@ function DashboardPage() {
       }
       
       console.log('Post saved successfully:', data);
+      console.log('Saved post media fields:', {
+        media_url: data.media_url,
+        media_type: data.media_type,
+        media_metadata: data.media_metadata
+      });
       
       // Reset the form
       setNewPostTitle('');
@@ -1275,6 +1298,8 @@ function DashboardPage() {
                               path={`portfolios/${user.id}`}
                               maxFiles={1}
                               autoUpload={true}
+                              showPreview={false}
+                              compact={true}
                             />
                             
                             {/* Media upload feedback */}

@@ -18,6 +18,7 @@ import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import SimpleLandingPage from './pages/SimpleLandingPage';
 import NotFoundPage from './pages/NotFoundPage';
+import EventPage from './pages/EventPage';
 
 // Lazy loaded pages (larger, less frequently accessed)
 const PasswordResetPage = lazy(() => import('./pages/PasswordResetPage'));
@@ -45,7 +46,6 @@ const MicroConclavPage = lazy(() => import('./pages/MicroConclavPage'));
 const SuperAdminDashboard = lazy(() => import('./pages/SuperAdminDashboard'));
 const JoinNetworkPage = lazy(() => import('./pages/JoinNetworkPage'));
 const NewsPostPage = lazy(() => import('./pages/NewsPostPage'));
-const EventPage = lazy(() => import('./pages/EventPage'));
 const MediaTest = lazy(() => import('./pages/MediaTest'));
 const TermsPage = lazy(() => import('./pages/TermsPage'));
 const DocumentationPage = lazy(() => import('./pages/DocumentationPage'));

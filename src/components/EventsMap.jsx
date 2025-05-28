@@ -1,6 +1,7 @@
 // src/components/EventsMap.jsx
 import React, { useEffect, useRef, useState } from 'react';
 import { Box, Typography, Paper, CircularProgress } from '@mui/material';
+import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
 // Use the provided token and custom style
@@ -17,8 +18,7 @@ export default function EventsMap({ events = [], onEventSelect, initialCoordinat
   useEffect(() => {
     const loadMapbox = async () => {
       try {
-        // Dynamically import mapbox-gl
-        const mapboxgl = (await import('mapbox-gl')).default;
+        // Set access token
         mapboxgl.accessToken = MAPBOX_TOKEN;
         
         if (!mapContainerRef.current) return;
@@ -113,7 +113,6 @@ export default function EventsMap({ events = [], onEventSelect, initialCoordinat
         markersRef.current.forEach(marker => marker.remove());
         markersRef.current = [];
         
-        const mapboxgl = (await import('mapbox-gl')).default;
         const eventsWithCoordinates = events.filter(event => 
           event?.coordinates && 
           event.coordinates.longitude && 

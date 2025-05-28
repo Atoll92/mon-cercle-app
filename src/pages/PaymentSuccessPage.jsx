@@ -56,13 +56,13 @@ const PaymentSuccessPage = () => {
         if (network.subscription_status === 'active') {
           // Success! Redirect to network admin after a brief delay
           setTimeout(() => {
-            navigate('/network-admin');
+            navigate('/admin');
           }, 3000);
         } else {
           // Something might be wrong, but let's not alarm the user yet
           // Sometimes webhook processing can take a bit longer
           setTimeout(() => {
-            navigate('/network-admin');
+            navigate('/admin');
           }, 5000);
         }
       } catch (error) {
@@ -104,7 +104,7 @@ const PaymentSuccessPage = () => {
             <Button 
               variant="contained" 
               color="primary"
-              onClick={() => navigate('/network-admin')}
+              onClick={() => navigate('/admin')}
             >
               Go to Admin Panel
             </Button>
@@ -121,7 +121,7 @@ const PaymentSuccessPage = () => {
             <Button 
               variant="contained" 
               color="primary"
-              onClick={() => navigate('/network-admin')}
+              onClick={() => navigate('/admin')}
             >
               Go to Admin Panel
             </Button>
