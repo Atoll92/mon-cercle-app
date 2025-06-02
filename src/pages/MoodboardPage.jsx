@@ -260,7 +260,7 @@ const renderContent = () => {
               maxHeight: '100%',
               position: 'relative',
               display: 'flex',
-              alignItems: 'center',
+              alignItems: 'stretch',
               justifyContent: 'center'
             }}
             onMouseDown={(e) => {
@@ -278,13 +278,6 @@ const renderContent = () => {
               // Otherwise, allow the drag to proceed
             }}
           >
-            <Box sx={{ 
-              '& video': {
-                maxWidth: '100%',
-                maxHeight: '100%',
-                objectFit: 'contain'
-              }
-            }}>
               <MediaPlayer
                 src={item.content}
                 type="video"
@@ -292,7 +285,6 @@ const renderContent = () => {
                 compact={false}
                 darkMode={true}
               />
-            </Box>
           </Box>
         </Box>
       );

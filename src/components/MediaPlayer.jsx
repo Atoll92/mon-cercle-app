@@ -356,6 +356,8 @@ function MediaPlayer({
         style={{
           width: '100%',
           height: 'auto',
+          maxWidth: '100%',
+          maxHeight: '100%',
           display: 'block',
           cursor: hideControlsUntilInteraction && !hasInteracted ? 'pointer' : 'default'
         }}
