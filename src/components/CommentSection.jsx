@@ -29,11 +29,11 @@ import {
 import { getItemComments, addComment, deleteComment, toggleCommentVisibility } from '../api/comments';
 import { formatDistanceToNow } from 'date-fns';
 
-const CommentSection = ({ itemType, itemId, darkMode, isAdmin = false }) => {
+const CommentSection = ({ itemType, itemId, darkMode, isAdmin = false, initialCount = 0 }) => {
   const { user } = useAuth();
   const theme = useTheme();
   const [comments, setComments] = useState([]);
-  const [commentCount, setCommentCount] = useState(0);
+  const [commentCount, setCommentCount] = useState(initialCount);
   const [showComments, setShowComments] = useState(false);
   const [newComment, setNewComment] = useState('');
   const [replyingTo, setReplyingTo] = useState(null);
@@ -41,6 +41,11 @@ const CommentSection = ({ itemType, itemId, darkMode, isAdmin = false }) => {
   const [submitting, setSubmitting] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedComment, setSelectedComment] = useState(null);
+
+  // Update comment count when initialCount changes
+  useEffect(() => {
+    setCommentCount(initialCount);
+  }, [initialCount]);
 
   // Fetch comments when expanded
   useEffect(() => {

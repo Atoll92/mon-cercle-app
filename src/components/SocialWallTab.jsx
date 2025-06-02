@@ -42,6 +42,7 @@ import LazyImage from './LazyImage';
 import ImageViewerModal from './ImageViewerModal';
 import CommentSection from './CommentSection';
 import LinkPreview from './LinkPreview';
+import { getCommentCount } from '../api/comments';
 
 // Number of items to display initially
 const ITEMS_PER_FETCH = 6;
@@ -92,6 +93,9 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
   // State for image viewer modal
   const [imageViewerOpen, setImageViewerOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState({ url: '', title: '' });
+  
+  // State for comment counts
+  const [commentCounts, setCommentCounts] = useState({});
   
   // Toggle card expansion with improved scroll handling
   const handleExpandCard = (id) => {
@@ -171,6 +175,29 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
     return () => window.removeEventListener('scroll', handleScroll);
   }, [scrollPosition, hasMore, loading, page, socialWallItems.length]);
   
+  // Fetch comment counts for all items
+  const fetchCommentCounts = useCallback(async (items) => {
+    const counts = {};
+    
+    // Fetch counts in parallel for better performance
+    const countPromises = items.map(async (item) => {
+      const { count } = await getCommentCount(item.itemType, item.id);
+      return { 
+        key: `${item.itemType}-${item.id}`, 
+        count: count || 0 
+      };
+    });
+    
+    const results = await Promise.all(countPromises);
+    
+    // Convert array of results to object
+    results.forEach(({ key, count }) => {
+      counts[key] = count;
+    });
+    
+    setCommentCounts(counts);
+  }, []);
+
   // Initial load
   useEffect(() => {
     if (socialWallItems && socialWallItems.length > 0) {
@@ -187,11 +214,14 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
       setDisplayItems(initialItems);
       setPage(Math.ceil(initialLoadCount / ITEMS_PER_FETCH)); // Set appropriate page number
       setHasMore(socialWallItems.length > initialLoadCount);
+      
+      // Fetch comment counts for all items
+      fetchCommentCounts(socialWallItems);
     } else {
       setDisplayItems([]);
       setHasMore(false);
     }
-  }, [socialWallItems]);
+  }, [socialWallItems, fetchCommentCounts]);
   
   // Load more items
   const loadMoreItems = useCallback(() => {
@@ -1125,6 +1155,7 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                       itemId={item.id}
                       darkMode={darkMode}
                       isAdmin={isAdmin}
+                      initialCount={commentCounts[`${item.itemType}-${item.id}`] || 0}
                     />
                   </CardContent>
                 </Card>
