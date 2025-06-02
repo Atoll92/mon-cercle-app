@@ -40,7 +40,11 @@ import {
   Tooltip,
   CardMedia,
   CardHeader,
-  TextField
+  TextField,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem
 } from '@mui/material';
 import { 
   Person as PersonIcon, 
@@ -64,6 +68,8 @@ import {
   AccessTime as AccessTimeIcon
 } from '@mui/icons-material';
 import { fetchNetworkMembers } from '../api/networks';
+import { fetchNetworkCategories } from '../api/categories';
+import { alpha } from '@mui/material';
 
 // Subscription Badge Component
 const SubscriptionBadge = ({ plan, status }) => {
@@ -187,6 +193,8 @@ function DashboardPage() {
   const [mediaUploading, setMediaUploading] = useState(false);
   const [publishingPost, setPublishingPost] = useState(false);
   const [postMessage, setPostMessage] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [categories, setCategories] = useState([]);
 
   // Animation setup - must be at top level, not conditional
   const headerRef = useFadeIn(0, ANIMATION_DURATION.normal);
@@ -347,6 +355,13 @@ function DashboardPage() {
             setLoadingNetworkDetails(false);
           });
           
+          // Fetch categories for the network
+          fetchNetworkCategories(data.network_id, true).then(response => {
+            if (response.data && !response.error) {
+              setCategories(response.data);
+            }
+          });
+          
           // Fetch upcoming events for the network
           fetchUpcomingEvents(data.network_id);
         } else {
@@ -451,7 +466,8 @@ function DashboardPage() {
         profile_id: user.id,
         title: newPostTitle,
         description: newPostContent,
-        url: newPostLink
+        url: newPostLink,
+        category_id: selectedCategory || null
       };
 
       // Add media fields if media was uploaded via MediaUpload component
@@ -495,6 +511,7 @@ function DashboardPage() {
       setMediaUrl(null);
       setMediaType(null);
       setMediaMetadata({});
+      setSelectedCategory('');
       
       // Show success message
       setPostMessage('Post published successfully!');
@@ -1381,6 +1398,39 @@ function DashboardPage() {
                               }
                             }}
                           />
+                          
+                          {/* Category selection */}
+                          {categories.length > 0 && (
+                            <FormControl fullWidth size="small" sx={{ mb: 1.5 }}>
+                              <InputLabel>Category (optional)</InputLabel>
+                              <Select
+                                value={selectedCategory}
+                                onChange={(e) => setSelectedCategory(e.target.value)}
+                                label="Category (optional)"
+                                displayEmpty
+                              >
+                                <MenuItem value="">
+                                  <em>No category</em>
+                                </MenuItem>
+                                {categories.map((category) => (
+                                  <MenuItem key={category.id} value={category.id}>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                      <Box
+                                        sx={{
+                                          width: 12,
+                                          height: 12,
+                                          borderRadius: '50%',
+                                          bgcolor: category.color,
+                                          flexShrink: 0
+                                        }}
+                                      />
+                                      {category.name}
+                                    </Box>
+                                  </MenuItem>
+                                ))}
+                              </Select>
+                            </FormControl>
+                          )}
                           
                           {/* Display image preview if available */}
                           {newPostImagePreview && (
