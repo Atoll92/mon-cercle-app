@@ -64,6 +64,7 @@ const EventsTab = ({ events, setEvents, user, networkId, network, darkMode = fal
     setDialogMode(mode);
     setSelectedEvent(event);
     setEventImageFile(null);
+    setError(null);
     
     if (mode === 'edit' && event) {
       setEventForm({
@@ -274,7 +275,7 @@ const EventsTab = ({ events, setEvents, user, networkId, network, darkMode = fal
         </Alert>
       )}
 
-      {error && (
+      {error && !openDialog && (
         <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError(null)}>
           {error}
         </Alert>
@@ -419,7 +420,10 @@ const EventsTab = ({ events, setEvents, user, networkId, network, darkMode = fal
         ))}
       </Grid>
 
-      <Dialog open={openDialog} onClose={() => setOpenDialog(false)} maxWidth="md" fullWidth>
+      <Dialog open={openDialog} onClose={() => {
+        setOpenDialog(false);
+        setError(null);
+      }} maxWidth="md" fullWidth>
         <DialogTitle>
           {dialogMode === 'create' ? 'Create New Event' : 'Edit Event'}
         </DialogTitle>
@@ -632,7 +636,15 @@ const EventsTab = ({ events, setEvents, user, networkId, network, darkMode = fal
           </Grid>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenDialog(false)}>Cancel</Button>
+          {error && openDialog && (
+            <Alert severity="error" sx={{ flex: 1, mr: 2 }} onClose={() => setError(null)}>
+              {error}
+            </Alert>
+          )}
+          <Button onClick={() => {
+            setOpenDialog(false);
+            setError(null);
+          }}>Cancel</Button>
           {dialogMode === 'edit' && (
             <Button 
               onClick={() => handleExportParticipants(selectedEvent.id)}
