@@ -574,6 +574,7 @@ const TicketsManagement = () => {
                               </Avatar>
                             </ListItemAvatar>
                             <ListItemText
+                              sx={{ 'p' : {whiteSpace: 'pre-wrap'} }}
                               primary={
                                 <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                                   <Typography variant="subtitle2">

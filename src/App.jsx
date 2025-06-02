@@ -48,6 +48,7 @@ const JoinNetworkPage = lazy(() => import('./pages/JoinNetworkPage'));
 const NewsPostPage = lazy(() => import('./pages/NewsPostPage'));
 const MediaTest = lazy(() => import('./pages/MediaTest'));
 const TermsPage = lazy(() => import('./pages/TermsPage'));
+const PrivacyPage = lazy(() => import('./pages/PrivacyPage'));
 const DocumentationPage = lazy(() => import('./pages/DocumentationPage'));
 const EnhancedLandingPage = lazy(() => import('./pages/EnhancedLandingPage'));
 
@@ -195,6 +196,7 @@ function App() {
             <Route path="/payment-success" element={<PaymentSuccessPage />} />
             <Route path="/shimmer" element={<ShimmeringTextPage />} />
             <Route path="/terms" element={<TermsPage />} />
+            <Route path="/privacy" element={<PrivacyPage />} />
             
             {/* Documentation Routes */}
             <Route path="/documentation" element={<DocumentationPage />} />
