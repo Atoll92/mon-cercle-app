@@ -58,7 +58,8 @@ import {
   Refresh as RefreshIcon,
   Download as ExportIcon,
   Search as SearchIcon,
-  FilterList as FilterIcon
+  FilterList as FilterIcon,
+  Logout as LogoutIcon
 } from '@mui/icons-material';
 import { 
   fetchAllNetworks, 
@@ -69,6 +70,7 @@ import {
 import { PageTransition } from '../components/AnimatedComponents';
 import NetworkDetailsModal from '../components/NetworkDetailsModal';
 import TicketsManagement from '../components/superadmin/TicketsManagement';
+import { logout } from '../api/auth';
 
 const SuperAdminDashboard = () => {
   const { user } = useAuth();
@@ -244,13 +246,24 @@ const SuperAdminDashboard = () => {
     <PageTransition>
       <Container maxWidth="xl" sx={{ py: 4 }}>
         {/* Header */}
-        <Box sx={{ mb: 4 }}>
-          <Typography variant="h3" component="h1" gutterBottom fontWeight="bold">
-            Super Admin Dashboard
-          </Typography>
-          <Typography variant="subtitle1" color="text.secondary">
-            Manage all networks, users, and system analytics
-          </Typography>
+        <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <Box>
+            <Typography variant="h3" component="h1" gutterBottom fontWeight="bold">
+              Super Admin Dashboard
+            </Typography>
+            <Typography variant="subtitle1" color="text.secondary">
+              Manage all networks, users, and system analytics
+            </Typography>
+          </Box>
+          <Button
+            variant="outlined"
+            color="primary"
+            startIcon={<LogoutIcon />}
+            onClick={logout}
+            sx={{ mt: 1 }}
+          >
+            Logout
+          </Button>
         </Box>
 
         {error && (

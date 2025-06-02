@@ -241,9 +241,22 @@ function MediaUpload({
   };
 
   // Upload files
-  const handleUpload = async (filesToUpload = files, previewsToUpload = previews) => {
-    console.log('MediaUpload: handleUpload called with', filesToUpload.length, 'files');
-    if (filesToUpload.length === 0) return;
+  const handleUpload = async (filesToUpload, previewsToUpload) => {
+    // Use current state values if no parameters provided
+    const actualFiles = filesToUpload || files;
+    const actualPreviews = previewsToUpload || previews;
+    
+    console.log('MediaUpload: handleUpload called');
+    console.log('  - filesToUpload:', filesToUpload);
+    console.log('  - previewsToUpload:', previewsToUpload);
+    console.log('  - files from state:', files);
+    console.log('  - previews from state:', previews);
+    console.log('  - actualFiles:', actualFiles.length, 'files');
+    
+    if (actualFiles.length === 0) {
+      console.log('MediaUpload: No files to upload, returning');
+      return;
+    }
 
     setUploading(true);
     setError(null);
@@ -251,9 +264,9 @@ function MediaUpload({
     try {
       const uploadedFiles = [];
       
-      for (let i = 0; i < filesToUpload.length; i++) {
-        const file = filesToUpload[i];
-        const preview = previewsToUpload[i];
+      for (let i = 0; i < actualFiles.length; i++) {
+        const file = actualFiles[i];
+        const preview = actualPreviews[i];
         console.log('MediaUpload: Uploading file:', file.name, 'Type:', file.type);
         
         try {
@@ -303,13 +316,16 @@ function MediaUpload({
       console.log('MediaUpload: All uploads complete. Total files:', uploadedFiles.length);
 
       // Clean up previews
-      previewsToUpload.forEach(preview => {
+      actualPreviews.forEach(preview => {
         if (preview.url) URL.revokeObjectURL(preview.url);
         if (preview.thumbnail) URL.revokeObjectURL(preview.thumbnail);
       });
 
       setFiles([]);
       setPreviews([]);
+      
+      // Show success feedback
+      console.log('MediaUpload: Upload completed successfully');
       
       if (onUpload) {
         const result = maxFiles === 1 ? uploadedFiles[0] : uploadedFiles;
@@ -539,7 +555,12 @@ function MediaUpload({
         <Button
           variant="contained"
           color="primary"
-          onClick={handleUpload}
+          onClick={() => {
+            console.log('MediaUpload: Upload button clicked');
+            console.log('MediaUpload: Current files state:', files);
+            console.log('MediaUpload: Current previews state:', previews);
+            handleUpload();
+          }}
           disabled={uploading}
           startIcon={uploading ? <CircularProgress size={20} /> : <UploadIcon />}
         >

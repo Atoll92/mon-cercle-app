@@ -120,6 +120,10 @@ const TicketsManagement = () => {
       if (ticketDetails && ticketDetails.id === ticketId) {
         setTicketDetails({ ...ticketDetails, ...updates });
       }
+      // Also update selectedTicket to reflect the status change in the dropdown
+      if (selectedTicket && selectedTicket.id === ticketId) {
+        setSelectedTicket({ ...selectedTicket, ...updates });
+      }
     }
     setSubmitting(false);
   };

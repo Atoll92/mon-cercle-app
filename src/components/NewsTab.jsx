@@ -133,6 +133,7 @@ const NewsTab = ({ darkMode }) => {
   // Handle media upload
   const handleMediaUpload = (uploadResult) => {
     console.log("[Regular NewsTab] Media upload result:", uploadResult);
+    console.log("[Regular NewsTab] Setting mediaType to:", uploadResult.type);
     setMediaUrl(uploadResult.url);
     setMediaType(uploadResult.type);
     // Include all metadata from the upload result, including thumbnail for audio
@@ -299,7 +300,7 @@ const NewsTab = ({ darkMode }) => {
         
         {mediaUrl && (
           <Box sx={{ position: 'relative', mb: 2 }}>
-            {mediaType === 'IMAGE' ? (
+            {mediaType === 'image' ? (
               <img 
                 src={mediaUrl} 
                 alt="Preview" 
@@ -318,7 +319,7 @@ const NewsTab = ({ darkMode }) => {
             ) : (
               <MediaPlayer
                 src={mediaUrl}
-                type={mediaType === 'VIDEO' ? 'video' : mediaType === 'PDF' ? 'pdf' : 'audio'}
+                type={mediaType === 'video' ? 'video' : mediaType === 'pdf' ? 'pdf' : 'audio'}
                 title={newsTitle || 'Media preview'}
                 thumbnail={mediaMetadata?.thumbnail}
                 fileName={mediaMetadata?.fileName}

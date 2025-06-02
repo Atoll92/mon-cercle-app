@@ -2435,8 +2435,8 @@ const handleUpdateItem = async (updatedItem) => {
                 }
               }}
               allowedTypes={['IMAGE', 'VIDEO', 'AUDIO']}
-              bucket="networks"
-              path={`moodboard/${moodboardId}`}
+              bucket="shared"
+              path={`moodboards/${moodboardId}`}
               maxFiles={1}
               showPreview={true}
             />
