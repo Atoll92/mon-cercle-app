@@ -543,7 +543,7 @@ const TicketsManagement = () => {
                   <Grid item xs={12} md={8}>
                     <Paper sx={{ p: 2, mb: 2, bgcolor: 'background.default' }}>
                       <Typography variant="subtitle2" gutterBottom>Description</Typography>
-                      <Typography variant="body2">{ticketDetails.description}</Typography>
+                      <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>{ticketDetails.description}</Typography>
                       <Box sx={{ mt: 2, display: 'flex', gap: 2 }}>
                         <Typography variant="caption" color="text.secondary">
                           Created {format(new Date(ticketDetails.created_at), 'PPpp')}
@@ -574,7 +574,6 @@ const TicketsManagement = () => {
                               </Avatar>
                             </ListItemAvatar>
                             <ListItemText
-                              sx={{ 'p' : {whiteSpace: 'pre-wrap'} }}
                               primary={
                                 <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                                   <Typography variant="subtitle2">
