@@ -26,6 +26,8 @@ import {
   Clear as ClearIcon,
   Help as HelpIcon,
 } from '@mui/icons-material';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Checkbox from '@mui/material/Checkbox';
 import { styled } from '@mui/material/styles';
 
 // Styled components for the file upload area
@@ -57,7 +59,7 @@ const isValidEmail = (email) => {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 };
 
-const BatchInviteModal = ({ open, onClose, onInvite, network, user }) => {
+const BatchInviteModal = ({ open, onClose, onInvite, network, user, onSuccess }) => {
   const [activeTab, setActiveTab] = useState(0);
   const [file, setFile] = useState(null);
   const [manualEmails, setManualEmails] = useState('');
@@ -68,6 +70,7 @@ const BatchInviteModal = ({ open, onClose, onInvite, network, user }) => {
   const [success, setSuccess] = useState(null);
   const [invitationProgress, setInvitationProgress] = useState(0);
   const [isInviting, setIsInviting] = useState(false);
+  const [inviteAsAdmin, setInviteAsAdmin] = useState(false);
   
   // Handle tab change
   const handleTabChange = (event, newValue) => {
@@ -263,7 +266,7 @@ const BatchInviteModal = ({ open, onClose, onInvite, network, user }) => {
         const email = extractedEmails[i];
         
         try {
-          const result = await onInvite(email, network.id, user.id);
+          const result = await onInvite(email, network.id, user.id, inviteAsAdmin ? 'admin' : 'member');
           
           if (result.success) {
             successful++;
@@ -308,6 +311,11 @@ const BatchInviteModal = ({ open, onClose, onInvite, network, user }) => {
         setManualEmails('');
         setExtractedEmails([]);
         setInvalidEmails([]);
+        
+        // Call onSuccess callback if provided
+        if (onSuccess) {
+          onSuccess();
+        }
       }
     } catch (error) {
       console.error('Error sending invitations:', error);
@@ -512,7 +520,21 @@ const BatchInviteModal = ({ open, onClose, onInvite, network, user }) => {
         <Box sx={{ mt: 2 }}>
           {activeTab === 0 ? renderFileUploadTab() : renderManualInputTab()}
           
-          {extractedEmails.length > 0 && renderEmailPreview()}
+          {extractedEmails.length > 0 && (
+            <Box sx={{ mt: 2 }}>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={inviteAsAdmin}
+                    onChange={(e) => setInviteAsAdmin(e.target.checked)}
+                    color="primary"
+                  />
+                }
+                label="Invite all as Admins"
+              />
+              {renderEmailPreview()}
+            </Box>
+          )}
           
           {isInviting && (
             <Box sx={{ mt: 3 }}>

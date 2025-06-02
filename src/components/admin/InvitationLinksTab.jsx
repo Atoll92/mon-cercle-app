@@ -57,7 +57,7 @@ import {
   updateInvitationLink
 } from '../../api/invitations';
 
-const InvitationLinksTab = ({ networkId }) => {
+const InvitationLinksTab = ({ networkId, darkMode, refreshTrigger }) => {
   const [invitations, setInvitations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [createDialog, setCreateDialog] = useState(false);
@@ -69,6 +69,7 @@ const InvitationLinksTab = ({ networkId }) => {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
+    role: 'member',
     hasExpiry: false,
     expiryDays: 7,
     hasMaxUses: false,
@@ -78,6 +79,13 @@ const InvitationLinksTab = ({ networkId }) => {
   useEffect(() => {
     loadInvitations();
   }, [networkId]);
+
+  // Reload invitations when refreshTrigger changes
+  useEffect(() => {
+    if (refreshTrigger > 0) {
+      loadInvitations();
+    }
+  }, [refreshTrigger]);
 
   const loadInvitations = async () => {
     setLoading(true);
@@ -98,6 +106,7 @@ const InvitationLinksTab = ({ networkId }) => {
     const data = {
       name: formData.name || 'General Invitation',
       description: formData.description || null,
+      role: formData.role,
       maxUses: formData.hasMaxUses ? formData.maxUses : null,
       expiresAt: formData.hasExpiry 
         ? new Date(Date.now() + formData.expiryDays * 24 * 60 * 60 * 1000).toISOString()
@@ -112,6 +121,7 @@ const InvitationLinksTab = ({ networkId }) => {
       setFormData({
         name: '',
         description: '',
+        role: 'member',
         hasExpiry: false,
         expiryDays: 7,
         hasMaxUses: false,
@@ -243,6 +253,7 @@ const InvitationLinksTab = ({ networkId }) => {
               <TableRow>
                 <TableCell>Name</TableCell>
                 <TableCell>Status</TableCell>
+                <TableCell>Role</TableCell>
                 <TableCell align="center">Uses</TableCell>
                 <TableCell>Expires</TableCell>
                 <TableCell>Created</TableCell>
@@ -263,6 +274,13 @@ const InvitationLinksTab = ({ networkId }) => {
                     </Box>
                   </TableCell>
                   <TableCell>{getStatusChip(invitation)}</TableCell>
+                  <TableCell>
+                    <Chip 
+                      label={invitation.role || 'member'} 
+                      color={invitation.role === 'admin' ? 'primary' : 'default'}
+                      size="small"
+                    />
+                  </TableCell>
                   <TableCell align="center">
                     <Box display="flex" alignItems="center" justifyContent="center" gap={0.5}>
                       <GroupsIcon fontSize="small" />
@@ -340,6 +358,18 @@ const InvitationLinksTab = ({ networkId }) => {
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               placeholder="Add notes about this invitation link"
             />
+            
+            <FormControl fullWidth>
+              <InputLabel>Role</InputLabel>
+              <Select
+                value={formData.role}
+                onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                label="Role"
+              >
+                <MenuItem value="member">Member</MenuItem>
+                <MenuItem value="admin">Admin</MenuItem>
+              </Select>
+            </FormControl>
             
             <FormControlLabel
               control={

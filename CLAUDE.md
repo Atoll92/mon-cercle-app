@@ -309,6 +309,15 @@ mon-cercle-app/
   - Excludes already existing conversations from search
   - Better UX for starting new conversations
   - Improved favicon detection with Google favicon service fallback
+- **Admin Role Invitations**: Enhanced invitation system with role assignment
+  - "Invite as Admin" checkbox for single email invitations
+  - "Invite all as Admins" option for batch invitations
+  - Role selection dropdown for invitation links (Member/Admin)
+  - Automatic role assignment when users accept invitations
+  - Role display in pending invitations table
+  - Database migration to add role field to network_invitation_links table
+  - Fixed role assignment during signup flow for new users with invitations
+  - Fixed invitation links table not refreshing after single/batch email invitations
 
 ### Latest Updates (January 2025)
 - **Storage Management System**: Added comprehensive storage tracking for network admins

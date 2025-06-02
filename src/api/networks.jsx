@@ -235,7 +235,7 @@ export {
 
 
 // New API functions for admin operations
-export const inviteUserToNetwork = async (email, networkId, inviterId) => {
+export const inviteUserToNetwork = async (email, networkId, inviterId, role = 'member') => {
   try {
     // Check if user already exists
     const { data: existingUser, error: userError } = await supabase
@@ -258,7 +258,7 @@ export const inviteUserToNetwork = async (email, networkId, inviterId) => {
       
       const { error: updateError } = await supabase
         .from('profiles')
-        .update({ network_id: networkId })
+        .update({ network_id: networkId, role: role })
         .eq('id', existingUser.id);
           
       if (updateError) throw updateError;
@@ -296,6 +296,7 @@ export const inviteUserToNetwork = async (email, networkId, inviterId) => {
           code: codeResult,
           name: `Email invitation for ${email}`,
           description: `Invitation sent via email to ${email}`,
+          role: role,
           max_uses: 1, // Single use for specific email
           is_active: true
         }])
@@ -312,7 +313,7 @@ export const inviteUserToNetwork = async (email, networkId, inviterId) => {
           network_id: networkId, 
           invited_by: inviterId,
           status: 'pending',
-          role: 'member'
+          role: role
         }]);
           
       if (inviteError) console.error('Error storing invitation record:', inviteError);

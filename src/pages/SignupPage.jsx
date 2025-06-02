@@ -89,7 +89,7 @@ function SignupPage() {
   }, [redirectUrl, prefillEmail]);
 
   
-  const ensureProfile = async (userId, email, networkId = null) => {
+  const ensureProfile = async (userId, email, networkId = null, role = 'member') => {
     try {
       // Check if profile already exists
       const { data: existingProfile, error: checkError } = await supabase
@@ -106,11 +106,13 @@ function SignupPage() {
       // If profile exists and we need to update network_id
       if (existingProfile) {
         if (networkId) {
+          console.log('Updating existing profile with role:', role);
           const { error: updateError } = await supabase
             .from('profiles')
             .update({ 
               network_id: networkId,
               contact_email: email,
+              role: role,
               updated_at: new Date()
             })
             .eq('id', userId);
@@ -127,12 +129,13 @@ function SignupPage() {
       const profileData = {
         id: userId,
         contact_email: email,
-        role: networkId ? 'member' : null,
+        role: networkId ? role : null,
         network_id: networkId,
         updated_at: new Date()
       };
       
       console.log('Creating new profile:', profileData);
+      console.log('Profile role being set:', profileData.role);
   
       const { error: createError } = await supabase
         .from('profiles')
@@ -163,6 +166,8 @@ function SignupPage() {
       const invitation = await getInvitationByCode(code);
       
       if (invitation) {
+        console.log('Fetched invitation data:', invitation);
+        console.log('Invitation role:', invitation.role);
         setInvitationData(invitation);
         setNetworkName(invitation.networks?.name || '');
       } else {
@@ -231,7 +236,8 @@ function SignupPage() {
           
           // Use the ensureProfile function instead of manual update/insert
           console.log('Creating profile with network:', invitationData.network_id);
-          const profileCreated = await ensureProfile(data.user.id, email, invitationData.network_id);
+          console.log('Invitation role:', invitationData.role);
+          const profileCreated = await ensureProfile(data.user.id, email, invitationData.network_id, invitationData.role || 'member');
           
           if (!profileCreated) {
             throw new Error("Failed to create or update profile with network information");

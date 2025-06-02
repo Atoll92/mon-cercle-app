@@ -325,7 +325,7 @@ const MembersTab = ({
               color="primary"
               startIcon={<PersonAddIcon />}
               component={Link}
-              to="/admin"
+              to="/admin?tab=members"
               sx={{ 
                 height: 40,
                 borderRadius: 2,

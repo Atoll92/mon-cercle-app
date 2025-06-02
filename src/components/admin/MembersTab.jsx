@@ -43,6 +43,8 @@ import {
   AccessTime as TimeIcon,
   Groups as GroupsIcon2
 } from '@mui/icons-material';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Checkbox from '@mui/material/Checkbox';
 import { Link } from 'react-router-dom';
 import { inviteUserToNetwork, toggleMemberAdmin, removeMemberFromNetwork, getNetworkPendingInvitations } from '../../api/networks';
 import BatchInviteModal from './BatchInviteModal';
@@ -50,6 +52,7 @@ import InvitationLinksTab from './InvitationLinksTab';
 
 const MembersTab = ({ members, user, network, onMembersChange, darkMode = false }) => {
   const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteAsAdmin, setInviteAsAdmin] = useState(false);
   const [inviting, setInviting] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState(null);
@@ -60,6 +63,7 @@ const MembersTab = ({ members, user, network, onMembersChange, darkMode = false 
   const [activeTab, setActiveTab] = useState(0);
   const [pendingInvitations, setPendingInvitations] = useState([]);
   const [loadingInvitations, setLoadingInvitations] = useState(false);
+  const [invitationLinksRefresh, setInvitationLinksRefresh] = useState(0);
 
   // Fetch pending invitations
   useEffect(() => {
@@ -95,11 +99,12 @@ const MembersTab = ({ members, user, network, onMembersChange, darkMode = false 
     setError(null);
     setMessage('');
     
-    const result = await inviteUserToNetwork(inviteEmail, network.id, user.id);
+    const result = await inviteUserToNetwork(inviteEmail, network.id, user.id, inviteAsAdmin ? 'admin' : 'member');
     
     if (result.success) {
       setMessage(result.message);
       setInviteEmail('');
+      setInviteAsAdmin(false);
       // Refresh members if needed
       if (result.message.includes('added to your network')) {
         onMembersChange();
@@ -109,6 +114,8 @@ const MembersTab = ({ members, user, network, onMembersChange, darkMode = false 
         if (invitationsResult.success) {
           setPendingInvitations(invitationsResult.invitations);
         }
+        // Trigger refresh of invitation links table
+        setInvitationLinksRefresh(prev => prev + 1);
       }
     } else {
       setError(result.message);
@@ -316,6 +323,7 @@ const MembersTab = ({ members, user, network, onMembersChange, darkMode = false 
                       <TableCell>Email</TableCell>
                       <TableCell>Invited By</TableCell>
                       <TableCell>Invited On</TableCell>
+                      <TableCell>Role</TableCell>
                       <TableCell>Status</TableCell>
                     </TableRow>
                   </TableHead>
@@ -336,6 +344,13 @@ const MembersTab = ({ members, user, network, onMembersChange, darkMode = false 
                           <Typography variant="body2" color="text.secondary">
                             {new Date(invitation.created_at).toLocaleDateString()}
                           </Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Chip 
+                            label={invitation.role || 'member'} 
+                            color={invitation.role === 'admin' ? 'primary' : 'default'}
+                            size="small"
+                          />
                         </TableCell>
                         <TableCell>
                           <Chip 
@@ -363,37 +378,49 @@ const MembersTab = ({ members, user, network, onMembersChange, darkMode = false 
               Invite via Email
             </Typography>
             <form onSubmit={handleInvite}>
-              <Box sx={{ display: 'flex', gap: 2 }}>
-                <TextField
-                  fullWidth
-                  label="Email Address"
-                  type="email"
-                  value={inviteEmail}
-                  onChange={(e) => setInviteEmail(e.target.value)}
-                  required
-                  variant="outlined"
-                />
-                <Button 
-                  type="submit" 
-                  variant="contained"
-                  color="primary"
-                  startIcon={<PersonAddIcon />}
-                  disabled={inviting}
-                  sx={{ whiteSpace: 'nowrap' }}
-                >
-                  {inviting ? 'Sending...' : 'Invite'}
-                </Button>
-                <Tooltip title="Invite multiple members from a CSV, Excel, or text file">
-                  <Button
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <Box sx={{ display: 'flex', gap: 2 }}>
+                  <TextField
+                    fullWidth
+                    label="Email Address"
+                    type="email"
+                    value={inviteEmail}
+                    onChange={(e) => setInviteEmail(e.target.value)}
+                    required
                     variant="outlined"
+                  />
+                  <Button 
+                    type="submit" 
+                    variant="contained"
                     color="primary"
-                    startIcon={<GroupAddIcon />}
-                    onClick={() => setBatchInviteOpen(true)}
+                    startIcon={<PersonAddIcon />}
+                    disabled={inviting}
                     sx={{ whiteSpace: 'nowrap' }}
                   >
-                    Batch Invite
+                    {inviting ? 'Sending...' : 'Invite'}
                   </Button>
-                </Tooltip>
+                  <Tooltip title="Invite multiple members from a CSV, Excel, or text file">
+                    <Button
+                      variant="outlined"
+                      color="primary"
+                      startIcon={<GroupAddIcon />}
+                      onClick={() => setBatchInviteOpen(true)}
+                      sx={{ whiteSpace: 'nowrap' }}
+                    >
+                      Batch Invite
+                    </Button>
+                  </Tooltip>
+                </Box>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={inviteAsAdmin}
+                      onChange={(e) => setInviteAsAdmin(e.target.checked)}
+                      color="primary"
+                    />
+                  }
+                  label="Invite as Admin"
+                />
               </Box>
             </form>
           </Box>
@@ -407,7 +434,7 @@ const MembersTab = ({ members, user, network, onMembersChange, darkMode = false 
             </Typography>
             
             {/* Embed the InvitationLinksTab component here */}
-            <InvitationLinksTab networkId={network.id} darkMode={darkMode} />
+            <InvitationLinksTab networkId={network.id} darkMode={darkMode} refreshTrigger={invitationLinksRefresh} />
           </Box>
         </Box>
       )}
@@ -444,6 +471,16 @@ const MembersTab = ({ members, user, network, onMembersChange, darkMode = false 
         onInvite={inviteUserToNetwork}
         network={network}
         user={user}
+        onSuccess={() => {
+          // Refresh invitation links table after batch invite
+          setInvitationLinksRefresh(prev => prev + 1);
+          // Also refresh pending invitations
+          getNetworkPendingInvitations(network.id).then(result => {
+            if (result.success) {
+              setPendingInvitations(result.invitations);
+            }
+          });
+        }}
       />
     </>
   );

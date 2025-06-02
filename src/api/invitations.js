@@ -16,6 +16,7 @@ export const createInvitationLink = async (networkId, data = {}) => {
       code: codeResult,
       name: data.name || 'General Invitation',
       description: data.description || null,
+      role: data.role || 'member',
       max_uses: data.maxUses || null,
       expires_at: data.expiresAt || null,
       is_active: true
@@ -217,6 +218,10 @@ export const joinNetworkViaInvitation = async (code, inviteeEmail = null) => {
       };
     }
     
+    // Debug: Log the invitation data to see if role is included
+    console.log('Invitation data:', invitation);
+    console.log('Invitation role:', invitation.role);
+    
     // Check if user is already in the network
     const { data: existingProfile } = await supabase
       .from('profiles')
@@ -231,17 +236,28 @@ export const joinNetworkViaInvitation = async (code, inviteeEmail = null) => {
       };
     }
     
-    // Update user's profile to join the network
-    const { error: updateError } = await supabase
+    // Update user's profile to join the network with the specified role
+    const roleToAssign = invitation.role || 'member';
+    console.log('Assigning role:', roleToAssign, 'to user:', user.id);
+    
+    const { data: updatedProfile, error: updateError } = await supabase
       .from('profiles')
       .update({
         network_id: invitation.network_id,
-        role: 'member',
+        role: roleToAssign,
         updated_at: new Date().toISOString()
       })
-      .eq('id', user.id);
+      .eq('id', user.id)
+      .select()
+      .single();
     
-    if (updateError) throw updateError;
+    if (updateError) {
+      console.error('Error updating profile:', updateError);
+      throw updateError;
+    }
+    
+    console.log('Updated profile:', updatedProfile);
+    console.log('Profile role after update:', updatedProfile?.role);
     
     // Increment usage count
     await supabase.rpc('increment_invitation_link_uses', { link_code: code });
