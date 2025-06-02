@@ -230,7 +230,10 @@ const PersonalMoodboardWidget = ({ user }) => {
             variant="contained"
             size="small"
             startIcon={<AddIcon />}
-            onClick={() => setCreateDialogOpen(true)}
+            onClick={() => {
+              setError(null);
+              setCreateDialogOpen(true);
+            }}
           >
             Create
           </Button>
@@ -238,7 +241,7 @@ const PersonalMoodboardWidget = ({ user }) => {
         
         {/* Widget content */}
         <Box sx={{ p: 2 }}>
-          {error && (
+          {error && !createDialogOpen && (
             <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
               {error}
             </Alert>
@@ -393,7 +396,10 @@ const PersonalMoodboardWidget = ({ user }) => {
       {/* Create Moodboard Dialog */}
       <Dialog 
         open={createDialogOpen} 
-        onClose={() => setCreateDialogOpen(false)}
+        onClose={() => {
+          setCreateDialogOpen(false);
+          setError(null);
+        }}
         maxWidth="sm"
         fullWidth
       >
@@ -503,7 +509,15 @@ const PersonalMoodboardWidget = ({ user }) => {
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setCreateDialogOpen(false)}>Cancel</Button>
+          {error && createDialogOpen && (
+            <Alert severity="error" sx={{ flex: 1, mr: 2 }} onClose={() => setError(null)}>
+              {error}
+            </Alert>
+          )}
+          <Button onClick={() => {
+            setCreateDialogOpen(false);
+            setError(null);
+          }}>Cancel</Button>
           <Button 
             onClick={handleCreateMoodboard} 
             variant="contained" 

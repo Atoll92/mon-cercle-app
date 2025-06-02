@@ -238,14 +238,17 @@ const PollsTab = ({ networkId }) => {
         <Button
           variant="contained"
           startIcon={<AddIcon />}
-          onClick={() => setCreateDialogOpen(true)}
+          onClick={() => {
+            setError(null);
+            setCreateDialogOpen(true);
+          }}
         >
           Create Poll
         </Button>
       </Box>
 
       {/* Alerts */}
-      {error && (
+      {error && !createDialogOpen && !statsDialogOpen && (
         <Alert severity="error" onClose={() => setError(null)} sx={{ mb: 2 }}>
           {error}
         </Alert>
@@ -359,7 +362,10 @@ const PollsTab = ({ networkId }) => {
       {/* Create Poll Dialog */}
       <Dialog
         open={createDialogOpen}
-        onClose={() => setCreateDialogOpen(false)}
+        onClose={() => {
+          setCreateDialogOpen(false);
+          setError(null);
+        }}
         maxWidth="md"
         fullWidth
       >
@@ -494,7 +500,15 @@ const PollsTab = ({ networkId }) => {
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setCreateDialogOpen(false)}>Cancel</Button>
+          {error && createDialogOpen && (
+            <Alert severity="error" sx={{ flex: 1, mr: 2 }} onClose={() => setError(null)}>
+              {error}
+            </Alert>
+          )}
+          <Button onClick={() => {
+            setCreateDialogOpen(false);
+            setError(null);
+          }}>Cancel</Button>
           <Button onClick={handleCreatePoll} variant="contained">
             Create Poll
           </Button>

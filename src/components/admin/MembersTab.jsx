@@ -127,6 +127,7 @@ const MembersTab = ({ members, user, network, onMembersChange, darkMode = false 
   const confirmAction = (action, member) => {
     setDialogAction(action);
     setDialogMember(member);
+    setError(null);
     setOpenDialog(true);
   };
 
@@ -134,6 +135,7 @@ const MembersTab = ({ members, user, network, onMembersChange, darkMode = false 
     setOpenDialog(false);
     setDialogAction(null);
     setDialogMember(null);
+    setError(null);
   };
 
   const handleConfirmedAction = async () => {
@@ -195,7 +197,7 @@ const MembersTab = ({ members, user, network, onMembersChange, darkMode = false 
         </Alert>
       )}
 
-      {error && (
+      {error && !openDialog && (
         <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError(null)}>
           {error}
         </Alert>
@@ -457,6 +459,11 @@ const MembersTab = ({ members, user, network, onMembersChange, darkMode = false 
           </DialogContentText>
         </DialogContent>
         <DialogActions>
+          {error && openDialog && (
+            <Alert severity="error" sx={{ flex: 1, mr: 2 }} onClose={() => setError(null)}>
+              {error}
+            </Alert>
+          )}
           <Button onClick={handleDialogClose}>Cancel</Button>
           <Button onClick={handleConfirmedAction} autoFocus>
             Confirm
