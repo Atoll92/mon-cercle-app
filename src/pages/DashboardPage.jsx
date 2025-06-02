@@ -919,7 +919,7 @@ function DashboardPage() {
                                   variant="outlined" 
                                   color="secondary" 
                                   component={Link} 
-                                  to="/admin"
+                                  to="/admin?tab=members"
                                   startIcon={<PersonAddIcon />}
                                   size="small"
                                   sx={{ flexGrow: 1 }}
@@ -1604,7 +1604,7 @@ function DashboardPage() {
                               <Button 
                                 variant="outlined" 
                                 component={Link} 
-                                to="/admin"
+                                to="/admin?tab=events"
                                 startIcon={<AddIcon />}
                                 size="small"
                               >

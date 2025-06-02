@@ -109,7 +109,7 @@ const EventsTab = ({
         {isUserAdmin && (
           <Button
             component={Link}
-            to="/admin"
+            to="/admin?tab=events"
             startIcon={<EventIcon />}
             color="primary"
             variant="contained"
@@ -213,7 +213,7 @@ const EventsTab = ({
                       variant="contained"
                       color="primary"
                       component={Link}
-                      to="/admin"
+                      to="/admin?tab=events"
                       startIcon={<EventIcon />}
                       sx={{ mt: 2 }}
                     >

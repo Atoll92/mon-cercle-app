@@ -1,6 +1,6 @@
 // File: src/pages/NetworkAdminPage.jsx - Updated for dark mode with theme constants
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/authcontext';
 import { useTheme } from '../components/ThemeProvider'; // Import useTheme hook
 import { supabase } from '../supabaseclient';
@@ -42,10 +42,41 @@ import AdminLayout from '../components/admin/AdminLayout';
 import AdminBreadcrumbs from '../components/admin/AdminBreadcrumbs';
 import OnboardingGuide, { WithOnboardingHighlight } from '../components/OnboardingGuide';
 
+// Tab name to index mapping
+const TAB_MAPPING = {
+  'settings': 0,
+  'members': 1,
+  'news': 2,
+  'events': 3,
+  'polls': 4,
+  'theme': 5,
+  'moderation': 6,
+  'monetization': 7,
+  'billing': 8,
+  'badges': 9,
+  'support': 10
+};
+
+// Index to tab name mapping
+const TAB_NAMES = Object.entries(TAB_MAPPING).reduce((acc, [name, index]) => {
+  acc[index] = name;
+  return acc;
+}, {});
+
 function NetworkAdminPage() {
   const { user } = useAuth();
   const { darkMode } = useTheme(); // Get darkMode from theme context
   const muiTheme = useMuiTheme(); // Get the MUI theme for accessing custom colors
+  const [searchParams, setSearchParams] = useSearchParams();
+  
+  // Get initial tab from URL params
+  const getInitialTab = () => {
+    const tabParam = searchParams.get('tab');
+    if (tabParam && TAB_MAPPING[tabParam] !== undefined) {
+      return TAB_MAPPING[tabParam];
+    }
+    return 0; // Default to settings tab
+  };
   
   // State variables
   const [profile, setProfile] = useState(null);
@@ -53,11 +84,31 @@ function NetworkAdminPage() {
   const [members, setMembers] = useState([]);
   const [events, setEvents] = useState([]);
   const [newsPosts, setNewsPosts] = useState([]);
-  const [activeTab, setActiveTab] = useState(0);
+  const [activeTab, setActiveTab] = useState(getInitialTab());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [message, setMessage] = useState('');
   const [memberCount, setMemberCount] = useState(0);
+  
+  // Update URL when tab changes
+  const handleTabChange = (newTab) => {
+    setActiveTab(newTab);
+    const tabName = TAB_NAMES[newTab];
+    if (tabName) {
+      setSearchParams({ tab: tabName });
+    }
+  };
+  
+  // Handle URL parameter changes (e.g., browser back/forward)
+  useEffect(() => {
+    const tabParam = searchParams.get('tab');
+    if (tabParam && TAB_MAPPING[tabParam] !== undefined) {
+      const newTab = TAB_MAPPING[tabParam];
+      if (newTab !== activeTab) {
+        setActiveTab(newTab);
+      }
+    }
+  }, [searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const fetchData = async () => {
@@ -147,7 +198,7 @@ function NetworkAdminPage() {
         <AdminLayout
           darkMode={darkMode}
           activeTab={activeTab}
-          setActiveTab={setActiveTab}
+          setActiveTab={handleTabChange}
           network={null}
         >
           <Box 
