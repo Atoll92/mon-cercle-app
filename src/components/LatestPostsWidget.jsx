@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import MediaPlayer from './MediaPlayer';
 import ImageViewerModal from './ImageViewerModal';
+import LinkPreview from './LinkPreview';
 import WidgetHeader from './shared/WidgetHeader';
 import WidgetSkeleton from './shared/WidgetSkeleton';
 import WidgetEmptyState from './shared/WidgetEmptyState';
@@ -16,7 +17,6 @@ import {
   Typography,
   Box,
   Avatar,
-  Button,
   Divider
 } from '@mui/material';
 import {
@@ -255,15 +255,17 @@ const LatestPostsWidget = ({ networkId }) => {
           </Typography>
 
           {latestPost.url && (
-            <Button
-              component="a"
-              href={latestPost.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              size="small"
-              sx={{ mt: 2 }}
-            >
-Open Link            </Button>
+            <Box sx={{ 
+              mt: 2,
+              bgcolor: 'rgba(0,0,0,0.02)', 
+              borderRadius: 1, 
+              overflow: 'hidden'
+            }}>
+              <LinkPreview 
+                url={latestPost.url} 
+                compact={true}
+              />
+            </Box>
           )}
         </Box>
       </CardContent>

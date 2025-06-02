@@ -16,7 +16,8 @@ import {
   OpenInNew as OpenInNewIcon,
   MusicNote as MusicNoteIcon,
   PlayCircleOutline as PlayCircleOutlineIcon,
-  Event as EventIcon
+  Event as EventIcon,
+  Image as ImageIcon
 } from '@mui/icons-material';
 import { getOpenGraphData } from '../services/opengraphService';
 
@@ -140,6 +141,8 @@ const LinkPreview = ({ url, compact = false, onDataLoaded = null, height = 'auto
         
         const data = await getOpenGraphData(formattedUrl);
         console.log('LinkPreview: Received data:', data);
+        console.log('LinkPreview: Image URL:', data?.image);
+        console.log('LinkPreview: Thumbnail URL:', data?.thumbnail);
         setOgData(data);
         
         // Handle special case for YouTube videos
@@ -365,7 +368,10 @@ const LinkPreview = ({ url, compact = false, onDataLoaded = null, height = 'auto
   }
 
   // Compact preview for media links with play option
-  if (compact && mediaInfo) {
+  if (compact && mediaInfo && !isPlaying) {
+    // If we have ogData with image, show thumbnail preview
+    const thumbnailUrl = ogData?.thumbnail || ogData?.image;
+    
     return (
       <Paper
         elevation={0}
@@ -377,68 +383,15 @@ const LinkPreview = ({ url, compact = false, onDataLoaded = null, height = 'auto
           alignItems: 'center',
           bgcolor: 'background.paper',
           borderRadius: 1,
-          p: 1
+          p: 1,
+          cursor: 'pointer',
+          '&:hover': {
+            bgcolor: 'action.hover'
+          }
         }}
       >
-        {mediaInfo.service === 'spotify' ? (
-          <MusicNoteIcon color="success" sx={{ fontSize: 20, mr: 1, flexShrink: 0 }} />
-        ) : (
-          <PlayCircleOutlineIcon color="error" sx={{ fontSize: 20, mr: 1, flexShrink: 0 }} />
-        )}
-        <Box sx={{ minWidth: 0, flexGrow: 1 }}>
-          <Typography
-            variant="subtitle2"
-            noWrap
-            sx={{
-              fontWeight: 'medium',
-              color: 'text.primary'
-            }}
-          >
-            {ogData.title || formattedUrl}
-          </Typography>
-          <Typography
-            variant="caption"
-            noWrap
-            sx={{
-              color: 'text.secondary',
-              display: 'block'
-            }}
-          >
-            {getHostname(formattedUrl)}
-          </Typography>
-        </Box>
-        <IconButton 
-          size="small" 
-          color="primary" 
-          onClick={toggleMediaPlayer}
-          sx={{ ml: 1 }}
-        >
-          {isPlaying ? <OpenInNewIcon /> : <PlayCircleOutlineIcon />}
-        </IconButton>
-      </Paper>
-    );
-  }
-
-  // Compact preview
-  if (compact) {
-    // If there's an image available in the metadata, show a compact preview with the image
-    if (ogData.image && !imageError) {
-      return (
-        <Paper
-          elevation={0}
-          sx={{
-            height: height,
-            width: '100%',
-            display: 'flex',
-            flexDirection: 'row',
-            alignItems: 'center',
-            bgcolor: 'background.paper',
-            borderRadius: 1,
-            p: 1,
-            overflow: 'hidden'
-          }}
-        >
-          {/* Small thumbnail image */}
+        {/* Thumbnail or icon */}
+        {thumbnailUrl && !imageError ? (
           <Box 
             sx={{ 
               width: 48, 
@@ -448,12 +401,12 @@ const LinkPreview = ({ url, compact = false, onDataLoaded = null, height = 'auto
               position: 'relative',
               overflow: 'hidden',
               borderRadius: 1,
-              bgcolor: 'action.hover'
+              bgcolor: 'grey.200'
             }}
           >
             <Box
               component="img"
-              src={ogData.image}
+              src={thumbnailUrl}
               alt={ogData.title || "Thumbnail"}
               onLoad={handleImageLoad}
               onError={handleImageError}
@@ -461,80 +414,64 @@ const LinkPreview = ({ url, compact = false, onDataLoaded = null, height = 'auto
                 width: '100%',
                 height: '100%',
                 objectFit: 'cover',
-                display: imageLoaded || ogData.image.startsWith('data:') ? 'block' : 'none'
-              }}
-            />
-          </Box>
-          
-          <Box sx={{ minWidth: 0, flexGrow: 1 }}>
-            <Typography
-              variant="subtitle2"
-              noWrap
-              sx={{
-                fontWeight: 'medium',
-                color: 'text.primary'
-              }}
-            >
-              {ogData.title || formattedUrl}
-            </Typography>
-            <Typography
-              variant="caption"
-              noWrap
-              sx={{
-                color: 'text.secondary',
                 display: 'block'
               }}
+            />
+            {/* Play icon overlay */}
+            <Box
+              sx={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                bgcolor: 'rgba(0,0,0,0.3)',
+                '&:hover': {
+                  bgcolor: 'rgba(0,0,0,0.5)'
+                }
+              }}
             >
-              {getHostname(formattedUrl)}
-            </Typography>
+              <PlayCircleOutlineIcon 
+                sx={{ 
+                  fontSize: 24, 
+                  color: 'white',
+                  filter: 'drop-shadow(0px 0px 2px rgba(0,0,0,0.5))'
+                }} 
+              />
+            </Box>
           </Box>
-        </Paper>
-      );
-    }
-    
-    // Standard compact view without image
-    return (
-      <Paper
-        elevation={0}
-        sx={{
-          height: height,
-          width: '100%',
-          display: 'flex',
-          flexDirection: 'row',
-          alignItems: 'center',
-          bgcolor: 'background.paper',
-          borderRadius: 1,
-          p: 1
-        }}
-      >
-        {isFacebookEvent ? (
-          <EventIcon color="primary" sx={{ fontSize: 20, mr: 1, flexShrink: 0 }} />
-        ) : isFacebook ? (
+        ) : (
           <Box
-            component="img"
-            src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cGF0aCBmaWxsPSIjMTg3N0YyIiBkPSJNNTA0IDI1NkM1MDQgMTE5IDM5MyA4IDI1NiA4UzggMTE5IDggMjU2YzAgMTIzLjc4IDkwLjY5IDIyNi4zOCAyMDkuMjUgMjQ1VjMyNy42OWgtNjMuVjI1Nmg2My4wOVYyMDhjMC02Mi4xNSAzNy05Ni40OCA5My42Ny05Ni40OCAyNy4xNCAwIDU1LjUyIDQuODQgNTUuNTIgNC44NHY2MS4wNWgtMzEuMjhjLTMwLjggMC00MC40MSAxOS4xMi00MC40MSAzOC43M1YyNTZoNjguNzhsLTExIDcxLjY5aC01Ny43OFY1MDFDNDEzLjMxIDQ4Mi4zOCA1MDQgMzc5Ljc4IDUwNCAyNTZ6Ii8+PC9zdmc+"
-            alt="Facebook"
-            sx={{ width: 20, height: 20, mr: 1, flexShrink: 0 }}
-          />
-        ) : ogData.favicon && !faviconError ? (
-          <Box
-            component="img"
-            src={ogData.favicon}
-            alt="Site favicon"
-            onLoad={handleFaviconLoad}
-            onError={handleFaviconError}
             sx={{
-              width: 20,
-              height: 20,
+              width: 48,
+              height: 48,
               mr: 1,
               flexShrink: 0,
-              display: faviconLoaded ? 'block' : 'none'
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              bgcolor: mediaInfo.service === 'spotify' ? 'success.light' : 'error.light',
+              borderRadius: 1
             }}
-          />
-        ) : (
-          <LinkIcon color="primary" sx={{ fontSize: 20, mr: 1, flexShrink: 0 }} />
+          >
+            {mediaInfo.service === 'spotify' ? (
+              <MusicNoteIcon color="success" sx={{ fontSize: 24 }} />
+            ) : (
+              <PlayCircleOutlineIcon color="error" sx={{ fontSize: 24 }} />
+            )}
+          </Box>
         )}
-        <Box sx={{ minWidth: 0, flexGrow: 1 }}>
+        
+        <Box 
+          sx={{ minWidth: 0, flexGrow: 1 }}
+          onClick={(e) => {
+            e.stopPropagation();
+            toggleMediaPlayer(e);
+          }}
+        >
           <Typography
             variant="subtitle2"
             noWrap
@@ -543,7 +480,7 @@ const LinkPreview = ({ url, compact = false, onDataLoaded = null, height = 'auto
               color: 'text.primary'
             }}
           >
-            {ogData.title || formattedUrl}
+            {ogData?.title || formattedUrl}
           </Typography>
           <Typography
             variant="caption"
@@ -556,6 +493,243 @@ const LinkPreview = ({ url, compact = false, onDataLoaded = null, height = 'auto
             {getHostname(formattedUrl)}
           </Typography>
         </Box>
+        
+        <IconButton 
+          size="small" 
+          color="primary" 
+          onClick={(e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            toggleMediaPlayer(e);
+          }}
+          sx={{ ml: 1 }}
+        >
+          <PlayCircleOutlineIcon />
+        </IconButton>
+      </Paper>
+    );
+  }
+  
+  // Show embedded player in compact mode when playing
+  if (compact && mediaInfo && isPlaying) {
+    return (
+      <Box sx={{ width: '100%' }}>
+        <Paper
+          elevation={0}
+          sx={{
+            width: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden',
+            bgcolor: 'background.paper',
+            borderRadius: 1
+          }}
+        >
+          {/* Header with close button */}
+          <Box
+            sx={{
+              p: 1,
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              borderBottom: '1px solid',
+              borderColor: 'divider'
+            }}
+          >
+            <Typography variant="subtitle2" noWrap sx={{ fontWeight: 'medium' }}>
+              {ogData?.title || getHostname(formattedUrl)}
+            </Typography>
+            <IconButton
+              size="small"
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsPlaying(false);
+              }}
+            >
+              <OpenInNewIcon fontSize="small" />
+            </IconButton>
+          </Box>
+          
+          {/* Embedded Media Player */}
+          <Box
+            sx={{
+              width: '100%',
+              height: mediaInfo.height,
+              bgcolor: '#000'
+            }}
+          >
+            <Box
+              component="iframe"
+              src={mediaInfo.embedUrl}
+              title={ogData?.title || "Media content"}
+              frameBorder="0"
+              allowFullScreen
+              allow="autoplay; encrypted-media; accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              sx={{
+                width: '100%',
+                height: '100%',
+                border: 'none'
+              }}
+            />
+          </Box>
+        </Paper>
+      </Box>
+    );
+  }
+
+  // Compact preview
+  if (compact) {
+    // Use thumbnail or image from ogData
+    const thumbnailUrl = ogData?.thumbnail || ogData?.image;
+    const hasImage = thumbnailUrl && !imageError;
+    
+    return (
+      <Paper
+        elevation={0}
+        component="a"
+        href={formattedUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        sx={{
+          height: height,
+          width: '100%',
+          display: 'flex',
+          flexDirection: 'row',
+          alignItems: 'center',
+          bgcolor: 'background.paper',
+          borderRadius: 1,
+          p: 1,
+          overflow: 'hidden',
+          textDecoration: 'none',
+          color: 'inherit',
+          cursor: 'pointer',
+          '&:hover': {
+            bgcolor: 'action.hover',
+            textDecoration: 'none'
+          }
+        }}
+      >
+        {/* Thumbnail, favicon, or icon */}
+        {hasImage ? (
+          <Box 
+            sx={{ 
+              width: 48, 
+              height: 48, 
+              mr: 1, 
+              flexShrink: 0,
+              position: 'relative',
+              overflow: 'hidden',
+              borderRadius: 1,
+              bgcolor: 'grey.200'
+            }}
+          >
+            {(!imageLoaded && !thumbnailUrl.startsWith('data:')) && (
+              <Box
+                sx={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: '100%',
+                  height: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  bgcolor: 'grey.100'
+                }}
+              >
+                <ImageIcon sx={{ color: 'grey.400' }} />
+              </Box>
+            )}
+            <Box
+              component="img"
+              src={thumbnailUrl}
+              alt={ogData?.title || "Thumbnail"}
+              onLoad={handleImageLoad}
+              onError={handleImageError}
+              sx={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                display: 'block'
+              }}
+            />
+          </Box>
+        ) : (
+          <Box
+            sx={{
+              width: 48,
+              height: 48,
+              mr: 1,
+              flexShrink: 0,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              bgcolor: 'grey.100',
+              borderRadius: 1
+            }}
+          >
+            {isFacebookEvent ? (
+              <EventIcon color="primary" sx={{ fontSize: 24 }} />
+            ) : isFacebook ? (
+              <Box
+                component="img"
+                src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cGF0aCBmaWxsPSIjMTg3N0YyIiBkPSJNNTA0IDI1NkM1MDQgMTE5IDM5MyA4IDI1NiA4UzggMTE5IDggMjU2YzAgMTIzLjc4IDkwLjY5IDIyNi4zOCAyMDkuMjUgMjQ1VjMyNy42OWgtNjMuVjI1Nmg2My4wOVYyMDhjMC02Mi4xNSAzNy05Ni40OCA5My42Ny05Ni40OCAyNy4xNCAwIDU1LjUyIDQuODQgNTUuNTIgNC44NHY2MS4wNWgtMzEuMjhjLTMwLjggMC00MC40MSAxOS4xMi00MC40MSAzOC43M1YyNTZoNjguNzhsLTExIDcxLjY5aC01Ny43OFY1MDFDNDEzLjMxIDQ4Mi4zOCA1MDQgMzc5Ljc4IDUwNCAyNTZ6Ii8+PC9zdmc+"
+                alt="Facebook"
+                sx={{ width: 24, height: 24 }}
+              />
+            ) : ogData?.favicon && !faviconError ? (
+              <Box
+                component="img"
+                src={ogData.favicon}
+                alt="Site favicon"
+                onLoad={handleFaviconLoad}
+                onError={handleFaviconError}
+                sx={{
+                  width: 24,
+                  height: 24,
+                  display: faviconLoaded || ogData.favicon.startsWith('data:') ? 'block' : 'none'
+                }}
+              />
+            ) : (
+              <LinkIcon color="primary" sx={{ fontSize: 24 }} />
+            )}
+          </Box>
+        )}
+        
+        <Box sx={{ minWidth: 0, flexGrow: 1 }}>
+          <Typography
+            variant="subtitle2"
+            noWrap
+            sx={{
+              fontWeight: 'medium',
+              color: 'text.primary'
+            }}
+          >
+            {ogData?.title || formattedUrl}
+          </Typography>
+          <Typography
+            variant="caption"
+            noWrap
+            sx={{
+              color: 'text.secondary',
+              display: 'block'
+            }}
+          >
+            {getHostname(formattedUrl)}
+          </Typography>
+        </Box>
+        
+        <IconButton 
+          size="small" 
+          color="primary"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
+          sx={{ ml: 1 }}
+        >
+          <OpenInNewIcon fontSize="small" />
+        </IconButton>
       </Paper>
     );
   }

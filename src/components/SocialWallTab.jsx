@@ -41,6 +41,7 @@ import MediaPlayer from './MediaPlayer';
 import LazyImage from './LazyImage';
 import ImageViewerModal from './ImageViewerModal';
 import CommentSection from './CommentSection';
+import LinkPreview from './LinkPreview';
 
 // Number of items to display initially
 const ITEMS_PER_FETCH = 6;
@@ -984,6 +985,22 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                             {expandedCardId === `${item.itemType}-${item.id}` ? 'Show less' : 'Read more'}
                           </Button>
                         )}
+                        
+                        {/* Link Preview for portfolio items with URLs */}
+                        {item.url && (
+                          <Box sx={{ 
+                            mb: 2, 
+                            bgcolor: darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)', 
+                            borderRadius: 1, 
+                            overflow: 'hidden'
+                          }}>
+                            <LinkPreview 
+                              url={item.url} 
+                              compact={true}
+                              darkMode={darkMode}
+                            />
+                          </Box>
+                        )}
                       </>
                     ) : (
                       <>
@@ -1057,9 +1074,9 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                     
                     <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', mt: 1 }}>
                       <Box>
-                        {item.itemType === 'post' && (item.url || (item.file_type === 'pdf' && item.file_url)) ? (
+                        {item.itemType === 'post' && item.file_type === 'pdf' && item.file_url && !item.url ? (
                           <a 
-                            href={item.url || (item.file_type === 'pdf' ? item.file_url : undefined)}
+                            href={item.file_url}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="view-project-btn"
@@ -1075,7 +1092,7 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                             }}
                             onClick={(e) => e.stopPropagation()} // Prevent card expansion
                           >
-                            {item.file_type === 'pdf' && !item.url ? 'View PDF' : 'View Link'}
+                            View PDF
                           </a>
                         ) : (
                           <Link 
