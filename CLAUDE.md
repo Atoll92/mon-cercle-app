@@ -76,7 +76,7 @@ mon-cercle-app/
 #### Services (`src/services/`)
 - `emailNotificationService.js` - Email notification queue
 - `networkFiles.js` - File management
-- `opengraphService.js` - URL preview generation
+- `opengraphService.js` - Enhanced URL preview generation with multiple proxy support and better fallbacks
 - `stripeService.js` - Payment processing
 - `subscriptionService.js` - Subscription management
 
@@ -120,7 +120,7 @@ mon-cercle-app/
 
 ##### Chat & Messaging
 - `Chat.jsx` - Network chat with mentions and reply functionality
-- `DirectMessageChat.jsx` - DM interface (dark mode ready)
+- `DirectMessageChat.jsx` - DM interface (dark mode ready, enhanced link preview support)
 - `DirectMessagesList.jsx` - Conversation list (dark mode ready)
 - `CommentSection.jsx` - Comment system for social wall items with threaded replies
 
@@ -137,11 +137,12 @@ mon-cercle-app/
 - `MoonboardTab.jsx` - Moodboard display
 - `AboutTab.jsx` - Network about section
 - `ChatTab.jsx` - Chat interface wrapper
+- `PrivacyPage.jsx` - Privacy policy page
 
 ##### Media & Content
 - `MediaUpload.jsx` - File upload system
 - `MediaPlayer.jsx` - Video/audio playback with artwork support
-- `LinkPreview.jsx` - URL preview cards
+- `LinkPreview.jsx` - Enhanced URL preview cards with improved OpenGraph data extraction
 - `QuillEditor.jsx` - Rich text editor
 - `moodboardGallery.jsx` - Moodboard gallery
 - `ImageViewerModal.jsx` - Full-screen image viewer with zoom and gallery navigation
@@ -286,6 +287,21 @@ mon-cercle-app/
   - Overview of key network features
   - Option to start guided tour from welcome message
   - Persistent state to avoid repeated displays
+
+### Latest Updates (February 2025)
+- **Enhanced LinkPreview Component**: Improved URL preview functionality
+  - Better image handling with proper URL resolution and error states
+  - Improved loading states with skeleton screens
+  - Enhanced typography with better title and description display
+  - Graceful error handling with fallback previews
+  - Fixed deprecated frameBorder warnings
+- **Improved OpenGraph Service**: More reliable link preview data extraction
+  - Multiple proxy support (corsproxy.io and allorigins.win) with automatic fallback
+  - Better meta tag extraction from multiple sources (OpenGraph, Twitter cards)
+  - Enhanced image URL resolution for relative paths
+  - Smart cache handling that detects and refetches placeholder data
+  - First paragraph extraction when no description meta tag is found
+  - Improved favicon detection with Google favicon service fallback
 
 ### Latest Updates (January 2025)
 - **Storage Management System**: Added comprehensive storage tracking for network admins
@@ -486,7 +502,7 @@ Key entities in the Supabase database:
 - `PollCard`: Interactive polling component with multiple question types
 - `NotificationSettings`: User email notification preferences
 - `NetworkOnboardingWizard`: Step-by-step network setup
-- `LinkPreview`: URL preview component
+- `LinkPreview`: Enhanced URL preview component with improved data extraction and display
 - `LatestNewsWidget`: News display widget
 - `LatestPostsWidget`: Recent posts display widget
 - `PersonalMoodboardWidget`: Personal moodboard display
