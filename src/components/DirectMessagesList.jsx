@@ -334,10 +334,12 @@ function DirectMessagesList({ onSelectConversation }) {
         open={Boolean(anchorEl)}
         onClose={handleMenuClose}
         onClick={handleMenuClose}
-        PaperProps={{
-          sx: {
-            bgcolor: 'background.paper',
-            color: 'text.primary'
+        slotProps={{
+          paper: {
+            sx: {
+              bgcolor: 'background.paper',
+              color: 'text.primary'
+            }
           }
         }}
       >

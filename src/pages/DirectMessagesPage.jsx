@@ -5,6 +5,7 @@ import { useDirectMessages } from '../context/directMessagesContext';
 import { getUserForMessaging, getOrCreateConversation } from '../api/directMessages';
 import DirectMessagesList from '../components/DirectMessagesList';
 import DirectMessageChat from '../components/DirectMessageChat';
+import UserSearchAutocomplete from '../components/UserSearchAutocomplete';
 import {
   Container,
   Grid,
@@ -22,8 +23,7 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogActions,
-  TextField
+  DialogActions
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import {
@@ -57,7 +57,7 @@ function DirectMessagesPage() {
   const [initError, setInitError] = useState(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [newChatDialogOpen, setNewChatDialogOpen] = useState(false);
-  const [newChatUserId, setNewChatUserId] = useState('');
+  const [selectedNewUser, setSelectedNewUser] = useState(null);
   
   // Use a ref to track if initialization has been attempted
   const initAttemptedRef = useRef(false);
@@ -243,14 +243,14 @@ function DirectMessagesPage() {
   };
 
   const handleStartNewChat = async () => {
-    if (!newChatUserId.trim()) {
+    if (!selectedNewUser) {
       return;
     }
 
     // Close dialog and navigate to start the conversation
     setNewChatDialogOpen(false);
-    setNewChatUserId('');
-    navigate(`/messages/${newChatUserId.trim()}`);
+    setSelectedNewUser(null);
+    navigate(`/messages/${selectedNewUser}`);
   };
   
   // Responsive layout setup
@@ -292,7 +292,11 @@ function DirectMessagesPage() {
             anchor="right"
             open={drawerOpen}
             onClose={() => setDrawerOpen(false)}
-            PaperProps={{ sx: { width: '80%', maxWidth: 360, bgcolor: 'background.paper', color: 'text.primary' } }}
+            slotProps={{
+              paper: {
+                sx: { width: '80%', maxWidth: 360, bgcolor: 'background.paper', color: 'text.primary' }
+              }
+            }}
           >
             <Box sx={{ display: 'flex', alignItems: 'center', p: 2, borderBottom: 1, borderColor: 'divider' }}>
               <Typography variant="h6" sx={{ flexGrow: 1 }}>
@@ -464,32 +468,43 @@ function DirectMessagesPage() {
       {/* New Chat Dialog */}
       <Dialog 
         open={newChatDialogOpen} 
-        onClose={() => setNewChatDialogOpen(false)} 
+        onClose={() => {
+          setNewChatDialogOpen(false);
+          setSelectedNewUser(null);
+        }} 
         maxWidth="sm" 
         fullWidth
-        PaperProps={{
-          sx: {
-            bgcolor: 'background.paper',
-            color: 'text.primary'
+        slotProps={{
+          paper: {
+            sx: {
+              bgcolor: 'background.paper',
+              color: 'text.primary'
+            }
           }
         }}
       >
         <DialogTitle>Start New Conversation</DialogTitle>
-        <DialogContent>
-          <TextField
-            autoFocus
-            margin="dense"
-            label="User ID"
-            fullWidth
-            variant="outlined"
-            value={newChatUserId}
-            onChange={(e) => setNewChatUserId(e.target.value)}
-            helperText="Enter the ID of the user you want to message"
+        <DialogContent sx={{ pt: 2 }}>
+          <UserSearchAutocomplete
+            onUserSelect={(userId) => setSelectedNewUser(userId)}
+            excludeUserIds={conversations.map(c => c.partner?.id).filter(Boolean)}
+            placeholder="Search for network members..."
           />
+          <Typography variant="caption" color="text.secondary" sx={{ mt: 2, display: 'block' }}>
+            Start typing a name to search for members in your network
+          </Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setNewChatDialogOpen(false)}>Cancel</Button>
-          <Button onClick={handleStartNewChat} variant="contained" color="primary">
+          <Button onClick={() => {
+            setNewChatDialogOpen(false);
+            setSelectedNewUser(null);
+          }}>Cancel</Button>
+          <Button 
+            onClick={handleStartNewChat} 
+            variant="contained" 
+            color="primary"
+            disabled={!selectedNewUser}
+          >
             Start Chat
           </Button>
         </DialogActions>

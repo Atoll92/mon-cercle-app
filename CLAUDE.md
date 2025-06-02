@@ -162,6 +162,7 @@ mon-cercle-app/
 - `LoadingSkeleton.jsx` - Loading states
 - `ThemeProvider.jsx` - Theme management
 - `ProtectedRoute.jsx` - Route protection
+- `UserSearchAutocomplete.jsx` - User search with autocomplete for network members
 
 ##### Widgets & Cards
 - `PollCard.jsx` - Poll display/voting
@@ -301,6 +302,12 @@ mon-cercle-app/
   - Enhanced image URL resolution for relative paths
   - Smart cache handling that detects and refetches placeholder data
   - First paragraph extraction when no description meta tag is found
+- **Direct Messages User Search**: Improved conversation initiation flow
+  - Replaced manual userId input with UserSearchAutocomplete component
+  - Real-time search for network members with debouncing
+  - Shows user avatars and bio previews in search results
+  - Excludes already existing conversations from search
+  - Better UX for starting new conversations
   - Improved favicon detection with Google favicon service fallback
 
 ### Latest Updates (January 2025)
