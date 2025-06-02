@@ -141,8 +141,11 @@ const LinkPreview = ({ url, compact = false, onDataLoaded = null, height = 'auto
         
         const data = await getOpenGraphData(formattedUrl);
         console.log('LinkPreview: Received data:', data);
+        console.log('LinkPreview: Title:', data?.title);
+        console.log('LinkPreview: Description:', data?.description);
         console.log('LinkPreview: Image URL:', data?.image);
         console.log('LinkPreview: Thumbnail URL:', data?.thumbnail);
+        console.log('LinkPreview: Favicon:', data?.favicon);
         setOgData(data);
         
         // Handle special case for YouTube videos
@@ -190,6 +193,7 @@ const LinkPreview = ({ url, compact = false, onDataLoaded = null, height = 'auto
   };
 
   const handleImageError = () => {
+    console.log('LinkPreview: Image failed to load:', ogData?.image);
     setImageError(true);
   };
 
@@ -210,14 +214,6 @@ const LinkPreview = ({ url, compact = false, onDataLoaded = null, height = 'auto
     }
   };
 
-  // Function to handle link clicks
-  const handleLinkClick = (e) => {
-    // If in edit mode, prevent the default action and stop propagation
-    if (!isEditable) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
-  };
 
   // Function to toggle media player
   const toggleMediaPlayer = (e) => {
@@ -262,53 +258,124 @@ const LinkPreview = ({ url, compact = false, onDataLoaded = null, height = 'auto
           <Skeleton
             variant="rectangular"
             width="100%"
-            height={120}
+            height={200}
             animation="wave"
           />
         )}
         <Box sx={{ p: compact ? 1 : 2, width: '100%' }}>
           <Skeleton animation="wave" height={24} width="80%" sx={{ mb: 1 }} />
-          {!compact && <Skeleton animation="wave" height={18} width="90%" />}
+          {!compact && <Skeleton animation="wave" height={18} width="90%" sx={{ mb: 1 }} />}
           <Skeleton animation="wave" height={18} width="40%" />
         </Box>
       </Paper>
     );
   }
 
-  // Error state
+  // Error state or no data - still show a nice preview
   if (error || !ogData) {
+    const fallbackData = {
+      title: getHostname(formattedUrl),
+      description: `Visit ${getHostname(formattedUrl)}`,
+      image: null,
+      favicon: `https://www.google.com/s2/favicons?domain=${getHostname(formattedUrl)}&sz=64`
+    };
+    
     return (
       <Paper
         elevation={compact ? 0 : 1}
+        component="a"
+        href={formattedUrl}
+        target="_blank"
+        rel="noopener noreferrer"
         sx={{
           height: height,
           width: '100%',
           display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          p: 2,
+          flexDirection: compact ? 'row' : 'column',
+          overflow: 'hidden',
           bgcolor: 'background.paper',
-          borderRadius: 1
+          borderRadius: 1,
+          textDecoration: 'none',
+          color: 'inherit',
+          '&:hover': {
+            bgcolor: 'action.hover'
+          }
         }}
       >
-        <LinkIcon color="primary" sx={{ fontSize: 32, mb: 1 }} />
-        <MuiLink
-          href={isEditable ? formattedUrl : "#"}
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={handleLinkClick}
-          sx={{
-            textDecoration: 'none',
-            color: 'primary.main',
-            textAlign: 'center',
-            fontWeight: 'medium',
-            pointerEvents: isEditable ? 'auto' : 'none',
-            cursor: isEditable ? 'pointer' : 'default'
-          }}
-        >
-          {formattedUrl}
-        </MuiLink>
+        {compact ? (
+          <>
+            <Box
+              sx={{
+                width: 48,
+                height: 48,
+                m: 1,
+                flexShrink: 0,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                bgcolor: 'grey.100',
+                borderRadius: 1
+              }}
+            >
+              <LinkIcon color="primary" sx={{ fontSize: 24 }} />
+            </Box>
+            <Box sx={{ minWidth: 0, flexGrow: 1, py: 1 }}>
+              <Typography
+                variant="subtitle2"
+                noWrap
+                sx={{
+                  fontWeight: 'medium',
+                  color: 'text.primary'
+                }}
+              >
+                {fallbackData.title}
+              </Typography>
+              <Typography
+                variant="caption"
+                noWrap
+                sx={{
+                  color: 'text.secondary',
+                  display: 'block'
+                }}
+              >
+                {fallbackData.description}
+              </Typography>
+            </Box>
+          </>
+        ) : (
+          <>
+            <Box
+              sx={{
+                width: '100%',
+                height: 120,
+                bgcolor: 'action.hover',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+            >
+              <LanguageIcon sx={{ fontSize: 50, color: 'text.disabled' }} />
+            </Box>
+            <Box sx={{ p: 2 }}>
+              <Typography
+                variant="subtitle1"
+                gutterBottom
+                sx={{
+                  fontWeight: 'medium',
+                  color: 'text.primary'
+                }}
+              >
+                {fallbackData.title}
+              </Typography>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+              >
+                {fallbackData.description}
+              </Typography>
+            </Box>
+          </>
+        )}
       </Paper>
     );
   }
@@ -562,7 +629,7 @@ const LinkPreview = ({ url, compact = false, onDataLoaded = null, height = 'auto
               component="iframe"
               src={mediaInfo.embedUrl}
               title={ogData?.title || "Media content"}
-              frameBorder="0"
+              style={{ border: 'none' }}
               allowFullScreen
               allow="autoplay; encrypted-media; accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               sx={{
@@ -829,7 +896,7 @@ const LinkPreview = ({ url, compact = false, onDataLoaded = null, height = 'auto
             component="iframe"
             src={mediaInfo.embedUrl}
             title={ogData.title || "Media content"}
-            frameBorder="0"
+            style={{ border: 'none' }}
             allowFullScreen
             allow="autoplay; encrypted-media; accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             sx={{
@@ -1063,7 +1130,17 @@ const LinkPreview = ({ url, compact = false, onDataLoaded = null, height = 'auto
   // Helper function to render normal content
   function renderContent() {
     // Handle image URL - use appropriate fallbacks for different types of links
-    let imageUrl = ogData.thumbnail || ogData.image;
+    let imageUrl = ogData.image || ogData.thumbnail;
+    
+    // Ensure absolute URL for images
+    if (imageUrl && !imageUrl.startsWith('http') && !imageUrl.startsWith('data:')) {
+      try {
+        imageUrl = new URL(imageUrl, formattedUrl).href;
+      } catch (e) {
+        console.error('Failed to create absolute URL for image:', e);
+        imageUrl = null;
+      }
+    }
     
     return (
       <>
@@ -1073,39 +1150,59 @@ const LinkPreview = ({ url, compact = false, onDataLoaded = null, height = 'auto
             sx={{
               position: 'relative',
               width: '100%',
-              height: 160,
-              bgcolor: 'action.hover'
+              height: 200,
+              bgcolor: 'grey.100',
+              overflow: 'hidden'
             }}
           >
-            {!imageLoaded && !imageError && !(imageUrl.startsWith('data:')) && (
+            {!imageError && (
+              <>
+                {!imageLoaded && !imageUrl.startsWith('data:') && (
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: '100%',
+                      height: '100%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      bgcolor: 'grey.100'
+                    }}
+                  >
+                    <CircularProgress size={30} />
+                  </Box>
+                )}
+                <Box
+                  component="img"
+                  src={imageUrl}
+                  alt={ogData.title || "Link preview"}
+                  onLoad={handleImageLoad}
+                  onError={handleImageError}
+                  sx={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                    display: (imageLoaded || imageUrl.startsWith('data:')) ? 'block' : 'none'
+                  }}
+                />
+              </>
+            )}
+            {imageError && (
               <Box
                 sx={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
                   width: '100%',
                   height: '100%',
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'center'
+                  justifyContent: 'center',
+                  bgcolor: 'grey.100'
                 }}
               >
-                <CircularProgress size={24} />
+                <BrokenImageIcon sx={{ fontSize: 40, color: 'grey.400' }} />
               </Box>
             )}
-            <Box
-              component="img"
-              src={imageUrl}
-              alt={ogData.title || "Link preview"}
-              onLoad={handleImageLoad}
-              onError={handleImageError}
-              sx={{
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover',
-                display: imageLoaded || imageUrl.startsWith('data:') ? 'block' : 'none'
-              }}
-            />
             
             {/* Play button overlay for media links */}
             {mediaInfo && (imageLoaded || imageUrl.startsWith('data:')) && (
@@ -1142,19 +1239,15 @@ const LinkPreview = ({ url, compact = false, onDataLoaded = null, height = 'auto
           <Box
             sx={{
               width: '100%',
-              height: 100,
-              bgcolor: 'action.hover',
+              height: 120,
+              bgcolor: 'grey.100',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               position: 'relative'
             }}
           >
-            {imageError ? (
-              <BrokenImageIcon sx={{ fontSize: 40, color: 'text.disabled' }} />
-            ) : (
-              <LanguageIcon sx={{ fontSize: 40, color: 'text.disabled' }} />
-            )}
+            <LanguageIcon sx={{ fontSize: 50, color: 'grey.400' }} />
             
             {/* Play button for media links even without image */}
             {mediaInfo && (
@@ -1196,33 +1289,35 @@ const LinkPreview = ({ url, compact = false, onDataLoaded = null, height = 'auto
             component="h3"
             gutterBottom
             sx={{
-              fontWeight: 'medium',
-              lineHeight: 1.2,
-              mb: 0.5,
+              fontWeight: 600,
+              lineHeight: 1.3,
+              mb: 1,
               overflow: 'hidden',
               textOverflow: 'ellipsis',
               display: '-webkit-box',
               WebkitLineClamp: 2,
-              WebkitBoxOrient: 'vertical'
+              WebkitBoxOrient: 'vertical',
+              color: 'text.primary'
             }}
           >
-            {ogData.title || formattedUrl}
+            {ogData.title || getHostname(formattedUrl)}
           </Typography>
 
-          {ogData.description && (
+          {(ogData.description || !ogData.title) && (
             <Typography
               variant="body2"
               color="text.secondary"
               sx={{
-                mb: 1,
+                mb: 1.5,
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
                 display: '-webkit-box',
-                WebkitLineClamp: 3,
-                WebkitBoxOrient: 'vertical'
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: 'vertical',
+                lineHeight: 1.5
               }}
             >
-              {ogData.description}
+              {ogData.description || `Visit ${getHostname(formattedUrl)} for more information`}
             </Typography>
           )}
 

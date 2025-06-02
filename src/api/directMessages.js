@@ -228,18 +228,31 @@ export const getConversationMessages = async (conversationId) => {
  * @param {string} conversationId - Conversation ID
  * @param {string} senderId - Sender's user ID
  * @param {string} content - Message content
+ * @param {Object} mediaData - Optional media data {url, type, metadata}
  * @returns {Object} Object containing the sent message or error
  */
-export const sendDirectMessage = async (conversationId, senderId, content) => {
+export const sendDirectMessage = async (conversationId, senderId, content, mediaData = null) => {
   try {
+    // Build message data
+    const messageData = {
+      conversation_id: conversationId,
+      sender_id: senderId,
+      content
+    };
+    
+    // Add media data if provided
+    if (mediaData) {
+      messageData.media_url = mediaData.url;
+      messageData.media_type = mediaData.type;
+      if (mediaData.metadata) {
+        messageData.media_metadata = mediaData.metadata;
+      }
+    }
+    
     // Insert message
     const { data: message, error: messageError } = await supabase
       .from('direct_messages')
-      .insert({
-        conversation_id: conversationId,
-        sender_id: senderId,
-        content
-      })
+      .insert(messageData)
       .select()
       .single();
       

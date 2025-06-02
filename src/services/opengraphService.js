@@ -149,7 +149,16 @@ export const getOpenGraphData = async (url) => {
       if (cachedData && !error && new Date(cachedData.updated_at) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)) {
         console.log('OpenGraph Service: Using cached data for URL:', cleanUrl);
         try {
-          return JSON.parse(cachedData.data);
+          const parsedData = JSON.parse(cachedData.data);
+          // Check if this is fallback data - if so, refetch
+          if (parsedData.title === getDomainName(parsedData.url) && 
+              parsedData.description === `Visit ${getDomainName(parsedData.url)} for more information.` &&
+              parsedData.image?.includes('placeholder')) {
+            console.log('OpenGraph Service: Cached data is fallback, refetching...');
+            // Continue to fetch new data
+          } else {
+            return parsedData;
+          }
         } catch (parseError) {
           console.error('OpenGraph Service: Error parsing cached data:', parseError);
           // If JSON parsing fails, continue to fetch new data
@@ -239,35 +248,44 @@ function getMetaTag(doc, tagName) {
 /**
  * Find the first suitable image in the document
  */
-function findFirstImage(doc) {
+function findFirstImage(doc, baseUrl) {
   try {
-    // Find the first image with reasonable dimensions
-    const images = doc.querySelectorAll('img');
-    for (const img of images) {
-      const src = img.getAttribute('src');
-      const width = parseInt(img.getAttribute('width') || '0');
-      const height = parseInt(img.getAttribute('height') || '0');
-      
-      // Skip tiny images, icons, or spacers
-      if (src && (width > 100 || height > 100 || (!width && !height))) {
-        // Convert relative URLs to absolute
-        if (src.startsWith('/')) {
-          // Skip data URLs
+    // Try to find images in various ways
+    const selectors = [
+      'article img',
+      'main img',
+      '.content img',
+      '#content img',
+      'img[src*="logo"]',
+      'img[src*="banner"]',
+      'img'
+    ];
+    
+    for (const selector of selectors) {
+      const images = doc.querySelectorAll(selector);
+      for (const img of images) {
+        const src = img.getAttribute('src') || img.getAttribute('data-src');
+        const width = parseInt(img.getAttribute('width') || '0');
+        const height = parseInt(img.getAttribute('height') || '0');
+        
+        // Skip tiny images, icons, or spacers
+        if (src && !src.includes('pixel') && !src.includes('spacer') && 
+            (width > 50 || height > 50 || (!width && !height))) {
+          
+          // Skip data URLs for now
           if (src.startsWith('data:')) continue;
           
-          // Find the base URL
-          const baseElement = doc.querySelector('base');
-          const baseUrl = baseElement ? baseElement.getAttribute('href') : null;
-          
-          if (baseUrl) {
-            return new URL(src, baseUrl).href;
+          // Convert relative URLs to absolute
+          try {
+            if (!src.startsWith('http')) {
+              return new URL(src, baseUrl).href;
+            }
+            return src;
+          } catch (e) {
+            console.error('Failed to create absolute URL for image:', e);
+            continue;
           }
-        } else if (!src.startsWith('http')) {
-          // Skip relative paths if we can't resolve them
-          continue;
         }
-        
-        return src;
       }
     }
     
@@ -283,24 +301,38 @@ function findFirstImage(doc) {
  */
 function getFavicon(doc, url) {
   try {
-    // Try to find favicon link
-    const faviconLink = doc.querySelector('link[rel="icon"], link[rel="shortcut icon"]');
-    if (faviconLink) {
-      const href = faviconLink.getAttribute('href');
-      if (href) {
-        // Convert relative URLs to absolute
-        if (href.startsWith('/')) {
-          return new URL(href, url).href;
+    // Try multiple favicon selectors
+    const faviconSelectors = [
+      'link[rel="icon"]',
+      'link[rel="shortcut icon"]',
+      'link[rel="apple-touch-icon"]',
+      'link[rel="apple-touch-icon-precomposed"]'
+    ];
+    
+    for (const selector of faviconSelectors) {
+      const faviconLink = doc.querySelector(selector);
+      if (faviconLink) {
+        const href = faviconLink.getAttribute('href');
+        if (href) {
+          // Convert relative URLs to absolute
+          try {
+            if (!href.startsWith('http')) {
+              return new URL(href, url).href;
+            }
+            return href;
+          } catch (e) {
+            console.error('Failed to create absolute favicon URL:', e);
+            continue;
+          }
         }
-        return href;
       }
     }
     
-    // Fallback to the default favicon location
-    return new URL('/favicon.ico', url).href;
+    // Use Google's favicon service as fallback
+    return `https://www.google.com/s2/favicons?domain=${getDomainName(url)}&sz=64`;
   } catch (error) {
     console.error('Error getting favicon:', error);
-    return null;
+    return `https://www.google.com/s2/favicons?domain=${getDomainName(url)}&sz=64`;
   }
 }
 
@@ -313,6 +345,25 @@ function getDomainName(url) {
     return urlObj.hostname.replace('www.', '');
   } catch (error) {
     return url;
+  }
+}
+
+/**
+ * Get first paragraph from document
+ */
+function getFirstParagraph(doc) {
+  try {
+    const paragraphs = doc.querySelectorAll('p');
+    for (const p of paragraphs) {
+      const text = p.textContent.trim();
+      if (text && text.length > 20 && text.length < 500) {
+        return text.substring(0, 200) + (text.length > 200 ? '...' : '');
+      }
+    }
+    return null;
+  } catch (error) {
+    console.error('Error getting first paragraph:', error);
+    return null;
   }
 }
 
@@ -424,20 +475,62 @@ function isFacebookUrl(url) {
         }
       }
       
-      // Using a proxy to avoid CORS issues
-      const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(formattedUrl)}`;
-      console.log('OpenGraph Service: Using proxy URL:', proxyUrl);
+      // Try multiple proxy services
+      const proxies = [
+        {
+          name: 'corsproxy.io',
+          getUrl: (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+          parseResponse: async (response) => {
+            const text = await response.text();
+            return { contents: text };
+          }
+        },
+        {
+          name: 'allorigins',
+          getUrl: (url) => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
+          parseResponse: async (response) => {
+            const data = await response.json();
+            return data;
+          }
+        }
+      ];
       
-      const response = await fetch(proxyUrl);
+      let data = null;
+      let lastError = null;
       
-      if (!response.ok) {
-        throw new Error(`Network response error: ${response.status} ${response.statusText}`);
+      // Try each proxy until one works
+      for (const proxy of proxies) {
+        try {
+          console.log(`OpenGraph Service: Trying ${proxy.name} proxy...`);
+          const proxyUrl = proxy.getUrl(formattedUrl);
+          
+          const response = await fetch(proxyUrl, {
+            method: 'GET',
+            headers: {
+              'Accept': 'text/html,application/xhtml+xml'
+            }
+          });
+          
+          if (!response.ok) {
+            throw new Error(`${proxy.name} proxy error: ${response.status}`);
+          }
+          
+          data = await proxy.parseResponse(response);
+          
+          if (data && data.contents) {
+            console.log(`OpenGraph Service: Successfully fetched with ${proxy.name}`);
+            break;
+          }
+        } catch (error) {
+          console.error(`OpenGraph Service: ${proxy.name} proxy failed:`, error);
+          lastError = error;
+          continue;
+        }
       }
       
-      const data = await response.json();
-      
-      if (!data.contents) {
-        console.warn('OpenGraph Service: No contents in response for URL:', formattedUrl);
+      if (!data || !data.contents) {
+        console.warn('OpenGraph Service: All proxies failed for URL:', formattedUrl);
+        if (lastError) throw lastError;
         return createFallbackData(formattedUrl);
       }
       
@@ -446,13 +539,40 @@ function isFacebookUrl(url) {
       const doc = parser.parseFromString(data.contents, 'text/html');
       
       // Extract OG data with enhanced fallbacks
+      const ogImage = getMetaTag(doc, 'og:image') || 
+                      getMetaTag(doc, 'og:image:url') ||
+                      getMetaTag(doc, 'og:image:secure_url') ||
+                      getMetaTag(doc, 'twitter:image') ||
+                      getMetaTag(doc, 'twitter:image:src');
+      
+      // Ensure image URL is absolute
+      let absoluteImage = ogImage;
+      if (ogImage && !ogImage.startsWith('http') && !ogImage.startsWith('data:')) {
+        try {
+          absoluteImage = new URL(ogImage, formattedUrl).href;
+        } catch (e) {
+          console.error('Failed to create absolute image URL:', e);
+          absoluteImage = null;
+        }
+      }
+      
       const og = {
         url: formattedUrl,
-        title: getMetaTag(doc, 'og:title') || getMetaTag(doc, 'title') || doc.title || getDomainName(formattedUrl),
-        description: getMetaTag(doc, 'og:description') || getMetaTag(doc, 'description') || getDefaultDescription(formattedUrl),
-        image: getMetaTag(doc, 'og:image') || getMetaTag(doc, 'twitter:image') || findFirstImage(doc) || getFallbackImage(formattedUrl),
-        thumbnail: getMetaTag(doc, 'og:image:secure_url') || getMetaTag(doc, 'twitter:image:src') || getMetaTag(doc, 'og:image'),
-        siteName: getMetaTag(doc, 'og:site_name') || getDomainName(formattedUrl),
+        title: getMetaTag(doc, 'og:title') || 
+               getMetaTag(doc, 'twitter:title') || 
+               getMetaTag(doc, 'title') || 
+               doc.title || 
+               getDomainName(formattedUrl),
+        description: getMetaTag(doc, 'og:description') || 
+                    getMetaTag(doc, 'twitter:description') || 
+                    getMetaTag(doc, 'description') || 
+                    getFirstParagraph(doc) ||
+                    getDefaultDescription(formattedUrl),
+        image: absoluteImage || findFirstImage(doc, formattedUrl),
+        thumbnail: absoluteImage,
+        siteName: getMetaTag(doc, 'og:site_name') || 
+                 getMetaTag(doc, 'application-name') || 
+                 getDomainName(formattedUrl),
         favicon: getFavicon(doc, formattedUrl)
       };
       
