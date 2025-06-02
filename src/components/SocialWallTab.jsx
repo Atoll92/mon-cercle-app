@@ -18,7 +18,11 @@ import {
   useMediaQuery,
   alpha,
   Collapse,
-  Button
+  Button,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel
 } from '@mui/material';
 import {
   Favorite as FavoriteIcon,
@@ -35,7 +39,8 @@ import {
   AudioFile as AudioIcon,
   Article as ArticleIcon,
   PlayCircleFilled as PlayIcon,
-  Pause as PauseIcon
+  Pause as PauseIcon,
+  FilterList as FilterListIcon
 } from '@mui/icons-material';
 import MediaPlayer from './MediaPlayer';
 import LazyImage from './LazyImage';
@@ -43,24 +48,32 @@ import ImageViewerModal from './ImageViewerModal';
 import CommentSection from './CommentSection';
 import LinkPreview from './LinkPreview';
 import { getCommentCount } from '../api/comments';
+import { fetchNetworkCategories } from '../api/categories';
 
 // Number of items to display initially
 const ITEMS_PER_FETCH = 6;
 
-const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = false, isAdmin = false }) => {
+const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = false, isAdmin = false, networkId }) => {
   const muiTheme = useTheme();
   const isMobile = useMediaQuery(muiTheme.breakpoints.down('sm'));
+  
+  // Category filtering state
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [categories, setCategories] = useState([]);
+  const [showFilter, setShowFilter] = useState(false);
   
   // Debug log for items received
   React.useEffect(() => {
     console.log('SocialWallTab received items:', socialWallItems);
+    console.log('NetworkId:', networkId);
+    console.log('Categories loaded:', categories);
     // Log post items specifically
     const postItems = socialWallItems.filter(item => item.itemType === 'post');
     console.log('Post items:', postItems);
     // Log if there are post items with images
     const postItemsWithImages = postItems.filter(item => item.image_url);
     console.log('Post items with images:', postItemsWithImages);
-  }, [socialWallItems]);
+  }, [socialWallItems, networkId, categories]);
   
   // When using theme.palette.custom, check first if it exists
   // This is for compatibility with both your custom theme and the default theme
@@ -175,6 +188,28 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
     return () => window.removeEventListener('scroll', handleScroll);
   }, [scrollPosition, hasMore, loading, page, socialWallItems.length]);
   
+  // Load categories on mount
+  useEffect(() => {
+    const loadCategories = async () => {
+      if (!networkId) return;
+      const { data, error } = await fetchNetworkCategories(networkId, true); // Only active categories
+      if (data && !error) {
+        setCategories(data);
+      }
+    };
+    loadCategories();
+  }, [networkId]);
+
+  // Filter items based on selected category
+  const filteredItems = React.useMemo(() => {
+    if (!selectedCategory) return socialWallItems;
+    
+    return socialWallItems.filter(item => {
+      // Check category_id for both news and portfolio items
+      return item.category_id === selectedCategory;
+    });
+  }, [socialWallItems, selectedCategory]);
+
   // Fetch comment counts for all items
   const fetchCommentCounts = useCallback(async (items) => {
     const counts = {};
@@ -200,20 +235,20 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
 
   // Initial load
   useEffect(() => {
-    if (socialWallItems && socialWallItems.length > 0) {
+    if (filteredItems && filteredItems.length > 0) {
       // Determine how many items to load initially - more if there are fewer total items
       const initialLoadCount = Math.min(
         ITEMS_PER_FETCH * 2, // Load 2 pages worth initially for smoother experience
-        Math.max(ITEMS_PER_FETCH, Math.ceil(socialWallItems.length / 2)) // But at least half of all items
+        Math.max(ITEMS_PER_FETCH, Math.ceil(filteredItems.length / 2)) // But at least half of all items
       );
       
-      console.log(`Initially loading ${initialLoadCount} of ${socialWallItems.length} items`);
+      console.log(`Initially loading ${initialLoadCount} of ${filteredItems.length} items`);
       
       // Load initial batch of items
-      const initialItems = socialWallItems.slice(0, initialLoadCount);
+      const initialItems = filteredItems.slice(0, initialLoadCount);
       setDisplayItems(initialItems);
       setPage(Math.ceil(initialLoadCount / ITEMS_PER_FETCH)); // Set appropriate page number
-      setHasMore(socialWallItems.length > initialLoadCount);
+      setHasMore(filteredItems.length > initialLoadCount);
       
       // Fetch comment counts for all items
       fetchCommentCounts(socialWallItems);
@@ -221,7 +256,7 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
       setDisplayItems([]);
       setHasMore(false);
     }
-  }, [socialWallItems, fetchCommentCounts]);
+  }, [filteredItems, fetchCommentCounts]);
   
   // Load more items
   const loadMoreItems = useCallback(() => {
@@ -232,9 +267,9 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
     setTimeout(() => {
       // Calculate which items to display based on the current page
       const endIndex = (page + 1) * ITEMS_PER_FETCH;
-      const nextItems = socialWallItems.slice(0, endIndex);
+      const nextItems = filteredItems.slice(0, endIndex);
       
-      if (nextItems.length === socialWallItems.length) {
+      if (nextItems.length === filteredItems.length) {
         setHasMore(false);
       } else {
         setPage(prevPage => prevPage + 1);
@@ -246,7 +281,7 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
       
       console.log(`Loaded items up to page ${page + 1}, total: ${nextItems.length} items`);
     }, 500); // Small timeout to prevent rapid scrolling issues
-  }, [page, hasMore, loading, socialWallItems]);
+  }, [page, hasMore, loading, filteredItems]);
   
   // Store the loadMoreItems function in the ref
   useEffect(() => {
@@ -494,7 +529,9 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
         justifyContent: 'space-between', 
         alignItems: 'center',
         mb: 3,
-        position: 'relative'
+        position: 'relative',
+        flexWrap: 'wrap',
+        gap: 2
       }}>
         <Typography 
           variant="h5" 
@@ -519,6 +556,41 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
         >
           Network Social Wall
         </Typography>
+        
+        {/* Category Filter */}
+        {categories.length > 0 && (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <FormControl size="small" sx={{ minWidth: 180 }}>
+              <InputLabel>Filter by Category</InputLabel>
+              <Select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                label="Filter by Category"
+                displayEmpty
+              >
+                <MenuItem value="">
+                  <em>All Categories</em>
+                </MenuItem>
+                {categories.map((category) => (
+                  <MenuItem key={category.id} value={category.id}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Box
+                        sx={{
+                          width: 12,
+                          height: 12,
+                          borderRadius: 0.5,
+                          bgcolor: category.color,
+                          flexShrink: 0
+                        }}
+                      />
+                      {category.name}
+                    </Box>
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Box>
+        )}
         
         {displayItems.length > 5 && showScrollTop && (
           <Fade in={showScrollTop}>
@@ -939,19 +1011,60 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                   )}
                   
                   <CardContent sx={{ pt: 1, pb: 2 }}>
-                    <Typography 
-                      variant="h6" 
-                      component="h3" 
-                      gutterBottom
-                      sx={{ 
-                        fontSize: '1.1rem',
-                        fontWeight: 600,
-                        color: customLightText,
-                        mb: 1
-                      }}
-                    >
-                      {item.title}
-                    </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                      <Typography 
+                        variant="h6" 
+                        component="h3" 
+                        sx={{ 
+                          fontSize: '1.1rem',
+                          fontWeight: 600,
+                          color: customLightText,
+                          flexGrow: 1
+                        }}
+                      >
+                        {item.title}
+                      </Typography>
+                      {item.category_id && categories.find(c => c.id === item.category_id) && (
+                        <Box
+                          sx={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 0.5,
+                            px: 1.5,
+                            py: 0.5,
+                            borderRadius: '16px',
+                            bgcolor: alpha(categories.find(c => c.id === item.category_id).color, 0.12),
+                            border: `1px solid ${alpha(categories.find(c => c.id === item.category_id).color, 0.3)}`,
+                            transition: 'all 0.2s ease',
+                            '&:hover': {
+                              bgcolor: alpha(categories.find(c => c.id === item.category_id).color, 0.18),
+                              borderColor: alpha(categories.find(c => c.id === item.category_id).color, 0.4),
+                            }
+                          }}
+                        >
+                          <Box
+                            sx={{
+                              width: 6,
+                              height: 6,
+                              borderRadius: '50%',
+                              bgcolor: categories.find(c => c.id === item.category_id).color,
+                              flexShrink: 0
+                            }}
+                          />
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              fontSize: '0.75rem',
+                              fontWeight: 500,
+                              color: categories.find(c => c.id === item.category_id).color,
+                              letterSpacing: '0.02em'
+                            }}
+                          >
+                            {categories.find(c => c.id === item.category_id).name}
+                          </Typography>
+                        </Box>
+                      )}
+                    </Box>
                     
                     {item.itemType === 'post' ? (
                       <>

@@ -406,7 +406,8 @@ export const fetchNetworkNews = async (networkId, options = {}) => {
     const { 
       page = 1, 
       limit = 20,
-      includeHidden = false
+      includeHidden = false,
+      categoryId = null
     } = options;
     
     // Calculate offset for pagination
@@ -423,6 +424,11 @@ export const fetchNetworkNews = async (networkId, options = {}) => {
     // Exclude hidden posts unless specifically requested
     if (!includeHidden) {
       query = query.eq('is_hidden', false);
+    }
+    
+    // Filter by category if provided
+    if (categoryId) {
+      query = query.eq('category_id', categoryId);
     }
       
     const { data, error, count } = await query;
@@ -742,7 +748,7 @@ export const uploadEventImage = async (eventId, imageFile) => {
 };
 
 // News post functions
-export const createNewsPost = async (networkId, userId, title, content, imageUrl = null, imageCaption = null, mediaUrl = null, mediaType = null, mediaMetadata = {}) => {
+export const createNewsPost = async (networkId, userId, title, content, imageUrl = null, imageCaption = null, mediaUrl = null, mediaType = null, mediaMetadata = {}, categoryId = null) => {
   try {
     // Create base post object
     const postData = {
@@ -751,6 +757,11 @@ export const createNewsPost = async (networkId, userId, title, content, imageUrl
       network_id: networkId,
       created_by: userId
     };
+    
+    // Add category if provided
+    if (categoryId) {
+      postData.category_id = categoryId;
+    }
     
     // Add media fields if provided
     if (mediaUrl) {

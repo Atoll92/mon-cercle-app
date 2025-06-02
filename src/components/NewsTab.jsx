@@ -24,7 +24,11 @@ import {
   IconButton,
   Chip,
   Fade,
-  Zoom
+  Zoom,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem
 } from '@mui/material';
 import {
   Edit as EditIcon,
@@ -39,6 +43,7 @@ import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { createNewsPost, deleteNewsPost } from '../api/networks';
 import { getActivePolls } from '../api/polls';
+import { fetchNetworkCategories } from '../api/categories';
 import PollCard from './PollCard';
 import MediaUpload from './MediaUpload';
 import MediaPlayer from './MediaPlayer';
@@ -74,6 +79,11 @@ const NewsTab = ({ darkMode }) => {
   const [updating, setUpdating] = useState(false);
   const [error, setError] = useState(null);
   
+  // State for categories
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [filterCategory, setFilterCategory] = useState('');
+  const [categories, setCategories] = useState([]);
+  
   // State for polls
   const [activePolls, setActivePolls] = useState([]);
   const [loadingPolls, setLoadingPolls] = useState(true);
@@ -83,12 +93,20 @@ const NewsTab = ({ darkMode }) => {
   const [imageViewerOpen, setImageViewerOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState({ url: '', title: '' });
 
-  // Fetch active polls
+  // Fetch active polls and categories
   useEffect(() => {
     if (network?.id) {
       fetchActivePolls();
+      loadCategories();
     }
   }, [network?.id]);
+
+  const loadCategories = async () => {
+    const { data, error } = await fetchNetworkCategories(network.id, true); // Only active categories
+    if (data && !error) {
+      setCategories(data);
+    }
+  };
 
   const fetchActivePolls = async () => {
     if (!network?.id) return;
@@ -126,6 +144,7 @@ const NewsTab = ({ darkMode }) => {
     setMediaUrl(null);
     setMediaType(null);
     setMediaMetadata({});
+    setSelectedCategory('');
     editor?.commands.clearContent();
     editor?.commands.focus();
   };
@@ -205,7 +224,8 @@ const NewsTab = ({ darkMode }) => {
         title: newsTitle,
         content,
         network_id: network.id,
-        created_by: user.id
+        created_by: user.id,
+        category_id: selectedCategory || null
       };
       
       // Add media fields if media was uploaded
@@ -291,6 +311,38 @@ const NewsTab = ({ darkMode }) => {
         onChange={(e) => setNewsTitle(e.target.value)}
         sx={{ mb: 2 }}
       />
+      
+      {/* Category selection */}
+      {categories.length > 0 && (
+        <FormControl fullWidth sx={{ mb: 2 }}>
+          <InputLabel>Category</InputLabel>
+          <Select
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+            label="Category"
+          >
+            <MenuItem value="">
+              <em>None</em>
+            </MenuItem>
+            {categories.map((category) => (
+              <MenuItem key={category.id} value={category.id}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Box
+                    sx={{
+                      width: 16,
+                      height: 16,
+                      borderRadius: 0.5,
+                      bgcolor: category.color,
+                      flexShrink: 0
+                    }}
+                  />
+                  {category.name}
+                </Box>
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      )}
       
       {/* Media upload section */}
       <Box sx={{ mb: 2, p: 2, border: '1px dashed grey', borderRadius: 1 }}>
@@ -467,9 +519,44 @@ const NewsTab = ({ darkMode }) => {
       )}
       
       {/* News Posts Section */}
-      <Typography variant="h5" gutterBottom sx={{ mb: 2 }}>
-        News & Updates
-      </Typography>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, flexWrap: 'wrap', gap: 2 }}>
+        <Typography variant="h5">
+          News & Updates
+        </Typography>
+        
+        {/* Category Filter */}
+        {categories.length > 0 && (
+          <FormControl size="small" sx={{ minWidth: 180 }}>
+            <InputLabel>Filter by Category</InputLabel>
+            <Select
+              value={filterCategory}
+              onChange={(e) => setFilterCategory(e.target.value)}
+              label="Filter by Category"
+              displayEmpty
+            >
+              <MenuItem value="">
+                <em>All Categories</em>
+              </MenuItem>
+              {categories.map((category) => (
+                <MenuItem key={category.id} value={category.id}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Box
+                      sx={{
+                        width: 12,
+                        height: 12,
+                        borderRadius: 0.5,
+                        bgcolor: category.color,
+                        flexShrink: 0
+                      }}
+                    />
+                    {category.name}
+                  </Box>
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        )}
+      </Box>
       <Divider sx={{ mb: 3 }} />
       
       {!network ? (
@@ -498,7 +585,9 @@ const NewsTab = ({ darkMode }) => {
           )}
         </Box>
       ) : (
-        networkNews.map((post, index) => (
+        networkNews
+          .filter(post => !filterCategory || post.category_id === filterCategory)
+          .map((post, index) => (
           <StaggeredListItem key={post.id} index={index}>
             <AnimatedCard sx={{ mb: 3, overflow: 'hidden' }}>
               {/* Display media content */}
@@ -572,9 +661,51 @@ const NewsTab = ({ darkMode }) => {
                 />
               )}
             <CardContent>
-              <Typography variant="h6" gutterBottom>
-                {post.title}
-              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
+                <Typography variant="h6">
+                  {post.title}
+                </Typography>
+                {post.category_id && categories.find(c => c.id === post.category_id) && (
+                  <Box
+                    sx={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 0.5,
+                      px: 1.5,
+                      py: 0.5,
+                      borderRadius: '16px',
+                      bgcolor: alpha(categories.find(c => c.id === post.category_id).color, 0.12),
+                      border: `1px solid ${alpha(categories.find(c => c.id === post.category_id).color, 0.3)}`,
+                      transition: 'all 0.2s ease',
+                      '&:hover': {
+                        bgcolor: alpha(categories.find(c => c.id === post.category_id).color, 0.18),
+                        borderColor: alpha(categories.find(c => c.id === post.category_id).color, 0.4),
+                      }
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        width: 6,
+                        height: 6,
+                        borderRadius: '50%',
+                        bgcolor: categories.find(c => c.id === post.category_id).color,
+                        flexShrink: 0
+                      }}
+                    />
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        fontSize: '0.75rem',
+                        fontWeight: 500,
+                        color: categories.find(c => c.id === post.category_id).color,
+                        letterSpacing: '0.02em'
+                      }}
+                    >
+                      {categories.find(c => c.id === post.category_id).name}
+                    </Typography>
+                  </Box>
+                )}
+              </Box>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
                 <Typography variant="caption" color="text.secondary">
                   Posted by {formatMemberName(post.created_by)} • {new Date(post.created_at).toLocaleDateString()}

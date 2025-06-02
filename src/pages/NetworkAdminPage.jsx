@@ -38,6 +38,7 @@ import MonetizationTab from '../components/admin/MonetizationTab';
 import BillingTab from '../components/admin/BillingTab';
 import BadgesTab from '../components/admin/BadgesTab';
 import SupportTicketsTab from '../components/admin/SupportTicketsTab';
+import CategoriesTab from '../components/admin/CategoriesTab';
 import AdminLayout from '../components/admin/AdminLayout';
 import AdminBreadcrumbs from '../components/admin/AdminBreadcrumbs';
 import OnboardingGuide, { WithOnboardingHighlight } from '../components/OnboardingGuide';
@@ -46,15 +47,16 @@ import OnboardingGuide, { WithOnboardingHighlight } from '../components/Onboardi
 const TAB_MAPPING = {
   'settings': 0,
   'members': 1,
-  'news': 2,
-  'events': 3,
-  'polls': 4,
-  'theme': 5,
-  'moderation': 6,
-  'monetization': 7,
-  'billing': 8,
-  'badges': 9,
-  'support': 10
+  'categories': 2,
+  'news': 3,
+  'events': 4,
+  'polls': 5,
+  'theme': 6,
+  'moderation': 7,
+  'monetization': 8,
+  'billing': 9,
+  'badges': 10,
+  'support': 11
 };
 
 // Index to tab name mapping
@@ -312,15 +314,16 @@ function NetworkAdminPage() {
           >
             {activeTab === 0 && "Network Settings"}
             {activeTab === 1 && "Members Management"}
-            {activeTab === 2 && "News Management"}
-            {activeTab === 3 && "Events Management"}
-            {activeTab === 4 && "Polls Management"}
-            {activeTab === 5 && "Theme & Branding"}
-            {activeTab === 6 && "Moderation Tools"}
-            {activeTab === 7 && "Monetization"}
-            {activeTab === 8 && "Billing & Plan"}
-            {activeTab === 9 && "Badges & Engagement"}
-            {activeTab === 10 && "Support Tickets"}
+            {activeTab === 2 && "Content Categories"}
+            {activeTab === 3 && "News Management"}
+            {activeTab === 4 && "Events Management"}
+            {activeTab === 5 && "Polls Management"}
+            {activeTab === 6 && "Theme & Branding"}
+            {activeTab === 7 && "Moderation Tools"}
+            {activeTab === 8 && "Monetization"}
+            {activeTab === 9 && "Billing & Plan"}
+            {activeTab === 10 && "Badges & Engagement"}
+            {activeTab === 11 && "Support Tickets"}
           </Typography>
         </Box>
 
@@ -356,6 +359,13 @@ function NetworkAdminPage() {
         )}
 
         {activeTab === 2 && (
+          /* Categories Management Component */
+          <CategoriesTab
+            networkId={network.id}
+          />
+        )}
+
+        {activeTab === 3 && (
           /* News Management Component */
           <NewsTab
             networkId={network.id}
@@ -367,7 +377,7 @@ function NetworkAdminPage() {
           />
         )}
 
-        {activeTab === 3 && (
+        {activeTab === 4 && (
           /* Events Management Component */
           <EventsTab 
             events={events}
@@ -379,7 +389,7 @@ function NetworkAdminPage() {
           />
         )}
 
-        {activeTab === 4 && (
+        {activeTab === 5 && (
           /* Polls Management Component */
           <PollsTab
             networkId={network.id}
@@ -388,7 +398,7 @@ function NetworkAdminPage() {
           />
         )}
 
-        {activeTab === 5 && (
+        {activeTab === 6 && (
           /* Theme Settings Component */
           <ThemeTab 
             network={network} 
@@ -397,7 +407,7 @@ function NetworkAdminPage() {
           />
         )}
         
-        {activeTab === 6 && (
+        {activeTab === 7 && (
           /* Moderation Tools Component */
           <ModerationTab
             network={network}
@@ -407,7 +417,7 @@ function NetworkAdminPage() {
           />
         )}
         
-        {activeTab === 7 && (
+        {activeTab === 8 && (
           /* Monetization Component */
           <MonetizationTab
             networkId={network.id}
@@ -416,14 +426,14 @@ function NetworkAdminPage() {
           />
         )}
         
-        {activeTab === 8 && (
+        {activeTab === 9 && (
           /* Billing & Plan Component */
           <BillingTab
             darkMode={darkMode} // Pass dark mode to component
           />
         )}
         
-        {activeTab === 9 && (
+        {activeTab === 10 && (
           /* Badges & Engagement Component */
           <BadgesTab
             networkId={network.id}
@@ -432,7 +442,7 @@ function NetworkAdminPage() {
           />
         )}
         
-        {activeTab === 10 && (
+        {activeTab === 11 && (
           /* Support Tickets Component */
           <SupportTicketsTab 
             network={network}

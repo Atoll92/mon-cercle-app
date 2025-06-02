@@ -35,7 +35,8 @@ import {
   MonetizationOn as MonetizationIcon,
   CreditCard as CreditCardIcon,
   EmojiEvents as BadgeIcon,
-  Support as SupportIcon
+  Support as SupportIcon,
+  Category as CategoryIcon
 } from '@mui/icons-material';
 
 // Drawer width for desktop view
@@ -79,49 +80,54 @@ const AdminLayout = ({
       index: 1 
     },
     { 
+      name: 'Categories', 
+      icon: <CategoryIcon />, 
+      index: 2 
+    },
+    { 
       name: 'News', 
       icon: <ArticleIcon />, 
-      index: 2 
+      index: 3 
     },
     { 
       name: 'Events', 
       icon: <EventIcon />, 
-      index: 3 
+      index: 4 
     },
     { 
       name: 'Polls', 
       icon: <PollIcon />, 
-      index: 4 
+      index: 5 
     },
     { 
       name: 'Theme & Branding', 
       icon: <PaletteIcon />, 
-      index: 5 
+      index: 6 
     },
     { 
       name: 'Moderation', 
       icon: <SecurityIcon />, 
-      index: 6 
+      index: 7 
     },
     { 
       name: 'Monetization', 
       icon: <MonetizationIcon />, 
-      index: 7 
+      index: 8 
     },
     { 
       name: 'Billing & Plan', 
       icon: <CreditCardIcon />, 
-      index: 8 
+      index: 9 
     },
     { 
       name: 'Badges & Engagement', 
       icon: <BadgeIcon />, 
-      index: 9 
+      index: 10 
     },
     { 
       name: 'Support Tickets', 
       icon: <SupportIcon />, 
-      index: 10 
+      index: 11 
     }
   ];
 

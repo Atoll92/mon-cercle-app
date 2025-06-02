@@ -836,6 +836,7 @@ function NetworkLandingPage() {
           networkMembers={networkMembers}
           darkMode={darkMode} // Pass dark mode to social wall tab
           isAdmin={isUserAdmin}
+          networkId={network.id}
         />
       )}
 

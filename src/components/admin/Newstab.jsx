@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import {
@@ -14,7 +14,11 @@ import {
   Alert,
   CircularProgress,
   IconButton,
-  Chip
+  Chip,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel
 } from '@mui/material';
 import {
   Save as SaveIcon,
@@ -22,6 +26,7 @@ import {
   Cancel as CancelIcon
 } from '@mui/icons-material';
 import { createNewsPost, deleteNewsPost } from '../../api/networks';
+import { fetchNetworkCategories } from '../../api/categories';
 import MediaUpload from '../MediaUpload';
 
 const NewsTab = ({ networkId, userId, newsPosts, setNewsPosts, members, darkMode = false }) => {
@@ -34,6 +39,8 @@ const NewsTab = ({ networkId, userId, newsPosts, setNewsPosts, members, darkMode
   const [updating, setUpdating] = useState(false);
   const [error, setError] = useState(null);
   const [message, setMessage] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [categories, setCategories] = useState([]);
 
   const editor = useEditor({
     extensions: [StarterKit],
@@ -42,6 +49,17 @@ const NewsTab = ({ networkId, userId, newsPosts, setNewsPosts, members, darkMode
       // You can access the content with editor.getHTML()
     },
   });
+
+  // Load categories on mount
+  useEffect(() => {
+    const loadCategories = async () => {
+      const { data, error } = await fetchNetworkCategories(networkId, true); // Only active categories
+      if (data && !error) {
+        setCategories(data);
+      }
+    };
+    loadCategories();
+  }, [networkId]);
 
   // Handle media upload
   const handleMediaUpload = (uploadResult) => {
@@ -102,7 +120,8 @@ const NewsTab = ({ networkId, userId, newsPosts, setNewsPosts, members, darkMode
         imageCaption,
         mediaUrl,
         mediaType,
-        mediaMetadata
+        mediaMetadata,
+        selectedCategory || null
       );
     
       if (result.success) {
@@ -113,6 +132,7 @@ const NewsTab = ({ networkId, userId, newsPosts, setNewsPosts, members, darkMode
         setMediaUrl(null);
         setMediaType(null);
         setMediaMetadata({});
+        setSelectedCategory('');
         editor.commands.clearContent();
         setMessage(result.message);
       } else {
@@ -169,6 +189,38 @@ const NewsTab = ({ networkId, userId, newsPosts, setNewsPosts, members, darkMode
             }
           }}
         />
+        
+        {/* Category selection */}
+        {categories.length > 0 && (
+          <FormControl fullWidth sx={{ mb: 2 }}>
+            <InputLabel>Category</InputLabel>
+            <Select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              label="Category"
+            >
+              <MenuItem value="">
+                <em>None</em>
+              </MenuItem>
+              {categories.map((category) => (
+                <MenuItem key={category.id} value={category.id}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Box
+                      sx={{
+                        width: 16,
+                        height: 16,
+                        borderRadius: 0.5,
+                        bgcolor: category.color,
+                        flexShrink: 0
+                      }}
+                    />
+                    {category.name}
+                  </Box>
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        )}
         
         {/* Image upload section */}
         <Box sx={{ mb: 2, p: 2, border: '1px dashed grey', borderRadius: 1 }}>
@@ -279,7 +331,49 @@ const NewsTab = ({ networkId, userId, newsPosts, setNewsPosts, members, darkMode
       {newsPosts.map(post => (
         <Card key={post.id} sx={{ mb: 2 }}>
           <CardContent>
-            <Typography variant="h6">{post.title}</Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
+              <Typography variant="h6">{post.title}</Typography>
+              {post.category_id && categories.find(c => c.id === post.category_id) && (
+                <Box
+                  sx={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 0.5,
+                    px: 1.5,
+                    py: 0.5,
+                    borderRadius: '16px',
+                    bgcolor: alpha(categories.find(c => c.id === post.category_id).color, 0.12),
+                    border: `1px solid ${alpha(categories.find(c => c.id === post.category_id).color, 0.3)}`,
+                    transition: 'all 0.2s ease',
+                    '&:hover': {
+                      bgcolor: alpha(categories.find(c => c.id === post.category_id).color, 0.18),
+                      borderColor: alpha(categories.find(c => c.id === post.category_id).color, 0.4),
+                    }
+                  }}
+                >
+                  <Box
+                    sx={{
+                      width: 6,
+                      height: 6,
+                      borderRadius: '50%',
+                      bgcolor: categories.find(c => c.id === post.category_id).color,
+                      flexShrink: 0
+                    }}
+                  />
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      fontSize: '0.75rem',
+                      fontWeight: 500,
+                      color: categories.find(c => c.id === post.category_id).color,
+                      letterSpacing: '0.02em'
+                    }}
+                  >
+                    {categories.find(c => c.id === post.category_id).name}
+                  </Typography>
+                </Box>
+              )}
+            </Box>
             <Typography variant="caption" color="text.secondary">
               Posted by {members.find(m => m.id === post.created_by)?.full_name || 'Admin'} • 
               {new Date(post.created_at).toLocaleDateString()}
