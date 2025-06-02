@@ -639,7 +639,7 @@ function NetworkLandingPage() {
                 >
                   <Button
                     component={Link}
-                    to={`/admin/${network?.id}`}
+                    to={`/admin`}
                     startIcon={<AdminIcon />}
                     color="primary"
                     variant="contained"

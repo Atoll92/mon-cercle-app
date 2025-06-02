@@ -888,3 +888,64 @@ export const exportEventParticipantsList = async (eventId) => {
     };
   }
 };
+
+// Get pending invitations for a network
+export const getNetworkPendingInvitations = async (networkId) => {
+  try {
+    // First get the invitations
+    const { data: invitations, error: invitationsError } = await supabase
+      .from('invitations')
+      .select('*')
+      .eq('network_id', networkId)
+      .eq('status', 'pending')
+      .order('created_at', { ascending: false });
+    
+    if (invitationsError) throw invitationsError;
+    
+    if (!invitations || invitations.length === 0) {
+      return {
+        success: true,
+        invitations: []
+      };
+    }
+    
+    // Get unique inviter IDs
+    const inviterIds = [...new Set(invitations.map(inv => inv.invited_by))];
+    
+    // Fetch profile information for all inviters
+    const { data: profiles, error: profilesError } = await supabase
+      .from('profiles')
+      .select('id, full_name, contact_email')
+      .in('id', inviterIds);
+    
+    if (profilesError) throw profilesError;
+    
+    // Create a map of profiles by ID
+    const profileMap = (profiles || []).reduce((acc, profile) => {
+      acc[profile.id] = profile;
+      return acc;
+    }, {});
+    
+    // Map profile data to invitations
+    const invitationsWithProfiles = invitations.map(invitation => ({
+      ...invitation,
+      inviter: profileMap[invitation.invited_by] || { 
+        id: invitation.invited_by, 
+        full_name: 'Unknown User',
+        contact_email: null
+      }
+    }));
+    
+    return {
+      success: true,
+      invitations: invitationsWithProfiles
+    };
+  } catch (error) {
+    console.error('Error fetching pending invitations:', error);
+    return {
+      success: false,
+      invitations: [],
+      error: error.message || 'Failed to fetch pending invitations'
+    };
+  }
+};

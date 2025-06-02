@@ -195,7 +195,7 @@ export const getInvitationByCode = async (code) => {
 };
 
 // Join network via invitation link
-export const joinNetworkViaInvitation = async (code) => {
+export const joinNetworkViaInvitation = async (code, inviteeEmail = null) => {
   try {
     // Get current user
     const { data: { user } } = await supabase.auth.getUser();
@@ -245,6 +245,16 @@ export const joinNetworkViaInvitation = async (code) => {
     
     // Increment usage count
     await supabase.rpc('increment_invitation_link_uses', { link_code: code });
+    
+    // If joining via email invitation, update the invitation status
+    if (inviteeEmail) {
+      await supabase
+        .from('invitations')
+        .update({ status: 'accepted' })
+        .eq('email', inviteeEmail)
+        .eq('network_id', invitation.network_id)
+        .eq('status', 'pending');
+    }
     
     return {
       success: true,

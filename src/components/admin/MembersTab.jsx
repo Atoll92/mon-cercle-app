@@ -44,7 +44,7 @@ import {
   Groups as GroupsIcon2
 } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
-import { inviteUserToNetwork, toggleMemberAdmin, removeMemberFromNetwork } from '../../api/networks';
+import { inviteUserToNetwork, toggleMemberAdmin, removeMemberFromNetwork, getNetworkPendingInvitations } from '../../api/networks';
 import BatchInviteModal from './BatchInviteModal';
 import InvitationLinksTab from './InvitationLinksTab';
 
@@ -58,6 +58,30 @@ const MembersTab = ({ members, user, network, onMembersChange, darkMode = false 
   const [dialogMember, setDialogMember] = useState(null);
   const [batchInviteOpen, setBatchInviteOpen] = useState(false);
   const [activeTab, setActiveTab] = useState(0);
+  const [pendingInvitations, setPendingInvitations] = useState([]);
+  const [loadingInvitations, setLoadingInvitations] = useState(false);
+
+  // Fetch pending invitations
+  useEffect(() => {
+    const fetchPendingInvitations = async () => {
+      console.log('MembersTab: Starting to fetch pending invitations for network:', network.id);
+      setLoadingInvitations(true);
+      const result = await getNetworkPendingInvitations(network.id);
+      console.log('MembersTab: API result:', result);
+      if (result.success) {
+        setPendingInvitations(result.invitations);
+        console.log('MembersTab: Set pending invitations:', result.invitations.length);
+      }
+      setLoadingInvitations(false);
+    };
+
+    if (network?.id) {
+      console.log('MembersTab: Network ID exists, fetching invitations');
+      fetchPendingInvitations();
+    } else {
+      console.log('MembersTab: No network ID, skipping fetch');
+    }
+  }, [network?.id]);
 
   const handleInvite = async (e) => {
     e.preventDefault();
@@ -79,6 +103,12 @@ const MembersTab = ({ members, user, network, onMembersChange, darkMode = false 
       // Refresh members if needed
       if (result.message.includes('added to your network')) {
         onMembersChange();
+      } else {
+        // Refresh pending invitations if a new invitation was sent
+        const invitationsResult = await getNetworkPendingInvitations(network.id);
+        if (invitationsResult.success) {
+          setPendingInvitations(invitationsResult.invitations);
+        }
       }
     } else {
       setError(result.message);
@@ -166,7 +196,7 @@ const MembersTab = ({ members, user, network, onMembersChange, darkMode = false 
 
       {/* Tabs for switching between members list and invitations */}
       <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
-        <Tabs value={activeTab} onChange={(e, newValue) => setActiveTab(newValue)}>
+        <Tabs value={activeTab} onChange={(_, newValue) => setActiveTab(newValue)}>
           <Tab label="Current Members" />
           <Tab label="Invite Members" />
         </Tabs>
@@ -180,7 +210,7 @@ const MembersTab = ({ members, user, network, onMembersChange, darkMode = false 
           </Typography>
           
           {members.length > 0 ? (
-            <TableContainer>
+            <TableContainer component={Paper}>
               <Table aria-label="members table">
                 <TableHead>
                   <TableRow>
@@ -268,6 +298,60 @@ const MembersTab = ({ members, user, network, onMembersChange, darkMode = false 
               No members found in your network.
             </Typography>
           )}
+
+          {/* Pending Invitations Section */}
+          {loadingInvitations ? (
+            <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
+              <CircularProgress />
+            </Box>
+          ) : pendingInvitations.length > 0 ? (
+            <Box sx={{ mt: 4 }}>
+              <Typography variant="h6" component="h3" gutterBottom>
+                Pending Invitations ({pendingInvitations.length})
+              </Typography>
+              <TableContainer component={Paper}>
+                <Table aria-label="pending invitations table">
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Email</TableCell>
+                      <TableCell>Invited By</TableCell>
+                      <TableCell>Invited On</TableCell>
+                      <TableCell>Status</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {pendingInvitations.map(invitation => (
+                      <TableRow key={invitation.id}>
+                        <TableCell>
+                          <Typography variant="body2">
+                            {invitation.email}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Typography variant="body2" color="text.secondary">
+                            {invitation.inviter?.full_name || 'System'}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Typography variant="body2" color="text.secondary">
+                            {new Date(invitation.created_at).toLocaleDateString()}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Chip 
+                            label="Pending" 
+                            color="warning"
+                            size="small"
+                            icon={<TimeIcon />}
+                          />
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </Box>
+          ) : null}
         </Box>
       )}
 

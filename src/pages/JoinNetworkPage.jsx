@@ -108,7 +108,7 @@ function JoinNetworkPage() {
       setJoining(true);
       setError(null);
 
-      await joinNetworkViaInvitation(code);
+      await joinNetworkViaInvitation(code, inviteeEmail);
       setSuccess(true);
 
       // Redirect to network page after 2 seconds with from_invite flag
