@@ -369,9 +369,20 @@ function ProfilePage() {
 )}
           {/* Overview Tab */}
           {activeTab === 0 && (
-            <Grid container>
+            <Grid container wrap="nowrap" sx={{ 
+              flexWrap: { xs: 'wrap', sm: 'nowrap' },
+              '@media (max-width: 900px)': {
+                flexWrap: 'wrap'
+              }
+            }}>
               {/* Left Sidebar */}
-              <Grid item xs={12} md={4} sx={{ borderRight: { md: 1 }, borderColor: 'divider' }}>
+              <Grid item sx={{ 
+                width: { xs: '100%', sm: '300px' },
+                minWidth: '300px',
+                flexShrink: 0,
+                borderRight: { sm: 1 }, 
+                borderColor: 'divider' 
+              }}>
                 <Box sx={{ p: 3, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                   <Avatar
                     src={profile.profile_picture_url}

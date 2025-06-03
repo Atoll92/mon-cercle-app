@@ -858,7 +858,7 @@ function EditProfilePage() {
                       mt: 4, 
                       p: 2, 
                       borderRadius: 2,
-                      bgcolor: 'grey.50',
+                      bgcolor: (theme) => theme.palette.mode === 'dark' ? 'grey.900' : 'grey.50',
                       width: '100%'
                     }}
                   >
