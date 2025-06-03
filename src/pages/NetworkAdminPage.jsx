@@ -230,7 +230,7 @@ function NetworkAdminPage() {
         <AdminLayout
           darkMode={darkMode}
           activeTab={activeTab}
-          setActiveTab={setActiveTab}
+          setActiveTab={handleTabChange}
           network={null}
         >
           <Paper 
@@ -276,7 +276,7 @@ function NetworkAdminPage() {
       <AdminLayout 
         darkMode={darkMode} 
         activeTab={activeTab} 
-        setActiveTab={setActiveTab} 
+        setActiveTab={handleTabChange} 
         network={network}
         message={message}
         clearMessage={() => setMessage('')}

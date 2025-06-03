@@ -1530,7 +1530,7 @@ function DashboardPage() {
                           action={
                             <Button 
                               component={Link}
-                              to={`/network/${profile.network_id}`}
+                              to={`/network/${profile.network_id}?tab=events`}
                               endIcon={<ArrowForwardIcon />}
                               size="small"
                             >

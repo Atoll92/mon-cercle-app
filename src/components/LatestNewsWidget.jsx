@@ -107,7 +107,7 @@ const LatestNewsWidget = ({ networkId }) => {
       <WidgetHeader 
         icon={<NewsIcon color="primary" />}
         title="Latest News"
-        viewAllLink="/dashboard"
+        viewAllLink={`/network/${networkId}?tab=news`}
       />
       
       <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column', p: 3 }}>

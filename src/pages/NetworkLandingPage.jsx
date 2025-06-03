@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/authcontext';
 import { useTheme } from '../components/ThemeProvider';
 import { useNetwork, NetworkProviderWithParams } from '../context/networkContext';
 import { supabase } from '../supabaseclient';
-import { useFadeIn, useStaggeredAnimation } from '../hooks/useAnimation';
-import { GridSkeleton, ListItemSkeleton } from '../components/LoadingSkeleton';
+import { useFadeIn } from '../hooks/useAnimation';
+import { GridSkeleton } from '../components/LoadingSkeleton';
 import ArticleIcon from '@mui/icons-material/Article';
 import ChatIcon from '@mui/icons-material/Chat';
 import TimelineIcon from '@mui/icons-material/Timeline';
@@ -62,6 +62,7 @@ function NetworkLandingPage() {
   const muiTheme = useMuiTheme();
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
   
   // Use the network context instead of local state and API calls
   const {
@@ -76,6 +77,7 @@ function NetworkLandingPage() {
     isAdmin: isUserAdmin
   } = useNetwork();
   
+  // Initialize activeTab state (will be updated based on URL params after visibleTabs is computed)
   const [activeTab, setActiveTab] = useState(0);
   const [copied, setCopied] = useState(false);
   const [showShareLink, setShowShareLink] = useState(false);
@@ -145,6 +147,34 @@ function NetworkLandingPage() {
     return orderedTabs.length > 0 ? orderedTabs : allTabs;
   }, [enabledTabs, allTabs]);
   
+  // Helper function to get tab index from tab id within visible tabs
+  const getTabIndexFromId = React.useCallback((tabId) => {
+    const index = visibleTabs.findIndex(tab => tab.id === tabId);
+    return index >= 0 ? index : 0;
+  }, [visibleTabs]);
+  
+  // Set initial tab from URL when visibleTabs is ready
+  React.useEffect(() => {
+    if (visibleTabs.length > 0) {
+      const tabParam = searchParams.get('tab');
+      if (tabParam) {
+        const index = getTabIndexFromId(tabParam);
+        setActiveTab(index);
+      }
+    }
+  }, [visibleTabs.length, searchParams, getTabIndexFromId]);
+  
+  // Update active tab based on URL params and visible tabs (for browser navigation)
+  React.useEffect(() => {
+    const tabParam = searchParams.get('tab');
+    if (tabParam) {
+      const newIndex = getTabIndexFromId(tabParam);
+      if (newIndex !== activeTab) {
+        setActiveTab(newIndex);
+      }
+    }
+  }, [searchParams, getTabIndexFromId, activeTab]);
+  
   // Generate shareable link
   const shareableLink = network ? `${window.location.origin}/network/${network.id}` : '';
   
@@ -153,6 +183,11 @@ function NetworkLandingPage() {
   
   const handleTabChange = (_, newValue) => {
     setActiveTab(newValue);
+    // Update URL with the tab name
+    const tabId = visibleTabs[newValue]?.id;
+    if (tabId) {
+      setSearchParams({ tab: tabId });
+    }
   };
   
   // Get the current tab ID based on the active tab index
@@ -198,7 +233,6 @@ function NetworkLandingPage() {
 
   // State to hold post items for all members (stored as portfolio_items in database)
   const [postItems, setPostItems] = useState([]);
-  const [loadingPosts, setLoadingPosts] = useState(false);
   
   // Check if user just joined the network (within last 5 minutes) or came from invitation
   useEffect(() => {
@@ -387,7 +421,6 @@ function NetworkLandingPage() {
         return;
       }
       
-      setLoadingPosts(true);
       try {
         console.log("Fetching posts (stored as portfolio_items in the database)");
         // Fetch all portfolio items from the database (will display as posts in UI)
@@ -423,8 +456,6 @@ function NetworkLandingPage() {
         setPostItems(itemsWithMemberInfo);
       } catch (err) {
         console.error('Error fetching post items:', err);
-      } finally {
-        setLoadingPosts(false);
       }
     };
     
@@ -782,7 +813,7 @@ function NetworkLandingPage() {
             }
           }}
         >
-          {visibleTabs.map((tab, index) => (
+          {visibleTabs.map((tab) => (
             <Tab key={tab.id} icon={tab.icon} label={tab.label} />
           ))}
         </Tabs>

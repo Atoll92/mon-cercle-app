@@ -699,7 +699,7 @@ const MoodboardGallery = ({ userId, isOwnProfile, limit, showFeatured = false })
   }
 
   return (
-    <Box>
+    <Box sx={{mb: 2}}>
       {/* Featured Moodboard */}
       {showFeatured && loading ? (
         <Skeleton variant="rectangular" height={500} sx={{ borderRadius: 2, mb: 4 }} />
@@ -809,19 +809,6 @@ const MoodboardGallery = ({ userId, isOwnProfile, limit, showFeatured = false })
                 </Grid>
               ))}
         </Grid>
-      )}
-      
-      {limit && moodboards.length > 0 && moodboards.length >= limit && (
-        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
-          <Button 
-            variant="outlined" 
-            endIcon={<ArrowForwardIcon />}
-            component={Link}
-            to={`/profile/${userId}/moodboards`}
-          >
-            View All Moodboards
-          </Button>
-        </Box>
       )}
     </Box>
   );

@@ -112,7 +112,7 @@ const LatestPostsWidget = ({ networkId }) => {
       <WidgetHeader
         icon={<WorkIcon color="primary" />}
         title="Latest Post"
-        viewAllLink={`/network/${networkId}/`}
+        viewAllLink={`/network/${networkId}?tab=social`}
       />
       
       <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column', p: 3 }}>
