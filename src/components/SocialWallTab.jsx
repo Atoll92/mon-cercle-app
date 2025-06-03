@@ -561,7 +561,7 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
         {categories.length > 0 && (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <FormControl size="small" sx={{ minWidth: 180 }}>
-              <InputLabel>Filter by Category</InputLabel>
+              <InputLabel shrink>Filter by Category</InputLabel>
               <Select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}

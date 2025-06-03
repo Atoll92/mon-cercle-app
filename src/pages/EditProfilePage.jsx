@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/authcontext';
 import { supabase } from '../supabaseclient';
+import { fetchNetworkCategories } from '../api/categories';
 import {
   Box,
   Button,
@@ -27,7 +28,12 @@ import {
   Tab,
   LinearProgress,
   CardMedia,
-  CardActions
+  CardActions,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  alpha
 } from '@mui/material';
 import {
   CloudUpload as UploadIcon,
@@ -74,6 +80,8 @@ function EditProfilePage() {
   const [newPostLink, setNewPostLink] = useState('');
   const [newPostImage, setNewPostImage] = useState(null);
   const [newPostImagePreview, setNewPostImagePreview] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [categories, setCategories] = useState([]);
   
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -188,6 +196,28 @@ function EditProfilePage() {
     getProfile();
   }, [user]);
 
+  // Load categories
+  useEffect(() => {
+    const loadCategories = async () => {
+      if (!user) return;
+      
+      // Get user's network ID from their profile
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('network_id')
+        .eq('id', user.id)
+        .single();
+      
+      if (profileError || !profileData?.network_id) return;
+      
+      const { data, error } = await fetchNetworkCategories(profileData.network_id, true); // Only active categories
+      if (data && !error) {
+        setCategories(data);
+      }
+    };
+    loadCategories();
+  }, [user]);
+
   const handleTabChange = (event, newValue) => {
     setActiveTab(newValue);
   };
@@ -266,6 +296,7 @@ function EditProfilePage() {
         title: newPostTitle,
         description: newPostContent,
         url: newPostLink,
+        category_id: selectedCategory || null,
         // The only image field in the schema is image_url
         image_url: fileUrl
       };
@@ -293,6 +324,7 @@ function EditProfilePage() {
       setNewPostLink('');
       setNewPostImage(null);
       setNewPostImagePreview('');
+      setSelectedCategory('');
       
       // Show success message
       setMessage('Post published successfully!');
@@ -1023,6 +1055,39 @@ function EditProfilePage() {
                       onChange={(e) => setNewPostContent(e.target.value)}
                     />
                     
+                    {/* Category selection */}
+                    {categories.length > 0 && (
+                      <FormControl fullWidth size="small" sx={{ mb: 2 }}>
+                        <InputLabel shrink>Category (optional)</InputLabel>
+                        <Select
+                          value={selectedCategory}
+                          onChange={(e) => setSelectedCategory(e.target.value)}
+                          label="Category (optional)"
+                          displayEmpty
+                        >
+                          <MenuItem value="">
+                            <em>No category</em>
+                          </MenuItem>
+                          {categories.map((category) => (
+                            <MenuItem key={category.id} value={category.id}>
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <Box
+                                  sx={{
+                                    width: 12,
+                                    height: 12,
+                                    borderRadius: '50%',
+                                    bgcolor: category.color,
+                                    flexShrink: 0
+                                  }}
+                                />
+                                {category.name}
+                              </Box>
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    )}
+                    
                     {/* Display image preview if available */}
                     {newPostImagePreview && (
                       <Box sx={{ mb: 2, position: 'relative', width: '100%', maxHeight: '200px', overflow: 'hidden', borderRadius: 1 }}>
@@ -1281,6 +1346,50 @@ function EditProfilePage() {
                                 sx={{ mb: 2 }}
                                 required
                               />
+                              
+                              {/* Category display */}
+                              {item.category_id && categories.find(c => c.id === item.category_id) && (
+                                <Box sx={{ mb: 2, display: 'flex', justifyContent: 'flex-end' }}>
+                                  <Box
+                                    sx={{
+                                      display: 'inline-flex',
+                                      alignItems: 'center',
+                                      gap: 0.5,
+                                      px: 1.5,
+                                      py: 0.5,
+                                      borderRadius: '16px',
+                                      bgcolor: alpha(categories.find(c => c.id === item.category_id).color, 0.12),
+                                      border: `1px solid ${alpha(categories.find(c => c.id === item.category_id).color, 0.3)}`,
+                                      transition: 'all 0.2s ease',
+                                      '&:hover': {
+                                        bgcolor: alpha(categories.find(c => c.id === item.category_id).color, 0.18),
+                                        borderColor: alpha(categories.find(c => c.id === item.category_id).color, 0.4),
+                                      }
+                                    }}
+                                  >
+                                    <Box
+                                      sx={{
+                                        width: 6,
+                                        height: 6,
+                                        borderRadius: '50%',
+                                        bgcolor: categories.find(c => c.id === item.category_id).color,
+                                        flexShrink: 0
+                                      }}
+                                    />
+                                    <Typography
+                                      variant="caption"
+                                      sx={{
+                                        fontSize: '0.75rem',
+                                        fontWeight: 500,
+                                        color: categories.find(c => c.id === item.category_id).color,
+                                        letterSpacing: '0.02em'
+                                      }}
+                                    >
+                                      {categories.find(c => c.id === item.category_id).name}
+                                    </Typography>
+                                  </Box>
+                                </Box>
+                              )}
                               
                               <TextField
                                 fullWidth

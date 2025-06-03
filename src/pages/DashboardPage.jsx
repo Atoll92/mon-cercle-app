@@ -1402,7 +1402,7 @@ function DashboardPage() {
                           {/* Category selection */}
                           {categories.length > 0 && (
                             <FormControl fullWidth size="small" sx={{ mb: 1.5 }}>
-                              <InputLabel>Category (optional)</InputLabel>
+                              <InputLabel shrink>Category (optional)</InputLabel>
                               <Select
                                 value={selectedCategory}
                                 onChange={(e) => setSelectedCategory(e.target.value)}

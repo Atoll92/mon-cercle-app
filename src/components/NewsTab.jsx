@@ -28,7 +28,8 @@ import {
   FormControl,
   InputLabel,
   Select,
-  MenuItem
+  MenuItem,
+  alpha
 } from '@mui/material';
 import {
   Edit as EditIcon,
@@ -527,7 +528,7 @@ const NewsTab = ({ darkMode }) => {
         {/* Category Filter */}
         {categories.length > 0 && (
           <FormControl size="small" sx={{ minWidth: 180 }}>
-            <InputLabel>Filter by Category</InputLabel>
+            <InputLabel shrink>Filter by Category</InputLabel>
             <Select
               value={filterCategory}
               onChange={(e) => setFilterCategory(e.target.value)}
