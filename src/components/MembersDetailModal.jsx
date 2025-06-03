@@ -73,46 +73,48 @@ const MemberDetailsModal = ({
   
   // Fetch posts only if not provided through props
   useEffect(() => {
-    // Skip fetching if member is not defined or modal not open
-    if (!member || !open) {
+    // Skip if modal is not open
+    if (!open || !member) {
       return;
     }
-    
-    // If posts are provided through props, use them
-    if (initialPosts && initialPosts.length >= 0) {
+
+    // Initialize with provided items if available
+    if (initialPosts && initialPosts.length > 0) {
       console.log("Using provided posts:", initialPosts);
       setMemberPosts(initialPosts);
       setLoading(false);
       return;
     }
 
-    // Only fetch if no posts provided
-    const fetchPosts = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        
-        console.log("Fetching posts for member:", member.id);
-        const { data, error } = await supabase
-          .from('portfolio_items')
-          .select('*')
-          .eq('profile_id', member.id)
-          .order('created_at', { ascending: false });
+    // Only fetch if we don't have posts already or if member changed
+    if (memberPosts.length === 0 || memberPosts[0]?.profile_id !== member.id) {
+      const fetchPosts = async () => {
+        try {
+          setLoading(true);
+          setError(null);
           
-        if (error) throw error;
-        
-        console.log("Fetched posts:", data);
-        setMemberPosts(data || []);
-      } catch (err) {
-        console.error('Error fetching posts:', err);
-        setError('Failed to load posts');
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    fetchPosts();
-  }, [member?.id, open]); // Remove initialPosts from dependencies to prevent loops
+          console.log("Fetching posts for member:", member.id);
+          const { data, error } = await supabase
+            .from('portfolio_items')
+            .select('*')
+            .eq('profile_id', member.id)
+            .order('created_at', { ascending: false });
+            
+          if (error) throw error;
+          
+          console.log("Fetched posts:", data);
+          setMemberPosts(data || []);
+        } catch (err) {
+          console.error('Error fetching posts:', err);
+          setError('Failed to load posts');
+        } finally {
+          setLoading(false);
+        }
+      };
+      
+      fetchPosts();
+    }
+  }, [member?.id, open]); // Only depend on member.id and open
 
   // Fetch member's featured moodboard
   useEffect(() => {
