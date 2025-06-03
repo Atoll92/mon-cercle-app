@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AnimatedCard, StaggeredListItem, PageTransition } from './AnimatedComponents';
+import EventDetailsDialog from './EventDetailsDialog';
 import {
   Box,
   Typography,
@@ -13,10 +14,6 @@ import {
   Card,
   CardContent,
   CardActions,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   Fade,
   Zoom
 } from '@mui/material';
@@ -24,8 +21,7 @@ import {
   Event as EventIcon,
   LocationOn as LocationOnIcon,
   ArrowForward as ArrowForwardIcon,
-  Link as LinkIcon,
-  OpenInNew as OpenInNewIcon
+  Link as LinkIcon
 } from '@mui/icons-material';
 import TimelineIcon from '@mui/icons-material/Timeline';
 import { Calendar, dateFnsLocalizer } from 'react-big-calendar';
@@ -1264,134 +1260,14 @@ const EventsTab = ({
       </Box>
 
       {/* Event Details Dialog */}
-      <Dialog
+      <EventDetailsDialog
         open={showEventDialog}
         onClose={closeEventDialog}
-        maxWidth="md"
-        fullWidth
-      >
-        {selectedEvent && (
-          <>
-            <DialogTitle>
-              {selectedEvent.title}
-              {selectedEvent.event_link && (
-                <LinkIcon color="primary" fontSize="small" sx={{ ml: 1, verticalAlign: 'middle' }} />
-              )}
-            </DialogTitle>
-            <DialogContent dividers>
-              {selectedEvent.cover_image_url && (
-                <Box sx={{ 
-                  width: '100%', 
-                  height: 300, 
-                  mb: 3,
-                  borderRadius: 1,
-                  overflow: 'hidden'
-                }}>
-                  <img 
-                    src={selectedEvent.cover_image_url} 
-                    alt={selectedEvent.title}
-                    style={{ 
-                      width: '100%', 
-                      height: '100%', 
-                      objectFit: 'cover' 
-                    }} 
-                  />
-                </Box>
-              )}
-              <Box sx={{ mb: 3 }}>
-                <Typography variant="subtitle1" gutterBottom>
-                  <strong>Date:</strong> {new Date(selectedEvent.date).toLocaleDateString('en-US', { 
-                    weekday: 'long', 
-                    year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric' 
-                  })}
-                </Typography>
-                <Typography variant="subtitle1" gutterBottom>
-                  <strong>Location:</strong> {selectedEvent.location}
-                </Typography>
-                {selectedEvent.capacity && (
-                  <Typography variant="subtitle1" gutterBottom>
-                    <strong>Capacity:</strong> {selectedEvent.capacity}
-                  </Typography>
-                )}
-                
-                {/* Add Event Link */}
-                {selectedEvent.event_link && (
-                  <Typography variant="subtitle1" gutterBottom sx={{ 
-                    display: 'flex', 
-                    alignItems: 'center',
-                    flexWrap: 'wrap',
-                    wordBreak: 'break-word'
-                  }}>
-                    <strong>Event Link:</strong>&nbsp;
-                    <Link
-                      href={selectedEvent.event_link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      sx={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        color: 'primary.main',
-                        textDecoration: 'none',
-                        '&:hover': {
-                          textDecoration: 'underline'
-                        }
-                      }}
-                    >
-                      {selectedEvent.event_link}
-                      <OpenInNewIcon fontSize="small" sx={{ ml: 0.5 }} />
-                    </Link>
-                  </Typography>
-                )}
-              </Box>
-              
-              {selectedEvent.description && (
-                <Box sx={{ mb: 3 }}>
-                  <Typography variant="h6" gutterBottom>
-                    Description
-                  </Typography>
-                  <Typography variant="body1" paragraph>
-                    {selectedEvent.description}
-                  </Typography>
-                </Box>
-              )}
-              
-              {user && (
-                <Box sx={{ mt: 3 }}>
-                  <Typography variant="h6" gutterBottom>
-                    Your RSVP
-                  </Typography>
-                  <EventParticipation 
-                    event={selectedEvent}
-                    showParticipants={true}
-                    onStatusChange={(status) => onParticipationChange(selectedEvent.id, status)}
-                  />
-                </Box>
-              )}
-            </DialogContent>
-            
-            <DialogActions>
-              {selectedEvent.event_link && (
-                <Button
-                  variant="contained"
-                  color="primary"
-                  startIcon={<LinkIcon />}
-                  href={selectedEvent.event_link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  sx={{ mr: 'auto' }}
-                >
-                  Visit Event Link
-                </Button>
-              )}
-              <Button onClick={closeEventDialog}>
-                Close
-              </Button>
-            </DialogActions>
-          </>
-        )}
-      </Dialog>
+        event={selectedEvent}
+        user={user}
+        onParticipationChange={onParticipationChange}
+        showParticipants={true}
+      />
       </Paper>
     </PageTransition>
   );

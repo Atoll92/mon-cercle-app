@@ -7,12 +7,9 @@ import MoodboardGallery from '../components/moodboardGallery';
 import EventParticipation from '../components/EventParticipation';
 import MediaPlayer from '../components/MediaPlayer';
 import UserBadges from '../components/UserBadges';
+import EventDetailsDialog from '../components/EventDetailsDialog';
 import {
   Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   Typography,
   Box,
   Divider,
@@ -170,13 +167,8 @@ function ProfilePage() {
     setShowEventDialog(false);
     setSelectedEvent(null);
   };
-  
-  const formatEventDate = (dateString) => {
-    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-    return new Date(dateString).toLocaleDateString(undefined, options);
-  };
 
-  const handleTabChange = (event, newValue) => {
+  const handleTabChange = (_, newValue) => {
     setActiveTab(newValue);
   };
 
@@ -1127,169 +1119,13 @@ function ProfilePage() {
       </Paper>
       
       {/* Event Details Dialog */}
-      <Dialog
+      <EventDetailsDialog
         open={showEventDialog}
         onClose={closeEventDialog}
-        maxWidth="md"
-        fullWidth
-        PaperProps={{
-          sx: {
-            borderRadius: 2,
-            overflow: 'hidden'
-          }
-        }}
-      >
-        {selectedEvent && (
-          <>
-            <DialogTitle sx={{ 
-              display: 'flex', 
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              p: 2,
-              bgcolor: 'primary.main',
-              color: 'white'
-            }}>
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <EventIcon sx={{ mr: 1.5 }} />
-                <Typography variant="h6" component="div">
-                  {selectedEvent.title}
-                </Typography>
-              </Box>
-              <Button 
-                onClick={closeEventDialog}
-                sx={{ color: 'white' }}
-              >
-                Close
-              </Button>
-            </DialogTitle>
-            <DialogContent dividers sx={{ p: 0 }}>
-              {selectedEvent.cover_image_url && (
-                <Box sx={{ 
-                  width: '100%', 
-                  height: 300,
-                  position: 'relative'
-                }}>
-                  <img 
-                    src={selectedEvent.cover_image_url} 
-                    alt={selectedEvent.title}
-                    style={{ 
-                      width: '100%', 
-                      height: '100%', 
-                      objectFit: 'cover' 
-                    }} 
-                  />
-                </Box>
-              )}
-              <Box sx={{ p: 3 }}>
-                <Grid container spacing={3}>
-                  <Grid item xs={12} md={4}>
-                    <Paper 
-                      variant="outlined" 
-                      sx={{ 
-                        p: 2, 
-                        borderRadius: 2,
-                        height: '100%'
-                      }}
-                    >
-                      <Typography 
-                        variant="subtitle2" 
-                        color="text.secondary" 
-                        gutterBottom
-                      >
-                        Event Details
-                      </Typography>
-                      
-                      <Stack spacing={2} mt={1}>
-                        <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
-                          <CalendarMonthIcon fontSize="small" color="primary" />
-                          <Box>
-                            <Typography variant="body2" fontWeight="medium">
-                              Date & Time
-                            </Typography>
-                            <Typography variant="body2" color="text.secondary">
-                              {formatEventDate(selectedEvent.date)}
-                            </Typography>
-                          </Box>
-                        </Box>
-                        
-                        <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
-                          <LocationOnIcon fontSize="small" color="primary" />
-                          <Box>
-                            <Typography variant="body2" fontWeight="medium">
-                              Location
-                            </Typography>
-                            <Typography variant="body2" color="text.secondary">
-                              {selectedEvent.location}
-                            </Typography>
-                          </Box>
-                        </Box>
-                        
-                        {selectedEvent.capacity && (
-                          <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
-                            <GroupsIcon fontSize="small" color="primary" />
-                            <Box>
-                              <Typography variant="body2" fontWeight="medium">
-                                Capacity
-                              </Typography>
-                              <Typography variant="body2" color="text.secondary">
-                                {selectedEvent.capacity} attendees
-                              </Typography>
-                            </Box>
-                          </Box>
-                        )}
-                      </Stack>
-                      
-                      {isOwnProfile && (
-                        <Box sx={{ mt: 3 }}>
-                          <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                            Your RSVP
-                          </Typography>
-                          <EventParticipation 
-                            event={selectedEvent}
-                            showParticipants={true}
-                          />
-                        </Box>
-                      )}
-                    </Paper>
-                  </Grid>
-                  
-                  <Grid item xs={12} md={8}>
-                    {selectedEvent.description ? (
-                      <>
-                        <Typography variant="h6" gutterBottom>
-                          About this event
-                        </Typography>
-                        <Typography variant="body1" paragraph>
-                          {selectedEvent.description}
-                        </Typography>
-                      </>
-                    ) : (
-                      <Alert severity="info" variant="outlined">
-                        No description provided for this event.
-                      </Alert>
-                    )}
-                  </Grid>
-                </Grid>
-              </Box>
-            </DialogContent>
-            <DialogActions sx={{ p: 2 }}>
-              <Button onClick={closeEventDialog}>
-                Close
-              </Button>
-              {selectedEvent.network_id && (
-                <Button 
-                  component={Link}
-                  to={`/network/${selectedEvent.network_id}`}
-                  variant="contained"
-                  color="primary"
-                >
-                  View Network
-                </Button>
-              )}
-            </DialogActions>
-          </>
-        )}
-      </Dialog>
+        event={selectedEvent}
+        user={user}
+        showParticipants={true}
+      />
     </Container>
   );
 }

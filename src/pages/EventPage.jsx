@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/authcontext';
+import MemberDetailsModal from '../components/MembersDetailModal';
 import {
   Container,
   Paper,
@@ -19,6 +20,7 @@ import {
   ListItem,
   ListItemAvatar,
   ListItemText,
+  ListItemButton,
   Grid,
   Card,
   CardContent,
@@ -57,6 +59,8 @@ function EventPage() {
   const [anchorEl, setAnchorEl] = useState(null);
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [network, setNetwork] = useState(null);
+  const [selectedMember, setSelectedMember] = useState(null);
+  const [showMemberDetailsModal, setShowMemberDetailsModal] = useState(false);
 
   useEffect(() => {
     fetchEventData();
@@ -166,6 +170,11 @@ function EventPage() {
 
   const handleMenuClose = () => {
     setAnchorEl(null);
+  };
+
+  const handleMemberClick = (member) => {
+    setSelectedMember(member);
+    setShowMemberDetailsModal(true);
   };
 
   const handleEdit = () => {
@@ -561,7 +570,17 @@ function EventPage() {
                 {participants
                   .filter(p => p.status === 'attending')
                   .map((participant) => (
-                    <ListItem key={participant.id} sx={{ px: 0 }}>
+                    <ListItemButton 
+                      key={participant.id} 
+                      sx={{ 
+                        px: 0,
+                        borderRadius: 1,
+                        '&:hover': {
+                          backgroundColor: 'action.hover'
+                        }
+                      }}
+                      onClick={() => handleMemberClick(participant.profiles)}
+                    >
                       <ListItemAvatar>
                         <Avatar
                           src={participant.profiles?.profile_picture_url}
@@ -576,7 +595,7 @@ function EventPage() {
                           participant.profile_id === event.created_by ? 'Organizer' : 'Attending'
                         }
                       />
-                    </ListItem>
+                    </ListItemButton>
                   ))}
               </List>
             </CardContent>
@@ -619,6 +638,19 @@ function EventPage() {
           )}
         </Grid>
       </Grid>
+
+      {/* Member Details Modal */}
+      {selectedMember && (
+        <MemberDetailsModal
+          open={showMemberDetailsModal}
+          onClose={() => {
+            setShowMemberDetailsModal(false);
+            setSelectedMember(null);
+          }}
+          member={selectedMember}
+          isCurrentUser={user?.id === selectedMember.id}
+        />
+      )}
     </Container>
   );
 }

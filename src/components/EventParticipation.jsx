@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/authcontext';
 import { supabase } from '../supabaseclient';
+import MemberDetailsModal from './MembersDetailModal';
 import {
   Button,
   ButtonGroup,
@@ -17,7 +18,8 @@ import {
   Typography,
   Tooltip,
   Chip,
-  CircularProgress
+  CircularProgress,
+  ListItemButton
 } from '@mui/material';
 import {
   CheckCircle as CheckCircleIcon,
@@ -59,6 +61,8 @@ function EventParticipation({ event, showParticipants = false, onStatusChange = 
     total: 0
   });
   const [error, setError] = useState(null);
+  const [selectedMember, setSelectedMember] = useState(null);
+  const [showMemberDetailsModal, setShowMemberDetailsModal] = useState(false);
 
   // Fetch current user's participation status and participants count
   useEffect(() => {
@@ -243,6 +247,11 @@ function EventParticipation({ event, showParticipants = false, onStatusChange = 
     setShowParticipantsDialog(true);
   };
 
+  const handleMemberClick = (participant) => {
+    setSelectedMember(participant.profiles);
+    setShowMemberDetailsModal(true);
+  };
+
   // Render participants list by status
   const renderParticipantsList = (status) => {
     const filteredParticipants = participants.filter(p => p.status === status);
@@ -259,7 +268,16 @@ function EventParticipation({ event, showParticipants = false, onStatusChange = 
     }
     
     return filteredParticipants.map(participant => (
-      <ListItem key={participant.profiles.id}>
+      <ListItemButton 
+        key={participant.profiles.id}
+        onClick={() => handleMemberClick(participant)}
+        sx={{ 
+          borderRadius: 1,
+          '&:hover': {
+            backgroundColor: 'action.hover'
+          }
+        }}
+      >
         <ListItemAvatar>
           <Avatar src={participant.profiles.profile_picture_url}>
             {participant.profiles.full_name ? participant.profiles.full_name.charAt(0).toUpperCase() : '?'}
@@ -268,7 +286,7 @@ function EventParticipation({ event, showParticipants = false, onStatusChange = 
         <ListItemText 
           primary={participant.profiles.full_name || 'Unnamed User'} 
         />
-      </ListItem>
+      </ListItemButton>
     ));
   };
 
@@ -399,6 +417,19 @@ function EventParticipation({ event, showParticipants = false, onStatusChange = 
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Member Details Modal */}
+      {selectedMember && (
+        <MemberDetailsModal
+          open={showMemberDetailsModal}
+          onClose={() => {
+            setShowMemberDetailsModal(false);
+            setSelectedMember(null);
+          }}
+          member={selectedMember}
+          isCurrentUser={user?.id === selectedMember.id}
+        />
+      )}
     </>
   );
 }

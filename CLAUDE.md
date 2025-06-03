@@ -193,6 +193,7 @@ mon-cercle-app/
 - `TestNotificationSystem.jsx` - Notification testing component
 - `OnboardingGuide.jsx` - Interactive onboarding guide with tooltips
 - `EditItemDialog.jsx` - Dialog for editing moodboard items
+- `EventDetailsDialog.jsx` - Reusable event details dialog with RSVP functionality
 - `Footer.jsx` - Application footer component
 - `WelcomeMessage.jsx` - Welcome dialog for new network members with celebration animation
 
