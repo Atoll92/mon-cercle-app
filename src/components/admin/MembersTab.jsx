@@ -41,7 +41,8 @@ import {
   QrCode as QrCodeIcon,
   Check as CheckIcon,
   AccessTime as TimeIcon,
-  Groups as GroupsIcon2
+  Groups as GroupsIcon2,
+  CheckCircle as CheckCircleIcon
 } from '@mui/icons-material';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
@@ -85,7 +86,7 @@ const MembersTab = ({ members, user, network, onMembersChange, darkMode = false 
     } else {
       console.log('MembersTab: No network ID, skipping fetch');
     }
-  }, [network?.id]);
+  }, [network?.id, members]);
 
   const handleInvite = async (e) => {
     e.preventDefault();
@@ -316,7 +317,7 @@ const MembersTab = ({ members, user, network, onMembersChange, darkMode = false 
           ) : pendingInvitations.length > 0 ? (
             <Box sx={{ mt: 4 }}>
               <Typography variant="h6" component="h3" gutterBottom>
-                Pending Invitations ({pendingInvitations.length})
+                Invitations ({pendingInvitations.length})
               </Typography>
               <TableContainer component={Paper}>
                 <Table aria-label="pending invitations table">
@@ -355,12 +356,23 @@ const MembersTab = ({ members, user, network, onMembersChange, darkMode = false 
                           />
                         </TableCell>
                         <TableCell>
-                          <Chip 
-                            label="Pending" 
-                            color="warning"
-                            size="small"
-                            icon={<TimeIcon />}
-                          />
+                          {invitation.status === 'accepted' ? (
+                            <Tooltip title={`Accepted on ${new Date(invitation.updated_at || invitation.created_at).toLocaleDateString()}`}>
+                              <Chip 
+                                label="Accepted" 
+                                color="success"
+                                size="small"
+                                icon={<CheckCircleIcon />}
+                              />
+                            </Tooltip>
+                          ) : (
+                            <Chip 
+                              label="Pending" 
+                              color="warning"
+                              size="small"
+                              icon={<TimeIcon />}
+                            />
+                          )}
                         </TableCell>
                       </TableRow>
                     ))}

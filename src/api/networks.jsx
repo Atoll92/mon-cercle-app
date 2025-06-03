@@ -263,6 +263,14 @@ export const inviteUserToNetwork = async (email, networkId, inviterId, role = 'm
           
       if (updateError) throw updateError;
 
+      // Update any pending invitations for this user to 'accepted'
+      await supabase
+        .from('invitations')
+        .update({ status: 'accepted' })
+        .eq('email', email.toLowerCase())
+        .eq('network_id', networkId)
+        .eq('status', 'pending');
+
       try {
         await supabase.functions.invoke('network-invite', {
           body: {
@@ -901,15 +909,19 @@ export const exportEventParticipantsList = async (eventId) => {
   }
 };
 
-// Get pending invitations for a network
+// Get pending and recently accepted invitations for a network
 export const getNetworkPendingInvitations = async (networkId) => {
   try {
-    // First get the invitations
+    // Calculate date 3 days ago
+    const threeDaysAgo = new Date();
+    threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+    
+    // Get both pending and recently accepted invitations
     const { data: invitations, error: invitationsError } = await supabase
       .from('invitations')
       .select('*')
       .eq('network_id', networkId)
-      .eq('status', 'pending')
+      .or(`status.eq.pending,and(status.eq.accepted,updated_at.gte.${threeDaysAgo.toISOString()})`)
       .order('created_at', { ascending: false });
     
     if (invitationsError) throw invitationsError;
@@ -921,8 +933,36 @@ export const getNetworkPendingInvitations = async (networkId) => {
       };
     }
     
+    // Get all network members to cross-reference emails
+    const { data: networkMembers, error: membersError } = await supabase
+      .from('profiles')
+      .select('contact_email')
+      .eq('network_id', networkId);
+    
+    if (membersError) throw membersError;
+    
+    // Create a set of member emails for quick lookup
+    const memberEmails = new Set((networkMembers || []).map(m => m.contact_email?.toLowerCase()));
+    
+    // Filter pending invitations where the invitee hasn't joined yet
+    // Keep accepted invitations as they are
+    const filteredInvitations = invitations.filter(inv => {
+      if (inv.status === 'accepted') {
+        return true; // Always show accepted invitations (within the 3-day window)
+      }
+      // For pending invitations, only show if the user hasn't joined yet
+      return !memberEmails.has(inv.email?.toLowerCase());
+    });
+    
+    if (filteredInvitations.length === 0) {
+      return {
+        success: true,
+        invitations: []
+      };
+    }
+    
     // Get unique inviter IDs
-    const inviterIds = [...new Set(invitations.map(inv => inv.invited_by))];
+    const inviterIds = [...new Set(filteredInvitations.map(inv => inv.invited_by))];
     
     // Fetch profile information for all inviters
     const { data: profiles, error: profilesError } = await supabase
@@ -939,7 +979,7 @@ export const getNetworkPendingInvitations = async (networkId) => {
     }, {});
     
     // Map profile data to invitations
-    const invitationsWithProfiles = invitations.map(invitation => ({
+    const invitationsWithProfiles = filteredInvitations.map(invitation => ({
       ...invitation,
       inviter: profileMap[invitation.invited_by] || { 
         id: invitation.invited_by, 
