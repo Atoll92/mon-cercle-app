@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import MembersDetailModal from './MembersDetailModal';
+import CreatePostModal from './CreatePostModal';
 import {
   Typography,
   Paper,
@@ -41,7 +42,9 @@ import {
   Article as ArticleIcon,
   PlayCircleFilled as PlayIcon,
   Pause as PauseIcon,
-  FilterList as FilterListIcon
+  FilterList as FilterListIcon,
+  Add as AddIcon,
+  Create as CreateIcon
 } from '@mui/icons-material';
 import MediaPlayer from './MediaPlayer';
 import LazyImage from './LazyImage';
@@ -115,6 +118,9 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
   // Member detail modal state
   const [selectedMember, setSelectedMember] = useState(null);
   const [memberModalOpen, setMemberModalOpen] = useState(false);
+  
+  // Create post modal state
+  const [createPostOpen, setCreatePostOpen] = useState(false);
   
   // Toggle card expansion with improved scroll handling
   const handleExpandCard = (id) => {
@@ -550,6 +556,16 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
     }
   };
   
+  // Handle post creation
+  const handlePostCreated = (newPost) => {
+    // This callback can be used to refresh the social wall or show a success message
+    // For now, we'll just close the modal (handled by the modal itself)
+    console.log('New post created:', newPost);
+    
+    // Optionally trigger a refresh of the social wall here
+    // The parent component would need to pass a refresh callback
+  };
+  
   return (
     <Paper 
       sx={{ 
@@ -595,9 +611,32 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
           Network Social Wall
         </Typography>
         
-        {/* Category Filter */}
-        {categories.length > 0 && (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
+          {/* Create Post Button */}
+          <Button
+            variant="contained"
+            startIcon={<CreateIcon />}
+            onClick={() => setCreatePostOpen(true)}
+            sx={{
+              borderRadius: 2,
+              px: 2.5,
+              py: 1,
+              fontWeight: 600,
+              boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              '&:hover': {
+                background: 'linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.18)',
+                transform: 'translateY(-1px)'
+              },
+              transition: 'all 0.2s ease'
+            }}
+          >
+            Create Post
+          </Button>
+          
+          {/* Category Filter */}
+          {categories.length > 0 && (
             <FormControl size="small" sx={{ minWidth: 180 }}>
               <InputLabel shrink>Filter by Category</InputLabel>
               <Select
@@ -627,8 +666,8 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                 ))}
               </Select>
             </FormControl>
-          </Box>
-        )}
+          )}
+        </Box>
         
         {displayItems.length > 5 && showScrollTop && (
           <Fade in={showScrollTop}>
@@ -1352,6 +1391,15 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
         onClose={() => setMemberModalOpen(false)}
         member={selectedMember}
         darkMode={darkMode}
+      />
+      
+      {/* Create Post Modal */}
+      <CreatePostModal
+        open={createPostOpen}
+        onClose={() => setCreatePostOpen(false)}
+        onPostCreated={handlePostCreated}
+        darkMode={darkMode}
+        networkId={networkId}
       />
     </Paper>
   );
