@@ -407,7 +407,7 @@ const ThemeTab = ({ network, onNetworkUpdate, darkMode = false }) => {
                       alignItems: 'center',
                       border: '1px dashed #aaa',
                       borderRadius: 1,
-                      backgroundColor: '#f9f9f9',
+                      backgroundColor: 'main.light',
                       mb: 2
                     }}
                   >
@@ -537,7 +537,7 @@ const ThemeTab = ({ network, onNetworkUpdate, darkMode = false }) => {
                       alignItems: 'center',
                       border: '1px dashed #aaa',
                       borderRadius: 1,
-                      backgroundColor: '#f9f9f9',
+                      backgroundColor: 'main.light',
                       mb: 2,
                       flexDirection: 'column'
                     }}
