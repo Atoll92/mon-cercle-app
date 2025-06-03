@@ -199,7 +199,11 @@ const Chat = ({ networkId, isFullscreen = false }) => {
               media_url,
               media_type,
               media_metadata,
-              profiles:user_id (id, full_name, profile_picture_url)
+              parent_message_id,
+              reply_to_user_id,
+              reply_to_content,
+              profiles:user_id (id, full_name, profile_picture_url),
+              reply_to_profile:reply_to_user_id (id, full_name)
             `)
             .eq('id', payload.new.id)
             .single();
