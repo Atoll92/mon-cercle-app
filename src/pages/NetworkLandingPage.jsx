@@ -797,7 +797,9 @@ function NetworkLandingPage() {
           indicatorColor="primary"
           // Adjust text color for better contrast in dark mode
           textColor={darkMode ? "secondary" : "primary"}
-          variant="fullWidth"
+          variant="scrollable"
+          scrollButtons="auto"
+          allowScrollButtonsMobile
           sx={{
             // Add custom styles for dark mode
             '& .MuiTab-root': {
@@ -805,12 +807,40 @@ function NetworkLandingPage() {
               '&.Mui-selected': {
                 color: muiTheme.palette.custom.lightText,
               },
+              // Make tabs take full width on desktop
+              [muiTheme.breakpoints.up('md')]: {
+                minWidth: 0,
+                flex: 1,
+              },
             },
             // Make the indicator more visible in dark mode
             '& .MuiTabs-indicator': {
               backgroundColor: darkMode ? '#90caf9' : undefined,
               height: darkMode ? 3 : undefined,
-            }
+            },
+            // Hide scrollbar while allowing scrolling on mobile
+            '& .MuiTabs-scroller': {
+              '&::-webkit-scrollbar': {
+                display: 'none',
+              },
+              '-ms-overflow-style': 'none',
+              'scrollbar-width': 'none',
+              // On desktop, make tabs fill width
+              [muiTheme.breakpoints.up('md')]: {
+                '& .MuiTabs-flexContainer': {
+                  width: '100%',
+                },
+              },
+            },
+            // Hide scroll buttons on desktop
+            '& .MuiTabs-scrollButtons': {
+              '&.Mui-disabled': {
+                opacity: 0.3,
+              },
+              [muiTheme.breakpoints.up('md')]: {
+                display: 'none',
+              },
+            },
           }}
         >
           {visibleTabs.map((tab) => (
