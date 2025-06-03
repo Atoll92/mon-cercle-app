@@ -74,7 +74,9 @@ const UserBadges = ({ userId, displayMode = 'chips', maxDisplay = 3, showTotal =
     try {
       setLoading(true);
       const data = await fetchUserBadges(userId);
-      setBadges(data);
+      // Filter out any badges where the badge data is null
+      const validBadges = data.filter(userBadge => userBadge.badge !== null);
+      setBadges(validBadges);
     } catch (err) {
       console.error('Error loading user badges:', err);
     } finally {
