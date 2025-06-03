@@ -70,6 +70,12 @@ function ProfilePage() {
   const [showEventDialog, setShowEventDialog] = useState(false);
   const [activeTab, setActiveTab] = useState(0);
   
+  // Tab indices
+  const TAB_OVERVIEW = 0;
+  const TAB_MOODBOARDS = 1;
+  const TAB_POSTS = 2;
+  const TAB_EVENTS = 3;
+  
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -354,7 +360,7 @@ function ProfilePage() {
         {/* Profile Content */}
         <Box sx={{ p: 0 }}>
 
-        {activeTab === 1 && (
+        {activeTab === TAB_MOODBOARDS && (
   <Box sx={{ p: 3 }}>
     <Typography variant="h5" gutterBottom>
       {isOwnProfile ? 'Your Moodboards' : `${profile.full_name}'s Moodboards`}
@@ -368,7 +374,7 @@ function ProfilePage() {
   </Box>
 )}
           {/* Overview Tab */}
-          {activeTab === 0 && (
+          {activeTab === TAB_OVERVIEW && (
             <Grid container wrap="nowrap" sx={{ 
               flexWrap: { xs: 'wrap', sm: 'nowrap' },
               '@media (max-width: 900px)': {
@@ -533,7 +539,7 @@ function ProfilePage() {
                           <Button 
                             size="small" 
                             endIcon={<MoreHorizIcon />} 
-                            onClick={() => setActiveTab(2)}
+                            onClick={() => setActiveTab(TAB_EVENTS)}
                           >
                             See All
                           </Button>
@@ -690,7 +696,7 @@ function ProfilePage() {
                     )}
                   </Box>
 
-{activeTab === 1 && (
+{activeTab === TAB_MOODBOARDS && (
   <Box sx={{ p: 3 }}>
     <Typography variant="h5" gutterBottom>
       {isOwnProfile ? 'Your Moodboards' : `${profile.full_name}'s Moodboards`}
@@ -730,7 +736,7 @@ function ProfilePage() {
     <Button 
       size="small" 
       endIcon={<MoreHorizIcon />} 
-      onClick={() => setActiveTab(1)}
+      onClick={() => setActiveTab(TAB_MOODBOARDS)}
     >
       See All
     </Button>
@@ -771,7 +777,7 @@ function ProfilePage() {
                         <Button 
                           size="small" 
                           endIcon={<MoreHorizIcon />} 
-                          onClick={() => setActiveTab(1)}
+                          onClick={() => setActiveTab(TAB_POSTS)}
                         >
                           See All
                         </Button>
@@ -910,7 +916,7 @@ function ProfilePage() {
           )}
           
           {/* Posts Tab */}
-          {activeTab === 2 && (
+          {activeTab === TAB_POSTS && (
             <Box sx={{ p: 3 }}>
               <Typography variant="h5" gutterBottom>
                 User Posts
@@ -1015,7 +1021,7 @@ function ProfilePage() {
           )}
           
           {/* Events Tab */}
-          {activeTab === 3 && upcomingEvents.length > 0 && (
+          {activeTab === TAB_EVENTS && upcomingEvents.length > 0 && (
             <Box sx={{ p: 3 }}>
               <Typography variant="h5" gutterBottom>
                 Upcoming Events
