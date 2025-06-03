@@ -39,6 +39,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import VideocamIcon from '@mui/icons-material/Videocam';
 import AudiotrackIcon from '@mui/icons-material/Audiotrack';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
+import EmojiEmotionsIcon from '@mui/icons-material/EmojiEmotions';
 import backgroundImage from '../assets/8-bit-artwork-sky-landscape-wallpaper-preview.jpg';
 import LinkPreview from './LinkPreview'; // Import the LinkPreview component
 import MediaUpload from './MediaUpload';
@@ -46,6 +47,7 @@ import MediaPlayer from './MediaPlayer';
 import ImageViewerModal from './ImageViewerModal';
 import { uploadMediaFile } from '../utils/mediaUpload';
 import { queueMentionNotification } from '../services/emailNotificationService';
+import EmojiPicker from 'emoji-picker-react';
 
 // URL regex pattern to detect links in messages
 // const URL_REGEX = /(https?:\/\/[^\s]+)/g;
@@ -63,6 +65,7 @@ const Chat = ({ networkId, isFullscreen = false }) => {
   const [showMediaUpload, setShowMediaUpload] = useState(false);
   const [expandedMedia, setExpandedMedia] = useState({});
   const [pendingMedia, setPendingMedia] = useState(null);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   
   // Image viewer modal state
   const [imageViewerOpen, setImageViewerOpen] = useState(false);
@@ -443,6 +446,40 @@ const Chat = ({ networkId, isFullscreen = false }) => {
     }
   };
   
+  // Handle emoji selection
+  const handleEmojiClick = (emojiData) => {
+    const emoji = emojiData.emoji;
+    const cursorPos = textFieldRef.current?.selectionStart || newMessage.length;
+    const textBefore = newMessage.substring(0, cursorPos);
+    const textAfter = newMessage.substring(cursorPos);
+    const newText = textBefore + emoji + textAfter;
+    
+    setNewMessage(newText);
+    setShowEmojiPicker(false);
+    
+    // Focus back to text field and set cursor position after emoji
+    setTimeout(() => {
+      textFieldRef.current?.focus();
+      const newCursorPos = cursorPos + emoji.length;
+      textFieldRef.current?.setSelectionRange(newCursorPos, newCursorPos);
+    }, 0);
+  };
+
+  // Close emoji picker when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showEmojiPicker && !event.target.closest('[data-emoji-picker]')) {
+        setShowEmojiPicker(false);
+      }
+      if (showMediaUpload && !event.target.closest('[data-media-upload]')) {
+        setShowMediaUpload(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showEmojiPicker, showMediaUpload]);
+
   // Handle media upload - just store it, don't send yet
   const handleMediaUpload = async (mediaData) => {
     console.log('Chat: handleMediaUpload called with:', mediaData);
@@ -1092,7 +1129,13 @@ const renderMedia = (mediaUrl, mediaType, metadata, messageId) => {
           lineHeight: 1.4,
           color: darkMode 
             ? 'rgba(255, 255, 255, 0.9)'
-            : 'rgba(0, 0, 0, 0.7)'
+            : 'rgba(0, 0, 0, 0.7)',
+          // Enhanced emoji support
+          fontFamily: '"Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", system-ui, -apple-system, sans-serif',
+          '& .emoji': {
+            fontSize: '1.1em',
+            verticalAlign: 'baseline'
+          }
         }}
       >
         {parts}
@@ -1791,6 +1834,16 @@ const renderMessageContent = (message) => {
           <AttachFileIcon />
         </IconButton>
         
+        {/* Emoji picker button */}
+        <IconButton
+          color="primary"
+          onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+          disabled={false}
+          sx={{ mr: 1 }}
+        >
+          <EmojiEmotionsIcon />
+        </IconButton>
+        
         <TextField
           ref={textFieldRef}
           fullWidth
@@ -1859,14 +1912,50 @@ const renderMessageContent = (message) => {
         </IconButton>
       </Box>
       
+      {/* Emoji picker dialog */}
+      {showEmojiPicker && (
+        <Paper 
+          data-emoji-picker
+          sx={{ 
+            position: 'absolute', 
+            bottom: 80, 
+            right: 16, 
+            p: 1,
+            bgcolor: darkMode ? 'background.paper' : 'background.default',
+            boxShadow: 3,
+            borderRadius: 2,
+            zIndex: 10
+          }}
+        >
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1, px: 1 }}>
+            <Typography variant="subtitle2">Choose Emoji</Typography>
+            <IconButton size="small" onClick={() => setShowEmojiPicker(false)}>
+              <CancelIcon />
+            </IconButton>
+          </Box>
+          <EmojiPicker
+            onEmojiClick={handleEmojiClick}
+            theme={darkMode ? 'dark' : 'light'}
+            width={300}
+            height={400}
+            searchDisabled={false}
+            skinTonesDisabled={false}
+            previewConfig={{
+              showPreview: false
+            }}
+          />
+        </Paper>
+      )}
+      
       {/* Media upload dialog */}
       {showMediaUpload && (
         <Paper 
+          data-media-upload
           sx={{ 
             position: 'absolute', 
             bottom: 80, 
             left: 16, 
-            right: 16, 
+            right: showEmojiPicker ? 332 : 16, // Adjust right margin when emoji picker is open
             p: 2,
             bgcolor: darkMode ? 'background.paper' : 'background.default',
             boxShadow: 3,
