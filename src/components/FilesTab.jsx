@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseclient';
 import { useAuth } from '../context/authcontext';
 import { useNetwork } from '../context/networkContext';
+import MembersDetailModal from './MembersDetailModal';
 import {
   Box,
   Button,
@@ -98,6 +99,10 @@ const FilesTab = ({ darkMode }) => {
   const [loadingMoodboards, setLoadingMoodboards] = useState(false);
   const [processing, setProcessing] = useState(false);
   
+  // Member detail modal state
+  const [selectedMember, setSelectedMember] = useState(null);
+  const [memberModalOpen, setMemberModalOpen] = useState(false);
+  
   // Process files when they're loaded from context
   useEffect(() => {
     const processFiles = async () => {
@@ -188,6 +193,27 @@ const FilesTab = ({ darkMode }) => {
       setError('Failed to add to moodboard');
     } finally {
       setProcessing(false);
+    }
+  };
+
+  // Handle member click
+  const handleMemberClick = async (uploaderId) => {
+    try {
+      const { data: member, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', uploaderId)
+        .single();
+        
+      if (error) throw error;
+      
+      if (member) {
+        setSelectedMember(member);
+        setMemberModalOpen(true);
+      }
+    } catch (err) {
+      console.error('Error fetching member details:', err);
+      setError('Failed to load member details');
     }
   };
   
@@ -356,8 +382,14 @@ const FilesTab = ({ darkMode }) => {
                             label={`By: ${file.uploader.full_name}`} 
                             size="small" 
                             variant="outlined"
+                            clickable
+                            onClick={() => handleMemberClick(file.uploaded_by)}
                             sx={{
-                              borderColor: darkMode ? 'rgba(255,255,255,0.2)' : undefined
+                              borderColor: darkMode ? 'rgba(255,255,255,0.2)' : undefined,
+                              cursor: 'pointer',
+                              '&:hover': {
+                                backgroundColor: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'
+                              }
                             }}
                           />
                         </Box>
@@ -462,6 +494,14 @@ const FilesTab = ({ darkMode }) => {
           </Box>
         </>
       )}
+      
+      {/* Member Detail Modal */}
+      <MembersDetailModal
+        open={memberModalOpen}
+        onClose={() => setMemberModalOpen(false)}
+        member={selectedMember}
+        darkMode={darkMode}
+      />
     </Paper>
   );
 };

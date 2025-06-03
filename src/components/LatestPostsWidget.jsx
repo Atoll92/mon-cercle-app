@@ -26,7 +26,7 @@ import {
 } from '@mui/icons-material';
 import { supabase } from '../supabaseclient';
 
-const LatestPostsWidget = ({ networkId }) => {
+const LatestPostsWidget = ({ networkId, onMemberClick }) => {
   const [imageViewerOpen, setImageViewerOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState({ url: '', title: '' });
 
@@ -128,7 +128,21 @@ const LatestPostsWidget = ({ networkId }) => {
             }
           </Avatar>
           <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Typography variant="body2" fontWeight={500} noWrap sx={{ lineHeight: 1.2 }}>
+            <Typography 
+              variant="body2" 
+              fontWeight={500} 
+              noWrap 
+              onClick={onMemberClick ? (e) => onMemberClick(latestPost.profiles?.id, e) : undefined}
+              sx={{ 
+                lineHeight: 1.2,
+                cursor: onMemberClick ? 'pointer' : 'default',
+                '&:hover': onMemberClick ? {
+                  color: 'primary.main',
+                  textDecoration: 'underline'
+                } : {},
+                transition: 'color 0.2s ease'
+              }}
+            >
               {latestPost.profiles?.full_name || 'Unknown Author'}
             </Typography>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.3 }}>

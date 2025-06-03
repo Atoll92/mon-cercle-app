@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/authcontext';
 import { useNetwork } from '../context/networkContext';
 import { supabase } from '../supabaseclient';
+import MembersDetailModal from './MembersDetailModal';
 import { AnimatedCard, StaggeredListItem, PageTransition } from './AnimatedComponents';
 import { NewsItemSkeleton } from './LoadingSkeleton';
 import {
@@ -93,6 +94,10 @@ const NewsTab = ({ darkMode }) => {
   // State for image viewer modal
   const [imageViewerOpen, setImageViewerOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState({ url: '', title: '' });
+  
+  // Member detail modal state
+  const [selectedMember, setSelectedMember] = useState(null);
+  const [memberModalOpen, setMemberModalOpen] = useState(false);
 
   // Fetch active polls and categories
   useEffect(() => {
@@ -297,6 +302,37 @@ const NewsTab = ({ darkMode }) => {
   const formatMemberName = (memberId) => {
     const member = networkMembers.find(m => m.id === memberId);
     return member?.full_name || 'Admin';
+  };
+
+  // Handle member click
+  const handleMemberClick = async (memberId, e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    try {
+      // Find member in networkMembers first
+      let member = networkMembers.find(m => m.id === memberId);
+      
+      if (!member) {
+        // If not found in networkMembers, fetch from profiles table
+        const { data: profileData, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', memberId)
+          .single();
+          
+        if (error) throw error;
+        member = profileData;
+      }
+      
+      if (member) {
+        setSelectedMember(member);
+        setMemberModalOpen(true);
+      }
+    } catch (err) {
+      console.error('Error fetching member details:', err);
+      // If modal fails, just log the error and don't fallback to navigation
+    }
   };
 
   // News post creation form
@@ -709,7 +745,22 @@ const NewsTab = ({ darkMode }) => {
               </Box>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
                 <Typography variant="caption" color="text.secondary">
-                  Posted by {formatMemberName(post.created_by)} • {new Date(post.created_at).toLocaleDateString()}
+                  Posted by{' '}
+                  <Box 
+                    component="span" 
+                    onClick={(e) => handleMemberClick(post.created_by, e)}
+                    sx={{ 
+                      cursor: 'pointer', 
+                      color: 'primary.main', 
+                      '&:hover': { 
+                        textDecoration: 'underline' 
+                      },
+                      transition: 'color 0.2s ease'
+                    }}
+                  >
+                    {formatMemberName(post.created_by)}
+                  </Box>
+                  {' • '}{new Date(post.created_at).toLocaleDateString()}
                 </Typography>
               </Box>
               
@@ -761,6 +812,14 @@ const NewsTab = ({ darkMode }) => {
         onClose={() => setImageViewerOpen(false)}
         imageUrl={selectedImage.url}
         title={selectedImage.title}
+      />
+      
+      {/* Member Detail Modal */}
+      <MembersDetailModal
+        open={memberModalOpen}
+        onClose={() => setMemberModalOpen(false)}
+        member={selectedMember}
+        darkMode={darkMode}
       />
     </PageTransition>
   );

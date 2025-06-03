@@ -3,11 +3,13 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../context/authcontext';
 import { supabase } from '../supabaseclient';
 import { useNavigate, Link } from 'react-router-dom';
+import MembersDetailModal from '../components/MembersDetailModal';
 import PersonalMoodboardWidget from '../components/PersonalMoodboardWidget';
 import LatestNewsWidget from '../components/LatestNewsWidget';
 import LatestPostsWidget from '../components/LatestPostsWidget';
 import TestNotificationSystem from '../components/TestNotificationSystem';
 import MediaUpload from '../components/MediaUpload';
+import EventDetailsDialog from '../components/EventDetailsDialog';
 import { useFadeIn, useStaggeredAnimation, ANIMATION_DURATION } from '../hooks/useAnimation';
 import { ProfileSkeleton, GridSkeleton } from '../components/LoadingSkeleton';
 import { 
@@ -195,6 +197,14 @@ function DashboardPage() {
   const [postMessage, setPostMessage] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [categories, setCategories] = useState([]);
+  
+  // Member detail modal state
+  const [selectedMember, setSelectedMember] = useState(null);
+  
+  // Event details dialog state
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [showEventDialog, setShowEventDialog] = useState(false);
+  const [memberModalOpen, setMemberModalOpen] = useState(false);
 
   // Animation setup - must be at top level, not conditional
   const headerRef = useFadeIn(0, ANIMATION_DURATION.normal);
@@ -522,6 +532,40 @@ function DashboardPage() {
       setPostMessage('Failed to publish post. Please try again.');
     } finally {
       setPublishingPost(false);
+    }
+  };
+
+  // Handle member click
+  const handleMemberClick = async (memberId, e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    
+    try {
+      // First check if member is in networkMembers
+      let member = networkMembers.find(m => m.id === memberId);
+      
+      if (!member) {
+        // If not found in networkMembers, fetch from profiles table
+        const { data: profileData, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', memberId)
+          .single();
+          
+        if (error) throw error;
+        member = profileData;
+      }
+      
+      if (member) {
+        setSelectedMember(member);
+        setMemberModalOpen(true);
+      }
+    } catch (err) {
+      console.error('Error fetching member details:', err);
+      // Fallback to profile page if modal fails
+      navigate(`/profile/${memberId}`);
     }
   };
 
@@ -1614,8 +1658,10 @@ function DashboardPage() {
                                   <Button
                                     variant="outlined"
                                     size="small"
-                                    component={Link}
-                                    to={`/network/${profile.network_id}`}
+                                    onClick={() => {
+                                      setSelectedEvent(event);
+                                      setShowEventDialog(true);
+                                    }}
                                     sx={{ flexShrink: 0, minWidth: 'auto', px: 1 }}
                                   >
                                     View
@@ -1676,10 +1722,10 @@ function DashboardPage() {
                   {profile.network_id && (
                     <>
                       <Grid item xs={12} sm={6} md={3} sx={{ display: 'flex' }}>
-                        <LatestNewsWidget networkId={profile.network_id} />
+                        <LatestNewsWidget networkId={profile.network_id} onMemberClick={handleMemberClick} />
                       </Grid>
                       <Grid item xs={12} sm={6} md={3} sx={{ display: 'flex' }}>
-                        <LatestPostsWidget networkId={profile.network_id} />
+                        <LatestPostsWidget networkId={profile.network_id} onMemberClick={handleMemberClick} />
                       </Grid>
                     </>
                   )}
@@ -1717,6 +1763,27 @@ function DashboardPage() {
         </Paper>
       )}
       
+      {/* Member Detail Modal */}
+      <MembersDetailModal 
+        open={memberModalOpen}
+        onClose={() => {
+          setMemberModalOpen(false);
+          setSelectedMember(null);
+        }}
+        member={selectedMember}
+        darkMode={false}
+      />
+      
+      {/* Event Details Dialog */}
+      <EventDetailsDialog
+        open={showEventDialog}
+        onClose={() => {
+          setShowEventDialog(false);
+          setSelectedEvent(null);
+        }}
+        event={selectedEvent}
+        user={user}
+      />
     </Container>
   );
 }

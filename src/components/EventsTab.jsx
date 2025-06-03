@@ -475,8 +475,10 @@ const EventsTab = ({
                                     variant={event.event_link ? "text" : "outlined"}
                                     color="primary"
                                     endIcon={<ArrowForwardIcon fontSize="small" />}
-                                    component={Link}
-                                    to={`/network/${event.network_id}/event/${event.id}`}
+                                    onClick={() => {
+                                      setSelectedEvent(event);
+                                      setShowEventDialog(true);
+                                    }}
                                   >
                                     Details
                                   </Button>

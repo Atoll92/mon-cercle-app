@@ -29,7 +29,7 @@ import {
 import { getItemComments, addComment, deleteComment, toggleCommentVisibility } from '../api/comments';
 import { formatDistanceToNow } from 'date-fns';
 
-const CommentSection = ({ itemType, itemId, darkMode, isAdmin = false, initialCount = 0 }) => {
+const CommentSection = ({ itemType, itemId, darkMode, isAdmin = false, initialCount = 0, onMemberClick }) => {
   const { user } = useAuth();
   const theme = useTheme();
   const [comments, setComments] = useState([]);
@@ -171,9 +171,16 @@ const CommentSection = ({ itemType, itemId, darkMode, isAdmin = false, initialCo
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
           <Typography
             variant="body2"
+            onClick={onMemberClick ? (e) => onMemberClick(comment.profile_id, e) : undefined}
             sx={{
               fontWeight: 500,
-              color: theme.palette.text.primary
+              color: theme.palette.text.primary,
+              cursor: onMemberClick ? 'pointer' : 'default',
+              '&:hover': onMemberClick ? {
+                color: theme.palette.primary.main,
+                textDecoration: 'underline'
+              } : {},
+              transition: 'color 0.2s ease'
             }}
           >
             {comment.profile?.full_name || 'Unknown User'}

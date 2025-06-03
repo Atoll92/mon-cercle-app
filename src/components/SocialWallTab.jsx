@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
+import MembersDetailModal from './MembersDetailModal';
 import {
   Typography,
   Paper,
@@ -49,6 +50,7 @@ import CommentSection from './CommentSection';
 import LinkPreview from './LinkPreview';
 import { getCommentCount } from '../api/comments';
 import { fetchNetworkCategories } from '../api/categories';
+import { supabase } from '../supabaseclient';
 
 // Number of items to display initially
 const ITEMS_PER_FETCH = 6;
@@ -109,6 +111,10 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
   
   // State for comment counts
   const [commentCounts, setCommentCounts] = useState({});
+  
+  // Member detail modal state
+  const [selectedMember, setSelectedMember] = useState(null);
+  const [memberModalOpen, setMemberModalOpen] = useState(false);
   
   // Toggle card expansion with improved scroll handling
   const handleExpandCard = (id) => {
@@ -512,6 +518,38 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
     setImageViewerOpen(true);
   };
   
+  // Handle member click
+  const handleMemberClick = async (memberId, e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    try {
+      // Find member in networkMembers first
+      let member = networkMembers.find(m => m.id === memberId);
+      
+      if (!member) {
+        // If not found in networkMembers, fetch from profiles table
+        const { data: profileData, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', memberId)
+          .single();
+          
+        if (error) throw error;
+        member = profileData;
+      }
+      
+      if (member) {
+        setSelectedMember(member);
+        setMemberModalOpen(true);
+      }
+    } catch (err) {
+      console.error('Error fetching member details:', err);
+      // Fallback to profile page if modal fails
+      window.location.href = `/profile/${memberId}`;
+    }
+  };
+  
   return (
     <Paper 
       sx={{ 
@@ -701,10 +739,10 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                       <Avatar
                         src={item.itemType === 'post' ? item.memberAvatar : 
                             networkMembers.find(m => m.id === item.created_by)?.profile_picture_url}
-                        component={Link}
-                        to={item.itemType === 'post' ? 
-                          `/profile/${item.memberId}` : 
-                          `/profile/${item.created_by}`}
+                        onClick={(e) => handleMemberClick(
+                          item.itemType === 'post' ? item.memberId : item.created_by, 
+                          e
+                        )}
                         sx={{ 
                           border: `2px solid ${customBorder}`,
                           bgcolor: muiTheme.palette.primary.main,
@@ -754,30 +792,27 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                       </Box>
                     }
                     title={
-                      <Link
-                        to={item.itemType === 'post' ? 
-                          `/profile/${item.memberId}` : 
-                          `/profile/${item.created_by}`}
-                        style={{ textDecoration: 'none' }}
+                      <Typography 
+                        variant="subtitle2" 
+                        onClick={(e) => handleMemberClick(
+                          item.itemType === 'post' ? item.memberId : item.created_by, 
+                          e
+                        )}
+                        sx={{ 
+                          fontWeight: 600,
+                          color: customLightText,
+                          cursor: 'pointer',
+                          '&:hover': {
+                            color: muiTheme.palette.primary.main,
+                            textDecoration: 'underline'
+                          },
+                          transition: 'color 0.2s ease'
+                        }}
                       >
-                        <Typography 
-                          variant="subtitle2" 
-                          sx={{ 
-                            fontWeight: 600,
-                            color: customLightText,
-                            cursor: 'pointer',
-                            '&:hover': {
-                              color: muiTheme.palette.primary.main,
-                              textDecoration: 'underline'
-                            },
-                            transition: 'color 0.2s ease'
-                          }}
-                        >
-                          {item.itemType === 'post' ? 
-                            item.memberName : 
-                            networkMembers.find(m => m.id === item.created_by)?.full_name || 'Network Admin'}
-                        </Typography>
-                      </Link>
+                        {item.itemType === 'post' ? 
+                          item.memberName : 
+                          networkMembers.find(m => m.id === item.created_by)?.full_name || 'Network Admin'}
+                      </Typography>
                     }
                     subheader={
                       <Typography 
@@ -1269,6 +1304,7 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                       darkMode={darkMode}
                       isAdmin={isAdmin}
                       initialCount={commentCounts[`${item.itemType}-${item.id}`] || 0}
+                      onMemberClick={handleMemberClick}
                     />
                   </CardContent>
                 </Card>
@@ -1308,6 +1344,14 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
         onClose={() => setImageViewerOpen(false)}
         imageUrl={selectedImage.url}
         title={selectedImage.title}
+      />
+      
+      {/* Member Detail Modal */}
+      <MembersDetailModal
+        open={memberModalOpen}
+        onClose={() => setMemberModalOpen(false)}
+        member={selectedMember}
+        darkMode={darkMode}
       />
     </Paper>
   );
