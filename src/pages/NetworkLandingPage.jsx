@@ -272,6 +272,13 @@ function NetworkLandingPage() {
   // State to hold post items for all members (stored as portfolio_items in database)
   const [postItems, setPostItems] = useState([]);
   
+  // Handle post deletion from social wall
+  const handlePostDeleted = (postId, itemType) => {
+    if (itemType === 'post') {
+      setPostItems(prevItems => prevItems.filter(item => item.id !== postId));
+    }
+  };
+  
   // Check if user just joined the network (within last 5 minutes) or came from invitation
   useEffect(() => {
     if (!user || !network) {
@@ -942,6 +949,7 @@ function NetworkLandingPage() {
           darkMode={darkMode} // Pass dark mode to social wall tab
           isAdmin={isUserAdmin}
           networkId={network.id}
+          onPostDeleted={handlePostDeleted}
         />
       )}
 

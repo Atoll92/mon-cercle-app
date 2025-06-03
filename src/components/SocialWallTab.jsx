@@ -44,7 +44,9 @@ import {
   Pause as PauseIcon,
   FilterList as FilterListIcon,
   Add as AddIcon,
-  Create as CreateIcon
+  Create as CreateIcon,
+  Delete as DeleteIcon,
+  Edit as EditIcon
 } from '@mui/icons-material';
 import MediaPlayer from './MediaPlayer';
 import LazyImage from './LazyImage';
@@ -54,11 +56,13 @@ import LinkPreview from './LinkPreview';
 import { getCommentCount } from '../api/comments';
 import { fetchNetworkCategories } from '../api/categories';
 import { supabase } from '../supabaseclient';
+import { useAuth } from '../context/authcontext';
 
 // Number of items to display initially
 const ITEMS_PER_FETCH = 6;
 
-const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = false, isAdmin = false, networkId }) => {
+const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = false, isAdmin = false, networkId, onPostDeleted }) => {
+  const { user } = useAuth();
   const muiTheme = useTheme();
   const isMobile = useMediaQuery(muiTheme.breakpoints.down('sm'));
   
@@ -121,6 +125,9 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
   
   // Create post modal state
   const [createPostOpen, setCreatePostOpen] = useState(false);
+  
+  // Delete post state
+  const [deletingPostId, setDeletingPostId] = useState(null);
   
   // Toggle card expansion with improved scroll handling
   const handleExpandCard = (id) => {
@@ -566,6 +573,52 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
     // The parent component would need to pass a refresh callback
   };
   
+  // Handle post deletion
+  const handleDeletePost = async (item, e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (!window.confirm('Are you sure you want to delete this post? This action cannot be undone.')) {
+      return;
+    }
+    
+    try {
+      setDeletingPostId(item.id);
+      
+      // Delete from portfolio_items table (posts are stored there)
+      const { error } = await supabase
+        .from('portfolio_items')
+        .delete()
+        .eq('id', item.id)
+        .eq('profile_id', user.id); // Ensure user can only delete their own posts
+        
+      if (error) throw error;
+      
+      console.log('Post deleted successfully:', item.id);
+      
+      // Remove the post from local state immediately
+      setDisplayItems(prevItems => prevItems.filter(displayItem => 
+        !(displayItem.itemType === 'post' && displayItem.id === item.id)
+      ));
+      
+      // Call parent callback if provided to update the main social wall items
+      if (onPostDeleted) {
+        onPostDeleted(item.id, 'post');
+      }
+      
+    } catch (err) {
+      console.error('Error deleting post:', err);
+      alert('Failed to delete post. Please try again.');
+    } finally {
+      setDeletingPostId(null);
+    }
+  };
+  
+  // Check if user owns the post
+  const isUserPost = (item) => {
+    return item.itemType === 'post' && item.memberId === user?.id;
+  };
+  
   return (
     <Paper 
       sx={{ 
@@ -800,6 +853,28 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                     }
                     action={
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1, mr: 1 }}>
+                        {/* Delete button for user's own posts */}
+                        {isUserPost(item) && (
+                          <IconButton
+                            size="small"
+                            onClick={(e) => handleDeletePost(item, e)}
+                            disabled={deletingPostId === item.id}
+                            sx={{
+                              color: 'error.main',
+                              '&:hover': {
+                                bgcolor: alpha(muiTheme.palette.error.main, 0.08)
+                              },
+                              transition: 'all 0.2s ease'
+                            }}
+                          >
+                            {deletingPostId === item.id ? (
+                              <CircularProgress size={16} />
+                            ) : (
+                              <DeleteIcon fontSize="small" />
+                            )}
+                          </IconButton>
+                        )}
+                        
                         {(() => {
                           const contentType = getContentTypeIcon(item);
                           return (
