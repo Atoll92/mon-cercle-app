@@ -90,11 +90,6 @@ const AboutTab = ({ network, networkMembers, isUserAdmin }) => {
             </CardContent>
           </Card>
         </Grid>
-        
-        {/* Invitation Links Widget */}
-        <Grid item xs={12}>
-          <InvitationLinkWidget networkId={network.id} />
-        </Grid>
       </Grid>
     </Paper>
   );
