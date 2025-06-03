@@ -871,7 +871,7 @@ function NetworkLandingPage() {
         open={showMemberModal}
         onClose={() => setShowMemberModal(false)}
         member={selectedMember}
-        portfolioItems={selectedMember ? postItems.filter(item => item.profile_id === selectedMember.id) : []}
+        posts={selectedMember ? postItems.filter(item => item.profile_id === selectedMember.id) : []}
         isCurrentUser={selectedMember?.id === user?.id}
         darkMode={membersTabDarkMode}
       />

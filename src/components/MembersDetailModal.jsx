@@ -54,7 +54,7 @@ const MemberDetailsModal = ({
   const customFadedText = muiTheme.palette.custom?.fadedText || (darkMode ? alpha('#ffffff', 0.7) : alpha('#000000', 0.7));
   const customBorder = muiTheme.palette.custom?.border || (darkMode ? alpha('#ffffff', 0.1) : alpha('#000000', 0.1));
   
-  const [memberPosts, setMemberPosts] = useState(initialPosts || []);
+  const [memberPosts, setMemberPosts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   
@@ -73,19 +73,20 @@ const MemberDetailsModal = ({
   
   // Fetch posts only if not provided through props
   useEffect(() => {
-    // Initialize with provided items if available
-    if (initialPosts && initialPosts.length > 0) {
+    // Skip fetching if member is not defined or modal not open
+    if (!member || !open) {
+      return;
+    }
+    
+    // If posts are provided through props, use them
+    if (initialPosts && initialPosts.length >= 0) {
       console.log("Using provided posts:", initialPosts);
       setMemberPosts(initialPosts);
       setLoading(false);
       return;
     }
-    
-    // Skip fetching if member is not defined or modal not open
-    if (!member || !open) {
-      return;
-    }
 
+    // Only fetch if no posts provided
     const fetchPosts = async () => {
       try {
         setLoading(true);
@@ -111,7 +112,7 @@ const MemberDetailsModal = ({
     };
     
     fetchPosts();
-  }, [member, open, initialPosts]);
+  }, [member?.id, open]); // Remove initialPosts from dependencies to prevent loops
 
   // Fetch member's featured moodboard
   useEffect(() => {
