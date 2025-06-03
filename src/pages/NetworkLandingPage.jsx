@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useLocation, useSearchParams, useParams } from 'react-router-dom';
 import { useAuth } from '../context/authcontext';
 import { useTheme } from '../components/ThemeProvider';
-import { useNetwork, NetworkProviderWithParams } from '../context/networkContext';
+import { useNetwork, NetworkProvider, NetworkProviderWithParams } from '../context/networkContext';
+import { useApp } from '../context/appContext';
 import { supabase } from '../supabaseclient';
 import { useFadeIn } from '../hooks/useAnimation';
 import { GridSkeleton } from '../components/LoadingSkeleton';
@@ -19,7 +20,6 @@ import {
   Button,
   Paper,
   Alert,
-  CircularProgress,
   Tabs,
   Tab,
   TextField,
@@ -49,12 +49,50 @@ import FilesTab from '../components/FilesTab';
 import OnboardingGuide, { WithOnboardingHighlight } from '../components/OnboardingGuide';
 import WelcomeMessage from '../components/WelcomeMessage';
 
-// Create wrapper component that uses NetworkProviderWithParams
-const NetworkLandingPageWrapper = () => (
-  <NetworkProviderWithParams>
-    <NetworkLandingPage />
-  </NetworkProviderWithParams>
-);
+// Simplified wrapper component that uses App context
+const NetworkLandingPageWrapper = () => {
+  const { networkId } = useParams();
+  const { userNetworkId, fetchingNetwork } = useApp();
+
+  // Show loading while fetching user's network
+  if (!networkId && fetchingNetwork) {
+    return (
+      <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+        <GridSkeleton items={6} columns={3} />
+      </Container>
+    );
+  }
+
+  // Determine which network ID to use
+  const effectiveNetworkId = networkId || userNetworkId;
+
+  if (!effectiveNetworkId) {
+    return (
+      <Container maxWidth="md" sx={{ mt: 4 }}>
+        <Alert severity="error">
+          No network found. Please make sure you are a member of a network.
+        </Alert>
+      </Container>
+    );
+  }
+
+  // Use the appropriate provider based on whether we have a URL param
+  if (networkId) {
+    // Public access with URL param - use existing NetworkProviderWithParams
+    return (
+      <NetworkProviderWithParams>
+        <NetworkLandingPage />
+      </NetworkProviderWithParams>
+    );
+  } else {
+    // Authenticated access without URL param - use NetworkProvider directly
+    return (
+      <NetworkProvider networkId={effectiveNetworkId}>
+        <NetworkLandingPage />
+      </NetworkProvider>
+    );
+  }
+};
 
 function NetworkLandingPage() {
   const { user } = useAuth();
@@ -329,6 +367,12 @@ function NetworkLandingPage() {
       const joinedAt = new Date(currentUserProfile.updated_at);
       const now = new Date();
       const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000);
+      
+      // Skip if date is invalid
+      if (isNaN(joinedAt.getTime())) {
+        console.log('[Welcome] Invalid date for updated_at:', currentUserProfile.updated_at);
+        return;
+      }
       
       console.log('[Welcome] Checking recent join:', {
         joinedAt: joinedAt.toISOString(),

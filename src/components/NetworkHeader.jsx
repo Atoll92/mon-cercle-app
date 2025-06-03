@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Skeleton, Badge, IconButton, Tooltip, Switch, alpha, Divider } from '@mui/material';
+import { Box, Typography, Skeleton, Badge, Tooltip, alpha, Divider } from '@mui/material';
 import { 
   Logout as LogoutIcon, 
   Person as PersonIcon,
@@ -161,7 +161,7 @@ const NetworkHeader = () => {
     >
       <Box sx={{ display: 'flex', alignItems: 'center' }}>
         {displayedLogoUrl ? (
-          <Link to={networkId ? `/network/${networkId}` : '/dashboard'}>
+          <Link to={user && networkId ? '/network' : (networkId ? `/network/${networkId}` : '/dashboard')}>
             <img
               src={displayedLogoUrl}
               alt={displayedNetworkName || "Network Logo"}
@@ -181,7 +181,7 @@ const NetworkHeader = () => {
           <Typography
             variant="h6"
             component={networkId ? Link : 'div'}
-            to={networkId ? `/network/${networkId}` : undefined}
+            to={user && networkId ? '/network' : (networkId ? `/network/${networkId}` : undefined)}
             sx={{
               fontWeight: displayedLogoUrl ? 700 : 900,
               color: darkMode ? '#ffffff' : '#333333', // Apply dark/light mode
@@ -216,7 +216,7 @@ const NetworkHeader = () => {
           {/* Network */}
           <Box 
             component={Link} 
-            to={networkId ? `/network/${networkId}` : '/dashboard'}
+            to={user && networkId ? '/network' : (networkId ? `/network/${networkId}` : '/dashboard')}
             sx={iconButtonStyle}
           >
             <BusinessIcon />

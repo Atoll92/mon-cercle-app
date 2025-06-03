@@ -291,7 +291,7 @@ const NetworkOnboardingWizard = ({ profile }) => {
       
       // Redirect to the network page after 2 seconds
       setTimeout(() => {
-        navigate(`/network/${network.id}`);
+        navigate('/network');
       }, 2000);
       
     } catch (error) {

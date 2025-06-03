@@ -10,6 +10,7 @@ import { preventResizeAnimations } from './utils/animationHelpers';
 import ThemeProvider from './components/ThemeProvider';
 import ProtectedRoute from './components/ProtectedRoute';
 import { DirectMessagesProvider } from './context/directMessagesContext';
+import { AppProvider } from './context/appContext';
 import ErrorBoundary from './components/ErrorBoundary';
 import { Analytics } from '@vercel/analytics/react';
 
@@ -63,7 +64,7 @@ function App() {
   const { loading, session, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [networkName, setNetworkName] = useState('');
+  const [userNetworkId, setUserNetworkId] = useState(null);
   const [fetchingNetwork, setFetchingNetwork] = useState(false);
 
   // Initialize resize animation prevention
@@ -76,14 +77,14 @@ function App() {
   useEffect(() => {
     const fetchUserNetwork = async () => {
       if (!user) {
-        setNetworkName('');
+        setUserNetworkId(null);
         return;
       }
 
       try {
         setFetchingNetwork(true);
         
-        // First get the user's profile to find their network_id
+        // Get the user's profile to find their network_id
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('network_id')
@@ -92,27 +93,14 @@ function App() {
           
         if (profileError || !profileData.network_id) {
           console.log('No network found or user not in a network');
-          setNetworkName('');
+          setUserNetworkId(null);
           return;
         }
         
-        // Then fetch the network details to get the name
-        const { data: networkData, error: networkError } = await supabase
-          .from('networks')
-          .select('name')
-          .eq('id', profileData.network_id)
-          .single();
-          
-        if (networkError) {
-          console.error('Error fetching network:', networkError);
-          setNetworkName('');
-          return;
-        }
-        
-        setNetworkName(networkData.name);
+        setUserNetworkId(profileData.network_id);
       } catch (error) {
         console.error('Error in network fetch:', error);
-        setNetworkName('');
+        setUserNetworkId(null);
       } finally {
         setFetchingNetwork(false);
       }
@@ -169,8 +157,9 @@ function App() {
   return (
     <ErrorBoundary>
       <ThemeProvider>
-        <DirectMessagesProvider>
-          <Box className="App" sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+        <AppProvider userNetworkId={userNetworkId} fetchingNetwork={fetchingNetwork}>
+          <DirectMessagesProvider>
+            <Box className="App" sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
             {/* Pass the network name to the header */}
             {window.location.pathname !== "/" && window.location.pathname !== "/pricing" && window.location.pathname !== "/terms" && window.location.pathname !== "/old" && !window.location.pathname.startsWith("/micro-conclav/") && (
               <NetworkHeader/>
@@ -248,9 +237,11 @@ function App() {
               <Route path="/admin" element={<NetworkAdminPage />} />
               <Route path="/super-admin" element={<SuperAdminDashboard />} />
               <Route path="/create-network" element={<NetworkOnboardingPage />} />
+              {/* Protected network route without ID for authenticated members */}
+              <Route path="/network" element={<NetworkLandingPage />} />
             </Route>
             
-            {/* Networks routes */}
+            {/* Public network routes with ID */}
             <Route path="/network/:networkId" element={<NetworkLandingPage />} />
             <Route path="/network/:networkId/news/:newsId" element={<NewsPostPage />} />
             <Route path="/network/:networkId/event/:eventId" element={<EventPage />} />
@@ -270,6 +261,7 @@ function App() {
             <Analytics />
           </Box>
         </DirectMessagesProvider>
+        </AppProvider>
       </ThemeProvider>
     </ErrorBoundary>
   );

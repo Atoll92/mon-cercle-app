@@ -732,7 +732,7 @@ function DashboardPage() {
                 variant="contained" 
                 color="error" 
                 component={Link}
-                to={`/network/${profile.network_id}`}
+                to="/network"
                 endIcon={<ArrowForwardIcon />}
                 sx={{ 
                   bgcolor: 'rgba(255,255,255,0.15)', 
@@ -1315,7 +1315,7 @@ function DashboardPage() {
                             variant="contained" 
                             fullWidth
                             component={Link}
-                            to={`/network/${profile.network_id}`}
+                            to="/network"
                             startIcon={<ArrowForwardIcon />}
                           >
                             Go to Network
@@ -1574,7 +1574,7 @@ function DashboardPage() {
                           action={
                             <Button 
                               component={Link}
-                              to={`/network/${profile.network_id}?tab=events`}
+                              to="/network?tab=events"
                               endIcon={<ArrowForwardIcon />}
                               size="small"
                             >

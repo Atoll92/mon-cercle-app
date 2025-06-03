@@ -625,10 +625,10 @@ function EditProfilePage() {
           
           if (fromInvite || isNewProfile) {
             // Redirect to network page with welcome flag
-            navigate(`/network/${currentProfile.network_id}?from_invite=true`);
+            navigate('/network?from_invite=true');
           } else {
             // Regular redirect to network page
-            navigate(`/network/${currentProfile.network_id}`);
+            navigate('/network');
           }
         } else {
           console.log('No network_id found, redirecting to dashboard');

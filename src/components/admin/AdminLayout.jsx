@@ -175,7 +175,7 @@ const AdminLayout = ({
           </Typography>
           <Button 
             component={Link} 
-            to={`/network/${network.id}`}
+            to="/network"
             size="small"
             startIcon={<ArrowBackIcon />}
             sx={{ mt: 1 }}

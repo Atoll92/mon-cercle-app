@@ -113,7 +113,7 @@ function JoinNetworkPage() {
 
       // Redirect to network page after 2 seconds with from_invite flag
       setTimeout(() => {
-        navigate(`/network/${network.id}?from_invite=true`);
+        navigate('/network?from_invite=true');
       }, 2000);
     } catch (err) {
       console.error('Error joining network:', err);
@@ -168,7 +168,7 @@ function JoinNetworkPage() {
           <Button
             variant="contained"
             component={Link}
-            to={`/network/${network?.id}`}
+            to="/network"
           >
             Go to Network
           </Button>
