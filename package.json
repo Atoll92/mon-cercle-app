@@ -10,7 +10,12 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "test:unit": "vitest run --testNamePattern='\\.(test|spec)\\.(js|jsx)$' --testPathIgnorePatterns='integration|e2e'",
+    "test:integration": "vitest run --testNamePattern='integration'",
+    "test:e2e": "vitest run --testNamePattern='e2e'",
+    "test:all": "node src/test-suites/run-all-tests.js",
+    "test:ci": "vitest run --reporter=json --outputFile=test-results.json"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
