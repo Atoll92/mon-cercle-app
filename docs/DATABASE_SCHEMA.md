@@ -40,6 +40,9 @@ profiles
 - notify_on_events (boolean)
 - notify_on_mentions (boolean)
 - notify_on_direct_messages (boolean)
+- badge_count (integer)
+- portfolio_data (jsonb) - Legacy field
+- created_at (timestamp) - When the profile was created
 - updated_at (timestamp)
 
 portfolio_items

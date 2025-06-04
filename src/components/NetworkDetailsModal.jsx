@@ -1,5 +1,6 @@
 // src/components/NetworkDetailsModal.jsx
 import React, { useState, useEffect } from 'react';
+import { formatTimeAgo, formatDate as formatDateUtil } from '../utils/dateFormatting';
 import {
   Dialog,
   DialogTitle,
@@ -296,9 +297,9 @@ const NetworkDetailsModal = ({ open, onClose, networkId }) => {
                                   {member.contact_email}
                                 </Typography>
                                 <Typography variant="caption" color="text.secondary">
-                                  Joined: {formatDate(member.created_at)}
+                                  Joined {formatTimeAgo(member.created_at)}
                                   {member.last_active && (
-                                    <> • Last active: {formatDate(member.last_active)}</>
+                                    <> • Last active {formatTimeAgo(member.last_active)}</>
                                   )}
                                 </Typography>
                               </Box>

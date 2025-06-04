@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../supabaseclient';
 import { useFadeIn } from '../hooks/useAnimation';
+import { formatTimeAgo } from '../utils/dateFormatting';
 import {
   Dialog,
   DialogContent,
@@ -654,7 +655,7 @@ const MemberDetailsModal = ({
                   {member.created_at && (
                     <Chip
                       icon={<EventNoteIcon fontSize="small" />}
-                      label={`Joined: ${new Date(member.created_at).toLocaleDateString()}`}
+                      label={`Joined ${formatTimeAgo(member.created_at)}`}
                       size="small"
                       sx={{ 
                         bgcolor: darkMode ? alpha('#555555', 0.8) : undefined,

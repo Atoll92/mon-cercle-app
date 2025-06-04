@@ -7,6 +7,15 @@ This document tracks significant changes and new features in the Conclav applica
 - Production domains: conclav.club and conclav.network
 - Updated branding throughout the application
 
+## June 2025 Updates
+
+### Profile Creation Timestamps
+- Added `created_at` column to profiles table with automatic timestamp on creation
+- Updated MembersDetailModal to show "Joined X time ago" using formatTimeAgo utility
+- Updated NetworkDetailsModal to show member join dates with relative time
+- Migration added to initialize existing profiles with current date
+- Improved member listings with join date information
+
 ## February 2025 Updates
 
 ### Enhanced LinkPreview Component
