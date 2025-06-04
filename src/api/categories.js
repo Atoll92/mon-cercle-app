@@ -39,11 +39,16 @@ export const createCategory = async (categoryData) => {
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      if (error.code === '23505') {
+        throw new Error('A category with this slug already exists in this network');
+      }
+      throw error;
+    }
     return { data, error: null };
   } catch (error) {
     console.error('Error creating category:', error);
-    return { data: null, error };
+    return { data: null, error: error.message || error };
   }
 };
 
@@ -57,11 +62,16 @@ export const updateCategory = async (categoryId, updates) => {
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      if (error.code === '23505') {
+        throw new Error('A category with this slug already exists in this network');
+      }
+      throw error;
+    }
     return { data, error: null };
   } catch (error) {
     console.error('Error updating category:', error);
-    return { data: null, error };
+    return { data: null, error: error.message || error };
   }
 };
 

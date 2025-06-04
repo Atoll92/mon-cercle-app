@@ -391,7 +391,7 @@ Key entities in the Supabase database:
 - `moodboards`: Personal and network moodboards
 - `moodboard_items`: Moodboard content items
 - `social_wall_comments`: Comments on social wall items (news and portfolio)
-- `network_badges`: Badge definitions for networks
+- `badges`: Badge definitions for networks
 - `user_badges`: Badge assignments to users
 - `network_invitation_links`: Shareable invitation links with QR codes
 - `support_tickets`: Support ticket system for network admins

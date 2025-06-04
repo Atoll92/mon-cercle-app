@@ -20,23 +20,6 @@ export const fetchMoodboard = async (id) => {
 };
 
 /**
- * Fetch all items for a moodboard
- * @param {string} moodboardId - The moodboard ID
- * @returns {Promise<Array>} Array of moodboard items
- */
-export const fetchMoodboardItems = async (moodboardId) => {
-  const { data, error } = await supabase
-    .from('moodboard_items')
-    .select('*')
-    .eq('moodboard_id', moodboardId)
-    .order('z_index', { ascending: true })
-    .order('created_at', { ascending: true });
-    
-  if (error) throw error;
-  return data || [];
-};
-
-/**
  * Create a new moodboard
  * @param {object} moodboard - The moodboard data
  * @returns {Promise<object>} The created moodboard

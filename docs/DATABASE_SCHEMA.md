@@ -243,13 +243,26 @@ moodboards
 moodboard_items
 - id (uuid, PK)
 - moodboard_id (uuid, FK to moodboards.id)
-- type (varchar) - 'image', 'text', etc.
+- type (text) - 'image', 'text', 'video', 'link'
 - content (text)
-- position_x (float)
-- position_y (float)
-- width (float)
-- height (float)
-- z_index (integer)
+- title (text, nullable)
+- x (double precision)
+- y (double precision)
+- width (double precision)
+- height (double precision)
+- rotation (double precision, default 0)
+- zIndex (integer, default 0)
+- textColor (text, nullable)
+- backgroundColor (text, nullable)
+- font_family (text, nullable)
+- font_size (text, nullable)
+- font_weight (text, nullable)
+- text_align (text, nullable)
+- line_height (text, nullable)
+- opacity (double precision, default 1)
+- border_radius (double precision, default 0)
+- metadata (jsonb, default '{}')
+- created_by (uuid, FK to profiles.id)
 - created_at (timestamp)
 - updated_at (timestamp)
 ```
@@ -275,6 +288,19 @@ wiki_categories
 - name (varchar)
 - description (text)
 - created_at (timestamp)
+
+network_categories
+- id (uuid, PK)
+- network_id (uuid, FK to networks.id)
+- name (varchar(100))
+- slug (varchar(100))
+- description (text, nullable)
+- color (varchar(7), nullable)
+- sort_order (integer, default 0)
+- is_active (boolean, default true)
+- created_by (uuid, FK to profiles.id, nullable)
+- created_at (timestamp)
+- updated_at (timestamp)
 
 wiki_comments
 - id (uuid, PK)
@@ -333,18 +359,16 @@ moderation_logs
 
 notification_queue
 - id (uuid, PK)
-- recipient_email (varchar)
-- recipient_name (varchar)
-- subject (varchar)
-- template_id (varchar)
-- template_data (jsonb)
-- status (varchar) - 'pending', 'sent', 'failed'
-- attempts (integer, default 0)
-- last_attempt_at (timestamp)
-- sent_at (timestamp)
-- error_message (text)
+- recipient_id (uuid, FK to profiles.id)
+- network_id (uuid, FK to networks.id)
+- notification_type (varchar(50)) - 'news', 'event', 'mention', 'direct_message'
+- subject_line (varchar(255))
+- content_preview (text, nullable)
+- related_item_id (uuid, nullable)
+- is_sent (boolean, default false)
 - created_at (timestamp)
-- updated_at (timestamp)
+- sent_at (timestamp, nullable)
+- error_message (text, nullable)
 ```
 
 ### Social Features
@@ -365,25 +389,41 @@ social_wall_comments
 ### Badges & Engagement
 
 ```sql
-network_badges  
+badges
 - id (uuid, PK)
-- network_id (uuid, FK to networks.id)
-- name (varchar)
-- description (text)
-- icon (varchar) - Material UI icon name
-- color (varchar) - Hex color code
-- criteria_type (varchar) - 'manual' or 'automatic'
-- criteria_config (jsonb) - Automatic awarding rules
+- network_id (uuid, FK to networks.id, nullable)
+- name (varchar(255))
+- description (text, nullable)
+- icon (varchar(50))
+- color (varchar(50), default 'primary')
+- criteria_type (varchar(50))
+- criteria_value (integer, default 0)
+- is_active (boolean, default true)
+- created_by (uuid, FK to profiles.id, nullable)
 - created_at (timestamp)
 - updated_at (timestamp)
 
 user_badges
 - id (uuid, PK)
 - user_id (uuid, FK to profiles.id)
-- badge_id (uuid, FK to network_badges.id)
+- badge_id (uuid, FK to badges.id)
 - awarded_by (uuid, FK to profiles.id, nullable)
 - awarded_at (timestamp)
 - reason (text, nullable)
+
+engagement_stats
+- id (uuid, PK)
+- user_id (uuid, FK to profiles.id)
+- network_id (uuid, FK to networks.id)
+- posts_count (integer, default 0)
+- events_attended (integer, default 0)
+- messages_sent (integer, default 0)
+- wiki_contributions (integer, default 0)
+- polls_participated (integer, default 0)
+- files_shared (integer, default 0)
+- last_active (timestamp)
+- member_since (timestamp)
+- updated_at (timestamp)
 ```
 
 ### Support System
