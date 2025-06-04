@@ -601,28 +601,72 @@ export const getUserActivity = async (limit = 100) => {
 // Get system health metrics
 export const getSystemHealth = async () => {
   try {
-    // Get database size and performance metrics
-    const { data: dbStats, error: dbError } = await supabase
-      .rpc('get_database_stats'); // You'll need to create this RPC function
-
-    if (dbError) {
-      console.warn('Could not fetch database stats:', dbError);
+    let dbStats = null;
+    
+    // Try to get database stats from RPC function
+    try {
+      const { data, error } = await supabase.rpc('get_database_stats');
+      
+      if (error) {
+        console.error('Database stats RPC error:', error);
+        // Provide more detailed error information
+        if (error.code === '42883') {
+          console.error('Function get_database_stats does not exist');
+        } else if (error.code === '42501') {
+          console.error('Permission denied for get_database_stats function');
+        }
+      } else {
+        dbStats = data;
+      }
+    } catch (rpcError) {
+      console.error('RPC call failed:', rpcError);
     }
 
-    // Get recent errors (if you have error logging)
-    const { data: recentErrors, error: errorsError } = await supabase
-      .from('error_logs') // If you have error logging table
-      .select('*')
-      .order('created_at', { ascending: false })
-      .limit(10);
+    // If RPC fails, try to get basic stats manually
+    if (!dbStats) {
+      console.warn('Falling back to manual database stats collection...');
+      try {
+        // Get basic table counts
+        const { count: profilesCount } = await supabase
+          .from('profiles')
+          .select('*', { count: 'exact', head: true });
+          
+        const { count: networksCount } = await supabase
+          .from('networks')
+          .select('*', { count: 'exact', head: true });
+          
+        const { count: messagesCount } = await supabase
+          .from('messages')
+          .select('*', { count: 'exact', head: true });
 
-    if (errorsError) {
-      console.warn('Could not fetch recent errors:', errorsError);
+        dbStats = {
+          database_size_formatted: 'N/A (RPC unavailable)',
+          row_counts: {
+            profiles: profilesCount || 0,
+            networks: networksCount || 0,
+            messages: messagesCount || 0
+          },
+          cache_hit_ratio: null,
+          active_connections: null,
+          uptime: null,
+          version: 'N/A',
+          table_sizes: {},
+          index_info: {
+            total_indexes: null,
+            unique_indexes: null,
+            primary_indexes: null,
+            total_index_size: null
+          }
+        };
+      } catch (fallbackError) {
+        console.error('Fallback stats collection failed:', fallbackError);
+        dbStats = null;
+      }
     }
 
     return {
-      database: dbStats || {},
-      errors: recentErrors || [],
+      database: dbStats,
+      errors: [], // Skip error_logs table since it doesn't exist
       timestamp: new Date().toISOString()
     };
   } catch (error) {

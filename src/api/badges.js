@@ -1,4 +1,5 @@
 import { supabase } from '../supabaseclient';
+import { handleArrayError, logError } from '../utils/errorHandling';
 
 // Fetch all badges for a network
 export const fetchNetworkBadges = async (networkId) => {
@@ -12,8 +13,8 @@ export const fetchNetworkBadges = async (networkId) => {
     if (error) throw error;
     return data || [];
   } catch (error) {
-    console.error('Error fetching badges:', error);
-    return [];
+    logError(error, 'fetchNetworkBadges', { networkId });
+    return handleArrayError(error, 'fetching network badges');
   }
 };
 
@@ -106,8 +107,8 @@ export const fetchUserBadges = async (userId) => {
     if (error) throw error;
     return data || [];
   } catch (error) {
-    console.error('Error fetching user badges:', error);
-    return [];
+    logError(error, 'fetchUserBadges', { userId });
+    return handleArrayError(error, 'fetching user badges');
   }
 };
 

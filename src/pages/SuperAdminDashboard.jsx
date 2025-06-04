@@ -53,19 +53,24 @@ import {
   Delete as DeleteIcon,
   Block as SuspendIcon,
   CheckCircle as ActiveIcon,
+  CheckCircle,
   Support as SupportIcon,
   Warning as WarningIcon,
   Refresh as RefreshIcon,
   Download as ExportIcon,
   Search as SearchIcon,
   FilterList as FilterIcon,
-  Logout as LogoutIcon
+  Logout as LogoutIcon,
+  Memory as DatabaseIcon,
+  Speed as PerformanceIcon,
+  TableChart as TableIcon
 } from '@mui/icons-material';
 import { 
   fetchAllNetworks, 
   updateNetworkStatus, 
   getNetworkAnalytics,
-  exportNetworkData 
+  exportNetworkData,
+  getSystemHealth
 } from '../api/superAdmin';
 import { PageTransition } from '../components/AnimatedComponents';
 import NetworkDetailsModal from '../components/NetworkDetailsModal';
@@ -79,6 +84,7 @@ const SuperAdminDashboard = () => {
   // State management
   const [networks, setNetworks] = useState([]);
   const [analytics, setAnalytics] = useState(null);
+  const [systemHealth, setSystemHealth] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedNetwork, setSelectedNetwork] = useState(null);
@@ -142,6 +148,15 @@ const SuperAdminDashboard = () => {
             usersGrowth: 0
           }
         });
+      }
+
+      // Try to load system health data
+      try {
+        const healthData = await getSystemHealth();
+        setSystemHealth(healthData);
+      } catch (err) {
+        console.error('Error loading system health:', err);
+        setSystemHealth(null);
       }
       
     } catch (err) {
@@ -277,6 +292,7 @@ const SuperAdminDashboard = () => {
           <Tabs value={activeTab} onChange={(e, v) => setActiveTab(v)} variant="fullWidth">
             <Tab icon={<DashboardIcon />} label="Networks" />
             <Tab icon={<SupportIcon />} label="Support Tickets" />
+            <Tab icon={<DatabaseIcon />} label="System Health" />
           </Tabs>
         </Paper>
 
@@ -285,7 +301,7 @@ const SuperAdminDashboard = () => {
             {/* Analytics Cards */}
             {analytics && (
           <Grid container spacing={3} sx={{ mb: 4 }}>
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid>
               <Card>
                 <CardContent>
                   <Box display="flex" alignItems="center" justifyContent="space-between">
@@ -701,6 +717,264 @@ const SuperAdminDashboard = () => {
         
         {activeTab === 1 && (
           <TicketsManagement />
+        )}
+
+        {activeTab === 2 && (
+          <>
+            {/* System Health Dashboard */}
+            <Grid container spacing={3} sx={{ mb: 4 }}>
+              {/* Database Overview */}
+              <Grid item xs={12} md={6}>
+                <Card>
+                  <CardHeader 
+                    title="Database Overview" 
+                    avatar={<DatabaseIcon color="primary" />}
+                    action={
+                      <Tooltip title="Refresh System Health">
+                        <IconButton onClick={loadDashboardData}>
+                          <RefreshIcon />
+                        </IconButton>
+                      </Tooltip>
+                    }
+                  />
+                  <CardContent>
+                    {systemHealth?.database ? (
+                      <Box>
+                        <Typography variant="h6" gutterBottom>
+                          Total Database Size: {systemHealth.database.database_size_formatted || 'N/A'}
+                        </Typography>
+                        <Divider sx={{ my: 2 }} />
+                        
+                        <Typography variant="subtitle2" gutterBottom>
+                          Table Row Counts:
+                        </Typography>
+                        <Grid container spacing={2}>
+                          {systemHealth.database.row_counts && Object.entries(systemHealth.database.row_counts).map(([table, count]) => (
+                            <Grid item xs={6} key={table}>
+                              <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                <Typography variant="body2" color="text.secondary">
+                                  {table}:
+                                </Typography>
+                                <Typography variant="body2" fontWeight="medium">
+                                  {count?.toLocaleString() || 0}
+                                </Typography>
+                              </Box>
+                            </Grid>
+                          ))}
+                        </Grid>
+                      </Box>
+                    ) : (
+                      <Alert severity="warning">Database statistics unavailable</Alert>
+                    )}
+                  </CardContent>
+                </Card>
+              </Grid>
+
+              {/* Performance Metrics */}
+              <Grid item xs={12} md={6}>
+                <Card>
+                  <CardHeader 
+                    title="Performance Metrics" 
+                    avatar={<PerformanceIcon color="success" />}
+                  />
+                  <CardContent>
+                    {systemHealth?.database ? (
+                      <Box>
+                        <Grid container spacing={2}>
+                          <Grid item xs={12}>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                              <Typography variant="body2" color="text.secondary">
+                                Cache Hit Ratio:
+                              </Typography>
+                              <Typography variant="body2" fontWeight="medium">
+                                {systemHealth.database.cache_hit_ratio || 0}%
+                              </Typography>
+                            </Box>
+                            <LinearProgress 
+                              variant="determinate" 
+                              value={systemHealth.database.cache_hit_ratio || 0}
+                              color={systemHealth.database.cache_hit_ratio > 90 ? 'success' : 
+                                     systemHealth.database.cache_hit_ratio > 80 ? 'warning' : 'error'}
+                              sx={{ height: 8, borderRadius: 4 }}
+                            />
+                          </Grid>
+                          
+                          <Grid item xs={6}>
+                            <Typography variant="body2" color="text.secondary">
+                              Active Connections:
+                            </Typography>
+                            <Typography variant="h6">
+                              {systemHealth.database.active_connections || 0}
+                            </Typography>
+                          </Grid>
+                          
+                          <Grid item xs={6}>
+                            <Typography variant="body2" color="text.secondary">
+                              Uptime:
+                            </Typography>
+                            <Typography variant="h6">
+                              {systemHealth.database.uptime ? 
+                                `${Math.floor(systemHealth.database.uptime / 3600)}h` : 'N/A'}
+                            </Typography>
+                          </Grid>
+                          
+                          <Grid item xs={12}>
+                            <Typography variant="body2" color="text.secondary">
+                              PostgreSQL Version:
+                            </Typography>
+                            <Typography variant="body2" fontWeight="medium">
+                              {systemHealth.database.version?.split(' ')[1] || 'Unknown'}
+                            </Typography>
+                          </Grid>
+                        </Grid>
+                      </Box>
+                    ) : (
+                      <Alert severity="warning">Performance metrics unavailable</Alert>
+                    )}
+                  </CardContent>
+                </Card>
+              </Grid>
+
+              {/* Index Information */}
+              <Grid item xs={12} md={6}>
+                <Card>
+                  <CardHeader 
+                    title="Index Statistics" 
+                    avatar={<TableIcon color="info" />}
+                  />
+                  <CardContent>
+                    {systemHealth?.database?.index_info ? (
+                      <Grid container spacing={2}>
+                        <Grid item xs={6}>
+                          <Typography variant="body2" color="text.secondary">
+                            Total Indexes:
+                          </Typography>
+                          <Typography variant="h6">
+                            {systemHealth.database.index_info.total_indexes || 0}
+                          </Typography>
+                        </Grid>
+                        
+                        <Grid item xs={6}>
+                          <Typography variant="body2" color="text.secondary">
+                            Unique Indexes:
+                          </Typography>
+                          <Typography variant="h6">
+                            {systemHealth.database.index_info.unique_indexes || 0}
+                          </Typography>
+                        </Grid>
+                        
+                        <Grid item xs={6}>
+                          <Typography variant="body2" color="text.secondary">
+                            Primary Indexes:
+                          </Typography>
+                          <Typography variant="h6">
+                            {systemHealth.database.index_info.primary_indexes || 0}
+                          </Typography>
+                        </Grid>
+                        
+                        <Grid item xs={6}>
+                          <Typography variant="body2" color="text.secondary">
+                            Index Size:
+                          </Typography>
+                          <Typography variant="h6">
+                            {systemHealth.database.index_info.total_index_size ? 
+                              `${(systemHealth.database.index_info.total_index_size / 1024 / 1024).toFixed(1)}MB` : 
+                              'N/A'}
+                          </Typography>
+                        </Grid>
+                      </Grid>
+                    ) : (
+                      <Alert severity="warning">Index information unavailable</Alert>
+                    )}
+                  </CardContent>
+                </Card>
+              </Grid>
+
+              {/* System Status */}
+              <Grid item xs={12} md={6}>
+                <Card>
+                  <CardHeader 
+                    title="System Status" 
+                    avatar={
+                      <CheckCircle 
+                        color={systemHealth ? 'success' : 'error'} 
+                      />
+                    }
+                  />
+                  <CardContent>
+                    <Box>
+                      <Alert 
+                        severity={systemHealth ? 'success' : 'error'} 
+                        sx={{ mb: 2 }}
+                      >
+                        {systemHealth ? 'System is operational' : 'System health check failed'}
+                      </Alert>
+                      
+                      {systemHealth && (
+                        <Typography variant="body2" color="text.secondary">
+                          Last updated: {new Date(systemHealth.timestamp).toLocaleString()}
+                        </Typography>
+                      )}
+                      
+                      {systemHealth?.errors && systemHealth.errors.length > 0 && (
+                        <Box sx={{ mt: 2 }}>
+                          <Typography variant="subtitle2" gutterBottom>
+                            Recent Errors:
+                          </Typography>
+                          {systemHealth.errors.slice(0, 5).map((error, index) => (
+                            <Alert key={index} severity="warning" sx={{ mb: 1 }}>
+                              {error.message || error}
+                            </Alert>
+                          ))}
+                        </Box>
+                      )}
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Grid>
+
+              {/* Table Sizes Chart */}
+              <Grid item xs={12}>
+                <Card>
+                  <CardHeader 
+                    title="Table Storage Usage" 
+                    avatar={<StorageIcon color="warning" />}
+                  />
+                  <CardContent>
+                    {systemHealth?.database?.table_sizes ? (
+                      <Box>
+                        <Typography variant="body2" color="text.secondary" gutterBottom>
+                          Top tables by storage size:
+                        </Typography>
+                        {Object.entries(systemHealth.database.table_sizes)
+                          .sort((a, b) => b[1] - a[1])
+                          .slice(0, 10)
+                          .map(([table, size]) => (
+                            <Box key={table} sx={{ mb: 1 }}>
+                              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                                <Typography variant="body2">
+                                  {table}
+                                </Typography>
+                                <Typography variant="body2" fontWeight="medium">
+                                  {(size / 1024 / 1024).toFixed(2)} MB
+                                </Typography>
+                              </Box>
+                              <LinearProgress 
+                                variant="determinate" 
+                                value={Math.min((size / Math.max(...Object.values(systemHealth.database.table_sizes))) * 100, 100)}
+                                sx={{ height: 4, borderRadius: 2 }}
+                              />
+                            </Box>
+                          ))}
+                      </Box>
+                    ) : (
+                      <Alert severity="warning">Table size information unavailable</Alert>
+                    )}
+                  </CardContent>
+                </Card>
+              </Grid>
+            </Grid>
+          </>
         )}
       </Container>
     </PageTransition>
