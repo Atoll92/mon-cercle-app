@@ -139,7 +139,7 @@ function WelcomeMessage({ open, onClose, network, user, onStartTour }) {
           </Stack>
         </DialogTitle>
 
-        <DialogContent sx={{ backgroundColor: 'white', pt: 3 }}>
+        <DialogContent sx={{ backgroundColor: 'background.paper', pt: 3 }}>
           <Alert 
             severity="success" 
             icon={<AutoAwesomeIcon />}
@@ -180,7 +180,7 @@ function WelcomeMessage({ open, onClose, network, user, onStartTour }) {
 
           <Box sx={{ 
             p: 2, 
-            backgroundColor: '#f5f5f5', 
+            backgroundColor: 'background.paper', 
             borderRadius: 1,
             textAlign: 'center'
           }}>
@@ -207,9 +207,9 @@ function WelcomeMessage({ open, onClose, network, user, onStartTour }) {
         </DialogContent>
 
         <DialogActions sx={{ 
-          backgroundColor: 'white', 
+          backgroundColor: 'background.default', 
           justifyContent: 'center',
-          pb: 3
+          py: 3
         }}>
           <Button 
             onClick={onClose} 
