@@ -52,7 +52,7 @@ import {
   VisibilityOff as VisibilityOffIcon,
   AttachMoney as AttachMoneyIcon
 } from '@mui/icons-material';
-import { useTheme, alpha } from '@mui/material/styles';
+import { useTheme, alpha, createTheme, ThemeProvider } from '@mui/material/styles';
 import { Business } from '@mui/icons-material';
 import { Groups } from '@mui/icons-material';
 import { Security } from '@mui/icons-material';
@@ -72,6 +72,13 @@ const PricingPage = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const isTablet = useMediaQuery(theme.breakpoints.down('md'));
   const isLargeScreen = useMediaQuery(theme.breakpoints.up('lg'));
+
+  // Create a light theme for the pricing page
+  const lightTheme = createTheme({
+    palette: {
+      mode: 'light',
+    },
+  });
 
   // Calculate discounted annual prices (10 months for price of 12)
   const getAnnualPrice = (monthlyPrice) => {
@@ -348,11 +355,11 @@ const handlePlanSelect = async (plan) => {
   };
 
   return (
-    <>
-    <ThreeJSBackground />
+    <ThemeProvider theme={lightTheme}>
+      <ThreeJSBackground />
 
-    <Container maxWidth="xl" sx={{ py: 8, zIndex: 99, backdropFilter: 'blur(8px)',
-      backgroundColor: alpha(theme.palette.background.paper, 0.4) }}>
+      <Container maxWidth="xl" sx={{ py: 8, zIndex: 99, backdropFilter: 'blur(8px)',
+        backgroundColor: alpha(lightTheme.palette.background.paper, 0.4) }}>
       {/* Header */}
       <Box sx={{ textAlign: 'center', mb: 8 }}>
         <Typography variant="h3" component="h1" gutterBottom fontWeight="bold" color="primary">
@@ -368,7 +375,7 @@ const handlePlanSelect = async (plan) => {
           alignItems: 'center', 
           justifyContent: 'center', 
           mt: 4, 
-          bgcolor: alpha(theme.palette.primary.main, 0.05),
+          bgcolor: alpha(lightTheme.palette.primary.main, 0.05),
           py: 2,
           px: 4,
           borderRadius: 3,
@@ -459,8 +466,8 @@ const handlePlanSelect = async (plan) => {
               <TableRow>
                 <TableCell 
                   sx={{ 
-                    background: alpha(theme.palette.primary.main, 0.05),
-                    borderBottom: `2px solid ${theme.palette.primary.main}`,
+                    background: alpha(lightTheme.palette.primary.main, 0.05),
+                    borderBottom: `2px solid ${lightTheme.palette.primary.main}`,
                     width: '16%',
                     py: 3
                   }}
@@ -474,10 +481,10 @@ const handlePlanSelect = async (plan) => {
                     align="center" 
                     sx={{ 
                       position: 'relative',
-                      background: plan.popular ? alpha(theme.palette.primary.main, 0.05) : 'white',
+                      background: plan.popular ? alpha(lightTheme.palette.primary.main, 0.05) : 'white',
                       borderBottom: plan.popular 
-                        ? `2px solid ${theme.palette.primary.main}` 
-                        : `2px solid ${theme.palette.divider}`,
+                        ? `2px solid ${lightTheme.palette.primary.main}` 
+                        : `2px solid ${lightTheme.palette.divider}`,
                       py: 3,
                       width: `${84/desktopPlans.length}%`
                     }}
@@ -572,13 +579,13 @@ const handlePlanSelect = async (plan) => {
                   key={feature.name}
                   sx={{
                     '&:nth-of-type(odd)': {
-                      backgroundColor: theme.palette.action.hover,
+                      backgroundColor: lightTheme.palette.action.hover,
                     },
                   }}
                 >
                   <TableCell 
                     sx={{ 
-                      borderLeft: `4px solid ${theme.palette.primary.main}`, 
+                      borderLeft: `4px solid ${lightTheme.palette.primary.main}`, 
                       fontWeight: 500
                     }}
                   >
@@ -593,15 +600,15 @@ const handlePlanSelect = async (plan) => {
                       key={`${plan.name}-${feature.name}`} 
                       align="center"
                       sx={{ 
-                        backgroundColor: plan.popular ? alpha(theme.palette.primary.main, 0.03) : 'inherit',
+                        backgroundColor: plan.popular ? alpha(lightTheme.palette.primary.main, 0.03) : 'inherit',
                         fontWeight: 500
                       }}
                     >
                       {typeof plan.features[idx].value === 'boolean' ? (
                         plan.features[idx].value ? (
-                          <CheckIcon sx={{ color: theme.palette.success.main }} />
+                          <CheckIcon sx={{ color: lightTheme.palette.success.main }} />
                         ) : (
-                          <CloseIcon sx={{ color: theme.palette.error.main }} />
+                          <CloseIcon sx={{ color: lightTheme.palette.error.main }} />
                         )
                       ) : (
                         <Typography>
@@ -614,9 +621,9 @@ const handlePlanSelect = async (plan) => {
               ))}
               
               {/* Additional members pricing row */}
-              <TableRow sx={{ backgroundColor: alpha(theme.palette.secondary.main, 0.05) }}>
+              <TableRow sx={{ backgroundColor: alpha(lightTheme.palette.secondary.main, 0.05) }}>
                 <TableCell sx={{ 
-                  borderLeft: `4px solid ${theme.palette.secondary.main}`, 
+                  borderLeft: `4px solid ${lightTheme.palette.secondary.main}`, 
                   fontWeight: 500 
                 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -665,7 +672,7 @@ const handlePlanSelect = async (plan) => {
                   '&:hover': {
                     transform: 'translateY(-8px)'
                   },
-                  border: plan.popular ? `2px solid ${theme.palette.primary.main}` : 'none',
+                  border: plan.popular ? `2px solid ${lightTheme.palette.primary.main}` : 'none',
                 }}
               >
                 {plan.popular && (
@@ -717,7 +724,7 @@ const handlePlanSelect = async (plan) => {
                   sx={{
                     textAlign: 'center',
                     pb: 0,
-                    backgroundColor: plan.popular ? alpha(theme.palette.primary.main, 0.05) : 'transparent'
+                    backgroundColor: plan.popular ? alpha(lightTheme.palette.primary.main, 0.05) : 'transparent'
                   }}
                 />
                 
@@ -779,7 +786,7 @@ const handlePlanSelect = async (plan) => {
                     ))}
                     
                     {/* Additional member pricing */}
-                    <ListItem disableGutters sx={{ py: 1, bgcolor: alpha(theme.palette.secondary.main, 0.05), px: 1, borderRadius: 1, mt: 1 }}>
+                    <ListItem disableGutters sx={{ py: 1, bgcolor: alpha(lightTheme.palette.secondary.main, 0.05), px: 1, borderRadius: 1, mt: 1 }}>
                       <ListItemIcon sx={{ minWidth: 40 }}>
                         <AddIcon color="secondary" />
                       </ListItemIcon>
@@ -844,7 +851,7 @@ const handlePlanSelect = async (plan) => {
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell sx={{ fontWeight: 'bold', bgcolor: alpha(theme.palette.primary.main, 0.05) }}>
+                <TableCell sx={{ fontWeight: 'bold', bgcolor: alpha(lightTheme.palette.primary.main, 0.05) }}>
                   Feature
                 </TableCell>
                 <TableCell align="center" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
@@ -989,9 +996,9 @@ const handlePlanSelect = async (plan) => {
             borderRadius: 2,
             fontSize: '1.1rem',
             fontWeight: 500,
-            boxShadow: theme.shadows[8],
+            boxShadow: lightTheme.shadows[8],
             '&:hover': {
-              boxShadow: theme.shadows[12],
+              boxShadow: lightTheme.shadows[12],
               transform: 'translateY(-2px)'
             },
             transition: 'all 0.3s ease'
@@ -1019,7 +1026,7 @@ const handlePlanSelect = async (plan) => {
         </Typography>
       </Box>
     </Container>
-    </>
+    </ThemeProvider>
   );
 };
 
