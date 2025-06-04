@@ -52,10 +52,12 @@ portfolio_items
 - description (text)
 - url (varchar)
 - image_url (varchar)
-- media_urls (text[], nullable) - Array of media file URLs
-- media_types (text[], nullable) - Array of media MIME types
+- file_type (text)
+- media_url (text) - Single media file URL
+- media_type (text) - Media type: 'image', 'video', 'audio', or 'pdf'
+- media_metadata (jsonb) - Metadata for media files
+- category_id (uuid, FK to network_categories.id)
 - created_at (timestamp)
-- updated_at (timestamp)
 ```
 
 ### Network Management
@@ -71,7 +73,7 @@ networks
 - purpose (varchar) - 'community', 'professional', 'educational', 'hobby', 'other'
 - theme_color (varchar)
 - features_config (jsonb) - Feature toggles
-- default_tabs (text[]) - Default visible tabs
+- enabled_tabs (jsonb) - Enabled navigation tabs configuration
 - subscription_status (varchar)
 - subscription_plan (varchar)
 - subscription_end_date (timestamp)
@@ -141,16 +143,18 @@ event_participations
 network_news
 - id (uuid, PK)
 - network_id (uuid, FK to networks.id)
-- title (varchar)
+- title (text)
 - content (text)
-- image_url (varchar)
-- image_caption (varchar)
-- media_urls (text[], nullable) - Array of media file URLs
-- media_types (text[], nullable) - Array of media MIME types  
+- created_by (uuid, FK to profiles.id)
+- image_url (text)
+- image_caption (text)
+- media_url (text) - Single media file URL
+- media_type (text) - Media type: 'image', 'video', 'audio', or 'pdf'
+- media_metadata (jsonb) - Metadata for media files
+- category_id (uuid, FK to network_categories.id)
 - is_hidden (boolean)
 - is_flagged (boolean)
 - flag_reason (text)
-- created_by (uuid, FK to profiles.id)
 - created_at (timestamp)
 - updated_at (timestamp)
 ```
@@ -226,9 +230,13 @@ messages
 ```sql
 moodboards
 - id (uuid, PK)
-- title (varchar)
+- network_id (uuid, FK to networks.id)
+- title (text)
 - description (text)
+- permissions (text) - 'personal', 'private', 'collaborative', 'public'
+- background_color (text)
 - created_by (uuid, FK to profiles.id)
+- is_personal (boolean)
 - created_at (timestamp)
 - updated_at (timestamp)
 
