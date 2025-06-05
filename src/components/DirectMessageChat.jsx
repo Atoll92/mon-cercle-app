@@ -919,11 +919,6 @@ if (refreshConversations) {
             {partnerStatus === 'online' ? 'Online now' : 'Offline'}
           </Typography>
         </Box>
-        <Tooltip title="More options">
-          <IconButton size="small">
-            <MoreVertIcon />
-          </IconButton>
-        </Tooltip>
       </Paper>
       
       {/* Messages Container */}

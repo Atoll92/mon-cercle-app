@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useDirectMessages } from '../context/directMessagesContext';
 import { useAuth } from '../context/authcontext';
+import { deleteConversation } from '../api/directMessages';
 import {
   List,
   ListItem,
@@ -20,7 +21,14 @@ import {
   Menu,
   MenuItem,
   ListItemIcon,
-  ListItemButton
+  ListItemButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  Alert,
+  Snackbar
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -30,17 +38,20 @@ import {
   PersonAdd as PersonAddIcon,
   FilterList as FilterListIcon,
   CircleOutlined as StatusOfflineIcon,
-  Circle as StatusOnlineIcon,
-  Archive as ArchiveIcon
+  Circle as StatusOnlineIcon
 } from '@mui/icons-material';
 
-function DirectMessagesList({ onSelectConversation }) {
+function DirectMessagesList({ onSelectConversation, onConversationDeleted }) {
   const { conversations, loading, error, refreshConversations } = useDirectMessages();
   const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedConversation, setSelectedConversation] = useState(null);
   const [quickFilter, setQuickFilter] = useState('all'); // all, unread, recent
+  const [openDialog, setOpenDialog] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [message, setMessage] = useState('');
+  const [alertError, setAlertError] = useState('');
   
   useEffect(() => {
     // Refresh conversations when component mounts
@@ -49,13 +60,71 @@ function DirectMessagesList({ onSelectConversation }) {
   
   const handleMenuClick = (event, conversation) => {
     event.stopPropagation();
+    console.log('🗑️ Menu clicked, setting conversation:', conversation);
     setAnchorEl(event.currentTarget);
     setSelectedConversation(conversation);
   };
   
   const handleMenuClose = () => {
+    console.log('🗑️ Menu closing, clearing conversation');
     setAnchorEl(null);
     setSelectedConversation(null);
+  };
+  
+  const handleDeleteClick = () => {
+    console.log('🗑️ Delete clicked, selectedConversation before dialog:', selectedConversation);
+    // Don't call handleMenuClose() here as it clears selectedConversation
+    // Just close the menu and keep the conversation selected for deletion
+    setAnchorEl(null);
+    setOpenDialog(true);
+  };
+  
+  const handleDialogClose = () => {
+    setOpenDialog(false);
+    setSelectedConversation(null);
+    setAlertError('');
+  };
+  
+  const handleConfirmedDelete = async () => {
+    console.log('🗑️ Delete button clicked!');
+    console.log('Selected conversation:', selectedConversation);
+    console.log('User ID:', user?.id);
+    
+    if (!selectedConversation || !user?.id) {
+      console.error('Missing data - selectedConversation:', selectedConversation, 'user.id:', user?.id);
+      return;
+    }
+    
+    setDeleting(true);
+    setAlertError('');
+    
+    try {
+      console.log('🗑️ Calling deleteConversation API...');
+      const result = await deleteConversation(selectedConversation.id, user.id);
+      console.log('🗑️ API result:', result);
+      
+      if (result.success) {
+        console.log('✅ Delete successful!');
+        setMessage(`Conversation with ${selectedConversation.partner?.full_name || 'Unknown User'} has been deleted.`);
+        // Notify parent component about the deletion
+        if (onConversationDeleted) {
+          onConversationDeleted(selectedConversation.id);
+        }
+        // Refresh conversations to remove the deleted one
+        refreshConversations();
+        // Close dialog
+        setOpenDialog(false);
+        setSelectedConversation(null);
+      } else {
+        console.error('❌ Delete failed:', result.error);
+        setAlertError(result.error?.message || 'Failed to delete conversation');
+      }
+    } catch (error) {
+      console.error('❌ Exception during delete:', error);
+      setAlertError('An unexpected error occurred while deleting the conversation');
+    } finally {
+      setDeleting(false);
+    }
   };
   
   // Format timestamp for last message
@@ -333,7 +402,6 @@ function DirectMessagesList({ onSelectConversation }) {
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
         onClose={handleMenuClose}
-        onClick={handleMenuClose}
         slotProps={{
           paper: {
             sx: {
@@ -343,19 +411,54 @@ function DirectMessagesList({ onSelectConversation }) {
           }
         }}
       >
-        <MenuItem>
-          <ListItemIcon>
-            <ArchiveIcon fontSize="small" />
-          </ListItemIcon>
-          <ListItemText>Archive</ListItemText>
-        </MenuItem>
-        <MenuItem>
+        <MenuItem onClick={handleDeleteClick}>
           <ListItemIcon>
             <DeleteIcon fontSize="small" />
           </ListItemIcon>
           <ListItemText>Delete</ListItemText>
         </MenuItem>
       </Menu>
+      
+      {/* Confirmation Dialog */}
+      <Dialog open={openDialog} onClose={handleDialogClose}>
+        <DialogTitle>Delete Conversation</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to delete your conversation with {selectedConversation?.partner?.full_name || 'this user'}? 
+            This action cannot be undone and will permanently delete all messages in this conversation.
+          </DialogContentText>
+          {alertError && (
+            <Alert severity="error" sx={{ mt: 2 }}>
+              {alertError}
+            </Alert>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleDialogClose} disabled={deleting}>
+            Cancel
+          </Button>
+          <Button 
+            onClick={handleConfirmedDelete} 
+            color="error" 
+            disabled={deleting}
+            startIcon={deleting ? <CircularProgress size={16} /> : null}
+          >
+            {deleting ? 'Deleting...' : 'Delete'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+      
+      {/* Success Toast */}
+      <Snackbar
+        open={!!message}
+        autoHideDuration={4000}
+        onClose={() => setMessage('')}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert onClose={() => setMessage('')} severity="success" sx={{ width: '100%' }}>
+          {message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

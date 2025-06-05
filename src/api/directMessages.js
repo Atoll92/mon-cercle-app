@@ -322,7 +322,10 @@ export const markMessagesAsRead = async (conversationId, userId) => {
  * @returns {Object} Object indicating success or error
  */
 export const deleteConversation = async (conversationId, userId) => {
+  console.log('🗑️ [API] deleteConversation called with:', { conversationId, userId });
+  
   try {
+    console.log('🗑️ [API] Fetching conversation to verify permissions...');
     // First verify the user is a participant in this conversation
     const { data: conversation, error: fetchError } = await supabase
       .from('direct_conversations')
@@ -330,31 +333,36 @@ export const deleteConversation = async (conversationId, userId) => {
       .eq('id', conversationId)
       .single();
       
-    if (fetchError) throw fetchError;
+    console.log('🗑️ [API] Conversation fetch result:', { conversation, fetchError });
+      
+    if (fetchError) {
+      console.error('🗑️ [API] Fetch error:', fetchError);
+      throw fetchError;
+    }
     
     if (!conversation?.participants?.includes(userId)) {
+      console.error('🗑️ [API] User not authorized. Participants:', conversation?.participants, 'User:', userId);
       throw new Error('You are not authorized to delete this conversation');
     }
     
-    // Delete all messages in the conversation first
-    const { error: messagesError } = await supabase
-      .from('direct_messages')
-      .delete()
-      .eq('conversation_id', conversationId);
-      
-    if (messagesError) throw messagesError;
-    
-    // Delete the conversation
+    console.log('🗑️ [API] User authorized, deleting conversation...');
+    // Delete the conversation (messages will be deleted automatically via CASCADE)
     const { error: conversationError } = await supabase
       .from('direct_conversations')
       .delete()
       .eq('id', conversationId);
       
-    if (conversationError) throw conversationError;
+    console.log('🗑️ [API] Delete result:', { conversationError });
+      
+    if (conversationError) {
+      console.error('🗑️ [API] Delete error:', conversationError);
+      throw conversationError;
+    }
     
+    console.log('🗑️ [API] Conversation deleted successfully!');
     return { success: true, error: null };
   } catch (error) {
-    console.error('Error deleting conversation:', error);
+    console.error('🗑️ [API] Error deleting conversation:', error);
     return { success: false, error };
   }
 };

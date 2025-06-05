@@ -74,7 +74,7 @@ mon-cercle-app/
 #### API Layer (`src/api/`)
 - `auth.jsx` - Authentication functions
 - `networks.jsx` - Network CRUD operations
-- `directMessages.js` - Direct messaging API (fixed for dark mode)
+- `directMessages.js` - Direct messaging API with conversation deletion support
 - `moodboards.jsx` - Moodboard operations
 - `polls.js` - Polling system
 - `invitations.js` - Invitation management

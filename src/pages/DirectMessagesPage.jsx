@@ -232,6 +232,30 @@ function DirectMessagesPage() {
   const handleBackToList = () => {
     setShowChat(false);
   };
+  
+  // Handle conversation deletion
+  const handleConversationDeleted = (deletedConversationId) => {
+    // If the deleted conversation was currently selected, clear the selection
+    if (selectedConversationId === deletedConversationId) {
+      setSelectedConversationId(null);
+      setPartner(null);
+      setShowChat(false);
+      
+      // Auto-select the first available conversation after deletion
+      setTimeout(() => {
+        if (conversations.length > 1) { // We'll have one less after deletion
+          const remainingConversations = conversations.filter(c => c.id !== deletedConversationId);
+          if (remainingConversations.length > 0 && !isMobile) {
+            const firstConversation = remainingConversations[0];
+            setSelectedConversationId(firstConversation.id);
+            setActiveConversation(firstConversation.id);
+            setPartner(firstConversation.partner);
+            setShowChat(true);
+          }
+        }
+      }, 100); // Small delay to allow state updates
+    }
+  };
 
   const toggleDrawer = () => {
     setDrawerOpen(!drawerOpen);
@@ -307,7 +331,10 @@ function DirectMessagesPage() {
               </IconButton>
             </Box>
             <Box sx={{ height: 'calc(100% - 64px)', overflow: 'hidden' }}>
-              <DirectMessagesList onSelectConversation={handleSelectConversation} />
+              <DirectMessagesList 
+                onSelectConversation={handleSelectConversation}
+                onConversationDeleted={handleConversationDeleted}
+              />
             </Box>
           </Drawer>
         </Box>
@@ -326,7 +353,10 @@ function DirectMessagesPage() {
             </IconButton>
           </Box>
           <Box sx={{ flexGrow: 1, overflow: 'hidden' }}>
-            <DirectMessagesList onSelectConversation={handleSelectConversation} />
+            <DirectMessagesList 
+              onSelectConversation={handleSelectConversation}
+              onConversationDeleted={handleConversationDeleted}
+            />
           </Box>
         </Box>
       )}
@@ -370,7 +400,10 @@ function DirectMessagesPage() {
           </IconButton>
         </Box>
         <Box sx={{ flexGrow: 1, overflow: 'auto' }}>
-          <DirectMessagesList onSelectConversation={handleSelectConversation} />
+          <DirectMessagesList 
+            onSelectConversation={handleSelectConversation}
+            onConversationDeleted={handleConversationDeleted}
+          />
         </Box>
       </Box>
       
