@@ -1,6 +1,7 @@
 import React from 'react';
 import { Box, Typography, Button, Paper, Container } from '@mui/material';
 import { ErrorOutline as ErrorIcon } from '@mui/icons-material';
+import { createSystemErrorTicket } from '../api/tickets';
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -13,7 +14,7 @@ class ErrorBoundary extends React.Component {
     return { hasError: true };
   }
 
-  componentDidCatch(error, errorInfo) {
+  async componentDidCatch(error, errorInfo) {
     // Log error to error reporting service
     console.error('ErrorBoundary caught an error:', error, errorInfo);
     
@@ -22,6 +23,38 @@ class ErrorBoundary extends React.Component {
       error,
       errorInfo
     });
+
+    // Create system error ticket
+    try {
+      const errorData = {
+        error: {
+          message: error.message,
+          name: error.name,
+          stack: error.stack
+        },
+        errorInfo,
+        userAgent: navigator.userAgent,
+        url: window.location.href,
+        timestamp: new Date().toISOString()
+      };
+
+      const ticketResult = await createSystemErrorTicket(errorData);
+      
+      if (ticketResult.error) {
+        if (ticketResult.error === 'RLS_POLICY_RESTRICTION') {
+          console.warn('System error ticket creation blocked by RLS policies. This is expected if policies need to be updated for system tickets.');
+        } else {
+          console.error('Failed to create system error ticket:', ticketResult.error);
+        }
+      } else if (ticketResult.data?.isDuplicate) {
+        console.log('Error already reported in ticket:', ticketResult.data.existingTicketId);
+      } else {
+        console.log('System error ticket created successfully:', ticketResult.data?.id);
+      }
+    } catch (ticketError) {
+      // Don't let ticket creation errors break the error boundary
+      console.error('Error creating system ticket:', ticketError);
+    }
 
     // In production, send to error tracking service
     if (process.env.NODE_ENV === 'production') {
@@ -50,7 +83,7 @@ class ErrorBoundary extends React.Component {
               Oops! Something went wrong
             </Typography>
             
-            <Typography variant="body1" color="text.secondary" paragraph>
+            <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
               We're sorry for the inconvenience. The application encountered an unexpected error.
             </Typography>
 

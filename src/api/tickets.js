@@ -304,3 +304,76 @@ export const closeTicket = async (ticketId) => {
     return { data: null, error: error.message };
   }
 };
+
+// Check if a similar error ticket already exists
+export const checkForDuplicateErrorTicket = async () => {
+  try {
+    // Skip duplicate checking for now since RLS policies prevent reading system tickets
+    // This is a temporary solution - ideally we'd update the view policies to allow
+    // reading system tickets for duplicate detection, or use a different approach
+    console.log('Skipping duplicate check due to RLS restrictions on system tickets');
+    return { isDuplicate: false, existingTicketId: null, error: null };
+  } catch (error) {
+    console.error('Error checking for duplicate tickets:', error);
+    return { isDuplicate: false, existingTicketId: null, error: error.message };
+  }
+};
+
+// Create a system-generated error ticket
+export const createSystemErrorTicket = async (errorData) => {
+  try {
+    const { error, errorInfo, userAgent, url, timestamp } = errorData;
+    
+    // Check for duplicates first (using authenticated client is fine for reading)
+    const duplicateCheck = await checkForDuplicateErrorTicket();
+    if (duplicateCheck.isDuplicate) {
+      console.log('Duplicate error ticket found, skipping creation:', duplicateCheck.existingTicketId);
+      return { data: { isDuplicate: true, existingTicketId: duplicateCheck.existingTicketId }, error: null };
+    }
+
+    const ticketData = {
+      network_id: null, // System tickets don't belong to a specific network
+      submitted_by: null, // System-generated tickets have no user submitter
+      title: `[SYSTEM] Application Error: ${error.message.substring(0, 100)}`,
+      description: `Automatic error report from ErrorBoundary
+
+**Error Details:**
+Message: ${error.message}
+Name: ${error.name}
+
+**Stack Trace:**
+${error.stack}
+
+**Component Stack:**
+${errorInfo?.componentStack || 'Not available'}
+
+**Environment:**
+- URL: ${url}
+- User Agent: ${userAgent}
+- Timestamp: ${timestamp}
+- Environment: ${import.meta.env.MODE || 'unknown'}
+
+This ticket was automatically created by the application's error handling system.`,
+      category: 'bug',
+      priority: 'medium',
+      status: 'open'
+    };
+
+    // Use regular authenticated client - policy should now allow system tickets
+    // Don't use .select() to avoid RLS violations when reading back the created ticket
+    const { error: insertError } = await supabase
+      .from('support_tickets')
+      .insert([ticketData]);
+
+    if (insertError) {
+      console.warn('Could not create system error ticket:', insertError);
+      return { data: null, error: insertError.message };
+    }
+
+    console.log('System error ticket created successfully');
+    return { data: { isDuplicate: false }, error: null };
+  } catch (error) {
+    console.error('Error creating system error ticket:', error);
+    return { data: null, error: error.message };
+  }
+};
