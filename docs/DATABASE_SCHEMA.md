@@ -21,29 +21,29 @@ auth.users
 profiles
 - id (uuid, PK, references auth.users.id)
 - network_id (uuid, FK to networks.id)
-- full_name (varchar)
-- contact_email (varchar)
+- full_name (text)
+- contact_email (text)
 - bio (text)
-- role (varchar) - 'admin' or 'member'
-- profile_picture_url (varchar)
-- portfolio_url (varchar)
-- linkedin_url (varchar)
+- role (text, NOT NULL, default 'member') - 'admin' or 'member'
+- profile_picture_url (text)
+- portfolio_url (text)
+- linkedin_url (text)
 - skills (text[])
-- is_suspended (boolean)
+- is_suspended (boolean, default false)
 - suspension_reason (text)
-- suspension_end_date (timestamp)
-- restriction_level (varchar)
+- suspension_end_date (timestamp with time zone)
+- restriction_level (text)
 - restriction_reason (text)
-- last_active (timestamp)
-- email_notifications_enabled (boolean)
-- notify_on_news (boolean)
-- notify_on_events (boolean)
-- notify_on_mentions (boolean)
-- notify_on_direct_messages (boolean)
-- badge_count (integer)
+- last_active (timestamp with time zone)
+- email_notifications_enabled (boolean, default true)
+- notify_on_news (boolean, default true)
+- notify_on_events (boolean, default true)
+- notify_on_mentions (boolean, default true)
+- notify_on_direct_messages (boolean, default true)
+- badge_count (integer, default 0)
 - portfolio_data (jsonb) - Legacy field
-- created_at (timestamp) - When the profile was created
-- updated_at (timestamp)
+- created_at (timestamp with time zone, NOT NULL, default now()) - When the profile was created
+- updated_at (timestamp with time zone)
 
 portfolio_items
 - id (uuid, PK)
@@ -65,49 +65,59 @@ portfolio_items
 ```sql
 networks
 - id (uuid, PK)
-- name (varchar)
+- name (text, NOT NULL)
 - description (text)
-- logo_url (varchar)
-- background_image_url (varchar)
-- privacy_level (varchar) - 'public', 'private', 'invite-only'
-- purpose (varchar) - 'community', 'professional', 'educational', 'hobby', 'other'
-- theme_color (varchar)
-- features_config (jsonb) - Feature toggles
-- enabled_tabs (jsonb) - Enabled navigation tabs configuration
-- subscription_status (varchar)
-- subscription_plan (varchar)
-- subscription_end_date (timestamp)
-- stripe_customer_id (varchar)
-- stripe_subscription_id (varchar)
-- trial_start_date (timestamp)
-- trial_end_date (timestamp)
-- is_trial (boolean)
-- trial_days_used (integer)
-- created_at (timestamp)
-- updated_at (timestamp)
+- logo_url (text)
+- background_image_url (text)
+- privacy_level (text, default 'private') - 'public', 'private', 'invite-only'
+- purpose (text, default 'general') - 'community', 'professional', 'educational', 'hobby', 'general', 'other'
+- theme_color (text, default '#1976d2')
+- theme_bg_color (character varying, default '#ffffff')
+- features_config (jsonb, default feature config) - Feature toggles
+- enabled_tabs (jsonb, default tabs config) - Enabled navigation tabs configuration
+- subscription_status (text, default 'free')
+- subscription_plan (text, default 'community')
+- subscription_start_date (timestamp with time zone)
+- subscription_end_date (timestamp with time zone)
+- subscription_updated_at (timestamp with time zone)
+- stripe_customer_id (text)
+- stripe_subscription_id (text)
+- stripe_account_id (text)
+- last_invoice_id (text)
+- last_payment_date (timestamp with time zone)
+- trial_start_date (timestamp with time zone)
+- trial_end_date (timestamp with time zone)
+- is_trial (boolean, default false)
+- trial_days_used (integer, default 0)
+- created_by (text)
+- created_at (timestamp with time zone, default now())
+- updated_at (timestamp with time zone)
 
 invitations
 - id (uuid, PK)
-- email (varchar)
-- network_id (uuid, FK to networks.id)
-- invited_by (uuid, FK to profiles.id)
-- status (varchar) - 'pending', 'accepted', 'declined'
-- role (varchar) - 'admin' or 'member'
-- created_at (timestamp)
+- email (text, NOT NULL)
+- network_id (uuid, FK to networks.id, NOT NULL)
+- invited_by (uuid, FK to auth.users.id, NOT NULL)
+- status (text, NOT NULL, default 'pending') - 'pending', 'accepted', 'declined'
+- role (text, NOT NULL, default 'member') - 'admin' or 'member'
+- expires_at (timestamp with time zone)
+- created_at (timestamp with time zone, default now())
+- updated_at (timestamp with time zone, default now())
 
 network_invitation_links
 - id (uuid, PK)
-- network_id (uuid, FK to networks.id)
-- code (varchar, unique)
-- created_by (uuid, FK to profiles.id)
-- name (varchar)
-- role (varchar) - 'admin' or 'member'
+- network_id (uuid, FK to networks.id, NOT NULL)
+- code (character varying, NOT NULL)
+- created_by (uuid, FK to profiles.id, NOT NULL)
+- name (character varying)
+- description (text)
+- role (character varying, default 'member') - 'admin' or 'member'
 - max_uses (integer, nullable)
 - uses_count (integer, default 0)
-- expires_at (timestamp, nullable)
+- expires_at (timestamp with time zone, nullable)
 - is_active (boolean, default true)
-- created_at (timestamp)
-- updated_at (timestamp)
+- created_at (timestamp with time zone, default now())
+- updated_at (timestamp with time zone, default now())
 ```
 
 ### Events & Participation
@@ -115,26 +125,34 @@ network_invitation_links
 ```sql
 network_events
 - id (uuid, PK)
-- network_id (uuid, FK to networks.id)
-- title (varchar)
+- network_id (uuid, FK to networks.id, NOT NULL)
+- title (text, NOT NULL)
 - description (text)
-- date (timestamp)
-- location (varchar)
-- coordinates (json) - {latitude, longitude}
-- cover_image_url (varchar)
+- date (timestamp with time zone, NOT NULL)
+- location (text, NOT NULL)
+- coordinates (jsonb) - {latitude, longitude}
+- cover_image_url (text)
 - capacity (integer)
-- event_link (varchar)
-- created_by (uuid, FK to profiles.id)
-- created_at (timestamp)
-- updated_at (timestamp)
+- max_tickets (integer)
+- tickets_sold (integer, default 0)
+- price (numeric, default 0)
+- currency (text, default 'EUR')
+- event_link (text)
+- created_by (uuid, FK to profiles.id, NOT NULL)
+- created_at (timestamp with time zone, default now())
+- updated_at (timestamp with time zone)
 
 event_participations
 - id (uuid, PK)
-- event_id (uuid, FK to network_events.id)
-- profile_id (uuid, FK to profiles.id)
-- status (varchar) - 'attending', 'maybe', 'declined'
-- created_at (timestamp)
-- updated_at (timestamp)
+- event_id (uuid, FK to network_events.id, NOT NULL)
+- profile_id (uuid, FK to profiles.id, NOT NULL)
+- status (character varying, NOT NULL) - 'attending', 'maybe', 'declined'
+- payment_status (text, default 'free') - 'free', 'paid', 'pending'
+- payment_amount (numeric)
+- payment_date (timestamp with time zone)
+- stripe_payment_id (text)
+- created_at (timestamp with time zone, default now())
+- updated_at (timestamp with time zone, default now())
 ```
 
 ### Content & News
@@ -150,13 +168,13 @@ network_news
 - image_caption (text)
 - media_url (text) - Single media file URL
 - media_type (text) - Media type: 'image', 'video', 'audio', or 'pdf'
-- media_metadata (jsonb) - Metadata for media files
+- media_metadata (jsonb, default '{}') - Metadata for media files
 - category_id (uuid, FK to network_categories.id)
-- is_hidden (boolean)
-- is_flagged (boolean)
+- is_hidden (boolean, default false)
+- is_flagged (boolean, default false)
 - flag_reason (text)
-- created_at (timestamp)
-- updated_at (timestamp)
+- created_at (timestamp with time zone, default now())
+- updated_at (timestamp with time zone)
 ```
 
 ### File Management
@@ -164,28 +182,31 @@ network_news
 ```sql
 network_files
 - id (uuid, PK)
-- network_id (uuid, FK to networks.id)
-- uploaded_by (uuid, FK to profiles.id)
-- filename (varchar)
-- filepath (varchar)
-- file_url (varchar)
-- file_size (integer)
-- file_type (varchar)
+- network_id (uuid, FK to networks.id, NOT NULL)
+- uploaded_by (uuid, FK to profiles.id, NOT NULL)
+- filename (text, NOT NULL)
+- filepath (text, NOT NULL)
+- file_url (text, NOT NULL)
+- file_size (bigint, NOT NULL)
+- file_type (text)
 - description (text)
-- download_count (integer)
-- created_at (timestamp)
-- updated_at (timestamp)
+- download_count (integer, default 0)
+- created_at (timestamp with time zone, default now())
+- updated_at (timestamp with time zone, default now())
 
 media_uploads
 - id (uuid, PK)
-- user_id (uuid, FK to profiles.id)
+- uploaded_by (uuid, FK to profiles.id)
 - network_id (uuid, FK to networks.id, nullable)
-- file_path (varchar)
-- file_url (varchar)
-- file_type (varchar)
+- url (text, NOT NULL)
+- file_name (text)
+- media_type (text, NOT NULL)
+- mime_type (text)
 - file_size (bigint)
-- metadata (jsonb) - Dimensions, duration, thumbnails, etc.
-- created_at (timestamp)
+- dimensions (jsonb)
+- duration (double precision)
+- metadata (jsonb, default '{}') - Dimensions, duration, thumbnails, etc.
+- created_at (timestamp with time zone, default now())
 ```
 
 ### Messaging & Communication
@@ -193,36 +214,39 @@ media_uploads
 ```sql
 direct_conversations
 - id (uuid, PK)
-- participants (uuid[]) - Array of user IDs (profiles.id)
-- created_at (timestamp)
-- updated_at (timestamp)
-- last_message_at (timestamp)
+- participants (uuid[], NOT NULL) - Array of user IDs (profiles.id)
+- created_at (timestamp with time zone, default now())
+- updated_at (timestamp with time zone, default now())
+- last_message_at (timestamp with time zone, default now())
 
 direct_messages
 - id (uuid, PK)
-- conversation_id (uuid, FK to direct_conversations.id)
-- sender_id (uuid, FK to profiles.id)
-- content (text)
-- media_urls (text[], nullable) - Array of media file URLs
-- media_types (text[], nullable) - Array of media MIME types
-- read_at (timestamp)
-- created_at (timestamp)
-- updated_at (timestamp)
+- conversation_id (uuid, FK to direct_conversations.id, NOT NULL)
+- sender_id (uuid, FK to profiles.id, NOT NULL)
+- recipient_id (uuid, FK to auth.users.id)
+- content (text, NOT NULL)
+- media_url (text) - Single media file URL
+- media_type (text) - Media type
+- media_metadata (jsonb, default '{}') - Media metadata
+- read_at (timestamp with time zone)
+- created_at (timestamp with time zone, default now())
+- updated_at (timestamp with time zone)
 
 messages
 - id (uuid, PK)
-- network_id (uuid, FK to networks.id)
-- user_id (uuid, FK to profiles.id)
-- content (text)
-- is_hidden (boolean)
-- is_flagged (boolean)
+- network_id (uuid, FK to networks.id, NOT NULL)
+- user_id (uuid, FK to profiles.id, NOT NULL)
+- content (text, NOT NULL)
+- is_hidden (boolean, default false)
+- is_flagged (boolean, default false)
 - flag_reason (text)
 - parent_message_id (uuid, FK to messages.id, nullable) - For reply threads
 - reply_to_user_id (uuid, FK to profiles.id, nullable) - User being replied to
 - reply_to_content (text, nullable) - Preview of replied message
-- media_urls (text[], nullable) - Array of media file URLs
-- media_types (text[], nullable) - Array of media MIME types
-- created_at (timestamp)
+- media_url (text) - Single media file URL
+- media_type (text) - Media type
+- media_metadata (jsonb, default '{}') - Media metadata
+- created_at (timestamp with time zone, NOT NULL, default now())
 ```
 
 ### Moodboards
@@ -272,22 +296,25 @@ moodboard_items
 ```sql
 wiki_pages
 - id (uuid, PK)
-- network_id (uuid, FK to networks.id)
-- title (varchar)
+- network_id (uuid, FK to networks.id, NOT NULL)
+- title (character varying, NOT NULL)
 - content (text)
-- slug (varchar)
-- category (varchar)
-- is_published (boolean)
+- slug (character varying, NOT NULL)
+- is_published (boolean, default false)
+- views_count (integer, default 0)
 - created_by (uuid, FK to profiles.id)
-- created_at (timestamp)
-- updated_at (timestamp)
+- last_edited_by (uuid, FK to profiles.id)
+- created_at (timestamp with time zone, default now())
+- updated_at (timestamp with time zone, default now())
 
 wiki_categories
 - id (uuid, PK)
-- network_id (uuid, FK to networks.id)
-- name (varchar)
+- network_id (uuid, FK to networks.id, NOT NULL)
+- name (character varying, NOT NULL)
+- slug (character varying, NOT NULL)
 - description (text)
-- created_at (timestamp)
+- created_by (uuid, FK to auth.users.id)
+- created_at (timestamp with time zone, default now())
 
 network_categories
 - id (uuid, PK)
@@ -304,18 +331,25 @@ network_categories
 
 wiki_comments
 - id (uuid, PK)
-- wiki_page_id (uuid, FK to wiki_pages.id)
-- user_id (uuid, FK to profiles.id)
-- content (text)
-- created_at (timestamp)
-- updated_at (timestamp)
+- page_id (uuid, FK to wiki_pages.id, NOT NULL)
+- profile_id (uuid, FK to profiles.id, NOT NULL)
+- content (text, NOT NULL)
+- is_hidden (boolean, default false)
+- hidden_at (timestamp with time zone)
+- hidden_by (uuid, FK to profiles.id)
+- created_at (timestamp with time zone, default now())
 
 wiki_revisions
 - id (uuid, PK)
-- wiki_page_id (uuid, FK to wiki_pages.id)
-- content (text)
-- edited_by (uuid, FK to profiles.id)
-- created_at (timestamp)
+- page_id (uuid, FK to wiki_pages.id, NOT NULL)
+- content (text, NOT NULL)
+- revision_number (integer, NOT NULL)
+- comment (character varying)
+- created_by (uuid, FK to profiles.id, NOT NULL)
+- is_approved (boolean, default false)
+- approved_by (uuid, FK to profiles.id)
+- approved_at (timestamp with time zone)
+- created_at (timestamp with time zone, default now())
 ```
 
 ### Polls
@@ -323,17 +357,19 @@ wiki_revisions
 ```sql
 network_polls
 - id (uuid, PK)
-- network_id (uuid, FK to networks.id)
-- created_by (uuid, FK to profiles.id)
-- question (text)
+- network_id (uuid, FK to networks.id, NOT NULL)
+- created_by (uuid, FK to profiles.id, NOT NULL)
+- title (character varying, NOT NULL)
 - description (text, nullable)
-- poll_type (varchar) - 'multiple_choice', 'yes_no', 'date_picker'
+- poll_type (character varying, NOT NULL) - 'multiple_choice', 'yes_no', 'date_picker'
 - options (jsonb) - Array of poll options
-- allow_multiple (boolean)
-- is_anonymous (boolean)
-- closes_at (timestamp, nullable)
-- created_at (timestamp)
-- updated_at (timestamp)
+- allow_multiple_votes (boolean, default false)
+- is_anonymous (boolean, default true)
+- status (character varying, default 'active')
+- starts_at (timestamp with time zone, default now())
+- ends_at (timestamp with time zone, nullable)
+- created_at (timestamp with time zone, default now())
+- updated_at (timestamp with time zone, default now())
 
 network_poll_votes
 - id (uuid, PK)
@@ -348,14 +384,13 @@ network_poll_votes
 ```sql
 moderation_logs
 - id (uuid, PK)
-- network_id (uuid, FK to networks.id)
-- moderator_id (uuid, FK to profiles.id)
-- target_user_id (uuid, FK to profiles.id, nullable)
-- target_content_id (uuid, nullable)
-- target_content_type (varchar) - 'message', 'news', 'profile'
-- action (varchar) - 'hide', 'flag', 'suspend', 'restrict', 'unsuspend', 'unrestrict'
+- network_id (uuid, FK to networks.id, NOT NULL)
+- moderator_id (uuid, FK to profiles.id, NOT NULL)
+- target_id (uuid, NOT NULL) - References target user/content ID
+- target_type (text, NOT NULL) - 'message', 'news', 'profile', 'user'
+- action (text, NOT NULL) - 'hide', 'flag', 'suspend', 'restrict', 'unsuspend', 'unrestrict'
 - reason (text)
-- created_at (timestamp)
+- created_at (timestamp with time zone, default now())
 
 notification_queue
 - id (uuid, PK)
@@ -376,14 +411,14 @@ notification_queue
 ```sql
 social_wall_comments
 - id (uuid, PK)
-- item_id (uuid) - References news or portfolio item
-- item_type (varchar) - 'news' or 'portfolio'
-- user_id (uuid, FK to profiles.id)
-- content (text)
+- item_id (uuid, NOT NULL) - References news or portfolio item
+- item_type (character varying, NOT NULL) - 'news' or 'post'
+- profile_id (uuid, FK to profiles.id, NOT NULL)
+- content (text, NOT NULL)
 - parent_comment_id (uuid, FK to social_wall_comments.id, nullable)
-- is_hidden (boolean)
-- created_at (timestamp)
-- updated_at (timestamp)
+- is_hidden (boolean, default false)
+- created_at (timestamp with time zone, default now())
+- updated_at (timestamp with time zone, default now())
 ```
 
 ### Badges & Engagement
@@ -392,23 +427,24 @@ social_wall_comments
 badges
 - id (uuid, PK)
 - network_id (uuid, FK to networks.id, nullable)
-- name (varchar(255))
+- name (character varying, NOT NULL)
 - description (text, nullable)
-- icon (varchar(50))
-- color (varchar(50), default 'primary')
-- criteria_type (varchar(50))
+- icon (character varying, NOT NULL)
+- color (character varying, default 'primary')
+- criteria_type (character varying, NOT NULL)
 - criteria_value (integer, default 0)
 - is_active (boolean, default true)
 - created_by (uuid, FK to profiles.id, nullable)
-- created_at (timestamp)
-- updated_at (timestamp)
+- achieved_at (timestamp with time zone, default now())
+- created_at (timestamp with time zone, NOT NULL, default now())
+- updated_at (timestamp with time zone, NOT NULL, default now())
 
 user_badges
 - id (uuid, PK)
 - user_id (uuid, FK to profiles.id)
 - badge_id (uuid, FK to badges.id)
 - awarded_by (uuid, FK to profiles.id, nullable)
-- awarded_at (timestamp)
+- awarded_at (timestamp with time zone, NOT NULL, default now())
 - reason (text, nullable)
 
 engagement_stats
@@ -421,9 +457,9 @@ engagement_stats
 - wiki_contributions (integer, default 0)
 - polls_participated (integer, default 0)
 - files_shared (integer, default 0)
-- last_active (timestamp)
-- member_since (timestamp)
-- updated_at (timestamp)
+- last_active (timestamp with time zone, NOT NULL, default now())
+- member_since (timestamp with time zone, NOT NULL, default now())
+- updated_at (timestamp with time zone, NOT NULL, default now())
 ```
 
 ### Support System
@@ -431,24 +467,81 @@ engagement_stats
 ```sql
 support_tickets
 - id (uuid, PK)
-- network_id (uuid, FK to networks.id)
-- submitted_by (uuid, FK to profiles.id)
+- network_id (uuid, FK to networks.id, nullable) - Null for system tickets
+- submitted_by (uuid, FK to profiles.id, nullable) - Null for system tickets
 - assigned_to (uuid, FK to profiles.id, nullable)
-- title (varchar)
-- description (text)
-- category (varchar) - 'technical', 'billing', 'feature', 'bug', 'other'
-- priority (varchar) - 'low', 'medium', 'high', 'urgent'
-- status (varchar) - 'open', 'in_progress', 'waiting_response', 'resolved', 'closed'
-- created_at (timestamp)
-- updated_at (timestamp)
-- resolved_at (timestamp, nullable)
+- title (character varying, NOT NULL)
+- description (text, NOT NULL)
+- category (character varying) - 'technical', 'billing', 'feature', 'bug', 'other'
+- priority (character varying, default 'medium') - 'low', 'medium', 'high', 'urgent'
+- status (character varying, default 'open') - 'open', 'in_progress', 'waiting_response', 'resolved', 'closed'
+- created_at (timestamp with time zone, default now())
+- updated_at (timestamp with time zone, default now())
+- resolved_at (timestamp with time zone, nullable)
 
 ticket_messages
 - id (uuid, PK)
 - ticket_id (uuid, FK to support_tickets.id)
-- sender_id (uuid, FK to profiles.id)
-- message (text)
-- is_internal (boolean) - For internal notes between super admins
+- sender_id (uuid, FK to profiles.id, nullable) - Null for system messages
+- message (text, NOT NULL)
+- is_internal (boolean, default false) - For internal notes between super admins
+- created_at (timestamp with time zone, default now())
+```
+
+### Monetization & Donations
+
+```sql
+donations
+- id (uuid, PK)
+- network_id (uuid, FK to networks.id)
+- donor_id (uuid, FK to profiles.id)
+- amount (numeric, NOT NULL)
+- currency (text, default 'EUR')
+- message (text, nullable)
+- is_anonymous (boolean, default false)
+- stripe_payment_id (text)
+- created_at (timestamp with time zone, default now())
+
+membership_plans
+- id (uuid, PK)
+- network_id (uuid, FK to networks.id)
+- name (text, NOT NULL)
+- description (text, nullable)
+- price (numeric, NOT NULL, default 0)
+- currency (text, default 'EUR')
+- interval (text, NOT NULL, default 'month') - 'month', 'year', etc.
+- features (jsonb, default '[]')
+- stripe_price_id (text)
+- is_active (boolean, default true)
+- created_at (timestamp with time zone, default now())
+- updated_at (timestamp with time zone, default now())
+
+member_subscriptions
+- id (uuid, PK)
+- network_id (uuid, FK to networks.id)
+- profile_id (uuid, FK to profiles.id)
+- plan_id (uuid, FK to membership_plans.id)
+- status (text, NOT NULL, default 'active') - 'active', 'canceled', 'past_due', etc.
+- stripe_subscription_id (text)
+- current_period_start (timestamp with time zone)
+- current_period_end (timestamp with time zone)
+- created_at (timestamp with time zone, default now())
+- updated_at (timestamp with time zone, default now())
+```
+
+### Wiki Advanced Features
+
+```sql
+wiki_page_categories
+- page_id (uuid, FK to wiki_pages.id)
+- category_id (uuid, FK to wiki_categories.id)
+
+wiki_page_permissions
+- id (uuid, PK)
+- page_id (uuid, FK to wiki_pages.id)
+- profile_id (uuid, FK to profiles.id, nullable)
+- role (varchar) - 'editor', 'viewer', etc.
+- created_by (uuid, FK to profiles.id)
 - created_at (timestamp)
 ```
 
@@ -457,11 +550,8 @@ ticket_messages
 ```sql
 opengraph_cache
 - id (uuid, PK)
-- url (varchar, unique)
-- title (varchar)
-- description (text)
-- image_url (varchar)
-- site_name (varchar)
-- created_at (timestamp)
-- updated_at (timestamp)
+- url (text, NOT NULL)
+- data (jsonb, NOT NULL) - Complete OpenGraph data
+- created_at (timestamp with time zone, default now())
+- updated_at (timestamp with time zone, default now())
 ```
