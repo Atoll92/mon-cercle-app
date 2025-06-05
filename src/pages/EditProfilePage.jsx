@@ -194,7 +194,7 @@ function EditProfilePage() {
     };
     
     getProfile();
-  }, [user]);
+  }, [user?.id]);
 
   // Load categories
   useEffect(() => {
@@ -216,7 +216,7 @@ function EditProfilePage() {
       }
     };
     loadCategories();
-  }, [user]);
+  }, [user?.id]);
 
   const handleTabChange = (event, newValue) => {
     setActiveTab(newValue);
