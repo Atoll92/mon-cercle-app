@@ -239,6 +239,7 @@ export const sendTicketMessage = async (ticketId, message, isInternal = false) =
     const { data: { user } } = await supabase.auth.getUser();
     
     // Insert the message
+    // NOTE: sender_id uses user.id (auth user) intentionally for support system
     const { data: messageData, error } = await supabase
       .from('ticket_messages')
       .insert([{
@@ -322,6 +323,13 @@ export const checkForDuplicateErrorTicket = async () => {
 // Create a system-generated error ticket
 export const createSystemErrorTicket = async (errorData) => {
   try {
+
+    //if we're in dev mode, skip ticket creation
+    if (import.meta.env.MODE === 'development') {
+      console.warn('Skipping system error ticket creation in development mode');
+      return { data: null, error: null };
+    }
+
     const { error, errorInfo, userAgent, url, timestamp } = errorData;
     
     // Check for duplicates first (using authenticated client is fine for reading)
