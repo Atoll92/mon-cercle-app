@@ -6,24 +6,31 @@ This document describes the Row-Level Security policies implemented in the Concl
 
 The following tables have Row-Level Security (RLS) enabled:
 
+- badges
 - direct_conversations
 - direct_messages
+- donations
+- engagement_stats
 - event_participations
+- media_uploads
+- member_subscriptions
+- membership_plans
 - messages
+- moderation_logs
 - moodboard_items
 - moodboards
+- network_categories
 - network_files
-- opengraph_cache
-- wiki_pages
-- moderation_logs
-- notification_queue
-- social_wall_comments
-- network_badges
-- user_badges
 - network_invitation_links
-- media_uploads
+- network_poll_votes
+- network_polls
+- notification_queue
+- opengraph_cache
+- social_wall_comments
 - support_tickets
 - ticket_messages
+- user_badges
+- wiki_pages
 
 ## Key RLS Policies by Feature
 
@@ -76,47 +83,97 @@ The following tables have Row-Level Security (RLS) enabled:
 
 ### Notification Queue
 
-- Only system can insert into notification queue
-- Network admins can view notifications for their network users
+- Authenticated users can insert notifications
+- Users can view notifications relevant to them (recipient or network member)
+- Network admins can view all notifications for their network
+- Users can delete their own notifications
+- System operations have full access for queue management
 
 ### Social Wall Comments
 
-- Users can view comments on public items or items in their network
-- Users can create comments on items in their network
-- Users can update/delete their own comments
-- Network admins can moderate all comments in their network
+- Users can view non-hidden comments, or all comments if they're network admins
+- Users can create comments on items in their network (news or portfolio posts)
+- Users can update and delete their own comments
+- Network admins can hide/unhide comments and view hidden comments
+- Comment visibility is determined by network membership and admin status
+
+### Network Polls & Poll Votes
+
+**network_polls**
+- Network members can view polls in their network
+- Network admins can create, update, and delete polls
+- Poll creators can manage their own polls
+
+**network_poll_votes**
+- Network members can vote on active polls within the voting period
+- Users can view and update their own votes while polls are active
+- Users can delete their votes while polls are active
+- Network admins can view all votes for polls in their network
+
+### Network Categories
+
+- Network members can view categories in their network
+- Network admins can create, update, and delete categories
+- Categories are scoped by network membership
+
+### Donations
+
+- Donors can view their own donation history
+- Network admins can view all donations to their network
+- Users can create donations to networks
+- Donation privacy is respected through is_anonymous flag
+
+### Membership Plans & Subscriptions
+
+**membership_plans**
+- Network members can view available plans for their network
+- Network admins can manage all aspects of membership plans
+
+**member_subscriptions**
+- Users can view and manage their own subscriptions
+- Network admins can view all subscriptions in their network
+- Subscription privacy is maintained per user
+
+### Engagement Stats
+
+- Users can view their own engagement statistics
+- Network admins can view engagement stats for all members in their network
+- System has full access for updating engagement tracking
+- Stats are automatically maintained through triggers
 
 ### Media Uploads
 
 - Users can view their own uploads
-- Users can view uploads in their network
-- Users can create uploads
+- Network members can view uploads in their network
+- Users can upload media to networks they belong to
 - Users can delete their own uploads
+- Media uploads are scoped by network membership
 
-### Network Badges & User Badges
+### Badges & User Badges
 
-**network_badges**
-- Network members can view badges in their network
-- Network admins can manage badge definitions
+**badges**
+- Network members can view active badges in their network
+- Network creators and admins can manage badge definitions
+- Only active badges are visible to members
 
 **user_badges**
-- Network admins can award badges to users
-- Users can view their own badges
-- Network members can view badges of users in their network
+- Anyone can view user badges (public visibility)
+- Network creators and admins can manage user badge assignments
+- Badge awards are publicly visible for recognition purposes
 
 ### Support Tickets
 
 **support_tickets**
-- Network admins can view and create tickets for their network
-- Network admins can update their own tickets
-- Super admins can view and update all tickets
-- Only super admins can access ticket statistics
+- Network admins can create, view and update tickets for their network
+- Super admins can view and update all tickets (including system tickets)
+- System can create tickets without authentication (for error reporting)
+- Network admins can only access tickets within their network scope
 
 **ticket_messages**
-- Users can view messages for tickets they have access to
+- Users can view messages for tickets they have access to (network admins or super admins)
 - Users can send messages to tickets they have access to
-- Super admins can create internal notes
-- Network admins cannot see internal notes
+- Super admins can create internal notes (is_internal flag)
+- Network admins cannot see internal messages
 
 ## Policy Implementation Patterns
 
