@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/authcontext';
 import { supabase } from '../supabaseclient';
+import { getUserProfile } from '../api/networks';
 import MoodboardGallery from '../components/moodboardGallery';
 import EventParticipation from '../components/EventParticipation';
 import MediaPlayer from '../components/MediaPlayer';
@@ -84,13 +85,20 @@ function ProfilePage() {
           setIsOwnProfile(true);
         }
         
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('*, networks(*)')
-          .eq('id', userId)
-          .single();
-          
-        if (error) throw error;
+        // Fetch profile with network info
+        const profileData = await getUserProfile(userId);
+        if (!profileData) throw new Error('Profile not found');
+        
+        // Fetch network info separately if needed
+        let networkData = null;
+        if (profileData.network_id) {
+          const { data: network } = await supabase
+            .from('networks')
+            .select('*')
+            .eq('id', profileData.network_id)
+            .single();
+          networkData = network;
+        }
         
         // Fetch posts for this profile
         const { data: postItems, error: postError } = await supabase
@@ -142,7 +150,8 @@ function ProfilePage() {
         }
         
         setProfile({
-          ...data,
+          ...profileData,
+          networks: networkData,
           posts: postItems || [] // Add posts to the profile object
         });
       } catch (error) {

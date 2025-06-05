@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../supabaseclient';
 import { useAuth } from '../context/authcontext';
+import { fetchNetworkMembers } from '../api/networks';
 import {
   Box,
   List,
@@ -94,24 +95,18 @@ const Chat = ({ networkId, isFullscreen = false }) => {
   
   // Fetch network members for mention suggestions
   useEffect(() => {
-    const fetchNetworkMembers = async () => {
+    const fetchMembers = async () => {
       if (!networkId) return;
       
       try {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('id, full_name, profile_picture_url')
-          .eq('network_id', networkId)
-          .order('full_name');
-          
-        if (error) throw error;
-        setNetworkMembers(data || []);
+        const result = await fetchNetworkMembers(networkId);
+        setNetworkMembers(result.members || []);
       } catch (error) {
         console.error('Error fetching network members:', error);
       }
     };
     
-    fetchNetworkMembers();
+    fetchMembers();
   }, [networkId]);
 
   useEffect(() => {

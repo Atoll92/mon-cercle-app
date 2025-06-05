@@ -6,6 +6,7 @@ import { useNetwork, NetworkProvider, NetworkProviderWithParams } from '../conte
 import { useApp } from '../context/appContext';
 import { supabase } from '../supabaseclient';
 import { useFadeIn } from '../hooks/useAnimation';
+import { getUserProfile } from '../api/networks';
 import { GridSkeleton } from '../components/LoadingSkeleton';
 import ArticleIcon from '@mui/icons-material/Article';
 import ChatIcon from '@mui/icons-material/Chat';
@@ -336,13 +337,9 @@ function NetworkLandingPage() {
         console.log('[Welcome] Current user profile not found in network members');
         // Try to fetch the user's profile directly
         try {
-          const { data: profileData, error } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', user.id)
-            .single();
+          const profileData = await getUserProfile(user.id);
             
-          if (error || !profileData) {
+          if (!profileData) {
             console.log('[Welcome] Could not fetch user profile');
             return;
           }

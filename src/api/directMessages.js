@@ -316,6 +316,50 @@ export const markMessagesAsRead = async (conversationId, userId) => {
 };
 
 /**
+ * Delete a conversation and all its messages
+ * @param {string} conversationId - Conversation ID
+ * @param {string} userId - Current user's ID (for authorization)
+ * @returns {Object} Object indicating success or error
+ */
+export const deleteConversation = async (conversationId, userId) => {
+  try {
+    // First verify the user is a participant in this conversation
+    const { data: conversation, error: fetchError } = await supabase
+      .from('direct_conversations')
+      .select('participants')
+      .eq('id', conversationId)
+      .single();
+      
+    if (fetchError) throw fetchError;
+    
+    if (!conversation?.participants?.includes(userId)) {
+      throw new Error('You are not authorized to delete this conversation');
+    }
+    
+    // Delete all messages in the conversation first
+    const { error: messagesError } = await supabase
+      .from('direct_messages')
+      .delete()
+      .eq('conversation_id', conversationId);
+      
+    if (messagesError) throw messagesError;
+    
+    // Delete the conversation
+    const { error: conversationError } = await supabase
+      .from('direct_conversations')
+      .delete()
+      .eq('id', conversationId);
+      
+    if (conversationError) throw conversationError;
+    
+    return { success: true, error: null };
+  } catch (error) {
+    console.error('Error deleting conversation:', error);
+    return { success: false, error };
+  }
+};
+
+/**
  * Get user profile for messaging
  * @param {string} userId - User ID
  * @returns {Object} Object containing user data or error

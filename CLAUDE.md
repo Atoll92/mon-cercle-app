@@ -81,6 +81,9 @@ mon-cercle-app/
 - `superAdmin.js` - Admin dashboard API
 - `comments.js` - Social wall comments system (add, fetch, delete, toggle visibility)
 - `tickets.js` - Support ticket system (create, update, view, message)
+- `profiles.js` - User profile operations (CRUD, preferences, subscriptions)
+- `wiki.js` - Wiki page operations (CRUD, categories, comments, revisions)
+- `events.js` - Event participation management and statistics
 
 #### Services (`src/services/`)
 - `emailNotificationService.js` - Email notification queue
@@ -331,6 +334,9 @@ API functions are organized in the `src/api/` directory:
 - `invitations.js`: Enhanced invitation system with links and codes
 - `superAdmin.js`: Super admin dashboard and system management
 - `badges.js`: Engagement badges system (create, award, track user stats)
+- `profiles.js`: User profile operations (CRUD, preferences, subscriptions)
+- `wiki.js`: Wiki page operations (CRUD, categories, comments, revisions)
+- `events.js`: Event participation management and statistics
 
 #### Services Layer
 

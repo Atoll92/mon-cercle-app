@@ -159,10 +159,11 @@ export const getNetworkStorageInfo = async (networkId) => {
 };
 
 const fetchNetworkMembers = async (networkId, options = {}) => {
+    //the callers of this function never seem to pass options or check for paging. with enough members this might start to cause issues.
     try {
         const { 
             page = 1, 
-            limit = 50,
+            limit = 5000,
             orderBy = 'full_name',
             ascending = true,
             search = null

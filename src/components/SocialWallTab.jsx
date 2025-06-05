@@ -57,6 +57,7 @@ import { getCommentCount } from '../api/comments';
 import { fetchNetworkCategories } from '../api/categories';
 import { supabase } from '../supabaseclient';
 import { useAuth } from '../context/authcontext';
+import { getUserProfile } from '../api/networks';
 
 // Number of items to display initially
 const ITEMS_PER_FETCH = 6;
@@ -542,14 +543,8 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
       
       if (!member) {
         // If not found in networkMembers, fetch from profiles table
-        const { data: profileData, error } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', memberId)
-          .single();
-          
-        if (error) throw error;
-        member = profileData;
+        member = await getUserProfile(memberId);
+        if (!member) throw new Error('Profile not found');
       }
       
       if (member) {

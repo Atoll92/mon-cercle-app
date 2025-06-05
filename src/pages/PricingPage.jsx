@@ -1,6 +1,5 @@
 import React, { useState  } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../supabaseclient';
 import { 
   Box, 
   Typography, 
@@ -64,12 +63,12 @@ import { createCheckoutSession } from '../services/stripeService';
 import { useAuth } from '../context/authcontext';
 import { PRICE_IDS, ANNUAL_PRICE_IDS } from '../stripe/config';
 import { PRICE_ID } from '../stripe/config';
+import { getUserProfileFields } from '../api/profiles';
 
 
 const PricingPage = () => {
   const [annual, setAnnual] = useState(false);
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const isTablet = useMediaQuery(theme.breakpoints.down('md'));
   const isLargeScreen = useMediaQuery(theme.breakpoints.up('lg'));
 
@@ -123,14 +122,10 @@ const handlePlanSelect = async (plan) => {
       setLoadingPlan(plan.name);
       
       // Get user's network ID
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('network_id')
-        .eq('id', user.id)
-        .single();
+      const profile = await getUserProfileFields(user.id, 'network_id');
 
-      if (profileError) {
-        console.error('Error fetching profile:', profileError);
+      if (!profile) {
+        console.error('Error fetching profile');
         alert('Could not retrieve your account information. Please try again.');
         setLoadingPlan(null);
         return;
@@ -475,7 +470,7 @@ const handlePlanSelect = async (plan) => {
                   <Typography variant="h6" fontWeight="bold">Features</Typography>
                 </TableCell>
                 
-                {desktopPlans.map((plan, index) => (
+                {desktopPlans.map((plan) => (
                   <TableCell 
                     key={plan.name} 
                     align="center" 

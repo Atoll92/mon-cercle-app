@@ -23,8 +23,7 @@ import {
   People as PeopleIcon
 } from '@mui/icons-material';
 import { getInvitationByCode, joinNetworkViaInvitation } from '../api/invitations';
-import { fetchNetworkDetails } from '../api/networks';
-import { supabase } from '../supabaseclient';
+import { fetchNetworkDetails, getUserProfile } from '../api/networks';
 
 function JoinNetworkPage() {
   const { code } = useParams();
@@ -69,11 +68,7 @@ function JoinNetworkPage() {
 
         // If user is logged in, check if they're already a member
         if (user) {
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', user.id)
-            .single();
+          const profile = await getUserProfile(user.id);
 
           if (profile) {
             setUserProfile(profile);

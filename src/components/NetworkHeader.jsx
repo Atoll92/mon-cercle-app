@@ -10,8 +10,8 @@ import MailIcon from '@mui/icons-material/Mail';
 import BusinessIcon from '@mui/icons-material/Business'; // Icon for network
 import { useAuth } from '../context/authcontext';
 import { useTheme } from '../components/ThemeProvider'; // Import directly from ThemeProvider
-import { supabase } from '../supabaseclient';
 import { Link, useLocation } from 'react-router-dom';
+import { getUserProfileFields } from '../api/profiles';
 import { useDirectMessages } from '../context/directMessagesContext';
 import { fetchNetworkDetails } from '../api/networks';
 import { logout } from '../api/auth';
@@ -82,14 +82,10 @@ const NetworkHeader = () => {
         }
         if (!user) return;
 
-        // Get user's profile
-        const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
-          .select('network_id')
-          .eq('id', user.id)
-          .single();
+        // Get user's network ID
+        const profileData = await getUserProfileFields(user.id, 'network_id');
           
-        if (profileError || !profileData?.network_id) return;
+        if (!profileData?.network_id) return;
         
         // Get network details
         const networkData = await fetchNetworkDetails(profileData.network_id);
