@@ -113,14 +113,14 @@ export const fetchUserBadges = async (userId) => {
 };
 
 // Award a badge to a user
-export const awardBadge = async (userId, badgeId, reason = null) => {
+export const awardBadge = async (userId, badgeId, awardedByUserId, reason = null) => {
   try {
     const { data, error } = await supabase
       .from('user_badges')
       .insert([{
         user_id: userId,
         badge_id: badgeId,
-        awarded_by: (await supabase.auth.getUser()).data.user.id,
+        awarded_by: awardedByUserId,
         reason
       }])
       .select()
@@ -256,13 +256,12 @@ export const checkAndAwardAutomaticBadges = async (userId, networkId) => {
 };
 
 // Award badge to multiple users
-export const awardBadgeToMultipleUsers = async (userIds, badgeId, reason = null) => {
+export const awardBadgeToMultipleUsers = async (userIds, badgeId, awardedByUserId, reason = null) => {
   try {
-    const currentUser = (await supabase.auth.getUser()).data.user;
     const userBadges = userIds.map(userId => ({
       user_id: userId,
       badge_id: badgeId,
-      awarded_by: currentUser.id,
+      awarded_by: awardedByUserId,
       reason
     }));
     

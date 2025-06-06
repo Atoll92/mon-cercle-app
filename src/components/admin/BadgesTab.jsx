@@ -90,6 +90,7 @@ import {
   fetchTopEngagedUsers,
   awardBadgeToMultipleUsers
 } from '../../api/badges';
+import { useProfile } from '../../context/profileContext';
 
 // Icon mapping for badge icons
 const BADGE_ICONS = {
@@ -115,6 +116,7 @@ const BADGE_ICONS = {
 
 const BadgesTab = ({ networkId, members, darkMode }) => {
   const theme = useTheme();
+  const { activeProfile } = useProfile();
   const [activeTab, setActiveTab] = useState(0);
   const [badges, setBadges] = useState([]);
   const [topUsers, setTopUsers] = useState([]);
@@ -246,6 +248,7 @@ const BadgesTab = ({ networkId, members, darkMode }) => {
       const result = await awardBadgeToMultipleUsers(
         selectedUsers.map(u => u.id),
         awardDialog.badge.id,
+        activeProfile?.id,
         awardReason || null
       );
 

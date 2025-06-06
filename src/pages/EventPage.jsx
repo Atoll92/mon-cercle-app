@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/authcontext';
+import { useProfile } from '../context/profileContext';
 import MemberDetailsModal from '../components/MembersDetailModal';
 import {
   Container,
@@ -49,6 +50,7 @@ function EventPage() {
   const { networkId, eventId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { activeProfile } = useProfile();
   const [event, setEvent] = useState(null);
   const [organizer, setOrganizer] = useState(null);
   const [participants, setParticipants] = useState([]);
@@ -120,7 +122,7 @@ function EventPage() {
         
         // Check current user's participation
         if (user) {
-          const userParticipation = participantsData.find(p => p.profile_id === user.id);
+          const userParticipation = participantsData.find(p => p.profile_id === (activeProfile?.id || user.id));
           setParticipation(userParticipation?.status || null);
         }
       }
@@ -139,7 +141,7 @@ function EventPage() {
       const { data: profile } = await supabase
         .from('profiles')
         .select('role, network_id')
-        .eq('id', user.id)
+        .eq('id', activeProfile?.id || user.id)
         .single();
 
       setIsAdmin(profile?.role === 'admin' && profile?.network_id === networkId);
@@ -214,7 +216,7 @@ function EventPage() {
           .from('event_participations')
           .delete()
           .eq('event_id', eventId)
-          .eq('profile_id', user.id);
+          .eq('profile_id', activeProfile?.id || user.id);
 
         if (error) throw error;
         setParticipation(null);
@@ -236,7 +238,7 @@ function EventPage() {
               updated_at: new Date().toISOString()
             })
             .eq('event_id', eventId)
-            .eq('profile_id', user.id);
+            .eq('profile_id', activeProfile?.id || user.id);
 
           if (error) throw error;
         } else {
@@ -245,7 +247,7 @@ function EventPage() {
             .from('event_participations')
             .insert({
               event_id: eventId,
-              profile_id: user.id,
+              profile_id: activeProfile?.id || user.id,
               status: newStatus
             });
 

@@ -11,10 +11,11 @@ import BusinessIcon from '@mui/icons-material/Business'; // Icon for network
 import { useAuth } from '../context/authcontext';
 import { useTheme } from '../components/ThemeProvider'; // Import directly from ThemeProvider
 import { Link, useLocation } from 'react-router-dom';
-import { getUserProfileFields } from '../api/profiles';
 import { useDirectMessages } from '../context/directMessagesContext';
 import { fetchNetworkDetails } from '../api/networks';
 import { logout } from '../api/auth';
+import ProfileSwitcher from './ProfileSwitcher';
+import { useProfile } from '../context/profileContext';
 
 // Simple badge component for unread messages
 const MessageBadge = React.memo(() => {
@@ -56,6 +57,7 @@ const NetworkHeader = () => {
   const location = useLocation();
   const [networkInfo, setNetworkInfo] = useState(null);
   const [loading, setLoading] = useState(false);
+  const { hasMultipleProfiles, activeProfile } = useProfile();
 
   function getNetworkIdFromUrl(pathname) {
     const urlParts = pathname.split('/');
@@ -82,15 +84,13 @@ const NetworkHeader = () => {
         }
         if (!user) return;
 
-        // Get user's network ID
-        const profileData = await getUserProfileFields(user.id, 'network_id');
-          
-        if (!profileData?.network_id) return;
-        
-        // Get network details
-        const networkData = await fetchNetworkDetails(profileData.network_id);
-        if (!networkData) return;
-        setNetworkInfo(networkData);
+        // For profile-aware system, use active profile's network
+        if (activeProfile?.network_id) {
+          // Get network details from active profile
+          const networkData = await fetchNetworkDetails(activeProfile.network_id);
+          if (!networkData) return;
+          setNetworkInfo(networkData);
+        }
       } catch (error) {
         console.error('Error fetching network info:', error);
       } finally {
@@ -99,7 +99,7 @@ const NetworkHeader = () => {
     };
     
     getNetworkInfo();
-  }, [user, location.pathname]);
+  }, [user, location.pathname, activeProfile]);
   
   if (!networkInfo) return null;
   
@@ -238,6 +238,19 @@ const NetworkHeader = () => {
               Messages
             </Typography>
           </Box>
+          
+          {/* Profile Switcher - only show if user has multiple profiles */}
+          {hasMultipleProfiles && (
+            <>
+              <Divider orientation="vertical" flexItem sx={{ 
+                mx: 1, 
+                height: '24px', 
+                alignSelf: 'center',
+                borderColor: darkMode ? alpha('#ffffff', 0.2) : alpha('#000000', 0.1)
+              }} />
+              <ProfileSwitcher />
+            </>
+          )}
           
           {/* Logout */}
           <Box 

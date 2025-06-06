@@ -272,16 +272,89 @@ const NetworkOnboardingWizard = ({ profile }) => {
 
       if (networkError) throw networkError;
 
-      // Update the user's profile with the new network_id
-      const { error: profileError } = await supabase
+      // Check if user already has a profile, if not create one
+      // Detect schema version first
+      const { data: schemaCheck } = await supabase
         .from('profiles')
-        .update({ 
-          network_id: network.id, 
-          role: 'admin'
-        })
-        .eq('id', user.id);
+        .select('user_id')
+        .limit(1);
+      
+      const hasUserIdColumn = schemaCheck !== null;
+      
+      let checkQuery;
+      if (hasUserIdColumn) {
+        // NEW SCHEMA: Look up by user_id
+        checkQuery = supabase
+          .from('profiles')
+          .select('id')
+          .eq('user_id', user.id);
+      } else {
+        // OLD SCHEMA: Look up by id
+        checkQuery = supabase
+          .from('profiles')
+          .select('id')
+          .eq('id', user.id);
+      }
+      
+      const { data: existingProfile, error: checkError } = await checkQuery.single();
 
-      if (profileError) throw profileError;
+      let isNewUser = false;
+
+      if (checkError && checkError.code === 'PGRST116') {
+        // No profile exists, create one
+        isNewUser = true;
+        
+        const profileData = {
+          network_id: network.id,
+          role: 'admin',
+          full_name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'Admin',
+          contact_email: user.email,
+          bio: '',
+          skills: [],
+          created_at: new Date().toISOString()
+        };
+        
+        if (hasUserIdColumn) {
+          // NEW SCHEMA: profiles.user_id = auth.users.id, profiles.id = generated UUID
+          profileData.user_id = user.id;
+        } else {
+          // OLD SCHEMA: profiles.id = auth.users.id
+          profileData.id = user.id;
+        }
+        
+        const { error: createProfileError } = await supabase
+          .from('profiles')
+          .insert(profileData);
+
+        if (createProfileError) throw createProfileError;
+      } else if (checkError) {
+        throw checkError;
+      } else {
+        // Profile exists, update it with the new network_id
+        let updateQuery;
+        if (hasUserIdColumn) {
+          // NEW SCHEMA: Update by profile id (existingProfile.id)
+          updateQuery = supabase
+            .from('profiles')
+            .update({ 
+              network_id: network.id, 
+              role: 'admin'
+            })
+            .eq('id', existingProfile.id);
+        } else {
+          // OLD SCHEMA: Update by user id
+          updateQuery = supabase
+            .from('profiles')
+            .update({ 
+              network_id: network.id, 
+              role: 'admin'
+            })
+            .eq('id', user.id);
+        }
+
+        const { error: profileError } = await updateQuery;
+        if (profileError) throw profileError;
+      }
 
       // Refresh the user session to ensure the profile update is reflected
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
@@ -289,9 +362,17 @@ const NetworkOnboardingWizard = ({ profile }) => {
 
       setSuccess(true);
       
-      // Redirect to the network page after 2 seconds
       setTimeout(() => {
-        navigate('/network');
+        if (isNewUser) {
+          navigate('/profile/edit', { 
+            state: { 
+              isFirstTime: true, 
+              message: 'Welcome! Please complete your profile to get started.' 
+            }
+          });
+        } else {
+          navigate('/network');
+        }
       }, 2000);
       
     } catch (error) {

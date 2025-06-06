@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { useAuth } from './authcontext';
+import { useProfile } from './profileContext';
 import { supabase } from '../supabaseclient';
 import {
   fetchNetworkDetails,
@@ -22,7 +22,7 @@ export const useNetwork = () => {
 };
 
 export const NetworkProvider = ({ networkId, children }) => {
-  const { user } = useAuth();
+  const { activeProfile } = useProfile();
   const [network, setNetwork] = useState(null);
   const [members, setMembers] = useState([]);
   const [events, setEvents] = useState([]);
@@ -52,11 +52,14 @@ export const NetworkProvider = ({ networkId, children }) => {
         const membersData = Array.isArray(membersResponse) ? membersResponse : membersResponse.members || [];
         setMembers(membersData);
         
-        // Determine user's role in the network
-        if (user) {
-          const currentMember = membersData.find(m => m.id === user.id);
+        // Determine user's role in the network using active profile
+        if (activeProfile) {
+          const currentMember = membersData.find(m => m.id === activeProfile.id);
           if (currentMember) {
             setUserRole(currentMember.role);
+          } else {
+            // Fallback to member role if profile not found in members
+            setUserRole('member');
           }
         }
         
@@ -88,7 +91,7 @@ export const NetworkProvider = ({ networkId, children }) => {
     };
     
     fetchNetworkData();
-  }, [networkId, user]);
+  }, [networkId, activeProfile]);
 
   // Create value object with all network-related data and functions
   const value = {

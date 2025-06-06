@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/authcontext';
+import { useProfile } from '../context/profileContext';
 import { useNetwork } from '../context/networkContext';
 import { supabase } from '../supabaseclient';
 import MembersDetailModal from './MembersDetailModal';
@@ -54,6 +55,7 @@ import ImageViewerModal from './ImageViewerModal';
 // Enhanced News Tab component with image upload support and admin editing
 const NewsTab = ({ darkMode }) => {
   const { user } = useAuth();
+  const { activeProfile } = useProfile();
   const { network, news: networkNews, members: networkMembers, refreshNews, isAdmin } = useNetwork();
   
   // Debug: Log the news data to see what we're getting
@@ -230,7 +232,7 @@ const NewsTab = ({ darkMode }) => {
         title: newsTitle,
         content,
         network_id: network.id,
-        created_by: user.id,
+        created_by: activeProfile?.id || user.id,
         category_id: selectedCategory || null
       };
       

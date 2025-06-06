@@ -31,11 +31,13 @@ import {
 } from '@mui/icons-material';
 import { supabase } from '../supabaseclient';
 import { useAuth } from '../context/authcontext';
+import { useProfile } from '../context/profileContext';
 import MediaUpload from './MediaUpload';
 import { fetchNetworkCategories } from '../api/categories';
 
 const CreatePostModal = ({ open, onClose, onPostCreated, darkMode = false, networkId }) => {
   const { user } = useAuth();
+  const { activeProfile } = useProfile();
   
   // Form state
   const [title, setTitle] = useState('');
@@ -147,7 +149,7 @@ const CreatePostModal = ({ open, onClose, onPostCreated, darkMode = false, netwo
       
       // Save post directly to the database
       const newPost = {
-        profile_id: user.id,
+        profile_id: activeProfile?.id || user.id, // Backward compatible with both schemas
         title: title,
         description: content,
         url: url,

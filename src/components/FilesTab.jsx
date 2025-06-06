@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseclient';
 import { useAuth } from '../context/authcontext';
+import { useProfile } from '../context/profileContext';
 import { useNetwork } from '../context/networkContext';
 import MembersDetailModal from './MembersDetailModal';
 import {
@@ -77,6 +78,7 @@ const formatFileSize = (bytes) => {
 // Files Tab Component - now with simplified props and using context
 const FilesTab = ({ darkMode }) => {
   const { user } = useAuth();
+  const { activeProfile } = useProfile();
   const navigate = useNavigate();
   
   // Use the network context
@@ -148,7 +150,7 @@ const FilesTab = ({ darkMode }) => {
       const { data, error } = await supabase
         .from('moodboards')
         .select('*')
-        .eq('created_by', user.id)
+        .eq('created_by', activeProfile?.id || user.id)
         .order('created_at', { ascending: false });
       
       if (error) throw error;
@@ -181,7 +183,7 @@ const FilesTab = ({ darkMode }) => {
         y: 100,
         width: 300,
         height: 200,
-        created_by: user.id
+        created_by: activeProfile?.id || user.id
       };
       
       await addMoodboardItem(newItem);

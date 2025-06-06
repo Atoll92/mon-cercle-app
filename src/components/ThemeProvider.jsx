@@ -1,5 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { useAuth } from '../context/authcontext';
+import { useProfile } from '../context/profileContext';
 import { supabase } from '../supabaseclient';
 import { ThemeProvider as MuiThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -11,6 +12,7 @@ export const useTheme = () => useContext(ThemeContext);
 
 const ThemeProvider = ({ children }) => {
   const { session, user } = useAuth();
+  const { activeProfile } = useProfile();
   const [networkTheme, setNetworkTheme] = useState({
     backgroundColor: '#ffffff', // Default white background
     logoUrl: null,
@@ -72,17 +74,23 @@ const theme = createTheme({
       }
       
       try {
-        // Get user's profile to find their network
-        const { data: profile, error: profileError } = await supabase
-          .from('profiles')
-          .select('network_id')
-          .eq('id', user.id)
-          .single();
-          
-        if (profileError) throw profileError;
+        // Get network ID from active profile, fallback to direct query
+        let networkId = activeProfile?.network_id;
+        
+        if (!networkId && user?.id) {
+          // Fallback for backward compatibility
+          const { data: profile, error: profileError } = await supabase
+            .from('profiles')
+            .select('network_id')
+            .eq('id', user.id)
+            .single();
+            
+          if (profileError) throw profileError;
+          networkId = profile?.network_id;
+        }
         
         // If user has no network, use default theme
-        if (!profile.network_id) {
+        if (!networkId) {
           setNetworkTheme(prev => ({ ...prev, loaded: true }));
           return;
         }
@@ -91,7 +99,7 @@ const theme = createTheme({
         const { data: network, error: networkError } = await supabase
           .from('networks')
           .select('theme_bg_color, logo_url')
-          .eq('id', profile.network_id)
+          .eq('id', networkId)
           .single();
           
         if (networkError) throw networkError;

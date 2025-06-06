@@ -36,6 +36,7 @@ import {
 import { getNetworkStorageInfo } from '../api/networks';
 import { useNetwork } from '../context/networkContext';
 import { useAuth } from '../context/authcontext';
+import { useProfile } from '../context/profileContext';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseclient';
 
@@ -56,6 +57,7 @@ function MediaUpload({
   const [storageInfo, setStorageInfo] = useState(null);
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { activeProfile } = useProfile();
   
   // Try to use network context, but don't fail if not available
   let currentNetwork = null;
@@ -72,8 +74,11 @@ function MediaUpload({
     const checkStorage = async () => {
       let networkId = currentNetwork?.id;
       
-      // If no network context, try to get network ID from user profile
-      if (!networkId && user?.id) {
+      // If no network context, try to get network ID from active profile
+      if (!networkId && activeProfile?.network_id) {
+        networkId = activeProfile.network_id;
+      } else if (!networkId && user?.id) {
+        // Fallback for backward compatibility
         try {
           const { data: profile } = await supabase
             .from('profiles')

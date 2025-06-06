@@ -1,16 +1,11 @@
 import { supabase } from '../supabaseclient';
 import { withErrorHandling, handleSupabaseResponse, createApiResponse } from '../utils/apiHelpers';
 
-// Create a new poll
+// Create a new poll  
 export const createPoll = withErrorHandling(async (pollData) => {
-  const { data: userData } = await supabase.auth.getUser();
-  
   const response = await supabase
     .from('network_polls')
-    .insert([{
-      ...pollData,
-      created_by: userData.user.id
-    }])
+    .insert([pollData])
     .select()
     .single();
   
@@ -87,14 +82,12 @@ export const getPollWithVotes = withErrorHandling(async (pollId) => {
 }, 'Error fetching poll with votes');
 
 // Submit a vote
-export const submitVote = withErrorHandling(async (pollId, selectedOptions) => {
-  const { data: userData } = await supabase.auth.getUser();
-  
+export const submitVote = withErrorHandling(async (pollId, selectedOptions, userId) => {
   const response = await supabase
     .from('network_poll_votes')
     .upsert({
       poll_id: pollId,
-      user_id: userData.user.id,
+      user_id: userId,
       selected_options: selectedOptions
     }, {
       onConflict: 'poll_id,user_id'
@@ -107,14 +100,12 @@ export const submitVote = withErrorHandling(async (pollId, selectedOptions) => {
 }, 'Error submitting vote');
 
 // Get user's vote for a poll
-export const getUserVote = withErrorHandling(async (pollId) => {
-  const { data: userData } = await supabase.auth.getUser();
-  
+export const getUserVote = withErrorHandling(async (pollId, userId) => {
   const response = await supabase
     .from('network_poll_votes')
     .select('*')
     .eq('poll_id', pollId)
-    .eq('user_id', userData.user.id)
+    .eq('user_id', userId)
     .maybeSingle();
   
   // Handle case where no vote exists (returns null instead of error)

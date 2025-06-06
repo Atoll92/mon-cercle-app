@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../supabaseclient';
 import { useAuth } from '../context/authcontext';
+import { useProfile } from '../context/profileContext';
 import { fetchNetworkMembers } from '../api/networks';
 import {
   Box,
@@ -55,6 +56,7 @@ import EmojiPicker from 'emoji-picker-react';
 
 const Chat = ({ networkId, isFullscreen = false }) => {
   const { user } = useAuth();
+  const { activeProfile } = useProfile();
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
@@ -110,6 +112,8 @@ const Chat = ({ networkId, isFullscreen = false }) => {
   }, [networkId]);
 
   useEffect(() => {
+    if (!user || !networkId || !activeProfile) return;
+    
     console.log('Initializing chat for network:', networkId);
     
     const fetchMessages = async () => {
@@ -166,7 +170,7 @@ const Chat = ({ networkId, isFullscreen = false }) => {
     channelRef.current = supabase.channel(channelName, {
       config: {
         presence: {
-          key: user.id,
+          key: activeProfile.id,
         },
       },
     });
@@ -215,7 +219,7 @@ const Chat = ({ networkId, isFullscreen = false }) => {
               
               // Remove any pending version of this message if it's from the current user
               const filteredMessages = prev.filter(msg => 
-                !(msg.pending && msg.user_id === user.id && msg.content === data.content)
+                !(msg.pending && msg.user_id === activeProfile.id && msg.content === data.content)
               );
               
               return [...filteredMessages, data];
@@ -244,11 +248,11 @@ const Chat = ({ networkId, isFullscreen = false }) => {
     channelRef.current.subscribe(async (status) => {
       console.log('Subscription status:', status);
       if (status === 'SUBSCRIBED') {
-        // Broadcast user presence with some profile data
+        // Broadcast user presence with profile data
         const userProfile = {
-          user_id: user.id,
-          full_name: user.user_metadata?.full_name || 'Anonymous',
-          avatar_url: user.user_metadata?.avatar_url,
+          user_id: activeProfile.id,
+          full_name: activeProfile.full_name || 'Anonymous',
+          avatar_url: activeProfile.profile_picture_url,
           online_at: new Date().toISOString(),
         };
         
@@ -262,7 +266,7 @@ const Chat = ({ networkId, isFullscreen = false }) => {
         supabase.removeChannel(channelRef.current);
       }
     };
-  }, [networkId, user]);
+  }, [networkId, user, activeProfile]);
 
   // Handle message input changes and detect mentions
   const handleMessageChange = (e) => {
@@ -345,11 +349,11 @@ const Chat = ({ networkId, isFullscreen = false }) => {
       id: `pending-${Date.now()}`,
       content: newMessage.trim(),
       created_at: new Date().toISOString(),
-      user_id: user.id,
+      user_id: activeProfile.id,
       profiles: {
-        id: user.id,
-        full_name: user.user_metadata?.full_name || 'You',
-        profile_picture_url: user.user_metadata?.avatar_url
+        id: activeProfile.id,
+        full_name: activeProfile.full_name || 'You',
+        profile_picture_url: activeProfile.profile_picture_url
       },
       parent_message_id: replyingTo?.id || null,
       reply_to_user_id: replyingTo?.user_id || null,
@@ -382,7 +386,7 @@ const Chat = ({ networkId, isFullscreen = false }) => {
       // Send the message to the database
       const messageData = {
         network_id: networkId,
-        user_id: user.id,
+        user_id: activeProfile.id,
         content: pendingMessage.content
       };
       
@@ -418,12 +422,12 @@ const Chat = ({ networkId, isFullscreen = false }) => {
       const mentions = extractMentions(pendingMessage.content);
       if (mentions.length > 0) {
         for (const mentionedUser of mentions) {
-          if (mentionedUser.id !== user.id) { // Don't notify self
+          if (mentionedUser.id !== activeProfile.id) { // Don't notify self
             try {
               await queueMentionNotification(
                 mentionedUser.id,
                 networkId,
-                user.user_metadata?.full_name || 'Someone',
+                activeProfile.full_name || 'Someone',
                 pendingMessage.content,
                 data.id
               );
@@ -479,6 +483,17 @@ const Chat = ({ networkId, isFullscreen = false }) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showEmojiPicker, showMediaUpload]);
 
+  // Early return if no active profile - after all hooks
+  if (!activeProfile) {
+    return (
+      <Box sx={{ p: 2, textAlign: 'center' }}>
+        <Typography variant="body2" color="text.secondary">
+          Please select a profile to access chat
+        </Typography>
+      </Box>
+    );
+  }
+
   // Handle media upload - just store it, don't send yet
   const handleMediaUpload = async (mediaData) => {
     console.log('Chat: handleMediaUpload called with:', mediaData);
@@ -514,7 +529,7 @@ const Chat = ({ networkId, isFullscreen = false }) => {
         .from('messages')
         .delete()
         .eq('id', selectedMessageId)
-        .eq('user_id', user.id); // Ensure users can only delete their own messages
+        .eq('user_id', activeProfile.id); // Ensure users can only delete their own messages
         
       if (error) throw error;
       
@@ -1382,10 +1397,10 @@ const renderMessageContent = (message) => {
                 sx={{
                   opacity: message.pending ? 0.7 : 1,
                   backgroundColor: darkMode
-                    ? (message.user_id === user.id 
+                    ? (message.user_id === activeProfile.id 
                       ? alpha('#1976d2', 0.6) 
                       : alpha('#333', 0.5))
-                    : (message.user_id === user.id 
+                    : (message.user_id === activeProfile.id 
                       ? alpha('#e3f2fd', 0.9) 
                       : alpha('#fff', 0.85)),
                   borderRadius: 2,
@@ -1396,16 +1411,16 @@ const renderMessageContent = (message) => {
                   boxShadow: darkMode
                     ? '0 1px 3px rgba(0,0,0,0.2)'
                     : '0 1px 3px rgba(0,0,0,0.05)',
-                  transform: message.user_id === user.id 
+                  transform: message.user_id === activeProfile.id 
                     ? 'translateX(4%)' 
                     : 'translateX(-4%)',
                   maxWidth: containsLink ? '92%' : '80%', // Slightly smaller max width
-                  marginLeft: message.user_id === user.id ? 'auto' : 2,
-                  marginRight: message.user_id === user.id ? 2 : 'auto',
+                  marginLeft: message.user_id === activeProfile.id ? 'auto' : 2,
+                  marginRight: message.user_id === activeProfile.id ? 2 : 'auto',
                   transition: 'all 0.2s ease',
                   border: darkMode 
                     ? 'none' 
-                    : `1px solid ${message.user_id === user.id ? '#bbdefb' : '#e0e0e0'}`,
+                    : `1px solid ${message.user_id === activeProfile.id ? '#bbdefb' : '#e0e0e0'}`,
                   animation: 'fadeInUp 0.3s ease-out',
                   position: 'relative',
                   '&:hover .message-menu-button': {
@@ -1414,11 +1429,11 @@ const renderMessageContent = (message) => {
                   '@keyframes fadeInUp': {
                     from: {
                       opacity: 0,
-                      transform: `translateY(10px) ${message.user_id === user.id ? 'translateX(4%)' : 'translateX(-4%)'}`
+                      transform: `translateY(10px) ${message.user_id === activeProfile.id ? 'translateX(4%)' : 'translateX(-4%)'}`
                     },
                     to: {
                       opacity: 1,
-                      transform: `translateY(0) ${message.user_id === user.id ? 'translateX(4%)' : 'translateX(-4%)'}`
+                      transform: `translateY(0) ${message.user_id === activeProfile.id ? 'translateX(4%)' : 'translateX(-4%)'}`
                     }
                   }
                 }}
@@ -1455,7 +1470,7 @@ const renderMessageContent = (message) => {
                           textDecoration: 'none',
                           color: darkMode 
                             ? 'white' 
-                            : (message.user_id === user.id ? '#1565c0' : '#424242')
+                            : (message.user_id === activeProfile.id ? '#1565c0' : '#424242')
                         }}
                       >
                         <Typography 
@@ -1470,7 +1485,7 @@ const renderMessageContent = (message) => {
                           }}
                         >
                           {message.profiles?.full_name || 'Anonymous'}
-                          {message.user_id === user.id && ' (You)'}
+                          {message.user_id === activeProfile.id && ' (You)'}
                         </Typography>
                       </Link>
                     ) : (
@@ -1479,13 +1494,13 @@ const renderMessageContent = (message) => {
                         sx={{ 
                           color: darkMode 
                             ? 'white' 
-                            : (message.user_id === user.id ? '#1565c0' : '#424242'),
+                            : (message.user_id === activeProfile.id ? '#1565c0' : '#424242'),
                           fontWeight: 500,
                           fontSize: '0.85rem' // Slightly smaller text
                         }}
                       >
                         {message.profiles?.full_name || 'Anonymous'}
-                        {message.user_id === user.id && ' (You)'}
+                        {message.user_id === activeProfile.id && ' (You)'}
                       </Typography>
                     )
                   }
@@ -2057,7 +2072,7 @@ const renderMessageContent = (message) => {
           <ReplyIcon fontSize="small" sx={{ mr: 1 }} />
           Reply
         </MenuItem>
-        {messages.find(msg => msg.id === selectedMessageId)?.user_id === user.id && (
+        {messages.find(msg => msg.id === selectedMessageId)?.user_id === activeProfile.id && (
           <MenuItem onClick={handleDeleteMessage}>
             <DeleteIcon fontSize="small" sx={{ mr: 1 }} />
             Delete Message

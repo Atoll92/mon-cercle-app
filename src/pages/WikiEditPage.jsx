@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../supabaseclient';
 import { useAuth } from '../context/authcontext';
+import { useProfile } from '../context/profileContext';
 import QuillEditor from '../components/QuillEditor';
 
 import {
@@ -44,6 +45,7 @@ const WikiEditPage = () => {
   const { networkId, pageSlug } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { activeProfile } = useProfile();
   
   const [isNewPage, setIsNewPage] = useState(() => {
     console.log('Initial pageSlug:', pageSlug);
@@ -97,7 +99,7 @@ const WikiEditPage = () => {
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('id, role, network_id')
-          .eq('id', user.id)
+          .eq('id', activeProfile?.id || user.id)
           .single();
           
         if (!profileError) {
@@ -174,7 +176,7 @@ const WikiEditPage = () => {
     };
     
     fetchData();
-  }, [networkId, pageSlug, user, navigate, isNewPage]);
+  }, [networkId, pageSlug, user, navigate, isNewPage, activeProfile?.id]);
 
   // Generate slug from title
   useEffect(() => {
@@ -220,8 +222,8 @@ const WikiEditPage = () => {
             slug: slug,
             content: content,
             is_published: isAdmin || publishImmediately,
-            created_by: user.id,
-            last_edited_by: user.id,
+            created_by: activeProfile?.id || user.id,
+            last_edited_by: activeProfile?.id || user.id,
             views_count: 0 // Add default view count
           })
           .select();
@@ -246,7 +248,7 @@ const WikiEditPage = () => {
             page_id: createdPage.id,
             content: content,
             revision_number: 1,
-            created_by: user.id,
+            created_by: activeProfile?.id || user.id,
             comment: revisionComment || 'Initial version',
             is_approved: isAdmin || publishImmediately,
             approved_by: isAdmin || publishImmediately ? user.id : null,
@@ -299,7 +301,7 @@ const WikiEditPage = () => {
                 slug: slug,
                 content: content,
                 is_published: true,
-                last_edited_by: user.id,
+                last_edited_by: activeProfile?.id || user.id,
                 updated_at: new Date().toISOString()
               })
               .eq('id', currentPage.id);
@@ -325,7 +327,7 @@ const WikiEditPage = () => {
               page_id: currentPage.id,
               content: content,
               revision_number: nextRevisionNumber,
-              created_by: user.id,
+              created_by: activeProfile?.id || user.id,
               comment: revisionComment || 'Updated content',
               is_approved: isAdmin || publishImmediately,
               approved_by: isAdmin || publishImmediately ? user.id : null,
@@ -374,7 +376,7 @@ const WikiEditPage = () => {
                 slug: slug,
                 content: content,
                 is_published: true,
-                last_edited_by: user.id,
+                last_edited_by: activeProfile?.id || user.id,
                 updated_at: new Date().toISOString()
               })
               .eq('id', page.id);
@@ -402,7 +404,7 @@ const WikiEditPage = () => {
               page_id: page.id,
               content: content,
               revision_number: nextRevisionNumber,
-              created_by: user.id,
+              created_by: activeProfile?.id || user.id,
               comment: revisionComment || 'Updated content',
               is_approved: isAdmin || publishImmediately,
               approved_by: isAdmin || publishImmediately ? user.id : null,
@@ -472,7 +474,7 @@ const WikiEditPage = () => {
           network_id: networkId,
           name: newCategoryName.trim(),
           slug: categorySlug,
-          created_by: user.id // Add this in case your RLS policy requires it
+          created_by: activeProfile?.id || user.id // Add this in case your RLS policy requires it
         })
         .select()
         .single();

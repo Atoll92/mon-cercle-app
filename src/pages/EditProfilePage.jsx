@@ -1,7 +1,8 @@
 // src/pages/EditProfilePage.jsx
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/authcontext';
+import { useProfile } from '../context/profileContext';
 import { supabase } from '../supabaseclient';
 import { fetchNetworkCategories } from '../api/categories';
 import {
@@ -57,7 +58,9 @@ import NotificationSettings from '../components/NotificationSettings';
 
 function EditProfilePage() {
   const { user } = useAuth();
+  const { activeProfile } = useProfile();
   const navigate = useNavigate();
+  const location = useLocation();
   
   const [fullName, setFullName] = useState('');
   const [contactEmail, setContactEmail] = useState('');
@@ -107,7 +110,7 @@ function EditProfilePage() {
         const { data: postData, error: postError } = await supabase
           .from('portfolio_items')
           .select('*')
-          .eq('profile_id', user.id);
+          .eq('profile_id', activeProfile?.id || user.id);
   
         if (postError) throw postError;
         
@@ -141,7 +144,7 @@ function EditProfilePage() {
         const { data, error } = await supabase
           .from('profiles')
           .select('*')
-          .eq('id', user.id)
+          .eq('id', activeProfile?.id || user.id)
           .maybeSingle();
           
         if (error && error.code !== 'PGRST116') {
@@ -205,7 +208,7 @@ function EditProfilePage() {
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('network_id')
-        .eq('id', user.id)
+        .eq('id', activeProfile?.id || user.id)
         .single();
       
       if (profileError || !profileData?.network_id) return;
@@ -267,7 +270,7 @@ function EditProfilePage() {
       if (newPostImage) {
         // Upload new image
         const fileExt = newPostImage.name.split('.').pop();
-        const fileName = `${user.id}-${Date.now()}-post.${fileExt}`;
+        const fileName = `${activeProfile?.id || user.id}-${Date.now()}-post.${fileExt}`;
         const filePath = `portfolios/${fileName}`;
 
         console.log('Uploading post image:', filePath);
@@ -292,7 +295,7 @@ function EditProfilePage() {
       // Save post directly to the database
       // Using the correct schema from portfolio_items table
       const newPost = {
-        profile_id: user.id,
+        profile_id: activeProfile?.id || user.id,
         title: newPostTitle,
         description: newPostContent,
         url: newPostLink,
@@ -421,7 +424,7 @@ function EditProfilePage() {
     
     try {
       const fileExt = avatar.name.split('.').pop();
-      const fileName = `${user.id}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const fileName = `${activeProfile?.id || user.id}-${Math.random().toString(36).substring(2)}.${fileExt}`;
       const filePath = `avatars/${fileName}`;
       
       // Simulate upload progress
@@ -492,7 +495,7 @@ function EditProfilePage() {
         if (item.imageFile) {
           // Upload new image
           const fileExt = item.imageFile.name.split('.').pop();
-          const fileName = `${user.id}-${Date.now()}-${index}.${fileExt}`;
+          const fileName = `${activeProfile?.id || user.id}-${Date.now()}-${index}.${fileExt}`;
           const filePath = `portfolios/${fileName}`;
 
           console.log('Uploading post image:', filePath);
@@ -516,7 +519,7 @@ function EditProfilePage() {
 
         console.log('Saving post to portfolio_items table:', {
           id: item.id || undefined,
-          profile_id: user.id,
+          profile_id: activeProfile?.id || user.id,
           title: item.title,
           description: item.description,
           url: item.url,
@@ -527,7 +530,7 @@ function EditProfilePage() {
           .from('portfolio_items')
           .upsert({
             id: item.id || undefined,
-            profile_id: user.id,
+            profile_id: activeProfile?.id || user.id,
             title: item.title,
             description: item.description,
             url: item.url,
@@ -568,7 +571,7 @@ function EditProfilePage() {
         const { data: existingProfile } = await supabase
           .from('profiles')
           .select('network_id, role')
-          .eq('id', user.id)
+          .eq('id', activeProfile?.id || user.id)
           .maybeSingle();
         
         if (existingProfile) {
@@ -576,7 +579,7 @@ function EditProfilePage() {
           result = await supabase
             .from('profiles')
             .update(profileData)
-            .eq('id', user.id);
+            .eq('id', activeProfile?.id || user.id);
         } else {
           // Create a new network and profile
           // This should ideally not happen as AuthProvider should have created it
@@ -588,7 +591,7 @@ function EditProfilePage() {
         result = await supabase
           .from('profiles')
           .update(profileData)
-          .eq('id', user.id);
+          .eq('id', activeProfile?.id || user.id);
       }
       
       if (result.error) throw result.error;
@@ -597,7 +600,7 @@ function EditProfilePage() {
       const { data: updatedProfile, error: fetchError } = await supabase
         .from('profiles')
         .select('*')
-        .eq('id', user.id)
+        .eq('id', activeProfile?.id || user.id)
         .single();
         
       if (fetchError) {
@@ -732,9 +735,9 @@ function EditProfilePage() {
           />
         </Tabs>
         
-        {isNewProfile && (
+        {(isNewProfile || location.state?.isFirstTime) && (
           <Alert severity="info" sx={{ mx: 3, mb: 3 }}>
-            Welcome! Please take a moment to set up your profile information.
+            {location.state?.message || "Welcome! Please take a moment to set up your profile information."}
           </Alert>
         )}
         

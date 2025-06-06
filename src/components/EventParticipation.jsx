@@ -1,6 +1,7 @@
 // src/components/EventParticipation.jsx
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/authcontext';
+import { useProfile } from '../context/profileContext';
 import { supabase } from '../supabaseclient';
 import MemberDetailsModal from './MembersDetailModal';
 import {
@@ -48,6 +49,7 @@ const STATUS_LABELS = {
 
 function EventParticipation({ event, showParticipants = false, onStatusChange = null, size = "medium" }) {
   const { user } = useAuth();
+  const { activeProfile } = useProfile();
   const [participationStatus, setParticipationStatus] = useState(null);
   const [participationId, setParticipationId] = useState(null); // Store the participation record ID
   const [isLoading, setIsLoading] = useState(true);
@@ -76,7 +78,7 @@ function EventParticipation({ event, showParticipants = false, onStatusChange = 
           .from('event_participations')
           .select('id, status')
           .eq('event_id', event.id)
-          .eq('profile_id', user.id)
+          .eq('profile_id', activeProfile?.id || user.id)
           .maybeSingle();
           
         if (participationError) {
@@ -176,7 +178,7 @@ function EventParticipation({ event, showParticipants = false, onStatusChange = 
             .from('event_participations')
             .insert({
               event_id: event.id,
-              profile_id: user.id,
+              profile_id: activeProfile?.id || user.id,
               status: newStatus,
               updated_at: new Date().toISOString()
             })

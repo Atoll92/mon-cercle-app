@@ -57,6 +57,7 @@ import { getCommentCount } from '../api/comments';
 import { fetchNetworkCategories } from '../api/categories';
 import { supabase } from '../supabaseclient';
 import { useAuth } from '../context/authcontext';
+import { useProfile } from '../context/profileContext';
 import { getUserProfile } from '../api/networks';
 
 // Number of items to display initially
@@ -64,6 +65,7 @@ const ITEMS_PER_FETCH = 6;
 
 const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = false, isAdmin = false, networkId, onPostDeleted }) => {
   const { user } = useAuth();
+  const { activeProfile } = useProfile();
   const muiTheme = useTheme();
   const isMobile = useMediaQuery(muiTheme.breakpoints.down('sm'));
   
@@ -585,7 +587,7 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
         .from('portfolio_items')
         .delete()
         .eq('id', item.id)
-        .eq('profile_id', user.id); // Ensure user can only delete their own posts
+        .eq('profile_id', activeProfile?.id || user.id); // Ensure user can only delete their own posts
         
       if (error) throw error;
       

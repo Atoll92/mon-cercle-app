@@ -32,7 +32,7 @@ import AddressSuggestions from '../AddressSuggestions';
 import EventParticipationStats from '../EventParticipationStats';
 import { createEvent, updateEvent, deleteEvent, exportEventParticipantsList } from '../../api/networks';
 
-const EventsTab = ({ events, setEvents, user, networkId, network, darkMode = false }) => {
+const EventsTab = ({ events, setEvents, user, activeProfile, networkId, network, darkMode = false }) => {
   const [openDialog, setOpenDialog] = useState(false);
   const [dialogMode, setDialogMode] = useState('create');
   const [selectedEvent, setSelectedEvent] = useState(null);
@@ -184,7 +184,7 @@ const EventsTab = ({ events, setEvents, user, networkId, network, darkMode = fal
       if (dialogMode === 'create') {
         const result = await createEvent(
           networkId, 
-          user.id, 
+          activeProfile?.id || user.id, 
           eventData, 
           eventImageFile
         );
@@ -201,7 +201,7 @@ const EventsTab = ({ events, setEvents, user, networkId, network, darkMode = fal
           {
             ...eventData,
             network_id: networkId,
-            created_by: user.id
+            created_by: activeProfile?.id || user.id
           },
           eventImageFile
         );

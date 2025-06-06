@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/authcontext';
+import { useProfile } from '../context/profileContext';
 import { supabase } from '../supabaseclient';
 import {
   Container,
@@ -52,6 +53,7 @@ import {
 
 function PersonalMoodboardsPage() {
   const { user } = useAuth();
+  const { activeProfile } = useProfile();
   const navigate = useNavigate();
   
   // State variables
@@ -92,7 +94,7 @@ function PersonalMoodboardsPage() {
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('network_id')
-          .eq('id', user.id)
+          .eq('id', activeProfile?.id || user.id)
           .single();
           
         if (profileError) throw profileError;
@@ -101,7 +103,7 @@ function PersonalMoodboardsPage() {
         const personalQuery = supabase
           .from('moodboards')
           .select('*')
-          .eq('created_by', user.id)
+          .eq('created_by', activeProfile?.id || user.id)
           .eq('is_personal', true);
         
         // Fetch network moodboards
@@ -149,7 +151,7 @@ function PersonalMoodboardsPage() {
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('network_id')
-        .eq('id', user.id)
+        .eq('id', activeProfile?.id || user.id)
         .single();
         
       if (profileError) throw profileError;
@@ -163,7 +165,7 @@ function PersonalMoodboardsPage() {
           description: newDescription,
           permissions: newPermissions,
           background_color: newBackgroundColor,
-          created_by: user.id,
+          created_by: activeProfile?.id || user.id,
           is_personal: true
         }])
         .select();

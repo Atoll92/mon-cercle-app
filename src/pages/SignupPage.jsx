@@ -31,6 +31,7 @@ import {
 } from '@mui/icons-material';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import ThreeJSBackground from '../components/ThreeJSBackground';
+import { useProfile } from '../context/profileContext';
 import { validatePassword, getPasswordStrength, getPasswordStrengthLabel, getPasswordRequirementsText } from '../utils/passwordValidation';
 
 // Reuse or import the same theme as LoginPage
@@ -58,6 +59,7 @@ function SignupPage() {
   const [passwordStrength, setPasswordStrength] = useState(0);
   const navigate = useNavigate();
   const location = useLocation(); // Added to access URL params
+  const { loadUserProfiles } = useProfile(); // Add ProfileContext
 
   // Invitation data states
   const [inviteCode, setInviteCode] = useState(null);
@@ -91,62 +93,135 @@ function SignupPage() {
   
   const ensureProfile = async (userId, email, networkId = null, role = 'member') => {
     try {
-      // Check if profile already exists
-      const { data: existingProfile, error: checkError } = await supabase
+      // Detect schema version by checking if user_id column exists
+      const { data: schemaCheck } = await supabase
         .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .maybeSingle();
-  
-      if (checkError && checkError.code !== 'PGRST116') {
-        console.error('Error checking profile:', checkError);
-        return false;
-      }
-  
-      // If profile exists and we need to update network_id
-      if (existingProfile) {
+        .select('user_id')
+        .limit(1);
+      
+      const hasUserIdColumn = schemaCheck !== null;
+      
+      if (hasUserIdColumn) {
+        // NEW SCHEMA: profiles.user_id = auth.users.id, profiles.id = generated UUID
+        console.log('Using new schema (post-migration)');
+        
+        // Check if profile exists for this user and network combination
+        let query = supabase
+          .from('profiles')
+          .select('*')
+          .eq('user_id', userId);
+          
         if (networkId) {
-          console.log('Updating existing profile with role:', role);
-          const { error: updateError } = await supabase
-            .from('profiles')
-            .update({ 
-              network_id: networkId,
-              contact_email: email,
-              role: role,
-              updated_at: new Date()
-            })
-            .eq('id', userId);
-  
-          if (updateError) {
-            console.error('Error updating profile:', updateError);
-            return false;
-          }
+          query = query.eq('network_id', networkId);
         }
+        
+        const { data: existingProfile, error: checkError } = await query.maybeSingle();
+        
+        if (checkError && checkError.code !== 'PGRST116') {
+          console.error('Error checking profile:', checkError);
+          return false;
+        }
+        
+        if (existingProfile) {
+          // Profile exists, update if needed
+          if (networkId) {
+            console.log('Updating existing profile with role:', role);
+            const { error: updateError } = await supabase
+              .from('profiles')
+              .update({ 
+                contact_email: email,
+                role: role,
+                updated_at: new Date()
+              })
+              .eq('id', existingProfile.id);
+              
+            if (updateError) {
+              console.error('Error updating profile:', updateError);
+              return false;
+            }
+          }
+          return true;
+        }
+        
+        // Create new profile with new schema
+        const profileData = {
+          user_id: userId,  // References auth.users.id
+          contact_email: email,
+          role: networkId ? role : null,
+          network_id: networkId,
+          updated_at: new Date()
+          // id will be auto-generated UUID
+        };
+        
+        console.log('Creating new profile (new schema):', profileData);
+        const { error: createError } = await supabase
+          .from('profiles')
+          .insert([profileData]);
+          
+        if (createError) {
+          console.error('Error creating profile:', createError);
+          return false;
+        }
+        
+        return true;
+        
+      } else {
+        // OLD SCHEMA: profiles.id = auth.users.id (current behavior)
+        console.log('Using old schema (pre-migration)');
+        
+        const { data: existingProfile, error: checkError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', userId)
+          .maybeSingle();
+    
+        if (checkError && checkError.code !== 'PGRST116') {
+          console.error('Error checking profile:', checkError);
+          return false;
+        }
+    
+        if (existingProfile) {
+          if (networkId) {
+            console.log('Updating existing profile with role:', role);
+            const { error: updateError } = await supabase
+              .from('profiles')
+              .update({ 
+                network_id: networkId,
+                contact_email: email,
+                role: role,
+                updated_at: new Date()
+              })
+              .eq('id', userId);
+    
+            if (updateError) {
+              console.error('Error updating profile:', updateError);
+              return false;
+            }
+          }
+          return true;
+        }
+    
+        // Create profile with old schema
+        const profileData = {
+          id: userId,  // Same as auth.users.id
+          contact_email: email,
+          role: networkId ? role : null,
+          network_id: networkId,
+          updated_at: new Date()
+        };
+        
+        console.log('Creating new profile (old schema):', profileData);
+        const { error: createError } = await supabase
+          .from('profiles')
+          .insert([profileData]);
+    
+        if (createError) {
+          console.error('Error creating profile:', createError);
+          return false;
+        }
+    
         return true;
       }
-  
-      // Profile doesn't exist, create it
-      const profileData = {
-        id: userId,
-        contact_email: email,
-        role: networkId ? role : null,
-        network_id: networkId,
-        updated_at: new Date()
-      };
-      
-      console.log('Creating new profile:', profileData);
-      console.log('Profile role being set:', profileData.role);
-  
-      const { error: createError } = await supabase
-        .from('profiles')
-        .insert([profileData]);
-  
-      if (createError) {
-        console.error('Error creating profile:', createError);
-        return false;
-      }
-  
-      return true;
     } catch (error) {
       console.error('Profile creation error:', error);
       return false;
@@ -282,8 +357,11 @@ function SignupPage() {
       setEmail(''); 
       setPassword('');
       setConfirmPassword('');
+
+      // Refresh ProfileContext to load the newly created profile
+      await loadUserProfiles();
   
-      // Wait a bit before redirecting
+      // Redirect after profile is loaded (reduced timeout since we ensured profile loading)
       setTimeout(() => {
         if (inviteCode && invitationData) {
           // If coming from invitation, redirect to dashboard with from_invite flag
@@ -293,7 +371,7 @@ function SignupPage() {
           // Otherwise redirect to login
           navigate('/login');
         }
-      }, 3000);
+      }, 1000);
   
     } catch (error) {
       setError(error.message || "Failed to sign up");

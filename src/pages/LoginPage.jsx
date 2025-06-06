@@ -29,6 +29,8 @@ import {
 } from '@mui/icons-material';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import ThreeJSBackground from '../components/ThreeJSBackground';
+import { useProfile } from '../context/profileContext';
+import ProfileSelector from '../components/ProfileSelector';
 
 // You can customize this theme or import from a separate theme file
 const theme = createTheme({
@@ -48,8 +50,10 @@ function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [showProfileSelector, setShowProfileSelector] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const { userProfiles, isLoadingProfiles } = useProfile();
   
   // Get redirect URL and email from query params
   const searchParams = new URLSearchParams(location.search);
@@ -75,18 +79,26 @@ function LoginPage() {
     try {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
+      
       // AuthProvider's onAuthStateChange will handle setting session state
-      // Check if there's a redirect URL, otherwise go to dashboard
-      if (redirectUrl) {
-        navigate(redirectUrl, { replace: true });
-      } else {
-        navigate('/dashboard', { replace: true });
-      }
+      // Wait a bit for the profile context to load
+      setTimeout(() => {
+        setShowProfileSelector(true);
+      }, 500);
     } catch (error) {
       setError(error.message || "Failed to log in");
       console.error("Login error:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleProfileSelected = (profile) => {
+    // Check if there's a redirect URL, otherwise go to dashboard
+    if (redirectUrl) {
+      navigate(redirectUrl, { replace: true });
+    } else {
+      navigate('/dashboard', { replace: true });
     }
   };
 
@@ -96,6 +108,28 @@ function LoginPage() {
     setPassword('demopassword');
     // You can auto-submit the form here if you want
   };
+
+  // If profile selector should be shown, render it instead of login form
+  if (showProfileSelector && !isLoadingProfiles && userProfiles.length > 0) {
+    return (
+      <ThemeProvider theme={theme}>
+        <ThreeJSBackground/>
+        <Container maxWidth="lg">
+          <Box
+            sx={{
+              marginTop: 8,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              zIndex: 9
+            }}
+          >
+            <ProfileSelector onProfileSelected={handleProfileSelected} />
+          </Box>
+        </Container>
+      </ThemeProvider>
+    );
+  }
 
   return (
     <ThemeProvider theme={theme}>

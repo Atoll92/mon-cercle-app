@@ -60,8 +60,10 @@ import {
   updatePollStatus, 
   deletePoll 
 } from '../../api/polls';
+import { useProfile } from '../../context/profileContext';
 
 const PollsTab = ({ networkId }) => {
+  const { activeProfile } = useProfile();
   const [polls, setPolls] = useState([]);
   const [loading, setLoading] = useState(true);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -100,6 +102,11 @@ const PollsTab = ({ networkId }) => {
   };
 
   const handleCreatePoll = async () => {
+    if (!activeProfile) {
+      setError('Profile is required to create a poll');
+      return;
+    }
+    
     if (!pollForm.title.trim()) {
       setError('Poll title is required');
       return;
@@ -135,7 +142,12 @@ const PollsTab = ({ networkId }) => {
       pollData.options = dateOptions;
     }
 
-    const { error } = await createPoll(pollData);
+    const pollDataWithCreator = {
+      ...pollData,
+      created_by: activeProfile?.id
+    };
+    
+    const { error } = await createPoll(pollDataWithCreator);
     if (error) {
       setError('Failed to create poll');
       console.error(error);

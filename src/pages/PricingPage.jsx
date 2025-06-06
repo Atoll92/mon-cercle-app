@@ -61,9 +61,9 @@ import BusinessIcon from '@mui/icons-material/Business';
 import ThreeJSBackground from '../components/ThreeJSBackground';
 import { createCheckoutSession } from '../services/stripeService';
 import { useAuth } from '../context/authcontext';
+import { useProfile } from '../context/profileContext';
 import { PRICE_IDS, ANNUAL_PRICE_IDS } from '../stripe/config';
 import { PRICE_ID } from '../stripe/config';
-import { getUserProfileFields } from '../api/profiles';
 
 
 const PricingPage = () => {
@@ -91,7 +91,8 @@ const PricingPage = () => {
 
 
   const { user } = useAuth();
-const [loadingPlan, setLoadingPlan] = useState(null);
+  const { activeProfile } = useProfile();
+  const [loadingPlan, setLoadingPlan] = useState(null);
 
 const handlePlanSelect = async (plan) => {
   // If user not logged in, redirect to signup
@@ -121,25 +122,16 @@ const handlePlanSelect = async (plan) => {
     try {
       setLoadingPlan(plan.name);
       
-      // Get user's network ID
-      const profile = await getUserProfileFields(user.id, 'network_id');
-
-      if (!profile) {
-        console.error('Error fetching profile');
-        alert('Could not retrieve your account information. Please try again.');
-        setLoadingPlan(null);
-        return;
-      }
-      
-      if (!profile || !profile.network_id) {
-        console.error('User has no network ID:', profile);
+      // Use active profile's network ID
+      if (!activeProfile?.network_id) {
+        console.error('User has no active profile or network ID:', activeProfile);
         alert('Your account is not associated with a network. Please create one first.');
         setLoadingPlan(null);
         return;
       }
 
-      console.log('Starting checkout with:', { priceId, networkId: profile.network_id, plan: plan.name });
-      await createCheckoutSession(priceId, profile.network_id);
+      console.log('Starting checkout with:', { priceId, networkId: activeProfile.network_id, plan: plan.name });
+      await createCheckoutSession(priceId, activeProfile.network_id);
     } catch (error) {
       console.error('Error starting checkout:', error);
       alert(`Payment error: ${error.message || 'Unknown error'}`);

@@ -1,5 +1,47 @@
 import { supabase } from '../supabaseclient';
 
+// Helper function to detect schema and get profiles by user IDs
+const getProfilesByUserIds = async (userIds, selectFields = 'id, full_name, profile_picture_url') => {
+  if (userIds.length === 0) return {};
+  
+  // Detect schema version by checking if user_id column exists
+  const { data: schemaCheck } = await supabase
+    .from('profiles')
+    .select('user_id')
+    .limit(1);
+  
+  const hasUserIdColumn = schemaCheck !== null;
+  
+  let query;
+  if (hasUserIdColumn) {
+    // NEW SCHEMA: Query by user_id, return mapping with auth user ID as key
+    query = supabase
+      .from('profiles')
+      .select(selectFields + ', user_id')
+      .in('user_id', userIds);
+  } else {
+    // OLD SCHEMA: Query by id (same as auth user id)
+    query = supabase
+      .from('profiles')
+      .select(selectFields)
+      .in('id', userIds);
+  }
+  
+  const { data: profileData, error: profileError } = await query;
+  
+  if (profileError || !profileData) {
+    console.error('Error fetching profiles for tickets:', profileError);
+    return {};
+  }
+  
+  // Create mapping with auth user ID as key
+  return profileData.reduce((acc, profile) => {
+    const userId = hasUserIdColumn ? profile.user_id : profile.id;
+    acc[userId] = profile;
+    return acc;
+  }, {});
+};
+
 // Get tickets for a network (admin view)
 export const getNetworkTickets = async (networkId) => {
   try {
@@ -18,20 +60,7 @@ export const getNetworkTickets = async (networkId) => {
       ...tickets.map(t => t.assigned_to).filter(Boolean)
     ])];
 
-    let profiles = {};
-    if (userIds.length > 0) {
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('id, full_name, profile_picture_url')
-        .in('id', userIds);
-      
-      if (!profileError && profileData) {
-        profiles = profileData.reduce((acc, profile) => {
-          acc[profile.id] = profile;
-          return acc;
-        }, {});
-      }
-    }
+    const profiles = await getProfilesByUserIds(userIds);
 
     // Combine the data
     const ticketsWithProfiles = tickets.map(ticket => ({
@@ -82,20 +111,7 @@ export const getAllTickets = async (filters = {}) => {
       ...tickets.map(t => t.assigned_to).filter(Boolean)
     ])];
 
-    let profiles = {};
-    if (userIds.length > 0) {
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('id, full_name, profile_picture_url, contact_email')
-        .in('id', userIds);
-      
-      if (!profileError && profileData) {
-        profiles = profileData.reduce((acc, profile) => {
-          acc[profile.id] = profile;
-          return acc;
-        }, {});
-      }
-    }
+    const profiles = await getProfilesByUserIds(userIds, 'id, full_name, profile_picture_url, contact_email');
 
     // Combine the data
     const ticketsWithProfiles = tickets.map(ticket => ({
@@ -132,21 +148,7 @@ export const getTicketDetails = async (ticketId) => {
 
     // Get profile information for submitted_by and assigned_to
     const userIds = [ticket.submitted_by, ticket.assigned_to].filter(Boolean);
-    let profiles = {};
-    
-    if (userIds.length > 0) {
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('id, full_name, profile_picture_url, contact_email')
-        .in('id', userIds);
-      
-      if (!profileError && profileData) {
-        profiles = profileData.reduce((acc, profile) => {
-          acc[profile.id] = profile;
-          return acc;
-        }, {});
-      }
-    }
+    const profiles = await getProfilesByUserIds(userIds, 'id, full_name, profile_picture_url, contact_email');
 
     // Add profile information to ticket
     ticket.submitted_by_profile = profiles[ticket.submitted_by] || null;
@@ -166,22 +168,12 @@ export const getTicketDetails = async (ticketId) => {
       const senderIds = [...new Set(messages.map(m => m.sender_id).filter(Boolean))];
       
       if (senderIds.length > 0) {
-        const { data: senderProfiles, error: senderError } = await supabase
-          .from('profiles')
-          .select('id, full_name, profile_picture_url')
-          .in('id', senderIds);
+        const senderMap = await getProfilesByUserIds(senderIds, 'id, full_name, profile_picture_url');
         
-        if (!senderError && senderProfiles) {
-          const senderMap = senderProfiles.reduce((acc, profile) => {
-            acc[profile.id] = profile;
-            return acc;
-          }, {});
-          
-          // Add sender profile to each message
-          messages.forEach(message => {
-            message.sender = senderMap[message.sender_id] || null;
-          });
-        }
+        // Add sender profile to each message
+        messages.forEach(message => {
+          message.sender = senderMap[message.sender_id] || null;
+        });
       }
     }
 

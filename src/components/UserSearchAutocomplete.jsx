@@ -9,11 +9,13 @@ import {
   Chip
 } from '@mui/material';
 import { useAuth } from '../context/authcontext';
+import { useProfile } from '../context/profileContext';
 import { supabase } from '../supabaseclient';
 import { debounce } from 'lodash';
 
 function UserSearchAutocomplete({ onUserSelect, excludeUserIds = [], placeholder = "Search for users..." }) {
   const { user } = useAuth();
+  const { activeProfile } = useProfile();
   const [inputValue, setInputValue] = useState('');
   const [options, setOptions] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -28,14 +30,20 @@ function UserSearchAutocomplete({ onUserSelect, excludeUserIds = [], placeholder
 
     setLoading(true);
     try {
-      // First get user's network
-      const { data: currentUser } = await supabase
-        .from('profiles')
-        .select('network_id')
-        .eq('id', user.id)
-        .single();
+      // Get network ID from active profile, fallback to user lookup
+      let networkId = activeProfile?.network_id;
+      
+      if (!networkId && user?.id) {
+        // Fallback for backward compatibility
+        const { data: currentUser } = await supabase
+          .from('profiles')
+          .select('network_id')
+          .eq('id', user.id)
+          .single();
+        networkId = currentUser?.network_id;
+      }
 
-      if (!currentUser?.network_id) {
+      if (!networkId) {
         setOptions([]);
         return;
       }
@@ -44,8 +52,8 @@ function UserSearchAutocomplete({ onUserSelect, excludeUserIds = [], placeholder
       const { data, error } = await supabase
         .from('profiles')
         .select('id, full_name, profile_picture_url, bio')
-        .eq('network_id', currentUser.network_id)
-        .neq('id', user.id) // Exclude current user
+        .eq('network_id', networkId)
+        .neq('id', activeProfile?.id || user.id) // Exclude current user
         .ilike('full_name', `%${searchTerm}%`)
         .limit(10);
 
@@ -72,7 +80,7 @@ function UserSearchAutocomplete({ onUserSelect, excludeUserIds = [], placeholder
     } finally {
       setLoading(false);
     }
-  }, [user.id, excludeUserIds]);
+  }, [activeProfile?.id, user.id, excludeUserIds]);
 
   // Debounce the search function
   const debouncedSearch = useCallback(

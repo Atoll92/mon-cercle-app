@@ -25,19 +25,47 @@ const NetworkOnboardingPage = () => {
   const navigate = useNavigate();
   const theme = useTheme();
 
-  // Fetch user profile
+  // Fetch user profile (if exists) or allow network creation without profile
   useEffect(() => {
     const fetchProfile = async () => {
       if (!user) return;
       
       try {
         setLoadingProfile(true);
-        const { data, error } = await supabase
+        
+        // Detect schema version by checking if user_id column exists
+        const { data: schemaCheck } = await supabase
           .from('profiles')
-          .select('*')
-          .eq('id', user.id)
-          .single();
+          .select('user_id')
+          .limit(1);
+        
+        const hasUserIdColumn = schemaCheck !== null;
+        
+        let query;
+        if (hasUserIdColumn) {
+          // NEW SCHEMA: Look up by user_id
+          query = supabase
+            .from('profiles')
+            .select('*')
+            .eq('user_id', user.id);
+        } else {
+          // OLD SCHEMA: Look up by id  
+          query = supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', user.id);
+        }
+        
+        const { data, error } = await query.single();
           
+        if (error && error.code === 'PGRST116') {
+          // No profile exists yet - this is fine for new users creating their first network
+          console.log("No profile found - new user creating first network");
+          setProfile(null);
+          setLoadingProfile(false);
+          return;
+        }
+        
         if (error) throw error;
         
         setProfile(data);
@@ -92,8 +120,8 @@ const NetworkOnboardingPage = () => {
     );
   }
   
-  // If no user or profile after loading is complete
-  if (!user || !profile) {
+  // If no user after loading is complete
+  if (!user) {
     return (
       <Box sx={{
         height: '100vh',
@@ -103,7 +131,7 @@ const NetworkOnboardingPage = () => {
         justifyContent: 'center'
       }}>
         <Alert severity="warning" sx={{ maxWidth: 500 }}>
-          Please complete your profile first before creating a network.
+          Please log in to create a network.
         </Alert>
       </Box>
     );
@@ -137,7 +165,7 @@ const NetworkOnboardingPage = () => {
           </Box>
           
           <Typography variant="h6" sx={{ mb: 2, fontWeight: 'normal' }}>
-            Welcome, {profile.full_name || 'there'}! Let's configure your new community space.
+            Welcome, {profile?.full_name || user?.email?.split('@')[0] || 'there'}! Let's configure your new community space.
           </Typography>
           
           <Typography variant="body1">

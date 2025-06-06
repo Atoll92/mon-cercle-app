@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/authcontext';
+import { useProfile } from '../context/profileContext';
 import { supabase } from '../supabaseclient';
 import {
   Container,
@@ -85,6 +86,7 @@ const formatFileSize = (bytes) => {
 function SharedFilesPage() {
   const { networkId } = useParams();
   const { user } = useAuth();
+  const { activeProfile } = useProfile();
   const navigate = useNavigate();
   
   // State variables
@@ -122,7 +124,7 @@ function SharedFilesPage() {
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('*')
-          .eq('id', user.id)
+          .eq('id', activeProfile?.id || user.id)
           .single();
           
         if (profileError) throw profileError;
@@ -248,7 +250,7 @@ function SharedFilesPage() {
         .from('network_files')
         .insert([{ 
           network_id: networkId,
-          uploaded_by: user.id,
+          uploaded_by: activeProfile?.id || user.id,
           filename: selectedFile.name,
           filepath: filePath,
           file_url: publicUrl,
@@ -270,7 +272,7 @@ function SharedFilesPage() {
       const { data: uploaderData } = await supabase
         .from('profiles')
         .select('full_name, profile_picture_url')
-        .eq('id', user.id)
+        .eq('id', activeProfile?.id || user.id)
         .single();
         
       const newFile = {
@@ -316,7 +318,7 @@ function SharedFilesPage() {
   
   // Handle file deletion
   const handleDeleteFile = async (file) => {
-    if (file.uploaded_by !== user.id && userProfile.role !== 'admin') {
+    if (file.uploaded_by !== (activeProfile?.id || user.id) && userProfile.role !== 'admin') {
       setError('You can only delete files that you uploaded.');
       return;
     }

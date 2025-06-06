@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseclient';
 import { useAuth } from '../context/authcontext';
+import { useProfile } from '../context/profileContext';
 
 import {
   Container,
@@ -56,6 +57,7 @@ function WikiListPage() {
   const { networkId, categorySlug } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { activeProfile } = useProfile();
   
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -96,7 +98,7 @@ function WikiListPage() {
           const { data: profileData, error: profileError } = await supabase
             .from('profiles')
             .select('id, role, network_id')
-            .eq('id', user.id)
+            .eq('id', activeProfile?.id || user.id)
             .single();
             
           if (!profileError) {

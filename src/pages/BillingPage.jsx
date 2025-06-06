@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseclient';
 import { useAuth } from '../context/authcontext';
+import { useProfile } from '../context/profileContext';
 import { fetchNetworkDetails } from '../api/networks';
 import { createCheckoutSession } from '../services/stripeService';
 import { PRICE_IDS } from '../stripe/config';
@@ -135,6 +136,7 @@ const planDetails = {
 
 const BillingPage = () => {
   const { user } = useAuth();
+  const { activeProfile } = useProfile();
   const navigate = useNavigate();
   const theme = useTheme();
   
@@ -206,7 +208,7 @@ const BillingPage = () => {
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('*')
-          .eq('id', user.id)
+          .eq('id', activeProfile?.id || user.id)
           .single();
           
         if (profileError) throw profileError;

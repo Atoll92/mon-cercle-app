@@ -1,11 +1,10 @@
 // src/App.jsx - Updated version with shared files routes
-import React, { useState, useEffect, lazy, Suspense } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from './context/authcontext';
 import { CircularProgress, Box } from '@mui/material';
 import NetworkHeader from './components/NetworkHeader';
 import Footer from './components/Footer';
-import { supabase } from './supabaseclient';
 import { preventResizeAnimations } from './utils/animationHelpers';
 import ThemeProvider from './components/ThemeProvider';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -13,6 +12,9 @@ import { DirectMessagesProvider } from './context/directMessagesContext';
 import { AppProvider } from './context/appContext';
 import ErrorBoundary from './components/ErrorBoundary';
 import { Analytics } from '@vercel/analytics/react';
+import { ProfileProvider, useProfile } from './context/profileContext';
+import ProfileSelector from './components/ProfileSelector';
+import ProfileAwareRoute from './components/ProfileAwareRoute';
 
 // Eagerly loaded pages (small, frequently accessed)
 import LoginPage from './pages/LoginPage';
@@ -39,7 +41,6 @@ const NetworkLandingPage = lazy(() => import('./pages/NetworkLandingPage'));
 const DemoPage = lazy(() => import('./pages/DemoPage'));
 const DirectMessagesPage = lazy(() => import('./pages/DirectMessagesPage'));
 const PricingPage = lazy(() => import('./pages/PricingPage'));
-const ShimmeringTextPage = lazy(() => import('./pages/ShimmeringTextPage'));
 const PersonalMoodboardsPage = lazy(() => import('./pages/PersonalMoodboardPage'));
 const PasswordUpdatePage = lazy(() => import('./pages/PasswordUpdatePage'));
 const NetworkOnboardingPage = lazy(() => import('./pages/NetworkOnboardingPage'));
@@ -60,54 +61,45 @@ const PageLoader = () => (
   </Box>
 );
 
-function App() {
-  const { loading, session, user } = useAuth();
-  const navigate = useNavigate();
-  const location = useLocation();
+// Component that provides network ID from active profile
+const AppWithProfileContext = ({ children }) => {
+  const { activeProfile, isLoadingProfiles } = useProfile();
   const [userNetworkId, setUserNetworkId] = useState(null);
   const [fetchingNetwork, setFetchingNetwork] = useState(false);
+
+  // Update network ID when active profile changes
+  useEffect(() => {
+    if (isLoadingProfiles) {
+      setFetchingNetwork(true);
+      return;
+    }
+
+    setFetchingNetwork(false);
+    
+    if (activeProfile?.network_id) {
+      setUserNetworkId(activeProfile.network_id);
+    } else {
+      setUserNetworkId(null);
+    }
+  }, [activeProfile, isLoadingProfiles]);
+
+  return (
+    <AppProvider userNetworkId={userNetworkId} fetchingNetwork={fetchingNetwork}>
+      {children}
+    </AppProvider>
+  );
+};
+
+function App() {
+  const { loading, session } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   // Initialize resize animation prevention
   useEffect(() => {
     const cleanup = preventResizeAnimations();
     return cleanup;
   }, []);
-
-  // Fetch user's network info when user changes
-  useEffect(() => {
-    const fetchUserNetwork = async () => {
-      if (!user) {
-        setUserNetworkId(null);
-        return;
-      }
-
-      try {
-        setFetchingNetwork(true);
-        
-        // Get the user's profile to find their network_id
-        const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
-          .select('network_id')
-          .eq('id', user.id)
-          .single();
-          
-        if (profileError || !profileData.network_id) {
-          console.log('No network found or user not in a network');
-          setUserNetworkId(null);
-          return;
-        }
-        
-        setUserNetworkId(profileData.network_id);
-      } catch (error) {
-        console.error('Error in network fetch:', error);
-        setUserNetworkId(null);
-      } finally {
-        setFetchingNetwork(false);
-      }
-    };
-    
-    fetchUserNetwork();
-  }, [user]);
 
   useEffect(() => {
     // Handle any redirects after login
@@ -156,10 +148,11 @@ function App() {
 
   return (
     <ErrorBoundary>
-      <ThemeProvider>
-        <AppProvider userNetworkId={userNetworkId} fetchingNetwork={fetchingNetwork}>
-          <DirectMessagesProvider>
-            <Box className="App" sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+      <ProfileProvider>
+        <ThemeProvider>
+          <AppWithProfileContext>
+            <DirectMessagesProvider>
+              <Box className="App" sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
             {/* Pass the network name to the header */}
             {window.location.pathname !== "/" && window.location.pathname !== "/pricing" && window.location.pathname !== "/terms" && window.location.pathname !== "/old" && !window.location.pathname.startsWith("/micro-conclav/") && (
               <NetworkHeader/>
@@ -183,7 +176,6 @@ function App() {
             <Route path="/demo" element={<DemoPage />} />
             <Route path="/pricing" element={<PricingPage />} />
             <Route path="/payment-success" element={<PaymentSuccessPage />} />
-            <Route path="/shimmer" element={<ShimmeringTextPage />} />
             <Route path="/terms" element={<TermsPage />} />
             <Route path="/privacy" element={<PrivacyPage />} />
             
@@ -203,42 +195,47 @@ function App() {
             
             {/* Protected Wiki routes - need to be inside ProtectedRoute */}
             <Route element={<ProtectedRoute />}>
-              <Route path="/network/:networkId/wiki/new" element={<WikiEditPage />} />
-              <Route path="/network/:networkId/wiki/edit/:pageSlug" element={<WikiEditPage />} />
+              <Route path="/network/:networkId/wiki/new" element={<ProfileAwareRoute><WikiEditPage /></ProfileAwareRoute>} />
+              <Route path="/network/:networkId/wiki/edit/:pageSlug" element={<ProfileAwareRoute><WikiEditPage /></ProfileAwareRoute>} />
             </Route>
 
             <Route element={<ProtectedRoute />}>
-              <Route path="/moodboard/:moodboardId" element={<MoodboardPage />} />
-              <Route path="/dashboard/moodboards" element={<PersonalMoodboardsPage />} />
-              <Route path="/network/:networkId/moodboards/create" element={<MoodboardPage />} />
+              <Route path="/moodboard/:moodboardId" element={<ProfileAwareRoute><MoodboardPage /></ProfileAwareRoute>} />
+              <Route path="/dashboard/moodboards" element={<ProfileAwareRoute><PersonalMoodboardsPage /></ProfileAwareRoute>} />
+              <Route path="/network/:networkId/moodboards/create" element={<ProfileAwareRoute><MoodboardPage /></ProfileAwareRoute>} />
             </Route>
 
             {/* Protected Shared Files Routes */}
             <Route element={<ProtectedRoute />}>
-              <Route path="/network/:networkId/files" element={<SharedFilesPage />} />
+              <Route path="/network/:networkId/files" element={<ProfileAwareRoute><SharedFilesPage /></ProfileAwareRoute>} />
             </Route>
 
             {/* Protected Direct Messages Routes */}
             <Route element={<ProtectedRoute />}>
-              <Route path="/messages" element={<DirectMessagesPage />} />
-              <Route path="/messages/:userId" element={<DirectMessagesPage />} />
+              <Route path="/messages" element={<ProfileAwareRoute><DirectMessagesPage /></ProfileAwareRoute>} />
+              <Route path="/messages/:userId" element={<ProfileAwareRoute><DirectMessagesPage /></ProfileAwareRoute>} />
             </Route>
 
             <Route element={<ProtectedRoute />}>
-              <Route path="/billing" element={<BillingPage />} />
+              <Route path="/billing" element={<ProfileAwareRoute><BillingPage /></ProfileAwareRoute>} />
+            </Route>
+            
+            {/* Profile Selection Route */}
+            <Route element={<ProtectedRoute />}>
+              <Route path="/profiles/select" element={<ProfileSelector />} />
             </Route>
             
             
             {/* Other Protected Routes */}
             <Route element={<ProtectedRoute />}>
-              <Route path="/dashboard" element={<DashboardPage />} />
-              <Route path="/profile/:userId" element={<ProfilePage />} />
-              <Route path="/profile/edit" element={<EditProfilePage />} />
-              <Route path="/admin" element={<NetworkAdminPage />} />
-              <Route path="/super-admin" element={<SuperAdminDashboard />} />
+              <Route path="/dashboard" element={<ProfileAwareRoute><DashboardPage /></ProfileAwareRoute>} />
+              <Route path="/profile/:userId" element={<ProfileAwareRoute><ProfilePage /></ProfileAwareRoute>} />
+              <Route path="/profile/edit" element={<ProfileAwareRoute><EditProfilePage /></ProfileAwareRoute>} />
+              <Route path="/admin" element={<ProfileAwareRoute><NetworkAdminPage /></ProfileAwareRoute>} />
+              <Route path="/super-admin" element={<ProfileAwareRoute><SuperAdminDashboard /></ProfileAwareRoute>} />
               <Route path="/create-network" element={<NetworkOnboardingPage />} />
               {/* Protected network route without ID for authenticated members */}
-              <Route path="/network" element={<NetworkLandingPage />} />
+              <Route path="/network" element={<ProfileAwareRoute><NetworkLandingPage /></ProfileAwareRoute>} />
             </Route>
             
             {/* Public network routes with ID */}
@@ -246,7 +243,7 @@ function App() {
             <Route path="/network/:networkId/news/:newsId" element={<NewsPostPage />} />
             <Route path="/network/:networkId/event/:eventId" element={<EventPage />} />
             
-            {/* Test route */}
+            {/* Test routes */}
             <Route path="/media-test" element={<MediaTest />} />
             
             {/* Join network via invitation link */}
@@ -260,9 +257,10 @@ function App() {
             <Footer />
             <Analytics />
           </Box>
-        </DirectMessagesProvider>
-        </AppProvider>
-      </ThemeProvider>
+            </DirectMessagesProvider>
+          </AppWithProfileContext>
+        </ThemeProvider>
+      </ProfileProvider>
     </ErrorBoundary>
   );
 }

@@ -34,9 +34,11 @@ import {
 } from '@mui/icons-material';
 import { submitVote, getUserVote, getPollWithVotes } from '../api/polls';
 import { useAuth } from '../context/authcontext';
+import { useProfile } from '../context/profileContext';
 
 const PollCard = ({ poll, onVoteSubmit }) => {
   const { user } = useAuth();
+  const { activeProfile } = useProfile();
   const [selectedOptions, setSelectedOptions] = useState([]);
   const [userVote, setUserVote] = useState(null);
   const [hasVoted, setHasVoted] = useState(false);
@@ -47,12 +49,16 @@ const PollCard = ({ poll, onVoteSubmit }) => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetchUserVote();
-  }, [poll.id]);
+    if (activeProfile) {
+      fetchUserVote();
+    }
+  }, [poll.id, activeProfile]);
 
   const fetchUserVote = async () => {
+    if (!activeProfile) return;
+    
     setLoading(true);
-    const { data: voteData } = await getUserVote(poll.id);
+    const { data: voteData } = await getUserVote(poll.id, activeProfile.id);
     if (voteData) {
       setUserVote(voteData);
       setHasVoted(true);
@@ -73,6 +79,11 @@ const PollCard = ({ poll, onVoteSubmit }) => {
   };
 
   const handleVote = async () => {
+    if (!activeProfile) {
+      setError('Please select a profile to vote');
+      return;
+    }
+    
     if (selectedOptions.length === 0) {
       setError('Please select at least one option');
       return;
@@ -81,7 +92,7 @@ const PollCard = ({ poll, onVoteSubmit }) => {
     setSubmitting(true);
     setError(null);
 
-    const { data, error } = await submitVote(poll.id, selectedOptions);
+    const { data, error } = await submitVote(poll.id, selectedOptions, activeProfile.id);
     
     if (error) {
       setError('Failed to submit vote');

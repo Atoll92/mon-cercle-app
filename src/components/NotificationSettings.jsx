@@ -20,9 +20,11 @@ import {
 } from '@mui/icons-material';
 import { supabase } from '../supabaseclient';
 import { useAuth } from '../context/authcontext';
+import { useProfile } from '../context/profileContext';
 
 const NotificationSettings = () => {
   const { user } = useAuth();
+  const { activeProfile } = useProfile();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
@@ -45,7 +47,7 @@ const NotificationSettings = () => {
         const { data, error } = await supabase
           .from('profiles')
           .select('email_notifications_enabled, notify_on_news, notify_on_events, notify_on_mentions, notify_on_direct_messages')
-          .eq('id', user.id)
+          .eq('id', activeProfile?.id || user.id)
           .single();
 
         if (error) throw error;
@@ -91,7 +93,7 @@ const NotificationSettings = () => {
       const { error } = await supabase
         .from('profiles')
         .update(updates)
-        .eq('id', user.id);
+        .eq('id', activeProfile?.id || user.id);
 
       if (error) throw error;
 

@@ -1,6 +1,7 @@
 // src/pages/DashboardPage.jsx
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/authcontext';
+import { useProfile } from '../context/profileContext';
 import { supabase } from '../supabaseclient';
 import { useNavigate, Link } from 'react-router-dom';
 import MembersDetailModal from '../components/MembersDetailModal';
@@ -172,6 +173,7 @@ const fetchNetworkDetails = async (networkId) => {
 
 function DashboardPage() {
   const { user, session } = useAuth();
+  const { activeProfile } = useProfile();
   const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
   const [networkMembers, setNetworkMembers] = useState([]);
@@ -247,12 +249,10 @@ function DashboardPage() {
       setError(null);
       
       try {
-        console.log('Fetching profile for user:', user.id);
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', user.id)
-          .maybeSingle(); // Use maybeSingle instead of single to handle missing profiles
+        console.log('Using active profile from context:', activeProfile?.id);
+        // Use activeProfile from context instead of direct DB query
+        const data = activeProfile;
+        const error = activeProfile ? null : { message: 'No active profile found' };
 
         if (error) {
           console.error("Error fetching profile:", error);
@@ -418,7 +418,7 @@ function DashboardPage() {
       setLoadingEvents(false);
       setLoadingNetworkDetails(false);
     }
-  }, [user, retryCount, navigate]);
+  }, [user, activeProfile, retryCount, navigate]);
 
   const handleRefresh = () => {
     window.location.reload();
@@ -473,7 +473,7 @@ function DashboardPage() {
       
       // Save post directly to the database
       const newPost = {
-        profile_id: user.id,
+        profile_id: activeProfile?.id || user.id,
         title: newPostTitle,
         description: newPostContent,
         url: newPostLink,
@@ -892,7 +892,7 @@ function DashboardPage() {
                           size="small" 
                           startIcon={<PersonIcon />}
                           component={Link} 
-                          to={`/profile/${user.id}`}
+                          to={`/profile/${activeProfile?.id || user.id}`}
                           variant="outlined"
                           color="secondary"
                         >
@@ -903,7 +903,7 @@ function DashboardPage() {
                           size="small" 
                           startIcon={<PreviewIcon />}
                           component={Link} 
-                          to={`/micro-conclav/${user.id}`}
+                          to={`/micro-conclav/${activeProfile?.id || user.id}`}
                           target="_blank"
                           variant="outlined"
                           color="primary"
@@ -1517,7 +1517,7 @@ function DashboardPage() {
                               onUpload={handleMediaUpload}
                               allowedTypes={['IMAGE', 'VIDEO', 'AUDIO', 'PDF']}
                               bucket="profiles"
-                              path={`portfolios/${user.id}`}
+                              path={`portfolios/${activeProfile?.id || user.id}`}
                               maxFiles={1}
                               autoUpload={true}
                               showPreview={false}

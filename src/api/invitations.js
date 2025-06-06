@@ -195,7 +195,8 @@ export const getInvitationByCode = async (code) => {
   }
 };
 
-// Join network via invitation link
+// MULTIPLE PROFILES SUPPORT: Creates a new profile for the user in the target network
+// while preserving their existing profiles in other networks
 export const joinNetworkViaInvitation = async (code, inviteeEmail = null) => {
   try {
     // Get current user
@@ -218,46 +219,146 @@ export const joinNetworkViaInvitation = async (code, inviteeEmail = null) => {
       };
     }
     
-    // Debug: Log the invitation data to see if role is included
-    console.log('Invitation data:', invitation);
-    console.log('Invitation role:', invitation.role);
+    console.log('Joining network via invitation:', invitation.network_id, 'Role:', invitation.role);
     
-    // Check if user is already in the network
-    const { data: existingProfile } = await supabase
-      .from('profiles')
-      .select('network_id')
-      .eq('id', user.id)
-      .single();
+    // Check if user already has a profile in this specific network
+    // Try new schema first (with user_id column), fallback to old schema
+    let existingProfile = null;
+    let useOldSchema = false;
     
-    if (existingProfile?.network_id === invitation.network_id) {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, network_id, role')
+        .eq('user_id', user.id)
+        .eq('network_id', invitation.network_id)
+        .maybeSingle();
+        
+      if (error && error.message?.includes('user_id') && error.message?.includes('does not exist')) {
+        // user_id column doesn't exist - database migration not done yet
+        useOldSchema = true;
+      } else if (error && error.code !== 'PGRST116') {
+        throw error;
+      } else {
+        existingProfile = data;
+      }
+    } catch (error) {
+      if (error.message?.includes('user_id') && error.message?.includes('does not exist')) {
+        useOldSchema = true;
+      } else {
+        throw error;
+      }
+    }
+    
+    if (useOldSchema) {
+      // FALLBACK: Use old schema behavior (pre-migration)
+      const { data: oldProfile, error: oldProfileError } = await supabase
+        .from('profiles')
+        .select('network_id, role')
+        .eq('id', user.id)
+        .single();
+      
+      if (oldProfileError && oldProfileError.code !== 'PGRST116') {
+        throw oldProfileError;
+      }
+      
+      if (oldProfile?.network_id === invitation.network_id) {
+        return {
+          success: false,
+          error: 'You are already a member of this network'
+        };
+      }
+      
+      // Update user's profile to join the network with the specified role (old behavior)
+      const roleToAssign = invitation.role || 'member';
+      console.log('OLD SCHEMA: Assigning role:', roleToAssign, 'to user:', user.id);
+      
+      const { data: updatedProfile, error: updateError } = await supabase
+        .from('profiles')
+        .update({
+          network_id: invitation.network_id,
+          role: roleToAssign,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', user.id)
+        .select()
+        .single();
+      
+      if (updateError) {
+        console.error('Error updating profile:', updateError);
+        throw updateError;
+      }
+      
+      console.log('Updated profile (old schema):', updatedProfile);
+      
+      // Increment usage count
+      await supabase.rpc('increment_invitation_link_uses', { link_code: code });
+      
+      // If joining via email invitation, update the invitation status
+      if (inviteeEmail) {
+        await supabase
+          .from('invitations')
+          .update({ status: 'accepted' })
+          .eq('email', inviteeEmail.toLowerCase())
+          .eq('network_id', invitation.network_id)
+          .eq('status', 'pending');
+      }
+      
+      return {
+        success: true,
+        message: 'Successfully joined the network!',
+        networkId: invitation.network_id,
+        networkName: invitation.networks?.name || 'Network',
+        profileId: updatedProfile.id
+      };
+    }
+    
+    if (existingProfile) {
       return {
         success: false,
         error: 'You are already a member of this network'
       };
     }
     
-    // Update user's profile to join the network with the specified role
-    const roleToAssign = invitation.role || 'member';
-    console.log('Assigning role:', roleToAssign, 'to user:', user.id);
-    
-    const { data: updatedProfile, error: updateError } = await supabase
+    // NEW SCHEMA: Get user's existing profile to copy basic info
+    const { data: userProfile, error: userProfileError } = await supabase
       .from('profiles')
-      .update({
+      .select('full_name, contact_email, bio, profile_picture_url, linkedin_url, portfolio_url, skills')
+      .eq('user_id', user.id)
+      .limit(1)
+      .maybeSingle();
+    
+    if (userProfileError && userProfileError.code !== 'PGRST116') {
+      throw userProfileError;
+    }
+    
+    // Create a new profile for the user in this network
+    const roleToAssign = invitation.role || 'member';
+    console.log('NEW SCHEMA: Creating new profile with role:', roleToAssign, 'for user:', user.id);
+    
+    const { data: newProfile, error: createError } = await supabase
+      .from('profiles')
+      .insert([{
+        user_id: user.id,
         network_id: invitation.network_id,
         role: roleToAssign,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', user.id)
+        full_name: userProfile?.full_name || '',
+        contact_email: userProfile?.contact_email || user.email || '',
+        bio: userProfile?.bio || '',
+        profile_picture_url: userProfile?.profile_picture_url || null,
+        linkedin_url: userProfile?.linkedin_url || null,
+        portfolio_url: userProfile?.portfolio_url || null,
+        skills: userProfile?.skills || []
+      }])
       .select()
       .single();
     
-    if (updateError) {
-      console.error('Error updating profile:', updateError);
-      throw updateError;
+    if (createError) {
+      console.error('Error creating new profile:', createError);
+      throw createError;
     }
     
-    console.log('Updated profile:', updatedProfile);
-    console.log('Profile role after update:', updatedProfile?.role);
+    console.log('Created new profile:', newProfile);
     
     // Increment usage count
     await supabase.rpc('increment_invitation_link_uses', { link_code: code });
@@ -267,7 +368,7 @@ export const joinNetworkViaInvitation = async (code, inviteeEmail = null) => {
       await supabase
         .from('invitations')
         .update({ status: 'accepted' })
-        .eq('email', inviteeEmail)
+        .eq('email', inviteeEmail.toLowerCase())
         .eq('network_id', invitation.network_id)
         .eq('status', 'pending');
     }
@@ -276,7 +377,8 @@ export const joinNetworkViaInvitation = async (code, inviteeEmail = null) => {
       success: true,
       message: 'Successfully joined the network!',
       networkId: invitation.network_id,
-      networkName: invitation.networks.name
+      networkName: invitation.networks?.name || 'Network',
+      profileId: newProfile.id
     };
   } catch (error) {
     console.error('Error joining network:', error);

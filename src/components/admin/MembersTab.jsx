@@ -51,7 +51,7 @@ import { inviteUserToNetwork, toggleMemberAdmin, removeMemberFromNetwork, getNet
 import BatchInviteModal from './BatchInviteModal';
 import InvitationLinksTab from './InvitationLinksTab';
 
-const MembersTab = ({ members, user, network, onMembersChange, darkMode = false }) => {
+const MembersTab = ({ members, user, activeProfile, network, onMembersChange, darkMode = false }) => {
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteAsAdmin, setInviteAsAdmin] = useState(false);
   const [inviting, setInviting] = useState(false);
@@ -233,7 +233,7 @@ const MembersTab = ({ members, user, network, onMembersChange, darkMode = false 
                   {members.map(member => (
                     <TableRow 
                       key={member.id}
-                      sx={member.id === user.id ? { 
+                      sx={member.id === activeProfile?.id ? { 
                         backgroundColor: 'rgba(25, 118, 210, 0.08)' 
                       } : {}}
                     >
@@ -249,7 +249,7 @@ const MembersTab = ({ members, user, network, onMembersChange, darkMode = false 
                           <Box>
                             <Typography variant="body1">
                               {member.full_name || 'Unnamed User'}
-                              {member.id === user.id && ' (You)'}
+                              {member.id === activeProfile?.id && ' (You)'}
                             </Typography>
                             <Typography variant="body2" color="text.secondary">
                               {member.contact_email}

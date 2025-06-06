@@ -236,33 +236,119 @@ export {
 
 
 // New API functions for admin operations
+// MULTIPLE PROFILES SUPPORT: Supports users having multiple profiles across networks
+// 1. Check if user already has a profile in this specific network
+// 2. If existing auth user, create a new profile for them in this network 
+// 3. If new user, send invitation link for them to sign up and join
 export const inviteUserToNetwork = async (email, networkId, inviterId, role = 'member') => {
   try {
-    // Check if user already exists
-    const { data: existingUser, error: userError } = await supabase
+    // Step 1: Check if user already has a profile in this specific network
+    const { data: existingProfile, error: profileError } = await supabase
       .from('profiles')
       .select('id, network_id, contact_email, full_name')
-      .eq('contact_email', email)
+      .eq('contact_email', email.toLowerCase())
+      .eq('network_id', networkId)
       .maybeSingle();
         
-    if (userError && userError.code !== 'PGRST116') {
-      throw userError;
+    if (profileError && profileError.code !== 'PGRST116') {
+      throw profileError;
     }
     
-    if (existingUser) {
-      if (existingUser.network_id === networkId) {
+    if (existingProfile) {
+      // User already has a profile in this network
+      return { 
+        success: false, 
+        message: 'This user is already in your network.'
+      };
+    }
+    
+    // Step 2: Check if this email belongs to an existing auth user
+    // Try new schema first (with user_id column), fallback to old schema
+    let authUser = null;
+    let useOldSchema = false;
+    
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('user_id, contact_email, full_name')
+        .eq('contact_email', email.toLowerCase())
+        .limit(1)
+        .maybeSingle();
+        
+      if (error && error.message?.includes('user_id') && error.message?.includes('does not exist')) {
+        // user_id column doesn't exist - database migration not done yet
+        useOldSchema = true;
+      } else if (error && error.code !== 'PGRST116') {
+        throw error;
+      } else {
+        authUser = data;
+      }
+    } catch (error) {
+      if (error.message?.includes('user_id') && error.message?.includes('does not exist')) {
+        useOldSchema = true;
+      } else {
+        throw error;
+      }
+    }
+    
+    if (useOldSchema) {
+      // FALLBACK: Use old schema behavior (pre-migration)
+      const { data: anyExistingProfile } = await supabase
+        .from('profiles')
+        .select('id, network_id, contact_email, full_name')
+        .eq('contact_email', email.toLowerCase())
+        .maybeSingle();
+        
+      if (anyExistingProfile && !anyExistingProfile.network_id) {
+        // User has a profile but no network - assign them to this network (old behavior)
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .update({ network_id: networkId, role: role })
+          .eq('id', anyExistingProfile.id);
+            
+        if (updateError) throw updateError;
+
+        // Update any pending invitations for this user to 'accepted'
+        await supabase
+          .from('invitations')
+          .update({ status: 'accepted' })
+          .eq('email', email.toLowerCase())
+          .eq('network_id', networkId)
+          .eq('status', 'pending');
+
+        try {
+          await supabase.functions.invoke('network-invite', {
+            body: {
+              toEmail: email,
+              networkName: (await fetchNetworkDetails(networkId)).name,
+              inviterName: (await getUserProfile(inviterId)).full_name || 'Network Admin',
+              type: 'existing_user'
+            }
+          });
+        } catch (emailError) {
+          console.error('Failed to send email notification:', emailError);
+        }
+        
         return { 
-          success: false, 
-          message: 'This user is already in your network.'
+          success: true, 
+          message: `User ${email} added to your network! Email notification sent.`
         };
       }
-      
-      const { error: updateError } = await supabase
+    } else if (authUser?.user_id) {
+      // NEW SCHEMA: Existing user - create a new profile for them in this network
+      const { error: createError } = await supabase
         .from('profiles')
-        .update({ network_id: networkId, role: role })
-        .eq('id', existingUser.id);
+        .insert([{
+          user_id: authUser.user_id,
+          network_id: networkId,
+          contact_email: email.toLowerCase(),
+          full_name: authUser.full_name || '',
+          role: role
+        }])
+        .select()
+        .single();
           
-      if (updateError) throw updateError;
+      if (createError) throw createError;
 
       // Update any pending invitations for this user to 'accepted'
       await supabase
@@ -272,25 +358,29 @@ export const inviteUserToNetwork = async (email, networkId, inviterId, role = 'm
         .eq('network_id', networkId)
         .eq('status', 'pending');
 
+      // Send notification to existing user about the new network
       try {
         await supabase.functions.invoke('network-invite', {
           body: {
-            toEmail: existingUser.contact_email,
+            toEmail: email,
             networkName: (await fetchNetworkDetails(networkId)).name,
             inviterName: (await getUserProfile(inviterId)).full_name || 'Network Admin',
-            type: 'existing_user'
+            type: 'existing_user_new_network'
           }
         });
       } catch (emailError) {
         console.error('Failed to send email notification:', emailError);
+        // Don't throw - profile was created successfully
       }
       
       return { 
         success: true, 
-        message: `User ${email} added to your network! Email notification sent.`
+        message: `User ${email} added to your network! They've been notified about this new network.`
       };
-    } else {
-      // For new users, create an invitation link with the email
+    }
+    
+    // Step 3b: New user OR old schema fallback - create invitation link for signup
+    {
       const { data: codeResult, error: codeError } = await supabase
         .rpc('generate_invitation_code');
       
@@ -318,7 +408,7 @@ export const inviteUserToNetwork = async (email, networkId, inviterId, role = 'm
       const { error: inviteError } = await supabase
         .from('invitations')
         .insert([{ 
-          email, 
+          email: email.toLowerCase(), 
           network_id: networkId, 
           invited_by: inviterId,
           status: 'pending',
@@ -331,6 +421,7 @@ export const inviteUserToNetwork = async (email, networkId, inviterId, role = 'm
       const baseUrl = getBaseUrl();
       const inviteLink = `${baseUrl}/join/${codeResult}?email=${encodeURIComponent(email)}`;
 
+      // Send invitation email to new user
       try {
         await supabase.functions.invoke('network-invite', {
           body: {
@@ -360,18 +451,37 @@ export const inviteUserToNetwork = async (email, networkId, inviterId, role = 'm
   }
 };
 
-export const getUserProfile = async (userId) => {
+// DEPRECATED: This function assumes profile ID matches user ID (single profile per user)
+// For multiple profiles migration, use getProfileById(profileId) instead
+export const getUserProfile = async (userIdOrProfileId) => {
   try {
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
-      .eq('id', userId)
+      .eq('id', userIdOrProfileId)
       .single();
       
     if (error) throw error;
     return data;
   } catch (error) {
     console.error('Error fetching user profile:', error);
+    return null;
+  }
+};
+
+// NEW: Profile-aware function for multiple profiles migration
+export const getProfileById = async (profileId) => {
+  try {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', profileId)
+      .single();
+      
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error('Error fetching profile by ID:', error);
     return null;
   }
 };
@@ -620,7 +730,7 @@ export const removeNetworkImage = async (networkId, type = 'logo') => {
 };
 
 // Event management functions
-export const createEvent = async (networkId, userId, eventData, imageFile) => {
+export const createEvent = async (networkId, profileId, eventData, imageFile) => {
   try {
     // Create event
     const { data, error } = await supabase
@@ -628,7 +738,7 @@ export const createEvent = async (networkId, userId, eventData, imageFile) => {
       .insert([{
         ...eventData,
         network_id: networkId,
-        created_by: userId
+        created_by: profileId
       }])
       .select();
       
@@ -757,14 +867,14 @@ export const uploadEventImage = async (eventId, imageFile) => {
 };
 
 // News post functions
-export const createNewsPost = async (networkId, userId, title, content, imageUrl = null, imageCaption = null, mediaUrl = null, mediaType = null, mediaMetadata = {}, categoryId = null) => {
+export const createNewsPost = async (networkId, profileId, title, content, imageUrl = null, imageCaption = null, mediaUrl = null, mediaType = null, mediaMetadata = {}, categoryId = null) => {
   try {
     // Create base post object
     const postData = {
       title,
       content,
       network_id: networkId,
-      created_by: userId
+      created_by: profileId
     };
     
     // Add category if provided
@@ -806,7 +916,7 @@ export const createNewsPost = async (networkId, userId, title, content, imageUrl
       const notificationResult = await queueNewsNotifications(
         networkId,
         data[0].id,
-        userId,
+        profileId,
         title,
         content
       );

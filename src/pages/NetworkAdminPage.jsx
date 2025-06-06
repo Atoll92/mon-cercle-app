@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/authcontext';
+import { useProfile } from '../context/profileContext';
 import { useTheme } from '../components/ThemeProvider'; // Import useTheme hook
 import { supabase } from '../supabaseclient';
 import {
@@ -67,6 +68,7 @@ const TAB_NAMES = Object.entries(TAB_MAPPING).reduce((acc, [name, index]) => {
 
 function NetworkAdminPage() {
   const { user } = useAuth();
+  const { activeProfile } = useProfile();
   const { darkMode } = useTheme(); // Get darkMode from theme context
   const muiTheme = useMuiTheme(); // Get the MUI theme for accessing custom colors
   const [searchParams, setSearchParams] = useSearchParams();
@@ -124,7 +126,7 @@ function NetworkAdminPage() {
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('*')
-          .eq('id', user.id)
+          .eq('id', activeProfile?.id || user.id)
           .single();
           
         if (profileError) throw profileError;
@@ -352,6 +354,7 @@ function NetworkAdminPage() {
           <MembersTab
             members={members}
             user={user}
+            activeProfile={activeProfile}
             network={network}
             onMembersChange={refreshMembers}
             darkMode={darkMode} // Pass dark mode to component
@@ -369,7 +372,7 @@ function NetworkAdminPage() {
           /* News Management Component */
           <NewsTab
             networkId={network.id}
-            userId={user.id}
+            userId={activeProfile?.id || user.id}
             newsPosts={newsPosts}
             setNewsPosts={setNewsPosts}
             members={members}
@@ -383,6 +386,7 @@ function NetworkAdminPage() {
             events={events}
             setEvents={setEvents}
             user={user}
+            activeProfile={activeProfile}
             networkId={network.id}
             network={network}
             darkMode={darkMode} // Pass dark mode to component
@@ -393,7 +397,7 @@ function NetworkAdminPage() {
           /* Polls Management Component */
           <PollsTab
             networkId={network.id}
-            userId={user.id}
+            userId={activeProfile?.id || user.id}
             darkMode={darkMode} // Pass dark mode to component
           />
         )}

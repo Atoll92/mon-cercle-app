@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../supabaseclient';
 import { useAuth } from '../context/authcontext';
+import { useProfile } from '../context/profileContext';
 // Import the useTheme hook from your ThemeProvider
 import { useTheme } from '../components/ThemeProvider';
 
@@ -50,6 +51,7 @@ const WikiPage = () => {
   const { networkId, pageSlug } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { activeProfile } = useProfile();
   // Get theme information including darkMode state
   const { darkMode } = useTheme();
   
@@ -89,7 +91,7 @@ const WikiPage = () => {
           const { data: profileData, error: profileError } = await supabase
             .from('profiles')
             .select('id, role, network_id')
-            .eq('id', user.id)
+            .eq('id', activeProfile?.id || user.id)
             .single();
             
           if (!profileError) {
@@ -232,7 +234,7 @@ const WikiPage = () => {
         .from('wiki_comments')
         .insert({
           page_id: page.id,
-          profile_id: user.id,
+          profile_id: activeProfile?.id || user.id,
           content: commentText.trim()
         });
         
@@ -270,7 +272,7 @@ const WikiPage = () => {
         .from('wiki_comments')
         .update({
           is_hidden: true,
-          hidden_by: user.id,
+          hidden_by: activeProfile?.id || user.id,
           hidden_at: new Date().toISOString()
         })
         .eq('id', commentId);
@@ -299,7 +301,7 @@ const WikiPage = () => {
         .from('wiki_revisions')
         .update({
           is_approved: true,
-          approved_by: user.id,
+          approved_by: activeProfile?.id || user.id,
           approved_at: new Date().toISOString()
         })
         .eq('id', revision.id);
