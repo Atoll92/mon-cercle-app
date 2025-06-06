@@ -13,7 +13,9 @@ Conclav (formerly Mon Cercle) is a modern community platform that enables organi
 #### Authentication & User Management
 - ✅ Supabase Auth integration with email/password
 - ✅ Password reset and update flows
-- ✅ User profiles with customizable information
+- ✅ **Multiple profiles system - Users can have one profile per network** 
+- ✅ **Profile switching with ProfileSelector/ProfileSwitcher components**
+- ✅ **Cookie-based active profile persistence**
 - ✅ Role-based access control (admin/member)
 
 #### Network Management

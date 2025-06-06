@@ -18,9 +18,11 @@ auth.users
 ### User & Profile Management
 
 ```sql
-profiles
-- id (uuid, PK, references auth.users.id)
-- network_id (uuid, FK to networks.id)
+profiles (MULTIPLE PROFILES SYSTEM - Users can have one profile per network)
+- id (uuid, PK, generated UUID) - Profile-specific ID
+- user_id (uuid, NOT NULL, FK to auth.users.id) - References the authenticated user
+- network_id (uuid, FK to networks.id) - Which network this profile belongs to
+- UNIQUE CONSTRAINT (user_id, network_id) - One profile per user per network
 - full_name (text)
 - contact_email (text)
 - bio (text)

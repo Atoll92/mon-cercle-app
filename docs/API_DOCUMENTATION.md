@@ -11,7 +11,25 @@ Authentication-related functions for user management.
 - User registration and login
 - Password reset and update
 - Session management
-- Profile creation and updates
+- Profile creation and updates (legacy single profile functions)
+
+### profiles.js
+**MULTIPLE PROFILES SYSTEM** - Core profile management for users with multiple network profiles.
+
+**Key Functions:**
+- `getUserProfiles(userId)` - Get all profiles for a user across networks
+- `createProfileForNetwork(userId, networkId, profileData)` - Create new profile when joining network
+- `getActiveProfile(userId)` - Get currently active profile from cookies
+- `setActiveProfile(profileId)` - Switch active profile and save to cookies
+- `getProfileByUserAndNetwork(userId, networkId)` - Get specific user's profile for network
+- `updateProfile(profileId, updates)` - Update profile data
+- `deleteProfile(profileId)` - Remove profile (leave network)
+- Schema detection and backward compatibility with old single-profile pattern
+
+**Profile Context Integration:**
+- Cookie-based active profile persistence
+- Profile switching with context updates
+- Backward compatibility: `activeProfile?.id || user.id` pattern
 
 ### networks.jsx
 Network CRUD operations and management.

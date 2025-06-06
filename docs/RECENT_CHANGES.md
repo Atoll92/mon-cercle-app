@@ -9,6 +9,31 @@ This document tracks significant changes and new features in the Conclav applica
 
 ## June 2025 Updates
 
+### ✅ MAJOR: Multiple Profiles System Implementation
+**Complete database migration and frontend overhaul to support multiple profiles per user**
+
+**Key Changes:**
+- **Database Schema**: Migrated from 1:1:1 (User:Profile:Network) to 1:many:many relationship
+  - `profiles.user_id` now references `auth.users.id` (multiple profiles per user)
+  - `profiles.id` uses generated UUIDs instead of user IDs
+  - Added unique constraint on `(user_id, network_id)` - one profile per user per network
+  - 35+ RLS policies updated for multiple profiles support
+
+**Frontend Implementation:**
+- **New Components**: `ProfileProvider`, `ProfileSelector`, `ProfileSwitcher`, `ProfileAwareRoute`
+- **Profile Context**: Manages multiple profiles, active profile selection, and cookie-based persistence
+- **API Layer**: Complete `src/api/profiles.js` with backward compatibility support
+- **Component Updates**: All major components updated with `activeProfile?.id || user.id` pattern
+- **Migration Ready**: All critical systems (Chat, Events, Social Wall, etc.) updated
+
+**User Experience:**
+- Users can join multiple networks with separate profiles for each
+- Seamless profile switching with persistent active profile selection
+- Backward compatibility maintained throughout migration process
+- Cookie-based active profile persistence across browser sessions
+
+## June 2025 Updates
+
 ### Profile Creation Timestamps
 - Added `created_at` column to profiles table with automatic timestamp on creation
 - Updated MembersDetailModal to show "Joined X time ago" using formatTimeAgo utility

@@ -68,6 +68,7 @@ mon-cercle-app/
 
 #### Context Providers
 - `src/context/authcontext.jsx` - Authentication state management
+- `src/context/profileContext.jsx` - **Multiple profiles management and active profile selection**
 - `src/context/networkContext.jsx` - Network data management
 - `src/context/directMessagesContext.jsx` - Direct messaging state
 
@@ -81,7 +82,7 @@ mon-cercle-app/
 - `superAdmin.js` - Admin dashboard API
 - `comments.js` - Social wall comments system (add, fetch, delete, toggle visibility)
 - `tickets.js` - Support ticket system (create, update, view, message)
-- `profiles.js` - User profile operations (CRUD, preferences, subscriptions)
+- `profiles.js` - **Multiple profile system with user-network profile management** (CRUD, preferences, subscriptions, active profile selection)
 - `wiki.js` - Wiki page operations (CRUD, categories, comments, revisions)
 - `events.js` - Event participation management and statistics
 
@@ -174,7 +175,10 @@ mon-cercle-app/
 - `LoadingSkeleton.jsx` - Loading states
 - `ThemeProvider.jsx` - Theme management
 - `ProtectedRoute.jsx` - Route protection
+- `ProfileAwareRoute.jsx` - **Profile-aware route wrapper for multiple profiles system**
 - `UserSearchAutocomplete.jsx` - User search with autocomplete for network members
+- `ProfileSelector.jsx` - **Profile selection interface for multiple profiles**
+- `ProfileSwitcher.jsx` - **Quick profile switching component**
 
 ##### Widgets & Cards
 - `PollCard.jsx` - Poll display/voting
@@ -357,7 +361,8 @@ Utility functions are organized in the `src/utils/` directory:
 
 The app uses React Context for state management:
 - `AuthProvider` (`context/authcontext.jsx`): Manages user authentication state
-- `NetworkProvider` (`context/networkContext.jsx`): Manages network data
+- **`ProfileProvider` (`context/profileContext.jsx`): Manages multiple profiles per user, active profile selection, and profile switching**
+- `NetworkProvider` (`context/networkContext.jsx`): Manages network data (now profile-aware)
 - `DirectMessagesProvider` (`context/directMessagesContext.jsx`): Manages direct messaging state
 
 #### Routing
@@ -376,7 +381,7 @@ Supabase Edge Functions handle server-side operations:
 ### Data Model
 
 Key entities in the Supabase database:
-- `profiles`: User profiles with notification preferences and moderation status
+- **`profiles`: Multiple user profiles system - users can have one profile per network they join** (notification preferences, moderation status, profile-specific data)
 - `networks`: User networks/communities with configuration options
 - `network_events`: Events within networks
 - `network_news`: News/posts within networks with media support
@@ -424,7 +429,7 @@ For complete database schema documentation, see [Database Schema](./docs/DATABAS
 
 ### Key Tables
 
-- **profiles** - User profiles with roles and preferences
+- **profiles** - **Multiple profiles per user system** - each user can have separate profiles for different networks with individual roles and preferences
 - **networks** - Network/community configurations
 - **messages** - Network chat messages with media support
 - **direct_messages** - Private messaging between users
@@ -456,6 +461,32 @@ The application requires the following environment variables:
 - `STRIPE_SECRET_KEY`: For Edge Functions (stripe payment integration)
 
 ## Feature Areas
+
+### Multiple Profiles System
+
+**Architecture**: Users can have multiple profiles, one for each network they join (1:many:many relationship)
+
+Key features:
+- **Profile per Network**: Each user gets a separate profile when joining a network
+- **Active Profile Selection**: Users can switch between their profiles using ProfileSelector/ProfileSwitcher components
+- **Cookie-based Persistence**: Active profile is saved in cookies for seamless experience
+- **Profile Context**: `ProfileProvider` manages profile state across the application
+- **Backward Compatibility**: All components handle both old (single profile) and new (multiple profiles) patterns
+
+Implementation details:
+- **Database Schema**: 
+  - `profiles.user_id` references `auth.users.id` (many profiles per user)
+  - `profiles.id` uses generated UUIDs (not user IDs)
+  - Unique constraint on `(user_id, network_id)` - one profile per user per network
+- **Frontend Components**: All major components use `activeProfile?.id || user.id` pattern for compatibility
+- **API Functions**: Profile-aware with schema detection and fallback support
+- **Migration Complete**: Full database migration completed with 35+ RLS policy fixes
+
+Components involved:
+- `ProfileProvider` - Core profile state management
+- `ProfileSelector` - Profile selection interface  
+- `ProfileSwitcher` - Quick profile switching
+- `ProfileAwareRoute` - Profile-aware routing wrapper
 
 ### Networks
 

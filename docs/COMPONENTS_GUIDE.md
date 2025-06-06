@@ -21,11 +21,31 @@ This document describes the React components in the Conclav application, organiz
 - Redirects unauthenticated users to login
 - Preserves intended destination
 
+**ProfileAwareRoute.jsx**
+- **Multiple profiles system route wrapper**
+- Ensures active profile is loaded before rendering
+- Integrates with ProfileProvider
+- Handles profile switching scenarios
+
 **Footer.jsx**
 - Application footer with links
 - Privacy policy, terms, documentation links
 
 ### Authentication & User Management
+
+**ProfileSelector.jsx**
+- **Multiple profiles system - Profile selection interface**
+- Displays available profiles/networks for user
+- Visual network cards with profile information
+- Profile creation for new networks
+- Used during login/onboarding
+
+**ProfileSwitcher.jsx**
+- **Multiple profiles system - Quick profile switching**
+- Dropdown/modal for rapid profile changes
+- Shows active profile indicator
+- Persistent across application tabs
+- Integrates with cookie-based storage
 
 **UserSearchAutocomplete.jsx**
 - Real-time user search with debouncing
