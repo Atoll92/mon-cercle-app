@@ -95,9 +95,10 @@ function NewsPostPage() {
         .from('profiles')
         .select('role, network_id')
         .eq('user_id', user.id)
+        .eq('network_id', networkId)
         .single();
 
-      setIsAdmin(profile?.role === 'admin' && profile?.network_id === networkId);
+      setIsAdmin(profile?.role === 'admin');
     } catch (err) {
       console.error('Error checking admin status:', err);
     }

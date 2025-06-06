@@ -28,7 +28,7 @@ const TestNotificationSystem = () => {
       const { data, error } = await supabase
         .from('profiles')
         .select('id, email_notifications_enabled, notify_on_news, notify_on_events, notify_on_mentions, notify_on_direct_messages')
-        .eq('id', user.id)
+        .eq('user_id', user.id)
         .single();
 
       if (error) {
