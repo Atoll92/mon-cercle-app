@@ -47,7 +47,7 @@ import {
 } from '../../api/tickets';
 import { formatDistanceToNow } from 'date-fns';
 
-const SupportTicketsTab = ({ network, user, darkMode }) => {
+const SupportTicketsTab = ({ network, user, activeProfile, darkMode }) => {
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -82,7 +82,7 @@ const SupportTicketsTab = ({ network, user, darkMode }) => {
     setSubmitting(true);
     const { data, error } = await createTicket({
       network_id: network.id,
-      submitted_by: user.id,
+      submitted_by: activeProfile.id,
       title: newTicket.title,
       description: newTicket.description,
       category: newTicket.category,

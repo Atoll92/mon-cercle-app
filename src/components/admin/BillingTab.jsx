@@ -114,7 +114,7 @@ const planDetails = {
   }
 };
 
-const BillingTab = ({ darkMode }) => {
+const BillingTab = ({ activeProfile, darkMode }) => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const theme = useTheme();
@@ -168,7 +168,7 @@ const BillingTab = ({ darkMode }) => {
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('*')
-          .eq('id', user.id)
+          .eq('id', activeProfile.id)
           .single();
           
         if (profileError) throw profileError;

@@ -226,7 +226,7 @@ function EventPage() {
           .from('event_participations')
           .select('id')
           .eq('event_id', eventId)
-          .eq('profile_id', user.id)
+          .eq('profile_id', activeProfile?.id || user.id)
           .single();
 
         if (existing) {

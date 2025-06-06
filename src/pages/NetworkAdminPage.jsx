@@ -433,6 +433,7 @@ function NetworkAdminPage() {
         {activeTab === 9 && (
           /* Billing & Plan Component */
           <BillingTab
+            activeProfile={activeProfile}
             darkMode={darkMode} // Pass dark mode to component
           />
         )}
@@ -451,6 +452,7 @@ function NetworkAdminPage() {
           <SupportTicketsTab 
             network={network}
             user={user}
+            activeProfile={activeProfile}
             darkMode={darkMode}
           />
         )}
