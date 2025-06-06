@@ -122,7 +122,7 @@ function EventPage() {
         
         // Check current user's participation
         if (user) {
-          const userParticipation = participantsData.find(p => p.profile_id === (activeProfile?.id || user.id));
+          const userParticipation = participantsData.find(p => p.profile_id === (activeProfile.id));
           setParticipation(userParticipation?.status || null);
         }
       }
@@ -141,7 +141,7 @@ function EventPage() {
       const { data: profile } = await supabase
         .from('profiles')
         .select('role, network_id')
-        .eq('id', activeProfile?.id || user.id)
+        .eq('id', activeProfile.id)
         .single();
 
       setIsAdmin(profile?.role === 'admin' && profile?.network_id === networkId);
@@ -216,7 +216,7 @@ function EventPage() {
           .from('event_participations')
           .delete()
           .eq('event_id', eventId)
-          .eq('profile_id', activeProfile?.id || user.id);
+          .eq('profile_id', activeProfile.id);
 
         if (error) throw error;
         setParticipation(null);
@@ -226,7 +226,7 @@ function EventPage() {
           .from('event_participations')
           .select('id')
           .eq('event_id', eventId)
-          .eq('profile_id', activeProfile?.id || user.id)
+          .eq('profile_id', activeProfile.id)
           .single();
 
         if (existing) {
@@ -238,7 +238,7 @@ function EventPage() {
               updated_at: new Date().toISOString()
             })
             .eq('event_id', eventId)
-            .eq('profile_id', activeProfile?.id || user.id);
+            .eq('profile_id', activeProfile.id);
 
           if (error) throw error;
         } else {
@@ -247,7 +247,7 @@ function EventPage() {
             .from('event_participations')
             .insert({
               event_id: eventId,
-              profile_id: activeProfile?.id || user.id,
+              profile_id: activeProfile.id,
               status: newStatus
             });
 

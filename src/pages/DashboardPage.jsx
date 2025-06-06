@@ -473,7 +473,7 @@ function DashboardPage() {
       
       // Save post directly to the database
       const newPost = {
-        profile_id: activeProfile?.id || user.id,
+        profile_id: activeProfile.id,
         title: newPostTitle,
         description: newPostContent,
         url: newPostLink,
@@ -892,7 +892,7 @@ function DashboardPage() {
                           size="small" 
                           startIcon={<PersonIcon />}
                           component={Link} 
-                          to={`/profile/${activeProfile?.id || user.id}`}
+                          to={`/profile/${activeProfile.id}`}
                           variant="outlined"
                           color="secondary"
                         >
@@ -903,7 +903,7 @@ function DashboardPage() {
                           size="small" 
                           startIcon={<PreviewIcon />}
                           component={Link} 
-                          to={`/micro-conclav/${activeProfile?.id || user.id}`}
+                          to={`/micro-conclav/${activeProfile.id}`}
                           target="_blank"
                           variant="outlined"
                           color="primary"
@@ -1517,7 +1517,7 @@ function DashboardPage() {
                               onUpload={handleMediaUpload}
                               allowedTypes={['IMAGE', 'VIDEO', 'AUDIO', 'PDF']}
                               bucket="profiles"
-                              path={`portfolios/${activeProfile?.id || user.id}`}
+                              path={`portfolios/${activeProfile.id}`}
                               maxFiles={1}
                               autoUpload={true}
                               showPreview={false}

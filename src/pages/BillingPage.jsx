@@ -208,7 +208,7 @@ const BillingPage = () => {
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('*')
-          .eq('id', activeProfile?.id || user.id)
+          .eq('id', activeProfile.id)
           .single();
           
         if (profileError) throw profileError;

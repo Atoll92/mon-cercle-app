@@ -126,7 +126,7 @@ function NetworkAdminPage() {
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('*')
-          .eq('id', activeProfile?.id || user.id)
+          .eq('id', activeProfile.id)
           .single();
           
         if (profileError) throw profileError;
@@ -372,7 +372,7 @@ function NetworkAdminPage() {
           /* News Management Component */
           <NewsTab
             networkId={network.id}
-            userId={activeProfile?.id || user.id}
+            userId={activeProfile.id}
             newsPosts={newsPosts}
             setNewsPosts={setNewsPosts}
             members={members}
@@ -397,7 +397,7 @@ function NetworkAdminPage() {
           /* Polls Management Component */
           <PollsTab
             networkId={network.id}
-            userId={activeProfile?.id || user.id}
+            userId={activeProfile.id}
             darkMode={darkMode} // Pass dark mode to component
           />
         )}

@@ -91,7 +91,7 @@ const WikiPage = () => {
           const { data: profileData, error: profileError } = await supabase
             .from('profiles')
             .select('id, role, network_id')
-            .eq('id', activeProfile?.id || user.id)
+            .eq('id', activeProfile.id)
             .single();
             
           if (!profileError) {
@@ -234,7 +234,7 @@ const WikiPage = () => {
         .from('wiki_comments')
         .insert({
           page_id: page.id,
-          profile_id: activeProfile?.id || user.id,
+          profile_id: activeProfile.id,
           content: commentText.trim()
         });
         
@@ -272,7 +272,7 @@ const WikiPage = () => {
         .from('wiki_comments')
         .update({
           is_hidden: true,
-          hidden_by: activeProfile?.id || user.id,
+          hidden_by: activeProfile.id,
           hidden_at: new Date().toISOString()
         })
         .eq('id', commentId);
@@ -301,7 +301,7 @@ const WikiPage = () => {
         .from('wiki_revisions')
         .update({
           is_approved: true,
-          approved_by: activeProfile?.id || user.id,
+          approved_by: activeProfile.id,
           approved_at: new Date().toISOString()
         })
         .eq('id', revision.id);

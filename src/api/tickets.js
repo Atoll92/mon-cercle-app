@@ -245,11 +245,11 @@ export const sendTicketMessage = async (ticketId, message, isInternal = false) =
 
     if (error) throw error;
 
-    // Get sender profile
+    // Get sender profile using user_id (new schema)
     const { data: senderProfile } = await supabase
       .from('profiles')
       .select('id, full_name, profile_picture_url')
-      .eq('id', user.id)
+      .eq('user_id', user.id)
       .single();
 
     // Add sender profile to message

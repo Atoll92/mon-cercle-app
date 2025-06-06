@@ -94,7 +94,7 @@ function PersonalMoodboardsPage() {
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('network_id')
-          .eq('id', activeProfile?.id || user.id)
+          .eq('id', activeProfile.id)
           .single();
           
         if (profileError) throw profileError;
@@ -103,7 +103,7 @@ function PersonalMoodboardsPage() {
         const personalQuery = supabase
           .from('moodboards')
           .select('*')
-          .eq('created_by', activeProfile?.id || user.id)
+          .eq('created_by', activeProfile.id)
           .eq('is_personal', true);
         
         // Fetch network moodboards
@@ -151,7 +151,7 @@ function PersonalMoodboardsPage() {
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('network_id')
-        .eq('id', activeProfile?.id || user.id)
+        .eq('id', activeProfile.id)
         .single();
         
       if (profileError) throw profileError;
@@ -165,7 +165,7 @@ function PersonalMoodboardsPage() {
           description: newDescription,
           permissions: newPermissions,
           background_color: newBackgroundColor,
-          created_by: activeProfile?.id || user.id,
+          created_by: activeProfile.id,
           is_personal: true
         }])
         .select();

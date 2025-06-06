@@ -94,7 +94,7 @@ function NewsPostPage() {
       const { data: profile } = await supabase
         .from('profiles')
         .select('role, network_id')
-        .eq('id', user.id)
+        .eq('user_id', user.id)
         .single();
 
       setIsAdmin(profile?.role === 'admin' && profile?.network_id === networkId);

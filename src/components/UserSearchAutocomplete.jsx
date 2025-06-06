@@ -38,7 +38,7 @@ function UserSearchAutocomplete({ onUserSelect, excludeUserIds = [], placeholder
         const { data: currentUser } = await supabase
           .from('profiles')
           .select('network_id')
-          .eq('id', user.id)
+          .eq('user_id', user.id)
           .single();
         networkId = currentUser?.network_id;
       }

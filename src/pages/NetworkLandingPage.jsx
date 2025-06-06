@@ -430,7 +430,7 @@ function NetworkLandingPage() {
         const { data, error } = await supabase
           .from('event_participations')
           .select('*')
-          .eq('profile_id', activeProfile?.id || user.id);
+          .eq('profile_id', activeProfile.id);
         
         if (error) {
           console.error('Error fetching user participations:', error);

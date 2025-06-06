@@ -98,7 +98,7 @@ function WikiListPage() {
           const { data: profileData, error: profileError } = await supabase
             .from('profiles')
             .select('id, role, network_id')
-            .eq('id', activeProfile?.id || user.id)
+            .eq('id', activeProfile.id)
             .single();
             
           if (!profileError) {

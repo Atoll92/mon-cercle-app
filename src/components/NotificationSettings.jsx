@@ -47,7 +47,7 @@ const NotificationSettings = () => {
         const { data, error } = await supabase
           .from('profiles')
           .select('email_notifications_enabled, notify_on_news, notify_on_events, notify_on_mentions, notify_on_direct_messages')
-          .eq('id', activeProfile?.id || user.id)
+          .eq('id', activeProfile.id)
           .single();
 
         if (error) throw error;
@@ -93,7 +93,7 @@ const NotificationSettings = () => {
       const { error } = await supabase
         .from('profiles')
         .update(updates)
-        .eq('id', activeProfile?.id || user.id);
+        .eq('id', activeProfile.id);
 
       if (error) throw error;
 
