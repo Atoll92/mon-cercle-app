@@ -117,7 +117,7 @@ const theme = createTheme({
     };
     
     loadNetworkTheme();
-  }, [user]);
+  }, [user, activeProfile]);
 
   // Expose both networkTheme and darkMode functionality
   const themeContextValue = {

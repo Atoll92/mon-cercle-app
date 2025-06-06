@@ -63,7 +63,7 @@ const ProfileSwitcher = ({ buttonVariant = 'icon' }) => {
     handleClose();
   };
 
-  const handleJoinNewNetwork = () => {
+  const handleCreateNetwork = () => {
     handleClose();
     navigate('/create-network');
   };
@@ -244,13 +244,13 @@ const ProfileSwitcher = ({ buttonVariant = 'icon' }) => {
         
         <Divider />
         
-        <MenuItem onClick={handleJoinNewNetwork}>
+        <MenuItem onClick={handleCreateNetwork}>
           <ListItemAvatar>
             <Avatar sx={{ bgcolor: 'action.hover' }}>
               <AddIcon />
             </Avatar>
           </ListItemAvatar>
-          <ListItemText primary="Join New Network" />
+          <ListItemText primary="Create Network" />
         </MenuItem>
         
         {hasMultipleProfiles && (

@@ -13,18 +13,22 @@ import {
   Alert,
   Container,
   Fade,
-  Grow
+  Grow,
+  IconButton
 } from '@mui/material';
 import {
   Groups as GroupsIcon,
   CheckCircle as CheckCircleIcon,
-  Add as AddIcon
+  Add as AddIcon,
+  Logout as LogoutIcon
 } from '@mui/icons-material';
 import { useProfile } from '../context/profileContext';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/authcontext';
 
 const ProfileSelector = ({ onProfileSelected }) => {
   const navigate = useNavigate();
+  const { signOut } = useAuth();
   const { 
     userProfiles, 
     isLoadingProfiles, 
@@ -68,6 +72,11 @@ const ProfileSelector = ({ onProfileSelected }) => {
     navigate('/create-network');
   };
 
+  const handleLogout = async () => {
+    await signOut();
+    navigate('/');
+  };
+
   if (isLoadingProfiles) {
     return (
       <Box 
@@ -92,9 +101,33 @@ const ProfileSelector = ({ onProfileSelected }) => {
   }
 
   return (
-    <Container maxWidth="md">
-      <Fade in timeout={600}>
-        <Box sx={{ py: 4 }}>
+    <Box 
+      sx={{ 
+        minHeight: 'calc(100vh - 80px)',
+        bgcolor: 'white',
+        position: 'relative'
+      }}
+    >
+      <Container maxWidth="md">
+        <Fade in timeout={600}>
+          <Box sx={{ py: 4 }}>
+          {/* Logout button in top right */}
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+            <IconButton
+              onClick={handleLogout}
+              color="inherit"
+              size="large"
+              sx={{ 
+                color: 'text.secondary',
+                '&:hover': {
+                  color: 'text.primary'
+                }
+              }}
+            >
+              <LogoutIcon />
+            </IconButton>
+          </Box>
+          
           <Typography 
             variant="h4" 
             align="center" 
@@ -163,7 +196,7 @@ const ProfileSelector = ({ onProfileSelected }) => {
                               width: 80, 
                               height: 80, 
                               mb: 2,
-                              bgcolor: profile.network?.theme_color || 'primary.main'
+                              bgcolor: 'primary.main'
                             }}
                           >
                             {profile.full_name?.charAt(0)}
@@ -245,7 +278,7 @@ const ProfileSelector = ({ onProfileSelected }) => {
                   >
                     <AddIcon sx={{ fontSize: 48, color: 'action.main', mb: 2 }} />
                     <Typography variant="h6" color="text.secondary">
-                      Join New Network
+                      Create Network
                     </Typography>
                   </CardActionArea>
                 </Card>
@@ -274,6 +307,7 @@ const ProfileSelector = ({ onProfileSelected }) => {
         </Box>
       </Fade>
     </Container>
+    </Box>
   );
 };
 
