@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/authcontext';
+import { useProfile } from '../context/profileContext';
 import {
   Box,
   Typography,
@@ -31,6 +32,7 @@ import { formatDistanceToNow } from 'date-fns';
 
 const CommentSection = ({ itemType, itemId, darkMode, isAdmin = false, initialCount = 0, onMemberClick }) => {
   const { user } = useAuth();
+  const { activeProfile } = useProfile();
   const theme = useTheme();
   const [comments, setComments] = useState([]);
   const [commentCount, setCommentCount] = useState(initialCount);
@@ -70,12 +72,17 @@ const CommentSection = ({ itemType, itemId, darkMode, isAdmin = false, initialCo
 
   const handleSubmitComment = async () => {
     if (!newComment.trim() || !user) return;
+    
+    if (!activeProfile) {
+      console.error('No active profile selected');
+      return;
+    }
 
     setSubmitting(true);
     const { data, error } = await addComment(
       itemType,
       itemId,
-      user.id,
+      activeProfile.id,
       newComment.trim(),
       replyingTo
     );

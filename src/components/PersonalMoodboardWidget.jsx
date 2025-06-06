@@ -44,6 +44,7 @@ import {
 
 const PersonalMoodboardWidget = ({ user }) => {
   const navigate = useNavigate();
+  const { activeProfile, isLoadingProfiles } = useProfile();
   
   // State variables
   const [personalMoodboards, setPersonalMoodboards] = useState([]);
@@ -63,26 +64,24 @@ const PersonalMoodboardWidget = ({ user }) => {
   // Fetch user's personal moodboards
   useEffect(() => {
     const fetchPersonalMoodboards = async () => {
-      if (!user) return;
+      if (!user || isLoadingProfiles) return;
+      
+      // If no active profile after loading, show appropriate message
+      if (!isLoadingProfiles && !activeProfile) {
+        setError('No active profile selected');
+        setLoading(false);
+        return;
+      }
       
       try {
         setLoading(true);
         setError(null);
         
-        // Get the user's profile first to get their network_id
-        const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
-          .select('network_id')
-          .eq('id', user.id)
-          .single();
-          
-        if (profileError) throw profileError;
-        
-        // Then fetch the personal moodboards
+        // Fetch the personal moodboards using the active profile ID
         const { data, error } = await supabase
           .from('moodboards')
           .select('*')
-          .eq('created_by', user.id)
+          .eq('created_by', activeProfile.id)
           .eq('is_personal', true)
           .order('created_at', { ascending: false });
           
@@ -98,35 +97,24 @@ const PersonalMoodboardWidget = ({ user }) => {
     };
     
     fetchPersonalMoodboards();
-  }, [user]);
+  }, [user, activeProfile, isLoadingProfiles]);
   
   // Handle creating a new personal moodboard
   const handleCreateMoodboard = async () => {
-    if (!newTitle.trim()) return;
+    if (!newTitle.trim() || !activeProfile) return;
     
     try {
       setProcessing(true);
       
-      // Get the user's network_id from their profile
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('network_id')
-        .eq('id', user.id)
-        .single();
-        
-      if (profileError) throw profileError;
-      
-      const networkId = profileData.network_id;
-      
       const { data, error } = await supabase
         .from('moodboards')
         .insert([{
-          network_id: networkId,
+          network_id: activeProfile.network_id,
           title: newTitle,
           description: newDescription,
           permissions: newPermissions,
           background_color: newBackgroundColor,
-          created_by: user.id,
+          created_by: activeProfile.id,
           is_personal: true
         }])
         .select();
@@ -189,7 +177,7 @@ const PersonalMoodboardWidget = ({ user }) => {
     }
   };
   
-  if (loading) {
+  if (loading || isLoadingProfiles) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
         <CircularProgress size={30} />

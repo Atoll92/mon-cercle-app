@@ -30,11 +30,23 @@ export const createCategory = async (categoryData) => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('User not authenticated');
 
+    // Get the user's profile ID for the network
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('network_id', categoryData.network_id)
+      .single();
+
+    if (profileError || !profile) {
+      throw new Error('Profile not found for this network');
+    }
+
     const { data, error } = await supabase
       .from('network_categories')
       .insert({
         ...categoryData,
-        created_by: user.id
+        created_by: profile.id
       })
       .select()
       .single();

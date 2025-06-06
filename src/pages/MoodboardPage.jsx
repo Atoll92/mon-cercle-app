@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/authcontext';
+import { useProfile } from '../context/profileContext';
 import { supabase } from '../supabaseclient';
 import LinkPreview from '../components/LinkPreview';
 import MediaUpload from '../components/MediaUpload';
@@ -1364,6 +1365,7 @@ const EditItemDialog = ({
 function MoodboardPage() {
   const { moodboardId } = useParams();
   const { user } = useAuth();
+  const { activeProfile } = useProfile();
   const navigate = useNavigate();
   const theme = useTheme();
   const canvasRef = useRef(null);
@@ -1443,8 +1445,8 @@ function MoodboardPage() {
         
         // Check permissions
         let canEdit = false;
-        if (user) {
-          if (moodboardData.created_by === user.id) {
+        if (user && activeProfile) {
+          if (moodboardData.created_by === activeProfile.id) {
             canEdit = true;
           } else if (moodboardData.permissions === 'collaborative') {
             canEdit = true;
@@ -1471,7 +1473,7 @@ function MoodboardPage() {
     };
     
     fetchMoodboard();
-  }, [moodboardId, user]);
+  }, [moodboardId, user, activeProfile]);
   
   // Add wheel event listener with passive: false for Chrome
   useEffect(() => {
@@ -1695,7 +1697,7 @@ function MoodboardPage() {
         width: 300,
         height: 200,
         zIndex: items.length + 1,
-        created_by: user.id
+        created_by: activeProfile?.id || user.id
       };
       
       const { data: itemData, error: itemError } = await supabase
@@ -1731,6 +1733,11 @@ function MoodboardPage() {
     try {
       setSaving(true);
       
+      // Check if we have an active profile
+      if (!activeProfile) {
+        throw new Error('No active profile selected. Please refresh the page.');
+      }
+      
       // Calculate position based on current view
       const canvasRect = canvasRef.current.getBoundingClientRect();
       const centerX = (canvasRect.width / 2 - position.x) / scale;
@@ -1748,7 +1755,7 @@ function MoodboardPage() {
         width: 250,
         height: 150,
         zIndex: items.length + 1,
-        created_by: user.id
+        created_by: activeProfile.id
       };
       
       const { data: itemData, error: itemError } = await supabase
@@ -1773,7 +1780,7 @@ function MoodboardPage() {
       
     } catch (err) {
       console.error('Error adding text:', err);
-      setError('Failed to add text');
+      setError(err.message || 'Failed to add text');
     } finally {
       setSaving(false);
     }
@@ -1802,7 +1809,7 @@ function MoodboardPage() {
         width: 200,
         height: 120,
         zIndex: items.length + 1,
-        created_by: user.id
+        created_by: activeProfile?.id || user.id
       };
       
       const { data: itemData, error: itemError } = await supabase
@@ -1874,7 +1881,7 @@ function MoodboardPage() {
         width: 300,
         height: 300,
         zIndex: items.length + 1,
-        created_by: user.id
+        created_by: activeProfile?.id || user.id
       };
       
       // If we have a thumbnail, add it to the item
@@ -2412,7 +2419,7 @@ const handleUpdateItem = async (updatedItem) => {
                     .insert([{
                       ...newItem,
                       moodboard_id: moodboardId,
-                      created_by: user.id
+                      created_by: activeProfile?.id || user.id
                     }])
                     .select()
                     .single();

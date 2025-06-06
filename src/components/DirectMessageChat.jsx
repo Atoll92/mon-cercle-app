@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, Fragment } from 'react';
 import { useAuth } from '../context/authcontext';
+import { useProfile } from '../context/profileContext';
 import { useDirectMessages } from '../context/directMessagesContext';
 import { getConversationMessages, sendDirectMessage, markMessagesAsRead } from '../api/directMessages';
 import { supabase } from '../supabaseclient';
@@ -35,6 +36,7 @@ import MediaUpload from './MediaUpload';
 
 function DirectMessageChat({ conversationId, partner, onBack }) {
   const { user } = useAuth();
+  const { activeProfile } = useProfile();
   const { updateConversationWithMessage, markConversationAsRead, refreshConversations } = useDirectMessages();
 
   const [messages, setMessages] = useState([]);
@@ -116,9 +118,9 @@ function DirectMessageChat({ conversationId, partner, onBack }) {
           });
           
           // Only update unread count if the message is from the other user
-          if (payload.new.sender_id !== user?.id) {
+          if (payload.new.sender_id !== activeProfile?.id) {
             // Mark as read if we're currently viewing this conversation
-            markMessagesAsRead(conversationId, user?.id);
+            if (activeProfile) markMessagesAsRead(conversationId, activeProfile.id);
             markConversationAsRead(conversationId);
           } else {
             // Update the conversation with our sent message
@@ -160,9 +162,9 @@ function DirectMessageChat({ conversationId, partner, onBack }) {
         lastFetchedConversationId.current = conversationId;
         
         // Mark messages as read and trigger a context refresh to update the badge
-        if (user?.id) {
+        if (user?.id && activeProfile?.id) {
           console.log('Marking messages as read for conversation:', conversationId);
-          const { success } = await markMessagesAsRead(conversationId, user.id);
+          const { success } = await markMessagesAsRead(conversationId, activeProfile.id);
           if (success) {
             console.log('Successfully marked messages as read');
             markConversationAsRead(conversationId);
@@ -193,7 +195,7 @@ function DirectMessageChat({ conversationId, partner, onBack }) {
         // Only mark as read if the user is actually viewing the messages (e.g., window is in focus)
         if (document.hasFocus()) {
           console.log('Periodic check: marking messages as read');
-          markMessagesAsRead(conversationId, user.id)
+          if (activeProfile) markMessagesAsRead(conversationId, activeProfile.id)
             .then(({ success }) => {
               if (success) {
                 markConversationAsRead(conversationId);
@@ -210,7 +212,7 @@ function DirectMessageChat({ conversationId, partner, onBack }) {
     return () => {
       clearInterval(markReadInterval);
     };
-  }, [conversationId, user?.id, markConversationAsRead, refreshConversations]);
+  }, [conversationId, user?.id, activeProfile?.id, markConversationAsRead, refreshConversations]);
 
   // When calling refreshConversations
 if (refreshConversations) {
@@ -246,14 +248,14 @@ if (refreshConversations) {
     const pendingMsg = {
       id: `pending-${Date.now()}`,
       conversation_id: conversationId,
-      sender_id: user.id,
+      sender_id: activeProfile?.id || user.id,
       content: messageContent,
       created_at: new Date().toISOString(),
       pending: true,
       sender: {
-        id: user.id,
-        full_name: user?.user_metadata?.full_name || 'You',
-        profile_picture_url: user?.user_metadata?.avatar_url
+        id: activeProfile?.id || user.id,
+        full_name: activeProfile?.full_name || user?.user_metadata?.full_name || 'You',
+        profile_picture_url: activeProfile?.profile_picture_url || user?.user_metadata?.avatar_url
       }
     };
     
@@ -272,9 +274,14 @@ if (refreshConversations) {
     setMessages(prev => [...prev, pendingMsg]);
     
     try {
+      // Use active profile ID for sender
+      if (!activeProfile) {
+        throw new Error('No active profile selected');
+      }
+      
       const { error } = await sendDirectMessage(
         conversationId,
-        user.id,
+        activeProfile.id,
         messageContent,
         media
       );
@@ -969,7 +976,7 @@ if (refreshConversations) {
         ) : (
           <>
             {messages.map((message, index) => {
-              const isUser = message.sender_id === user?.id;
+              const isUser = message.sender_id === activeProfile?.id;
               const showAvatar = !isUser && (index === 0 || messages[index - 1].sender_id !== message.sender_id);
               const showDateHeader = shouldShowDateHeader(message.created_at, index);
               
@@ -1026,7 +1033,7 @@ if (refreshConversations) {
                         maxWidth: '70%',
                         boxShadow: (theme) => theme.palette.mode === 'dark' ? '0 1px 2px rgba(0,0,0,0.3)' : '0 1px 2px rgba(0,0,0,0.1)',
                         borderTopLeftRadius: !isUser && !showAvatar ? 1 : undefined,
-                        borderTopRightRadius: isUser && index > 0 && messages[index - 1].sender_id === user?.id ? 1 : undefined,
+                        borderTopRightRadius: isUser && index > 0 && messages[index - 1].sender_id === activeProfile?.id ? 1 : undefined,
                         ml: isUser ? 0 : 0.5,
                         mr: isUser ? 0.5 : 0
                       }}

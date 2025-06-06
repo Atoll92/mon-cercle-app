@@ -318,15 +318,15 @@ export const markMessagesAsRead = async (conversationId, userId) => {
 /**
  * Delete a conversation and all its messages
  * @param {string} conversationId - Conversation ID
- * @param {string} userId - Current user's ID (for authorization)
+ * @param {string} profileId - Current profile's ID (for authorization)
  * @returns {Object} Object indicating success or error
  */
-export const deleteConversation = async (conversationId, userId) => {
-  console.log('🗑️ [API] deleteConversation called with:', { conversationId, userId });
+export const deleteConversation = async (conversationId, profileId) => {
+  console.log('🗑️ [API] deleteConversation called with:', { conversationId, profileId });
   
   try {
     console.log('🗑️ [API] Fetching conversation to verify permissions...');
-    // First verify the user is a participant in this conversation
+    // First verify the profile is a participant in this conversation
     const { data: conversation, error: fetchError } = await supabase
       .from('direct_conversations')
       .select('participants')
@@ -340,8 +340,8 @@ export const deleteConversation = async (conversationId, userId) => {
       throw fetchError;
     }
     
-    if (!conversation?.participants?.includes(userId)) {
-      console.error('🗑️ [API] User not authorized. Participants:', conversation?.participants, 'User:', userId);
+    if (!conversation?.participants?.includes(profileId)) {
+      console.error('🗑️ [API] Profile not authorized. Participants:', conversation?.participants, 'Profile:', profileId);
       throw new Error('You are not authorized to delete this conversation');
     }
     

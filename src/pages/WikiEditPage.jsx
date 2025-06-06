@@ -99,7 +99,7 @@ const WikiEditPage = () => {
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('id, role, network_id')
-          .eq('id', activeProfile?.id || user.id)
+          .eq('id', activeProfile?.id)
           .single();
           
         if (!profileError) {
@@ -208,6 +208,11 @@ const WikiEditPage = () => {
   const handleSave = async (publishImmediately = false) => {
     if (!validateForm()) return;
     
+    if (!activeProfile) {
+      setError('No active profile selected. Please refresh the page.');
+      return;
+    }
+    
     try {
       setSaving(true);
       console.log("Saving wiki page:", { isNewPage, title, networkId });
@@ -222,8 +227,8 @@ const WikiEditPage = () => {
             slug: slug,
             content: content,
             is_published: isAdmin || publishImmediately,
-            created_by: activeProfile?.id || user.id,
-            last_edited_by: activeProfile?.id || user.id,
+            created_by: activeProfile.id,
+            last_edited_by: activeProfile.id,
             views_count: 0 // Add default view count
           })
           .select();
@@ -248,10 +253,10 @@ const WikiEditPage = () => {
             page_id: createdPage.id,
             content: content,
             revision_number: 1,
-            created_by: activeProfile?.id || user.id,
+            created_by: activeProfile.id,
             comment: revisionComment || 'Initial version',
             is_approved: isAdmin || publishImmediately,
-            approved_by: isAdmin || publishImmediately ? user.id : null,
+            approved_by: isAdmin || publishImmediately ? activeProfile.id : null,
             approved_at: isAdmin || publishImmediately ? new Date().toISOString() : null
           });
           
@@ -301,7 +306,7 @@ const WikiEditPage = () => {
                 slug: slug,
                 content: content,
                 is_published: true,
-                last_edited_by: activeProfile?.id || user.id,
+                last_edited_by: activeProfile.id,
                 updated_at: new Date().toISOString()
               })
               .eq('id', currentPage.id);
@@ -327,10 +332,10 @@ const WikiEditPage = () => {
               page_id: currentPage.id,
               content: content,
               revision_number: nextRevisionNumber,
-              created_by: activeProfile?.id || user.id,
+              created_by: activeProfile.id,
               comment: revisionComment || 'Updated content',
               is_approved: isAdmin || publishImmediately,
-              approved_by: isAdmin || publishImmediately ? user.id : null,
+              approved_by: isAdmin || publishImmediately ? activeProfile.id : null,
               approved_at: isAdmin || publishImmediately ? new Date().toISOString() : null
             });
             
@@ -376,7 +381,7 @@ const WikiEditPage = () => {
                 slug: slug,
                 content: content,
                 is_published: true,
-                last_edited_by: activeProfile?.id || user.id,
+                last_edited_by: activeProfile.id,
                 updated_at: new Date().toISOString()
               })
               .eq('id', page.id);
@@ -404,10 +409,10 @@ const WikiEditPage = () => {
               page_id: page.id,
               content: content,
               revision_number: nextRevisionNumber,
-              created_by: activeProfile?.id || user.id,
+              created_by: activeProfile.id,
               comment: revisionComment || 'Updated content',
               is_approved: isAdmin || publishImmediately,
-              approved_by: isAdmin || publishImmediately ? user.id : null,
+              approved_by: isAdmin || publishImmediately ? activeProfile.id : null,
               approved_at: isAdmin || publishImmediately ? new Date().toISOString() : null
             });
             
@@ -474,7 +479,7 @@ const WikiEditPage = () => {
           network_id: networkId,
           name: newCategoryName.trim(),
           slug: categorySlug,
-          created_by: activeProfile?.id || user.id // Add this in case your RLS policy requires it
+          created_by: activeProfile.id // Add this in case your RLS policy requires it
         })
         .select()
         .single();

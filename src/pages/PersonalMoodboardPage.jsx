@@ -138,7 +138,7 @@ function PersonalMoodboardsPage() {
     };
     
     fetchMoodboards();
-  }, [user, navigate]);
+  }, [user, navigate, activeProfile]);
   
   // Create new moodboard
   const handleCreateMoodboard = async () => {

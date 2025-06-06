@@ -153,7 +153,7 @@ const MembersTab = ({ members, user, activeProfile, network, onMembersChange, da
   };
 
   const handleRemoveMember = async (memberId) => {
-    if (memberId === user.id) {
+    if (memberId === activeProfile.id) {
       setError('You cannot remove yourself from the network.');
       return;
     }
@@ -172,7 +172,7 @@ const MembersTab = ({ members, user, activeProfile, network, onMembersChange, da
   };
 
   const handleToggleAdmin = async (memberId, currentRole) => {
-    if (memberId === user.id) {
+    if (memberId === activeProfile.id) {
       setError('You cannot change your own admin status.');
       return;
     }
@@ -274,7 +274,7 @@ const MembersTab = ({ members, user, activeProfile, network, onMembersChange, da
                           >
                             View
                           </Button>
-                          {member.id !== user.id && (
+                          {member.id !== activeProfile.id && (
                             <>
                               <Button 
                                 size="small"

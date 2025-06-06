@@ -72,13 +72,13 @@ function EventParticipation({ event, showParticipants = false, onStatusChange = 
       setIsLoading(true);
       setError(null);
       
-      if (user) {
+      if (user && activeProfile) {
         // Get current user's participation status
         const { data: userParticipation, error: participationError } = await supabase
           .from('event_participations')
           .select('id, status')
           .eq('event_id', event.id)
-          .eq('profile_id', activeProfile?.id || user.id)
+          .eq('profile_id', activeProfile.id)
           .maybeSingle();
           
         if (participationError) {
@@ -122,11 +122,17 @@ function EventParticipation({ event, showParticipants = false, onStatusChange = 
     if (event?.id) {
       fetchParticipationData();
     }
-  }, [event?.id, user]);
+  }, [event?.id, user, activeProfile]);
 
   // Update participation status
   const updateStatus = async (newStatus) => {
     if (!user || !event?.id) return;
+    
+    if (!activeProfile) {
+      console.error('No active profile selected');
+      setError('No active profile selected. Please refresh the page.');
+      return;
+    }
     
     setIsUpdating(true);
     setError(null);
@@ -178,7 +184,7 @@ function EventParticipation({ event, showParticipants = false, onStatusChange = 
             .from('event_participations')
             .insert({
               event_id: event.id,
-              profile_id: activeProfile?.id || user.id,
+              profile_id: activeProfile.id,
               status: newStatus,
               updated_at: new Date().toISOString()
             })
@@ -429,7 +435,7 @@ function EventParticipation({ event, showParticipants = false, onStatusChange = 
             setSelectedMember(null);
           }}
           member={selectedMember}
-          isCurrentUser={user?.id === selectedMember.id}
+          isCurrentUser={activeProfile?.id === selectedMember.id}
         />
       )}
     </>

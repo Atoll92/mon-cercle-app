@@ -124,7 +124,7 @@ function SharedFilesPage() {
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('*')
-          .eq('id', activeProfile?.id || user.id)
+          .eq('id', activeProfile.id)
           .single();
           
         if (profileError) throw profileError;
@@ -250,7 +250,7 @@ function SharedFilesPage() {
         .from('network_files')
         .insert([{ 
           network_id: networkId,
-          uploaded_by: activeProfile?.id || user.id,
+          uploaded_by: activeProfile.id,
           filename: selectedFile.name,
           filepath: filePath,
           file_url: publicUrl,
@@ -272,7 +272,7 @@ function SharedFilesPage() {
       const { data: uploaderData } = await supabase
         .from('profiles')
         .select('full_name, profile_picture_url')
-        .eq('id', activeProfile?.id || user.id)
+        .eq('id', activeProfile.id)
         .single();
         
       const newFile = {
@@ -318,7 +318,7 @@ function SharedFilesPage() {
   
   // Handle file deletion
   const handleDeleteFile = async (file) => {
-    if (file.uploaded_by !== (activeProfile?.id || user.id) && userProfile.role !== 'admin') {
+    if (file.uploaded_by !== activeProfile.id && userProfile.role !== 'admin') {
       setError('You can only delete files that you uploaded.');
       return;
     }

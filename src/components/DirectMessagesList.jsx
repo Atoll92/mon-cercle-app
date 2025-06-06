@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useDirectMessages } from '../context/directMessagesContext';
 import { useAuth } from '../context/authcontext';
+import { useProfile } from '../context/profileContext';
 import { deleteConversation } from '../api/directMessages';
 import {
   List,
@@ -44,6 +45,7 @@ import {
 function DirectMessagesList({ onSelectConversation, onConversationDeleted }) {
   const { conversations, loading, error, refreshConversations } = useDirectMessages();
   const { user } = useAuth();
+  const { activeProfile } = useProfile();
   const [searchTerm, setSearchTerm] = useState('');
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedConversation, setSelectedConversation] = useState(null);
@@ -100,7 +102,7 @@ function DirectMessagesList({ onSelectConversation, onConversationDeleted }) {
     
     try {
       console.log('🗑️ Calling deleteConversation API...');
-      const result = await deleteConversation(selectedConversation.id, user.id);
+      const result = await deleteConversation(selectedConversation.id, activeProfile.id);
       console.log('🗑️ API result:', result);
       
       if (result.success) {

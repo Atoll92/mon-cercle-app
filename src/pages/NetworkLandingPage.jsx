@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation, useSearchParams, useParams } from 'react-router-dom';
 import { useAuth } from '../context/authcontext';
+import { useProfile } from '../context/profileContext';
 import { useTheme } from '../components/ThemeProvider';
 import { useNetwork, NetworkProvider, NetworkProviderWithParams } from '../context/networkContext';
 import { useApp } from '../context/appContext';
@@ -97,6 +98,7 @@ const NetworkLandingPageWrapper = () => {
 
 function NetworkLandingPage() {
   const { user } = useAuth();
+  const { activeProfile } = useProfile();
   const { darkMode } = useTheme();
   const muiTheme = useMuiTheme();
   const navigate = useNavigate();
@@ -902,6 +904,7 @@ function NetworkLandingPage() {
         <MembersTab 
           networkMembers={networkMembers}
           user={user}
+          activeProfile={activeProfile}
           isUserAdmin={isUserAdmin}
           networkId={network.id}
           loading={loading}
@@ -982,7 +985,7 @@ function NetworkLandingPage() {
         onClose={() => setShowMemberModal(false)}
         member={selectedMember}
         posts={selectedMember ? postItems.filter(item => item.profile_id === selectedMember.id) : []}
-        isCurrentUser={selectedMember?.id === user?.id}
+        isCurrentUser={selectedMember?.id === activeProfile?.id}
         darkMode={membersTabDarkMode}
       />
       

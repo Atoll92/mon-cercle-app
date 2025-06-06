@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/authcontext';
+import { useProfile } from '../context/profileContext';
 import { useDirectMessages } from '../context/directMessagesContext';
 import { getUserForMessaging, getOrCreateConversation } from '../api/directMessages';
 import DirectMessagesList from '../components/DirectMessagesList';
@@ -37,6 +38,7 @@ import {
 function DirectMessagesPage() {
   const { userId } = useParams(); // Optional param if starting a conversation with someone
   const { user } = useAuth();
+  const { activeProfile } = useProfile();
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -64,18 +66,18 @@ function DirectMessagesPage() {
   // Ref to track the latest userId to prevent re-initialization on the same ID
   const lastUserIdRef = useRef(null);
 
-  // Debug logging for state
-  console.log("Current state:", {
-    selectedConversationId,
-    partnerState: partner ? `${partner.id} (${partner.full_name})` : 'none',
-    conversationsCount: conversations.length,
-    conversationsLoading
-  });
+  // // Debug logging for state
+  // console.log("Current state:", {
+  //   selectedConversationId,
+  //   partnerState: partner ? `${partner.id} (${partner.full_name})` : 'none',
+  //   conversationsCount: conversations.length,
+  //   conversationsLoading
+  // });
   
   // If userId is provided, start or get conversation with that user
   useEffect(() => {
     // Skip if we've already initialized for this userId or no userId is provided
-    if (!userId || !user || userId === user.id) {
+    if (!userId || !user || !activeProfile || userId === activeProfile.id) {
       return;
     }
     
@@ -124,7 +126,7 @@ function DirectMessagesPage() {
         }
         
         // Get or create conversation
-        const { conversation, error } = await getOrCreateConversation(user.id, userId);
+        const { conversation, error } = await getOrCreateConversation(activeProfile.id, userId);
         
         if (error) {
           console.error('Error getting/creating conversation:', error);

@@ -650,7 +650,7 @@ function EventPage() {
             setSelectedMember(null);
           }}
           member={selectedMember}
-          isCurrentUser={user?.id === selectedMember.id}
+          isCurrentUser={activeProfile?.id === selectedMember.id}
         />
       )}
     </Container>

@@ -155,18 +155,18 @@ export const uploadMoodboardImage = async (file, moodboardId) => {
 
 /**
  * Fetch all personal moodboard items for a user
- * @param {string} userId - The user ID
+ * @param {string} profileId - The profile ID (not auth user ID)
  * @param {number} offset - Pagination offset
  * @param {number} limit - Number of items to fetch
  * @returns {Promise<Array>} Array of moodboard items
  */
-export const getUserMoodboardItems = async (userId, offset = 0, limit = 20) => {
+export const getUserMoodboardItems = async (profileId, offset = 0, limit = 20) => {
   try {
-    // First get all moodboards created by the user
+    // First get all moodboards created by the profile
     const { data: moodboards, error: moodboardsError } = await supabase
       .from('moodboards')
       .select('id, background_color')
-      .eq('created_by', userId)
+      .eq('created_by', profileId)
       .eq('is_personal', true);
     
     if (moodboardsError) throw moodboardsError;

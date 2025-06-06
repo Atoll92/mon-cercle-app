@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect, useRef, useCallback, useContext, useMemo } from 'react';
 import { useAuth } from './authcontext';
+import { useProfile } from './profileContext';
 import { supabase } from '../supabaseclient';
 import { getUserConversations } from '../api/directMessages';
 import useRealtimeChannel from '../hooks/useRealtimeChannel';
@@ -16,6 +17,7 @@ export const useDirectMessages = () => {
 
 export const DirectMessagesProvider = ({ children }) => {
   const { user } = useAuth();
+  const { activeProfile } = useProfile();
   const [conversations, setConversations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -42,7 +44,7 @@ export const DirectMessagesProvider = ({ children }) => {
       return;
     }
     
-    if (!user) {
+    if (!user || !activeProfile) {
       setConversations([]);
       setUnreadTotal(0);
       setLoading(false);
@@ -59,9 +61,9 @@ export const DirectMessagesProvider = ({ children }) => {
       }
       setError(null);
       
-      console.log('Fetching conversations for user:', user.id);
+      console.log('Fetching conversations for profile:', activeProfile.id);
       
-      const { conversations, error } = await getUserConversations(user.id);
+      const { conversations, error } = await getUserConversations(activeProfile.id);
       
       if (error) throw error;
       
@@ -79,7 +81,7 @@ export const DirectMessagesProvider = ({ children }) => {
       fetchingRef.current = false;
       setLoading(false);
     }
-  }, [user, loading]);
+  }, [user, activeProfile, loading]);
   
   // Initial fetch and setup subscriptions
   useEffect(() => {
@@ -91,8 +93,8 @@ export const DirectMessagesProvider = ({ children }) => {
     
     fetchConversations(true);
     
-    // Only set up realtime subscription if user is logged in
-    if (user) {
+    // Only set up realtime subscription if user is logged in and profile is selected
+    if (user && activeProfile) {
       // Set up a single channel with multiple subscriptions
       const channel = supabase.channel('direct-messages-updates');
       
@@ -131,8 +133,8 @@ export const DirectMessagesProvider = ({ children }) => {
           (payload) => {
             console.log('New conversation created:', payload);
             
-            // Check if user is part of this conversation
-            if (payload.new.participants && payload.new.participants.includes(user.id)) {
+            // Check if current profile is part of this conversation
+            if (payload.new.participants && payload.new.participants.includes(activeProfile.id)) {
               fetchConversations();
             }
           }
@@ -142,12 +144,12 @@ export const DirectMessagesProvider = ({ children }) => {
       channelRef.current = channel;
       
       return () => {
-        // Cleanup subscription when component unmounts or user changes
+        // Cleanup subscription when component unmounts or user/profile changes
         supabase.removeChannel(channel);
         channelRef.current = null;
       };
     }
-  }, [user, fetchConversations]);
+  }, [user, activeProfile, fetchConversations]);
   
   // Get active conversation
   const getActiveConversation = useCallback(() => {
@@ -171,8 +173,8 @@ export const DirectMessagesProvider = ({ children }) => {
         ...updatedConversations[existingConvIndex],
         last_message: message,
         last_message_at: message.created_at,
-        // Only increment unread count if the message is from the other user
-        unread_count: message.sender_id !== user?.id 
+        // Only increment unread count if the message is from the other profile
+        unread_count: message.sender_id !== activeProfile?.id 
           ? (updatedConversations[existingConvIndex].unread_count || 0) + 1 
           : updatedConversations[existingConvIndex].unread_count
       };
@@ -182,7 +184,7 @@ export const DirectMessagesProvider = ({ children }) => {
     
     // Recalculate total unread
     calculateUnreadTotal();
-  }, [user]);
+  }, [user, activeProfile]);
   
   // Calculate total unread messages
   const calculateUnreadTotal = useCallback(() => {

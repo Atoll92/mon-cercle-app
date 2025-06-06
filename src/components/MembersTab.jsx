@@ -48,6 +48,7 @@ const ITEMS_PER_BATCH = 12;
 const MembersTab = ({ 
   networkMembers = [], 
   user, 
+  activeProfile,
   isUserAdmin, 
   networkId, 
   loading = false,
@@ -697,7 +698,7 @@ const MembersTab = ({
                       </Badge>
                       
                       {/* Message button */}
-                      {member.id !== user?.id && (
+                      {member.id !== activeProfile?.id && (
                         <Tooltip title="Send Message">
                           <IconButton
                             component={Link}
@@ -762,7 +763,7 @@ const MembersTab = ({
                         }}
                       >
                         {member.full_name || 'Unnamed User'}
-                        {member.id === user?.id && ' (You)'}
+                        {member.id === activeProfile?.id && ' (You)'}
                       </Typography>
                     </Box>
                     
