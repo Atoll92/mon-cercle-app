@@ -116,12 +116,17 @@ function App() {
         return;
       }
       
-      // Otherwise handle standard auth page redirects
-      if (['/login', '/password-reset'].includes(location.pathname) ||
-         (location.pathname === '/signup' && !hasInvite)) {
-        console.log('User authenticated, redirecting from auth page to /dashboard');
+      // Handle password reset redirect
+      if (location.pathname === '/password-reset') {
+        console.log('User authenticated, redirecting from password reset to /dashboard');
         navigate('/dashboard', { replace: true });
       }
+      // Handle signup redirect (only if not from invite)
+      else if (location.pathname === '/signup' && !hasInvite) {
+        console.log('User authenticated, redirecting from signup to /dashboard');
+        navigate('/dashboard', { replace: true });
+      }
+      // Login page will handle its own redirects based on profile count
     }
   }, [loading, session, location.pathname, location.search, navigate]);
 
@@ -154,7 +159,7 @@ function App() {
             <DirectMessagesProvider>
               <Box className="App" sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
             {/* Pass the network name to the header */}
-            {window.location.pathname !== "/" && window.location.pathname !== "/pricing" && window.location.pathname !== "/terms" && window.location.pathname !== "/old" && window.location.pathname !== "/profiles/select" && !window.location.pathname.startsWith("/micro-conclav/") && (
+            {window.location.pathname !== "/" && window.location.pathname !== "/pricing" && window.location.pathname !== "/terms" && window.location.pathname !== "/old" && window.location.pathname !== "/profiles/select" && window.location.pathname !== "/login" && !window.location.pathname.startsWith("/micro-conclav/") && (
               <NetworkHeader/>
             )}
             <Box component="main" sx={{ 

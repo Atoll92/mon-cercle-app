@@ -177,8 +177,7 @@ mon-cercle-app/
 - `ProtectedRoute.jsx` - Route protection
 - `ProfileAwareRoute.jsx` - **Profile-aware route wrapper for multiple profiles system**
 - `UserSearchAutocomplete.jsx` - User search with autocomplete for network members
-- `NetworkSelector.jsx` - **Network selection interface for switching between networks**
-- `NetworkSwitcher.jsx` - **Quick network switching component**
+- `NetworkSelector.jsx` - **Network selection interface for users with multiple networks**
 
 ##### Widgets & Cards
 - `PollCard.jsx` - Poll display/voting

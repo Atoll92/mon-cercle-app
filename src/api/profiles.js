@@ -81,8 +81,7 @@ export const getUserProfiles = async (userId) => {
               logo_url
             )
           `)
-          .eq('id', userId)
-          .single();
+          .eq('id', userId);
 
         if (oldError) {
           if (oldError.code === 'PGRST116') { // No rows returned
@@ -92,7 +91,7 @@ export const getUserProfiles = async (userId) => {
         }
 
         // Return as array for consistency
-        return { data: oldData ? [oldData] : [], error: null };
+        return { data: oldData || [], error: null };
       }
       throw error;
     }

@@ -13,12 +13,10 @@ import {
   Container,
   Fade,
   Grow,
-  IconButton
 } from '@mui/material';
 import {
   Groups as GroupsIcon,
   CheckCircle as CheckCircleIcon,
-  Add as AddIcon,
   Logout as LogoutIcon
 } from '@mui/icons-material';
 import { useProfile } from '../context/profileContext';
@@ -69,9 +67,6 @@ const NetworkSelector = ({ onProfileSelected }) => {
     setIsSelecting(false);
   };
 
-  const handleCreateNewProfile = () => {
-    navigate('/create-network');
-  };
 
   const handleLogout = async () => {
     await signOut();
@@ -235,45 +230,6 @@ const NetworkSelector = ({ onProfileSelected }) => {
               </Grow>
             ))}
             
-            {/* Add new profile card */}
-            <Grow 
-              in 
-              timeout={800 + userProfiles.length * 100}
-              style={{ transformOrigin: '0 0 0' }}
-            >
-              <Grid item xs={12} sm={6} md={4}>
-                <Card 
-                  sx={{ 
-                    height: 240,
-                    width: 200,
-                    border: 1,
-                    borderColor: 'divider',
-                    borderStyle: 'dashed',
-                    transition: 'all 0.3s ease',
-                    '&:hover': {
-                      borderColor: 'primary.main',
-                      boxShadow: 2
-                    }
-                  }}
-                >
-                  <CardActionArea
-                    onClick={handleCreateNewProfile}
-                    sx={{ 
-                      height: '100%',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'center',
-                      alignItems: 'center'
-                    }}
-                  >
-                    <AddIcon sx={{ fontSize: 48, color: 'action.main', mb: 2 }} />
-                    <Typography variant="h6" color="text.secondary">
-                      Create Network
-                    </Typography>
-                  </CardActionArea>
-                </Card>
-              </Grid>
-            </Grow>
           </Grid>
 
           <Box display="flex" justifyContent="center" sx={{ mt: 4 }}>

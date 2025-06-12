@@ -53,7 +53,7 @@ function LoginPage() {
   const [showProfileSelector, setShowProfileSelector] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const { userProfiles, isLoadingProfiles } = useProfile();
+  const { userProfiles, isLoadingProfiles, loadUserProfiles } = useProfile();
   
   // Get redirect URL and email from query params
   const searchParams = new URLSearchParams(location.search);
@@ -66,6 +66,30 @@ function LoginPage() {
       setEmail(prefillEmail);
     }
   }, [prefillEmail]);
+
+  // Handle profile selection logic after login
+  useEffect(() => {
+    // Only run this logic if we've triggered the profile selector AND profiles are done loading
+    if (showProfileSelector && !isLoadingProfiles) {
+      console.log('Profile selection logic - userProfiles:', userProfiles.length);
+      
+      // Add a small delay to ensure state is fully updated
+      const timer = setTimeout(() => {
+        if (userProfiles.length === 0) {
+          console.log('Redirecting to create-network (no profiles)');
+          navigate('/create-network', { replace: true });
+        } else if (userProfiles.length === 1) {
+          console.log('Redirecting to dashboard (1 profile)');
+          navigate('/dashboard', { replace: true });
+        } else {
+          console.log('Showing NetworkSelector (multiple profiles)');
+          // If userProfiles.length > 1, stay on this page to show selector
+        }
+      }, 50);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [showProfileSelector, isLoadingProfiles, userProfiles.length, navigate]);
 
   const handleClickShowPassword = () => {
     setShowPassword(!showPassword);
@@ -80,11 +104,13 @@ function LoginPage() {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
       
-      // AuthProvider's onAuthStateChange will handle setting session state
-      // Wait a bit for the profile context to load
-      setTimeout(() => {
-        setShowProfileSelector(true);
-      }, 500);
+      // Manually trigger profile loading after successful login
+      console.log('Login successful, loading profiles...');
+      await loadUserProfiles();
+      
+      // Set flag to show profile selector logic will be handled by useEffect
+      console.log('Setting showProfileSelector to true');
+      setShowProfileSelector(true);
     } catch (error) {
       setError(error.message || "Failed to log in");
       console.error("Login error:", error);
@@ -110,7 +136,9 @@ function LoginPage() {
   };
 
   // If profile selector should be shown, render it instead of login form
-  if (showProfileSelector && !isLoadingProfiles && userProfiles.length > 0) {
+  console.log('Render check:', { showProfileSelector, isLoadingProfiles, profileCount: userProfiles.length });
+  if (showProfileSelector && !isLoadingProfiles && userProfiles.length > 1) {
+    console.log('Rendering NetworkSelector');
     return (
       <ThemeProvider theme={theme}>
         <ThreeJSBackground/>

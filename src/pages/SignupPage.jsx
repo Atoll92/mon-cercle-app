@@ -347,9 +347,9 @@ function SignupPage() {
             setError('Failed to create profile. Please try again.');
             return;
           }
-          setMessage('Signup successful! Please check your email to confirm your account, then complete your profile setup.');
+          setMessage('Signup successful! Please check your email to confirm your account. You will be redirected to create your own network.');
         } else {
-          setMessage('Signup successful! Please check your email to confirm your account.');
+          setMessage('Signup successful! Please check your email to confirm your account. You will be redirected to create your own network.');
         }
       }
   
@@ -368,8 +368,8 @@ function SignupPage() {
           // Dashboard will handle profile check and redirect appropriately
           navigate(`/dashboard?from_invite=true`);
         } else {
-          // Otherwise redirect to login
-          navigate('/login');
+          // Otherwise redirect to create network page
+          navigate('/create-network');
         }
       }, 1000);
   
@@ -421,6 +421,19 @@ function SignupPage() {
 
             {/* --- Card Content / Form --- */}
             <CardContent sx={{ p: 4 }}>
+              {/* Show message if NOT coming from invitation */}
+              {!inviteCode && !invitationLoading && (
+                <Alert severity="info" sx={{ mb: 3 }}>
+                  <Typography variant="body2" sx={{ mb: 1 }}>
+                    <strong>Want to join an existing network?</strong>
+                  </Typography>
+                  <Typography variant="body2">
+                    If you have an invitation link from a network, please use that link to sign up instead. 
+                    Otherwise, you'll be able to create your own network after signing up.
+                  </Typography>
+                </Alert>
+              )}
+              
               {/* Invitation Info Banner */}
               {invitationLoading ? (
                 <Box sx={{ display: 'flex', justifyContent: 'center', my: 2 }}>

@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseclient';
 import { useAuth } from '../context/authcontext';
+import { useProfile } from '../context/profileContext';
 import {
   Box,
   Stepper,
@@ -135,6 +136,7 @@ const SortableWizardTabChip = ({ tab, isSelected, onToggle }) => {
 
 const NetworkOnboardingWizard = ({ profile }) => {
   const { user } = useAuth();
+  const { loadUserProfiles } = useProfile();
   const navigate = useNavigate();
   const theme = useTheme();
 
@@ -360,19 +362,14 @@ const NetworkOnboardingWizard = ({ profile }) => {
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       if (sessionError) console.error('Error refreshing session:', sessionError);
 
+      // Reload user profiles to pick up the new network
+      await loadUserProfiles();
+
       setSuccess(true);
       
+      // Navigate to dashboard after a short delay
       setTimeout(() => {
-        if (isNewUser) {
-          navigate('/profile/edit', { 
-            state: { 
-              isFirstTime: true, 
-              message: 'Welcome! Please complete your profile to get started.' 
-            }
-          });
-        } else {
-          navigate('/network');
-        }
+        navigate('/dashboard');
       }, 2000);
       
     } catch (error) {
