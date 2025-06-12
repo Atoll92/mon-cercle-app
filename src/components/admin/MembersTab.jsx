@@ -51,7 +51,7 @@ import { inviteUserToNetwork, toggleMemberAdmin, removeMemberFromNetwork, getNet
 import BatchInviteModal from './BatchInviteModal';
 import InvitationLinksTab from './InvitationLinksTab';
 
-const MembersTab = ({ members, user, activeProfile, network, onMembersChange, darkMode = false }) => {
+const MembersTab = ({ members, activeProfile, network, onMembersChange, darkMode = false }) => {
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteAsAdmin, setInviteAsAdmin] = useState(false);
   const [inviting, setInviting] = useState(false);
@@ -100,7 +100,7 @@ const MembersTab = ({ members, user, activeProfile, network, onMembersChange, da
     setError(null);
     setMessage('');
     
-    const result = await inviteUserToNetwork(inviteEmail, network.id, user.id, inviteAsAdmin ? 'admin' : 'member');
+    const result = await inviteUserToNetwork(inviteEmail, network.id, activeProfile.id, inviteAsAdmin ? 'admin' : 'member');
     
     if (result.success) {
       setMessage(result.message);
@@ -489,7 +489,7 @@ const MembersTab = ({ members, user, activeProfile, network, onMembersChange, da
         onClose={() => setBatchInviteOpen(false)}
         onInvite={inviteUserToNetwork}
         network={network}
-        user={user}
+        activeProfile={activeProfile}
         onSuccess={() => {
           // Refresh invitation links table after batch invite
           setInvitationLinksRefresh(prev => prev + 1);

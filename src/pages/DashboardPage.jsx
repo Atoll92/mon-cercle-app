@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../context/authcontext';
 import { useProfile } from '../context/profileContext';
 import { supabase } from '../supabaseclient';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import MembersDetailModal from '../components/MembersDetailModal';
 import PersonalMoodboardWidget from '../components/PersonalMoodboardWidget';
 import LatestNewsWidget from '../components/LatestNewsWidget';
@@ -173,8 +173,9 @@ const fetchNetworkDetails = async (networkId) => {
 
 function DashboardPage() {
   const { user, session } = useAuth();
-  const { activeProfile } = useProfile();
+  const { activeProfile, userProfiles, isLoadingProfiles } = useProfile();
   const navigate = useNavigate();
+  const location = useLocation();
   const [profile, setProfile] = useState(null);
   const [networkMembers, setNetworkMembers] = useState([]);
   const [networkDetails, setNetworkDetails] = useState(null);
@@ -212,6 +213,24 @@ function DashboardPage() {
   const headerRef = useFadeIn(0, ANIMATION_DURATION.normal);
   const getItemRef = useStaggeredAnimation(10, 100, 50);
 
+  // Redirect to create-network if user has no profiles
+  useEffect(() => {
+    if (!isLoadingProfiles && user && userProfiles.length === 0) {
+      // Check if coming from invitation signup
+      const searchParams = new URLSearchParams(location.search);
+      const fromInvite = searchParams.get('from_invite');
+      
+      if (fromInvite) {
+        console.log('Coming from invitation signup but no profiles found - showing error');
+        setError('Failed to load your profile. Please try again later.');
+        return;
+      }
+      
+      console.log('User has no profiles, redirecting to create-network');
+      navigate('/create-network', { replace: true });
+    }
+  }, [user, userProfiles, isLoadingProfiles, navigate, location.search]);
+
   console.log("Component render cycle. States:", { 
     loadingProfile, 
     loadingMembers,
@@ -219,7 +238,9 @@ function DashboardPage() {
     hasProfile: !!profile, 
     memberCount: networkMembers?.length,
     hasNetworkDetails: !!networkDetails,
-    networkDetails: networkDetails
+    networkDetails: networkDetails,
+    userProfilesCount: userProfiles.length,
+    isLoadingProfiles
   });
 
   useEffect(() => {
@@ -234,6 +255,7 @@ function DashboardPage() {
     
     return () => clearTimeout(timer);
   }, []);
+
 
   // Force re-render when networkDetails changes
   useEffect(() => {
@@ -250,34 +272,36 @@ function DashboardPage() {
       
       try {
         console.log('Using active profile from context:', activeProfile?.id);
-        // Use activeProfile from context instead of direct DB query
+        
+        // If ProfileContext is still loading, wait
+        if (isLoadingProfiles) {
+          console.log('ProfileContext still loading, waiting...');
+          return;
+        }
+        
+        // Use activeProfile from context
         const data = activeProfile;
-        const error = activeProfile ? null : { message: 'No active profile found' };
-
-        if (error) {
-          console.error("Error fetching profile:", error);
-          // If we're getting a 'not found' error and we haven't retried too many times
-          if (error.code === 'PGRST116' && retryCount < 3) {
+        
+        if (!data) {
+          console.error("Error fetching profile: No active profile found");
+          // Only retry if we haven't exceeded retry count and we're expecting a profile (from_invite)
+          const params = new URLSearchParams(location.search);
+          const fromInvite = params.get('from_invite');
+          
+          if (fromInvite && retryCount < 3) {
             console.log(`Profile not found, retrying in 1 second (attempt ${retryCount + 1}/3)`);
             setRetryCount(prev => prev + 1);
             setTimeout(() => fetchProfile(), 1000); // Retry after 1 second
             return;
           }
-          throw error;
+          throw { message: 'No active profile found' };
         }
 
-        if (!data) {
-          console.log('No profile data found for user:', user.id);
-          setError("Your profile hasn't been created yet. Redirecting to profile setup...");
-          setLoadingProfile(false);
-          
-          // Redirect to profile edit page
-          setTimeout(() => {
-            navigate('/profile/edit');
-          }, 1500);
-          return;
-        }
-
+        // Profile found, update state
+        setProfile(data);
+        setLoadingProfile(false);
+        setRetryCount(0); // Reset retry count on success
+        
         // Check if profile is incomplete (e.g., no full name or other important fields)
         if (!data.full_name || data.full_name.trim() === '') {
           console.log('Profile found but incomplete');
@@ -308,17 +332,20 @@ function DashboardPage() {
             setProfile(data);
             setLoadingProfile(false);
             
-            // Clear the flags
-            if (fromProfileSetup) {
-              urlParams.delete('from_profile_setup');
-            }
-            if (fromInvite) {
-              urlParams.delete('from_invite');
-            }
-            if (fromProfileSetup || fromInvite) {
-              const newUrl = `${window.location.pathname}${urlParams.toString() ? '?' + urlParams.toString() : ''}`;
-              window.history.replaceState({}, '', newUrl);
-            }
+            // Clear the flags after a delay to ensure everything is loaded properly
+            setTimeout(() => {
+              if (fromProfileSetup) {
+                urlParams.delete('from_profile_setup');
+              }
+              if (fromInvite) {
+                urlParams.delete('from_invite');
+              }
+              if (fromProfileSetup || fromInvite) {
+                const newUrl = `${window.location.pathname}${urlParams.toString() ? '?' + urlParams.toString() : ''}`;
+                window.history.replaceState({}, '', newUrl);
+                console.log('Cleaned up URL parameters after successful profile load');
+              }
+            }, 2000); // Wait 2 seconds before cleaning up parameters
           } else {
             // Otherwise redirect to complete profile
             console.log('Redirecting to profile edit page');
@@ -418,7 +445,7 @@ function DashboardPage() {
       setLoadingEvents(false);
       setLoadingNetworkDetails(false);
     }
-  }, [user, activeProfile, retryCount, navigate]);
+  }, [user, activeProfile, retryCount, navigate, isLoadingProfiles, location.search]);
 
   const handleRefresh = () => {
     window.location.reload();

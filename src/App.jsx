@@ -106,7 +106,6 @@ function App() {
     if (!loading && session) {
       // Get the current URL to check for parameters
       const searchParams = new URLSearchParams(location.search);
-      const hasInvite = searchParams.get('invite');
       const returnTo = searchParams.get('returnTo') || sessionStorage.getItem('returnTo');
       
       // If we have a returnTo, navigate there and remove it from session storage
@@ -116,17 +115,7 @@ function App() {
         return;
       }
       
-      // Handle password reset redirect
-      if (location.pathname === '/password-reset') {
-        console.log('User authenticated, redirecting from password reset to /dashboard');
-        navigate('/dashboard', { replace: true });
-      }
-      // Handle signup redirect (only if not from invite)
-      else if (location.pathname === '/signup' && !hasInvite) {
-        console.log('User authenticated, redirecting from signup to /dashboard');
-        navigate('/dashboard', { replace: true });
-      }
-      // Login page will handle its own redirects based on profile count
+      // Let login and signup pages handle their own redirects based on profile count and invitation flows
     }
   }, [loading, session, location.pathname, location.search, navigate]);
 

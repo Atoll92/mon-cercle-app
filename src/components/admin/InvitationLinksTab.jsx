@@ -56,8 +56,10 @@ import {
   toggleInvitationStatus,
   updateInvitationLink
 } from '../../api/invitations';
+import { useProfile } from '../../context/profileContext';
 
 const InvitationLinksTab = ({ networkId, darkMode, refreshTrigger }) => {
+  const { activeProfile } = useProfile();
   const [invitations, setInvitations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [createDialog, setCreateDialog] = useState(false);
@@ -103,6 +105,11 @@ const InvitationLinksTab = ({ networkId, darkMode, refreshTrigger }) => {
   };
 
   const handleCreateInvitation = async () => {
+    if (!activeProfile?.id) {
+      showSnackbar('No active profile found', 'error');
+      return;
+    }
+
     const data = {
       name: formData.name || 'General Invitation',
       description: formData.description || null,
@@ -113,7 +120,7 @@ const InvitationLinksTab = ({ networkId, darkMode, refreshTrigger }) => {
         : null
     };
 
-    const result = await createInvitationLink(networkId, data);
+    const result = await createInvitationLink(networkId, activeProfile.id, data);
     
     if (result.success) {
       showSnackbar('Invitation link created successfully', 'success');

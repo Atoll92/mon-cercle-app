@@ -50,7 +50,25 @@ export const getUserProfileFields = async (userId, fields = '*') => {
  */
 export const getUserProfiles = async (userId) => {
   try {
-    // Try the new multiple profile structure first (post-migration)
+    console.log('getUserProfiles: Querying for user_id:', userId);
+    console.log('getUserProfiles: Current auth user:', (await supabase.auth.getUser()).data.user?.id);
+    
+    // Try a simple query first to test basic access
+    console.log('getUserProfiles: Testing basic profiles access...');
+    const { data: simpleData, error: simpleError } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('user_id', userId);
+    
+    console.log('getUserProfiles: Simple query result:', simpleData?.length || 0, 'profiles, error:', simpleError);
+    
+    if (simpleError) {
+      console.log('getUserProfiles: Simple query failed, error details:', simpleError);
+      throw simpleError;
+    }
+    
+    // If simple query works, try with network join
+    console.log('getUserProfiles: Testing query with network join...');
     const { data, error } = await supabase
       .from('profiles')
       .select(`
@@ -65,6 +83,9 @@ export const getUserProfiles = async (userId) => {
       `)
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
+
+    console.log('getUserProfiles: Query result - data:', data?.length || 0, 'profiles, error:', error);
+    console.log('getUserProfiles: Full error details:', error);
 
     if (error) {
       // If user_id column doesn't exist yet (pre-migration), try old structure
@@ -275,67 +296,10 @@ export const updateUserNotificationPreferences = async (userId, preferences) => 
   }
 };
 
-/**
- * Join a user to a network
- * @param {string} userId - The user ID
- * @param {string} networkId - The network ID
- * @param {string} role - The user role (defaults to 'member')
- * @returns {Promise<Object>} Result with success status
- */
-export const joinNetwork = async (userId, networkId, role = 'member') => {
-  try {
-    const { error } = await supabase
-      .from('profiles')
-      .update({ 
-        network_id: networkId,
-        role: role
-      })
-      .eq('id', userId);
-      
-    if (error) throw error;
-    
-    return {
-      success: true,
-      message: 'Successfully joined network'
-    };
-  } catch (error) {
-    console.error('Error joining network:', error);
-    return {
-      success: false,
-      error: error.message || 'Failed to join network'
-    };
-  }
-};
-
-/**
- * Leave a network
- * @param {string} userId - The user ID
- * @returns {Promise<Object>} Result with success status
- */
-export const leaveNetwork = async (userId) => {
-  try {
-    const { error } = await supabase
-      .from('profiles')
-      .update({ 
-        network_id: null,
-        role: null
-      })
-      .eq('id', userId);
-      
-    if (error) throw error;
-    
-    return {
-      success: true,
-      message: 'Successfully left network'
-    };
-  } catch (error) {
-    console.error('Error leaving network:', error);
-    return {
-      success: false,
-      error: error.message || 'Failed to leave network'
-    };
-  }
-};
+// Legacy joinNetwork and leaveNetwork functions removed
+// In the multiple profiles system:
+// - Joining a network creates a new profile (use createProfileForNetwork)
+// - Leaving a network deletes the profile (use deleteProfile)
 
 /**
  * Get profiles by email
@@ -474,17 +438,32 @@ export const updateUserTheme = async (userId, theme) => {
  */
 export const createProfileForNetwork = async (userId, networkId, profileData) => {
   try {
+    // Generate default name from email if not provided
+    let fullName = profileData.full_name;
+    if (!fullName && profileData.contact_email) {
+      // Extract username from email (part before @)
+      const emailParts = profileData.contact_email.split('@');
+      if (emailParts.length > 0) {
+        // Capitalize first letter and replace dots/underscores with spaces
+        fullName = emailParts[0]
+          .replace(/[._]/g, ' ')
+          .split(' ')
+          .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+          .join(' ');
+      }
+    }
+    
     const { data, error } = await supabase
       .from('profiles')
       .insert({
         user_id: userId,
         network_id: networkId,
-        full_name: profileData.full_name,
+        full_name: fullName || 'New User', // Fallback if email parsing fails
         contact_email: profileData.contact_email,
         bio: profileData.bio || '',
         profile_picture_url: profileData.profile_picture_url,
         skills: profileData.skills || [],
-        role: 'member' // New profiles start as members
+        role: profileData.role || 'member' // Use provided role or default to member
       })
       .select(`
         *,

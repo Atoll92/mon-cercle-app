@@ -78,14 +78,19 @@ const theme = createTheme({
         let networkId = activeProfile?.network_id;
         
         if (!networkId && user?.id) {
-          // Fallback for backward compatibility
+          // Fallback for backward compatibility - use maybeSingle to handle no results gracefully
           const { data: profile, error: profileError } = await supabase
             .from('profiles')
             .select('network_id')
             .eq('user_id', user.id)
-            .single();
+            .maybeSingle();
             
-          if (profileError) throw profileError;
+          if (profileError) {
+            console.error('Error loading profile for theme:', profileError);
+            // Don't throw - just use default theme
+            setNetworkTheme(prev => ({ ...prev, loaded: true }));
+            return;
+          }
           networkId = profile?.network_id;
         }
         

@@ -24,6 +24,15 @@ const ProfileAwareRoute = ({ children }) => {
 
     // If user has no profiles, they need to create a network first
     if (userProfiles.length === 0) {
+      // Check if coming from invitation signup - if so, let DashboardPage handle the error
+      const searchParams = new URLSearchParams(location.search);
+      const fromInvite = searchParams.get('from_invite');
+      
+      if (fromInvite && location.pathname === '/dashboard') {
+        // Let DashboardPage handle the "no profiles after invitation" case
+        return;
+      }
+      
       // Redirect to create network page unless we're already there
       if (location.pathname !== '/create-network') {
         navigate('/create-network');
@@ -53,7 +62,7 @@ const ProfileAwareRoute = ({ children }) => {
     setShowProfileSelector(false);
   }, [user, activeProfile, userProfiles, isLoadingProfiles, profileError, location.pathname, navigate]);
 
-  const handleProfileSelected = (profile) => {
+  const handleProfileSelected = () => {
     setShowProfileSelector(false);
     // Profile context will handle the navigation
   };

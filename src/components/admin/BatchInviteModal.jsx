@@ -59,7 +59,7 @@ const isValidEmail = (email) => {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 };
 
-const BatchInviteModal = ({ open, onClose, onInvite, network, user, onSuccess }) => {
+const BatchInviteModal = ({ open, onClose, onInvite, network, activeProfile, onSuccess }) => {
   const [activeTab, setActiveTab] = useState(0);
   const [file, setFile] = useState(null);
   const [manualEmails, setManualEmails] = useState('');
@@ -266,7 +266,7 @@ const BatchInviteModal = ({ open, onClose, onInvite, network, user, onSuccess })
         const email = extractedEmails[i];
         
         try {
-          const result = await onInvite(email, network.id, user.id, inviteAsAdmin ? 'admin' : 'member');
+          const result = await onInvite(email, network.id, activeProfile.id, inviteAsAdmin ? 'admin' : 'member');
           
           if (result.success) {
             successful++;

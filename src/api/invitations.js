@@ -2,7 +2,7 @@
 import { supabase } from '../supabaseclient';
 
 // Create a new invitation link
-export const createInvitationLink = async (networkId, data = {}) => {
+export const createInvitationLink = async (networkId, profileId, data = {}) => {
   try {
     // Generate a unique code
     const { data: codeResult, error: codeError } = await supabase
@@ -10,25 +10,21 @@ export const createInvitationLink = async (networkId, data = {}) => {
     
     if (codeError) throw codeError;
     
-    // Get current user
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error('User not authenticated');
-
-    // Get the user's profile ID for the network
+    // Verify the profile exists and belongs to the network
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('id')
-      .eq('user_id', user.id)
+      .select('id, network_id, role')
+      .eq('id', profileId)
       .eq('network_id', networkId)
       .single();
 
     if (profileError || !profile) {
-      throw new Error('Profile not found for this network');
+      throw new Error('Profile not found or does not belong to this network');
     }
     
     const invitationData = {
       network_id: networkId,
-      created_by: profile.id,
+      created_by: profileId,
       code: codeResult,
       name: data.name || 'General Invitation',
       description: data.description || null,

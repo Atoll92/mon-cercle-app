@@ -33,19 +33,23 @@ export const ProfileProvider = ({ children }) => {
 
   // Load all profiles for the current user
   const loadUserProfiles = async () => {
-    if (!user) return;
+    if (!user) return { profiles: [], error: null };
     
     setIsLoadingProfiles(true);
     setProfileError(null);
     
     try {
       // Fetch all profiles for the user
+      console.log('ProfileContext: Loading profiles for user:', user.id);
       const { data: profiles, error } = await profilesApi.getUserProfiles(user.id);
       
       if (error) {
+        console.error('ProfileContext: Error loading profiles:', error);
         throw new Error(error);
       }
       
+      console.log('ProfileContext: Loaded profiles:', profiles?.length || 0, 'profiles found');
+      console.log('ProfileContext: Profile details:', profiles);
       setUserProfiles(profiles || []);
       
       // Try to load active profile from cookie
@@ -57,9 +61,13 @@ export const ProfileProvider = ({ children }) => {
         // If only one profile, automatically select it
         await setActiveProfile(profiles[0]);
       }
+      
+      // Return the fresh data for immediate use
+      return { profiles: profiles || [], error: null };
     } catch (error) {
       console.error('Error loading profiles:', error);
       setProfileError(error.message);
+      return { profiles: [], error: error.message };
     } finally {
       setIsLoadingProfiles(false);
     }

@@ -31,7 +31,6 @@ import {
 } from '@mui/icons-material';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import ThreeJSBackground from '../components/ThreeJSBackground';
-import { useProfile } from '../context/profileContext';
 import { validatePassword, getPasswordStrength, getPasswordStrengthLabel, getPasswordRequirementsText } from '../utils/passwordValidation';
 
 // Reuse or import the same theme as LoginPage
@@ -59,7 +58,7 @@ function SignupPage() {
   const [passwordStrength, setPasswordStrength] = useState(0);
   const navigate = useNavigate();
   const location = useLocation(); // Added to access URL params
-  const { loadUserProfiles } = useProfile(); // Add ProfileContext
+  // ProfileContext not used directly due to timing issues with auth state
 
   // Invitation data states
   const [inviteCode, setInviteCode] = useState(null);
@@ -90,143 +89,6 @@ function SignupPage() {
     }
   }, [redirectUrl, prefillEmail]);
 
-  
-  const ensureProfile = async (userId, email, networkId = null, role = 'member') => {
-    try {
-      // Detect schema version by checking if user_id column exists
-      const { data: schemaCheck } = await supabase
-        .from('profiles')
-        .select('user_id')
-        .limit(1);
-      
-      const hasUserIdColumn = schemaCheck !== null;
-      
-      if (hasUserIdColumn) {
-        // NEW SCHEMA: profiles.user_id = auth.users.id, profiles.id = generated UUID
-        console.log('Using new schema (post-migration)');
-        
-        // Check if profile exists for this user and network combination
-        let query = supabase
-          .from('profiles')
-          .select('*')
-          .eq('user_id', userId);
-          
-        if (networkId) {
-          query = query.eq('network_id', networkId);
-        }
-        
-        const { data: existingProfile, error: checkError } = await query.maybeSingle();
-        
-        if (checkError && checkError.code !== 'PGRST116') {
-          console.error('Error checking profile:', checkError);
-          return false;
-        }
-        
-        if (existingProfile) {
-          // Profile exists, update if needed
-          if (networkId) {
-            console.log('Updating existing profile with role:', role);
-            const { error: updateError } = await supabase
-              .from('profiles')
-              .update({ 
-                contact_email: email,
-                role: role,
-                updated_at: new Date()
-              })
-              .eq('id', existingProfile.id);
-              
-            if (updateError) {
-              console.error('Error updating profile:', updateError);
-              return false;
-            }
-          }
-          return true;
-        }
-        
-        // Create new profile with new schema
-        const profileData = {
-          user_id: userId,  // References auth.users.id
-          contact_email: email,
-          role: networkId ? role : null,
-          network_id: networkId,
-          updated_at: new Date()
-          // id will be auto-generated UUID
-        };
-        
-        console.log('Creating new profile (new schema):', profileData);
-        const { error: createError } = await supabase
-          .from('profiles')
-          .insert([profileData]);
-          
-        if (createError) {
-          console.error('Error creating profile:', createError);
-          return false;
-        }
-        
-        return true;
-        
-      } else {
-        // OLD SCHEMA: profiles.id = auth.users.id (current behavior)
-        console.log('Using old schema (pre-migration)');
-        
-        const { data: existingProfile, error: checkError } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', userId)
-          .maybeSingle();
-    
-        if (checkError && checkError.code !== 'PGRST116') {
-          console.error('Error checking profile:', checkError);
-          return false;
-        }
-    
-        if (existingProfile) {
-          if (networkId) {
-            console.log('Updating existing profile with role:', role);
-            const { error: updateError } = await supabase
-              .from('profiles')
-              .update({ 
-                network_id: networkId,
-                contact_email: email,
-                role: role,
-                updated_at: new Date()
-              })
-              .eq('id', userId);
-    
-            if (updateError) {
-              console.error('Error updating profile:', updateError);
-              return false;
-            }
-          }
-          return true;
-        }
-    
-        // Create profile with old schema
-        const profileData = {
-          id: userId,  // Same as auth.users.id
-          contact_email: email,
-          role: networkId ? role : null,
-          network_id: networkId,
-          updated_at: new Date()
-        };
-        
-        console.log('Creating new profile (old schema):', profileData);
-        const { error: createError } = await supabase
-          .from('profiles')
-          .insert([profileData]);
-    
-        if (createError) {
-          console.error('Error creating profile:', createError);
-          return false;
-        }
-    
-        return true;
-      }
-    } catch (error) {
-      console.error('Profile creation error:', error);
-      return false;
-    }
-  };
   
   // Fetch invitation info based on the code
   const fetchInvitationInfo = async (code) => {
@@ -309,14 +171,27 @@ function SignupPage() {
           // Make sure there's a delay to allow Supabase to create any default records
           await new Promise(resolve => setTimeout(resolve, 1000));
           
-          // Use the ensureProfile function instead of manual update/insert
+          // Use ProfileContext's createProfileForNetwork method
           console.log('Creating profile with network:', invitationData.network_id);
           console.log('Invitation role:', invitationData.role);
-          const profileCreated = await ensureProfile(data.user.id, email, invitationData.network_id, invitationData.role || 'member');
           
-          if (!profileCreated) {
-            throw new Error("Failed to create or update profile with network information");
+          // Use the API directly since ProfileContext user might not be ready yet
+          const { createProfileForNetwork: apiCreateProfile } = await import('../api/profiles');
+          const profileResult = await apiCreateProfile(data.user.id, invitationData.network_id, {
+            contact_email: email,
+            role: invitationData.role || 'member'
+          });
+          
+          if (profileResult.error) {
+            throw new Error(profileResult.error);
           }
+          
+          console.log('Successfully created profile via API:', profileResult.data);
+          
+          // Since we used the API directly, we need to manually set the active profile
+          // But ProfileContext might not be ready yet, so we'll use the API method
+          const { setActiveProfile: apiSetActiveProfile } = await import('../api/profiles');
+          await apiSetActiveProfile(profileResult.data.id);
           
           // Increment invitation link usage count
           await supabase.rpc('increment_invitation_link_uses', { link_code: inviteCode });
@@ -324,33 +199,14 @@ function SignupPage() {
           setMessage(`Signup successful! You have been added to ${networkName}. Please check your email to confirm your account.`);
         } catch (inviteError) {
           console.error('Error processing invitation:', inviteError);
-          setMessage('Signup successful, but there was an issue with the invitation. Please check your email to confirm your account.');
+          // More specific error message for debugging
+          setError(`Signup was successful, but failed to join the network: ${inviteError.message}. Please contact support.`);
+          return; // Don't proceed with redirect if invitation failed
         }
       } else {
-        // Regular signup without invitation - still create a profile
-        const profileCreated = await ensureProfile(data.user.id, email);
-        
-        if (!profileCreated) {
-          // Create the profile here (fallback)
-          const { error: profileError } = await supabase
-            .from('profiles')
-            .insert([
-              {
-                id: data.user.id,
-                contact_email: email,
-                role: 'member', // Default role
-                updated_at: new Date(),
-              },
-            ]);
-          if (profileError) {
-            console.error('Error creating profile:', profileError);
-            setError('Failed to create profile. Please try again.');
-            return;
-          }
-          setMessage('Signup successful! Please check your email to confirm your account. You will be redirected to create your own network.');
-        } else {
-          setMessage('Signup successful! Please check your email to confirm your account. You will be redirected to create your own network.');
-        }
+        // Regular signup without invitation - no profile created
+        // Profile will be created when user creates or joins a network
+        setMessage('Signup successful! Please check your email to confirm your account. You will be redirected to create your own network.');
       }
   
       // Clear form on success
@@ -358,20 +214,19 @@ function SignupPage() {
       setPassword('');
       setConfirmPassword('');
 
-      // Refresh ProfileContext to load the newly created profile
-      await loadUserProfiles();
+      // Give a moment for the profile to be saved
+      await new Promise(resolve => setTimeout(resolve, 500));
   
-      // Redirect after profile is loaded (reduced timeout since we ensured profile loading)
-      setTimeout(() => {
-        if (inviteCode && invitationData) {
-          // If coming from invitation, redirect to dashboard with from_invite flag
-          // Dashboard will handle profile check and redirect appropriately
-          navigate(`/dashboard?from_invite=true`);
-        } else {
-          // Otherwise redirect to create network page
-          navigate('/create-network');
-        }
-      }, 1000);
+      // Hard reload to ensure all contexts are refreshed with the new profile
+      if (inviteCode && invitationData) {
+        // If coming from invitation, redirect to dashboard with from_invite flag
+        console.log('Redirecting to dashboard after invitation signup with hard reload');
+        window.location.href = '/dashboard?from_invite=true';
+      } else {
+        // Otherwise redirect to create network page
+        console.log('Redirecting to create-network after regular signup with hard reload');
+        window.location.href = '/create-network';
+      }
   
     } catch (error) {
       setError(error.message || "Failed to sign up");

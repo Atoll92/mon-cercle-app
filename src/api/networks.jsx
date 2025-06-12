@@ -299,41 +299,8 @@ export const inviteUserToNetwork = async (email, networkId, inviterId, role = 'm
         .eq('contact_email', email.toLowerCase())
         .maybeSingle();
         
-      if (anyExistingProfile && !anyExistingProfile.network_id) {
-        // User has a profile but no network - assign them to this network (old behavior)
-        const { error: updateError } = await supabase
-          .from('profiles')
-          .update({ network_id: networkId, role: role })
-          .eq('id', anyExistingProfile.id);
-            
-        if (updateError) throw updateError;
-
-        // Update any pending invitations for this user to 'accepted'
-        await supabase
-          .from('invitations')
-          .update({ status: 'accepted' })
-          .eq('email', email.toLowerCase())
-          .eq('network_id', networkId)
-          .eq('status', 'pending');
-
-        try {
-          await supabase.functions.invoke('network-invite', {
-            body: {
-              toEmail: email,
-              networkName: (await fetchNetworkDetails(networkId)).name,
-              inviterName: (await getUserProfile(inviterId)).full_name || 'Network Admin',
-              type: 'existing_user'
-            }
-          });
-        } catch (emailError) {
-          console.error('Failed to send email notification:', emailError);
-        }
-        
-        return { 
-          success: true, 
-          message: `User ${email} added to your network! Email notification sent.`
-        };
-      }
+      // Remove legacy code that updates network_id for profiles without networks
+      // In the new system, profiles are always created with a network_id
     } else if (authUser?.user_id) {
       // NEW SCHEMA: Existing user - create a new profile for them in this network
       const { error: createError } = await supabase
@@ -600,9 +567,10 @@ export const toggleMemberAdmin = async (memberId, currentRole) => {
 
 export const removeMemberFromNetwork = async (memberId) => {
   try {
+    // In the multiple profiles system, removing from network means deleting the profile
     const { error } = await supabase
       .from('profiles')
-      .update({ network_id: null })
+      .delete()
       .eq('id', memberId);
       
     if (error) throw error;
