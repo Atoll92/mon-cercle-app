@@ -136,7 +136,7 @@ const SortableWizardTabChip = ({ tab, isSelected, onToggle }) => {
 
 const NetworkOnboardingWizard = ({ profile }) => {
   const { user } = useAuth();
-  const { loadUserProfiles } = useProfile();
+  const { loadUserProfiles, setActiveProfile } = useProfile();
   const navigate = useNavigate();
   const theme = useTheme();
 
@@ -363,13 +363,21 @@ const NetworkOnboardingWizard = ({ profile }) => {
       if (sessionError) console.error('Error refreshing session:', sessionError);
 
       // Reload user profiles to pick up the new network
-      await loadUserProfiles();
+      const { profiles } = await loadUserProfiles();
+      
+      // Find the newly created profile for this network and set it as active
+      const newProfile = profiles.find(p => p.network_id === network.id);
+      if (newProfile) {
+        console.log('Setting newly created profile as active:', newProfile);
+        await setActiveProfile(newProfile);
+      }
 
       setSuccess(true);
       
-      // Navigate to dashboard after a short delay
+      // Do a hard reload to ensure all contexts are properly refreshed with the new network
       setTimeout(() => {
-        navigate('/dashboard');
+        console.log('Redirecting to dashboard with hard reload after network creation');
+        window.location.href = '/dashboard';
       }, 2000);
       
     } catch (error) {

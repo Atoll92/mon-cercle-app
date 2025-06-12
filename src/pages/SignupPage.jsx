@@ -67,10 +67,11 @@ function SignupPage() {
   const [invitationLoading, setInvitationLoading] = useState(false);
   const [invitationError, setInvitationError] = useState(null);
 
-  // Extract redirect URL and email from query params
+  // Extract redirect URL, email, and intent from query params
   const searchParams = new URLSearchParams(location.search);
   const redirectUrl = searchParams.get('redirect');
   const prefillEmail = searchParams.get('email');
+  const intent = searchParams.get('intent');
 
   // Extract invite code from redirect URL when component mounts
   useEffect(() => {
@@ -497,7 +498,7 @@ function SignupPage() {
                 <Typography variant="body2" color="text.secondary">
                   Already have an account?{' '}
                   <RouterLink // Use RouterLink for client-side nav
-                    to="/login"
+                    to={intent === 'create-network' ? "/login?intent=create-network" : "/login"}
                     style={{
                       color: theme.palette.primary.main,
                       textDecoration: 'none',

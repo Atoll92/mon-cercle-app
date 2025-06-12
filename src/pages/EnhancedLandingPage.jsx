@@ -542,7 +542,7 @@ const EnhancedLandingPage = () => {
             </Button>
             <Button 
               component={RouterLink} 
-              to="/signup" 
+              to="/signup?intent=create-network" 
               variant="contained"
               size="small"
             >
@@ -616,7 +616,7 @@ const EnhancedLandingPage = () => {
             >
               <Button
                 component={RouterLink}
-                to="/signup"
+                to="/signup?intent=create-network"
                 variant="contained"
                 size="large"
                 sx={{
@@ -1217,7 +1217,7 @@ const EnhancedLandingPage = () => {
                       fullWidth
                       variant={plan.highlighted ? 'contained' : 'outlined'}
                       size="large"
-                      onClick={() => navigate('/signup')}
+                      onClick={() => navigate('/signup?intent=create-network')}
                       sx={{
                         py: 1.5,
                         borderRadius: 2,
@@ -1283,7 +1283,7 @@ const EnhancedLandingPage = () => {
               <Button
                 variant="contained"
                 size="large"
-                onClick={() => navigate('/signup')}
+                onClick={() => navigate('/signup?intent=create-network')}
                 endIcon={<ArrowForward />}
                 sx={{
                   py: 2,

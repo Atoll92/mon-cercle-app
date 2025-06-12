@@ -55,10 +55,11 @@ function LoginPage() {
   const location = useLocation();
   const { userProfiles, isLoadingProfiles, loadUserProfiles } = useProfile();
   
-  // Get redirect URL and email from query params
+  // Get redirect URL, email, and intent from query params
   const searchParams = new URLSearchParams(location.search);
   const redirectUrl = searchParams.get('redirect');
   const prefillEmail = searchParams.get('email');
+  const intent = searchParams.get('intent');
   
   // Prefill email if provided
   useEffect(() => {
@@ -75,8 +76,8 @@ function LoginPage() {
       
       // Add a small delay to ensure state is fully updated
       const timer = setTimeout(() => {
-        if (userProfiles.length === 0) {
-          console.log('Redirecting to create-network (no profiles)');
+        if (userProfiles.length === 0 || intent === 'create-network') {
+          console.log('Redirecting to create-network (no profiles or create-network intent)');
           navigate('/create-network', { replace: true });
         } else if (userProfiles.length === 1) {
           console.log('Redirecting to dashboard (1 profile)');
@@ -89,7 +90,7 @@ function LoginPage() {
       
       return () => clearTimeout(timer);
     }
-  }, [showProfileSelector, isLoadingProfiles, userProfiles.length, navigate]);
+  }, [showProfileSelector, isLoadingProfiles, userProfiles.length, navigate, intent]);
 
   const handleClickShowPassword = () => {
     setShowPassword(!showPassword);
@@ -120,8 +121,10 @@ function LoginPage() {
   };
 
   const handleProfileSelected = (profile) => {
-    // Check if there's a redirect URL, otherwise go to dashboard
-    if (redirectUrl) {
+    // Check priority: intent, redirectUrl, or default to dashboard
+    if (intent === 'create-network') {
+      navigate('/create-network', { replace: true });
+    } else if (redirectUrl) {
       navigate(redirectUrl, { replace: true });
     } else {
       navigate('/dashboard', { replace: true });
