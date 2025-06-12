@@ -24,10 +24,12 @@ import {
 import { useProfile } from '../context/profileContext';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/authcontext';
+import { useTheme } from './ThemeProvider';
 
 const NetworkSelector = ({ onProfileSelected }) => {
   const navigate = useNavigate();
   const { signOut } = useAuth();
+  const { darkMode } = useTheme();
   const { 
     userProfiles, 
     isLoadingProfiles, 
@@ -103,7 +105,7 @@ const NetworkSelector = ({ onProfileSelected }) => {
     <Box 
       sx={{ 
         minHeight: 'calc(100vh - 80px)',
-        bgcolor: 'white',
+        bgcolor: darkMode ? '#000000' : '#ffffff',
         position: 'relative'
       }}
     >
@@ -112,7 +114,7 @@ const NetworkSelector = ({ onProfileSelected }) => {
           <Box sx={{ py: 4 }}>
           {/* Logout button in top right */}
           <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
-            <IconButton
+            <Button
               onClick={handleLogout}
               color="inherit"
               size="large"
@@ -123,8 +125,8 @@ const NetworkSelector = ({ onProfileSelected }) => {
                 }
               }}
             >
-              <LogoutIcon />
-            </IconButton>
+              <LogoutIcon /><Typography variant="button" sx={{ ml: 1 }}>Logout</Typography>
+            </Button>
           </Box>
           
           <Typography 
@@ -145,7 +147,7 @@ const NetworkSelector = ({ onProfileSelected }) => {
             Select which network you'd like to access
           </Typography>
 
-          <Grid container spacing={3}>
+          <Grid container spacing={3} justifyContent="center">
             {userProfiles.map((profile, index) => (
               <Grow 
                 key={profile.id} 
@@ -156,8 +158,8 @@ const NetworkSelector = ({ onProfileSelected }) => {
                 <Grid item xs={12} sm={6} md={4}>
                   <Card 
                     sx={{ 
-                      height: '100%',
-                      minHeight: 280,
+                      height: 240,
+                      width: 200,
                       position: 'relative',
                       transition: 'all 0.3s ease',
                       border: selectedProfileId === profile.id ? 2 : 1,
@@ -242,8 +244,8 @@ const NetworkSelector = ({ onProfileSelected }) => {
               <Grid item xs={12} sm={6} md={4}>
                 <Card 
                   sx={{ 
-                    height: '100%',
-                    minHeight: 280,
+                    height: 240,
+                    width: 200,
                     border: 1,
                     borderColor: 'divider',
                     borderStyle: 'dashed',
