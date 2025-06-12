@@ -8,7 +8,6 @@ import {
   Avatar,
   Grid,
   Button,
-  Chip,
   CircularProgress,
   Alert,
   Container,
@@ -26,7 +25,7 @@ import { useProfile } from '../context/profileContext';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/authcontext';
 
-const ProfileSelector = ({ onProfileSelected }) => {
+const NetworkSelector = ({ onProfileSelected }) => {
   const navigate = useNavigate();
   const { signOut } = useAuth();
   const { 
@@ -134,7 +133,7 @@ const ProfileSelector = ({ onProfileSelected }) => {
             gutterBottom 
             sx={{ mb: 4, fontWeight: 600 }}
           >
-            Choose Your Profile
+            Choose Your Network
           </Typography>
           
           <Typography 
@@ -143,7 +142,7 @@ const ProfileSelector = ({ onProfileSelected }) => {
             color="text.secondary" 
             sx={{ mb: 4 }}
           >
-            Select which network profile you'd like to use
+            Select which network you'd like to access
           </Typography>
 
           <Grid container spacing={3}>
@@ -158,6 +157,7 @@ const ProfileSelector = ({ onProfileSelected }) => {
                   <Card 
                     sx={{ 
                       height: '100%',
+                      minHeight: 280,
                       position: 'relative',
                       transition: 'all 0.3s ease',
                       border: selectedProfileId === profile.id ? 2 : 1,
@@ -191,52 +191,40 @@ const ProfileSelector = ({ onProfileSelected }) => {
                         
                         <Box display="flex" flexDirection="column" alignItems="center">
                           <Avatar
-                            src={profile.profile_picture_url}
+                            src={profile.network?.logo_url}
                             sx={{ 
                               width: 80, 
                               height: 80, 
                               mb: 2,
-                              bgcolor: 'primary.main'
+                              bgcolor: profile.network?.theme_color || 'primary.main'
                             }}
                           >
-                            {profile.full_name?.charAt(0)}
+                            <GroupsIcon sx={{ fontSize: 40 }} />
                           </Avatar>
                           
                           <Typography variant="h6" gutterBottom align="center">
-                            {profile.full_name}
+                            {profile.network?.name}
                           </Typography>
                           
-                          <Box display="flex" alignItems="center" gap={1} mb={2}>
-                            <GroupsIcon fontSize="small" color="action" />
-                            <Typography variant="body2" color="text.secondary">
-                              {profile.network?.name}
-                            </Typography>
-                          </Box>
-                          
-                          <Chip
-                            label={profile.role}
-                            size="small"
-                            color={profile.role === 'admin' ? 'primary' : 'default'}
-                            sx={{ mb: 1 }}
-                          />
-                          
-                          {profile.bio && (
+                          {profile.network?.description && (
                             <Typography 
                               variant="body2" 
                               color="text.secondary" 
                               align="center"
                               sx={{ 
-                                mt: 1,
+                                mb: 2,
                                 overflow: 'hidden',
                                 textOverflow: 'ellipsis',
                                 display: '-webkit-box',
-                                WebkitLineClamp: 2,
-                                WebkitBoxOrient: 'vertical'
+                                WebkitLineClamp: 3,
+                                WebkitBoxOrient: 'vertical',
+                                minHeight: 60
                               }}
                             >
-                              {profile.bio}
+                              {profile.network.description}
                             </Typography>
                           )}
+                          
                         </Box>
                       </CardContent>
                     </CardActionArea>
@@ -255,6 +243,7 @@ const ProfileSelector = ({ onProfileSelected }) => {
                 <Card 
                   sx={{ 
                     height: '100%',
+                    minHeight: 280,
                     border: 1,
                     borderColor: 'divider',
                     borderStyle: 'dashed',
@@ -269,7 +258,6 @@ const ProfileSelector = ({ onProfileSelected }) => {
                     onClick={handleCreateNewProfile}
                     sx={{ 
                       height: '100%',
-                      minHeight: 250,
                       display: 'flex',
                       flexDirection: 'column',
                       justifyContent: 'center',
@@ -311,4 +299,4 @@ const ProfileSelector = ({ onProfileSelected }) => {
   );
 };
 
-export default ProfileSelector;
+export default NetworkSelector;

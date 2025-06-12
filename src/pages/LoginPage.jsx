@@ -30,7 +30,7 @@ import {
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import ThreeJSBackground from '../components/ThreeJSBackground';
 import { useProfile } from '../context/profileContext';
-import ProfileSelector from '../components/ProfileSelector';
+import NetworkSelector from '../components/NetworkSelector';
 
 // You can customize this theme or import from a separate theme file
 const theme = createTheme({
@@ -124,7 +124,7 @@ function LoginPage() {
               zIndex: 9
             }}
           >
-            <ProfileSelector onProfileSelected={handleProfileSelected} />
+            <NetworkSelector onProfileSelected={handleProfileSelected} />
           </Box>
         </Container>
       </ThemeProvider>

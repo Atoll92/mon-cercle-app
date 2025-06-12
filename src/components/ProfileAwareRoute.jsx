@@ -3,7 +3,7 @@ import { useProfile } from '../context/profileContext';
 import { useAuth } from '../context/authcontext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Box, CircularProgress } from '@mui/material';
-import ProfileSelector from './ProfileSelector';
+import NetworkSelector from './NetworkSelector';
 
 const ProfileAwareRoute = ({ children }) => {
   const { user } = useAuth();
@@ -67,10 +67,10 @@ const ProfileAwareRoute = ({ children }) => {
     );
   }
 
-  // Show profile selector if needed
+  // Show network selector if needed
   if (showProfileSelector) {
     return (
-      <ProfileSelector onProfileSelected={handleProfileSelected} />
+      <NetworkSelector onProfileSelected={handleProfileSelected} />
     );
   }
 

@@ -9,19 +9,18 @@ import {
   Typography,
   Divider,
   Box,
-  Chip,
   CircularProgress,
   Tooltip
 } from '@mui/material';
 import {
-  AccountCircle as AccountCircleIcon,
   Add as AddIcon,
-  Check as CheckIcon
+  Check as CheckIcon,
+  Groups as GroupsIcon
 } from '@mui/icons-material';
 import { useProfile } from '../context/profileContext';
 import { useNavigate } from 'react-router-dom';
 
-const ProfileSwitcher = ({ buttonVariant = 'icon' }) => {
+const NetworkSwitcher = ({ buttonVariant = 'icon' }) => {
   const navigate = useNavigate();
   const { 
     activeProfile, 
@@ -81,26 +80,38 @@ const ProfileSwitcher = ({ buttonVariant = 'icon' }) => {
   const renderButton = () => {
     if (buttonVariant === 'icon') {
       return (
-        <Tooltip title="Switch Profile">
+        <Tooltip title="Switch Network">
           <IconButton
             onClick={handleClick}
             size="large"
             edge="end"
-            aria-label="switch profile"
-            aria-controls={open ? 'profile-menu' : undefined}
+            aria-label="switch network"
+            aria-controls={open ? 'network-menu' : undefined}
             aria-haspopup="true"
             aria-expanded={open ? 'true' : undefined}
             color="inherit"
           >
-            {activeProfile?.profile_picture_url ? (
+            {activeProfile?.network?.logo_url ? (
               <Avatar
-                src={activeProfile.profile_picture_url}
-                sx={{ width: 32, height: 32 }}
+                src={activeProfile.network.logo_url}
+                sx={{ 
+                  width: 32, 
+                  height: 32,
+                  bgcolor: activeProfile.network?.theme_color || 'primary.main'
+                }}
               >
-                {activeProfile.full_name?.charAt(0)}
+                <GroupsIcon sx={{ fontSize: 20 }} />
               </Avatar>
             ) : (
-              <AccountCircleIcon />
+              <Avatar
+                sx={{ 
+                  width: 32, 
+                  height: 32,
+                  bgcolor: activeProfile?.network?.theme_color || 'primary.main'
+                }}
+              >
+                <GroupsIcon sx={{ fontSize: 20 }} />
+              </Avatar>
             )}
           </IconButton>
         </Tooltip>
@@ -124,16 +135,17 @@ const ProfileSwitcher = ({ buttonVariant = 'icon' }) => {
         }}
       >
         <Avatar
-          src={activeProfile?.profile_picture_url}
-          sx={{ width: 40, height: 40 }}
+          src={activeProfile?.network?.logo_url}
+          sx={{ 
+            width: 40, 
+            height: 40,
+            bgcolor: activeProfile?.network?.theme_color || 'primary.main'
+          }}
         >
-          {activeProfile?.full_name?.charAt(0)}
+          <GroupsIcon sx={{ fontSize: 24 }} />
         </Avatar>
         <Box>
           <Typography variant="body2" fontWeight={600}>
-            {activeProfile?.full_name}
-          </Typography>
-          <Typography variant="caption" color="text.secondary">
             {activeProfile?.network?.name}
           </Typography>
         </Box>
@@ -146,16 +158,18 @@ const ProfileSwitcher = ({ buttonVariant = 'icon' }) => {
       {renderButton()}
       
       <Menu
-        id="profile-menu"
+        id="network-menu"
         anchorEl={anchorEl}
         open={open}
         onClose={handleClose}
-        PaperProps={{
-          elevation: 4,
-          sx: {
-            minWidth: 280,
-            maxHeight: 400,
-            mt: 1.5,
+        slotProps={{
+          paper: {
+            elevation: 4,
+            sx: {
+              minWidth: 280,
+              maxHeight: 400,
+              mt: 1.5,
+            }
           }
         }}
         transformOrigin={{ horizontal: 'right', vertical: 'top' }}
@@ -165,18 +179,11 @@ const ProfileSwitcher = ({ buttonVariant = 'icon' }) => {
           <>
             <Box sx={{ px: 2, py: 1.5 }}>
               <Typography variant="caption" color="text.secondary">
-                Current Profile
+                Current Network
               </Typography>
-              <Box display="flex" alignItems="center" gap={1} mt={0.5}>
-                <Typography variant="body2" fontWeight={600}>
-                  {activeProfile.full_name}
-                </Typography>
-                <Chip
-                  label={activeProfile.role}
-                  size="small"
-                  color={activeProfile.role === 'admin' ? 'primary' : 'default'}
-                />
-              </Box>
+              <Typography variant="body2" fontWeight={600} mt={0.5}>
+                {activeProfile.network?.name}
+              </Typography>
             </Box>
             <Divider />
           </>
@@ -205,32 +212,19 @@ const ProfileSwitcher = ({ buttonVariant = 'icon' }) => {
             >
               <ListItemAvatar>
                 <Avatar
-                  src={profile.profile_picture_url}
+                  src={profile.network?.logo_url}
                   sx={{ 
                     width: 36, 
                     height: 36,
                     bgcolor: profile.network?.theme_color || 'primary.main'
                   }}
                 >
-                  {profile.full_name?.charAt(0)}
+                  <GroupsIcon sx={{ fontSize: 22 }} />
                 </Avatar>
               </ListItemAvatar>
               <ListItemText
-                primary={profile.full_name}
-                secondary={
-                  <Box display="flex" alignItems="center" gap={0.5}>
-                    <Typography variant="caption">
-                      {profile.network?.name}
-                    </Typography>
-                    {profile.role === 'admin' && (
-                      <Chip
-                        label="Admin"
-                        size="small"
-                        sx={{ height: 16, fontSize: '0.7rem' }}
-                      />
-                    )}
-                  </Box>
-                }
+                primary={profile.network?.name}
+                secondary={profile.network?.privacy_level || 'Private'}
               />
               {profile.id === activeProfile?.id && (
                 <CheckIcon fontSize="small" color="primary" />
@@ -256,7 +250,7 @@ const ProfileSwitcher = ({ buttonVariant = 'icon' }) => {
         {hasMultipleProfiles && (
           <MenuItem onClick={handleManageProfiles}>
             <ListItemText 
-              primary="Manage Profiles" 
+              primary="Manage Networks" 
               sx={{ pl: 7.5 }}
             />
           </MenuItem>
@@ -266,4 +260,4 @@ const ProfileSwitcher = ({ buttonVariant = 'icon' }) => {
   );
 };
 
-export default ProfileSwitcher;
+export default NetworkSwitcher;

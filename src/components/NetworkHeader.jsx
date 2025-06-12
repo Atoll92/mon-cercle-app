@@ -14,7 +14,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useDirectMessages } from '../context/directMessagesContext';
 import { fetchNetworkDetails } from '../api/networks';
 import { logout } from '../api/auth';
-import ProfileSwitcher from './ProfileSwitcher';
+import NetworkSwitcher from './NetworkSwitcher';
 import { useProfile } from '../context/profileContext';
 
 // Simple badge component for unread messages
@@ -248,7 +248,7 @@ const NetworkHeader = () => {
                 alignSelf: 'center',
                 borderColor: darkMode ? alpha('#ffffff', 0.2) : alpha('#000000', 0.1)
               }} />
-              <ProfileSwitcher />
+              <NetworkSwitcher />
             </>
           )}
           

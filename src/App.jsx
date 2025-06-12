@@ -13,7 +13,7 @@ import { AppProvider } from './context/appContext';
 import ErrorBoundary from './components/ErrorBoundary';
 import { Analytics } from '@vercel/analytics/react';
 import { ProfileProvider, useProfile } from './context/profileContext';
-import ProfileSelector from './components/ProfileSelector';
+import NetworkSelector from './components/NetworkSelector';
 import ProfileAwareRoute from './components/ProfileAwareRoute';
 
 // Eagerly loaded pages (small, frequently accessed)
@@ -222,7 +222,7 @@ function App() {
             
             {/* Profile Selection Route */}
             <Route element={<ProtectedRoute />}>
-              <Route path="/profiles/select" element={<ProfileSelector />} />
+              <Route path="/profiles/select" element={<NetworkSelector />} />
             </Route>
             
             
