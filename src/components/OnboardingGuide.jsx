@@ -105,11 +105,11 @@ const OnboardingGuide = ({
     // 2. Network has very few members (1-2, likely just the creator)
     // 3. Guide hasn't been dismissed
     if (isNetworkAdmin && memberCount <= 2 && !guideDismissed) {
-      // Wait 5 seconds before showing the guide
+      // Wait 3 seconds before showing the guide (reduced from 5)
       const timer = setTimeout(() => {
         console.log('[OnboardingGuide] Auto-showing guide for admin');
         setShowGuide(true);
-      }, 5000);
+      }, 3000);
 
       return () => clearTimeout(timer);
     }
@@ -161,16 +161,16 @@ const OnboardingGuide = ({
     }
   };
 
-  // Auto-dismiss after 45 seconds if user doesn't interact
+  // Auto-dismiss after 2 minutes if user doesn't interact
   useEffect(() => {
-    if (showGuide) {
+    if (showGuide && !forceShow) {
       const autoTimer = setTimeout(() => {
         handleDismissGuide();
-      }, 45000);
+      }, 120000); // 2 minutes
 
       return () => clearTimeout(autoTimer);
     }
-  }, [showGuide]);
+  }, [showGuide, forceShow]);
 
   if (!showGuide || guideDismissed) {
     return null;

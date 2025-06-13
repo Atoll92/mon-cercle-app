@@ -7,7 +7,6 @@ import { useNetwork, NetworkProvider, NetworkProviderWithParams } from '../conte
 import { useApp } from '../context/appContext';
 import { supabase } from '../supabaseclient';
 import { useFadeIn } from '../hooks/useAnimation';
-import { getUserProfile } from '../api/networks';
 import { GridSkeleton } from '../components/LoadingSkeleton';
 import ArticleIcon from '@mui/icons-material/Article';
 import ChatIcon from '@mui/icons-material/Chat';
@@ -126,6 +125,13 @@ function NetworkLandingPage() {
   const [showMemberModal, setShowMemberModal] = useState(false);
   const [userParticipations, setUserParticipations] = useState([]);
   const [memberCount, setMemberCount] = useState(0);
+  
+  // Update member count when networkMembers changes
+  useEffect(() => {
+    if (networkMembers && networkMembers.length > 0) {
+      setMemberCount(networkMembers.length);
+    }
+  }, [networkMembers]);
   const [showWelcomeMessage, setShowWelcomeMessage] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
   
@@ -282,10 +288,10 @@ function NetworkLandingPage() {
     }
   };
   
-  // Check if user just joined the network (within last 5 minutes) or came from invitation
+  // Check if user just joined the network or came from invitation
   useEffect(() => {
-    if (!user || !network) {
-      console.log('[Welcome] Waiting for user and network data');
+    if (!user || !network || !activeProfile) {
+      console.log('[Welcome] Waiting for user, network, and profile data');
       return;
     }
     
@@ -296,14 +302,20 @@ function NetworkLandingPage() {
       
       console.log('[Welcome] Checking welcome conditions:', {
         fromInvite,
-        user: user?.id,
-        network: network?.id,
+        userId: user?.id,
+        activeProfileId: activeProfile?.id,
+        networkId: network?.id,
         networkMembersCount: networkMembers.length
+      });
+      
+      console.log('[Welcome] Session storage check:', {
+        recentJoinKey: `recent_join_${network.id}_${activeProfile.id}`,
+        hasRecentJoinFlag: sessionStorage.getItem(`recent_join_${network.id}_${activeProfile.id}`)
       });
       
       // If coming from invite, show welcome immediately
       if (fromInvite) {
-        const welcomeShownKey = `welcome_shown_${network.id}_${user.id}`;
+        const welcomeShownKey = `welcome_shown_${network.id}_${activeProfile.id}`;
         const hasShownWelcome = localStorage.getItem(welcomeShownKey);
         
         console.log('[Welcome] From invite - checking if already shown:', {
@@ -311,94 +323,102 @@ function NetworkLandingPage() {
           hasShownWelcome
         });
         
-        if (!hasShownWelcome) {
-          console.log('[Welcome] Showing welcome message from invite!');
-          // Add a small delay to ensure page is fully loaded
+        // Always show welcome when coming directly from an invitation link
+        // This handles cases where user might have multiple attempts or the flag was set incorrectly
+        console.log('[Welcome] Showing welcome message from invite!');
+        // Add a small delay to ensure page is fully loaded
+        setTimeout(() => {
+          setShowWelcomeMessage(true);
+          localStorage.setItem(welcomeShownKey, 'true');
+        }, 1500);
+        
+        // Clear the from_invite parameter from URL
+        searchParams.delete('from_invite');
+        const newUrl = `${location.pathname}${searchParams.toString() ? '?' + searchParams.toString() : ''}`;
+        window.history.replaceState({}, '', newUrl);
+        return;
+      }
+      
+      // Check if admin just created this network
+      if (isUserAdmin) {
+        const showOnboardingKey = `show_admin_onboarding_${network.id}_${activeProfile.id}`;
+        const shouldShowOnboarding = sessionStorage.getItem(showOnboardingKey) === 'true';
+        
+        if (shouldShowOnboarding) {
+          console.log('[Welcome] Admin onboarding requested after network creation');
           setTimeout(() => {
-            setShowWelcomeMessage(true);
-            localStorage.setItem(welcomeShownKey, 'true');
-          }, 1500);
+            setShowOnboarding(true);
+          }, 2000);
           
-          // Clear the from_invite parameter from URL
-          searchParams.delete('from_invite');
-          const newUrl = `${location.pathname}${searchParams.toString() ? '?' + searchParams.toString() : ''}`;
-          window.history.replaceState({}, '', newUrl);
-        }
-        return;
-      }
-      
-      // Wait for network members to load before checking recent join
-      if (!networkMembers || networkMembers.length === 0) {
-        console.log('[Welcome] Waiting for network members to load');
-        return;
-      }
-      
-      // Find current user's profile
-      const currentUserProfile = networkMembers.find(m => m.id === user.id);
-      if (!currentUserProfile) {
-        console.log('[Welcome] Current user profile not found in network members');
-        // Try to fetch the user's profile directly
-        try {
-          const profileData = await getUserProfile(user.id);
-            
-          if (!profileData) {
-            console.log('[Welcome] Could not fetch user profile');
-            return;
-          }
-          
-          // Check if the user joined within the last 5 minutes
-          const joinedAt = new Date(profileData.updated_at);
+          // Clear the flag
+          sessionStorage.removeItem(showOnboardingKey);
+        } else if (network.created_at) {
+          // Fallback: Check if this is a new network (created recently by admin)
+          const createdAt = new Date(network.created_at);
           const now = new Date();
-          const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000);
+          const tenMinutesAgo = new Date(now.getTime() - 10 * 60 * 1000);
           
-          if (joinedAt > fiveMinutesAgo && profileData.network_id === network.id) {
-            const welcomeShownKey = `welcome_shown_${network.id}_${user.id}`;
-            const hasShownWelcome = localStorage.getItem(welcomeShownKey);
+          if (createdAt > tenMinutesAgo && networkMembers.length <= 2) {
+            const onboardingShownKey = `onboarding_shown_${network.id}_${activeProfile.id}`;
+            const hasShownOnboarding = localStorage.getItem(onboardingShownKey);
             
-            if (!hasShownWelcome) {
-              console.log('[Welcome] Showing welcome message for recent join (direct fetch)!');
+            if (!hasShownOnboarding) {
+              console.log('[Welcome] New network detected, showing admin onboarding');
               setTimeout(() => {
-                setShowWelcomeMessage(true);
-                localStorage.setItem(welcomeShownKey, 'true');
-              }, 1500);
+                setShowOnboarding(true);
+                localStorage.setItem(onboardingShownKey, 'true');
+              }, 3000);
             }
           }
-        } catch (err) {
-          console.error('[Welcome] Error fetching profile:', err);
         }
-        return;
       }
       
-      // Check if the user joined within the last 5 minutes
-      const joinedAt = new Date(currentUserProfile.updated_at);
-      const now = new Date();
-      const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000);
-      
-      // Skip if date is invalid
-      if (isNaN(joinedAt.getTime())) {
-        console.log('[Welcome] Invalid date for updated_at:', currentUserProfile.updated_at);
-        return;
-      }
-      
-      console.log('[Welcome] Checking recent join:', {
-        joinedAt: joinedAt.toISOString(),
-        now: now.toISOString(),
-        fiveMinutesAgo: fiveMinutesAgo.toISOString(),
-        isRecent: joinedAt > fiveMinutesAgo,
-        userProfile: currentUserProfile
-      });
-      
-      if (joinedAt > fiveMinutesAgo) {
-        // Check if we've already shown the welcome message
-        const welcomeShownKey = `welcome_shown_${network.id}_${user.id}`;
-        const hasShownWelcome = localStorage.getItem(welcomeShownKey);
+      // For regular members, check if they recently joined
+      if (!isUserAdmin) {
+        // Check session storage for recent join flag (profile-specific)
+        const recentJoinKey = `recent_join_${network.id}_${activeProfile.id}`;
+        const isRecentJoin = sessionStorage.getItem(recentJoinKey) === 'true';
         
-        if (!hasShownWelcome) {
-          console.log('[Welcome] Showing welcome message for recent join!');
-          setTimeout(() => {
-            setShowWelcomeMessage(true);
-            localStorage.setItem(welcomeShownKey, 'true');
-          }, 1500);
+        // Check for user+network based flag (more robust)
+        const userNetworkJoinKey = `recent_join_user_${user.id}_network_${network.id}`;
+        const isRecentJoinUserNetwork = sessionStorage.getItem(userNetworkJoinKey) === 'true';
+        
+        // Also check for a timestamp-based fallback for recently created profiles
+        const profileCreatedKey = `profile_created_${network.id}_${activeProfile.id}`;
+        const profileCreatedFlag = localStorage.getItem(profileCreatedKey) === 'true';
+        
+        // Check user+network created flag
+        const userNetworkCreatedKey = `profile_created_user_${user.id}_network_${network.id}`;
+        const userNetworkCreatedFlag = localStorage.getItem(userNetworkCreatedKey) === 'true';
+        
+        console.log('[Welcome] Member join checks:', {
+          isRecentJoin,
+          isRecentJoinUserNetwork,
+          profileCreatedFlag,
+          userNetworkCreatedFlag,
+          recentJoinKey,
+          userNetworkJoinKey,
+          profileCreatedKey,
+          userNetworkCreatedKey
+        });
+        
+        if (isRecentJoin || isRecentJoinUserNetwork || profileCreatedFlag || userNetworkCreatedFlag) {
+          const welcomeShownKey = `welcome_shown_${network.id}_${activeProfile.id}`;
+          const hasShownWelcome = localStorage.getItem(welcomeShownKey);
+          
+          if (!hasShownWelcome) {
+            console.log('[Welcome] Showing welcome message for recent join!');
+            setTimeout(() => {
+              setShowWelcomeMessage(true);
+              localStorage.setItem(welcomeShownKey, 'true');
+            }, 1500);
+            
+            // Clear all the flags
+            sessionStorage.removeItem(recentJoinKey);
+            sessionStorage.removeItem(userNetworkJoinKey);
+            localStorage.removeItem(profileCreatedKey);
+            localStorage.removeItem(userNetworkCreatedKey);
+          }
         }
       }
     };
@@ -406,7 +426,7 @@ function NetworkLandingPage() {
     // Run check after a delay to ensure data is loaded
     const timer = setTimeout(checkNewMember, 500);
     return () => clearTimeout(timer);
-  }, [user, network, networkMembers, location]);
+  }, [user, network, networkMembers, activeProfile, isUserAdmin, location]);
 
   // Fetch user's event participations on component mount
   useEffect(() => {
@@ -1056,8 +1076,34 @@ function NetworkLandingPage() {
               console.log('[Debug] Manually showing welcome message');
               setShowWelcomeMessage(true);
             }}
+            sx={{ mb: 1, display: 'block' }}
           >
             Show Welcome
+          </Button>
+          <Button
+            variant="contained"
+            size="small"
+            color="info"
+            onClick={() => {
+              console.log('[Debug] Setting profile created flag for testing');
+              localStorage.setItem(`profile_created_${network?.id}_${activeProfile?.id}`, 'true');
+              console.log('[Debug] Flag set, reloading...');
+              window.location.reload();
+            }}
+            sx={{ mb: 1, display: 'block' }}
+          >
+            Test New Member
+          </Button>
+          <Button
+            variant="contained"
+            size="small"
+            color="warning"
+            onClick={() => {
+              console.log('[Debug] Simulating from_invite URL parameter');
+              window.location.href = window.location.pathname + '?from_invite=true';
+            }}
+          >
+            Test from_invite
           </Button>
         </Box>
       )}

@@ -316,6 +316,16 @@ export const joinNetworkViaInvitation = async (code, inviteeEmail = null) => {
           .eq('status', 'pending');
       }
       
+      // Set flags to trigger welcome message
+      if (typeof window !== 'undefined') {
+        console.log('[JoinNetwork] Setting flags (old schema) for user:', user.id, 'network:', invitation.network_id, 'profile:', updatedProfile.id);
+        // Set with both profile ID and user+network ID for more robust detection
+        sessionStorage.setItem(`recent_join_${invitation.network_id}_${updatedProfile.id}`, 'true');
+        sessionStorage.setItem(`recent_join_user_${user.id}_network_${invitation.network_id}`, 'true');
+        localStorage.setItem(`profile_created_${invitation.network_id}_${updatedProfile.id}`, 'true');
+        localStorage.setItem(`profile_created_user_${user.id}_network_${invitation.network_id}`, 'true');
+      }
+      
       return {
         success: true,
         message: 'Successfully joined the network!',
@@ -383,6 +393,16 @@ export const joinNetworkViaInvitation = async (code, inviteeEmail = null) => {
         .eq('email', inviteeEmail.toLowerCase())
         .eq('network_id', invitation.network_id)
         .eq('status', 'pending');
+    }
+    
+    // Set flags to trigger welcome message
+    if (typeof window !== 'undefined') {
+      console.log('[JoinNetwork] Setting flags for user:', user.id, 'network:', invitation.network_id, 'profile:', newProfile.id);
+      // Set with both profile ID and user+network ID for more robust detection
+      sessionStorage.setItem(`recent_join_${invitation.network_id}_${newProfile.id}`, 'true');
+      sessionStorage.setItem(`recent_join_user_${user.id}_network_${invitation.network_id}`, 'true');
+      localStorage.setItem(`profile_created_${invitation.network_id}_${newProfile.id}`, 'true');
+      localStorage.setItem(`profile_created_user_${user.id}_network_${invitation.network_id}`, 'true');
     }
     
     return {

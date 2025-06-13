@@ -163,7 +163,7 @@ function JoinNetworkPage() {
           <Button
             variant="contained"
             component={Link}
-            to="/network"
+            to="/network?from_invite=true"
           >
             Go to Network
           </Button>

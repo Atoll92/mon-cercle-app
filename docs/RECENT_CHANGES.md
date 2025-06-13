@@ -9,6 +9,16 @@ This document tracks significant changes and new features in the Conclav applica
 
 ## June 2025 Updates
 
+### Onboarding Welcome Guide Improvements
+- Fixed welcome message trigger for new network members
+- Improved admin onboarding guide after network creation
+- Changed from `updated_at` timestamp to session storage flags for reliable detection
+- Added automatic onboarding guide trigger when admin creates new network
+- Updated member count tracking for proper onboarding conditions
+- Fixed profile context issues with multiple profiles system
+- Reduced onboarding guide auto-dismiss timeout from 45s to 2 minutes
+- Added session storage flag when users join via invitation
+
 ### ✅ MAJOR: Multiple Profiles System Implementation
 **Complete database migration and frontend overhaul to support multiple profiles per user**
 

@@ -374,6 +374,11 @@ const NetworkOnboardingWizard = ({ profile }) => {
 
       setSuccess(true);
       
+      // Set a flag to show onboarding guide when the admin arrives at their network
+      if (typeof window !== 'undefined' && newProfile) {
+        sessionStorage.setItem(`show_admin_onboarding_${network.id}_${newProfile.id}`, 'true');
+      }
+      
       // Do a hard reload to ensure all contexts are properly refreshed with the new network
       setTimeout(() => {
         console.log('Redirecting to dashboard with hard reload after network creation');

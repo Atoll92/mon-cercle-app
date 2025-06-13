@@ -82,6 +82,7 @@ export const ProfileProvider = ({ children }) => {
         throw new Error(error);
       }
       
+      console.log('ProfileContext: Setting active profile:', data);
       setActiveProfileState(data);
       return { success: true };
     } catch (error) {
