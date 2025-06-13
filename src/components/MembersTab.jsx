@@ -43,7 +43,7 @@ import {
 } from '@mui/icons-material';
 
 // Number of items to load per batch
-const ITEMS_PER_BATCH = 12;
+const ITEMS_PER_BATCH = 24;
 
 const MembersTab = ({ 
   networkMembers = [], 
@@ -80,23 +80,10 @@ const MembersTab = ({
   const [displayMembers, setDisplayMembers] = useState([]);
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [visibleCount, setVisibleCount] = useState(ITEMS_PER_BATCH);
   const [showScrollTop, setShowScrollTop] = useState(false);
   
   // Ref for intersection observer
   const observer = useRef();
-  const lastMemberRef = useCallback(node => {
-    if (loadingMore) return;
-    if (observer.current) observer.current.disconnect();
-    
-    observer.current = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting && hasMore) {
-        loadMoreMembers();
-      }
-    });
-    
-    if (node) observer.current.observe(node);
-  }, [loadingMore, hasMore]);
   
   // Scroll position tracking
   useEffect(() => {
@@ -174,7 +161,6 @@ const MembersTab = ({
     });
     
     setFilteredMembers(filtered);
-    setVisibleCount(ITEMS_PER_BATCH);
     setHasMore(filtered.length > ITEMS_PER_BATCH);
     
     // Update display members
@@ -191,24 +177,42 @@ const MembersTab = ({
     
     setLoadingMore(true);
     
-    // Simulate loading delay
+    // Simulate loading delay for better UX
     setTimeout(() => {
+      const currentCount = displayMembers.length;
       const nextBatch = filteredMembers.slice(
-        visibleCount, 
-        visibleCount + ITEMS_PER_BATCH
+        currentCount, 
+        currentCount + ITEMS_PER_BATCH
       );
       
       if (nextBatch.length === 0) {
         setHasMore(false);
       } else {
         setDisplayMembers(prevMembers => [...prevMembers, ...nextBatch]);
-        setVisibleCount(prev => prev + nextBatch.length);
-        setHasMore(visibleCount + nextBatch.length < filteredMembers.length);
+        setHasMore(currentCount + nextBatch.length < filteredMembers.length);
       }
       
       setLoadingMore(false);
-    }, 500);
-  }, [filteredMembers, visibleCount, hasMore, loadingMore]);
+    }, 300);
+  }, [filteredMembers, displayMembers.length, hasMore, loadingMore]);
+  
+  // Callback for intersection observer
+  const lastMemberRef = useCallback(node => {
+    if (loadingMore) return;
+    if (observer.current) observer.current.disconnect();
+    
+    observer.current = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && hasMore) {
+        loadMoreMembers();
+      }
+    }, {
+      root: null,
+      rootMargin: '100px',
+      threshold: 0.1
+    });
+    
+    if (node) observer.current.observe(node);
+  }, [loadingMore, hasMore, loadMoreMembers]);
   
   // Initial filtering and when filters change
   useEffect(() => {
