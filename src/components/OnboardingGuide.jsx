@@ -20,7 +20,8 @@ import {
   AdminPanelSettings as AdminIcon,
   NavigateNext as NextIcon,
   Groups as MembersIcon,
-  Close as CloseIcon
+  Close as CloseIcon,
+  Groups as GroupsIcon
 } from '@mui/icons-material';
 
 // Gentle pulse animation for highlighting
@@ -70,7 +71,7 @@ const OnboardingGuide = ({
   networkId, 
   isNetworkAdmin, 
   memberCount, 
-  currentPage = 'network', // 'network', 'admin', 'members'
+  currentPage = 'network', // 'network', 'admin', 'members', 'dashboard'
   currentAdminTab = null,   // admin tab index
   onGuideComplete,
   forceShow = false,      // Force show the guide
@@ -119,7 +120,7 @@ const OnboardingGuide = ({
   useEffect(() => {
     if (!showGuide || guideDismissed) return;
 
-    if (currentPage === 'network') {
+    if (currentPage === 'dashboard' || currentPage === 'network') {
       setCurrentStep(ONBOARDING_STEPS.NETWORK_LANDING);
     } else if (currentPage === 'admin' && currentAdminTab !== 1) {
       setCurrentStep(ONBOARDING_STEPS.ADMIN_PANEL);
@@ -150,8 +151,13 @@ const OnboardingGuide = ({
 
   const handleNextStep = () => {
     if (currentStep === ONBOARDING_STEPS.NETWORK_LANDING) {
-      // Navigate to admin panel
-      navigate(`/admin/${networkId}`);
+      if (currentPage === 'dashboard') {
+        // From dashboard, navigate to network page
+        navigate('/network');
+      } else {
+        // From network page, navigate to admin panel
+        navigate(`/admin/${networkId}`);
+      }
     } else if (currentStep === ONBOARDING_STEPS.ADMIN_PANEL) {
       // User should click on Members tab (we'll detect this via currentAdminTab prop)
       // This step will be handled by the parent component updating currentAdminTab
@@ -179,6 +185,16 @@ const OnboardingGuide = ({
   const getStepContent = () => {
     switch (currentStep) {
       case ONBOARDING_STEPS.NETWORK_LANDING:
+        if (currentPage === 'dashboard') {
+          return {
+            icon: <GroupsIcon sx={{ color: 'primary.main' }} />,
+            title: "Welcome to your network!",
+            description: "You've successfully joined the network. Let's explore what you can do here.",
+            action: "Go to Network",
+            actionIcon: <NextIcon />,
+            pointer: "Click here to visit your network page"
+          };
+        }
         return {
           icon: <AdminIcon sx={{ color: 'primary.main' }} />,
           title: "Welcome to your network!",
@@ -205,7 +221,7 @@ const OnboardingGuide = ({
           description: "Now you can invite people to join your network.",
           action: "Got it!",
           actionIcon: <GroupAddIcon />,
-          pointer: "Look for the 'Invite Members' button"
+          pointer: "Invite by email adress or create an invitation link"
         };
       
       default:

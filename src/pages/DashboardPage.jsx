@@ -13,6 +13,8 @@ import MediaUpload from '../components/MediaUpload';
 import EventDetailsDialog from '../components/EventDetailsDialog';
 import { useFadeIn, useStaggeredAnimation, ANIMATION_DURATION } from '../hooks/useAnimation';
 import { ProfileSkeleton, GridSkeleton } from '../components/LoadingSkeleton';
+import OnboardingGuide from '../components/OnboardingGuide';
+import WelcomeMessage from '../components/WelcomeMessage';
 import { 
   AttachMoney as AttachMoneyIcon,
   Star as StarIcon,
@@ -208,6 +210,10 @@ function DashboardPage() {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [showEventDialog, setShowEventDialog] = useState(false);
   const [memberModalOpen, setMemberModalOpen] = useState(false);
+  
+  // Onboarding guide state
+  const [showOnboardingGuide, setShowOnboardingGuide] = useState(false);
+  const [showWelcomeMessage, setShowWelcomeMessage] = useState(false);
 
   // Animation setup - must be at top level, not conditional
   const headerRef = useFadeIn(0, ANIMATION_DURATION.normal);
@@ -230,6 +236,55 @@ function DashboardPage() {
       navigate('/create-network', { replace: true });
     }
   }, [user, userProfiles, isLoadingProfiles, navigate, location.search]);
+  
+  // Check for from_invite parameter and show appropriate welcome
+  useEffect(() => {
+    if (!profile || !user || loadingProfile) return;
+    
+    const searchParams = new URLSearchParams(location.search);
+    const fromInvite = searchParams.get('from_invite');
+    
+    if (fromInvite === 'true') {
+      console.log('[Dashboard] User came from invitation');
+      
+      // Clean up the URL parameter after a delay
+      setTimeout(() => {
+        searchParams.delete('from_invite');
+        const newUrl = `${location.pathname}${searchParams.toString() ? '?' + searchParams.toString() : ''}`;
+        window.history.replaceState({}, '', newUrl);
+      }, 3000);
+      
+      // Show WelcomeMessage for regular members who were invited
+      if (profile.role !== 'admin') {
+        console.log('[Dashboard] Regular member from invitation, showing welcome message');
+        setTimeout(() => {
+          setShowWelcomeMessage(true);
+        }, 2000);
+      }
+    }
+  }, [profile, user, loadingProfile, location.search]);
+
+  // Show onboarding guide for admin members only
+  useEffect(() => {
+    if (!profile || !user || loadingProfile) return;
+    
+    // Check if the user is an admin and hasn't seen the onboarding guide
+    if (profile.role === 'admin') {
+      // Check localStorage to see if admin has already seen the guide
+      const hasSeenGuideKey = `onboarding_guide_seen_${profile.network_id}_${user.id}`;
+      const hasSeenGuide = localStorage.getItem(hasSeenGuideKey);
+      
+      if (!hasSeenGuide && !showOnboardingGuide) {
+        console.log('[Dashboard] Admin member detected, showing onboarding guide');
+        // Wait a bit for the page to fully load
+        const timer = setTimeout(() => {
+          setShowOnboardingGuide(true);
+        }, 1500);
+        
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [profile, user, loadingProfile, showOnboardingGuide]);
 
   console.log("Component render cycle. States:", { 
     loadingProfile, 
@@ -1810,6 +1865,37 @@ function DashboardPage() {
         }}
         event={selectedEvent}
         user={user}
+      />
+      
+      {/* Onboarding Guide */}
+      <OnboardingGuide
+        networkId={profile?.network_id}
+        isNetworkAdmin={profile?.role === 'admin'}
+        memberCount={networkMembers?.length || 0}
+        currentPage="dashboard"
+        forceShow={showOnboardingGuide}
+        onComplete={() => {
+          setShowOnboardingGuide(false);
+          // Mark that the admin has seen the guide
+          if (profile?.role === 'admin') {
+            const hasSeenGuideKey = `onboarding_guide_seen_${profile.network_id}_${user.id}`;
+            localStorage.setItem(hasSeenGuideKey, 'true');
+          }
+        }}
+      />
+      
+      {/* Welcome Message for invited regular members */}
+      <WelcomeMessage
+        open={showWelcomeMessage}
+        onClose={() => setShowWelcomeMessage(false)}
+        network={networkDetails}
+        user={user}
+        onStartTour={() => {
+          // Navigate to network page if user wants a tour
+          if (profile?.network_id) {
+            navigate(`/network/${profile.network_id}`);
+          }
+        }}
       />
     </Container>
   );
