@@ -214,15 +214,34 @@ const fetchNetworkMembers = async (networkId, options = {}) => {
  const fetchNetworkDetails = async (networkId) => {
     try {
       console.log('Fetching network details for network:', networkId);
-      const { data, error } = await supabase
+      
+      // Fetch network data
+      const { data: networkData, error: networkError } = await supabase
         .from('networks')
         .select('*')
         .eq('id', networkId)
         .single();
         
-      if (error) throw error;
-      console.log('Network details:', data);
-      return data;
+      if (networkError) throw networkError;
+      
+      // Fetch member count
+      const { count: memberCount, error: countError } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true })
+        .eq('network_id', networkId);
+      
+      if (countError) {
+        console.warn('Error fetching member count:', countError);
+      }
+      
+      // Add member count to network data
+      const dataWithCount = {
+        ...networkData,
+        member_count: memberCount || 0
+      };
+      
+      console.log('Network details with member count:', dataWithCount);
+      return dataWithCount;
     } catch (error) {
       console.error("Error fetching network details:", error);
       return null;
