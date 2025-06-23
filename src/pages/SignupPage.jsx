@@ -271,7 +271,7 @@ function SignupPage() {
                 Create Your Account
               </Typography>
               <Typography variant="body2" align="center" sx={{ mt: 1 }}>
-                Join the Mon Cercle community today!
+                Join the community today!
               </Typography>
             </Box>
 
