@@ -1,5 +1,5 @@
 // NewLandingPage.jsx - Conceptual Outline for a simple and convincing landing page
-// Incorporates negative advertising by highlighting issues with mainstream social media.
+// Retargeted for Network Creators of Private Micro Social Networks.
 
 import React from 'react';
 import {
@@ -9,8 +9,7 @@ import {
   Button,
   Grid,
   Stack,
-  useTheme, // Potentially for responsive design or theme-specific styles
-  // Add other Material-UI imports as needed based on your existing files (e.g., Card, Paper, etc.)
+  useTheme,
 } from '@mui/material';
 import {
   Shield,         // For Privacy/Security
@@ -18,23 +17,24 @@ import {
   Block,          // For Ads/Tracking/AI Free
   CheckCircle,    // For positive features / Benefits
   ArrowForward,   // For Call to Action
-  Warning,        // For warnings/problems related to big tech
-  DataUsage,      // For data handling issues
-  Campaign,       // For advertising/tracking
+  Warning,        // For warnings/problems related to big tech (as a contrast)
+  Groups,         // For Community/Network Building
+  Handshake,      // For Trust/Authenticity
+  AdminPanelSettings, // For Control/Management
 } from '@mui/icons-material';
 
 const NewLandingPage = () => {
-  const theme = useTheme(); // Use theme for consistent styling
+  const theme = useTheme();
 
   return (
     <Box sx={{ flexGrow: 1 }}>
 
-      {/* 1. Hero Section: Direct, Negative Advertising Headline */}
+      {/* 1. Hero Section: Direct, Creator-Focused Headline */}
       <Box
         sx={{
           py: { xs: 8, md: 12 },
           textAlign: 'center',
-          backgroundColor: theme.palette.primary.main, // Or a gradient/image
+          backgroundColor: theme.palette.primary.main,
           color: theme.palette.primary.contrastText,
         }}
       >
@@ -45,13 +45,13 @@ const NewLandingPage = () => {
             gutterBottom
             sx={{ fontWeight: 700, mb: 2 }}
           >
-            Tired of Being the Product? <br /> Reclaim Your Social Life.
+            Empower Your Community. <br /> Create Your Own Private Network.
           </Typography>
           <Typography
             variant="h6"
             sx={{ mb: 4, opacity: 0.9 }}
           >
-            Escape the data-hungry giants. Discover a truly private, ad-free, and human-centric social network.
+            Tired of mainstream platforms dictating your community's rules and monetizing its data? Build a dedicated, private space, fully under your control.
           </Typography>
           <Stack
             direction={{ xs: 'column', sm: 'row' }}
@@ -61,11 +61,11 @@ const NewLandingPage = () => {
             <Button
               variant="contained"
               size="large"
-              color="secondary" // Use a contrasting color for the main CTA
+              color="secondary"
               endIcon={<ArrowForward />}
-              // onClick={() => navigate('/signup')} // Placeholder for navigation
+              // onClick={() => navigate('/create-network')} // Placeholder for navigation
             >
-              Join the Private Network
+              Start Building Your Network
             </Button>
             <Button
               variant="outlined"
@@ -78,56 +78,56 @@ const NewLandingPage = () => {
                   backgroundColor: 'rgba(255,255,255,0.1)',
                 }
               }}
-              // onClick={() => navigate('/features')} // Placeholder for navigation
+              // onClick={() => navigate('/how-it-works-for-creators')} // Placeholder for navigation
             >
-              See Our Promise
+              How It Works for Creators
             </Button>
           </Stack>
         </Container>
       </Box>
 
-      {/* 2. Problem Section: The "Villain" - Criticisms of Big Social Media */}
+      {/* 2. Problem Section: The "Challenges" for Community Builders on Mainstream Platforms */}
       <Box sx={{ py: { xs: 8, md: 10 }, backgroundColor: theme.palette.background.paper }}>
         <Container maxWidth="lg">
           <Typography variant="h4" align="center" gutterBottom sx={{ mb: 6 }}>
-            The Cost of "Free": What Big Tech Takes From You
+            The Limitations of Generic Social Platforms for Your Community
           </Typography>
           <Grid container spacing={{ xs: 4, md: 6 }} justifyContent="center">
-            {/* Problem 1: Data Breaches & Privacy Violations (Meta's history) */}
+            {/* Problem 1: Lack of Control & Data Exploitation */}
             <Grid item xs={12} sm={6} md={4}>
               <Box sx={{ textAlign: 'center', p: 2 }}>
                 <DataUsage color="error" sx={{ fontSize: 60, mb: 2 }} />
                 <Typography variant="h5" gutterBottom>
-                  Your Data, Their Gold Mine
+                  Loss of Control & Data Ownership
                 </Typography>
                 <Typography variant="body1" color="text.secondary">
-                  From Cambridge Analytica to billions in GDPR fines, major platforms profit by exploiting your personal data, selling it, and tracking your every move without true consent.
+                  Your community's data is a valuable asset. On mainstream platforms, it's harvested, analyzed, and monetized by others, leaving you with no control or direct insight.
                 </Typography>
               </Box>
             </Grid>
 
-            {/* Problem 2: Ads, Tracking, & AI Manipulation */}
+            {/* Problem 2: Distractions, Algorithms & Eroding Engagement */}
             <Grid item xs={12} sm={6} md={4}>
               <Box sx={{ textAlign: 'center', p: 2 }}>
                 <Campaign color="warning" sx={{ fontSize: 60, mb: 2 }} />
                 <Typography variant="h5" gutterBottom>
-                  Endless Ads & Algorithmic Traps
+                  Algorithmic Interference & Distractions
                 </Typography>
                 <Typography variant="body1" color="text.secondary">
-                  Your feed isn't for you; it's designed to keep you scrolling, fed by relentless ads and AI that learns your weaknesses. Is this truly social connection, or just a sophisticated selling machine?
+                  Ads, irrelevant content, and opaque algorithms stifle genuine interaction. Your community's messages get lost, and engagement suffers from constant external noise.
                 </Typography>
               </Box>
             </Grid>
 
-            {/* Problem 3: Misinformation & Lack of Control */}
+            {/* Problem 3: Trust Issues & Brand Dilution */}
             <Grid item xs={12} sm={6} md={4}>
               <Box sx={{ textAlign: 'center', p: 2 }}>
                 <Warning color="info" sx={{ fontSize: 60, mb: 2 }} />
                 <Typography variant="h5" gutterBottom>
-                  Trust & Truth Eroded
+                  Compromised Trust & Brand Consistency
                 </Typography>
                 <Typography variant="body1" color="text.secondary">
-                  Navigating misinformation and arbitrary content moderation is frustrating. When your privacy is compromised, can you truly trust the information you see or the interactions you have?
+                  Building trust is paramount for any community. When your interactions happen on platforms known for privacy breaches and misinformation, your brand's integrity is at risk.
                 </Typography>
               </Box>
             </Grid>
@@ -135,48 +135,48 @@ const NewLandingPage = () => {
         </Container>
       </Box>
 
-      {/* 3. Solution Section: Your Network's Unique Value Proposition */}
+      {/* 3. Solution Section: Your Platform's Unique Value Proposition for Creators */}
       <Box sx={{ py: { xs: 8, md: 10 }, backgroundColor: theme.palette.background.default }}>
         <Container maxWidth="lg">
           <Typography variant="h4" align="center" gutterBottom sx={{ mb: 6 }}>
-            A Social Network Built Differently. Built For You.
+            The Solution: Your Dedicated, Private Social Network
           </Typography>
           <Grid container spacing={{ xs: 4, md: 6 }} justifyContent="center">
-            {/* Solution 1: Privacy (No Ads, No Tracking, No AI) */}
+            {/* Solution 1: Full Control & Ownership */}
+            <Grid item xs={12} sm={6} md={4}>
+              <Box sx={{ textAlign: 'center', p: 2 }}>
+                <AdminPanelSettings color="primary" sx={{ fontSize: 60, mb: 2 }} />
+                <Typography variant="h5" gutterBottom>
+                  Complete Control & Data Sovereignty
+                </Typography>
+                <Typography variant="body1" color="text.secondary">
+                  You own your network, your data, and your rules. Customize everything from branding to moderation, ensuring a safe and tailored experience for your members.
+                </Typography>
+              </Box>
+            </Grid>
+
+            {/* Solution 2: Privacy & Trust by Design (for your members) */}
             <Grid item xs={12} sm={6} md={4}>
               <Box sx={{ textAlign: 'center', p: 2 }}>
                 <Shield color="primary" sx={{ fontSize: 60, mb: 2 }} />
                 <Typography variant="h5" gutterBottom>
-                  True Privacy. No Exceptions.
+                  Built-in Privacy & GDPR Compliance
                 </Typography>
                 <Typography variant="body1" color="text.secondary">
-                  Enjoy social media without the hidden costs. We are completely ads-free, tracking-free, and AI-free. Your data stays yours.
+                  Attract and retain members with a platform designed for privacy. No ads, no tracking, no AI exploitation. Hosted entirely within the EU for maximum data protection.
                 </Typography>
               </Box>
             </Grid>
 
-            {/* Solution 2: EU-Based & GDPR Compliant */}
+            {/* Solution 3: Foster Deeper Engagement & Authentic Connections */}
             <Grid item xs={12} sm={6} md={4}>
               <Box sx={{ textAlign: 'center', p: 2 }}>
-                <Euro color="primary" sx={{ fontSize: 60, mb: 2 }} />
+                <Groups color="primary" sx={{ fontSize: 60, mb: 2 }} />
                 <Typography variant="h5" gutterBottom>
-                  European by Design & Law
+                  Focus on Authentic Community & Engagement
                 </Typography>
                 <Typography variant="body1" color="text.secondary">
-                  Hosted and operated entirely within the EU, we adhere to the world's strictest privacy laws (GDPR), ensuring your digital rights are always protected.
-                </Typography>
-              </Box>
-            </Grid>
-
-            {/* Solution 3: Simplicity & Genuine Connection */}
-            <Grid item xs={12} sm={6} md={4}>
-              <Box sx={{ textAlign: 'center', p: 2 }}>
-                <CheckCircle color="primary" sx={{ fontSize: 60, mb: 2 }} />
-                <Typography variant="h5" gutterBottom>
-                  Simply Social. Truly Connect.
-                </Typography>
-                <Typography variant="body1" color="text.secondary">
-                  A clean, intuitive interface focused purely on authentic interactions. No distractions, no algorithms, just real people and genuine connections.
+                  Provide a clean, focused environment free from distractions. Empower your members to connect genuinely, fostering stronger bonds and more meaningful interactions.
                 </Typography>
               </Box>
             </Grid>
@@ -184,28 +184,28 @@ const NewLandingPage = () => {
         </Container>
       </Box>
 
-      {/* 4. Call to Action Section */}
+      {/* 4. Call to Action Section (for Network Creators) */}
       <Box
         sx={{
           py: { xs: 8, md: 10 },
           textAlign: 'center',
-          backgroundColor: theme.palette.secondary.main, // Or another prominent color
+          backgroundColor: theme.palette.secondary.main,
           color: theme.palette.secondary.contrastText,
         }}
       >
         <Container maxWidth="md">
           <Typography variant="h4" gutterBottom sx={{ mb: 3 }}>
-            Ready to Experience Social Media as It Should Be?
+            Ready to Build the Social Network Your Community Deserves?
           </Typography>
           <Typography variant="h6" sx={{ mb: 4, opacity: 0.9 }}>
-            Join the movement towards a safer, simpler, and more human online experience.
+            Take back control and cultivate a thriving, private online space for your members.
           </Typography>
           <Button
             variant="contained"
             size="large"
-            color="primary" // Use a contrasting color
+            color="primary"
             endIcon={<ArrowForward />}
-            // onClick={() => navigate('/signup')} // Placeholder for navigation
+            // onClick={() => navigate('/start-your-network')} // Placeholder for navigation
             sx={{
               py: 1.5,
               px: 4,
@@ -217,7 +217,7 @@ const NewLandingPage = () => {
               }
             }}
           >
-            Create Your Account Today
+            Launch Your Private Network Now
           </Button>
         </Container>
       </Box>
