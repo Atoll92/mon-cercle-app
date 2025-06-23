@@ -313,7 +313,7 @@ function NetworkLandingPage() {
         hasRecentJoinFlag: sessionStorage.getItem(`recent_join_${network.id}_${activeProfile.id}`)
       });
       
-      // If coming from invite, show welcome immediately
+      // If coming from invite, show welcome immediately (but only once)
       if (fromInvite) {
         const welcomeShownKey = `welcome_shown_${network.id}_${activeProfile.id}`;
         const hasShownWelcome = localStorage.getItem(welcomeShownKey);
@@ -323,14 +323,15 @@ function NetworkLandingPage() {
           hasShownWelcome
         });
         
-        // Always show welcome when coming directly from an invitation link
-        // This handles cases where user might have multiple attempts or the flag was set incorrectly
-        console.log('[Welcome] Showing welcome message from invite!');
-        // Add a small delay to ensure page is fully loaded
-        setTimeout(() => {
-          setShowWelcomeMessage(true);
-          localStorage.setItem(welcomeShownKey, 'true');
-        }, 1500);
+        // Only show welcome if it hasn't been shown before
+        if (!hasShownWelcome) {
+          console.log('[Welcome] Showing welcome message from invite!');
+          // Add a small delay to ensure page is fully loaded
+          setTimeout(() => {
+            setShowWelcomeMessage(true);
+            localStorage.setItem(welcomeShownKey, 'true');
+          }, 1500);
+        }
         
         // Clear the from_invite parameter from URL
         searchParams.delete('from_invite');
@@ -341,32 +342,32 @@ function NetworkLandingPage() {
       
       // Check if admin just created this network
       if (isUserAdmin) {
-        const showOnboardingKey = `show_admin_onboarding_${network.id}_${activeProfile.id}`;
-        const shouldShowOnboarding = sessionStorage.getItem(showOnboardingKey) === 'true';
+        // Check if onboarding has been dismissed for this network
+        const onboardingDismissedKey = `onboarding-dismissed-${network.id}`;
+        const isOnboardingDismissed = localStorage.getItem(onboardingDismissedKey);
         
-        if (shouldShowOnboarding) {
-          console.log('[Welcome] Admin onboarding requested after network creation');
-          setTimeout(() => {
-            setShowOnboarding(true);
-          }, 2000);
+        if (!isOnboardingDismissed) {
+          const showOnboardingKey = `show_admin_onboarding_${network.id}_${activeProfile.id}`;
+          const shouldShowOnboarding = sessionStorage.getItem(showOnboardingKey) === 'true';
           
-          // Clear the flag
-          sessionStorage.removeItem(showOnboardingKey);
-        } else if (network.created_at) {
-          // Fallback: Check if this is a new network (created recently by admin)
-          const createdAt = new Date(network.created_at);
-          const now = new Date();
-          const tenMinutesAgo = new Date(now.getTime() - 10 * 60 * 1000);
-          
-          if (createdAt > tenMinutesAgo && networkMembers.length <= 2) {
-            const onboardingShownKey = `onboarding_shown_${network.id}_${activeProfile.id}`;
-            const hasShownOnboarding = localStorage.getItem(onboardingShownKey);
+          if (shouldShowOnboarding) {
+            console.log('[Welcome] Admin onboarding requested after network creation');
+            setTimeout(() => {
+              setShowOnboarding(true);
+            }, 2000);
             
-            if (!hasShownOnboarding) {
+            // Clear the flag
+            sessionStorage.removeItem(showOnboardingKey);
+          } else if (network.created_at) {
+            // Fallback: Check if this is a new network (created recently by admin)
+            const createdAt = new Date(network.created_at);
+            const now = new Date();
+            const tenMinutesAgo = new Date(now.getTime() - 10 * 60 * 1000);
+            
+            if (createdAt > tenMinutesAgo && networkMembers.length <= 2) {
               console.log('[Welcome] New network detected, showing admin onboarding');
               setTimeout(() => {
                 setShowOnboarding(true);
-                localStorage.setItem(onboardingShownKey, 'true');
               }, 3000);
             }
           }
@@ -375,38 +376,39 @@ function NetworkLandingPage() {
       
       // For regular members, check if they recently joined
       if (!isUserAdmin) {
-        // Check session storage for recent join flag (profile-specific)
-        const recentJoinKey = `recent_join_${network.id}_${activeProfile.id}`;
-        const isRecentJoin = sessionStorage.getItem(recentJoinKey) === 'true';
+        // Check if we've already shown the welcome message
+        const welcomeShownKey = `welcome_shown_${network.id}_${activeProfile.id}`;
+        const hasShownWelcome = localStorage.getItem(welcomeShownKey);
         
-        // Check for user+network based flag (more robust)
-        const userNetworkJoinKey = `recent_join_user_${user.id}_network_${network.id}`;
-        const isRecentJoinUserNetwork = sessionStorage.getItem(userNetworkJoinKey) === 'true';
-        
-        // Also check for a timestamp-based fallback for recently created profiles
-        const profileCreatedKey = `profile_created_${network.id}_${activeProfile.id}`;
-        const profileCreatedFlag = localStorage.getItem(profileCreatedKey) === 'true';
-        
-        // Check user+network created flag
-        const userNetworkCreatedKey = `profile_created_user_${user.id}_network_${network.id}`;
-        const userNetworkCreatedFlag = localStorage.getItem(userNetworkCreatedKey) === 'true';
-        
-        console.log('[Welcome] Member join checks:', {
-          isRecentJoin,
-          isRecentJoinUserNetwork,
-          profileCreatedFlag,
-          userNetworkCreatedFlag,
-          recentJoinKey,
-          userNetworkJoinKey,
-          profileCreatedKey,
-          userNetworkCreatedKey
-        });
-        
-        if (isRecentJoin || isRecentJoinUserNetwork || profileCreatedFlag || userNetworkCreatedFlag) {
-          const welcomeShownKey = `welcome_shown_${network.id}_${activeProfile.id}`;
-          const hasShownWelcome = localStorage.getItem(welcomeShownKey);
+        if (!hasShownWelcome) {
+          // Check session storage for recent join flag (profile-specific)
+          const recentJoinKey = `recent_join_${network.id}_${activeProfile.id}`;
+          const isRecentJoin = sessionStorage.getItem(recentJoinKey) === 'true';
           
-          if (!hasShownWelcome) {
+          // Check for user+network based flag (more robust)
+          const userNetworkJoinKey = `recent_join_user_${user.id}_network_${network.id}`;
+          const isRecentJoinUserNetwork = sessionStorage.getItem(userNetworkJoinKey) === 'true';
+          
+          // Also check for a timestamp-based fallback for recently created profiles
+          const profileCreatedKey = `profile_created_${network.id}_${activeProfile.id}`;
+          const profileCreatedFlag = localStorage.getItem(profileCreatedKey) === 'true';
+          
+          // Check user+network created flag
+          const userNetworkCreatedKey = `profile_created_user_${user.id}_network_${network.id}`;
+          const userNetworkCreatedFlag = localStorage.getItem(userNetworkCreatedKey) === 'true';
+          
+          console.log('[Welcome] Member join checks:', {
+            isRecentJoin,
+            isRecentJoinUserNetwork,
+            profileCreatedFlag,
+            userNetworkCreatedFlag,
+            recentJoinKey,
+            userNetworkJoinKey,
+            profileCreatedKey,
+            userNetworkCreatedKey
+          });
+          
+          if (isRecentJoin || isRecentJoinUserNetwork || profileCreatedFlag || userNetworkCreatedFlag) {
             console.log('[Welcome] Showing welcome message for recent join!');
             setTimeout(() => {
               setShowWelcomeMessage(true);

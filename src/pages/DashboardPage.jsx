@@ -256,10 +256,17 @@ function DashboardPage() {
       
       // Show WelcomeMessage for regular members who were invited
       if (profile.role !== 'admin') {
-        console.log('[Dashboard] Regular member from invitation, showing welcome message');
-        setTimeout(() => {
-          setShowWelcomeMessage(true);
-        }, 2000);
+        // Check if we've already shown the welcome message
+        const welcomeShownKey = `dashboard_welcome_shown_${profile.network_id}_${profile.id}`;
+        const hasShownWelcome = localStorage.getItem(welcomeShownKey);
+        
+        if (!hasShownWelcome) {
+          console.log('[Dashboard] Regular member from invitation, showing welcome message');
+          setTimeout(() => {
+            setShowWelcomeMessage(true);
+            localStorage.setItem(welcomeShownKey, 'true');
+          }, 2000);
+        }
       }
     }
   }, [profile, user, loadingProfile, location.search]);
@@ -270,11 +277,15 @@ function DashboardPage() {
     
     // Check if the user is an admin and hasn't seen the onboarding guide
     if (profile.role === 'admin') {
-      // Check localStorage to see if admin has already seen the guide
+      // Check if onboarding has been dismissed using the same key as OnboardingGuide component
+      const onboardingDismissedKey = `onboarding-dismissed-${profile.network_id}`;
+      const isOnboardingDismissed = localStorage.getItem(onboardingDismissedKey);
+      
+      // Also check the legacy key for backward compatibility
       const hasSeenGuideKey = `onboarding_guide_seen_${profile.network_id}_${user.id}`;
       const hasSeenGuide = localStorage.getItem(hasSeenGuideKey);
       
-      if (!hasSeenGuide && !showOnboardingGuide) {
+      if (!isOnboardingDismissed && !hasSeenGuide && !showOnboardingGuide) {
         console.log('[Dashboard] Admin member detected, showing onboarding guide');
         // Wait a bit for the page to fully load
         const timer = setTimeout(() => {
