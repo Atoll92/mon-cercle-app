@@ -1,7 +1,8 @@
 // NewLandingPage.jsx - Conceptual Outline for a simple and convincing landing page
-// Retargeted for Network Creators of Private Micro Social Networks.
+// Retargeted for Network Creators of Private Micro Social Networks, with functionalities listed.
 
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Container,
@@ -10,23 +11,42 @@ import {
   Grid,
   Stack,
   useTheme,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
 } from '@mui/material';
 import {
-  Shield,         // For Privacy/Security
-  Euro,           // For EU-based
-  Block,          // For Ads/Tracking/AI Free
-  CheckCircle,    // For positive features / Benefits
-  ArrowForward,   // For Call to Action
-  Warning,        // For warnings/problems related to big tech (as a contrast)
-  Groups,         // For Community/Network Building
-  Handshake,      // For Trust/Authenticity
-  AdminPanelSettings, // For Control/Management
-  DataUsage,      // For data handling issues
-  Campaign,       // For advertising/tracking
+  Shield,
+  Euro,
+  Block,
+  CheckCircle,
+  ArrowForward,
+  Warning,
+  Groups,
+  Handshake,
+  AdminPanelSettings,
+  Settings,
+  PersonAdd,
+  Message,
+  AccountCircle,
+  Visibility,
+  Lock,
+  Category,
+  AddPhotoAlternate,
+  Event,
+  Notifications,
+  Dashboard,
+  ReportProblem,
+  Gavel,
+  BarChart,
+  DataUsage,
+  Campaign,
 } from '@mui/icons-material';
 
 const NewLandingPage = () => {
   const theme = useTheme();
+  const navigate = useNavigate();
 
   return (
     <Box sx={{ flexGrow: 1 }}>
@@ -65,7 +85,7 @@ const NewLandingPage = () => {
               size="large"
               color="secondary"
               endIcon={<ArrowForward />}
-              // onClick={() => navigate('/create-network')} // Placeholder for navigation
+              onClick={() => navigate('/signup')}
             >
               Start Building Your Network
             </Button>
@@ -80,7 +100,7 @@ const NewLandingPage = () => {
                   backgroundColor: 'rgba(255,255,255,0.1)',
                 }
               }}
-              // onClick={() => navigate('/how-it-works-for-creators')} // Placeholder for navigation
+              onClick={() => navigate('/demo')}
             >
               How It Works for Creators
             </Button>
@@ -154,6 +174,48 @@ const NewLandingPage = () => {
                 <Typography variant="body1" color="text.secondary">
                   You own your network, your data, and your rules. Customize everything from branding to moderation, ensuring a safe and tailored experience for your members.
                 </Typography>
+                <List sx={{ textAlign: 'left', mt: 2 }}>
+                  <ListItem disablePadding>
+                    <ListItemIcon sx={{ minWidth: 36 }}>
+                      <CheckCircle fontSize="small" />
+                    </ListItemIcon>
+                    <ListItemText 
+                      primary="Network General Settings" 
+                      secondary="Name, description, logo, theme"
+                      primaryTypographyProps={{ variant: 'body2' }}
+                      secondaryTypographyProps={{ variant: 'caption' }}
+                    />
+                  </ListItem>
+                  <ListItem disablePadding>
+                    <ListItemIcon sx={{ minWidth: 36 }}>
+                      <Groups fontSize="small" />
+                    </ListItemIcon>
+                    <ListItemText 
+                      primary="Member Management" 
+                      secondary="Invite, remove, manage roles"
+                      primaryTypographyProps={{ variant: 'body2' }}
+                      secondaryTypographyProps={{ variant: 'caption' }}
+                    />
+                  </ListItem>
+                  <ListItem disablePadding>
+                    <ListItemIcon sx={{ minWidth: 36 }}>
+                      <Gavel fontSize="small" />
+                    </ListItemIcon>
+                    <ListItemText 
+                      primary="Content Moderation Tools"
+                      primaryTypographyProps={{ variant: 'body2' }}
+                    />
+                  </ListItem>
+                  <ListItem disablePadding>
+                    <ListItemIcon sx={{ minWidth: 36 }}>
+                      <BarChart fontSize="small" />
+                    </ListItemIcon>
+                    <ListItemText 
+                      primary="Network Analytics & Statistics"
+                      primaryTypographyProps={{ variant: 'body2' }}
+                    />
+                  </ListItem>
+                </List>
               </Box>
             </Grid>
 
@@ -167,6 +229,37 @@ const NewLandingPage = () => {
                 <Typography variant="body1" color="text.secondary">
                   Attract and retain members with a platform designed for privacy. No ads, no tracking, no AI exploitation. Hosted entirely within the EU for maximum data protection.
                 </Typography>
+                <List sx={{ textAlign: 'left', mt: 2 }}>
+                  <ListItem disablePadding>
+                    <ListItemIcon sx={{ minWidth: 36 }}>
+                      <Lock fontSize="small" />
+                    </ListItemIcon>
+                    <ListItemText 
+                      primary="Private Network Options" 
+                      secondary="Public, Private, Secret visibility"
+                      primaryTypographyProps={{ variant: 'body2' }}
+                      secondaryTypographyProps={{ variant: 'caption' }}
+                    />
+                  </ListItem>
+                  <ListItem disablePadding>
+                    <ListItemIcon sx={{ minWidth: 36 }}>
+                      <Block fontSize="small" />
+                    </ListItemIcon>
+                    <ListItemText 
+                      primary="Ad-free & Tracking-free"
+                      primaryTypographyProps={{ variant: 'body2' }}
+                    />
+                  </ListItem>
+                  <ListItem disablePadding>
+                    <ListItemIcon sx={{ minWidth: 36 }}>
+                      <Euro fontSize="small" />
+                    </ListItemIcon>
+                    <ListItemText 
+                      primary="GDPR Compliant by Design"
+                      primaryTypographyProps={{ variant: 'body2' }}
+                    />
+                  </ListItem>
+                </List>
               </Box>
             </Grid>
 
@@ -175,11 +268,71 @@ const NewLandingPage = () => {
               <Box sx={{ textAlign: 'center', p: 2 }}>
                 <Groups color="primary" sx={{ fontSize: 60, mb: 2 }} />
                 <Typography variant="h5" gutterBottom>
-                  Focus on Authentic Community & Engagement
+                  Foster Authentic Community & Engagement
                 </Typography>
                 <Typography variant="body1" color="text.secondary">
                   Provide a clean, focused environment free from distractions. Empower your members to connect genuinely, fostering stronger bonds and more meaningful interactions.
                 </Typography>
+                <List sx={{ textAlign: 'left', mt: 2 }}>
+                  <ListItem disablePadding>
+                    <ListItemIcon sx={{ minWidth: 36 }}>
+                      <Message fontSize="small" />
+                    </ListItemIcon>
+                    <ListItemText 
+                      primary="Direct Messaging & Group Chat"
+                      primaryTypographyProps={{ variant: 'body2' }}
+                    />
+                  </ListItem>
+                  <ListItem disablePadding>
+                    <ListItemIcon sx={{ minWidth: 36 }}>
+                      <AddPhotoAlternate fontSize="small" />
+                    </ListItemIcon>
+                    <ListItemText 
+                      primary="Rich Media Posts" 
+                      secondary="Text, images, and videos"
+                      primaryTypographyProps={{ variant: 'body2' }}
+                      secondaryTypographyProps={{ variant: 'caption' }}
+                    />
+                  </ListItem>
+                  <ListItem disablePadding>
+                    <ListItemIcon sx={{ minWidth: 36 }}>
+                      <Event fontSize="small" />
+                    </ListItemIcon>
+                    <ListItemText 
+                      primary="Event Creation & Management"
+                      primaryTypographyProps={{ variant: 'body2' }}
+                    />
+                  </ListItem>
+                  <ListItem disablePadding>
+                    <ListItemIcon sx={{ minWidth: 36 }}>
+                      <Notifications fontSize="small" />
+                    </ListItemIcon>
+                    <ListItemText 
+                      primary="Activity Feed & Notifications"
+                      primaryTypographyProps={{ variant: 'body2' }}
+                    />
+                  </ListItem>
+                  <ListItem disablePadding>
+                    <ListItemIcon sx={{ minWidth: 36 }}>
+                      <AccountCircle fontSize="small" />
+                    </ListItemIcon>
+                    <ListItemText 
+                      primary="Customizable User Profiles"
+                      primaryTypographyProps={{ variant: 'body2' }}
+                    />
+                  </ListItem>
+                  <ListItem disablePadding>
+                    <ListItemIcon sx={{ minWidth: 36 }}>
+                      <Category fontSize="small" />
+                    </ListItemIcon>
+                    <ListItemText 
+                      primary="Content Organization" 
+                      secondary="Categories, topics, and wikis"
+                      primaryTypographyProps={{ variant: 'body2' }}
+                      secondaryTypographyProps={{ variant: 'caption' }}
+                    />
+                  </ListItem>
+                </List>
               </Box>
             </Grid>
           </Grid>
@@ -207,7 +360,7 @@ const NewLandingPage = () => {
             size="large"
             color="primary"
             endIcon={<ArrowForward />}
-            // onClick={() => navigate('/start-your-network')} // Placeholder for navigation
+            onClick={() => navigate('/signup')}
             sx={{
               py: 1.5,
               px: 4,
@@ -234,17 +387,32 @@ const NewLandingPage = () => {
             spacing={2}
           >
             <Typography variant="body2" color="text.secondary">
-              © {new Date().getFullYear()} [Your App Name]. All rights reserved.
+              © {new Date().getFullYear()} Conclav. All rights reserved.
             </Typography>
             <Stack direction="row" spacing={3}>
-              <Button variant="text" size="small" color="inherit" /*onClick={() => navigate('/privacy') }*/>
+              <Button 
+                variant="text" 
+                size="small" 
+                color="inherit" 
+                onClick={() => navigate('/privacy')}
+              >
                 Privacy Policy
               </Button>
-              <Button variant="text" size="small" color="inherit" /*onClick={() => navigate('/terms') }*/>
+              <Button 
+                variant="text" 
+                size="small" 
+                color="inherit" 
+                onClick={() => navigate('/terms')}
+              >
                 Terms of Service
               </Button>
-              <Button variant="text" size="small" color="inherit" /*onClick={() => navigate('/contact') }*/>
-                Contact Us
+              <Button 
+                variant="text" 
+                size="small" 
+                color="inherit" 
+                onClick={() => navigate('/documentation')}
+              >
+                Help Center
               </Button>
             </Stack>
           </Stack>
