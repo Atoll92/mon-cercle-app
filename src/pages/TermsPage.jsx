@@ -30,7 +30,7 @@ function TermsPage() {
             1. Objet et acceptation des conditions
           </Typography>
           <Typography variant="body1" paragraph>
-            Les présentes conditions générales d'utilisation (ci-après "CGU") régissent l'utilisation de la plateforme Mon Cercle (ci-après "la Plateforme") éditée par [Nom de votre société], société [forme juridique] au capital de [montant] euros, immatriculée au RCS de [ville] sous le numéro [numéro], dont le siège social est situé [adresse].
+            Les présentes conditions générales d'utilisation (ci-après "CGU") régissent l'utilisation de la plateforme Conclav (ci-après "la Plateforme") éditée par [Nom de votre société], société [forme juridique] au capital de [montant] euros, immatriculée au RCS de [ville] sous le numéro [numéro], dont le siège social est situé [adresse].
           </Typography>
           <Typography variant="body1" paragraph>
             L'utilisation de la Plateforme implique l'acceptation pleine et entière des présentes CGU. Si vous n'acceptez pas ces conditions, vous ne devez pas utiliser la Plateforme.
@@ -40,7 +40,7 @@ function TermsPage() {
             2. Description du service
           </Typography>
           <Typography variant="body1" paragraph>
-            Mon Cercle est une plateforme de création et de gestion de réseaux privés permettant aux utilisateurs de :
+            Conclav est une plateforme de création et de gestion de réseaux privés permettant aux utilisateurs de :
           </Typography>
           <Box component="ul" sx={{ pl: 3 }}>
             <Typography component="li" variant="body1">Créer et administrer des réseaux privés</Typography>

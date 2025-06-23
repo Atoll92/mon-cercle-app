@@ -50,8 +50,8 @@ const DocumentationPage = () => {
       icon: <HelpIcon />,
       faqs: [
         {
-          question: "Qu'est-ce que Mon Cercle ?",
-          answer: "Mon Cercle est une plateforme collaborative pour créer et gérer des communautés privées. Chaque cercle (network) dispose d'outils de communication, de partage de fichiers, d'événements, et bien plus pour faciliter la collaboration entre membres."
+          question: "Qu'est-ce que Conclav ?",
+          answer: "Conclav est une plateforme collaborative pour créer et gérer des communautés privées. Chaque cercle (network) dispose d'outils de communication, de partage de fichiers, d'événements, et bien plus pour faciliter la collaboration entre membres."
         },
         {
           question: "Comment créer mon premier cercle ?",
@@ -198,7 +198,7 @@ const DocumentationPage = () => {
       {/* Header */}
       <Box textAlign="center" mb={6}>
         <Typography variant="h3" component="h1" gutterBottom fontWeight="bold">
-          Centre d'aide Mon Cercle
+          Centre d'aide Conclav
         </Typography>
         <Typography variant="h6" color="text.secondary" paragraph>
           Trouvez rapidement des réponses à vos questions
