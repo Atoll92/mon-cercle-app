@@ -1,48 +1,43 @@
 # Automated Testing Summary
 
 ## Overview
-This document summarizes the comprehensive automated test suite created for Mon Cercle App, covering the entire application from unit tests to end-to-end tests.
+This document summarizes the automated test suite for Conclav (formerly Mon Cercle), providing an accurate overview of current test coverage and future testing needs.
 
 ## Test Coverage Status
 
-### ✅ Completed Test Files
+### ✅ Existing Test Files (As of June 2025)
 
-#### API Layer Tests
-- `src/api/auth.test.jsx` - Authentication API (signUp, signIn, signOut, password reset)
-- `src/api/directMessages.test.js` - Direct messaging API
-- `src/api/polls.test.js` - Polling system API
-- `src/api/badges.test.js` - Badges and achievements API
-- `src/api/networks.test.js` - Network management API (existing)
+#### API Layer Tests (6 files)
+- `src/api/auth.test.jsx` - Authentication API tests
+- `src/api/directMessages.test.js` - Direct messaging API tests
+- `src/api/polls.test.js` - Polling system API tests
+- `src/api/badges.test.js` - Badges and achievements API tests
+- `src/api/networks.test.js` - Network management API tests
+- `src/api/supportTickets.test.js` - Support ticket API tests
 
-#### Context Tests
-- `src/context/authcontext.test.jsx` - Authentication context provider
-- `src/context/networkContext.test.jsx` - Network context provider (existing)
+#### Context Tests (2 files)
+- `src/context/authContext.test.jsx` - Authentication context provider tests
+- `src/context/networkContext.test.jsx` - Network context provider tests
 
-#### Component Tests
-- `src/components/MediaUpload.test.jsx` - Media upload component
-- `src/components/Chat.test.jsx` - Real-time chat component
-- `src/components/NewsTab.test.jsx` - News tab component (existing)
+#### Component Tests (4 files)
+- `src/components/MediaUpload.test.jsx` - Media upload component tests
+- `src/components/Chat.test.jsx` - Real-time chat component tests
+- `src/components/NewsTab.test.jsx` - News tab component tests
+- `src/components/StorageUsageBar.test.jsx` - Storage usage display tests
 
-#### Page Tests
-- `src/pages/LoginPage.test.jsx` - Login page with form validation
+#### Page Tests (1 file)
+- `src/pages/LoginPage.test.jsx` - Login page with form validation tests
 
-#### Service Tests
-- `src/services/stripeService.test.js` - Stripe payment service
-
-#### Utility Tests
-- `src/utils/passwordValidation.test.js` - Password validation utilities
-
-#### Infrastructure
-- `src/__mocks__/services/emailNotificationService.js` - Mock for email service
-- `src/test-suites/run-all-tests.js` - Comprehensive test runner
-- `.github/workflows/ci.yml` - CI/CD pipeline configuration
+#### Utility Tests (1 file)
+- `src/utils/passwordValidation.test.js` - Password validation utility tests
 
 ## Test Statistics
 
-### Current Coverage
-- **Files with tests**: 15
-- **Total test cases**: ~150+
-- **Coverage areas**: Authentication, Messaging, Polls, Badges, Media, Payments
+### Actual Coverage
+- **Files with tests**: 14 test files
+- **Total test cases**: Approximately 20-30 tests (needs verification)
+- **Coverage areas**: Basic API functionality, authentication, some components
+- **Test coverage percentage**: Unknown (coverage reporting not set up)
 
 ### Test Types
 1. **Unit Tests**: Individual functions and utilities

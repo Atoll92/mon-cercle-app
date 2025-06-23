@@ -13,7 +13,7 @@
   - Nonprofit plan
   - Network plan
   - Business plan
-- Test edge function (`test-stripe`) exposes key prefix
+- **Note**: Webhook is correctly configured in `/supabase/functions/stripe-webhook/` using proper environment variables
 - **Action**: Create production price IDs in Stripe dashboard and update configuration
 
 ### 3. **CORS Configuration** 🚨
