@@ -54,6 +54,7 @@ const PrivacyPage = lazy(() => import('./pages/PrivacyPage'));
 const DocumentationPage = lazy(() => import('./pages/DocumentationPage'));
 const EnhancedLandingPage = lazy(() => import('./pages/EnhancedLandingPage'));
 const AlternativeLandingPage = lazy(() => import('./pages/AlternativeLandingPage'));
+const NewLandingPage = lazy(() => import('./pages/NewLandingPage'));
 
 // Loading component for lazy loaded routes
 const PageLoader = () => (
@@ -165,6 +166,7 @@ function App() {
             <Route path="/simple" element={<SimpleLandingPage/>}/>
             <Route path="/old" element={<LandingPage/>}/>
             <Route path="/alt" element={<AlternativeLandingPage/>}/>
+            <Route path="/new" element={<NewLandingPage/>}/>
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignupPage />} />
             <Route path="/password-reset" element={<PasswordResetPage />} />
