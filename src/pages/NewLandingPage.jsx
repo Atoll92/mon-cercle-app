@@ -21,6 +21,8 @@ import {
   Groups,         // For Community/Network Building
   Handshake,      // For Trust/Authenticity
   AdminPanelSettings, // For Control/Management
+  DataUsage,      // For data handling issues
+  Campaign,       // For advertising/tracking
 } from '@mui/icons-material';
 
 const NewLandingPage = () => {
