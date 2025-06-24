@@ -58,6 +58,15 @@ import {
   ManageAccounts,
 } from '@mui/icons-material';
 
+// Import screenshots
+import socialWallImg from '../assets/screenshots/socialwall.png';
+import wikiImg from '../assets/screenshots/wiki.png';
+import filesSharingImg from '../assets/screenshots/filessharing.png';
+import eventsImg from '../assets/screenshots/events.png';
+import chatImg from '../assets/screenshots/chat.png';
+import membersImg from '../assets/screenshots/members.png';
+import moderationImg from '../assets/screenshots/moderation.png';
+
 const NewLandingPage = () => {
   const theme = useTheme();
   const navigate = useNavigate();
@@ -489,7 +498,7 @@ const NewLandingPage = () => {
                     <Card elevation={3}>
                       <CardMedia
                         component="img"
-                        image="/src/assets/screenshots/socialwall.png"
+                        image={socialWallImg}
                         alt="Social Wall Feature"
                         sx={{ width: '100%', height: 'auto' }}
                       />
@@ -559,7 +568,7 @@ const NewLandingPage = () => {
                     <Card elevation={3}>
                       <CardMedia
                         component="img"
-                        image="/src/assets/screenshots/wiki.png"
+                        image={wikiImg}
                         alt="Wiki Feature"
                         sx={{ width: '100%', height: 'auto' }}
                       />
@@ -577,7 +586,7 @@ const NewLandingPage = () => {
                     <Card elevation={3}>
                       <CardMedia
                         component="img"
-                        image="/src/assets/screenshots/filessharing.png"
+                        image={filesSharingImg}
                         alt="File Sharing Feature"
                         sx={{ width: '100%', height: 'auto' }}
                       />
@@ -647,7 +656,7 @@ const NewLandingPage = () => {
                     <Card elevation={3}>
                       <CardMedia
                         component="img"
-                        image="/src/assets/screenshots/events.png"
+                        image={eventsImg}
                         alt="Events Feature"
                         sx={{ width: '100%', height: 'auto' }}
                       />
@@ -665,7 +674,7 @@ const NewLandingPage = () => {
                     <Card elevation={3}>
                       <CardMedia
                         component="img"
-                        image="/src/assets/screenshots/chat.png"
+                        image={chatImg}
                         alt="Chat Feature"
                         sx={{ width: '100%', height: 'auto' }}
                       />
@@ -735,7 +744,7 @@ const NewLandingPage = () => {
                     <Card elevation={3}>
                       <CardMedia
                         component="img"
-                        image="/src/assets/screenshots/members.png"
+                        image={membersImg}
                         alt="Members Feature"
                         sx={{ width: '100%', height: 'auto' }}
                       />
@@ -753,7 +762,7 @@ const NewLandingPage = () => {
                     <Card elevation={3}>
                       <CardMedia
                         component="img"
-                        image="/src/assets/screenshots/moderation.png"
+                        image={moderationImg}
                         alt="Admin Tools Feature"
                         sx={{ width: '100%', height: 'auto' }}
                       />
