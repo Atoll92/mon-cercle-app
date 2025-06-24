@@ -1,7 +1,7 @@
 // NewLandingPage.jsx - Conceptual Outline for a simple and convincing landing page
 // Retargeted for Network Creators of Private Micro Social Networks, with functionalities listed.
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -23,6 +23,8 @@ import {
   Fade,
   Paper,
   alpha,
+  Zoom,
+  useMediaQuery,
 } from '@mui/material';
 import {
   Shield,
@@ -56,6 +58,7 @@ import {
   GroupWork,
   SupervisedUserCircle,
   ManageAccounts,
+  Palette, // Added for the new customization card icon
 } from '@mui/icons-material';
 
 // Import screenshots
@@ -67,426 +70,560 @@ import chatImg from '../assets/screenshots/chat.png';
 import membersImg from '../assets/screenshots/members.png';
 import moderationImg from '../assets/screenshots/moderation.png';
 
+// Import Three.js background for visual consistency
+import ThreeJSBackground from '../components/ThreeJSBackground';
+
 const NewLandingPage = () => {
   const theme = useTheme();
   const navigate = useNavigate();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [activeTab, setActiveTab] = useState(0);
+  const [hoveredCard, setHoveredCard] = useState(null);
 
   return (
-    <Box sx={{ flexGrow: 1 }}>
-
-      {/* 1. Hero Section: Direct, Creator-Focused Headline */}
+    <Box sx={{ 
+      minHeight: '100vh',
+      position: 'relative',
+      overflow: 'hidden'
+    }}>
+      {/* Three.js Background */}
+      <ThreeJSBackground />
+      
+      {/* Overlay for better text readability */}
       <Box
         sx={{
-          py: { xs: 8, md: 12 },
-          textAlign: 'center',
-          backgroundColor: theme.palette.primary.main,
-          color: theme.palette.primary.contrastText,
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: `linear-gradient(135deg, 
+            ${alpha(theme.palette.background.default, 0.85)} 0%, 
+            ${alpha(theme.palette.background.default, 0.75)} 50%, 
+            ${alpha(theme.palette.background.default, 0.85)} 100%)`,
+          backdropFilter: 'blur(1px)',
+          zIndex: 1,
+          height: '100%',
         }}
-      >
-        <Container maxWidth="md">
-          <Typography
-            variant="h3"
-            component="h1"
-            gutterBottom
-            sx={{ fontWeight: 700, mb: 2 }}
-          >
-            Empower Your Community. <br /> Create Your Own Private Network.
-          </Typography>
-          <Typography
-            variant="h6"
-            sx={{ mb: 4, opacity: 0.9 }}
-          >
-            Tired of mainstream platforms dictating your community's rules and monetizing its data? Build a dedicated, private space, fully under your control.
-          </Typography>
-          <Stack
-            direction={{ xs: 'column', sm: 'row' }}
-            spacing={2}
-            justifyContent="center"
-          >
-            <Button
-              variant="contained"
-              size="large"
-              color="secondary"
-              endIcon={<ArrowForward />}
-              onClick={() => navigate('/signup')}
-            >
-              Start Building Your Network
-            </Button>
-            <Button
-              variant="outlined"
-              size="large"
-              sx={{
-                color: 'white',
-                borderColor: 'white',
-                '&:hover': {
-                  borderColor: 'rgba(255,255,255,0.7)',
-                  backgroundColor: 'rgba(255,255,255,0.1)',
+      />
+
+      {/* Main Content Wrapper */}
+      <Box sx={{ position: 'relative', zIndex: 2 }}>
+        {/* 1. Hero Section: Direct, Creator-Focused Headline */}
+        <Box
+          sx={{
+            py: { xs: 8, md: 12 },
+            textAlign: 'center',
+            background: 'transparent',
+            position: 'relative',
+          }}
+        >
+          <Container maxWidth="md">
+            <Fade in timeout={1000}>
+              <Typography
+                variant={isMobile ? "h3" : "h2"}
+                component="h1"
+                gutterBottom
+                sx={{ 
+                  fontWeight: 900,
+                  mb: 3,
+                  background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                  lineHeight: 1.2
+                }}
+              >
+                Empower Your Community. <br /> Create Your Own Private Network.
+              </Typography>
+            </Fade>
+            
+            <Fade in timeout={1200}>
+              <Typography
+                variant="h5"
+                sx={{ 
+                  mb: 4, 
+                  color: theme.palette.text.secondary,
+                  maxWidth: 800,
+                  mx: 'auto',
+                  fontWeight: 400,
+                  lineHeight: 1.6
+                }}
+              >
+                Tired of mainstream platforms dictating your community's rules and monetizing its data? Build a dedicated, private space, fully under your control.
+              </Typography>
+            </Fade>
+            
+            <Zoom in timeout={1400}>
+              <Stack
+                direction={{ xs: 'column', sm: 'row' }}
+                spacing={2}
+                justifyContent="center"
+              >
+                <Button
+                  variant="contained"
+                  size="large"
+                  endIcon={<ArrowForward />}
+                  onClick={() => navigate('/signup')}
+                  sx={{
+                    py: 1.5,
+                    px: 4,
+                    borderRadius: 3,
+                    boxShadow: `0 8px 32px ${alpha(theme.palette.primary.main, 0.3)}`,
+                    '&:hover': {
+                      transform: 'translateY(-2px)',
+                      boxShadow: `0 12px 40px ${alpha(theme.palette.primary.main, 0.4)}`
+                    },
+                    transition: 'all 0.3s ease'
+                  }}
+                >
+                  Start Building Your Network
+                </Button>
+                <Button
+                  variant="outlined"
+                  size="large"
+                  sx={{
+                    py: 1.5,
+                    px: 4,
+                    borderRadius: 3,
+                    borderColor: alpha(theme.palette.primary.main, 0.3),
+                    '&:hover': {
+                      borderColor: theme.palette.primary.main,
+                      backgroundColor: alpha(theme.palette.primary.main, 0.05)
+                    }
+                  }}
+                  onClick={() => navigate('/demo')}
+                  >
+                  How It Works for Creators
+                </Button>
+              </Stack>
+            </Zoom>
+          </Container>
+        </Box>
+
+        {/* 2. Problem Section: The "Challenges" for Community Builders on Mainstream Platforms */}
+        <Box sx={{ py: { xs: 8, md: 10 }, backgroundColor: alpha(theme.palette.background.paper, 0.8) }}>
+          <Container maxWidth="lg">
+            <Fade in timeout={1600}>
+              <Typography variant="h3" align="center" gutterBottom sx={{ mb: 2, fontWeight: 700 }}>
+                The Limitations of Generic Social Platforms for Your Community
+              </Typography>
+            </Fade>
+            <Fade in timeout={1700}>
+              <Typography variant="h6" align="center" color="text.secondary" sx={{ mb: 6, maxWidth: 700, mx: 'auto' }}>
+                Mainstream platforms prioritize their growth over your community's needs
+              </Typography>
+            </Fade>
+            <Grid container spacing={4} justifyContent="center">
+              {[
+                {
+                  icon: <DataUsage sx={{ fontSize: 60 }} />,
+                  color: theme.palette.error.main,
+                  title: 'Loss of Control & Data Ownership',
+                  description: 'Your community\'s data is a valuable asset. On mainstream platforms, it\'s harvested, analyzed, and monetized by others, leaving you with no control or direct insight.',
+                  delay: 1800
+                },
+                {
+                  icon: <Campaign sx={{ fontSize: 60 }} />,
+                  color: theme.palette.warning.main,
+                  title: 'Algorithmic Interference & Distractions',
+                  description: 'Ads, irrelevant content, and opaque algorithms stifle genuine interaction. Your community\'s messages get lost, and engagement suffers from constant external noise.',
+                  delay: 1900
+                },
+                {
+                  icon: <Warning sx={{ fontSize: 60 }} />,
+                  color: theme.palette.info.main,
+                  title: 'Compromised Trust & Brand Consistency',
+                  description: 'Building trust is paramount for any community. When your interactions happen on platforms known for privacy breaches and misinformation, your brand\'s integrity is at risk.',
+                  delay: 2000
                 }
-              }}
-              onClick={() => navigate('/demo')}
-            >
-              How It Works for Creators
-            </Button>
-          </Stack>
-        </Container>
-      </Box>
+              ].map((problem, index) => (
+                <Grid item key={index}>
+                  <Zoom in timeout={problem.delay}>
+                    <Card
+                      elevation={0}
+                      sx={{
+                        width: { xs: '100%', sm: 350 },
+                        height: '100%',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        p: 4,
+                        textAlign: 'center',
+                        border: `2px solid transparent`,
+                        background: `linear-gradient(white, white) padding-box, linear-gradient(135deg, ${alpha(problem.color, 0.2)}, ${alpha(problem.color, 0.05)}) border-box`,
+                        borderRadius: 3,
+                        cursor: 'pointer',
+                        transition: 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+                        position: 'relative',
+                        overflow: 'hidden',
+                        '&::before': {
+                          content: '""',
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          background: `linear-gradient(135deg, ${alpha(problem.color, 0.03)}, transparent)`,
+                          opacity: hoveredCard === index ? 1 : 0,
+                          transition: 'opacity 0.3s ease',
+                          borderRadius: 3
+                        },
+                        '&:hover': {
+                          transform: 'translateY(-12px) scale(1.02)',
+                          boxShadow: `0 20px 60px ${alpha(problem.color, 0.15)}, 0 8px 20px ${alpha(problem.color, 0.1)}`,
+                          border: `2px solid ${alpha(problem.color, 0.2)}`
+                        }
+                      }}
+                      onMouseEnter={() => setHoveredCard(index)}
+                      onMouseLeave={() => setHoveredCard(null)}
+                    >
+                      <Box 
+                        sx={{ 
+                          mb: 3,
+                          color: problem.color,
+                          transform: hoveredCard === index ? 'scale(1.1)' : 'scale(1)',
+                          transition: 'transform 0.3s ease'
+                        }}
+                      >
+                        {problem.icon}
+                      </Box>
+                      <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                        <Typography variant="h5" gutterBottom sx={{ fontWeight: 600, mb: 2 }}>
+                          {problem.title}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.6 }}>
+                          {problem.description}
+                        </Typography>
+                      </Box>
+                    </Card>
+                  </Zoom>
+                </Grid>
+              ))}
+            </Grid>
+          </Container>
+        </Box>
 
-      {/* 2. Problem Section: The "Challenges" for Community Builders on Mainstream Platforms */}
-      <Box sx={{ py: { xs: 8, md: 10 }, backgroundColor: theme.palette.background.paper }}>
-        <Container maxWidth="lg">
-          <Typography variant="h4" align="center" gutterBottom sx={{ mb: 6 }}>
-            The Limitations of Generic Social Platforms for Your Community
-          </Typography>
+        {/* 3. Solution Section: Your Platform's Unique Value Proposition for Creators */}
+        <Box sx={{ py: { xs: 8, md: 10 }, background: 'transparent' }}>
+          <Container maxWidth="lg">
+            <Fade in timeout={2100}>
+              <Typography variant="h3" align="center" gutterBottom sx={{ mb: 2, fontWeight: 700 }}>
+                The Solution: Your Dedicated, Private Social Network
+              </Typography>
+            </Fade>
+            <Fade in timeout={2200}>
+              <Typography variant="h6" align="center" color="text.secondary" sx={{ mb: 8, maxWidth: 700, mx: 'auto' }}>
+                Everything you need to build, grow, and monetize your community
+              </Typography>
+            </Fade>
           <Grid container spacing={4} justifyContent="center" sx={{ display: 'flex', flexWrap: 'wrap' }}>
-            {/* Problem 1: Loss of Control & Data Ownership */}
-            <Grid item>
-              <Card
-                sx={{
-                  width: { xs: '100%', sm: 300 },
-                  height: '100%',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  p: 3,
-                  textAlign: 'center',
-                  transition: 'transform 0.2s, box-shadow 0.2s',
-                  '&:hover': {
-                    transform: 'translateY(-4px)',
-                    boxShadow: theme.shadows[8],
-                  }
-                }}
-              >
-                <DataUsage color="error" sx={{ fontSize: 60, mb: 2 }} />
-                <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-                  <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
-                    Loss of Control & Data Ownership
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Your community's data is a valuable asset. On mainstream platforms, it's harvested, analyzed, and monetized by others, leaving you with no control or direct insight.
-                  </Typography>
-                </Box>
-              </Card>
-            </Grid>
+              {/* Solution 1: Empowering Ownership & Uncompromised Privacy */}
+              <Grid item>
+                <Zoom in timeout={2300}>
+                  <Card
+                    elevation={0}
+                    sx={{
+                      width: { xs: '100%', sm: 380 },
+                      minHeight: 450,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      p: 4,
+                      background: alpha(theme.palette.background.paper, 0.8),
+                      backdropFilter: 'blur(10px)',
+                      border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+                      borderRadius: 3,
+                      transition: 'all 0.3s ease',
+                      '&:hover': {
+                        transform: 'translateY(-8px)',
+                        boxShadow: `0 20px 40px ${alpha(theme.palette.primary.main, 0.15)}`,
+                        border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`
+                      }
+                    }}
+                  >
+                    <Box sx={{ textAlign: 'center', mb: 3 }}>
+                      {/* Using Shield icon to represent both control and privacy */}
+                      <Shield sx={{ fontSize: 60, color: theme.palette.primary.main }} />
+                    </Box>
+                    <Typography variant="h5" gutterBottom sx={{ fontWeight: 600, textAlign: 'center', mb: 2 }}>
+                      Empowering Ownership & Uncompromised Privacy
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 3, textAlign: 'center', lineHeight: 1.6 }}>
+                      Gain full control over your network's data, content, and rules. Our platform ensures your community's privacy by design, with no ads, tracking, or data exploitation.
+                    </Typography>
+                    <List sx={{ mt: 'auto' }}>
+                      <ListItem disablePadding sx={{ mb: 1 }}>
+                        <ListItemIcon sx={{ minWidth: 40 }}>
+                          <ManageAccounts fontSize="small" color="primary" />
+                        </ListItemIcon>
+                        <ListItemText
+                          primary="Comprehensive Network Management"
+                          secondary="General settings, member roles, content moderation"
+                          primaryTypographyProps={{ variant: 'body2' }}
+                          secondaryTypographyProps={{ variant: 'caption' }}
+                        />
+                      </ListItem>
+                      <ListItem disablePadding sx={{ mb: 1 }}>
+                        <ListItemIcon sx={{ minWidth: 40 }}>
+                          <DataUsage fontSize="small" color="primary" />
+                        </ListItemIcon>
+                        <ListItemText
+                          primary="Absolute Data Sovereignty"
+                          secondary="You own your data, hosted within the EU"
+                          primaryTypographyProps={{ variant: 'body2' }}
+                          secondaryTypographyProps={{ variant: 'caption' }}
+                        />
+                      </ListItem>
+                      <ListItem disablePadding sx={{ mb: 1 }}>
+                        <ListItemIcon sx={{ minWidth: 40 }}>
+                          <Euro fontSize="small" color="primary" />
+                        </ListItemIcon>
+                        <ListItemText
+                          primary="GDPR Compliant by Design"
+                          primaryTypographyProps={{ variant: 'body2' }}
+                        />
+                      </ListItem>
+                      <ListItem disablePadding>
+                        <ListItemIcon sx={{ minWidth: 40 }}>
+                          <Block fontSize="small" color="primary" />
+                        </ListItemIcon>
+                        <ListItemText
+                          primary="Ad-free & Tracking-free Environment"
+                          primaryTypographyProps={{ variant: 'body2' }}
+                        />
+                      </ListItem>
+                    </List>
+                  </Card>
+                </Zoom>
+              </Grid>
 
-            {/* Problem 2: Algorithmic Interference & Distractions */}
-            <Grid item>
-              <Card
-                sx={{
-                  width: { xs: '100%', sm: 300 },
-                  height: '100%',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  p: 3,
-                  textAlign: 'center',
-                  transition: 'transform 0.2s, box-shadow 0.2s',
-                  '&:hover': {
-                    transform: 'translateY(-4px)',
-                    boxShadow: theme.shadows[8],
-                  }
-                }}
-              >
-                <Campaign color="warning" sx={{ fontSize: 60, mb: 2 }} />
-                <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-                  <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
-                    Algorithmic Interference & Distractions
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Ads, irrelevant content, and opaque algorithms stifle genuine interaction. Your community's messages get lost, and engagement suffers from constant external noise.
-                  </Typography>
-                </Box>
-              </Card>
-            </Grid>
+              {/* Solution 2: Flexible Customization & Brand Identity */}
+              <Grid item>
+                <Zoom in timeout={2400}>
+                  <Card
+                    elevation={0}
+                    sx={{
+                      width: { xs: '100%', sm: 380 },
+                      minHeight: 450,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      p: 4,
+                      background: alpha(theme.palette.background.paper, 0.8),
+                      backdropFilter: 'blur(10px)',
+                      border: `1px solid ${alpha(theme.palette.success.main, 0.1)}`,
+                      borderRadius: 3,
+                      transition: 'all 0.3s ease',
+                      '&:hover': {
+                        transform: 'translateY(-8px)',
+                        boxShadow: `0 20px 40px ${alpha(theme.palette.success.main, 0.15)}`,
+                        border: `1px solid ${alpha(theme.palette.success.main, 0.2)}`
+                      }
+                    }}
+                  >
+                    <Box sx={{ textAlign: 'center', mb: 3 }}>
+                      {/* Using Settings icon for customization */}
+                      <Settings sx={{ fontSize: 60, color: theme.palette.success.main }} />
+                    </Box>
+                    <Typography variant="h5" gutterBottom sx={{ fontWeight: 600, textAlign: 'center', mb: 2 }}>
+                      Flexible Customization & Brand Identity
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 3, textAlign: 'center', lineHeight: 1.6 }}>
+                      Tailor every aspect of your network to reflect your brand and community's unique identity, fostering a strong and recognizable online presence.
+                    </Typography>
+                    <List sx={{ mt: 'auto' }}>
+                      <ListItem disablePadding sx={{ mb: 1 }}>
+                        <ListItemIcon sx={{ minWidth: 40 }}>
+                          <Palette fontSize="small" color="success" /> {/* Using Palette for visual customization */}
+                        </ListItemIcon>
+                        <ListItemText
+                          primary="Personalized Branding & Themes"
+                          secondary="Logo, colors, layout, and visual styles"
+                          primaryTypographyProps={{ variant: 'body2' }}
+                          secondaryTypographyProps={{ variant: 'caption' }}
+                        />
+                      </ListItem>
+                      <ListItem disablePadding sx={{ mb: 1 }}>
+                        <ListItemIcon sx={{ minWidth: 40 }}>
+                          <AccountCircle fontSize="small" color="success" />
+                        </ListItemIcon>
+                        <ListItemText
+                          primary="Customizable Member Profiles"
+                          secondary="Define fields and profile visibility"
+                          primaryTypographyProps={{ variant: 'body2' }}
+                          secondaryTypographyProps={{ variant: 'caption' }}
+                        />
+                      </ListItem>
+                      <ListItem disablePadding sx={{ mb: 1 }}>
+                        <ListItemIcon sx={{ minWidth: 40 }}>
+                          <SupervisedUserCircle fontSize="small" color="success" />
+                        </ListItemIcon>
+                        <ListItemText
+                          primary="Granular Role-Based Permissions"
+                          secondary="Define what each user role can access and do"
+                          primaryTypographyProps={{ variant: 'body2' }}
+                          secondaryTypographyProps={{ variant: 'caption' }}
+                        />
+                      </ListItem>
+                      <ListItem disablePadding>
+                        <ListItemIcon sx={{ minWidth: 40 }}>
+                          <Category fontSize="small" color="success" />
+                        </ListItemIcon>
+                        <ListItemText
+                          primary="Themed Content Categories"
+                          secondary="Organize discussions, wikis, and files with custom labels"
+                          primaryTypographyProps={{ variant: 'body2' }}
+                          secondaryTypographyProps={{ variant: 'caption' }}
+                        />
+                      </ListItem>
+                    </List>
+                  </Card>
+                </Zoom>
+              </Grid>
 
-            {/* Problem 3: Compromised Trust & Brand Consistency */}
-            <Grid item>
-              <Card
-                sx={{
-                  width: { xs: '100%', sm: 300 },
-                  height: '100%',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  p: 3,
-                  textAlign: 'center',
-                  transition: 'transform 0.2s, box-shadow 0.2s',
-                  '&:hover': {
-                    transform: 'translateY(-4px)',
-                    boxShadow: theme.shadows[8],
-                  }
-                }}
-              >
-                <Warning color="info" sx={{ fontSize: 60, mb: 2 }} />
-                <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-                  <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
-                    Compromised Trust & Brand Consistency
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Building trust is paramount for any community. When your interactions happen on platforms known for privacy breaches and misinformation, your brand's integrity is at risk.
-                  </Typography>
-                </Box>
-              </Card>
-            </Grid>
+              {/* Solution 3: Foster Deeper Engagement & Authentic Connections (UNCHANGED) */}
+              <Grid item>
+                <Zoom in timeout={2500}>
+                  <Card
+                    elevation={0}
+                    sx={{
+                      width: { xs: '100%', sm: 380 },
+                      minHeight: 450,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      p: 4,
+                      background: alpha(theme.palette.background.paper, 0.8),
+                      backdropFilter: 'blur(10px)',
+                      border: `1px solid ${alpha(theme.palette.secondary.main, 0.1)}`,
+                      borderRadius: 3,
+                      transition: 'all 0.3s ease',
+                      '&:hover': {
+                        transform: 'translateY(-8px)',
+                        boxShadow: `0 20px 40px ${alpha(theme.palette.secondary.main, 0.15)}`,
+                        border: `1px solid ${alpha(theme.palette.secondary.main, 0.2)}`
+                      }
+                    }}
+                  >
+                    <Box sx={{ textAlign: 'center', mb: 3 }}>
+                      <Groups sx={{ fontSize: 60, color: theme.palette.secondary.main }} />
+                    </Box>
+                    <Typography variant="h5" gutterBottom sx={{ fontWeight: 600, textAlign: 'center', mb: 2 }}>
+                      Foster Authentic Community & Engagement
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 3, textAlign: 'center', lineHeight: 1.6 }}>
+                      Provide a clean, focused environment free from distractions. Empower your members to connect genuinely, fostering stronger bonds and more meaningful interactions.
+                    </Typography>
+                    <List sx={{ mt: 'auto' }}>
+                      <ListItem disablePadding sx={{ mb: 1 }}>
+                        <ListItemIcon sx={{ minWidth: 40 }}>
+                          <Message fontSize="small" color="secondary" />
+                        </ListItemIcon>
+                        <ListItemText
+                          primary="Direct Messaging & Group Chat"
+                          primaryTypographyProps={{ variant: 'body2' }}
+                        />
+                      </ListItem>
+                      <ListItem disablePadding sx={{ mb: 1 }}>
+                        <ListItemIcon sx={{ minWidth: 40 }}>
+                          <AddPhotoAlternate fontSize="small" color="secondary" />
+                        </ListItemIcon>
+                        <ListItemText
+                          primary="Rich Media Posts"
+                          secondary="Text, images, and videos"
+                          primaryTypographyProps={{ variant: 'body2' }}
+                          secondaryTypographyProps={{ variant: 'caption' }}
+                        />
+                      </ListItem>
+                      <ListItem disablePadding sx={{ mb: 1 }}>
+                        <ListItemIcon sx={{ minWidth: 40 }}>
+                          <Event fontSize="small" color="secondary" />
+                        </ListItemIcon>
+                        <ListItemText
+                          primary="Event Creation & Management"
+                          primaryTypographyProps={{ variant: 'body2' }}
+                        />
+                      </ListItem>
+                      <ListItem disablePadding sx={{ mb: 1 }}>
+                        <ListItemIcon sx={{ minWidth: 40 }}>
+                          <Notifications fontSize="small" color="secondary" />
+                        </ListItemIcon>
+                        <ListItemText
+                          primary="Activity Feed & Notifications"
+                          primaryTypographyProps={{ variant: 'body2' }}
+                        />
+                      </ListItem>
+                      <ListItem disablePadding sx={{ mb: 1 }}>
+                        <ListItemIcon sx={{ minWidth: 40 }}>
+                          <AccountCircle fontSize="small" color="secondary" />
+                        </ListItemIcon>
+                        <ListItemText
+                          primary="Customizable User Profiles"
+                          primaryTypographyProps={{ variant: 'body2' }}
+                          secondaryTypographyProps={{ variant: 'caption' }}
+                        />
+                      </ListItem>
+                      <ListItem disablePadding>
+                        <ListItemIcon sx={{ minWidth: 40 }}>
+                          <Category fontSize="small" color="secondary" />
+                        </ListItemIcon>
+                        <ListItemText
+                          primary="Content Organization"
+                          secondary="Categories, topics, and wikis"
+                          primaryTypographyProps={{ variant: 'body2' }}
+                          secondaryTypographyProps={{ variant: 'caption' }}
+                        />
+                      </ListItem>
+                    </List>
+                  </Card>
+                </Zoom>
+              </Grid>
           </Grid>
         </Container>
       </Box>
 
-      {/* 3. Solution Section: Your Platform's Unique Value Proposition for Creators */}
-      <Box sx={{ py: { xs: 8, md: 10 }, backgroundColor: theme.palette.background.default }}>
-        <Container maxWidth="lg">
-          <Typography variant="h4" align="center" gutterBottom sx={{ mb: 6 }}>
-            The Solution: Your Dedicated, Private Social Network
-          </Typography>
-          <Grid container spacing={4} justifyContent="center" sx={{ display: 'flex', flexWrap: 'wrap' }}>
-            {/* Solution 1: Full Control & Ownership */}
-            <Grid item>
-              <Card
-                sx={{
-                  width: { xs: '100%', sm: 350 },
-                  minHeight: 400,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  p: 3,
-                  transition: 'transform 0.2s, box-shadow 0.2s',
-                  '&:hover': {
-                    transform: 'translateY(-4px)',
-                    boxShadow: theme.shadows[8],
-                  }
-                }}
-              >
-                <Box sx={{ textAlign: 'center', mb: 2 }}>
-                  <AdminPanelSettings color="primary" sx={{ fontSize: 70 }} />
-                </Box>
-                <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, textAlign: 'center', mb: 2 }}>
-                  Complete Control & Data Sovereignty
-                </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 2, textAlign: 'center' }}>
-                  You own your network, your data, and your rules. Customize everything from branding to moderation, ensuring a safe and tailored experience for your members.
-                </Typography>
-                <List sx={{ mt: 'auto' }}>
-                  <ListItem disablePadding sx={{ mb: 1 }}>
-                    <ListItemIcon sx={{ minWidth: 36 }}>
-                      <CheckCircle fontSize="small" color="primary" />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary="Network General Settings"
-                      secondary="Name, description, logo, theme"
-                      primaryTypographyProps={{ variant: 'body2' }}
-                      secondaryTypographyProps={{ variant: 'caption' }}
-                    />
-                  </ListItem>
-                  <ListItem disablePadding sx={{ mb: 1 }}>
-                    <ListItemIcon sx={{ minWidth: 36 }}>
-                      <Groups fontSize="small" color="primary" />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary="Member Management"
-                      secondary="Invite, remove, manage roles"
-                      primaryTypographyProps={{ variant: 'body2' }}
-                      secondaryTypographyProps={{ variant: 'caption' }}
-                    />
-                  </ListItem>
-                  <ListItem disablePadding sx={{ mb: 1 }}>
-                    <ListItemIcon sx={{ minWidth: 36 }}>
-                      <Gavel fontSize="small" color="primary" />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary="Content Moderation Tools"
-                      primaryTypographyProps={{ variant: 'body2' }}
-                    />
-                  </ListItem>
-                  <ListItem disablePadding>
-                    <ListItemIcon sx={{ minWidth: 36 }}>
-                      <BarChart fontSize="small" color="primary" />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary="Network Analytics & Statistics"
-                      primaryTypographyProps={{ variant: 'body2' }}
-                    />
-                  </ListItem>
-                </List>
-              </Card>
-            </Grid>
+        {/* 4. Features Showcase with Screenshots */}
+        <Box sx={{ py: { xs: 8, md: 10 }, backgroundColor: alpha(theme.palette.background.paper, 0.8) }}>
+          <Container maxWidth="lg">
+            <Fade in timeout={2600}>
+              <Typography variant="h3" align="center" gutterBottom sx={{ mb: 2, fontWeight: 700 }}>
+                See Your Platform in Action
+              </Typography>
+            </Fade>
+            <Fade in timeout={2700}>
+              <Typography variant="h6" align="center" color="text.secondary" sx={{ mb: 6, maxWidth: 700, mx: 'auto' }}>
+                Explore the powerful features that will help you build and manage your private community
+              </Typography>
+            </Fade>
 
-            {/* Solution 2: Privacy & Trust by Design (for your members) */}
-            <Grid item>
-              <Card
-                sx={{
-                  width: { xs: '100%', sm: 350 },
-                  minHeight: 400,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  p: 3,
-                  transition: 'transform 0.2s, box-shadow 0.2s',
-                  '&:hover': {
-                    transform: 'translateY(-4px)',
-                    boxShadow: theme.shadows[8],
-                  }
-                }}
-              >
-                <Box sx={{ textAlign: 'center', mb: 2 }}>
-                  <Shield color="primary" sx={{ fontSize: 70 }} />
-                </Box>
-                <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, textAlign: 'center', mb: 2 }}>
-                  Built-in Privacy & GDPR Compliance
-                </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 2, textAlign: 'center' }}>
-                  Attract and retain members with a platform designed for privacy. No ads, no tracking, no AI exploitation. Hosted entirely within the EU for maximum data protection.
-                </Typography>
-                <List sx={{ mt: 'auto' }}>
-                  <ListItem disablePadding sx={{ mb: 1 }}>
-                    <ListItemIcon sx={{ minWidth: 36 }}>
-                      <Lock fontSize="small" color="primary" />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary="Private Network Options"
-                      secondary="Public, Private, Secret visibility"
-                      primaryTypographyProps={{ variant: 'body2' }}
-                      secondaryTypographyProps={{ variant: 'caption' }}
-                    />
-                  </ListItem>
-                  <ListItem disablePadding sx={{ mb: 1 }}>
-                    <ListItemIcon sx={{ minWidth: 36 }}>
-                      <Block fontSize="small" color="primary" />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary="Ad-free & Tracking-free"
-                      primaryTypographyProps={{ variant: 'body2' }}
-                    />
-                  </ListItem>
-                  <ListItem disablePadding>
-                    <ListItemIcon sx={{ minWidth: 36 }}>
-                      <Euro fontSize="small" color="primary" />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary="GDPR Compliant by Design"
-                      primaryTypographyProps={{ variant: 'body2' }}
-                    />
-                  </ListItem>
-                </List>
-              </Card>
-            </Grid>
-
-            {/* Solution 3: Foster Deeper Engagement & Authentic Connections */}
-            <Grid item>
-              <Card
-                sx={{
-                  width: { xs: '100%', sm: 350 },
-                  minHeight: 400,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  p: 3,
-                  transition: 'transform 0.2s, box-shadow 0.2s',
-                  '&:hover': {
-                    transform: 'translateY(-4px)',
-                    boxShadow: theme.shadows[8],
-                  }
-                }}
-              >
-                <Box sx={{ textAlign: 'center', mb: 2 }}>
-                  <Groups color="primary" sx={{ fontSize: 70 }} />
-                </Box>
-                <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, textAlign: 'center', mb: 2 }}>
-                  Foster Authentic Community & Engagement
-                </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 2, textAlign: 'center' }}>
-                  Provide a clean, focused environment free from distractions. Empower your members to connect genuinely, fostering stronger bonds and more meaningful interactions.
-                </Typography>
-                <List sx={{ mt: 'auto' }}>
-                  <ListItem disablePadding sx={{ mb: 1 }}>
-                    <ListItemIcon sx={{ minWidth: 36 }}>
-                      <Message fontSize="small" color="primary" />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary="Direct Messaging & Group Chat"
-                      primaryTypographyProps={{ variant: 'body2' }}
-                    />
-                  </ListItem>
-                  <ListItem disablePadding sx={{ mb: 1 }}>
-                    <ListItemIcon sx={{ minWidth: 36 }}>
-                      <AddPhotoAlternate fontSize="small" color="primary" />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary="Rich Media Posts"
-                      secondary="Text, images, and videos"
-                      primaryTypographyProps={{ variant: 'body2' }}
-                      secondaryTypographyProps={{ variant: 'caption' }}
-                    />
-                  </ListItem>
-                  <ListItem disablePadding sx={{ mb: 1 }}>
-                    <ListItemIcon sx={{ minWidth: 36 }}>
-                      <Event fontSize="small" color="primary" />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary="Event Creation & Management"
-                      primaryTypographyProps={{ variant: 'body2' }}
-                    />
-                  </ListItem>
-                  <ListItem disablePadding sx={{ mb: 1 }}>
-                    <ListItemIcon sx={{ minWidth: 36 }}>
-                      <Notifications fontSize="small" color="primary" />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary="Activity Feed & Notifications"
-                      primaryTypographyProps={{ variant: 'body2' }}
-                    />
-                  </ListItem>
-                  <ListItem disablePadding sx={{ mb: 1 }}>
-                    <ListItemIcon sx={{ minWidth: 36 }}>
-                      <AccountCircle fontSize="small" color="primary" />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary="Customizable User Profiles"
-                      primaryTypographyProps={{ variant: 'body2' }}
-                    />
-                  </ListItem>
-                  <ListItem disablePadding>
-                    <ListItemIcon sx={{ minWidth: 36 }}>
-                      <Category fontSize="small" color="primary" />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary="Content Organization"
-                      secondary="Categories, topics, and wikis"
-                      primaryTypographyProps={{ variant: 'body2' }}
-                      secondaryTypographyProps={{ variant: 'caption' }}
-                    />
-                  </ListItem>
-                </List>
-              </Card>
-            </Grid>
-          </Grid>
-        </Container>
-      </Box>
-
-      {/* 4. Features Showcase with Screenshots */}
-      <Box sx={{ py: { xs: 8, md: 10 }, backgroundColor: theme.palette.background.paper }}>
-        <Container maxWidth="lg">
-          <Typography variant="h4" align="center" gutterBottom sx={{ mb: 2 }}>
-            See Your Platform in Action
-          </Typography>
-          <Typography variant="h6" align="center" color="text.secondary" sx={{ mb: 6 }}>
-            Explore the powerful features that will help you build and manage your private community
-          </Typography>
-
-          {/* Tabs for different feature categories */}
-          <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 4 }}>
-            <Tabs
-              value={activeTab}
-              onChange={(e, newValue) => setActiveTab(newValue)}
-              variant="scrollable"
-              scrollButtons="auto"
-              centered
-            >
+            {/* Tabs for different feature categories */}
+            <Fade in timeout={2800}>
+              <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 4 }}>
+                <Tabs
+                  value={activeTab}
+                  onChange={(e, newValue) => setActiveTab(newValue)}
+                  variant="scrollable"
+                  scrollButtons="auto"
+                  centered
+                  sx={{
+                    '& .MuiTab-root': {
+                      textTransform: 'none',
+                      fontWeight: 500,
+                      fontSize: '0.95rem',
+                      '&.Mui-selected': {
+                        fontWeight: 600
+                      }
+                    }
+                  }}
+                >
               <Tab label="Social Wall" icon={<Forum />} iconPosition="start" />
               <Tab label="Wiki & Knowledge" icon={<Description />} iconPosition="start" />
               <Tab label="File Sharing" icon={<FolderShared />} iconPosition="start" />
               <Tab label="Events" icon={<Event />} iconPosition="start" />
               <Tab label="Chat" icon={<Message />} iconPosition="start" />
               <Tab label="Members" icon={<Groups />} iconPosition="start" />
-              <Tab label="Admin Tools" icon={<AdminPanelSettings />} iconPosition="start" />
-            </Tabs>
-          </Box>
+                  <Tab label="Admin Tools" icon={<AdminPanelSettings />} iconPosition="start" />
+                </Tabs>
+              </Box>
+            </Fade>
 
           {/* Tab Panels */}
           <Box sx={{ minHeight: 500 }}>
@@ -495,7 +632,19 @@ const NewLandingPage = () => {
               <Box sx={{ display: activeTab === 0 ? 'block' : 'none' }}>
                 <Grid container spacing={4} alignItems="center">
                   <Grid item xs={12} md={6}>
-                    <Card elevation={3}>
+                    <Card 
+                      elevation={0}
+                      sx={{
+                        borderRadius: 3,
+                        overflow: 'hidden',
+                        boxShadow: `0 10px 30px ${alpha(theme.palette.common.black, 0.1)}`,
+                        transition: 'all 0.3s ease',
+                        '&:hover': {
+                          transform: 'translateY(-4px)',
+                          boxShadow: `0 15px 40px ${alpha(theme.palette.common.black, 0.15)}`
+                        }
+                      }}
+                    >
                       <CardMedia
                         component="img"
                         image={socialWallImg}
@@ -538,7 +687,29 @@ const NewLandingPage = () => {
             <Fade in={activeTab === 1} timeout={500}>
               <Box sx={{ display: activeTab === 1 ? 'block' : 'none' }}>
                 <Grid container spacing={4} alignItems="center">
-                  <Grid item xs={12} md={6} order={{ xs: 2, md: 1 }}>
+                  <Grid item xs={12} md={6}>
+                    <Card 
+                      elevation={0}
+                      sx={{
+                        borderRadius: 3,
+                        overflow: 'hidden',
+                        boxShadow: `0 10px 30px ${alpha(theme.palette.common.black, 0.1)}`,
+                        transition: 'all 0.3s ease',
+                        '&:hover': {
+                          transform: 'translateY(-4px)',
+                          boxShadow: `0 15px 40px ${alpha(theme.palette.common.black, 0.15)}`
+                        }
+                      }}
+                    >
+                      <CardMedia
+                        component="img"
+                        image={wikiImg}
+                        alt="Wiki Feature"
+                        sx={{ width: '100%', height: 'auto' }}
+                      />
+                    </Card>
+                  </Grid>
+                  <Grid item xs={12} md={6}>
                     <Typography variant="h5" gutterBottom sx={{ fontWeight: 600 }}>
                       Collaborative Wiki System
                     </Typography>
@@ -564,16 +735,6 @@ const NewLandingPage = () => {
                       </ListItem>
                     </List>
                   </Grid>
-                  <Grid item xs={12} md={6} order={{ xs: 1, md: 2 }}>
-                    <Card elevation={3}>
-                      <CardMedia
-                        component="img"
-                        image={wikiImg}
-                        alt="Wiki Feature"
-                        sx={{ width: '100%', height: 'auto' }}
-                      />
-                    </Card>
-                  </Grid>
                 </Grid>
               </Box>
             </Fade>
@@ -583,7 +744,19 @@ const NewLandingPage = () => {
               <Box sx={{ display: activeTab === 2 ? 'block' : 'none' }}>
                 <Grid container spacing={4} alignItems="center">
                   <Grid item xs={12} md={6}>
-                    <Card elevation={3}>
+                    <Card 
+                      elevation={0}
+                      sx={{
+                        borderRadius: 3,
+                        overflow: 'hidden',
+                        boxShadow: `0 10px 30px ${alpha(theme.palette.common.black, 0.1)}`,
+                        transition: 'all 0.3s ease',
+                        '&:hover': {
+                          transform: 'translateY(-4px)',
+                          boxShadow: `0 15px 40px ${alpha(theme.palette.common.black, 0.15)}`
+                        }
+                      }}
+                    >
                       <CardMedia
                         component="img"
                         image={filesSharingImg}
@@ -626,7 +799,29 @@ const NewLandingPage = () => {
             <Fade in={activeTab === 3} timeout={500}>
               <Box sx={{ display: activeTab === 3 ? 'block' : 'none' }}>
                 <Grid container spacing={4} alignItems="center">
-                  <Grid item xs={12} md={6} order={{ xs: 2, md: 1 }}>
+                  <Grid item xs={12} md={6}>
+                    <Card 
+                      elevation={0}
+                      sx={{
+                        borderRadius: 3,
+                        overflow: 'hidden',
+                        boxShadow: `0 10px 30px ${alpha(theme.palette.common.black, 0.1)}`,
+                        transition: 'all 0.3s ease',
+                        '&:hover': {
+                          transform: 'translateY(-4px)',
+                          boxShadow: `0 15px 40px ${alpha(theme.palette.common.black, 0.15)}`
+                        }
+                      }}
+                    >
+                      <CardMedia
+                        component="img"
+                        image={eventsImg}
+                        alt="Events Feature"
+                        sx={{ width: '100%', height: 'auto' }}
+                      />
+                    </Card>
+                  </Grid>
+                  <Grid item xs={12} md={6}>
                     <Typography variant="h5" gutterBottom sx={{ fontWeight: 600 }}>
                       Event Management
                     </Typography>
@@ -652,16 +847,6 @@ const NewLandingPage = () => {
                       </ListItem>
                     </List>
                   </Grid>
-                  <Grid item xs={12} md={6} order={{ xs: 1, md: 2 }}>
-                    <Card elevation={3}>
-                      <CardMedia
-                        component="img"
-                        image={eventsImg}
-                        alt="Events Feature"
-                        sx={{ width: '100%', height: 'auto' }}
-                      />
-                    </Card>
-                  </Grid>
                 </Grid>
               </Box>
             </Fade>
@@ -671,7 +856,19 @@ const NewLandingPage = () => {
               <Box sx={{ display: activeTab === 4 ? 'block' : 'none' }}>
                 <Grid container spacing={4} alignItems="center">
                   <Grid item xs={12} md={6}>
-                    <Card elevation={3}>
+                    <Card 
+                      elevation={0}
+                      sx={{
+                        borderRadius: 3,
+                        overflow: 'hidden',
+                        boxShadow: `0 10px 30px ${alpha(theme.palette.common.black, 0.1)}`,
+                        transition: 'all 0.3s ease',
+                        '&:hover': {
+                          transform: 'translateY(-4px)',
+                          boxShadow: `0 15px 40px ${alpha(theme.palette.common.black, 0.15)}`
+                        }
+                      }}
+                    >
                       <CardMedia
                         component="img"
                         image={chatImg}
@@ -714,7 +911,29 @@ const NewLandingPage = () => {
             <Fade in={activeTab === 5} timeout={500}>
               <Box sx={{ display: activeTab === 5 ? 'block' : 'none' }}>
                 <Grid container spacing={4} alignItems="center">
-                  <Grid item xs={12} md={6} order={{ xs: 2, md: 1 }}>
+                  <Grid item xs={12} md={6}>
+                    <Card 
+                      elevation={0}
+                      sx={{
+                        borderRadius: 3,
+                        overflow: 'hidden',
+                        boxShadow: `0 10px 30px ${alpha(theme.palette.common.black, 0.1)}`,
+                        transition: 'all 0.3s ease',
+                        '&:hover': {
+                          transform: 'translateY(-4px)',
+                          boxShadow: `0 15px 40px ${alpha(theme.palette.common.black, 0.15)}`
+                        }
+                      }}
+                    >
+                      <CardMedia
+                        component="img"
+                        image={membersImg}
+                        alt="Members Feature"
+                        sx={{ width: '100%', height: 'auto' }}
+                      />
+                    </Card>
+                  </Grid>
+                  <Grid item xs={12} md={6}>
                     <Typography variant="h5" gutterBottom sx={{ fontWeight: 600 }}>
                       Member Directory & Management
                     </Typography>
@@ -740,16 +959,6 @@ const NewLandingPage = () => {
                       </ListItem>
                     </List>
                   </Grid>
-                  <Grid item xs={12} md={6} order={{ xs: 1, md: 2 }}>
-                    <Card elevation={3}>
-                      <CardMedia
-                        component="img"
-                        image={membersImg}
-                        alt="Members Feature"
-                        sx={{ width: '100%', height: 'auto' }}
-                      />
-                    </Card>
-                  </Grid>
                 </Grid>
               </Box>
             </Fade>
@@ -759,7 +968,19 @@ const NewLandingPage = () => {
               <Box sx={{ display: activeTab === 6 ? 'block' : 'none' }}>
                 <Grid container spacing={4} alignItems="center">
                   <Grid item xs={12} md={6}>
-                    <Card elevation={3}>
+                    <Card 
+                      elevation={0}
+                      sx={{
+                        borderRadius: 3,
+                        overflow: 'hidden',
+                        boxShadow: `0 10px 30px ${alpha(theme.palette.common.black, 0.1)}`,
+                        transition: 'all 0.3s ease',
+                        '&:hover': {
+                          transform: 'translateY(-4px)',
+                          boxShadow: `0 15px 40px ${alpha(theme.palette.common.black, 0.15)}`
+                        }
+                      }}
+                    >
                       <CardMedia
                         component="img"
                         image={moderationImg}
@@ -801,120 +1022,215 @@ const NewLandingPage = () => {
 
           {/* Additional Features Grid */}
           <Box sx={{ mt: 8 }}>
-            <Typography variant="h5" align="center" gutterBottom sx={{ mb: 4 }}>
-              And Much More...
-            </Typography>
+            <Fade in timeout={2900}>
+              <Typography variant="h5" align="center" gutterBottom sx={{ mb: 4, fontWeight: 600 }}>
+                And Much More...
+              </Typography>
+            </Fade>
             <Grid container spacing={3}>
               <Grid item xs={12} sm={6} md={4}>
-                <Paper elevation={0} sx={{ p: 3, textAlign: 'center', bgcolor: alpha(theme.palette.primary.main, 0.05) }}>
+                <Zoom in timeout={3000}>
+                  <Paper 
+                    elevation={0} 
+                    sx={{ 
+                      p: 3, 
+                      textAlign: 'center', 
+                      bgcolor: alpha(theme.palette.primary.main, 0.05),
+                      borderRadius: 3,
+                      transition: 'all 0.3s ease',
+                      cursor: 'pointer',
+                      '&:hover': {
+                        transform: 'translateY(-4px)',
+                        boxShadow: `0 10px 25px ${alpha(theme.palette.primary.main, 0.1)}`
+                      }
+                    }}
+                  >
                   <GroupWork sx={{ fontSize: 40, color: 'primary.main', mb: 2 }} />
                   <Typography variant="h6" gutterBottom>Polls & Surveys</Typography>
                   <Typography variant="body2" color="text.secondary">
                     Gather feedback and make decisions together with interactive polls
                   </Typography>
-                </Paper>
+                  </Paper>
+                </Zoom>
               </Grid>
               <Grid item xs={12} sm={6} md={4}>
-                <Paper elevation={0} sx={{ p: 3, textAlign: 'center', bgcolor: alpha(theme.palette.primary.main, 0.05) }}>
+                <Zoom in timeout={3100}>
+                  <Paper 
+                    elevation={0} 
+                    sx={{ 
+                      p: 3, 
+                      textAlign: 'center', 
+                      bgcolor: alpha(theme.palette.primary.main, 0.05),
+                      borderRadius: 3,
+                      transition: 'all 0.3s ease',
+                      cursor: 'pointer',
+                      '&:hover': {
+                        transform: 'translateY(-4px)',
+                        boxShadow: `0 10px 25px ${alpha(theme.palette.primary.main, 0.1)}`
+                      }
+                    }}
+                  >
                   <AddPhotoAlternate sx={{ fontSize: 40, color: 'primary.main', mb: 2 }} />
                   <Typography variant="h6" gutterBottom>Moodboards</Typography>
                   <Typography variant="body2" color="text.secondary">
                     Create visual collections and inspiration boards for your community
                   </Typography>
-                </Paper>
+                  </Paper>
+                </Zoom>
               </Grid>
               <Grid item xs={12} sm={6} md={4}>
-                <Paper elevation={0} sx={{ p: 3, textAlign: 'center', bgcolor: alpha(theme.palette.primary.main, 0.05) }}>
-                  <Notifications sx={{ fontSize: 40, color: 'primary.main', mb: 2 }} />
-                  <Typography variant="h6" gutterBottom>Smart Notifications</Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Keep members engaged with customizable email and in-app notifications
-                  </Typography>
-                </Paper>
+                <Zoom in timeout={3200}>
+                  <Paper 
+                    elevation={0} 
+                    sx={{ 
+                      p: 3, 
+                      textAlign: 'center', 
+                      bgcolor: alpha(theme.palette.primary.main, 0.05),
+                      borderRadius: 3,
+                      transition: 'all 0.3s ease',
+                      cursor: 'pointer',
+                      '&:hover': {
+                        transform: 'translateY(-4px)',
+                        boxShadow: `0 10px 25px ${alpha(theme.palette.primary.main, 0.1)}`
+                      }
+                    }}
+                  >
+                    <Notifications sx={{ fontSize: 40, color: 'primary.main', mb: 2 }} />
+                    <Typography variant="h6" gutterBottom>Smart Notifications</Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Keep members engaged with customizable email and in-app notifications
+                    </Typography>
+                  </Paper>
+                </Zoom>
               </Grid>
             </Grid>
           </Box>
         </Container>
       </Box>
 
-      {/* 5. Call to Action Section (for Network Creators) */}
-      <Box
-        sx={{
-          py: { xs: 8, md: 10 },
-          textAlign: 'center',
-          backgroundColor: theme.palette.secondary.main,
-          color: theme.palette.secondary.contrastText,
-        }}
-      >
-        <Container maxWidth="md">
-          <Typography variant="h4" gutterBottom sx={{ mb: 3 }}>
-            Ready to Build the Social Network Your Community Deserves?
-          </Typography>
-          <Typography variant="h6" sx={{ mb: 4, opacity: 0.9 }}>
-            Take back control and cultivate a thriving, private online space for your members.
-          </Typography>
-          <Button
-            variant="contained"
-            size="large"
-            color="primary"
-            endIcon={<ArrowForward />}
-            onClick={() => navigate('/signup')}
-            sx={{
-              py: 1.5,
-              px: 4,
-              fontSize: '1.2rem',
-              fontWeight: 600,
-              boxShadow: `0 8px 25px ${theme.palette.mode === 'dark' ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.2)'}`,
-              '&:hover': {
-                boxShadow: `0 12px 30px ${theme.palette.mode === 'dark' ? 'rgba(0,0,0,0.7)' : 'rgba(0,0,0,0.3)'}`,
-              }
-            }}
-          >
-            Launch Your Private Network Now
-          </Button>
-        </Container>
-      </Box>
+        {/* 5. Call to Action Section (for Network Creators) */}
+        <Box
+          sx={{
+            py: { xs: 8, md: 10 },
+            textAlign: 'center',
+            background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.1)}, ${alpha(theme.palette.secondary.main, 0.05)})`,
+            position: 'relative',
+            overflow: 'hidden',
+            '&::before': {
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'radial-gradient(circle at 30% 20%, rgba(33, 150, 243, 0.1), transparent 50%)',
+              zIndex: 0
+            }
+          }}
+        >
+          <Container maxWidth="md" sx={{ position: 'relative', zIndex: 1 }}>
+            <Fade in timeout={3000}>
+              <Typography variant="h3" gutterBottom sx={{ mb: 3, fontWeight: 700 }}>
+                Ready to Build the Social Network Your Community Deserves?
+              </Typography>
+            </Fade>
+            <Fade in timeout={3100}>
+              <Typography variant="h6" sx={{ mb: 5, color: theme.palette.text.secondary }}>
+                Take back control and cultivate a thriving, private online space for your members.
+              </Typography>
+            </Fade>
+            <Zoom in timeout={3200}>
+              <Button
+                variant="contained"
+                size="large"
+                color="primary"
+                endIcon={<ArrowForward />}
+                onClick={() => navigate('/signup')}
+                sx={{
+                  py: 2,
+                  px: 5,
+                  fontSize: '1.1rem',
+                  fontWeight: 600,
+                  borderRadius: 3,
+                  boxShadow: `0 8px 32px ${alpha(theme.palette.primary.main, 0.3)}`,
+                  background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
+                  '&:hover': {
+                    transform: 'translateY(-2px)',
+                    boxShadow: `0 12px 40px ${alpha(theme.palette.primary.main, 0.4)}`,
+                  },
+                  transition: 'all 0.3s ease'
+                }}
+              >
+                Launch Your Private Network Now
+              </Button>
+            </Zoom>
+          </Container>
+        </Box>
 
-      {/* 6. Footer: Standard links */}
-      <Box sx={{ py: 4, borderTop: `1px solid ${theme.palette.divider}`, backgroundColor: theme.palette.background.paper }}>
-        <Container maxWidth="lg">
-          <Stack
-            direction={{ xs: 'column', md: 'row' }}
-            justifyContent="space-between"
-            alignItems="center"
-            spacing={2}
-          >
-            <Typography variant="body2" color="text.secondary">
-              © {new Date().getFullYear()} Conclav. All rights reserved.
-            </Typography>
-            <Stack direction="row" spacing={3}>
-              <Button
-                variant="text"
-                size="small"
-                color="inherit"
-                onClick={() => navigate('/privacy')}
-              >
-                Privacy Policy
-              </Button>
-              <Button
-                variant="text"
-                size="small"
-                color="inherit"
-                onClick={() => navigate('/terms')}
-              >
-                Terms of Service
-              </Button>
-              <Button
-                variant="text"
-                size="small"
-                color="inherit"
-                onClick={() => navigate('/documentation')}
-              >
-                Help Center
-              </Button>
+        {/* 6. Footer: Standard links */}
+        <Box sx={{ 
+          py: 6, 
+          borderTop: `1px solid ${alpha(theme.palette.divider, 0.1)}`, 
+          backgroundColor: alpha(theme.palette.background.paper, 0.8),
+          backdropFilter: 'blur(10px)'
+        }}>
+          <Container maxWidth="lg">
+            <Stack
+              direction={{ xs: 'column', md: 'row' }}
+              justifyContent="space-between"
+              alignItems="center"
+              spacing={2}
+            >
+              <Typography variant="body2" color="text.secondary">
+                © {new Date().getFullYear()} Conclav. Built with privacy in mind 🇫🇷
+              </Typography>
+              <Stack direction="row" spacing={3}>
+                <Button
+                  variant="text"
+                  size="small"
+                  sx={{
+                    color: theme.palette.text.secondary,
+                    '&:hover': {
+                      color: theme.palette.primary.main,
+                      backgroundColor: 'transparent'
+                    }
+                  }}
+                  onClick={() => navigate('/privacy')}
+                >
+                  Privacy Policy
+                </Button>
+                <Button
+                  variant="text"
+                  size="small"
+                  sx={{
+                    color: theme.palette.text.secondary,
+                    '&:hover': {
+                      color: theme.palette.primary.main,
+                      backgroundColor: 'transparent'
+                    }
+                  }}
+                  onClick={() => navigate('/terms')}
+                >
+                  Terms of Service
+                </Button>
+                <Button
+                  variant="text"
+                  size="small"
+                  sx={{
+                    color: theme.palette.text.secondary,
+                    '&:hover': {
+                      color: theme.palette.primary.main,
+                      backgroundColor: 'transparent'
+                    }
+                  }}
+                  onClick={() => navigate('/documentation')}
+                >
+                  Help Center
+                </Button>
+              </Stack>
             </Stack>
-          </Stack>
-        </Container>
+          </Container>
+        </Box>
       </Box>
     </Box>
   );
