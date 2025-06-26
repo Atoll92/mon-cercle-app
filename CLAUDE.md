@@ -11,6 +11,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - **[Project Structure](./docs/PROJECT_STRUCTURE.md)** - Directory organization and file structure
 - **[Database Schema](./docs/DATABASE_SCHEMA.md)** - Complete database table definitions
+- **[Complete Database Documentation](./database.md)** - **CRITICAL: Comprehensive database schema, relationships, and data analysis - MUST READ before any database changes**
 - **[RLS Policies](./docs/RLS_POLICIES.md)** - Row-Level Security policies
 - **[API Documentation](./docs/API_DOCUMENTATION.md)** - API functions and services
 - **[Components Guide](./docs/COMPONENTS_GUIDE.md)** - React components documentation
@@ -629,3 +630,39 @@ Comprehensive media handling:
 - Media type detection and validation
 - Automatic thumbnail generation
 - Storage quota management
+
+## Database Schema Validation Protocol
+
+**CRITICAL REQUIREMENT**: Before making ANY database schema changes, AI assistants MUST:
+
+1. **Read Complete Database Documentation** - Review `./database.md` for full schema understanding
+2. **Validate Against Current State** - Check existing migrations in `supabase/migrations/`
+3. **Use Multi-Model Validation** - Employ Zen MCP for cross-model verification of database changes
+4. **Follow Multi-Profile Architecture** - Ensure all changes support the 1:many:many User:Profile:Network system
+
+### Schema Change Workflow
+
+```bash
+# REQUIRED: Before any database modifications
+1. Read ./database.md for complete schema context
+2. Check latest migration files for current state
+3. Use Zen MCP to validate approach with multiple AI models
+4. Test RLS policies with multi-profile patterns
+5. Verify foreign key integrity across all related tables
+```
+
+### Multi-Model Validation with Zen
+
+When proposing database changes, use the Zen MCP to:
+- Compare schema modification approaches across different AI models
+- Validate migration scripts for safety and completeness  
+- Ensure RLS policies maintain security with multi-profile system
+- Cross-check foreign key relationships and constraints
+
+**Example Zen Usage:**
+```bash
+# Use Zen to validate database migration approach
+zen compare "Review this database migration for multi-profile compatibility and suggest improvements" --models claude,gpt4,gemini
+```
+
+This ensures database integrity and prevents breaking changes to the complex multi-profile relationship system.
