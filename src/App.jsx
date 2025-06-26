@@ -15,6 +15,7 @@ import { Analytics } from '@vercel/analytics/react';
 import { ProfileProvider, useProfile } from './context/profileContext';
 import NetworkSelector from './components/NetworkSelector';
 import ProfileAwareRoute from './components/ProfileAwareRoute';
+import { startAutomaticNotificationProcessing } from './services/emailNotificationService';
 
 // Eagerly loaded pages (small, frequently accessed)
 import LoginPage from './pages/LoginPage';
@@ -97,9 +98,15 @@ function App() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Initialize resize animation prevention
+  // Initialize resize animation prevention and automatic notification processing
   useEffect(() => {
     const cleanup = preventResizeAnimations();
+    
+    // Start automatic notification processing when app initializes
+    console.log('🚀 [APP] Starting automatic notification processing...');
+    const processorStatus = startAutomaticNotificationProcessing();
+    console.log('🚀 [APP] Notification processor status:', processorStatus);
+    
     return cleanup;
   }, []);
 

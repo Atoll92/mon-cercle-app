@@ -55,6 +55,7 @@ import {
   Notifications as NotificationsIcon
 } from '@mui/icons-material';
 import NotificationSettings from '../components/NotificationSettings';
+import NotificationSystemManager from '../components/NotificationSystemManager';
 
 function EditProfilePage() {
   const { user } = useAuth();
@@ -1458,7 +1459,10 @@ function EditProfilePage() {
             {/* Notifications Tab */}
             {activeTab === 2 && (
               <Box>
-                <NotificationSettings />
+                <Stack spacing={3}>
+                  <NotificationSettings />
+                  <NotificationSystemManager />
+                </Stack>
               </Box>
             )}
             

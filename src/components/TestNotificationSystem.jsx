@@ -12,10 +12,11 @@ import {
 } from '@mui/material';
 import { supabase } from '../supabaseclient';
 import { useAuth } from '../context/authcontext';
+import { useProfile } from '../context/profileContext';
 import { queueNewsNotifications, processPendingNotifications } from '../services/emailNotificationService';
 
 const TestNotificationSystem = () => {
-  const { user } = useAuth();
+  const { activeProfile } = useProfile();
   const [testing, setTesting] = useState(false);
   const [result, setResult] = useState(null);
 
@@ -28,7 +29,7 @@ const TestNotificationSystem = () => {
       const { data, error } = await supabase
         .from('profiles')
         .select('id, email_notifications_enabled, notify_on_news, notify_on_events, notify_on_mentions, notify_on_direct_messages')
-        .eq('user_id', user.id)
+        .eq('id', activeProfile.id)
         .single();
 
       if (error) {
@@ -79,7 +80,7 @@ const TestNotificationSystem = () => {
       const { data: userOnlyData, error: userOnlyError } = await supabase
         .from('notification_queue')
         .select('*')
-        .eq('recipient_id', user.id);
+        .eq('recipient_id', activeProfile.id);
       
       tests.push({
         name: 'User notifications only',
@@ -163,7 +164,7 @@ const TestNotificationSystem = () => {
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
-        .eq('id', user.id)
+        .eq('id', activeProfile.id)
         .single();
 
       if (error) {
@@ -197,7 +198,7 @@ const TestNotificationSystem = () => {
       const { data: profile } = await supabase
         .from('profiles')
         .select('network_id')
-        .eq('id', user.id)
+        .eq('id', activeProfile.id)
         .single();
 
       if (!profile?.network_id) {
@@ -209,7 +210,7 @@ const TestNotificationSystem = () => {
       const fakeResult = await queueNewsNotifications(
         profile.network_id,
         fakeNewsId,
-        user.id,
+        activeProfile.id,
         'Test News Post',
         'This is a test news post to check if notifications are working.'
       );

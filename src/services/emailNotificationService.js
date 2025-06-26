@@ -191,7 +191,7 @@ export const processPendingNotifications = async () => {
         // Retry logic for rate limit errors
         let retryCount = 0;
         const maxRetries = 3;
-        let emailResult = null;
+        // emailResult will be set if successful
 
         while (retryCount < maxRetries) {
           try {
@@ -224,7 +224,7 @@ export const processPendingNotifications = async () => {
               }
             }
 
-            emailResult = { data, error: null };
+            // Email sent successfully
             break; // Success, exit retry loop
 
           } catch (retryError) {
@@ -297,14 +297,14 @@ export const processPendingNotifications = async () => {
 
 /**
  * Get notification statistics for a user
- * @param {string} userId - The user ID
+ * @param {string} profileId - The profile ID
  */
-export const getNotificationStats = async (userId) => {
+export const getNotificationStats = async (profileId) => {
   try {
     const { data, error } = await supabase
       .from('notification_queue')
-      .select('is_sent, created_at')
-      .eq('recipient_id', userId);
+      .select('is_sent, created_at, error_message')
+      .eq('recipient_id', profileId);
 
     if (error) {
       console.error('Error fetching notification stats:', error);
@@ -313,14 +313,16 @@ export const getNotificationStats = async (userId) => {
 
     const total = data.length;
     const sent = data.filter(n => n.is_sent).length;
-    const pending = total - sent;
+    const pending = data.filter(n => !n.is_sent && !n.error_message).length;
+    const failed = data.filter(n => n.error_message).length;
 
     return {
       success: true,
       stats: {
         total,
         sent,
-        pending
+        pending,
+        failed
       }
     };
 
@@ -402,4 +404,336 @@ export const queueMentionNotification = async (mentionedUserId, networkId, menti
     console.error('🔔 [MENTION DEBUG] Error in queueMentionNotification:', error);
     return { success: false, error: error.message };
   }
+};
+
+/**
+ * Clean up old notifications (older than 30 days)
+ * This helps keep the notification queue table manageable
+ */
+export const cleanupOldNotifications = async () => {
+  try {
+    console.log('🧹 [CLEANUP DEBUG] Starting notification cleanup...');
+    
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    
+    const { error } = await supabase
+      .from('notification_queue')
+      .delete()
+      .lt('created_at', thirtyDaysAgo.toISOString())
+      .eq('is_sent', true);
+      
+    if (error) {
+      console.error('🧹 [CLEANUP DEBUG] Error cleaning up notifications:', error);
+      return { success: false, error: error.message };
+    }
+    
+    console.log('🧹 [CLEANUP DEBUG] Successfully cleaned up old notifications');
+    return { success: true, message: 'Old notifications cleaned up' };
+    
+  } catch (error) {
+    console.error('🧹 [CLEANUP DEBUG] Error in cleanupOldNotifications:', error);
+    return { success: false, error: error.message };
+  }
+};
+
+/**
+ * Queue a direct message notification for a recipient
+ * @param {string} recipientId - The ID of the user receiving the message
+ * @param {string} senderId - The ID of the user sending the message
+ * @param {string} messageContent - The message content
+ * @param {string} messageId - The ID of the message
+ */
+export const queueDirectMessageNotification = async (recipientId, senderId, messageContent, messageId) => {
+  try {
+    console.log('💬 [DM DEBUG] Queueing direct message notification');
+    console.log('💬 [DM DEBUG] Recipient ID:', recipientId);
+    console.log('💬 [DM DEBUG] Sender ID:', senderId);
+    
+    // Don't send notification to self
+    if (recipientId === senderId) {
+      console.log('💬 [DM DEBUG] Skipping notification - same user');
+      return { success: true, message: 'No notification needed for self-messaging' };
+    }
+    
+    // Check if the recipient wants direct message notifications
+    const { data: recipientProfile, error: profileError } = await supabase
+      .from('profiles')
+      .select('full_name, contact_email, email_notifications_enabled, notify_on_direct_messages, network_id')
+      .eq('id', recipientId)
+      .single();
+      
+    if (profileError) {
+      console.error('💬 [DM DEBUG] Error fetching recipient profile:', profileError);
+      return { success: false, error: profileError.message };
+    }
+    
+    if (!recipientProfile.email_notifications_enabled || !recipientProfile.notify_on_direct_messages) {
+      console.log('💬 [DM DEBUG] Recipient has direct message notifications disabled');
+      return { success: true, message: 'Recipient has direct message notifications disabled' };
+    }
+    
+    // Get sender name
+    const { data: senderProfile, error: senderError } = await supabase
+      .from('profiles')
+      .select('full_name')
+      .eq('id', senderId)
+      .single();
+      
+    if (senderError) {
+      console.error('💬 [DM DEBUG] Error fetching sender profile:', senderError);
+      return { success: false, error: senderError.message };
+    }
+    
+    // Create notification
+    const notification = {
+      recipient_id: recipientId,
+      network_id: recipientProfile.network_id, // Use recipient's network for organization
+      notification_type: 'direct_message',
+      subject_line: `New message from ${senderProfile.full_name || 'Someone'}`,
+      content_preview: messageContent.substring(0, 200) + (messageContent.length > 200 ? '...' : ''),
+      related_item_id: messageId
+    };
+    
+    console.log('💬 [DM DEBUG] Creating notification:', notification);
+    
+    const { error: insertError } = await supabase
+      .from('notification_queue')
+      .insert([notification]);
+      
+    if (insertError) {
+      console.error('💬 [DM DEBUG] Error inserting notification:', insertError);
+      return { success: false, error: insertError.message };
+    }
+    
+    console.log('💬 [DM DEBUG] Successfully queued direct message notification');
+    return { success: true, message: 'Direct message notification queued' };
+    
+  } catch (error) {
+    console.error('💬 [DM DEBUG] Error in queueDirectMessageNotification:', error);
+    return { success: false, error: error.message };
+  }
+};
+
+/**
+ * Clear all notifications for a user (sent and pending)
+ * @param {string} profileId - The profile ID
+ */
+export const clearNotificationQueue = async (profileId) => {
+  try {
+    console.log('🧹 [CLEAR DEBUG] Clearing notification queue for profile:', profileId);
+    
+    const { error } = await supabase
+      .from('notification_queue')
+      .delete()
+      .eq('recipient_id', profileId);
+      
+    if (error) {
+      console.error('🧹 [CLEAR DEBUG] Error clearing notification queue:', error);
+      return { success: false, error: error.message };
+    }
+    
+    console.log('🧹 [CLEAR DEBUG] Successfully cleared notification queue');
+    return { success: true, message: 'Notification queue cleared successfully' };
+    
+  } catch (error) {
+    console.error('🧹 [CLEAR DEBUG] Error in clearNotificationQueue:', error);
+    return { success: false, error: error.message };
+  }
+};
+
+/**
+ * Get user's notification preferences
+ * @param {string} profileId - The profile ID
+ */
+export const getUserNotificationPreferences = async (profileId) => {
+  try {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('email_notifications_enabled, notify_on_news, notify_on_events, notify_on_mentions, notify_on_direct_messages')
+      .eq('id', profileId)
+      .single();
+
+    if (error) {
+      console.error('Error fetching notification preferences:', error);
+      return { success: false, error: error.message };
+    }
+
+    return {
+      success: true,
+      preferences: data
+    };
+
+  } catch (error) {
+    console.error('Error in getUserNotificationPreferences:', error);
+    return { success: false, error: error.message };
+  }
+};
+
+/**
+ * Automatic notification processor - runs continuously in the background
+ * Processes queued notifications every 1 minute and clears successful sends
+ */
+class NotificationProcessor {
+  constructor() {
+    this.isRunning = false;
+    this.intervalId = null;
+    this.processingInterval = 1 * 60 * 1000; // 1 minute
+  }
+
+  /**
+   * Start automatic notification processing
+   */
+  start() {
+    if (this.isRunning) {
+      console.log('🤖 [AUTO PROCESSOR] Already running');
+      return;
+    }
+
+    console.log('🤖 [AUTO PROCESSOR] Starting automatic notification processing...');
+    console.log(`🤖 [AUTO PROCESSOR] Will process notifications every ${this.processingInterval / 1000} seconds`);
+    
+    this.isRunning = true;
+    
+    // Process immediately on start
+    this.processNotifications();
+    
+    // Set up interval for continuous processing
+    this.intervalId = setInterval(() => {
+      this.processNotifications();
+    }, this.processingInterval);
+  }
+
+  /**
+   * Stop automatic notification processing
+   */
+  stop() {
+    if (!this.isRunning) {
+      console.log('🤖 [AUTO PROCESSOR] Not running');
+      return;
+    }
+
+    console.log('🤖 [AUTO PROCESSOR] Stopping automatic notification processing...');
+    
+    this.isRunning = false;
+    
+    if (this.intervalId) {
+      clearInterval(this.intervalId);
+      this.intervalId = null;
+    }
+  }
+
+  /**
+   * Process notifications and clear successful sends automatically
+   */
+  async processNotifications() {
+    if (!this.isRunning) {
+      return;
+    }
+
+    try {
+      console.log('🤖 [AUTO PROCESSOR] Starting notification processing cycle...');
+      
+      // Get pending count before processing
+      const { data: beforeCount } = await supabase
+        .from('notification_queue')
+        .select('id', { count: 'exact' })
+        .eq('is_sent', false);
+
+      const pendingBefore = beforeCount || 0;
+      
+      if (pendingBefore === 0) {
+        console.log('🤖 [AUTO PROCESSOR] No pending notifications to process');
+        return;
+      }
+
+      console.log(`🤖 [AUTO PROCESSOR] Found ${pendingBefore} pending notifications`);
+
+      // Process pending notifications
+      const result = await processPendingNotifications();
+      
+      if (result.success) {
+        console.log(`🤖 [AUTO PROCESSOR] Processing completed: ${result.sent} sent, ${result.failed} failed`);
+        
+        // Auto-cleanup: Remove old sent notifications (older than 7 days) to prevent database bloat
+        await this.cleanupSentNotifications();
+      } else {
+        console.error('🤖 [AUTO PROCESSOR] Processing failed:', result.error);
+      }
+
+    } catch (error) {
+      console.error('🤖 [AUTO PROCESSOR] Error in automatic processing:', error);
+    }
+  }
+
+  /**
+   * Clean up sent notifications older than 7 days to prevent database bloat
+   */
+  async cleanupSentNotifications() {
+    try {
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      
+      const { error } = await supabase
+        .from('notification_queue')
+        .delete()
+        .lt('sent_at', sevenDaysAgo.toISOString())
+        .eq('is_sent', true);
+
+      if (error) {
+        console.error('🤖 [AUTO PROCESSOR] Error cleaning up sent notifications:', error);
+      } else {
+        console.log('🤖 [AUTO PROCESSOR] Cleaned up old sent notifications');
+      }
+    } catch (error) {
+      console.error('🤖 [AUTO PROCESSOR] Error in cleanup:', error);
+    }
+  }
+
+  /**
+   * Get processor status
+   */
+  getStatus() {
+    return {
+      isRunning: this.isRunning,
+      processingInterval: `${this.processingInterval / 1000} seconds`,
+      nextProcessing: this.isRunning ? new Date(Date.now() + this.processingInterval).toISOString() : null
+    };
+  }
+}
+
+// Create singleton instance
+const notificationProcessor = new NotificationProcessor();
+
+/**
+ * Start automatic notification processing
+ * Call this when the application starts up
+ */
+export const startAutomaticNotificationProcessing = () => {
+  notificationProcessor.start();
+  return notificationProcessor.getStatus();
+};
+
+/**
+ * Stop automatic notification processing
+ */
+export const stopAutomaticNotificationProcessing = () => {
+  notificationProcessor.stop();
+  return notificationProcessor.getStatus();
+};
+
+/**
+ * Get automatic processor status
+ */
+export const getAutomaticProcessorStatus = () => {
+  return notificationProcessor.getStatus();
+};
+
+/**
+ * Force immediate notification processing (manual trigger)
+ */
+export const forceNotificationProcessing = async () => {
+  console.log('🔄 [FORCE PROCESSOR] Manual notification processing triggered');
+  await notificationProcessor.processNotifications();
+  return { success: true, message: 'Forced processing completed' };
 };

@@ -3,6 +3,7 @@ import { useAuth } from '../context/authcontext';
 import { useProfile } from '../context/profileContext';
 import { useDirectMessages } from '../context/directMessagesContext';
 import { getConversationMessages, sendDirectMessage, markMessagesAsRead } from '../api/directMessages';
+import { queueDirectMessageNotification } from '../services/emailNotificationService';
 import { supabase } from '../supabaseclient';
 import {
   Box,
@@ -279,7 +280,7 @@ if (refreshConversations) {
         throw new Error('No active profile selected');
       }
       
-      const { error } = await sendDirectMessage(
+      const { data: messageData, error } = await sendDirectMessage(
         conversationId,
         activeProfile.id,
         messageContent,
@@ -287,6 +288,28 @@ if (refreshConversations) {
       );
       
       if (error) throw error;
+      
+      // Queue notification for the recipient
+      try {
+        if (partner?.id && messageData?.message?.id) {
+          console.log('💬 [DM DEBUG] Queueing notification for recipient:', partner.id);
+          const notificationResult = await queueDirectMessageNotification(
+            partner.id,           // recipient ID
+            activeProfile.id,     // sender ID
+            messageContent || '[Media message]',  // message content
+            messageData.message.id        // message ID
+          );
+          
+          if (notificationResult.success) {
+            console.log('💬 [DM DEBUG] Notification queued successfully');
+          } else {
+            console.warn('💬 [DM DEBUG] Failed to queue notification:', notificationResult.error);
+          }
+        }
+      } catch (notificationError) {
+        console.error('💬 [DM DEBUG] Error queueing notification:', notificationError);
+        // Don't fail the message sending if notification fails
+      }
       
       // The real message will be added via the subscription
       // We just leave the pending message for now - it will be replaced
