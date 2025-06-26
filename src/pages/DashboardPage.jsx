@@ -977,13 +977,22 @@ function DashboardPage() {
                       
                       <Box sx={{ flexGrow: 1 }} />
                       
-                      <CardActions sx={{ p: 1, justifyContent: 'space-between', flexWrap: 'wrap', gap: 0.5 }}>
+                      <CardActions sx={{ 
+                        p: 1, 
+                        display: 'flex',
+                        flexDirection: { xs: 'column', sm: 'row' },
+                        gap: 1,
+                        '& .MuiButton-root': {
+                          width: { xs: '100%', sm: 'auto' }
+                        }
+                      }}>
                         <Button 
                           size="small" 
                           startIcon={<EditIcon />}
                           component={Link} 
                           to="/profile/edit"
                           variant="outlined"
+                          style={{margin: '0 auto'}}
                         >
                           Edit Profile
                         </Button>
@@ -995,6 +1004,7 @@ function DashboardPage() {
                           to={`/profile/${activeProfile.id}`}
                           variant="outlined"
                           color="secondary"
+                          style={{margin: '0 auto'}}
                         >
                           View Profile
                         </Button>
@@ -1007,6 +1017,7 @@ function DashboardPage() {
                           target="_blank"
                           variant="outlined"
                           color="primary"
+                          style={{margin: '0 auto'}}
                         >
                           Micro Conclav
                         </Button>
@@ -1312,12 +1323,19 @@ function DashboardPage() {
                           
                           {/* Network Stats */}
                           <Grid container spacing={1.5}>
-                            <Grid item xs={6}>
+                            <Grid item size={6} style={{maxWidth: '100px'}}>
                               <Paper sx={{ 
                                 p: 1, 
                                 textAlign: 'center',
                                 bgcolor: 'rgba(33, 150, 243, 0.1)',
-                                borderRadius: 2
+                                borderRadius: 2,
+                                height: '100%',
+                                minHeight: '80px',
+                                width: '100%',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                justifyContent: 'center',
+                                boxSizing: 'border-box'
                               }}>
                                 <Typography variant="h5" fontWeight="500" color="primary.main">
                                   {networkMembers.length}
@@ -1328,12 +1346,19 @@ function DashboardPage() {
                               </Paper>
                             </Grid>
                             
-                            <Grid item xs={6}>
+                            <Grid item size={6} style={{maxWidth: '100px'}}>
                               <Paper sx={{ 
                                 p: 1, 
                                 textAlign: 'center',
                                 bgcolor: 'rgba(76, 175, 80, 0.1)',
-                                borderRadius: 2
+                                borderRadius: 2,
+                                height: '100%',
+                                minHeight: '80px',
+                                width: '100%',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                justifyContent: 'center',
+                                boxSizing: 'border-box'
                               }}>
                                 <Typography variant="h5" fontWeight="500" color="success.main">
                                   {recentEvents.length}
