@@ -400,14 +400,14 @@ const FilesTab = ({ darkMode }) => {
                   />
                   
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <Button
+                    {/* <Button
                       size="small"
                       startIcon={<DashboardIcon />}
                       onClick={() => handleUseInMoodboard(file)}
                       sx={{ mr: 1 }}
                     >
                       Use in Moodboard
-                    </Button>
+                    </Button> */}
                     
                     <Tooltip title="Download">
                       <IconButton 

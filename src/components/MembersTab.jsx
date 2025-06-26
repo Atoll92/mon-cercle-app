@@ -323,7 +323,7 @@ const MembersTab = ({
           Network Members
         </Typography>
         
-        <Box sx={{ display: 'flex', gap: 1 }}>
+        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', justifyContent: { xs: 'center', sm: 'flex-end' } }}>
           {isUserAdmin && (
             <Button
               variant={darkMode ? "contained" : "outlined"}
@@ -332,9 +332,14 @@ const MembersTab = ({
               component={Link}
               to="/admin?tab=members"
               sx={{ 
-                height: 40,
+                minHeight: 40,
+                height: 'auto',
                 borderRadius: 2,
                 px: 2,
+                py: 1,
+                whiteSpace: 'normal',
+                wordBreak: 'break-word',
+                textAlign: 'center',
                 boxShadow: darkMode ? '0 4px 12px rgba(25, 118, 210, 0.3)' : 'none'
               }}
             >
@@ -348,8 +353,14 @@ const MembersTab = ({
             startIcon={<FilterListIcon />}
             onClick={() => setShowFilters(!showFilters)}
             sx={{ 
-              height: 40,
+              minHeight: 40,
+              height: 'auto',
               borderRadius: 2,
+              py: 1,
+              px: 2,
+              whiteSpace: 'normal',
+              wordBreak: 'break-word',
+              textAlign: 'center',
               boxShadow: darkMode ? '0 4px 12px rgba(156, 39, 176, 0.3)' : 'none'
             }}
           >

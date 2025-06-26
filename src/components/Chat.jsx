@@ -1862,7 +1862,7 @@ const renderMessageContent = (message) => {
           ref={textFieldRef}
           fullWidth
           variant="outlined"
-          placeholder="Type a message or paste a link..."
+          placeholder="Type a message..."
           value={newMessage}
           onChange={handleMessageChange}
           onKeyDown={(e) => {

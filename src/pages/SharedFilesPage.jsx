@@ -491,8 +491,21 @@ function SharedFilesPage() {
           </Alert>
         )}
         
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}>
-          <Box sx={{ display: 'flex', gap: 2 }}>
+        <Box sx={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: { xs: 'stretch', sm: 'center' }, 
+          mb: 3, 
+          flexWrap: 'wrap', 
+          gap: 2,
+          flexDirection: { xs: 'column', sm: 'row' }
+        }}>
+          <Box sx={{ 
+            display: 'flex', 
+            gap: { xs: 1, sm: 2 },
+            flexWrap: 'wrap',
+            width: { xs: '100%', sm: 'auto' }
+          }}>
             <TextField
               placeholder="Search files..."
               size="small"
@@ -501,7 +514,10 @@ function SharedFilesPage() {
               InputProps={{
                 startAdornment: <SearchIcon fontSize="small" sx={{ mr: 1, color: 'text.secondary' }} />
               }}
-              sx={{ minWidth: 200 }}
+              sx={{ 
+                minWidth: { xs: '100%', sm: 200 },
+                flexGrow: { xs: 1, sm: 0 }
+              }}
             />
             
             <Button
@@ -509,6 +525,10 @@ function SharedFilesPage() {
               startIcon={<FilterListIcon />}
               onClick={(e) => setFilterMenuOpen(true)}
               size="small"
+              sx={{ 
+                minWidth: { xs: 'auto', sm: 'auto' },
+                flex: { xs: '1 1 auto', sm: '0 0 auto' }
+              }}
             >
               {filterOption === 'all' ? 'All Files' : 
                 filterOption.charAt(0).toUpperCase() + filterOption.slice(1)}
@@ -544,6 +564,10 @@ function SharedFilesPage() {
               startIcon={<SortIcon />}
               onClick={(e) => setSortMenuOpen(true)}
               size="small"
+              sx={{ 
+                minWidth: { xs: 'auto', sm: 'auto' },
+                flex: { xs: '1 1 auto', sm: '0 0 auto' }
+              }}
             >
               Sort: {sortOption === 'newest' ? 'Newest' : 
                      sortOption === 'oldest' ? 'Oldest' : 
@@ -588,6 +612,10 @@ function SharedFilesPage() {
             color="primary"
             startIcon={<CloudUploadIcon />}
             onClick={() => setUploadDialogOpen(true)}
+            sx={{ 
+              width: { xs: '100%', sm: 'auto' },
+              mt: { xs: 1, sm: 0 }
+            }}
           >
             Upload File
           </Button>
@@ -617,55 +645,7 @@ function SharedFilesPage() {
                       backgroundColor: 'rgba(0, 0, 0, 0.04)'
                     }
                   }}
-                >
-                  <ListItemIcon>
-                    <FileTypeIcon fileType={file.file_type} />
-                  </ListItemIcon>
-                  
-                  <ListItemText
-                    primary={
-                      <Typography variant="subtitle1" component="div" sx={{ fontWeight: 500 }}>
-                        {file.filename}
-                      </Typography>
-                    }
-                    secondary={
-                      <>
-                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 0.5 }}>
-                          <Chip 
-                            label={formatFileSize(file.file_size)} 
-                            size="small" 
-                            variant="outlined"
-                          />
-                          <Chip 
-                            label={`Uploaded ${formatDistanceToNow(new Date(file.created_at))} ago`} 
-                            size="small" 
-                            variant="outlined"
-                          />
-                          <Chip 
-                            label={`Downloads: ${file.download_count || 0}`} 
-                            size="small" 
-                            variant="outlined"
-                          />
-                          <Chip 
-                            label={`By: ${file.uploader.full_name}`} 
-                            size="small" 
-                            variant="outlined"
-                          />
-                        </Box>
-                        {file.description && (
-                          <Typography 
-                            variant="body2" 
-                            sx={{ mt: 1, color: 'text.primary' }}
-                          >
-                            {file.description}
-                          </Typography>
-                        )}
-                      </>
-                    }
-                  />
-                  
-                  <ListItemSecondaryAction>
-                    <Tooltip title="Download">
+                  secondaryAction={<><Tooltip title="Download">
                       <IconButton 
                         edge="end" 
                         aria-label="download"
@@ -682,8 +662,64 @@ function SharedFilesPage() {
                       onClick={(e) => handleFileMenuOpen(e, file)}
                     >
                       <MoreVertIcon />
-                    </IconButton>
-                  </ListItemSecondaryAction>
+                    </IconButton></>}
+                >
+                  <ListItemIcon>
+                    <FileTypeIcon fileType={file.file_type} />
+                  </ListItemIcon>
+                  
+                  <ListItemText
+                    style={{ marginRight: '70px' }}
+                    primary={
+                      <Typography variant="subtitle1" component="div" sx={{ fontWeight: 500 }}>
+                        {file.filename}
+                      </Typography>
+                    }
+                    secondary={
+                      <>
+                        <Box sx={{ 
+                          display: 'flex', 
+                          flexWrap: 'wrap', 
+                          gap: { xs: 0.5, sm: 1 }, 
+                          mt: 0.5,
+                          maxWidth: { xs: 'calc(100vw - 120px)', sm: 'none' }
+                        }}>
+                          <Chip 
+                            label={formatFileSize(file.file_size)} 
+                            size="small" 
+                            variant="outlined"
+                            sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                          />
+                          <Chip 
+                            label={`Uploaded ${formatDistanceToNow(new Date(file.created_at))} ago`} 
+                            size="small" 
+                            variant="outlined"
+                            sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                          />
+                          <Chip 
+                            label={`Downloads: ${file.download_count || 0}`} 
+                            size="small" 
+                            variant="outlined"
+                            sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                          />
+                          <Chip 
+                            label={`By: ${file.uploader.full_name}`} 
+                            size="small" 
+                            variant="outlined"
+                            sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                          />
+                        </Box>
+                        {file.description && (
+                          <Typography 
+                            variant="body2" 
+                            sx={{ mt: 1, color: 'text.primary' }}
+                          >
+                            {file.description}
+                          </Typography>
+                        )}
+                      </>
+                    }
+                  />
                 </ListItem>
               </React.Fragment>
             ))}

@@ -142,7 +142,7 @@ const EventsTab = ({
               flex: '0 0 auto'
             }}
           >
-            <Box sx={{ p: 2, bgcolor: 'background.default', borderBottom: '1px solid', borderColor: 'divider' }}>
+            <Box sx={{ p: 2, bgcolor: 'background.paper', borderBottom: '1px solid', borderColor: 'divider' }}>
               <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center' }}>
                 <LocationOnIcon sx={{ mr: 1 }} color="primary" />
                 Events Map
@@ -177,7 +177,7 @@ const EventsTab = ({
           >
             <Box sx={{ 
               p: 2, 
-              bgcolor: 'background.default', 
+              bgcolor: 'background.paper', 
               borderBottom: '1px solid', 
               borderColor: 'divider',
               display: 'flex', 
@@ -516,7 +516,7 @@ const EventsTab = ({
           >
             <Box sx={{ 
               p: 2, 
-              bgcolor: 'background.default', 
+              bgcolor: 'background.paper', 
               borderBottom: '1px solid', 
               borderColor: 'divider',
               display: 'flex',
