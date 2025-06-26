@@ -1,0 +1,575 @@
+# Functions Documentation - Supabase Edge Functions & Integrations
+
+This document provides comprehensive documentation for all Supabase Edge Functions, Stripe integrations, CRON jobs, and serverless functions in the Conclav application.
+
+## Overview
+
+The application uses Supabase Edge Functions for server-side operations including payment processing, email notifications, and subscription management. All functions are deployed to Supabase's Deno-based edge runtime.
+
+## Edge Functions Directory Structure
+
+```
+supabase/functions/
+├── _shared/
+│   └── cors.ts                    # Shared CORS configuration
+├── create-checkout-session/
+│   └── index.ts                   # Stripe checkout session creation
+├── manage-subscription/
+│   └── index.ts                   # Subscription management operations
+├── network-invite/
+│   └── index.ts                   # Email invitation system
+├── stripe-webhook/
+│   ├── config.json                # Webhook configuration
+│   └── index.ts                   # Stripe webhook event processor
+└── test-stripe/
+    └── index.ts                   # Stripe integration testing
+```
+
+## Function Catalog
+
+### 1. create-checkout-session
+
+**Purpose**: Creates Stripe checkout sessions for subscription payments
+**Runtime**: Deno Edge Function
+**Trigger**: HTTP POST request from frontend
+
+#### Functionality
+- Validates Stripe API key configuration
+- Creates Stripe checkout sessions for subscription purchases
+- Handles payment method configuration (card payments)
+- Sets up subscription mode billing
+- Configures success/cancel URLs with session ID tracking
+- Includes metadata for user and network identification
+- Enables promotion code support
+- Requires billing address collection
+
+#### Input Parameters
+```typescript
+{
+  priceId: string,           // Stripe price ID for the subscription plan
+  userId?: string,           // User ID for metadata tracking
+  networkId?: string,        // Network ID for metadata tracking
+  successUrl?: string,       // Custom success redirect URL
+  cancelUrl?: string         // Custom cancel redirect URL
+}
+```
+
+#### Response Format
+```typescript
+{
+  sessionId: string,         // Checkout session ID
+  url: string               // Stripe checkout URL
+}
+```
+
+#### Error Handling
+- Missing STRIPE_SECRET_KEY environment variable
+- Invalid request body format
+- Missing required priceId parameter
+- Stripe API errors with detailed error codes
+- General server errors with logging
+
+#### Environment Variables Required
+- `STRIPE_SECRET_KEY`: Stripe secret API key for payments
+
+---
+
+### 2. manage-subscription
+
+**Purpose**: Comprehensive subscription management operations
+**Runtime**: Deno Edge Function
+**Trigger**: HTTP POST request from admin interfaces
+
+#### Functionality
+- **Cancel Subscriptions**: Cancel at period end or immediately
+- **Reactivate Subscriptions**: Restore canceled subscriptions
+- **Billing Portal**: Generate customer portal sessions
+- **Invoice Management**: Retrieve customer invoice history
+
+#### Supported Actions
+
+##### Cancel Action
+```typescript
+{
+  action: 'cancel',
+  networkId?: string,
+  subscriptionId?: string,
+  cancelAtPeriodEnd?: boolean  // Default: true
+}
+```
+
+##### Reactivate Action
+```typescript
+{
+  action: 'reactivate',
+  networkId?: string,
+  subscriptionId?: string
+}
+```
+
+##### Portal Session Action
+```typescript
+{
+  action: 'get_portal_session',
+  networkId?: string,
+  subscriptionId?: string
+}
+```
+
+##### Invoice Retrieval Action
+```typescript
+{
+  action: 'get_invoices',
+  networkId?: string,
+  subscriptionId?: string
+}
+```
+
+#### Database Operations
+- Updates `networks` table subscription status
+- Tracks `stripe_subscription_id` and `stripe_customer_id`
+- Maintains subscription status synchronization
+
+#### Environment Variables Required
+- `STRIPE_SECRET_KEY`: Stripe secret API key
+- `SUPABASE_URL`: Supabase project URL
+- `SUPABASE_SERVICE_ROLE_KEY`: Service role key for database operations
+
+---
+
+### 3. network-invite
+
+**Purpose**: Email invitation system with multiple notification types
+**Runtime**: Deno Edge Function
+**Trigger**: HTTP POST request from invitation flows
+
+#### Functionality
+- **Existing User Invites**: Notify existing users of network additions
+- **New User Invites**: Send signup invitations with registration links
+- **News Notifications**: Broadcast news updates to network members
+
+#### Invitation Types
+
+##### Existing User Invitation
+```typescript
+{
+  type: 'existing_user',
+  toEmail: string,
+  networkName: string,
+  inviterName: string
+}
+```
+
+##### New User Invitation
+```typescript
+{
+  type: 'new_user',
+  toEmail: string,
+  networkName: string,
+  inviterName: string,
+  inviteLink: string  // Required registration link
+}
+```
+
+##### News Notification
+```typescript
+{
+  type: 'news_notification',
+  toEmail: string,
+  networkName: string,
+  inviterName: string,
+  subject: string,
+  content: string,
+  relatedItemId?: string
+}
+```
+
+#### Email Templates
+- **Responsive HTML templates** with consistent branding
+- **Mobile-optimized** layouts with proper typography
+- **Call-to-action buttons** with branded styling
+- **Unsubscribe management** links for notifications
+- **Expiration notices** for time-sensitive invitations
+
+#### Integration
+- **Resend API** for reliable email delivery
+- **CORS support** for cross-origin requests
+- **Error handling** with detailed logging
+- **Template customization** support
+
+#### Environment Variables Required
+- `RESEND_API_KEY`: Resend email service API key
+- `FROM_EMAIL`: Sender email address
+- `APP_URL`: Application base URL for links
+
+---
+
+### 4. stripe-webhook
+
+**Purpose**: Process Stripe webhook events for subscription lifecycle management
+**Runtime**: Deno Edge Function
+**Trigger**: Stripe webhook events (POST requests)
+
+#### Functionality
+- **Webhook Signature Verification**: Validates Stripe webhook authenticity
+- **Event Processing**: Handles subscription lifecycle events
+- **Database Synchronization**: Updates subscription status in real-time
+- **Plan Mapping**: Maps Stripe price IDs to application subscription plans
+
+#### Supported Webhook Events
+
+##### checkout.session.completed
+- **Purpose**: Activate subscription after successful payment
+- **Actions**:
+  - Update network with Stripe customer and subscription IDs
+  - Set subscription status to 'active'
+  - Map price ID to subscription plan
+  - Clear subscription end date
+
+##### customer.subscription.updated
+- **Purpose**: Sync subscription changes
+- **Actions**:
+  - Update subscription status (active, past_due, canceled, etc.)
+  - Update subscription plan based on new price
+  - Set subscription end date from current period end
+
+##### customer.subscription.deleted
+- **Purpose**: Handle subscription cancellations
+- **Actions**:
+  - Set subscription status to 'canceled'
+  - Downgrade plan to 'community'
+  - Maintain historical subscription data
+
+#### Price ID to Plan Mapping
+```typescript
+const priceToPlans = {
+  'price_1RSy002KqNIKpvjTG7YyuZZ6': 'community',    // €17/month
+  'price_1RK6Vk2KqNIKpvjTKgFNpV0y': 'organization', // Organization plan
+  'price_1RK6qr2KqNIKpvjTZh47uSJO': 'organization', // Alternative org plan
+  // Additional mappings for nonprofit, network, business plans
+}
+```
+
+#### Security Features
+- **Webhook signature verification** using Stripe's constructEventAsync
+- **Environment variable validation** for required secrets
+- **Request body integrity** checking
+- **CORS header validation** for allowed origins
+
+#### Environment Variables Required
+- `STRIPE_WEBHOOK_SECRET`: Stripe webhook endpoint secret
+- `STRIPE_SECRET_KEY`: Stripe secret API key
+- `SUPABASE_URL`: Supabase project URL
+- `SUPABASE_SERVICE_ROLE_KEY`: Service role key for database operations
+
+---
+
+### 5. test-stripe
+
+**Purpose**: Development and testing utility for Stripe integration
+**Runtime**: Deno Edge Function
+**Trigger**: HTTP GET/POST request for testing
+
+#### Functionality
+- **Environment Validation**: Checks Stripe API key configuration
+- **Integration Testing**: Validates Stripe connection
+- **Development Support**: Provides debugging information
+
+#### Response Format
+```typescript
+{
+  hasStripeKey: boolean,     // Whether STRIPE_SECRET_KEY is configured
+  keyPrefix: string          // First 7 characters of the key for verification
+}
+```
+
+#### Use Cases
+- **Development Environment Setup**: Verify Stripe configuration
+- **CI/CD Pipeline Testing**: Validate environment variables
+- **Production Readiness**: Check integration status
+
+---
+
+## Shared Components
+
+### CORS Configuration (_shared/cors.ts)
+
+**Purpose**: Centralized CORS policy management for all edge functions
+
+#### Features
+- **Origin Validation**: Whitelist-based origin checking
+- **Development Support**: Localhost origins for development
+- **Production Security**: Restricted origins for production deployment
+- **Credentials Support**: Enables credential-based requests
+
+#### Allowed Origins
+```typescript
+const ALLOWED_ORIGINS = [
+  'http://localhost:5173',           // Vite dev server
+  'http://localhost:3000',           // Alternative dev server
+  'https://mon-cercle-app.vercel.app', // Production deployment
+]
+```
+
+#### Headers Configuration
+- `Access-Control-Allow-Origin`: Dynamic origin validation
+- `Access-Control-Allow-Headers`: API key, authorization, content-type
+- `Access-Control-Allow-Methods`: GET, POST, PUT, DELETE, OPTIONS
+- `Access-Control-Allow-Credentials`: true for authenticated requests
+
+---
+
+## CRON Jobs & Scheduled Tasks
+
+**Current Status**: No CRON jobs currently configured
+**Future Implementation**: Ready for pg_cron extension integration
+
+### Potential CRON Job Use Cases
+1. **Subscription Status Sync**: Periodic Stripe subscription status verification
+2. **Email Queue Processing**: Retry failed email notifications
+3. **Data Cleanup**: Archive old messages, clean temporary files
+4. **Analytics Processing**: Generate daily/weekly network statistics
+5. **Trial Expiration**: Automated trial period management
+6. **Invoice Generation**: Monthly subscription invoice processing
+
+### Implementation Framework
+```sql
+-- Example CRON job for subscription sync (not currently implemented)
+SELECT cron.schedule('subscription-sync', '0 2 * * *', $$
+  -- Sync subscription statuses with Stripe
+  -- Update expired subscriptions
+  -- Send renewal notifications
+$$);
+```
+
+---
+
+## Database Integration
+
+### Tables Modified by Functions
+
+#### networks
+- `stripe_customer_id`: Stripe customer identifier
+- `stripe_subscription_id`: Stripe subscription identifier
+- `subscription_status`: Current subscription status
+- `subscription_plan`: Active subscription plan
+- `subscription_end_date`: Subscription period end date
+
+#### notification_queue (indirect)
+- Email notifications are queued through API calls
+- Functions trigger email notifications for invitations
+- News notifications are processed through the email queue
+
+---
+
+## Environment Variables Summary
+
+### Required for All Functions
+- `SUPABASE_URL`: Supabase project URL
+- `SUPABASE_SERVICE_ROLE_KEY`: Service role key for database access
+
+### Stripe Integration
+- `STRIPE_SECRET_KEY`: Stripe secret API key for payments
+- `STRIPE_WEBHOOK_SECRET`: Webhook endpoint secret for security
+
+### Email Service
+- `RESEND_API_KEY`: Resend email service API key
+- `FROM_EMAIL`: Default sender email address
+- `APP_URL`: Application base URL for email links
+
+### Optional Configuration
+- `OPENAI_API_KEY`: For Supabase AI features (development)
+- `S3_HOST`: S3 bucket URL for file storage
+- `S3_REGION`: S3 bucket region
+- `S3_ACCESS_KEY`: AWS access key for S3
+- `S3_SECRET_KEY`: AWS secret key for S3
+
+---
+
+## Deployment & Security
+
+### Edge Runtime Configuration
+```toml
+[edge_runtime]
+enabled = true
+policy = "oneshot"        # Hot reload for development
+inspector_port = 8083     # Debug port
+```
+
+### Security Measures
+1. **Environment Variable Validation**: All sensitive data through environment variables
+2. **CORS Policy Enforcement**: Strict origin validation
+3. **Webhook Signature Verification**: Cryptographic validation of webhook authenticity
+4. **Request Body Validation**: Schema validation for all input parameters
+5. **Error Handling**: Secure error messages without sensitive data exposure
+6. **Logging**: Comprehensive logging for debugging without exposing secrets
+
+### Performance Considerations
+- **Connection Pooling**: Efficient database connection management
+- **Error Caching**: Prevent repeated failed requests
+- **Response Optimization**: Minimal response payloads
+- **Async Operations**: Non-blocking I/O operations
+
+---
+
+## Monitoring & Debugging
+
+### Function Logs
+All functions include comprehensive logging:
+- **Request/Response Logging**: Full HTTP request/response cycle
+- **Error Tracking**: Detailed error messages with stack traces
+- **Performance Metrics**: Request duration and resource usage
+- **Security Events**: Authentication and authorization failures
+
+### Debug Endpoints
+- `test-stripe`: Validates Stripe integration configuration
+- Built-in health checks for all functions
+- Environment variable validation
+
+### Production Monitoring
+- **Webhook Event Tracking**: Monitor Stripe webhook delivery
+- **Email Delivery Status**: Track invitation and notification success rates
+- **Subscription Sync Status**: Monitor database synchronization
+- **Error Rate Monitoring**: Track function failure rates
+
+---
+
+## Development Workflow
+
+### Local Development
+```bash
+# Start Supabase local development
+supabase start
+
+# Deploy functions locally
+supabase functions deploy
+
+# Test functions locally
+curl -X POST http://localhost:54321/functions/v1/test-stripe
+```
+
+### Function Testing
+```bash
+# Test Stripe integration
+curl -X POST http://localhost:54321/functions/v1/test-stripe \
+  -H "Authorization: Bearer <anon-key>"
+
+# Test email invitation
+curl -X POST http://localhost:54321/functions/v1/network-invite \
+  -H "Authorization: Bearer <anon-key>" \
+  -H "Content-Type: application/json" \
+  -d '{"toEmail":"test@example.com","networkName":"Test Network","inviterName":"Test User","type":"existing_user"}'
+```
+
+### Production Deployment
+```bash
+# Deploy to production
+supabase functions deploy --project-ref <project-ref>
+
+# Deploy specific function
+supabase functions deploy create-checkout-session --project-ref <project-ref>
+```
+
+---
+
+## Troubleshooting
+
+### Common Issues
+
+#### Stripe Integration
+- **Invalid API Key**: Check STRIPE_SECRET_KEY environment variable
+- **Webhook Signature Mismatch**: Verify STRIPE_WEBHOOK_SECRET configuration
+- **Price ID Mapping**: Ensure price IDs in webhook function match Stripe dashboard
+
+#### Email Notifications
+- **Resend API Limits**: Check Resend API usage and limits
+- **Email Template Issues**: Validate HTML template syntax
+- **Delivery Failures**: Check recipient email validity and spam filters
+
+#### CORS Errors
+- **Origin Not Allowed**: Add domain to ALLOWED_ORIGINS in cors.ts
+- **Preflight Failures**: Ensure OPTIONS method handling in all functions
+- **Credential Issues**: Verify Access-Control-Allow-Credentials settings
+
+#### Database Connection
+- **RLS Policy Violations**: Ensure service role key has proper permissions
+- **Connection Timeouts**: Check database connection pool settings
+- **Migration Issues**: Verify database schema matches function expectations
+
+### Error Codes
+- **400**: Bad Request - Invalid input parameters
+- **401**: Unauthorized - Missing or invalid API key
+- **403**: Forbidden - CORS policy violation
+- **500**: Internal Server Error - Function execution failure
+- **502**: Bad Gateway - Supabase/Stripe API connectivity issues
+
+---
+
+## Future Enhancements
+
+### Planned Features
+1. **Advanced CRON Jobs**: Automated subscription management and data cleanup
+2. **Webhook Replay**: Handle failed webhook processing with retry logic
+3. **Enhanced Monitoring**: Real-time function performance dashboards
+4. **Email Templates**: Rich HTML email templates with customization
+5. **Multi-tenant Support**: Network-specific function configurations
+6. **Advanced Analytics**: Function usage and performance analytics
+
+### Integration Opportunities
+1. **SendGrid Integration**: Alternative email provider support
+2. **Twilio SMS**: SMS notifications for critical events
+3. **Slack/Discord**: Network integration webhooks
+4. **Zapier/IFTTT**: Third-party automation platform integration
+5. **GitHub Actions**: CI/CD integration for function deployment
+
+---
+
+## Change Log
+
+### Version History
+- **v1.0.0**: Initial edge functions implementation
+  - Basic Stripe integration
+  - Email invitation system
+  - Webhook event processing
+  
+- **v1.1.0**: Enhanced subscription management
+  - Billing portal integration
+  - Invoice management
+  - Subscription cancellation/reactivation
+  
+- **v1.2.0**: Email system improvements
+  - News notification support
+  - Enhanced email templates
+  - Better error handling
+
+### Breaking Changes
+- None currently
+
+### Migration Notes
+- All functions maintain backward compatibility
+- Environment variable additions require deployment updates
+- Database schema changes require migration coordination
+
+---
+
+## Support & Contact
+
+### Documentation Links
+- [Supabase Edge Functions Guide](https://supabase.com/docs/guides/functions)
+- [Stripe API Documentation](https://stripe.com/docs/api)
+- [Resend API Documentation](https://resend.com/docs)
+
+### Development Team Contact
+- **Backend Functions**: Managed through CLAUDE.md instructions
+- **Database Schema**: See database.md for complete schema documentation
+- **API Integration**: See docs/API_DOCUMENTATION.md
+
+### Issue Reporting
+- Function errors: Check Supabase function logs
+- Payment issues: Review Stripe dashboard events
+- Email delivery: Monitor Resend delivery logs
+- Database issues: Check Supabase database logs
+
+---
+
+*This documentation is automatically maintained and should be updated whenever functions are modified or added.*
