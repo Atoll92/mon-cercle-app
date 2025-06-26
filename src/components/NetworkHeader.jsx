@@ -111,19 +111,19 @@ const NetworkHeader = () => {
     display: 'flex',
     alignItems: 'center',
     position: 'relative',
-    minWidth: '40px',
-    height: '40px',
+    minWidth: { xs: '36px', sm: '40px' },
+    height: { xs: '36px', sm: '40px' },
     borderRadius: '4px',
-    padding: '8px',
+    padding: { xs: '6px', sm: '8px' },
     color: 'inherit',
     textDecoration: 'none',
     transition: 'background-color 0.3s ease-in-out',
     '&:hover': {
       backgroundColor: darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.04)',
       '& .buttonText': {
-        width: '80px',
-        opacity: 1,
-        marginLeft: '8px',
+        width: { xs: '0px', sm: '80px' },
+        opacity: { xs: 0, sm: 1 },
+        marginLeft: { xs: '0px', sm: '8px' },
       }
     }
   };
@@ -136,12 +136,14 @@ const NetworkHeader = () => {
     opacity: 0,
     marginLeft: '0px',
     transition: 'width 0.3s ease-in-out, opacity 0.3s ease-in-out, margin-left 0.3s ease-in-out',
+    display: { xs: 'none', sm: 'block' }
   };
   
   return (
     <Box
       sx={{
         display: 'flex',
+        flexWrap: 'wrap',
         alignItems: 'center',
         justifyContent: 'space-between',
         padding: 2,
@@ -151,10 +153,19 @@ const NetworkHeader = () => {
         boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
         color: darkMode ? '#ffffff' : 'inherit', // Apply dark/light mode to text color
         position: 'relative',
-        zIndex: 1200 // Ensure header is above other content
+        zIndex: 1200, // Ensure header is above other content
+        gap: { xs: 1, sm: 2 }
       }}
     >
-      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+      {/* Logo Block */}
+      <Box sx={{ 
+        display: 'flex', 
+        alignItems: 'center',
+        justifyContent: { xs: 'center', sm: 'flex-start' },
+        flexShrink: 0,
+        order: { xs: 1, sm: 1 },
+        minWidth: { xs: '100%', sm: 'auto' }
+      }}>
         {displayedLogoUrl ? (
           <Link to={user && networkId ? '/network' : (networkId ? `/network/${networkId}` : '/dashboard')}>
             <img
@@ -162,14 +173,24 @@ const NetworkHeader = () => {
               alt={displayedNetworkName || "Network Logo"}
               style={{
                 maxHeight: '60px',
-                maxWidth: '200px',
-                objectFit: 'contain',
-                marginRight: displayedNetworkName ? '16px' : 0
+                maxWidth: '120px',
+                objectFit: 'contain'
               }}
             />
           </Link>
         ) : null}
-        
+      </Box>
+      
+      {/* Network Name Block */}
+      <Box sx={{ 
+        display: 'flex', 
+        alignItems: 'center',
+        flexGrow: 1,
+        justifyContent: { xs: 'center', sm: 'flex-start' },
+        order: { xs: 2, sm: 2 },
+        minWidth: { xs: '100%', sm: 'auto' },
+        paddingX: { xs: 0, sm: 2 }
+      }}>
         {loading ? (
           <Skeleton width={150} height={40} />
         ) : displayedNetworkName ? (
@@ -181,6 +202,7 @@ const NetworkHeader = () => {
               fontWeight: displayedLogoUrl ? 700 : 900,
               color: darkMode ? '#ffffff' : '#333333', // Apply dark/light mode
               textDecoration: 'none',
+              textAlign: { xs: 'center', sm: 'left' },
               '&:hover': {
                 textDecoration: networkId ? 'underline' : 'none',
               }
@@ -191,8 +213,17 @@ const NetworkHeader = () => {
         ) : null}
       </Box>
       
+      {/* Buttons Block */}
       {user && (
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+        <Box sx={{ 
+          display: 'flex', 
+          alignItems: 'center',
+          order: { xs: 3, sm: 3 },
+          justifyContent: { xs: 'center', sm: 'flex-end' },
+          minWidth: { xs: '100%', sm: 'auto' },
+          flexWrap: 'wrap',
+          gap: 0.5
+        }}>
           {/* Profile */}
           <Box 
             component={Link} 
