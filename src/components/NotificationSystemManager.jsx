@@ -34,6 +34,7 @@ import { supabase } from '../supabaseclient';
 import { useProfile } from '../context/profileContext';
 import { 
   queueNewsNotifications, 
+  queueEventNotifications,
   processPendingNotifications, 
   getNotificationStats,
   clearNotificationQueue,
@@ -264,6 +265,55 @@ const NotificationSystemManager = () => {
     }
   };
 
+  const handleTestEventNotification = async () => {
+    try {
+      setProcessing(true);
+      setResult(null);
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('network_id')
+        .eq('id', activeProfile.id)
+        .single();
+
+      if (!profile?.network_id) {
+        throw new Error('Profile not in a network');
+      }
+
+      const fakeEventId = crypto.randomUUID();
+      const futureDate = new Date();
+      futureDate.setDate(futureDate.getDate() + 7); // 7 days from now
+
+      const testResult = await queueEventNotifications(
+        profile.network_id,
+        fakeEventId,
+        activeProfile.id,
+        'Test Event Notification',
+        'This is a test event notification to verify the event notification system is working correctly.',
+        futureDate.toISOString()
+      );
+
+      setResult({
+        success: testResult.success,
+        message: testResult.success 
+          ? `Test event notification queued successfully! ${testResult.count || 0} recipients will be notified.`
+          : testResult.error
+      });
+      
+      // Refresh data
+      await loadNotifications();
+      await loadStats();
+    } catch (error) {
+      console.error('Error creating test event notification:', error);
+      setResult({
+        success: false,
+        message: `Failed to create test event notification: ${error.message}`
+      });
+    } finally {
+      setProcessing(false);
+    }
+  };
+
   const handleDeleteNotification = async (notificationId) => {
     try {
       const { error } = await supabase
@@ -425,6 +475,16 @@ const NotificationSystemManager = () => {
               disabled={processing}
             >
               Test DM
+            </Button>
+
+            <Button
+              variant="outlined"
+              size="small"
+              onClick={handleTestEventNotification}
+              startIcon={<SendIcon />}
+              disabled={processing}
+            >
+              Test Event
             </Button>
             
             <Button
@@ -624,7 +684,7 @@ const NotificationSystemManager = () => {
 
         <Typography variant="caption" color="text.secondary" sx={{ mt: 2, display: 'block' }}>
           💡 Tip: Automatic processing runs every minute to send queued notifications. 
-          Use "Test News" or "Test DM" to create test notifications. 
+          Use "Test News", "Test DM", or "Test Event" to create test notifications. 
           Use "Force Process Now" to immediately send pending notifications. 
           Use "Clear Queue" to remove all notifications.
         </Typography>

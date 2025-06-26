@@ -1,5 +1,5 @@
 import { supabase } from '../supabaseclient';
-import { queueNewsNotifications } from '../services/emailNotificationService';
+import { queueNewsNotifications, queueEventNotifications } from '../services/emailNotificationService';
 
 // Storage limits by subscription plan (in MB)
 const STORAGE_LIMITS = {
@@ -747,6 +747,33 @@ export const createEvent = async (networkId, profileId, eventData, imageFile) =>
       
       // Update the data object
       data[0].cover_image_url = imageUrl;
+    }
+    
+    // Queue email notifications for network members
+    try {
+      console.log('📅 [EVENT DEBUG] Starting to queue email notifications for event...');
+      console.log('📅 [EVENT DEBUG] Event created:', data[0]);
+      
+      const notificationResult = await queueEventNotifications(
+        networkId,
+        data[0].id,
+        profileId,
+        eventData.title,
+        eventData.description,
+        eventData.date
+      );
+      
+      console.log('📅 [EVENT DEBUG] Notification queueing result:', notificationResult);
+      
+      if (notificationResult.success) {
+        console.log(`📅 [EVENT DEBUG] Email notifications queued successfully: ${notificationResult.message}`);
+      } else {
+        console.error('📅 [EVENT DEBUG] Failed to queue email notifications:', notificationResult.error);
+        // Don't fail the event creation if notification queueing fails
+      }
+    } catch (notificationError) {
+      console.error('📅 [EVENT DEBUG] Error queueing email notifications:', notificationError);
+      // Don't fail the event creation if notification queueing fails
     }
     
     return {

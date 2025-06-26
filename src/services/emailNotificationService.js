@@ -407,6 +407,130 @@ export const queueMentionNotification = async (mentionedUserId, networkId, menti
 };
 
 /**
+ * Queue an event notification for all network members who want to receive them
+ * @param {string} networkId - The network ID where event was created
+ * @param {string} eventId - The ID of the event
+ * @param {string} authorId - The ID of the user who created the event
+ * @param {string} eventTitle - Title of the event
+ * @param {string} eventDescription - Description of the event
+ * @param {string} eventDate - Date of the event
+ */
+export const queueEventNotifications = async (networkId, eventId, authorId, eventTitle, eventDescription, eventDate) => {
+  try {
+    console.log('📅 [EVENT DEBUG] Starting to queue event notifications');
+    console.log('📅 [EVENT DEBUG] Network ID:', networkId);
+    console.log('📅 [EVENT DEBUG] Event ID:', eventId);
+    console.log('📅 [EVENT DEBUG] Author ID:', authorId);
+    console.log('📅 [EVENT DEBUG] Event Title:', eventTitle);
+
+    // Get all network members who want event notifications (excluding the author)
+    console.log('📅 [EVENT DEBUG] Fetching potential recipients...');
+    const { data: recipients, error: recipientsError } = await supabase
+      .from('profiles')
+      .select('id, full_name, contact_email, email_notifications_enabled, notify_on_events')
+      .eq('network_id', networkId)
+      .neq('id', authorId)
+      .eq('email_notifications_enabled', true)
+      .eq('notify_on_events', true);
+
+    console.log('📅 [EVENT DEBUG] Recipients query result:', { recipients, recipientsError });
+
+    if (recipientsError) {
+      console.error('📅 [EVENT DEBUG] Error fetching notification recipients:', recipientsError);
+      return { success: false, error: recipientsError.message };
+    }
+
+    if (!recipients || recipients.length === 0) {
+      console.log('📅 [EVENT DEBUG] No recipients found for event notifications');
+      console.log('📅 [EVENT DEBUG] This could mean:');
+      console.log('  - No other members in the network');
+      console.log('  - All members have email notifications disabled');
+      console.log('  - All members have event notifications disabled');
+      return { success: true, message: 'No recipients found' };
+    }
+
+    console.log(`📅 [EVENT DEBUG] Found ${recipients.length} potential recipients:`, recipients);
+
+    // Get network name for the notification
+    console.log('📅 [EVENT DEBUG] Fetching network details...');
+    const { data: network, error: networkError } = await supabase
+      .from('networks')
+      .select('name')
+      .eq('id', networkId)
+      .single();
+
+    console.log('📅 [EVENT DEBUG] Network query result:', { network, networkError });
+
+    if (networkError) {
+      console.error('📅 [EVENT DEBUG] Error fetching network name:', networkError);
+      return { success: false, error: networkError.message };
+    }
+
+    // Get author name for the notification
+    console.log('📅 [EVENT DEBUG] Fetching author details...');
+    const { data: author, error: authorError } = await supabase
+      .from('profiles')
+      .select('full_name')
+      .eq('id', authorId)
+      .single();
+
+    console.log('📅 [EVENT DEBUG] Author query result:', { author, authorError });
+
+    if (authorError) {
+      console.error('📅 [EVENT DEBUG] Error fetching author name:', authorError);
+      return { success: false, error: authorError.message };
+    }
+
+    // Format event date for display
+    const formattedDate = new Date(eventDate).toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+
+    // Create notification queue entries
+    console.log('📅 [EVENT DEBUG] Creating notification queue entries...');
+    const notifications = recipients.map(recipient => ({
+      recipient_id: recipient.id,
+      network_id: networkId,
+      notification_type: 'event',
+      subject_line: `New event in ${network.name}: ${eventTitle}`,
+      content_preview: `${author.full_name || 'Someone'} created an event: ${eventTitle} on ${formattedDate}. ${eventDescription?.substring(0, 150) || ''}${eventDescription?.length > 150 ? '...' : ''}`,
+      related_item_id: eventId
+    }));
+
+    console.log('📅 [EVENT DEBUG] Notification entries to insert:', notifications);
+
+    // Insert all notifications at once
+    console.log('📅 [EVENT DEBUG] Inserting notifications into queue...');
+    const { error: insertError } = await supabase
+      .from('notification_queue')
+      .insert(notifications);
+
+    console.log('📅 [EVENT DEBUG] Insert result:', { insertError });
+
+    if (insertError) {
+      console.error('📅 [EVENT DEBUG] Error queueing notifications:', insertError);
+      return { success: false, error: insertError.message };
+    }
+
+    console.log(`📅 [EVENT DEBUG] Successfully queued ${notifications.length} event notifications`);
+    return { 
+      success: true, 
+      message: `Queued notifications for ${notifications.length} recipients`,
+      count: notifications.length 
+    };
+
+  } catch (error) {
+    console.error('📅 [EVENT DEBUG] Error in queueEventNotifications:', error);
+    return { success: false, error: error.message };
+  }
+};
+
+/**
  * Clean up old notifications (older than 30 days)
  * This helps keep the notification queue table manageable
  */
