@@ -12,6 +12,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **[Project Structure](./docs/PROJECT_STRUCTURE.md)** - Directory organization and file structure
 - **[Database Schema](./docs/DATABASE_SCHEMA.md)** - Complete database table definitions
 - **[Complete Database Documentation](./database.md)** - **CRITICAL: Comprehensive database schema, relationships, and data analysis - MUST READ before any database changes**
+- **[Functions Documentation](./functions.db)** - **CRITICAL: Complete documentation of all Supabase Edge Functions, Stripe integrations, CRON jobs, and serverless functions**
 - **[RLS Policies](./docs/RLS_POLICIES.md)** - Row-Level Security policies
 - **[API Documentation](./docs/API_DOCUMENTATION.md)** - API functions and services
 - **[Components Guide](./docs/COMPONENTS_GUIDE.md)** - React components documentation
@@ -251,13 +252,15 @@ mon-cercle-app/
 - `src/mocks/` - MSW mock handlers
 
 #### Supabase Backend (`supabase/`)
-- `supabase/functions/` - Edge functions
-  - `create-checkout-session/` - Stripe checkout
-  - `stripe-webhook/` - Payment webhooks
-  - `network-invite/` - Invitation emails
-  - `manage-subscription/` - Subscription logic
-- `supabase/migrations/` - Database migrations
-- `supabase_schema.sql` - Database schema
+- `supabase/functions/` - **Edge functions (see [Functions Documentation](./functions.db) for complete details)**
+  - `_shared/cors.ts` - Shared CORS configuration for all functions
+  - `create-checkout-session/` - Stripe checkout session creation
+  - `stripe-webhook/` - Payment webhook event processing with subscription sync
+  - `network-invite/` - Multi-type email invitation system (existing users, new users, news notifications)
+  - `manage-subscription/` - Comprehensive subscription management (cancel, reactivate, billing portal, invoices)
+  - `test-stripe/` - Stripe integration testing and validation
+- `supabase/migrations/` - Database migrations with multi-profile support
+- `supabase/config.toml` - Supabase configuration with edge runtime settings
 
 ### Recent Changes
 
@@ -296,11 +299,12 @@ npm run test:coverage
 
 - **Frontend**: React with Vite
 - **Backend**: Supabase (PostgreSQL, Auth, Storage, Edge Functions)
+- **Edge Functions**: Deno-based serverless functions for payments, emails, subscriptions
 - **Authentication**: Supabase Auth
 - **Styling**: Material UI (MUI), CSS
 - **Routing**: React Router
 - **State Management**: Context API
-- **Payments**: Stripe integration
+- **Payments**: Stripe integration with comprehensive webhook handling
 - **Realtime Communication**: Supabase Realtime
 - **Testing**: Vitest, React Testing Library
 - **Rich Text Editing**: TipTap, React Quill, MD Editor
@@ -664,5 +668,7 @@ When proposing database changes, use the Zen MCP to:
 # Use Zen to validate database migration approach
 zen compare "Review this database migration for multi-profile compatibility and suggest improvements" --models claude,gpt4,gemini
 ```
+
+**Practical Guide**: See `./zen-database-validation.md` for detailed examples and workflow integration.
 
 This ensures database integrity and prevents breaking changes to the complex multi-profile relationship system.
