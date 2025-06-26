@@ -48,13 +48,16 @@ const NotificationSystemManager = () => {
   const { activeProfile } = useProfile();
   const [loading, setLoading] = useState(false);
   const [notifications, setNotifications] = useState([]);
+  const [triggeredNotifications, setTriggeredNotifications] = useState([]);
   const [stats, setStats] = useState(null);
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState(null);
   const [processorStatus, setProcessorStatus] = useState(null);
+  const [viewMode, setViewMode] = useState('received'); // 'received' or 'triggered'
 
   useEffect(() => {
     loadNotifications();
+    loadTriggeredNotifications();
     loadStats();
     loadProcessorStatus();
   }, [activeProfile]);
@@ -102,7 +105,7 @@ const NotificationSystemManager = () => {
       }
       
       setNotifications(data || []);
-      console.log(`📬 Loaded ${data?.length || 0} notifications for display`);
+      console.log(`📬 Loaded ${data?.length || 0} received notifications for display`);
       
       // Clear any previous error messages when loading succeeds
       if (result?.success === false) {
@@ -116,6 +119,75 @@ const NotificationSystemManager = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadTriggeredNotifications = async () => {
+    if (!activeProfile?.id) {
+      console.log('📭 No active profile, skipping triggered notifications load');
+      return;
+    }
+    
+    try {
+      console.log('📤 Loading notifications triggered by profile:', activeProfile.id);
+      
+      // Get notifications where this user triggered the notification by looking at related items
+      // We need to find news posts, events, etc. created by this user and see notifications for them
+      const { data: newsData } = await supabase
+        .from('network_news')
+        .select('id')
+        .eq('created_by', activeProfile.id);
+      
+      const { data: eventsData } = await supabase
+        .from('network_events')
+        .select('id')
+        .eq('created_by', activeProfile.id);
+      
+      const newsIds = newsData?.map(item => item.id) || [];
+      const eventIds = eventsData?.map(item => item.id) || [];
+      const relatedIds = [...newsIds, ...eventIds];
+      
+      if (relatedIds.length === 0) {
+        setTriggeredNotifications([]);
+        return;
+      }
+      
+      const { data, error } = await supabase
+        .from('notification_queue')
+        .select(`
+          id,
+          notification_type,
+          subject_line,
+          content_preview,
+          is_sent,
+          created_at,
+          sent_at,
+          error_message,
+          recipient_id,
+          related_item_id,
+          networks!notification_queue_network_id_fkey (
+            name
+          ),
+          profiles!notification_queue_recipient_id_fkey (
+            full_name
+          )
+        `)
+        .in('related_item_id', relatedIds)
+        .order('created_at', { ascending: false })
+        .limit(50);
+
+      console.log('📤 Triggered notifications query result:', { data, error, count: data?.length || 0 });
+
+      if (error) {
+        console.error('📤 Database error loading triggered notifications:', error);
+        return;
+      }
+      
+      setTriggeredNotifications(data || []);
+      console.log(`📤 Loaded ${data?.length || 0} triggered notifications for display`);
+      
+    } catch (error) {
+      console.error('📤 Error loading triggered notifications:', error);
     }
   };
 
@@ -146,6 +218,7 @@ const NotificationSystemManager = () => {
       
       // Refresh data
       await loadNotifications();
+      await loadTriggeredNotifications();
       await loadStats();
     } catch (error) {
       console.error('Error processing notifications:', error);
@@ -191,6 +264,7 @@ const NotificationSystemManager = () => {
       
       // Refresh data
       await loadNotifications();
+      await loadTriggeredNotifications();
       await loadStats();
     } catch (error) {
       console.error('Error creating test notification:', error);
@@ -253,6 +327,7 @@ const NotificationSystemManager = () => {
       
       // Refresh data
       await loadNotifications();
+      await loadTriggeredNotifications();
       await loadStats();
     } catch (error) {
       console.error('Error creating test DM notification:', error);
@@ -302,6 +377,7 @@ const NotificationSystemManager = () => {
       
       // Refresh data
       await loadNotifications();
+      await loadTriggeredNotifications();
       await loadStats();
     } catch (error) {
       console.error('Error creating test event notification:', error);
@@ -350,6 +426,7 @@ const NotificationSystemManager = () => {
       
       // Refresh data
       await loadNotifications();
+      await loadTriggeredNotifications();
       await loadStats();
     } catch (error) {
       console.error('Error clearing notification queue:', error);
@@ -408,6 +485,7 @@ const NotificationSystemManager = () => {
       
       // Refresh data
       await loadNotifications();
+      await loadTriggeredNotifications();
       await loadStats();
       loadProcessorStatus();
     } catch (error) {
@@ -594,10 +672,28 @@ const NotificationSystemManager = () => {
 
         <Divider sx={{ mb: 2 }} />
 
-        {/* Notifications Table */}
-        <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-          Recent Notifications
-        </Typography>
+        {/* View Mode Toggle */}
+        <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+          <Typography variant="subtitle2" color="text.secondary">
+            {viewMode === 'received' ? 'Notifications You Received' : 'Notifications You Triggered'}
+          </Typography>
+          <Stack direction="row" spacing={1}>
+            <Button
+              size="small"
+              variant={viewMode === 'received' ? 'contained' : 'outlined'}
+              onClick={() => setViewMode('received')}
+            >
+              Received ({notifications.length})
+            </Button>
+            <Button
+              size="small"
+              variant={viewMode === 'triggered' ? 'contained' : 'outlined'}
+              onClick={() => setViewMode('triggered')}
+            >
+              You Triggered ({triggeredNotifications.length})
+            </Button>
+          </Stack>
+        </Box>
         
         <TableContainer component={Paper} variant="outlined">
           <Table size="small">
@@ -606,7 +702,7 @@ const NotificationSystemManager = () => {
                 <TableCell>Status</TableCell>
                 <TableCell>Type</TableCell>
                 <TableCell>Subject</TableCell>
-                <TableCell>Network</TableCell>
+                <TableCell>{viewMode === 'received' ? 'Network' : 'Recipient'}</TableCell>
                 <TableCell>Created</TableCell>
                 <TableCell>Sent</TableCell>
                 <TableCell width={50}>Actions</TableCell>
@@ -619,16 +715,18 @@ const NotificationSystemManager = () => {
                     <CircularProgress size={20} />
                   </TableCell>
                 </TableRow>
-              ) : notifications.length === 0 ? (
+              ) : (viewMode === 'received' ? notifications : triggeredNotifications).length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} align="center" sx={{ py: 3 }}>
                     <Typography variant="body2" color="text.secondary">
-                      No notifications found. Try creating a test notification.
+                      {viewMode === 'received' 
+                        ? 'No notifications received. Try creating a test notification.' 
+                        : 'No notifications triggered yet. Create some news posts or events to see notifications you generate for others.'}
                     </Typography>
                   </TableCell>
                 </TableRow>
               ) : (
-                notifications.map((notification) => (
+                (viewMode === 'received' ? notifications : triggeredNotifications).map((notification) => (
                   <TableRow key={notification.id}>
                     <TableCell>
                       {getStatusChip(notification)}
@@ -652,7 +750,9 @@ const NotificationSystemManager = () => {
                     </TableCell>
                     <TableCell>
                       <Typography variant="body2">
-                        {notification.networks?.name || 'Unknown'}
+                        {viewMode === 'received' 
+                          ? (notification.networks?.name || 'Unknown')
+                          : (notification.profiles?.full_name || 'Unknown User')}
                       </Typography>
                     </TableCell>
                     <TableCell>
@@ -683,10 +783,8 @@ const NotificationSystemManager = () => {
         </TableContainer>
 
         <Typography variant="caption" color="text.secondary" sx={{ mt: 2, display: 'block' }}>
-          💡 Tip: Automatic processing runs every minute to send queued notifications. 
-          Use "Test News", "Test DM", or "Test Event" to create test notifications. 
-          Use "Force Process Now" to immediately send pending notifications. 
-          Use "Clear Queue" to remove all notifications.
+          💡 Tip: "Received" shows notifications sent to you. "You Triggered" shows notifications your posts/events generated for other network members. 
+          Automatic processing runs every minute. Use test buttons to verify functionality.
         </Typography>
       </CardContent>
     </Card>
