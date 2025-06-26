@@ -784,17 +784,24 @@ function DashboardPage() {
         {/* Blue header banner */}
         <Box 
           sx={{ 
-            p: 2, 
+            p: { xs: 1.5, md: 2 }, 
             background: 'linear-gradient(120deg, #2196f3, #3f51b5)', 
             color: 'white',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'space-between'
+            justifyContent: 'space-between',
+            flexDirection: { xs: 'column', sm: 'row' },
+            gap: { xs: 1.5, sm: 0 }
           }}
         >
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <DashboardIcon sx={{ mr: 2, fontSize: 28 }} />
-            <Typography variant="h5" component="h1" fontWeight="500">
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'center',
+            width: { xs: '100%', sm: 'auto' },
+            justifyContent: { xs: 'center', sm: 'flex-start' }
+          }}>
+            <DashboardIcon sx={{ mr: 2, fontSize: { xs: 24, md: 28 } }} />
+            <Typography variant={{ xs: 'h6', md: 'h5' }} component="h1" fontWeight="500">
               Dashboard
             </Typography>
           </Box>
