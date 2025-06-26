@@ -62,17 +62,46 @@ const Footer = () => {
             </Typography>
           </Box>
           
-          <Typography variant="body2" color="text.secondary" textAlign={{ xs: 'center', sm: 'right' }}>
-            © {currentYear} Conclav Networks. All rights reserved.
-            <Box component="span" sx={{ mx: 1.5 }}>|</Box>
-            <Link to="/pricing" style={{ color: 'inherit', textDecoration: 'none' }}>Pricing</Link>
-            <Box component="span" sx={{ mx: 1 }}>•</Box>
-            <Link to="/documentation" style={{ color: 'inherit', textDecoration: 'none' }}>Documentation</Link>
-            <Box component="span" sx={{ mx: 1 }}>•</Box>
-            <Link to="/terms" style={{ color: 'inherit', textDecoration: 'none' }}>CGU</Link>
-            <Box component="span" sx={{ mx: 1 }}>•</Box>
-            <Link to="/privacy" style={{ color: 'inherit', textDecoration: 'none' }}>Confidentialité</Link>
-          </Typography>
+          <Box 
+            sx={{ 
+              display: 'flex',
+              flexDirection: { xs: 'column', sm: 'row' },
+              alignItems: 'center',
+              gap: { xs: 1, sm: 0 },
+              textAlign: { xs: 'center', sm: 'right' }
+            }}
+          >
+            <Typography variant="body2" color="text.secondary">
+              © {currentYear} Conclav Networks. All rights reserved.
+            </Typography>
+            <Box 
+              sx={{ 
+                display: { xs: 'none', sm: 'block' },
+                mx: 1.5,
+                color: 'text.secondary'
+              }}
+            >
+              |
+            </Box>
+            <Box 
+              sx={{ 
+                display: 'flex',
+                flexWrap: 'wrap',
+                justifyContent: 'center',
+                gap: 1,
+                color: 'text.secondary',
+                fontSize: '0.875rem'
+              }}
+            >
+              <Link to="/pricing" style={{ color: 'inherit', textDecoration: 'none' }}>Pricing</Link>
+              <Box component="span">•</Box>
+              <Link to="/documentation" style={{ color: 'inherit', textDecoration: 'none' }}>Documentation</Link>
+              <Box component="span">•</Box>
+              <Link to="/terms" style={{ color: 'inherit', textDecoration: 'none' }}>CGU</Link>
+              <Box component="span">•</Box>
+              <Link to="/privacy" style={{ color: 'inherit', textDecoration: 'none' }}>Confidentialité</Link>
+            </Box>
+          </Box>
         </Box>
       </Container>
     </Box>
