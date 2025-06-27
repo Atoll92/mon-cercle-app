@@ -1,29 +1,64 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { useParams } from 'react-router-dom';
-import { Box, Paper, Avatar, Typography, CircularProgress, ToggleButton, ToggleButtonGroup, IconButton } from '@mui/material';
+import { useParams, useNavigate } from 'react-router-dom';
+import { 
+  Box, 
+  Paper, 
+  Avatar, 
+  Typography, 
+  CircularProgress, 
+  ToggleButton, 
+  ToggleButtonGroup, 
+  Button,
+  alpha
+} from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { getUserProfile } from '../api/networks';
 import { getUserMoodboardItems } from '../api/moodboards';
+import { supabase } from '../supabaseclient';
+import { useMoodboardCanvas } from '../hooks/useMoodboardCanvas';
+import useWheelHandler from '../hooks/useWheelHandler';
+import MoodboardCanvas from '../components/Moodboard/MoodboardCanvas';
+import ZoomControls from '../components/Moodboard/ZoomControls';
 import GridViewIcon from '@mui/icons-material/GridView';
 import DashboardIcon from '@mui/icons-material/Dashboard';
-import ZoomInIcon from '@mui/icons-material/ZoomIn';
-import ZoomOutIcon from '@mui/icons-material/ZoomOut';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import LinkPreview from '../components/LinkPreview';
+import MoodboardItemDisplay from '../components/Moodboard/MoodboardItemDisplay';
+import MoodboardItemGrid from '../components/Moodboard/MoodboardItemGrid';
 
 const MicroConclavPage = () => {
   const { userId } = useParams();
+  const navigate = useNavigate();
   const theme = useTheme();
   const [profile, setProfile] = useState(null);
   const [moodboardItems, setMoodboardItems] = useState([]);
+  const [primaryMoodboardItems, setPrimaryMoodboardItems] = useState([]);
   const [moodboardBackgroundColor, setMoodboardBackgroundColor] = useState(null);
+  const [primaryMoodboardId, setPrimaryMoodboardId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'moodboard'
-  const [zoom, setZoom] = useState(1); // Zoom level (1 = 100%)
+  
   const containerRef = useRef(null);
-  const contentZoneRef = useRef(null);
+  
+  // Use the moodboard canvas hook for all canvas navigation
+  const {
+    scale,
+    position,
+    isDraggingCanvas,
+    canvasRef,
+    handleCanvasMouseDown,
+    handleCanvasMouseMove,
+    handleCanvasMouseUp,
+    handleWheel,
+    handleZoomIn,
+    handleZoomOut,
+    handleZoomReset
+  } = useMoodboardCanvas({
+    items: primaryMoodboardItems // Pass items for boundary calculations
+  });
 
   const fetchProfile = async () => {
     try {
@@ -31,6 +66,50 @@ const MicroConclavPage = () => {
       setProfile(userProfile);
     } catch (error) {
       console.error('Error fetching profile:', error);
+    }
+  };
+
+  const fetchUserPersonalMoodboard = async () => {
+    try {
+      // First fetch the user's personal moodboard
+      const { data: moodboards, error: moodboardError } = await supabase
+        .from('moodboards')
+        .select('*')
+        .eq('created_by', userId)
+        .eq('is_personal', true)
+        .order('created_at', { ascending: false })
+        .limit(1);
+      
+      if (moodboardError) throw moodboardError;
+      
+      if (moodboards && moodboards.length > 0) {
+        const moodboard = moodboards[0];
+        setMoodboardBackgroundColor(moodboard.background_color);
+        setPrimaryMoodboardId(moodboard.id);
+        return moodboard.id;
+      }
+      return null;
+    } catch (error) {
+      console.error('Error fetching personal moodboard:', error);
+      return null;
+    }
+  };
+
+  const fetchPrimaryMoodboardItems = async () => {
+    if (!primaryMoodboardId) return;
+    
+    try {
+      const { data: items, error: itemsError } = await supabase
+        .from('moodboard_items')
+        .select('*')
+        .eq('moodboard_id', primaryMoodboardId)
+        .order('created_at', { ascending: false });
+      
+      if (itemsError) throw itemsError;
+      
+      setPrimaryMoodboardItems(items || []);
+    } catch (error) {
+      console.error('Error fetching primary moodboard items:', error);
     }
   };
 
@@ -47,7 +126,7 @@ const MicroConclavPage = () => {
       
       if (pageNum === 0) {
         setMoodboardItems(result.items);
-        setMoodboardBackgroundColor(result.backgroundColor);
+        // Don't override background color here anymore, let fetchUserPersonalMoodboard handle it
       } else {
         setMoodboardItems(prev => [...prev, ...result.items]);
       }
@@ -61,20 +140,26 @@ const MicroConclavPage = () => {
   useEffect(() => {
     const init = async () => {
       setLoading(true);
-      await Promise.all([
-        fetchProfile(),
-        fetchMoodboardItems(0)
-      ]);
+      await fetchProfile();
+      await fetchUserPersonalMoodboard();
+      await fetchMoodboardItems(0);
       setLoading(false);
     };
     
     init();
   }, [userId]);
 
+  // Fetch primary moodboard items when primaryMoodboardId is set
+  useEffect(() => {
+    if (primaryMoodboardId) {
+      fetchPrimaryMoodboardItems();
+    }
+  }, [primaryMoodboardId]);
+
   const handleScroll = useCallback(() => {
     if (viewMode !== 'grid') return; // Only handle scroll in grid mode
     
-    if (containerRef.current && contentZoneRef.current) {
+    if (containerRef.current) {
       const container = containerRef.current;
       const scrollTop = container.scrollTop;
       const scrollHeight = container.scrollHeight;
@@ -87,18 +172,9 @@ const MicroConclavPage = () => {
     }
   }, [loadingMore, hasMore, viewMode]);
 
-  // Handle wheel zoom (only with Ctrl key)
-  const handleWheel = useCallback((e) => {
-    if (viewMode !== 'moodboard') return;
-    
-    // Only zoom if Ctrl or Cmd key is pressed
-    if (e.ctrlKey || e.metaKey) {
-      e.preventDefault();
-      
-      const zoomDelta = e.deltaY > 0 ? 0.95 : 1.05; // Smaller increments for smoother zoom
-      setZoom(prev => Math.max(0.2, Math.min(3, prev * zoomDelta)));
-    }
-  }, [viewMode]);
+  const handleCanvasClick = () => {
+    // Clear any selections or interactions when clicking on empty canvas
+  };
 
   useEffect(() => {
     if (page > 0) {
@@ -110,45 +186,19 @@ const MicroConclavPage = () => {
     const container = containerRef.current;
     if (container) {
       container.addEventListener('scroll', handleScroll);
-      container.addEventListener('wheel', handleWheel, { passive: false });
-      
       return () => {
         container.removeEventListener('scroll', handleScroll);
-        container.removeEventListener('wheel', handleWheel);
       };
     }
-  }, [handleScroll, handleWheel]);
+  }, [handleScroll]);
 
-  // Center the view when switching to moodboard mode
-  useEffect(() => {
-    if (viewMode === 'moodboard' && containerRef.current && moodboardItems.length > 0) {
-      // Scroll to center the content
-      const container = containerRef.current;
-      const viewportWidth = container.clientWidth;
-      const viewportHeight = container.clientHeight;
-      
-      // Scroll to center of the canvas (10000px is the center)
-      container.scrollLeft = 10000 - viewportWidth / 2;
-      container.scrollTop = 10000 - viewportHeight / 2;
-    }
-  }, [viewMode, moodboardItems]);
+  // Use the wheel handler hook for moodboard view
+  useWheelHandler(canvasRef, viewMode === 'moodboard' ? handleWheel : null, [viewMode]);
 
   const handleViewModeChange = (_, newMode) => {
     if (newMode !== null) {
       setViewMode(newMode);
     }
-  };
-
-  const handleZoomIn = () => {
-    setZoom(prev => Math.min(prev * 1.2, 3)); // Max zoom 300%
-  };
-
-  const handleZoomOut = () => {
-    setZoom(prev => Math.max(prev / 1.2, 0.2)); // Min zoom 20%
-  };
-
-  const handleZoomReset = () => {
-    setZoom(1);
   };
 
   if (loading) {
@@ -167,95 +217,82 @@ const MicroConclavPage = () => {
     );
   }
 
-  // Render moodboard item based on type
-  const renderMoodboardItem = (item) => {
-    switch (item.type) {
-      case 'image':
-        return (
-          <Box sx={{ width: '100%', height: '100%', position: 'relative', overflow: 'hidden' }}>
-            <img 
-              src={item.content} 
-              alt={item.title || ''} 
-              style={{ 
-                width: '100%', 
-                height: '100%', 
-                objectFit: 'contain',
-                pointerEvents: 'none'
-              }} 
-            />
-          </Box>
-        );
-      case 'text':
-        return (
-          <Box 
-            sx={{ 
-              width: '100%', 
-              height: '100%', 
-              p: 2,
-              overflow: 'auto',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: item.backgroundColor || 'transparent',
-              color: item.textColor || 'inherit',
-              fontFamily: item.font_family || 'inherit',
-              fontSize: item.font_size || 'inherit',
-              fontWeight: item.font_weight || 'normal',
-              textAlign: item.text_align || 'center',
-              lineHeight: item.line_height || 'normal'
-            }}
-          >
-            <Typography 
-              component="div"
-              sx={{
-                width: '100%',
-                color: 'inherit',
-                fontFamily: 'inherit',
-                fontSize: 'inherit',
-                fontWeight: 'inherit',
-                textAlign: 'inherit',
-                lineHeight: 'inherit'
-              }}
-            >
-              {item.content}
-            </Typography>
-          </Box>
-        );
-      case 'link':
-        return (
-          <Box sx={{ 
-            width: '100%', 
-            height: '100%', 
-            p: 2,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}>
-            <LinkPreview url={item.content} />
-          </Box>
-        );
-      default:
-        return null;
-    }
-  };
 
   return (
-    <Box
-      ref={containerRef}
-      sx={{
-        height: '100vh',
-        overflow: 'auto',
-        backgroundColor: theme.palette.background.default,
-        position: 'relative',
-      }}
-    >
-      {/* Floating User Info Popup */}
+    <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden', position: 'relative' }}>
+      {/* Toolbar */}
+      <Box 
+        sx={{ 
+          p: 1, 
+          display: 'flex', 
+          justifyContent: 'space-between',
+          bgcolor: alpha(theme.palette.primary.main, 0.05),
+          borderBottom: '1px solid',
+          borderColor: 'divider',
+          flexWrap: 'wrap',
+          gap: 1
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Button
+            startIcon={<ArrowBackIcon />}
+            onClick={() => navigate('/dashboard')}
+            size="small"
+          >
+            Back to Dashboard
+          </Button>
+          
+          <Typography 
+            variant="h6" 
+            sx={{ 
+              ml: 1,
+              display: { xs: 'none', sm: 'block' }
+            }}
+          >
+            {profile?.full_name}'s Micro Conclav
+          </Typography>
+        </Box>
+
+        {/* View Mode Toggle */}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <ToggleButtonGroup
+            value={viewMode}
+            exclusive
+            onChange={handleViewModeChange}
+            aria-label="view mode"
+            size="small"
+          >
+            <ToggleButton value="grid" aria-label="grid view">
+              <GridViewIcon sx={{ mr: 0.5 }} />
+              Grid
+            </ToggleButton>
+            <ToggleButton value="moodboard" aria-label="moodboard view">
+              <DashboardIcon sx={{ mr: 0.5 }} />
+              Moodboard
+            </ToggleButton>
+          </ToggleButtonGroup>
+        </Box>
+        
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          {/* Zoom controls - only show in moodboard view */}
+          {viewMode === 'moodboard' && (
+            <ZoomControls
+              scale={scale}
+              onZoomIn={handleZoomIn}
+              onZoomOut={handleZoomOut}
+              onZoomReset={handleZoomReset}
+            />
+          )}
+        </Box>
+      </Box>
+
+      {/* User Info Card - top right */}
       <Paper
         elevation={4}
         sx={{
-          position: 'fixed',
-          top: 20,
-          right: 20,
+          position: 'absolute',
+          top: '4rem',
+          right: '1rem',
           p: 2,
           borderRadius: 2,
           backgroundColor: theme.palette.background.paper,
@@ -293,100 +330,13 @@ const MicroConclavPage = () => {
         </Box>
       </Paper>
 
-      {/* View Mode Toggle */}
-      <Box 
-        sx={{ 
-          position: 'fixed',
-          top: 20,
-          left: '50%',
-          transform: 'translateX(-50%)',
-          zIndex: 1000,
-          backgroundColor: theme.palette.background.paper,
-          borderRadius: 1,
-          boxShadow: 2
-        }}
-      >
-        <ToggleButtonGroup
-          value={viewMode}
-          exclusive
-          onChange={handleViewModeChange}
-          aria-label="view mode"
-          size="small"
-        >
-          <ToggleButton value="grid" aria-label="grid view">
-            <GridViewIcon sx={{ mr: 0.5 }} />
-            Grid
-          </ToggleButton>
-          <ToggleButton value="moodboard" aria-label="moodboard view">
-            <DashboardIcon sx={{ mr: 0.5 }} />
-            Moodboard
-          </ToggleButton>
-        </ToggleButtonGroup>
-      </Box>
-
-      {/* Zoom Controls - Only show in moodboard view */}
-      {viewMode === 'moodboard' && (
-        <Box 
-          sx={{ 
-            position: 'fixed',
-            bottom: 20,
-            right: 20,
-            zIndex: 1000,
-            backgroundColor: theme.palette.background.paper,
-            borderRadius: 1,
-            boxShadow: 2,
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 0.5,
-            p: 0.5
-          }}
-          title="Use Ctrl+Scroll to zoom"
-        >
-          <IconButton 
-            onClick={handleZoomIn}
-            size="small"
-            disabled={zoom >= 3}
-            title="Zoom In"
-          >
-            <ZoomInIcon />
-          </IconButton>
-          <Typography 
-            variant="caption" 
-            sx={{ 
-              textAlign: 'center', 
-              minWidth: 40,
-              fontSize: '0.7rem'
-            }}
-          >
-            {Math.round(zoom * 100)}%
-          </Typography>
-          <IconButton 
-            onClick={handleZoomOut}
-            size="small"
-            disabled={zoom <= 0.2}
-            title="Zoom Out"
-          >
-            <ZoomOutIcon />
-          </IconButton>
-          <IconButton 
-            onClick={handleZoomReset}
-            size="small"
-            title="Reset Zoom"
-            sx={{ fontSize: '0.7rem' }}
-          >
-            1:1
-          </IconButton>
-        </Box>
-      )}
-
       {/* Content Zone */}
       <Box
-        ref={contentZoneRef}
+        ref={containerRef}
         sx={{
-          width: '100%',
-          height: '100%',
+          flexGrow: 1,
           position: 'relative',
-          overflow: viewMode === 'grid' ? 'visible' : 'hidden',
+          overflow: viewMode === 'grid' ? 'auto' : 'hidden',
         }}
       >
         {viewMode === 'grid' ? (
@@ -408,158 +358,52 @@ const MicroConclavPage = () => {
               }}
             >
             {moodboardItems.map((item, index) => (
-              <Paper
+              <MoodboardItemGrid
                 key={`${item.id}-${index}`}
-                elevation={2}
-                sx={{
-                  overflow: 'hidden',
-                  borderRadius: 2,
-                  transition: 'transform 0.2s',
-                  '&:hover': {
-                    transform: 'translateY(-4px)',
-                  },
-                }}
-              >
-                <Box sx={{ width: '100%', height: 300 }}>
-                  {renderMoodboardItem(item)}
-                </Box>
-              </Paper>
+                item={item}
+              />
             ))}
             </Box>
           </Box>
         ) : (
-          /* Moodboard View - Original Layout */
-          <Box
-            sx={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              overflow: 'auto',
-              backgroundColor: moodboardBackgroundColor || '#f5f5f5',
-            }}
+          /* Moodboard View - Canvas Layout using new MoodboardCanvas component */
+          <MoodboardCanvas
+            backgroundColor={moodboardBackgroundColor || '#f5f5f5'}
+            scale={scale}
+            position={position}
+            isDraggingCanvas={isDraggingCanvas}
+            canvasRef={canvasRef}
+            onCanvasClick={handleCanvasClick}
+            onCanvasMouseDown={handleCanvasMouseDown}
+            onCanvasMouseMove={handleCanvasMouseMove}
+            onCanvasMouseUp={handleCanvasMouseUp}
+            onCanvasMouseLeave={handleCanvasMouseUp}
+            showGrid={!moodboardBackgroundColor}
+            height="calc(100vh - 55px)"
           >
-            {/* Canvas container with repeating content */}
-            <Box
-              sx={{
-                position: 'relative',
-                width: '20000px', // Even larger for more repetitions
-                height: '20000px', // Even larger for more repetitions
-                backgroundColor: moodboardBackgroundColor || '#f5f5f5',
-                // Add a subtle grid pattern for visual reference
-                backgroundImage: `
-                  linear-gradient(rgba(0,0,0,0.03) 1px, transparent 1px),
-                  linear-gradient(90deg, rgba(0,0,0,0.03) 1px, transparent 1px)
-                `,
-                backgroundSize: `${50 * zoom}px ${50 * zoom}px`,
-                backgroundPosition: '0 0',
-                transform: `scale(${zoom})`,
-                transformOrigin: '0 0',
-              }}
-            >
-              {/* Scroll hint */}
-              {moodboardItems.length > 0 && (
-                <Box
-                  sx={{
-                    position: 'fixed',
-                    bottom: 20,
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-                    color: 'white',
-                    px: 2,
-                    py: 1,
-                    borderRadius: 2,
-                    fontSize: '0.875rem',
-                    zIndex: 1000,
-                    pointerEvents: 'none',
-                  }}
-                >
-                  Scroll to explore • Ctrl+Scroll to zoom
-                </Box>
-              )}
+            {/* Render items from primary moodboard only */}
+            {primaryMoodboardItems.map((item, index) => {
+              // Ensure items have valid positioning and z-index
+              const adjustedItem = {
+                ...item,
+                x: item.x !== undefined ? item.x : 100 + (index * 20), // Default x if undefined
+                y: item.y !== undefined ? item.y : 100 + (index * 20), // Default y if undefined
+                width: item.width || 200, // Default width
+                height: item.height || 200, // Default height
+                zIndex: item.zIndex || (10 + index) // Ensure higher z-index
+              };
               
-              {(() => {
-                if (moodboardItems.length === 0) return null;
-                
-                // Calculate content bounds
-                const bounds = moodboardItems.reduce((acc, item) => {
-                  const left = item.x || 0;
-                  const top = item.y || 0;
-                  const right = left + (item.width || 200);
-                  const bottom = top + (item.height || 200);
-                  
-                  return {
-                    minX: Math.min(acc.minX, left),
-                    minY: Math.min(acc.minY, top),
-                    maxX: Math.max(acc.maxX, right),
-                    maxY: Math.max(acc.maxY, bottom),
-                  };
-                }, { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity });
-                
-                // Calculate pattern dimensions with some padding
-                const patternWidth = bounds.maxX - bounds.minX + 200;
-                const patternHeight = bounds.maxY - bounds.minY + 200;
-                
-                // Create a 7x7 grid of repetitions (49 total)
-                const repetitions = [];
-                for (let row = -3; row <= 3; row++) {
-                  for (let col = -3; col <= 3; col++) {
-                    const offsetX = col * patternWidth + 10000; // Center in the canvas
-                    const offsetY = row * patternHeight + 10000; // Center in the canvas
-                    
-                    repetitions.push(
-                      moodboardItems.map((item, index) => {
-                        // Safe defaults for item properties
-                        const safeItem = {
-                          x: item.x || 0,
-                          y: item.y || 0,
-                          width: item.width || 200,
-                          height: item.height || 200,
-                          rotation: item.rotation || 0,
-                          opacity: item.opacity !== undefined ? item.opacity : 1,
-                          border_radius: item.border_radius || 0,
-                          zIndex: item.zIndex || 0,
-                          backgroundColor: item.backgroundColor || 'transparent',
-                          textColor: item.textColor || theme.palette.text.primary,
-                          ...item
-                        };
-
-                        return (
-                          <Paper
-                            key={`${item.id}-${row}-${col}-${index}`}
-                            elevation={1}
-                            sx={{
-                              position: 'absolute',
-                              left: `${safeItem.x - bounds.minX + offsetX}px`,
-                              top: `${safeItem.y - bounds.minY + offsetY}px`,
-                              width: `${safeItem.width}px`,
-                              height: `${safeItem.height}px`,
-                              transform: safeItem.rotation ? `rotate(${safeItem.rotation}deg)` : 'none',
-                              opacity: safeItem.opacity * (row === 0 && col === 0 ? 1 : 0.8), // Slightly fade repetitions
-                              borderRadius: `${safeItem.border_radius}px`,
-                              overflow: 'hidden',
-                              zIndex: safeItem.zIndex,
-                              transition: 'box-shadow 0.2s',
-                              cursor: 'default',
-                              '&:hover': {
-                                boxShadow: 3,
-                              },
-                            }}
-                          >
-                            {renderMoodboardItem(safeItem)}
-                          </Paper>
-                        );
-                      })
-                    );
-                  }
-                }
-                
-                return repetitions;
-              })()}
-            </Box>
-          </Box>
+              return (
+                <MoodboardItemDisplay
+                  key={`${item.id}-${index}`}
+                  item={adjustedItem}
+                  offsetX={0}
+                  offsetY={0}
+                  scale={scale}
+                />
+              );
+            })}
+          </MoodboardCanvas>
         )}
 
         {loadingMore && viewMode === 'grid' && (
