@@ -124,11 +124,65 @@ const theme = createTheme({
     loadNetworkTheme();
   }, [user, activeProfile]);
 
-  // Expose both networkTheme and darkMode functionality
+  // Function to refresh network theme
+  const refreshNetworkTheme = async () => {
+    // Only attempt to load theme if user is logged in
+    if (!user) {
+      setNetworkTheme(prev => ({ ...prev, loaded: true }));
+      return;
+    }
+    
+    try {
+      // Get network ID from active profile, fallback to direct query
+      let networkId = activeProfile?.network_id;
+      
+      if (!networkId && user?.id) {
+        // Fallback for backward compatibility - use maybeSingle to handle no results gracefully
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('network_id')
+          .eq('user_id', user.id)
+          .maybeSingle();
+          
+        if (profileError) {
+          console.error('Error loading profile for theme refresh:', profileError);
+          return;
+        }
+        networkId = profile?.network_id;
+      }
+      
+      // If user has no network, use default theme
+      if (!networkId) {
+        setNetworkTheme(prev => ({ ...prev, loaded: true }));
+        return;
+      }
+      
+      // Load network theme settings
+      const { data: network, error: networkError } = await supabase
+        .from('networks')
+        .select('theme_bg_color, logo_url')
+        .eq('id', networkId)
+        .single();
+        
+      if (networkError) throw networkError;
+      
+      // Apply theme if available
+      setNetworkTheme({
+        backgroundColor: network.theme_bg_color || '#ffffff',
+        logoUrl: network.logo_url || null,
+        loaded: true
+      });
+    } catch (error) {
+      console.error('Error refreshing theme:', error);
+    }
+  };
+
+  // Expose networkTheme, darkMode functionality, and refresh function
   const themeContextValue = {
     networkTheme,
     darkMode,
-    toggleDarkMode
+    toggleDarkMode,
+    refreshNetworkTheme
   };
 
   return (

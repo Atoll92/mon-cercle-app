@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Box, Typography, Skeleton, Badge, Tooltip, alpha, Divider } from '@mui/material';
 import { 
   Logout as LogoutIcon, 
@@ -15,6 +15,7 @@ import { useDirectMessages } from '../context/directMessagesContext';
 import { fetchNetworkDetails } from '../api/networks';
 import { logout } from '../api/auth';
 import { useProfile } from '../context/profileContext';
+import { useNetworkRefresh } from '../hooks/useNetworkRefresh';
 
 // Simple badge component for unread messages
 const MessageBadge = React.memo(() => {
@@ -67,38 +68,41 @@ const NetworkHeader = () => {
     return null;
   }
   
-  useEffect(() => {
-    const getNetworkInfo = async () => {
-      const networkIdFromUrl = getNetworkIdFromUrl(location.pathname);
-      if (!user && !networkIdFromUrl) return;
-      
-      try {
-        setLoading(true);
-
-        if (networkIdFromUrl) {
-          const networkData = await fetchNetworkDetails(networkIdFromUrl);
-          if (!networkData) return;
-          setNetworkInfo(networkData);
-          return;
-        }
-        if (!user) return;
-
-        // For profile-aware system, use active profile's network
-        if (activeProfile?.network_id) {
-          // Get network details from active profile
-          const networkData = await fetchNetworkDetails(activeProfile.network_id);
-          if (!networkData) return;
-          setNetworkInfo(networkData);
-        }
-      } catch (error) {
-        console.error('Error fetching network info:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const getNetworkInfo = useCallback(async () => {
+    const networkIdFromUrl = getNetworkIdFromUrl(location.pathname);
+    if (!user && !networkIdFromUrl) return;
     
-    getNetworkInfo();
+    try {
+      setLoading(true);
+
+      if (networkIdFromUrl) {
+        const networkData = await fetchNetworkDetails(networkIdFromUrl);
+        if (!networkData) return;
+        setNetworkInfo(networkData);
+        return;
+      }
+      if (!user) return;
+
+      // For profile-aware system, use active profile's network
+      if (activeProfile?.network_id) {
+        // Get network details from active profile
+        const networkData = await fetchNetworkDetails(activeProfile.network_id);
+        if (!networkData) return;
+        setNetworkInfo(networkData);
+      }
+    } catch (error) {
+      console.error('Error fetching network info:', error);
+    } finally {
+      setLoading(false);
+    }
   }, [user, location.pathname, activeProfile]);
+
+  useEffect(() => {
+    getNetworkInfo();
+  }, [getNetworkInfo]);
+
+  // Subscribe to network refresh events
+  useNetworkRefresh(networkInfo?.id, getNetworkInfo);
   
   if (!networkInfo) return null;
   

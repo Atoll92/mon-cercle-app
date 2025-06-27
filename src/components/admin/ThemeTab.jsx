@@ -18,8 +18,10 @@ import {
   Add as AddIcon
 } from '@mui/icons-material';
 import { updateNetworkDetails, uploadNetworkImage, removeNetworkImage } from '../../api/networks';
+import { useTheme } from '../ThemeProvider';
 
 const ThemeTab = ({ network, onNetworkUpdate, darkMode = false }) => {
+  const { refreshNetworkTheme } = useTheme();
   const [themeSettings, setThemeSettings] = useState({
     backgroundColor: network.theme_bg_color || '#ffffff'
   });
@@ -78,6 +80,8 @@ const ThemeTab = ({ network, onNetworkUpdate, darkMode = false }) => {
         ...network,
         theme_bg_color: themeSettings.backgroundColor
       });
+      // Refresh the global theme to apply changes instantly
+      await refreshNetworkTheme();
       setMessage('Theme settings updated successfully!');
     } else {
       setError(result.message || 'Failed to update theme settings');
@@ -216,6 +220,8 @@ const ThemeTab = ({ network, onNetworkUpdate, darkMode = false }) => {
         ...network,
         logo_url: result.publicUrl
       });
+      // Refresh the global theme to apply logo changes instantly
+      await refreshNetworkTheme();
       setMessage('Network logo updated successfully!');
       setLogoFile(null);
     } else {
@@ -239,6 +245,8 @@ const ThemeTab = ({ network, onNetworkUpdate, darkMode = false }) => {
         ...network,
         logo_url: null
       });
+      // Refresh the global theme to apply logo removal instantly
+      await refreshNetworkTheme();
       setLogoPreview(null);
       setMessage('Network logo removed successfully!');
     } else {
@@ -340,9 +348,11 @@ const ThemeTab = ({ network, onNetworkUpdate, darkMode = false }) => {
                   value={themeSettings.backgroundColor}
                   onChange={(e) => setThemeSettings({...themeSettings, backgroundColor: e.target.value})}
                   sx={{ mb: 2 }}
-                  inputProps={{
-                    pattern: "#[0-9A-Fa-f]{6}",
-                    maxLength: 7
+                  slotProps={{
+                    input: {
+                      pattern: "#[0-9A-Fa-f]{6}",
+                      maxLength: 7
+                    }
                   }}
                 />
               </Box>

@@ -331,7 +331,14 @@ function NetworkAdminPage() {
 
         {activeTab === 0 && (
           <Box>
-            {/* Network Info Component - at the top */}
+            {/* Network Settings Component*/}
+            <NetworkSettingsTab 
+              network={network} 
+              onNetworkUpdate={updateNetworkState}
+              darkMode={darkMode} // Pass dark mode to component
+            />
+            <br/>
+            {/* Network Info Component*/}
             <Box sx={{ mb: 3 }}>
               <NetworkInfoPanel 
                 network={network} 
@@ -340,12 +347,6 @@ function NetworkAdminPage() {
               />
             </Box>
             
-            {/* Network Settings Component - full width below */}
-            <NetworkSettingsTab 
-              network={network} 
-              onNetworkUpdate={updateNetworkState}
-              darkMode={darkMode} // Pass dark mode to component
-            />
           </Box>
         )}
 

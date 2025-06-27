@@ -154,6 +154,17 @@ export const NetworkProvider = ({ networkId, children }) => {
         console.error('Failed to refresh files:', error);
         return { success: false, error };
       }
+    },
+    refreshNetwork: async () => {
+      try {
+        const networkData = await fetchNetworkDetails(networkId);
+        if (!networkData) throw new Error('Network not found');
+        setNetwork(networkData);
+        return { success: true };
+      } catch (error) {
+        console.error('Failed to refresh network:', error);
+        return { success: false, error };
+      }
     }
   };
 

@@ -60,6 +60,7 @@ import {
   DragIndicator as DragIndicatorIcon
 } from '@mui/icons-material';
 import { updateNetworkDetails } from '../../api/networks';
+import { triggerNetworkRefresh } from '../../hooks/useNetworkRefresh';
 
 // Sortable Chip Component
 const SortableTabChip = ({ tab, isSelected, onToggle, darkMode }) => {
@@ -230,6 +231,8 @@ const NetworkSettingsTab = ({ network, onNetworkUpdate, darkMode }) => {
     
     if (result.success) {
       onNetworkUpdate({ ...network, ...updates });
+      // Trigger global network refresh to update NetworkHeader and other components
+      triggerNetworkRefresh(network.id);
       setMessage('Network settings updated successfully!');
     } else {
       setError(result.message || 'Failed to update network. Please try again.');
