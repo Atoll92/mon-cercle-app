@@ -227,38 +227,25 @@ const NewsTab = ({ darkMode }) => {
         imageUrl = await uploadNewsImage(network.id, imageFile);
       }
       
-      // Create the news post with optional media
-      const newsData = {
-        title: newsTitle,
+      // Create news post using API function (includes notification queueing)
+      const result = await createNewsPost(
+        network.id,
+        activeProfile?.id || user.id,
+        newsTitle,
         content,
-        network_id: network.id,
-        created_by: activeProfile?.id || user.id,
-        category_id: selectedCategory || null
-      };
+        imageUrl,
+        imageCaption,
+        mediaUrl,
+        mediaType,
+        mediaMetadata,
+        selectedCategory
+      );
       
-      // Add media fields if media was uploaded
-      if (mediaUrl) {
-        newsData.media_url = mediaUrl;
-        newsData.media_type = mediaType;
-        newsData.media_metadata = mediaMetadata;
-        // For backward compatibility, also set image fields if it's an image
-        if (mediaType === 'image') {
-          newsData.image_url = mediaUrl;
-          newsData.image_caption = imageCaption;
-        }
-      } else if (imageUrl) {
-        // Legacy image upload support
-        newsData.image_url = imageUrl;
-        newsData.image_caption = imageCaption;
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to create news post');
       }
       
-      // Insert news post to database
-      const { data, error } = await supabase
-        .from('network_news')
-        .insert([newsData])
-        .select();
-        
-      if (error) throw error;
+      console.log('📰 News post created successfully:', result);
       
       // Update UI and clean up
       resetForm();

@@ -56,6 +56,8 @@ import {
 } from '@mui/icons-material';
 import NotificationSettings from '../components/NotificationSettings';
 import NotificationSystemManager from '../components/NotificationSystemManager';
+import NotificationDebugger from '../components/NotificationDebugger';
+import { queuePortfolioNotifications } from '../services/emailNotificationService';
 
 function EditProfilePage() {
   const { user } = useAuth();
@@ -318,6 +320,31 @@ function EditProfilePage() {
       }
       
       console.log('Post saved successfully:', data);
+      
+      // Queue email notifications for network members
+      if (activeProfile?.network_id) {
+        try {
+          console.log('💼 [EDIT PROFILE DEBUG] Starting to queue email notifications for portfolio post...');
+          
+          const notificationResult = await queuePortfolioNotifications(
+            activeProfile.network_id,
+            data.id,
+            activeProfile.id,
+            newPostTitle,
+            newPostContent
+          );
+          
+          console.log('💼 [EDIT PROFILE DEBUG] Notification queueing result:', notificationResult);
+          
+          if (notificationResult.success) {
+            console.log(`💼 [EDIT PROFILE DEBUG] Email notifications queued successfully: ${notificationResult.message}`);
+          } else {
+            console.error('💼 [EDIT PROFILE DEBUG] Failed to queue email notifications:', notificationResult.error);
+          }
+        } catch (notificationError) {
+          console.error('💼 [EDIT PROFILE DEBUG] Error queueing email notifications:', notificationError);
+        }
+      }
       
       // Add the new item to the local state for immediate UI update
       setPostItems([...postItems, data]);
@@ -1462,6 +1489,12 @@ function EditProfilePage() {
                 <Stack spacing={3}>
                   <NotificationSettings />
                   <NotificationSystemManager />
+                  <Box sx={{ mt: 4 }}>
+                    <Typography variant="h6" gutterBottom>
+                      Notification System Diagnostics
+                    </Typography>
+                    <NotificationDebugger />
+                  </Box>
                 </Stack>
               </Box>
             )}

@@ -48,7 +48,6 @@ import MediaUpload from './MediaUpload';
 import MediaPlayer from './MediaPlayer';
 import ImageViewerModal from './ImageViewerModal';
 import { uploadMediaFile } from '../utils/mediaUpload';
-// import { queueMentionNotification } from '../services/emailNotificationService'; // Moved to API level
 import EmojiPicker from 'emoji-picker-react';
 
 // URL regex pattern to detect links in messages
@@ -372,7 +371,8 @@ const Chat = ({ networkId, isFullscreen = false }) => {
         activeProfile.id,
         pendingMessage.content,
         media,
-        replyingTo
+        replyingTo,
+        networkMembers // Pass network members for mention detection
       );
 
       if (result.error) throw new Error(result.error);

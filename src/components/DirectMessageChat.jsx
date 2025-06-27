@@ -3,7 +3,6 @@ import { useAuth } from '../context/authcontext';
 import { useProfile } from '../context/profileContext';
 import { useDirectMessages } from '../context/directMessagesContext';
 import { getConversationMessages, sendDirectMessage, markMessagesAsRead } from '../api/directMessages';
-// import { queueDirectMessageNotification } from '../services/emailNotificationService'; // Moved to API level
 import { supabase } from '../supabaseclient';
 import {
   Box,

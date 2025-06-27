@@ -958,6 +958,7 @@ export const createNewsPost = async (networkId, profileId, title, content, image
     console.error('News error:', error);
     return {
       success: false,
+      error: error.message,
       message: 'Failed to publish news post'
     };
   }

@@ -11,6 +11,7 @@ import LatestPostsWidget from '../components/LatestPostsWidget';
 import TestNotificationSystem from '../components/TestNotificationSystem';
 import MediaUpload from '../components/MediaUpload';
 import EventDetailsDialog from '../components/EventDetailsDialog';
+import { queuePortfolioNotifications } from '../services/emailNotificationService';
 import { useFadeIn, useStaggeredAnimation, ANIMATION_DURATION } from '../hooks/useAnimation';
 import { ProfileSkeleton, GridSkeleton } from '../components/LoadingSkeleton';
 import OnboardingGuide from '../components/OnboardingGuide';
@@ -605,6 +606,31 @@ function DashboardPage() {
         media_type: data.media_type,
         media_metadata: data.media_metadata
       });
+      
+      // Queue email notifications for network members
+      if (profile.network_id) {
+        try {
+          console.log('💼 [DASHBOARD DEBUG] Starting to queue email notifications for portfolio post...');
+          
+          const notificationResult = await queuePortfolioNotifications(
+            profile.network_id,
+            data.id,
+            profile.id,
+            newPostTitle,
+            newPostContent
+          );
+          
+          console.log('💼 [DASHBOARD DEBUG] Notification queueing result:', notificationResult);
+          
+          if (notificationResult.success) {
+            console.log(`💼 [DASHBOARD DEBUG] Email notifications queued successfully: ${notificationResult.message}`);
+          } else {
+            console.error('💼 [DASHBOARD DEBUG] Failed to queue email notifications:', notificationResult.error);
+          }
+        } catch (notificationError) {
+          console.error('💼 [DASHBOARD DEBUG] Error queueing email notifications:', notificationError);
+        }
+      }
       
       // Reset the form
       setNewPostTitle('');

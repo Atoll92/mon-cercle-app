@@ -34,6 +34,7 @@ import { useAuth } from '../context/authcontext';
 import { useProfile } from '../context/profileContext';
 import MediaUpload from './MediaUpload';
 import { fetchNetworkCategories } from '../api/categories';
+import { queuePortfolioNotifications } from '../services/emailNotificationService';
 
 const CreatePostModal = ({ open, onClose, onPostCreated, darkMode = false, networkId }) => {
   const { user } = useAuth();
@@ -188,6 +189,32 @@ const CreatePostModal = ({ open, onClose, onPostCreated, darkMode = false, netwo
         media_type: data.media_type,
         media_metadata: data.media_metadata
       });
+      
+      // Queue email notifications for network members
+      try {
+        console.log('💼 [PORTFOLIO DEBUG] Starting to queue email notifications for portfolio post...');
+        console.log('💼 [PORTFOLIO DEBUG] Portfolio post created:', data);
+        
+        const notificationResult = await queuePortfolioNotifications(
+          networkId,
+          data.id,
+          activeProfile?.id || user.id,
+          title,
+          content
+        );
+        
+        console.log('💼 [PORTFOLIO DEBUG] Notification queueing result:', notificationResult);
+        
+        if (notificationResult.success) {
+          console.log(`💼 [PORTFOLIO DEBUG] Email notifications queued successfully: ${notificationResult.message}`);
+        } else {
+          console.error('💼 [PORTFOLIO DEBUG] Failed to queue email notifications:', notificationResult.error);
+          // Don't fail the post creation if notification queueing fails
+        }
+      } catch (notificationError) {
+        console.error('💼 [PORTFOLIO DEBUG] Error queueing email notifications:', notificationError);
+        // Don't fail the post creation if notification queueing fails
+      }
       
       setSuccess(true);
       
