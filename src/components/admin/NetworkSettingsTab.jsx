@@ -314,8 +314,8 @@ const NetworkSettingsTab = ({ network, onNetworkUpdate, darkMode }) => {
             </Typography>
           </AccordionSummary>
           <AccordionDetails>
-            <Grid container spacing={3}>
-              <Grid item xs={12}>
+            <Grid container spacing={3} direction="column">
+              <Grid item xs={12} sx={{ width: '100%' }}>
                 <TextField 
                   fullWidth
                   label="Network Name"
@@ -323,15 +323,11 @@ const NetworkSettingsTab = ({ network, onNetworkUpdate, darkMode }) => {
                   value={networkName}
                   onChange={(e) => setNetworkName(e.target.value)}
                   required
-                  sx={{
-                    '& .MuiOutlinedInput-root': {
-                      backgroundColor: darkMode ? alpha(muiTheme.palette.background.paper, 0.6) : alpha(muiTheme.palette.background.default, 0.6),
-                    }
-                  }}
+                  sx={{ width: '100%' }}
                 />
               </Grid>
               
-              <Grid item xs={12}>
+              <Grid item xs={12} sx={{ width: '100%' }}>
                 <TextField 
                   fullWidth
                   label="Network Description"
@@ -339,10 +335,13 @@ const NetworkSettingsTab = ({ network, onNetworkUpdate, darkMode }) => {
                   value={networkDescription}
                   onChange={(e) => setNetworkDescription(e.target.value)}
                   multiline
-                  rows={4}
+                  minRows={4}
+                  maxRows={8}
                   sx={{
-                    '& .MuiOutlinedInput-root': {
-                      backgroundColor: darkMode ? alpha(muiTheme.palette.background.paper, 0.6) : alpha(muiTheme.palette.background.default, 0.6),
+                    width: '100%',
+                    '& .MuiInputBase-input': {
+                      overflow: 'auto',
+                      resize: 'vertical'
                     }
                   }}
                 />

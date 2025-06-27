@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Box,
@@ -247,6 +247,32 @@ const AdminLayout = ({
     </>
   );
 
+  const heightScrolled = () => {
+    const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+    return scrollTop;
+  };
+  const [desktopNavTopOffset, setDesktopNavTopOffset] = useState(Math.max(0, 80 - heightScrolled())); // Adjust for NetworkHeader height
+  const handleScroll = () => {
+    const newOffset = Math.max(0, 80 - heightScrolled()); // Adjust for NetworkHeader height
+    if (newOffset !== desktopNavTopOffset) {
+      setDesktopNavTopOffset(newOffset);
+    }
+  };
+  const handleResize = () => {
+    const newOffset = Math.max(0, 80 - heightScrolled()); // Adjust for NetworkHeader height
+    if (newOffset !== desktopNavTopOffset) {
+      setDesktopNavTopOffset(newOffset);
+    }
+  };
+  useEffect(() => {
+    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [desktopNavTopOffset]);
+
   return (
     <Box sx={{ display: 'flex' }}>
       {/* Mobile app bar - only visible on mobile */}
@@ -312,22 +338,18 @@ const AdminLayout = ({
           variant="permanent"
           sx={{
             display: { xs: 'none', md: 'block' },
-             position: 'sticky',
-              top: 0,
             '& .MuiDrawer-paper': {
               boxSizing: 'border-box',
-               position: 'sticky',
-              
               width: drawerWidth,
               borderRight: `1px solid ${muiTheme.palette.custom.border}`,
               backgroundColor: darkMode 
-                ? muiTheme.palette.background.paper 
-                : muiTheme.palette.background.default,
+                ? "black" 
+                : "white",
               boxShadow: darkMode 
                 ? '0 4px 20px rgba(0,0,0,0.3)' 
                 : '0 1px 3px rgba(0,0,0,0.1)',
-              height: 'calc(100vh - 80px)', // Adjust for NetworkHeader height (80px min-height)
-              top: 80, // Positioned below NetworkHeader
+              height: `calc(100vh - ${desktopNavTopOffset}px)`, // Adjust for NetworkHeader height (${desktopNavTopOffset}px min-height)
+              marginTop: `${desktopNavTopOffset}px`, // Positioned below NetworkHeader
               borderTop: `1px solid ${muiTheme.palette.custom.border}`,
             },
           }}
