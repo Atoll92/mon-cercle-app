@@ -564,6 +564,7 @@ function DashboardPage() {
       setPublishingPost(true);
       console.log("Publishing post:", newPostTitle);
       console.log("Current media state:", { mediaUrl, mediaType, mediaMetadata });
+      console.log("💼 [DASHBOARD DEBUG] Current activeProfile:", activeProfile);
       
       // Save post directly to the database
       const newPost = {
@@ -608,14 +609,15 @@ function DashboardPage() {
       });
       
       // Queue email notifications for network members
-      if (profile.network_id) {
+      if (activeProfile?.network_id) {
         try {
           console.log('💼 [DASHBOARD DEBUG] Starting to queue email notifications for portfolio post...');
+          console.log('💼 [DASHBOARD DEBUG] Using activeProfile.network_id:', activeProfile.network_id);
           
           const notificationResult = await queuePortfolioNotifications(
-            profile.network_id,
+            activeProfile.network_id,
             data.id,
-            profile.id,
+            activeProfile.id,
             newPostTitle,
             newPostContent
           );
