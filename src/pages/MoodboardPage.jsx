@@ -8,6 +8,8 @@ import LinkPreview from '../components/LinkPreview';
 import MediaUpload from '../components/MediaUpload';
 import MediaPlayer from '../components/MediaPlayer';
 import MoodboardItem from '../components/Moodboard/MoodboardItem';
+import MoodboardSettingsDialog from '../components/Moodboard/MoodboardSettingsDialog';
+import { updateMoodboard } from '../api/moodboards';
 import {
   Box,
   Paper,
@@ -60,7 +62,8 @@ import {
   FileCopy as FileCopyIcon,
   Close as CloseIcon,
   CloudUpload as CloudUploadIcon,
-  PictureAsPdf as PdfIcon
+  PictureAsPdf as PdfIcon,
+  Settings as SettingsIcon
 } from '@mui/icons-material';
 
 // Enhanced EditItemDialog with improved UI and PDF support
@@ -1462,6 +1465,31 @@ const handleUpdateItem = async (updatedItem) => {
     }
   };
   
+  // Handle moodboard settings update
+  const handleSaveMoodboardSettings = async (updates) => {
+    try {
+      setSaving(true);
+      
+      const updatedMoodboard = await updateMoodboard(moodboardId, updates);
+      
+      // Update local state
+      setMoodboard(prev => ({
+        ...prev,
+        ...updatedMoodboard
+      }));
+      
+      setSettingsDialogOpen(false);
+      setSuccess('Moodboard settings updated successfully');
+      setTimeout(() => setSuccess(null), 3000);
+      
+    } catch (err) {
+      console.error('Error updating moodboard settings:', err);
+      setError('Failed to update moodboard settings: ' + (err.message || 'Unknown error'));
+    } finally {
+      setSaving(false);
+    }
+  };
+  
   // Handle file input change for image upload
   const handleFileChange = (e) => {
     if (!e.target.files || e.target.files.length === 0) {
@@ -1628,6 +1656,15 @@ const handleUpdateItem = async (updatedItem) => {
                 size="small"
               >
                 {saving ? 'Saving...' : 'Save Changes'}
+              </Button>
+              
+              <Button
+                variant="outlined"
+                startIcon={<SettingsIcon />}
+                onClick={() => setSettingsDialogOpen(true)}
+                size="small"
+              >
+                Settings
               </Button>
             </>
           )}
@@ -2130,6 +2167,15 @@ const handleUpdateItem = async (updatedItem) => {
           </Button>
         </DialogActions>
       </Dialog>
+      
+      {/* Moodboard Settings Dialog */}
+      <MoodboardSettingsDialog
+        open={settingsDialogOpen}
+        onClose={() => setSettingsDialogOpen(false)}
+        moodboard={moodboard}
+        onSave={handleSaveMoodboardSettings}
+        processing={saving}
+      />
     </Box>
   );
 }
