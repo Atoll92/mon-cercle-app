@@ -570,8 +570,10 @@ export const queueEventNotifications = async (networkId, eventId, authorId, even
  * @param {string} authorId - The ID of the user who created the post
  * @param {string} postTitle - Title of the portfolio post
  * @param {string} postDescription - Description of the portfolio post
+ * @param {string} mediaUrl - URL of attached media (optional)
+ * @param {string} mediaType - Type of attached media (optional)
  */
-export const queuePortfolioNotifications = async (networkId, postId, authorId, postTitle, postDescription) => {
+export const queuePortfolioNotifications = async (networkId, postId, authorId, postTitle, postDescription, mediaUrl = null, mediaType = null) => {
   try {
     console.log('💼 [PORTFOLIO DEBUG] Starting to queue portfolio post notifications');
     console.log('💼 [PORTFOLIO DEBUG] Network ID:', networkId);
@@ -643,9 +645,9 @@ export const queuePortfolioNotifications = async (networkId, postId, authorId, p
     const notifications = recipients.map(recipient => ({
       recipient_id: recipient.id,
       network_id: networkId,
-      notification_type: 'news', // Use news type since portfolio posts are treated like news
-      subject_line: `New project shared in ${network.name}: ${postTitle}`,
-      content_preview: `${author.full_name || 'Someone'} shared a new project: ${postTitle}. ${postDescription?.substring(0, 150) || ''}${postDescription?.length > 150 ? '...' : ''}`,
+      notification_type: 'post', // Portfolio posts have their own type
+      subject_line: `New post shared in ${network.name}: ${postTitle}`,
+      content_preview: `${author.full_name || 'Someone'} shared a new post: ${postTitle}. ${postDescription?.substring(0, 150) || ''}${postDescription?.length > 150 ? '...' : ''}`,
       related_item_id: postId
     }));
 

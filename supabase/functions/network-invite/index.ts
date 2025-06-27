@@ -1,12 +1,14 @@
 // supabase/functions/network-invite/index.ts
 
+/// <reference types="https://esm.sh/@types/node@18/index.d.ts" />
+
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
 
 interface InviteData {
   toEmail: string;
   networkName: string;
   inviterName: string;
-  type: 'existing_user' | 'new_user' | 'news' | 'event' | 'mention' | 'direct_message';
+  type: 'existing_user' | 'new_user' | 'news' | 'event' | 'mention' | 'direct_message' | 'post';
   inviteLink?: string;
   subject?: string;
   content?: string;
@@ -78,7 +80,7 @@ const handler = async (request: Request): Promise<Response> => {
     }
 
     // For content notifications, subject and content are required
-    if ((type === 'news' || type === 'event' || type === 'mention' || type === 'direct_message') && (!subject || !content)) {
+    if ((type === 'news' || type === 'event' || type === 'mention' || type === 'direct_message' || type === 'post') && (!subject || !content)) {
       return new Response(
         JSON.stringify({ error: 'Subject and content are required for content notifications' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -132,7 +134,19 @@ const handler = async (request: Request): Promise<Response> => {
         content: content?.substring(0, 100) + '...',
         networkName
       });
-      emailSubject = subject;
+      emailSubject = subject || `New post in ${networkName}`;
+      
+      // Parse content to extract title if it's a portfolio post
+      let postTitle = '';
+      let postContent = content || 'Content not available';
+      
+      // Check if this is a portfolio post by looking for the pattern "shared a new post: Title. Description"
+      const portfolioMatch = content?.match(/shared a new post: ([^.]+)\.\s*(.*)$/);
+      if (portfolioMatch) {
+        postTitle = portfolioMatch[1];
+        postContent = portfolioMatch[2] || 'No description provided';
+      }
+      
       html = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; line-height: 1.6;">
           <div style="background-color: #2196f3; padding: 20px; border-radius: 8px 8px 0 0;">
@@ -144,8 +158,15 @@ const handler = async (request: Request): Promise<Response> => {
             <div style="margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #f0f0f0;">
               <p style="margin: 0; color: #666; font-size: 14px;">Posted by <strong>${inviterName || 'Someone'}</strong></p>
             </div>
+            
+            ${postTitle ? `
+            <div style="margin-bottom: 16px;">
+              <h3 style="margin: 0 0 8px 0; color: #333; font-size: 18px; font-weight: 600;">${postTitle}</h3>
+            </div>
+            ` : ''}
+            
             <div style="margin-bottom: 20px;">
-              <p style="margin: 0 0 16px 0; color: #333; font-size: 16px; line-height: 1.5;">${content || 'Content not available'}</p>
+              <p style="margin: 0 0 16px 0; color: #333; font-size: 16px; line-height: 1.5;">${postContent}</p>
             </div>
             
             <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid #f0f0f0;">
@@ -167,6 +188,66 @@ const handler = async (request: Request): Promise<Response> => {
           </div>
         </div>
       `;
+    } else if (type === 'post') {
+      console.log('🚀 [EDGE FUNCTION DEBUG] Creating portfolio post notification email with:', {
+        subject,
+        content: content?.substring(0, 100) + '...',
+        networkName
+      });
+      emailSubject = subject || `New post in ${networkName}`;
+      
+      // Parse content to extract title and description for portfolio posts
+      let postTitle = '';
+      let postContent = content || 'Content not available';
+      
+      // Check if this is a portfolio post by looking for the pattern "shared a new post: Title. Description"
+      const portfolioMatch = content?.match(/shared a new post: ([^.]+)\\.\\s*(.*)$/);
+      if (portfolioMatch) {
+        postTitle = portfolioMatch[1];
+        postContent = portfolioMatch[2] || 'No description provided';
+      }
+      
+      html = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; line-height: 1.6;">
+          <div style="background-color: #673ab7; padding: 20px; border-radius: 8px 8px 0 0;">
+            <h2 style="color: white; margin: 0 0 10px 0; font-size: 24px;">📊 New Portfolio Post in ${networkName}</h2>
+            <p style="margin: 0; color: #ede7f6; font-size: 14px;">Discover what your network members are sharing</p>
+          </div>
+          
+          <div style="background-color: white; padding: 24px; border: 1px solid #e0e0e0; border-radius: 0 0 8px 8px; border-top: none;">
+            <div style="margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #f0f0f0;">
+              <p style="margin: 0; color: #666; font-size: 14px;">Shared by <strong>${inviterName || 'Someone'}</strong></p>
+            </div>
+            
+            ${postTitle ? `
+            <div style="margin-bottom: 16px;">
+              <h3 style="margin: 0 0 8px 0; color: #333; font-size: 18px; font-weight: 600;">${postTitle}</h3>
+            </div>
+            ` : ''}
+            
+            <div style="margin-bottom: 20px;">
+              <p style="margin: 0 0 16px 0; color: #333; font-size: 16px; line-height: 1.5;">${postContent}</p>
+            </div>
+            
+            <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid #f0f0f0;">
+              <a href="${Deno.env.get('APP_URL') || 'https://your-app-url.com'}/dashboard" 
+                 style="display: inline-block; background-color: #673ab7; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 500;">
+                View Post & Connect
+              </a>
+            </div>
+          </div>
+          
+          <div style="margin-top: 20px; padding: 16px; background-color: #f8f9fa; border-radius: 6px; font-size: 12px; color: #666;">
+            <p style="margin: 0 0 8px 0;">You're receiving this because you're subscribed to portfolio notifications for ${networkName}.</p>
+            <p style="margin: 0;">
+              <a href="${Deno.env.get('APP_URL') || 'https://your-app-url.com'}/profile/edit" 
+                 style="color: #673ab7; text-decoration: none;">
+                Manage your notification preferences
+              </a>
+            </p>
+          </div>
+        </div>
+      `;
     } else if (type === 'event') {
       console.log('🚀 [EDGE FUNCTION DEBUG] Creating event notification email with:', {
         subject,
@@ -175,7 +256,7 @@ const handler = async (request: Request): Promise<Response> => {
         eventLocation,
         networkName
       });
-      emailSubject = subject;
+      emailSubject = subject || `New post in ${networkName}`;
       
       // Format event date if provided
       let formattedDate = 'Date TBD';
@@ -251,7 +332,7 @@ const handler = async (request: Request): Promise<Response> => {
         messageContext,
         networkName
       });
-      emailSubject = subject;
+      emailSubject = subject || `New post in ${networkName}`;
       html = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; line-height: 1.6;">
           <div style="background-color: #9c27b0; padding: 20px; border-radius: 8px 8px 0 0;">
@@ -299,7 +380,7 @@ const handler = async (request: Request): Promise<Response> => {
         content: content?.substring(0, 100) + '...',
         networkName
       });
-      emailSubject = subject;
+      emailSubject = subject || `New post in ${networkName}`;
       html = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; line-height: 1.6;">
           <div style="background-color: #4caf50; padding: 20px; border-radius: 8px 8px 0 0;">
