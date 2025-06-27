@@ -1145,7 +1145,7 @@ const renderMedia = (mediaUrl, mediaType, metadata, messageId) => {
             ? 'rgba(255, 255, 255, 0.9)'
             : 'rgba(0, 0, 0, 0.7)',
           // Enhanced emoji support
-          fontFamily: '"Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", system-ui, -apple-system, sans-serif',
+          // fontFamily: '"Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", system-ui, -apple-system, sans-serif',
           '& .emoji': {
             fontSize: '1.1em',
             verticalAlign: 'baseline'
