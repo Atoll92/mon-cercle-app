@@ -1,8 +1,9 @@
 // src/components/PersonalMoodboardWidget.jsx
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { supabase } from '../supabaseclient';
 import { useProfile } from '../context/profileContext';
+import MoodboardSettingsDialog from './Moodboard/MoodboardSettingsDialog';
 import {
   Box,
   Card,
@@ -17,33 +18,18 @@ import {
   Chip,
   Alert,
   IconButton,
-  Stack,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   alpha
 } from '@mui/material';
 import {
   Dashboard as DashboardIcon,
   Add as AddIcon,
-  Edit as EditIcon,
   Delete as DeleteIcon,
-  Visibility as VisibilityIcon,
   Public as PublicIcon,
-  Person as PersonIcon,
   Lock as LockIcon,
-  MoreVert as MoreVertIcon,
   CreateNewFolder as CreateNewFolderIcon
 } from '@mui/icons-material';
 
 const PersonalMoodboardWidget = ({ user }) => {
-  const navigate = useNavigate();
   const { activeProfile, isLoadingProfiles } = useProfile();
   
   // State variables
@@ -52,14 +38,7 @@ const PersonalMoodboardWidget = ({ user }) => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const [currentMoodboard, setCurrentMoodboard] = useState(null);
   const [processing, setProcessing] = useState(false);
-  
-  // Form state
-  const [newTitle, setNewTitle] = useState('');
-  const [newDescription, setNewDescription] = useState('');
-  const [newPermissions, setNewPermissions] = useState('personal'); // Default to personal
-  const [newBackgroundColor, setNewBackgroundColor] = useState('#f0f7ff'); // Light blue default
   
   // Fetch user's personal moodboards
   useEffect(() => {
@@ -100,8 +79,8 @@ const PersonalMoodboardWidget = ({ user }) => {
   }, [user, activeProfile, isLoadingProfiles]);
   
   // Handle creating a new personal moodboard
-  const handleCreateMoodboard = async () => {
-    if (!newTitle.trim() || !activeProfile) return;
+  const handleCreateMoodboard = async (formData) => {
+    if (!activeProfile) return;
     
     try {
       setProcessing(true);
@@ -110,10 +89,10 @@ const PersonalMoodboardWidget = ({ user }) => {
         .from('moodboards')
         .insert([{
           network_id: activeProfile.network_id,
-          title: newTitle,
-          description: newDescription,
-          permissions: newPermissions,
-          background_color: newBackgroundColor,
+          title: formData.title,
+          description: formData.description,
+          permissions: formData.permissions,
+          background_color: formData.background_color,
           created_by: activeProfile.id,
           is_personal: true
         }])
@@ -124,11 +103,7 @@ const PersonalMoodboardWidget = ({ user }) => {
       // Add the new moodboard to state
       setPersonalMoodboards([data[0], ...personalMoodboards]);
       
-      // Reset form and close dialog
-      setNewTitle('');
-      setNewDescription('');
-      setNewPermissions('personal');
-      setNewBackgroundColor('#f0f7ff');
+      // Close dialog
       setCreateDialogOpen(false);
       
       setSuccess('Personal moodboard created successfully!');
@@ -136,6 +111,7 @@ const PersonalMoodboardWidget = ({ user }) => {
     } catch (err) {
       console.error('Error creating personal moodboard:', err);
       setError('Failed to create personal moodboard');
+      throw err; // Re-throw to let dialog handle the error
     } finally {
       setProcessing(false);
     }
@@ -299,14 +275,12 @@ const PersonalMoodboardWidget = ({ user }) => {
                       {/* Permission chip */}
                       <Chip
                         icon={
-                          moodboard.permissions === 'personal' ? <PersonIcon fontSize="small" /> :
                           moodboard.permissions === 'private' ? <LockIcon fontSize="small" /> :
                           <PublicIcon fontSize="small" />
                         }
                         label={
-                          moodboard.permissions === 'personal' ? 'Personal' :
                           moodboard.permissions === 'private' ? 'Private' :
-                          moodboard.permissions === 'public' ? 'Public' : 'Collaborative'
+                          moodboard.permissions === 'public' ? 'Public' : 'Private'
                         }
                         size="small"
                         sx={{ 
@@ -383,140 +357,16 @@ const PersonalMoodboardWidget = ({ user }) => {
       )}
       
       {/* Create Moodboard Dialog */}
-      <Dialog 
-        open={createDialogOpen} 
+      <MoodboardSettingsDialog
+        open={createDialogOpen}
         onClose={() => {
           setCreateDialogOpen(false);
           setError(null);
         }}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle>Create Personal Moodboard</DialogTitle>
-        <DialogContent>
-          <TextField
-            label="Title"
-            value={newTitle}
-            onChange={(e) => setNewTitle(e.target.value)}
-            fullWidth
-            margin="normal"
-            required
-          />
-          
-          <TextField
-            label="Description (optional)"
-            value={newDescription}
-            onChange={(e) => setNewDescription(e.target.value)}
-            fullWidth
-            margin="normal"
-            multiline
-            rows={3}
-          />
-          
-          <FormControl fullWidth margin="normal">
-            <InputLabel id="permissions-label">Visibility</InputLabel>
-            <Select
-              labelId="permissions-label"
-              value={newPermissions}
-              label="Visibility"
-              onChange={(e) => setNewPermissions(e.target.value)}
-            >
-              <MenuItem value="personal">
-                <Stack direction="row" alignItems="center" spacing={1}>
-                  <PersonIcon fontSize="small" />
-                  <Box>
-                    <Typography variant="body2">Personal</Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      Only you can view and edit
-                    </Typography>
-                  </Box>
-                </Stack>
-              </MenuItem>
-              <MenuItem value="private">
-                <Stack direction="row" alignItems="center" spacing={1}>
-                  <LockIcon fontSize="small" />
-                  <Box>
-                    <Typography variant="body2">Private</Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      Only you and admins can view
-                    </Typography>
-                  </Box>
-                </Stack>
-              </MenuItem>
-              <MenuItem value="public">
-                <Stack direction="row" alignItems="center" spacing={1}>
-                  <PublicIcon fontSize="small" />
-                  <Box>
-                    <Typography variant="body2">Public</Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      Anyone can view, only you can edit
-                    </Typography>
-                  </Box>
-                </Stack>
-              </MenuItem>
-            </Select>
-          </FormControl>
-          
-          <Box sx={{ mt: 2 }}>
-            <Typography variant="subtitle2" gutterBottom>
-              Background Color
-            </Typography>
-            <TextField
-              type="color"
-              value={newBackgroundColor}
-              onChange={(e) => setNewBackgroundColor(e.target.value)}
-              fullWidth
-              sx={{ mb: 2 }}
-              InputProps={{
-                sx: { height: 50 }
-              }}
-            />
-            
-            <Box 
-              sx={{ 
-                height: 100, 
-                bgcolor: newBackgroundColor,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                borderRadius: 1,
-                border: '1px solid',
-                borderColor: 'divider'
-              }}
-            >
-              <Typography 
-                variant="body2" 
-                color={
-                  parseInt(newBackgroundColor.replace('#', ''), 16) > 0xffffff / 2 
-                    ? 'rgba(0,0,0,0.8)' 
-                    : 'rgba(255,255,255,0.8)'
-                }
-              >
-                Background Preview
-              </Typography>
-            </Box>
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          {error && createDialogOpen && (
-            <Alert severity="error" sx={{ flex: 1, mr: 2 }} onClose={() => setError(null)}>
-              {error}
-            </Alert>
-          )}
-          <Button onClick={() => {
-            setCreateDialogOpen(false);
-            setError(null);
-          }}>Cancel</Button>
-          <Button 
-            onClick={handleCreateMoodboard} 
-            variant="contained" 
-            disabled={!newTitle.trim() || processing}
-            startIcon={processing && <CircularProgress size={20} />}
-          >
-            {processing ? 'Creating...' : 'Create'}
-          </Button>
-        </DialogActions>
-      </Dialog>
+        onSave={handleCreateMoodboard}
+        processing={processing}
+        mode="create"
+      />
     </Card>
   );
 };
