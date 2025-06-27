@@ -761,7 +761,8 @@ export const createEvent = async (networkId, profileId, eventData, imageFile) =>
         eventData.title,
         eventData.description,
         eventData.date,
-        eventData.location
+        eventData.location,
+        data[0].cover_image_url
       );
       
       console.log('📅 [EVENT DEBUG] Notification queueing result:', notificationResult);
@@ -933,7 +934,9 @@ export const createNewsPost = async (networkId, profileId, title, content, image
         data[0].id,
         profileId,
         title,
-        content
+        content,
+        mediaUrl || imageUrl,
+        mediaType || (imageUrl ? 'image' : null)
       );
       
       console.log('📰 [NEWS DEBUG] Notification queueing result:', notificationResult);

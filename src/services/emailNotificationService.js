@@ -9,7 +9,7 @@ import { supabase } from '../supabaseclient';
  * @param {string} newsTitle - Title of the news post
  * @param {string} newsContent - Content preview of the news post
  */
-export const queueNewsNotifications = async (networkId, newsId, authorId, newsTitle, newsContent) => {
+export const queueNewsNotifications = async (networkId, newsId, authorId, newsTitle, newsContent, mediaUrl = null, mediaType = null) => {
   try {
     console.log('🔔 [EMAIL DEBUG] Starting to queue news notifications');
     console.log('🔔 [EMAIL DEBUG] Network ID:', networkId);
@@ -82,7 +82,7 @@ export const queueNewsNotifications = async (networkId, newsId, authorId, newsTi
       network_id: networkId,
       notification_type: 'news',
       subject_line: `New post in ${network.name}: ${newsTitle}`,
-      content_preview: `${author.full_name || 'Someone'} shared: ${newsContent?.substring(0, 200) || newsTitle}${newsContent?.length > 200 ? '...' : ''}`,
+      content_preview: `${author.full_name || 'Someone'} shared: ${newsContent?.substring(0, 200) || newsTitle}${newsContent?.length > 200 ? '...' : ''}${mediaUrl ? ` [${mediaType || 'Media'}:${mediaUrl}]` : ''}`,
       related_item_id: newsId
     }));
 
@@ -205,12 +205,12 @@ export const processPendingNotifications = async () => {
               try {
                 const { data: eventData } = await supabase
                   .from('network_events')
-                  .select('event_date, location')
+                  .select('date, location')
                   .eq('id', notification.related_item_id)
                   .single();
                 
                 if (eventData) {
-                  additionalData.eventDate = eventData.event_date;
+                  additionalData.eventDate = eventData.date;
                   additionalData.eventLocation = eventData.location;
                 }
               } catch (eventError) {
@@ -448,7 +448,7 @@ export const queueMentionNotification = async (mentionedUserId, networkId, menti
  * @param {string} eventDescription - Description of the event
  * @param {string} eventDate - Date of the event
  */
-export const queueEventNotifications = async (networkId, eventId, authorId, eventTitle, eventDescription, eventDate, eventLocation = null) => {
+export const queueEventNotifications = async (networkId, eventId, authorId, eventTitle, eventDescription, eventDate, eventLocation = null, coverImageUrl = null) => {
   try {
     console.log('📅 [EVENT DEBUG] Starting to queue event notifications');
     console.log('📅 [EVENT DEBUG] Network ID:', networkId);
@@ -531,7 +531,7 @@ export const queueEventNotifications = async (networkId, eventId, authorId, even
       network_id: networkId,
       notification_type: 'event',
       subject_line: `New event in ${network.name}: ${eventTitle}`,
-      content_preview: `${author.full_name || 'Someone'} created an event: ${eventTitle} on ${formattedDate}. ${eventDescription?.substring(0, 150) || ''}${eventDescription?.length > 150 ? '...' : ''}`,
+      content_preview: `${author.full_name || 'Someone'} created an event: ${eventTitle} on ${formattedDate}. ${eventDescription?.substring(0, 150) || ''}${eventDescription?.length > 150 ? '...' : ''}${coverImageUrl ? ` [image:${coverImageUrl}]` : ''}`,
       related_item_id: eventId
     }));
 

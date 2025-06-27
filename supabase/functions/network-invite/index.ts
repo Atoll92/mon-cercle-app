@@ -136,15 +136,22 @@ const handler = async (request: Request): Promise<Response> => {
       });
       emailSubject = subject || `New post in ${networkName}`;
       
-      // Parse content to extract title if it's a portfolio post
+      // Parse content to extract title, description, and media for news posts
       let postTitle = '';
       let postContent = content || 'Content not available';
+      let hasMedia = false;
+      let mediaType = '';
+      let mediaUrl = '';
       
-      // Check if this is a portfolio post by looking for the pattern "shared a new post: Title. Description"
-      const portfolioMatch = content?.match(/shared a new post: ([^.]+)\.\s*(.*)$/);
-      if (portfolioMatch) {
-        postTitle = portfolioMatch[1];
-        postContent = portfolioMatch[2] || 'No description provided';
+      // Check for news post with media by looking for the pattern "shared: content [MediaType:URL]"
+      const newsMatch = content?.match(/shared: ([^\[]*?)([\[])([^:]+):([^\]]+)\]\s*$/);
+      if (newsMatch) {
+        postContent = newsMatch[1]?.trim() || 'No description provided';
+        if (newsMatch[3] && newsMatch[4]) {
+          hasMedia = true;
+          mediaType = newsMatch[3];
+          mediaUrl = newsMatch[4];
+        }
       }
       
       html = `
@@ -167,6 +174,27 @@ const handler = async (request: Request): Promise<Response> => {
             
             <div style="margin-bottom: 20px;">
               <p style="margin: 0 0 16px 0; color: #333; font-size: 16px; line-height: 1.5;">${postContent}</p>
+              
+              ${hasMedia ? `
+              <div style="margin-top: 16px;">
+                ${mediaType === 'image' ? `
+                <div style="text-align: center; margin: 16px 0;">
+                  <img src="${mediaUrl}" alt="News image" style="max-width: 100%; height: auto; max-height: 400px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);" />
+                </div>
+                ` : `
+                <div style="padding: 12px; background-color: #f8f9fa; border-radius: 6px; border-left: 4px solid #2196f3;">
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 18px;">${mediaType === 'video' ? '🎥' : mediaType === 'audio' ? '🎵' : '📎'}</span>
+                    <span style="color: #2196f3; font-weight: 500; font-size: 14px;">
+                      ${mediaType === 'video' ? 'Video attached' : 
+                        mediaType === 'audio' ? 'Audio attached' : 
+                        'Media attached'}
+                    </span>
+                  </div>
+                </div>
+                `}
+              </div>
+              ` : ''}
             </div>
             
             <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid #f0f0f0;">
@@ -281,17 +309,54 @@ const handler = async (request: Request): Promise<Response> => {
       console.log('🚀 [EDGE FUNCTION DEBUG] Creating event notification email with:', {
         subject,
         content: content?.substring(0, 100) + '...',
-        eventDate,
-        eventLocation,
-        networkName
+        eventDate: requestBody.eventDate,
+        eventLocation: requestBody.eventLocation,
+        networkName,
+        fullRequestBody: requestBody
       });
       emailSubject = subject || `New post in ${networkName}`;
       
+      // Parse content for media in events
+      let eventDescription = content || 'Event description not available';
+      let hasMedia = false;
+      let mediaType = '';
+      let mediaUrl = '';
+      
+      // Check for event with media by looking for the pattern "Someone created an event: Title on Date. Description [image:URL]"
+      const eventMatch = content?.match(/created an event: ([^.]+)\.\s*([^\[]*?)(\[([^:]+):([^\]]+)\])?\s*$/);
+      if (eventMatch) {
+        // eventMatch[1] contains "Title on Date"
+        // eventMatch[2] contains the description
+        // eventMatch[4] and eventMatch[5] contain media type and URL
+        const titleAndDate = eventMatch[1]?.trim() || '';
+        eventDescription = eventMatch[2]?.trim() || 'Event description not available';
+        
+        if (eventMatch[4] && eventMatch[5]) {
+          hasMedia = true;
+          mediaType = eventMatch[4];
+          mediaUrl = eventMatch[5];
+        }
+      } else {
+        // If no media pattern found, just clean up the description by removing the prefix
+        eventDescription = content?.replace(/^[^:]*created an event: /, '') || 'Event description not available';
+      }
+      
+      // Debug logging for event media parsing
+      console.log('🚀 [EDGE FUNCTION DEBUG] Event content parsing result:', {
+        originalContent: content,
+        eventDescription,
+        hasMedia,
+        mediaType,
+        mediaUrl,
+        eventMatchFound: !!eventMatch
+      });
+      
       // Format event date if provided
       let formattedDate = 'Date TBD';
-      if (eventDate) {
+      const eventDateValue = requestBody.eventDate || eventDate;
+      if (eventDateValue) {
         try {
-          const date = new Date(eventDate);
+          const date = new Date(eventDateValue);
           formattedDate = date.toLocaleDateString('en-US', {
             weekday: 'long',
             year: 'numeric',
@@ -301,7 +366,7 @@ const handler = async (request: Request): Promise<Response> => {
             minute: '2-digit'
           });
         } catch (e) {
-          formattedDate = eventDate;
+          formattedDate = eventDateValue;
         }
       }
       
@@ -319,7 +384,28 @@ const handler = async (request: Request): Promise<Response> => {
             
             <div style="margin-bottom: 20px;">
               <h3 style="margin: 0 0 16px 0; color: #333; font-size: 18px;">${(subject || 'Event').replace(`New event in ${networkName}: `, '') || 'Event Details'}</h3>
-              <p style="margin: 0 0 16px 0; color: #333; font-size: 16px; line-height: 1.5;">${content || 'Event description not available'}</p>
+              <p style="margin: 0 0 16px 0; color: #333; font-size: 16px; line-height: 1.5;">${eventDescription}</p>
+              
+              ${hasMedia ? `
+              <div style="margin-top: 16px;">
+                ${mediaType === 'image' ? `
+                <div style="text-align: center; margin: 16px 0;">
+                  <img src="${mediaUrl}" alt="Event cover image" style="max-width: 100%; height: auto; max-height: 400px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);" />
+                </div>
+                ` : `
+                <div style="padding: 12px; background-color: #fff3e0; border-radius: 6px; border-left: 4px solid #ff9800;">
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 18px;">${mediaType === 'video' ? '🎥' : mediaType === 'audio' ? '🎵' : '📎'}</span>
+                    <span style="color: #ff9800; font-weight: 500; font-size: 14px;">
+                      ${mediaType === 'video' ? 'Video attached' : 
+                        mediaType === 'audio' ? 'Audio attached' : 
+                        'Media attached'}
+                    </span>
+                  </div>
+                </div>
+                `}
+              </div>
+              ` : ''}
             </div>
             
             <div style="background-color: #fff3e0; padding: 16px; border-radius: 6px; margin-bottom: 20px;">
@@ -327,10 +413,10 @@ const handler = async (request: Request): Promise<Response> => {
                 <span style="font-weight: 600; color: #e65100;">📅 When:</span>
                 <span style="color: #333; margin-left: 8px;">${formattedDate}</span>
               </div>
-              ${eventLocation ? `
+              ${(requestBody.eventLocation || eventLocation) ? `
               <div style="margin-bottom: 8px;">
                 <span style="font-weight: 600; color: #e65100;">📍 Where:</span>
-                <span style="color: #333; margin-left: 8px;">${eventLocation}</span>
+                <span style="color: #333; margin-left: 8px;">${requestBody.eventLocation || eventLocation}</span>
               </div>
               ` : ''}
             </div>
