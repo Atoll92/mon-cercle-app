@@ -196,21 +196,29 @@ const handler = async (request: Request): Promise<Response> => {
       });
       emailSubject = subject || `New post in ${networkName}`;
       
-      // Parse content to extract title and description for portfolio posts
+      // Parse content to extract title, description, and media for portfolio posts
       let postTitle = '';
       let postContent = content || 'Content not available';
+      let hasMedia = false;
+      let mediaType = '';
+      let mediaUrl = '';
       
-      // Check if this is a portfolio post by looking for the pattern "shared a new post: Title. Description"
-      const portfolioMatch = content?.match(/shared a new post: ([^.]+)\\.\\s*(.*)$/);
+      // Check if this is a portfolio post by looking for the pattern "shared a new post: Title. Description [MediaType:URL]"
+      const portfolioMatch = content?.match(/shared a new post: ([^.]+)\.\s*([^\[]*?)(\[([^:]+):([^\]]+)\])?\s*$/);
       if (portfolioMatch) {
         postTitle = portfolioMatch[1];
-        postContent = portfolioMatch[2] || 'No description provided';
+        postContent = portfolioMatch[2]?.trim() || 'No description provided';
+        if (portfolioMatch[4] && portfolioMatch[5]) {
+          hasMedia = true;
+          mediaType = portfolioMatch[4];
+          mediaUrl = portfolioMatch[5];
+        }
       }
       
       html = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; line-height: 1.6;">
           <div style="background-color: #673ab7; padding: 20px; border-radius: 8px 8px 0 0;">
-            <h2 style="color: white; margin: 0 0 10px 0; font-size: 24px;">📊 New Portfolio Post in ${networkName}</h2>
+            <h2 style="color: white; margin: 0 0 10px 0; font-size: 24px;">📊 New Post in ${networkName}</h2>
             <p style="margin: 0; color: #ede7f6; font-size: 14px;">Discover what your network members are sharing</p>
           </div>
           
@@ -227,6 +235,27 @@ const handler = async (request: Request): Promise<Response> => {
             
             <div style="margin-bottom: 20px;">
               <p style="margin: 0 0 16px 0; color: #333; font-size: 16px; line-height: 1.5;">${postContent}</p>
+              
+              ${hasMedia ? `
+              <div style="margin-top: 16px;">
+                ${mediaType === 'image' ? `
+                <div style="text-align: center; margin: 16px 0;">
+                  <img src="${mediaUrl}" alt="Post image" style="max-width: 100%; height: auto; max-height: 400px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);" />
+                </div>
+                ` : `
+                <div style="padding: 12px; background-color: #f8f9fa; border-radius: 6px; border-left: 4px solid #673ab7;">
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 18px;">${mediaType === 'video' ? '🎥' : mediaType === 'audio' ? '🎵' : '📎'}</span>
+                    <span style="color: #673ab7; font-weight: 500; font-size: 14px;">
+                      ${mediaType === 'video' ? 'Video attached' : 
+                        mediaType === 'audio' ? 'Audio attached' : 
+                        'Media attached'}
+                    </span>
+                  </div>
+                </div>
+                `}
+              </div>
+              ` : ''}
             </div>
             
             <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid #f0f0f0;">

@@ -191,30 +191,28 @@ const CreatePostModal = ({ open, onClose, onPostCreated, darkMode = false, netwo
       });
       
       // Queue email notifications for network members
-      try {
-        console.log('💼 [PORTFOLIO DEBUG] Starting to queue email notifications for portfolio post...');
-        console.log('💼 [PORTFOLIO DEBUG] Portfolio post created:', data);
+      if (networkId) {
+        try {
         
         const notificationResult = await queuePortfolioNotifications(
           networkId,
           data.id,
           activeProfile?.id || user.id,
           title,
-          content
+          content,
+          data.media_url || data.image_url,
+          data.media_type || (data.image_url ? 'image' : null)
         );
         
-        console.log('💼 [PORTFOLIO DEBUG] Notification queueing result:', notificationResult);
-        
-        if (notificationResult.success) {
-          console.log(`💼 [PORTFOLIO DEBUG] Email notifications queued successfully: ${notificationResult.message}`);
-        } else {
-          console.error('💼 [PORTFOLIO DEBUG] Failed to queue email notifications:', notificationResult.error);
+        if (!notificationResult.success) {
+          console.error('Failed to queue email notifications:', notificationResult.error);
           // Don't fail the post creation if notification queueing fails
         }
       } catch (notificationError) {
-        console.error('💼 [PORTFOLIO DEBUG] Error queueing email notifications:', notificationError);
+        console.error('Error queueing email notifications:', notificationError);
         // Don't fail the post creation if notification queueing fails
       }
+    }
       
       setSuccess(true);
       

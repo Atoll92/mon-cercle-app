@@ -611,26 +611,22 @@ function DashboardPage() {
       // Queue email notifications for network members
       if (activeProfile?.network_id) {
         try {
-          console.log('💼 [DASHBOARD DEBUG] Starting to queue email notifications for portfolio post...');
-          console.log('💼 [DASHBOARD DEBUG] Using activeProfile.network_id:', activeProfile.network_id);
           
           const notificationResult = await queuePortfolioNotifications(
             activeProfile.network_id,
             data.id,
             activeProfile.id,
             newPostTitle,
-            newPostContent
+            newPostContent,
+            data.media_url || data.image_url,
+            data.media_type || (data.image_url ? 'image' : null)
           );
           
-          console.log('💼 [DASHBOARD DEBUG] Notification queueing result:', notificationResult);
-          
-          if (notificationResult.success) {
-            console.log(`💼 [DASHBOARD DEBUG] Email notifications queued successfully: ${notificationResult.message}`);
-          } else {
-            console.error('💼 [DASHBOARD DEBUG] Failed to queue email notifications:', notificationResult.error);
+          if (!notificationResult.success) {
+            console.error('Failed to queue email notifications:', notificationResult.error);
           }
         } catch (notificationError) {
-          console.error('💼 [DASHBOARD DEBUG] Error queueing email notifications:', notificationError);
+          console.error('Error queueing email notifications:', notificationError);
         }
       }
       

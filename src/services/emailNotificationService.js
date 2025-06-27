@@ -575,15 +575,10 @@ export const queueEventNotifications = async (networkId, eventId, authorId, even
  */
 export const queuePortfolioNotifications = async (networkId, postId, authorId, postTitle, postDescription, mediaUrl = null, mediaType = null) => {
   try {
-    console.log('💼 [PORTFOLIO DEBUG] Starting to queue portfolio post notifications');
-    console.log('💼 [PORTFOLIO DEBUG] Network ID:', networkId);
-    console.log('💼 [PORTFOLIO DEBUG] Post ID:', postId);
-    console.log('💼 [PORTFOLIO DEBUG] Author ID:', authorId);
-    console.log('💼 [PORTFOLIO DEBUG] Post Title:', postTitle);
+    console.log('🔔 [PORTFOLIO] Queueing notifications for portfolio post:', postTitle);
 
     // Get all network members who want news notifications (excluding the author)
     // Using news notification preference since portfolio posts are like news/updates
-    console.log('💼 [PORTFOLIO DEBUG] Fetching potential recipients...');
     const { data: recipients, error: recipientsError } = await supabase
       .from('profiles')
       .select('id, full_name, contact_email, email_notifications_enabled, notify_on_news')
@@ -592,77 +587,68 @@ export const queuePortfolioNotifications = async (networkId, postId, authorId, p
       .eq('email_notifications_enabled', true)
       .eq('notify_on_news', true); // Portfolio posts use news notification preference
 
-    console.log('💼 [PORTFOLIO DEBUG] Recipients query result:', { recipients, recipientsError });
-
     if (recipientsError) {
-      console.error('💼 [PORTFOLIO DEBUG] Error fetching notification recipients:', recipientsError);
+      console.error('Error fetching notification recipients:', recipientsError);
       return { success: false, error: recipientsError.message };
     }
 
     if (!recipients || recipients.length === 0) {
-      console.log('💼 [PORTFOLIO DEBUG] No recipients found for portfolio notifications');
-      console.log('💼 [PORTFOLIO DEBUG] This could mean:');
-      console.log('  - No other members in the network');
-      console.log('  - All members have email notifications disabled');
-      console.log('  - All members have news notifications disabled');
       return { success: true, message: 'No recipients found' };
     }
 
-    console.log(`💼 [PORTFOLIO DEBUG] Found ${recipients.length} potential recipients:`, recipients);
-
     // Get network name for the notification
-    console.log('💼 [PORTFOLIO DEBUG] Fetching network details...');
+    console.log('🔔 [PORTFOLIO] Fetching network details...');
     const { data: network, error: networkError } = await supabase
       .from('networks')
       .select('name')
       .eq('id', networkId)
       .single();
 
-    console.log('💼 [PORTFOLIO DEBUG] Network query result:', { network, networkError });
+    console.log('🔔 [PORTFOLIO] Network query result:', { network, networkError });
 
     if (networkError) {
-      console.error('💼 [PORTFOLIO DEBUG] Error fetching network name:', networkError);
+      console.error('🔔 [PORTFOLIO] Error fetching network name:', networkError);
       return { success: false, error: networkError.message };
     }
 
     // Get author name for the notification
-    console.log('💼 [PORTFOLIO DEBUG] Fetching author details...');
+    console.log('🔔 [PORTFOLIO] Fetching author details...');
     const { data: author, error: authorError } = await supabase
       .from('profiles')
       .select('full_name')
       .eq('id', authorId)
       .single();
 
-    console.log('💼 [PORTFOLIO DEBUG] Author query result:', { author, authorError });
+    console.log('🔔 [PORTFOLIO] Author query result:', { author, authorError });
 
     if (authorError) {
-      console.error('💼 [PORTFOLIO DEBUG] Error fetching author name:', authorError);
+      console.error('🔔 [PORTFOLIO] Error fetching author name:', authorError);
       return { success: false, error: authorError.message };
     }
 
     // Create notification queue entries
-    console.log('💼 [PORTFOLIO DEBUG] Creating notification queue entries...');
+    console.log('🔔 [PORTFOLIO] Creating notification queue entries...');
     const notifications = recipients.map(recipient => ({
       recipient_id: recipient.id,
       network_id: networkId,
       notification_type: 'post', // Portfolio posts have their own type
       subject_line: `New post shared in ${network.name}: ${postTitle}`,
-      content_preview: `${author.full_name || 'Someone'} shared a new post: ${postTitle}. ${postDescription?.substring(0, 150) || ''}${postDescription?.length > 150 ? '...' : ''}`,
+      content_preview: `${author.full_name || 'Someone'} shared a new post: ${postTitle}. ${postDescription?.substring(0, 150) || ''}${postDescription?.length > 150 ? '...' : ''}${mediaUrl ? ` [${mediaType || 'Media'}:${mediaUrl}]` : ''}`,
       related_item_id: postId
     }));
 
-    console.log('💼 [PORTFOLIO DEBUG] Notification entries to insert:', notifications);
+    console.log('🔔 [PORTFOLIO] Notification entries to insert:', notifications);
 
     // Insert all notifications at once
-    console.log('💼 [PORTFOLIO DEBUG] Inserting notifications into queue...');
+    console.log('🔔 [PORTFOLIO] Inserting notifications into queue...');
     const { error: insertError } = await supabase
       .from('notification_queue')
       .insert(notifications);
 
-    console.log('💼 [PORTFOLIO DEBUG] Insert result:', { insertError });
+    console.log('🔔 [PORTFOLIO] Insert result:', { insertError });
 
     if (insertError) {
-      console.error('💼 [PORTFOLIO DEBUG] Error queueing notifications:', insertError);
+      console.error('🔔 [PORTFOLIO] Error queueing notifications:', insertError);
       return { success: false, error: insertError.message };
     }
 

@@ -324,25 +324,22 @@ function EditProfilePage() {
       // Queue email notifications for network members
       if (activeProfile?.network_id) {
         try {
-          console.log('💼 [EDIT PROFILE DEBUG] Starting to queue email notifications for portfolio post...');
           
           const notificationResult = await queuePortfolioNotifications(
             activeProfile.network_id,
             data.id,
             activeProfile.id,
             newPostTitle,
-            newPostContent
+            newPostContent,
+            data.media_url || data.image_url,
+            data.media_type || (data.image_url ? 'image' : null)
           );
           
-          console.log('💼 [EDIT PROFILE DEBUG] Notification queueing result:', notificationResult);
-          
-          if (notificationResult.success) {
-            console.log(`💼 [EDIT PROFILE DEBUG] Email notifications queued successfully: ${notificationResult.message}`);
-          } else {
-            console.error('💼 [EDIT PROFILE DEBUG] Failed to queue email notifications:', notificationResult.error);
+          if (!notificationResult.success) {
+            console.error('Failed to queue email notifications:', notificationResult.error);
           }
         } catch (notificationError) {
-          console.error('💼 [EDIT PROFILE DEBUG] Error queueing email notifications:', notificationError);
+          console.error('Error queueing email notifications:', notificationError);
         }
       }
       
