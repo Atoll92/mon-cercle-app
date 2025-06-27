@@ -1,5 +1,5 @@
 import { supabase } from '../supabaseclient';
-import { queueNewsNotifications, queueEventNotifications } from '../services/emailNotificationService';
+import { queueNewsNotifications, queueEventNotifications, queueMentionNotification } from '../services/emailNotificationService';
 
 // Storage limits by subscription plan (in MB)
 const STORAGE_LIMITS = {
@@ -312,7 +312,7 @@ export const inviteUserToNetwork = async (email, networkId, inviterId, role = 'm
     
     if (useOldSchema) {
       // FALLBACK: Use old schema behavior (pre-migration)
-      const { data: anyExistingProfile } = await supabase
+      const { data: _anyExistingProfile } = await supabase
         .from('profiles')
         .select('id, network_id, contact_email, full_name')
         .eq('contact_email', email.toLowerCase())
@@ -760,7 +760,8 @@ export const createEvent = async (networkId, profileId, eventData, imageFile) =>
         profileId,
         eventData.title,
         eventData.description,
-        eventData.date
+        eventData.date,
+        eventData.location
       );
       
       console.log('📅 [EVENT DEBUG] Notification queueing result:', notificationResult);
@@ -1125,4 +1126,137 @@ export const getNetworkPendingInvitations = async (networkId) => {
       error: error.message || 'Failed to fetch pending invitations'
     };
   }
+};
+
+/**
+ * Send a chat message to a network with automatic mention notification handling
+ * @param {string} networkId - Network ID
+ * @param {string} userId - Sender's profile ID
+ * @param {string} content - Message content
+ * @param {Object} mediaData - Optional media data
+ * @param {Object} replyData - Optional reply data
+ * @param {Array} networkMembers - Array of network members for mention detection
+ * @returns {Object} Object containing success status and message data
+ */
+export const sendChatMessage = async (networkId, userId, content, mediaData = null, replyData = null, networkMembers = []) => {
+  try {
+    // Build message data
+    const messageData = {
+      network_id: networkId,
+      user_id: userId,
+      content
+    };
+    
+    // Add reply data if present
+    if (replyData) {
+      messageData.parent_message_id = replyData.id;
+      messageData.reply_to_user_id = replyData.user_id;
+      messageData.reply_to_content = replyData.content?.substring(0, 100);
+    }
+    
+    // Add media data if present
+    if (mediaData) {
+      messageData.media_url = mediaData.url;
+      messageData.media_type = mediaData.type || mediaData.mediaType?.toLowerCase();
+      messageData.media_metadata = mediaData.metadata || {
+        fileName: mediaData.fileName,
+        fileSize: mediaData.fileSize,
+        mimeType: mediaData.mimeType
+      };
+    }
+    
+    // Insert the message
+    const { data, error } = await supabase
+      .from('messages')
+      .insert(messageData)
+      .select('id')
+      .single();
+
+    if (error) throw error;
+    
+    console.log('💬 [CHAT API DEBUG] Message sent successfully with ID:', data.id);
+    
+    // Handle mentions - extract and queue notifications (similar to news notifications)
+    if (content && networkMembers.length > 0) {
+      try {
+        const mentions = extractMentions(content, networkMembers);
+        console.log('💬 [CHAT API DEBUG] Found mentions:', mentions.length);
+        
+        if (mentions.length > 0) {
+          // Get sender profile info for notifications
+          const { data: senderProfile } = await supabase
+            .from('profiles')
+            .select('full_name')
+            .eq('id', userId)
+            .single();
+            
+          const senderName = senderProfile?.full_name || 'Someone';
+          
+          for (const mentionedUser of mentions) {
+            if (mentionedUser.id !== userId) { // Don't notify self
+              try {
+                console.log(`💬 [CHAT API DEBUG] Queueing mention notification for ${mentionedUser.full_name}`);
+                const notificationResult = await queueMentionNotification(
+                  mentionedUser.id,
+                  networkId,
+                  senderName,
+                  content,
+                  data.id
+                );
+                
+                if (notificationResult.success) {
+                  console.log(`💬 [CHAT API DEBUG] Notification queued successfully for ${mentionedUser.full_name}`);
+                } else {
+                  console.warn(`💬 [CHAT API DEBUG] Failed to queue notification for ${mentionedUser.full_name}:`, notificationResult.error);
+                }
+              } catch (notifError) {
+                console.error(`💬 [CHAT API DEBUG] Error queueing mention notification for ${mentionedUser.full_name}:`, notifError);
+              }
+            }
+          }
+        }
+      } catch (mentionError) {
+        console.error('💬 [CHAT API DEBUG] Error processing mentions:', mentionError);
+        // Don't fail the message sending if mention processing fails
+      }
+    }
+    
+    return {
+      success: true,
+      message: data,
+      messageId: data.id
+    };
+  } catch (error) {
+    console.error('💬 [CHAT API DEBUG] Error sending chat message:', error);
+    return {
+      success: false,
+      error: error.message || 'Failed to send message'
+    };
+  }
+};
+
+/**
+ * Extract mentions from message content
+ * @param {string} content - Message content
+ * @param {Array} networkMembers - Array of network members
+ * @returns {Array} Array of mentioned users
+ */
+const extractMentions = (content, networkMembers) => {
+  if (!content || !networkMembers || networkMembers.length === 0) return [];
+  
+  const mentionRegex = /@([^@\s]+(?:\s+[^@\s]+)*)/g;
+  const mentions = [];
+  let match;
+  
+  while ((match = mentionRegex.exec(content)) !== null) {
+    const mentionedName = match[1].trim();
+    const mentionedUser = networkMembers.find(member => 
+      member.full_name?.toLowerCase() === mentionedName.toLowerCase()
+    );
+    if (mentionedUser) {
+      mentions.push(mentionedUser);
+    }
+  }
+  
+  return mentions;
 };

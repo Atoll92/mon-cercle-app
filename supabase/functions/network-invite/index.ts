@@ -6,11 +6,14 @@ interface InviteData {
   toEmail: string;
   networkName: string;
   inviterName: string;
-  type: 'existing_user' | 'new_user' | 'news_notification';
+  type: 'existing_user' | 'new_user' | 'news' | 'event' | 'mention' | 'direct_message';
   inviteLink?: string;
   subject?: string;
   content?: string;
   relatedItemId?: string;
+  eventDate?: string;
+  eventLocation?: string;
+  messageContext?: string;
 }
 
 const handler = async (request: Request): Promise<Response> => {
@@ -42,7 +45,7 @@ const handler = async (request: Request): Promise<Response> => {
 
     // Parse the request body
     const requestBody = await request.json() as InviteData;
-    const { toEmail, networkName, inviterName, type, inviteLink, subject, content, relatedItemId } = requestBody;
+    const { toEmail, networkName, inviterName, type, inviteLink, subject, content, relatedItemId, eventDate, eventLocation, messageContext } = requestBody;
     
     console.log('🚀 [EDGE FUNCTION DEBUG] Parsed request body:', {
       toEmail,
@@ -52,7 +55,10 @@ const handler = async (request: Request): Promise<Response> => {
       hasInviteLink: !!inviteLink,
       hasSubject: !!subject,
       hasContent: !!content,
-      relatedItemId
+      relatedItemId,
+      eventDate,
+      eventLocation,
+      hasMessageContext: !!messageContext
     });
 
     // Validate required fields
@@ -71,10 +77,10 @@ const handler = async (request: Request): Promise<Response> => {
       );
     }
 
-    // For news notifications, subject and content are required
-    if (type === 'news_notification' && (!subject || !content)) {
+    // For content notifications, subject and content are required
+    if ((type === 'news' || type === 'event' || type === 'mention' || type === 'direct_message') && (!subject || !content)) {
       return new Response(
-        JSON.stringify({ error: 'Subject and content are required for news notifications' }),
+        JSON.stringify({ error: 'Subject and content are required for content notifications' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -120,7 +126,7 @@ const handler = async (request: Request): Promise<Response> => {
           <p>Best regards,<br>The Team</p>
         </div>
       `;
-    } else if (type === 'news_notification') {
+    } else if (type === 'news') {
       console.log('🚀 [EDGE FUNCTION DEBUG] Creating news notification email with:', {
         subject,
         content: content?.substring(0, 100) + '...',
@@ -129,24 +135,237 @@ const handler = async (request: Request): Promise<Response> => {
       emailSubject = subject;
       html = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; line-height: 1.6;">
-          <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-            <h2 style="color: #2196f3; margin: 0 0 10px 0;">📰 New Post in ${networkName}</h2>
-            <p style="margin: 0; color: #666; font-size: 14px;">Stay connected with your network</p>
+          <div style="background-color: #2196f3; padding: 20px; border-radius: 8px 8px 0 0;">
+            <h2 style="color: white; margin: 0 0 10px 0; font-size: 24px;">📰 New Post in ${networkName}</h2>
+            <p style="margin: 0; color: #e3f2fd; font-size: 14px;">Stay connected with your network</p>
           </div>
           
-          <div style="background-color: white; padding: 24px; border: 1px solid #e0e0e0; border-radius: 8px;">
-            <p style="margin: 0 0 16px 0; color: #333;">${content}</p>
+          <div style="background-color: white; padding: 24px; border: 1px solid #e0e0e0; border-radius: 0 0 8px 8px; border-top: none;">
+            <div style="margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #f0f0f0;">
+              <p style="margin: 0; color: #666; font-size: 14px;">Posted by <strong>${inviterName || 'Someone'}</strong></p>
+            </div>
+            <div style="margin-bottom: 20px;">
+              <p style="margin: 0 0 16px 0; color: #333; font-size: 16px; line-height: 1.5;">${content || 'Content not available'}</p>
+            </div>
             
             <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid #f0f0f0;">
               <a href="${Deno.env.get('APP_URL') || 'https://your-app-url.com'}/dashboard" 
                  style="display: inline-block; background-color: #2196f3; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 500;">
-                View Full Post
+                View Full Post & Comments
               </a>
             </div>
           </div>
           
           <div style="margin-top: 20px; padding: 16px; background-color: #f8f9fa; border-radius: 6px; font-size: 12px; color: #666;">
-            <p style="margin: 0 0 8px 0;">You're receiving this because you're subscribed to notifications for ${networkName}.</p>
+            <p style="margin: 0 0 8px 0;">You're receiving this because you're subscribed to news notifications for ${networkName}.</p>
+            <p style="margin: 0;">
+              <a href="${Deno.env.get('APP_URL') || 'https://your-app-url.com'}/profile/edit" 
+                 style="color: #2196f3; text-decoration: none;">
+                Manage your notification preferences
+              </a>
+            </p>
+          </div>
+        </div>
+      `;
+    } else if (type === 'event') {
+      console.log('🚀 [EDGE FUNCTION DEBUG] Creating event notification email with:', {
+        subject,
+        content: content?.substring(0, 100) + '...',
+        eventDate,
+        eventLocation,
+        networkName
+      });
+      emailSubject = subject;
+      
+      // Format event date if provided
+      let formattedDate = 'Date TBD';
+      if (eventDate) {
+        try {
+          const date = new Date(eventDate);
+          formattedDate = date.toLocaleDateString('en-US', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          });
+        } catch (e) {
+          formattedDate = eventDate;
+        }
+      }
+      
+      html = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; line-height: 1.6;">
+          <div style="background-color: #ff9800; padding: 20px; border-radius: 8px 8px 0 0;">
+            <h2 style="color: white; margin: 0 0 10px 0; font-size: 24px;">📅 New Event in ${networkName}</h2>
+            <p style="margin: 0; color: #fff3e0; font-size: 14px;">Don't miss out on this event!</p>
+          </div>
+          
+          <div style="background-color: white; padding: 24px; border: 1px solid #e0e0e0; border-radius: 0 0 8px 8px; border-top: none;">
+            <div style="margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #f0f0f0;">
+              <p style="margin: 0; color: #666; font-size: 14px;">Organized by <strong>${inviterName}</strong></p>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+              <h3 style="margin: 0 0 16px 0; color: #333; font-size: 18px;">${(subject || 'Event').replace(`New event in ${networkName}: `, '') || 'Event Details'}</h3>
+              <p style="margin: 0 0 16px 0; color: #333; font-size: 16px; line-height: 1.5;">${content || 'Event description not available'}</p>
+            </div>
+            
+            <div style="background-color: #fff3e0; padding: 16px; border-radius: 6px; margin-bottom: 20px;">
+              <div style="margin-bottom: 8px;">
+                <span style="font-weight: 600; color: #e65100;">📅 When:</span>
+                <span style="color: #333; margin-left: 8px;">${formattedDate}</span>
+              </div>
+              ${eventLocation ? `
+              <div style="margin-bottom: 8px;">
+                <span style="font-weight: 600; color: #e65100;">📍 Where:</span>
+                <span style="color: #333; margin-left: 8px;">${eventLocation}</span>
+              </div>
+              ` : ''}
+            </div>
+            
+            <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid #f0f0f0;">
+              <a href="${Deno.env.get('APP_URL') || 'https://your-app-url.com'}/dashboard" 
+                 style="display: inline-block; background-color: #ff9800; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 500; margin-right: 12px;">
+                View Event Details & RSVP
+              </a>
+            </div>
+          </div>
+          
+          <div style="margin-top: 20px; padding: 16px; background-color: #f8f9fa; border-radius: 6px; font-size: 12px; color: #666;">
+            <p style="margin: 0 0 8px 0;">You're receiving this because you're subscribed to event notifications for ${networkName}.</p>
+            <p style="margin: 0;">
+              <a href="${Deno.env.get('APP_URL') || 'https://your-app-url.com'}/profile/edit" 
+                 style="color: #2196f3; text-decoration: none;">
+                Manage your notification preferences
+              </a>
+            </p>
+          </div>
+        </div>
+      `;
+    } else if (type === 'mention') {
+      console.log('🚀 [EDGE FUNCTION DEBUG] Creating mention notification email with:', {
+        subject,
+        content: content?.substring(0, 100) + '...',
+        messageContext,
+        networkName
+      });
+      emailSubject = subject;
+      html = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; line-height: 1.6;">
+          <div style="background-color: #9c27b0; padding: 20px; border-radius: 8px 8px 0 0;">
+            <h2 style="color: white; margin: 0 0 10px 0; font-size: 24px;">💬 You were mentioned in ${networkName}</h2>
+            <p style="margin: 0; color: #f3e5f5; font-size: 14px;">Someone wants your attention!</p>
+          </div>
+          
+          <div style="background-color: white; padding: 24px; border: 1px solid #e0e0e0; border-radius: 0 0 8px 8px; border-top: none;">
+            <div style="margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #f0f0f0;">
+              <p style="margin: 0; color: #666; font-size: 14px;"><strong>${inviterName}</strong> mentioned you in the chat</p>
+            </div>
+            
+            <div style="background-color: #f3e5f5; padding: 16px; border-left: 4px solid #9c27b0; border-radius: 4px; margin-bottom: 20px;">
+              <p style="margin: 0; color: #333; font-size: 16px; line-height: 1.5; font-style: italic;">"${content || 'Message content not available'}"</p>
+            </div>
+            
+            ${messageContext ? `
+            <div style="margin-bottom: 16px;">
+              <p style="margin: 0; color: #666; font-size: 14px;">In: ${messageContext}</p>
+            </div>
+            ` : ''}
+            
+            <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid #f0f0f0;">
+              <a href="${Deno.env.get('APP_URL') || 'https://your-app-url.com'}/dashboard" 
+                 style="display: inline-block; background-color: #9c27b0; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 500;">
+                View Message & Reply
+              </a>
+            </div>
+          </div>
+          
+          <div style="margin-top: 20px; padding: 16px; background-color: #f8f9fa; border-radius: 6px; font-size: 12px; color: #666;">
+            <p style="margin: 0 0 8px 0;">You're receiving this because you're subscribed to mention notifications for ${networkName}.</p>
+            <p style="margin: 0;">
+              <a href="${Deno.env.get('APP_URL') || 'https://your-app-url.com'}/profile/edit" 
+                 style="color: #2196f3; text-decoration: none;">
+                Manage your notification preferences
+              </a>
+            </p>
+          </div>
+        </div>
+      `;
+    } else if (type === 'direct_message') {
+      console.log('🚀 [EDGE FUNCTION DEBUG] Creating direct message notification email with:', {
+        subject,
+        content: content?.substring(0, 100) + '...',
+        networkName
+      });
+      emailSubject = subject;
+      html = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; line-height: 1.6;">
+          <div style="background-color: #4caf50; padding: 20px; border-radius: 8px 8px 0 0;">
+            <h2 style="color: white; margin: 0 0 10px 0; font-size: 24px;">💌 New Direct Message</h2>
+            <p style="margin: 0; color: #e8f5e9; font-size: 14px;">You have a private message waiting</p>
+          </div>
+          
+          <div style="background-color: white; padding: 24px; border: 1px solid #e0e0e0; border-radius: 0 0 8px 8px; border-top: none;">
+            <div style="margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #f0f0f0;">
+              <p style="margin: 0; color: #666; font-size: 14px;">From: <strong>${inviterName}</strong></p>
+              ${networkName ? `<p style="margin: 4px 0 0 0; color: #666; font-size: 12px;">Network: ${networkName}</p>` : ''}
+            </div>
+            
+            <div style="background-color: #e8f5e8; padding: 16px; border-left: 4px solid #4caf50; border-radius: 4px; margin-bottom: 20px;">
+              <p style="margin: 0; color: #333; font-size: 16px; line-height: 1.5;">${content || 'Message content not available'}</p>
+            </div>
+            
+            <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid #f0f0f0;">
+              <a href="${Deno.env.get('APP_URL') || 'https://your-app-url.com'}/direct-messages" 
+                 style="display: inline-block; background-color: #4caf50; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 500;">
+                Read & Reply to Message
+              </a>
+            </div>
+          </div>
+          
+          <div style="margin-top: 20px; padding: 16px; background-color: #f8f9fa; border-radius: 6px; font-size: 12px; color: #666;">
+            <p style="margin: 0 0 8px 0;">You're receiving this because you're subscribed to direct message notifications.</p>
+            <p style="margin: 0;">
+              <a href="${Deno.env.get('APP_URL') || 'https://your-app-url.com'}/profile/edit" 
+                 style="color: #2196f3; text-decoration: none;">
+                Manage your notification preferences
+              </a>
+            </p>
+          </div>
+        </div>
+      `;
+    } else {
+      // Handle unknown notification types
+      console.warn('🚀 [EDGE FUNCTION DEBUG] Unknown notification type:', type);
+      emailSubject = subject || `Notification from ${networkName}`;
+      html = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; line-height: 1.6;">
+          <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+            <h2 style="color: #666; margin: 0 0 10px 0;">📬 Notification from ${networkName}</h2>
+            <p style="margin: 0; color: #666; font-size: 14px;">You have a new notification</p>
+          </div>
+          
+          <div style="background-color: white; padding: 24px; border: 1px solid #e0e0e0; border-radius: 8px;">
+            <div style="margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #f0f0f0;">
+              <p style="margin: 0; color: #666; font-size: 14px;">From: <strong>${inviterName || 'Network Update'}</strong></p>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+              <p style="margin: 0 0 16px 0; color: #333; font-size: 16px; line-height: 1.5;">${content || 'Notification content not available'}</p>
+            </div>
+            
+            <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid #f0f0f0;">
+              <a href="${Deno.env.get('APP_URL') || 'https://your-app-url.com'}/dashboard" 
+                 style="display: inline-block; background-color: #666; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 500;">
+                View Notification
+              </a>
+            </div>
+          </div>
+          
+          <div style="margin-top: 20px; padding: 16px; background-color: #f8f9fa; border-radius: 6px; font-size: 12px; color: #666;">
+            <p style="margin: 0 0 8px 0;">You're receiving this notification from ${networkName}.</p>
             <p style="margin: 0;">
               <a href="${Deno.env.get('APP_URL') || 'https://your-app-url.com'}/profile/edit" 
                  style="color: #2196f3; text-decoration: none;">

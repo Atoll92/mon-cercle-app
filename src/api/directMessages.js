@@ -1,4 +1,5 @@
 import { supabase } from '../supabaseclient';
+import { queueDirectMessageNotification } from '../services/emailNotificationService';
 
 /**
  * Get or create a conversation between two users
@@ -277,6 +278,39 @@ export const sendDirectMessage = async (conversationId, senderId, content, media
       .single();
       
     if (senderError) throw senderError;
+    
+    // Get recipient ID from conversation participants
+    const { data: conversation, error: convError } = await supabase
+      .from('direct_conversations')
+      .select('participants')
+      .eq('id', conversationId)
+      .single();
+      
+    if (!convError && conversation) {
+      const recipientId = conversation.participants.find(id => id !== senderId);
+      
+      if (recipientId) {
+        // Queue notification for the recipient (similar to news notifications)
+        try {
+          console.log('💬 [DM API DEBUG] Queueing notification for recipient:', recipientId);
+          const notificationResult = await queueDirectMessageNotification(
+            recipientId,           // recipient ID
+            senderId,              // sender ID
+            content || '[Media message]',  // message content
+            message.id             // message ID
+          );
+          
+          if (notificationResult.success) {
+            console.log('💬 [DM API DEBUG] Notification queued successfully');
+          } else {
+            console.warn('💬 [DM API DEBUG] Failed to queue notification:', notificationResult.error);
+          }
+        } catch (notificationError) {
+          console.error('💬 [DM API DEBUG] Error queueing notification:', notificationError);
+          // Don't fail the message sending if notification fails
+        }
+      }
+    }
     
     return { 
       message: { 

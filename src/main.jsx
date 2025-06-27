@@ -6,9 +6,13 @@ import App from './App.jsx'
 import { AuthProvider } from './context/authcontext.jsx'
 import { BrowserRouter } from 'react-router-dom'; // <= THE MISSING PIECE!
 import { initializeLogger } from './utils/logger'
+import { startAutomaticNotificationProcessing } from './services/emailNotificationService'
 
 // Initialize logger to disable console logs in production
 initializeLogger();
+
+// Start automatic notification processing
+startAutomaticNotificationProcessing();
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

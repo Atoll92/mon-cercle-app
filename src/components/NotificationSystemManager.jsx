@@ -28,8 +28,10 @@ import {
   CheckCircle as CheckCircleIcon,
   Error as ErrorIcon,
   Schedule as ScheduleIcon,
-  Delete as DeleteIcon
+  Delete as DeleteIcon,
+  Science as TestTubeIcon
 } from '@mui/icons-material';
+import NotificationSystemTester from './NotificationSystemTester';
 import { supabase } from '../supabaseclient';
 import { useProfile } from '../context/profileContext';
 import { 
@@ -54,6 +56,7 @@ const NotificationSystemManager = () => {
   const [result, setResult] = useState(null);
   const [processorStatus, setProcessorStatus] = useState(null);
   const [viewMode, setViewMode] = useState('received'); // 'received' or 'triggered'
+  const [showTester, setShowTester] = useState(false);
 
   useEffect(() => {
     loadNotifications();
@@ -365,7 +368,8 @@ const NotificationSystemManager = () => {
         activeProfile.id,
         'Test Event Notification',
         'This is a test event notification to verify the event notification system is working correctly.',
-        futureDate.toISOString()
+        futureDate.toISOString(),
+        'Test Location - Conference Room A'
       );
 
       setResult({
@@ -586,6 +590,16 @@ const NotificationSystemManager = () => {
             >
               Clear Queue
             </Button>
+
+            <Button
+              variant="outlined"
+              color="info"
+              size="small"
+              onClick={() => setShowTester(!showTester)}
+              startIcon={<TestTubeIcon />}
+            >
+              {showTester ? 'Hide' : 'Show'} E2E Tester
+            </Button>
           </Box>
         </Box>
 
@@ -786,6 +800,13 @@ const NotificationSystemManager = () => {
           💡 Tip: "Received" shows notifications sent to you. "You Triggered" shows notifications your posts/events generated for other network members. 
           Automatic processing runs every minute. Use test buttons to verify functionality.
         </Typography>
+
+        {/* End-to-End Tester */}
+        {showTester && (
+          <Box sx={{ mt: 3 }}>
+            <NotificationSystemTester />
+          </Box>
+        )}
       </CardContent>
     </Card>
   );

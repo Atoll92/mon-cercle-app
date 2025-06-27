@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { supabase } from '../supabaseclient';
 import { useAuth } from '../context/authcontext';
 import { useProfile } from '../context/profileContext';
-import { fetchNetworkMembers } from '../api/networks';
+import { fetchNetworkMembers, sendChatMessage } from '../api/networks';
 import {
   Box,
   List,
@@ -48,7 +48,7 @@ import MediaUpload from './MediaUpload';
 import MediaPlayer from './MediaPlayer';
 import ImageViewerModal from './ImageViewerModal';
 import { uploadMediaFile } from '../utils/mediaUpload';
-import { queueMentionNotification } from '../services/emailNotificationService';
+// import { queueMentionNotification } from '../services/emailNotificationService'; // Moved to API level
 import EmojiPicker from 'emoji-picker-react';
 
 // URL regex pattern to detect links in messages
@@ -318,24 +318,7 @@ const Chat = ({ networkId, isFullscreen = false }) => {
     }
   };
   
-  // Extract mentions from message content
-  const extractMentions = (content) => {
-    const mentionRegex = /@([^@\s]+(?:\s+[^@\s]+)*)/g;
-    const mentions = [];
-    let match;
-    
-    while ((match = mentionRegex.exec(content)) !== null) {
-      const mentionedName = match[1].trim();
-      const mentionedUser = networkMembers.find(member => 
-        member.full_name?.toLowerCase() === mentionedName.toLowerCase()
-      );
-      if (mentionedUser) {
-        mentions.push(mentionedUser);
-      }
-    }
-    
-    return mentions;
-  };
+  // Note: extractMentions function moved to API level (networks.jsx)
   
   const handleSend = async (mediaData = null) => {
     // Use passed mediaData or pendingMedia
@@ -383,60 +366,18 @@ const Chat = ({ networkId, isFullscreen = false }) => {
     setReplyingTo(null); // Clear reply state
 
     try {
-      // Send the message to the database
-      const messageData = {
-        network_id: networkId,
-        user_id: activeProfile.id,
-        content: pendingMessage.content
-      };
-      
-      // Add reply data if present
-      if (replyingTo) {
-        messageData.parent_message_id = replyingTo.id;
-        messageData.reply_to_user_id = replyingTo.user_id;
-        messageData.reply_to_content = replyingTo.content?.substring(0, 100);
-      }
-      
-      // Add media data if present
-      if (media) {
-        messageData.media_url = media.url;
-        messageData.media_type = media.type || media.mediaType?.toLowerCase();
-        messageData.media_metadata = media.metadata || {
-          fileName: media.fileName,
-          fileSize: media.fileSize,
-          mimeType: media.mimeType
-        };
-      }
-      
-      const { data, error } = await supabase
-        .from('messages')
-        .insert(messageData)
-        .select('id')
-        .single();
+      // Use the new sendChatMessage API function which handles notifications at the API level
+      const result = await sendChatMessage(
+        networkId,
+        activeProfile.id,
+        pendingMessage.content,
+        media,
+        replyingTo
+      );
 
-      if (error) throw error;
+      if (result.error) throw new Error(result.error);
       
-      console.log('Message sent successfully with ID:', data.id);
-      
-      // Handle mentions - queue notifications
-      const mentions = extractMentions(pendingMessage.content);
-      if (mentions.length > 0) {
-        for (const mentionedUser of mentions) {
-          if (mentionedUser.id !== activeProfile.id) { // Don't notify self
-            try {
-              await queueMentionNotification(
-                mentionedUser.id,
-                networkId,
-                activeProfile.full_name || 'Someone',
-                pendingMessage.content,
-                data.id
-              );
-            } catch (notifError) {
-              console.error('Error queueing mention notification:', notifError);
-            }
-          }
-        }
-      }
+      console.log('Message sent successfully with ID:', result.message.id);
       
       // The realtime subscription will handle adding the confirmed message
       // Clear reply state after successful send

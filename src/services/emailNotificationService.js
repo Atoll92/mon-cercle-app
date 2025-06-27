@@ -197,16 +197,43 @@ export const processPendingNotifications = async () => {
           try {
             console.log(`📨 [EMAIL PROCESS DEBUG] Attempt ${retryCount + 1}/${maxRetries} for notification ${notification.id}`);
 
+            // Prepare additional context based on notification type
+            let additionalData = {};
+            
+            // For event notifications, get event details
+            if (notification.notification_type === 'event' && notification.related_item_id) {
+              try {
+                const { data: eventData } = await supabase
+                  .from('network_events')
+                  .select('event_date, location')
+                  .eq('id', notification.related_item_id)
+                  .single();
+                
+                if (eventData) {
+                  additionalData.eventDate = eventData.event_date;
+                  additionalData.eventLocation = eventData.location;
+                }
+              } catch (eventError) {
+                console.warn('📨 [EMAIL PROCESS DEBUG] Failed to fetch event details:', eventError);
+              }
+            }
+            
+            // For mention notifications, add context about chat location
+            if (notification.notification_type === 'mention') {
+              additionalData.messageContext = `Network Chat in ${notification.networks.name}`;
+            }
+
             // Call the edge function to send the email
             const { data, error } = await supabase.functions.invoke('network-invite', {
               body: {
                 toEmail: notification.profiles.contact_email,
                 networkName: notification.networks.name,
                 inviterName: 'Network Update',
-                type: 'news_notification',
+                type: notification.notification_type, // Use the actual notification type from database
                 subject: notification.subject_line,
                 content: notification.content_preview,
-                relatedItemId: notification.related_item_id
+                relatedItemId: notification.related_item_id,
+                ...additionalData
               }
             });
 
@@ -364,6 +391,12 @@ export const queueMentionNotification = async (mentionedUserId, networkId, menti
       return { success: true, message: 'User has mention notifications disabled' };
     }
     
+    // Check if user has email configured
+    if (!userProfile.contact_email) {
+      console.error('🔔 [MENTION DEBUG] No contact_email found for mentioned user');
+      return { success: false, error: 'Mentioned user has no email address configured' };
+    }
+    
     // Get network name
     const { data: network, error: networkError } = await supabase
       .from('networks')
@@ -415,7 +448,7 @@ export const queueMentionNotification = async (mentionedUserId, networkId, menti
  * @param {string} eventDescription - Description of the event
  * @param {string} eventDate - Date of the event
  */
-export const queueEventNotifications = async (networkId, eventId, authorId, eventTitle, eventDescription, eventDate) => {
+export const queueEventNotifications = async (networkId, eventId, authorId, eventTitle, eventDescription, eventDate, eventLocation = null) => {
   try {
     console.log('📅 [EVENT DEBUG] Starting to queue event notifications');
     console.log('📅 [EVENT DEBUG] Network ID:', networkId);
@@ -595,6 +628,13 @@ export const queueDirectMessageNotification = async (recipientId, senderId, mess
     if (!recipientProfile.email_notifications_enabled || !recipientProfile.notify_on_direct_messages) {
       console.log('💬 [DM DEBUG] Recipient has direct message notifications disabled');
       return { success: true, message: 'Recipient has direct message notifications disabled' };
+    }
+    
+    // Use contact_email as the notification email (should be populated during profile creation)
+    const recipientEmail = recipientProfile.contact_email;
+    if (!recipientEmail) {
+      console.error('💬 [DM DEBUG] No contact_email found for recipient');
+      return { success: false, error: 'Recipient has no email address configured' };
     }
     
     // Get sender name
