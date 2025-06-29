@@ -31,13 +31,18 @@ import MediaPlayer from './MediaPlayer';
 import LazyImage from './LazyImage';
 import LinkPreview from './LinkPreview';
 import ImageViewerModal from './ImageViewerModal';
+import CreatePostModal from './CreatePostModal';
 import { formatDistanceToNow } from 'date-fns';
 import { Link } from 'react-router-dom';
 import { getCommentCount } from '../api/comments';
+import { deletePost } from '../api/posts';
+import { useProfile } from '../context/profileContext';
+import { useNetwork } from '../context/networkContext';
 
 /**
  * PostCard component for displaying portfolio posts
  * Based on SocialWallTab implementation with added edit/delete functionality
+ * Returns null if not within a NetworkProvider context
  */
 const PostCard = ({
   post,
@@ -45,17 +50,32 @@ const PostCard = ({
   category,
   darkMode = false,
   isOwner = false,
-  onEdit,
-  onDelete,
   onAuthorClick,
+  onPostUpdated,
+  onPostDeleted,
   sx = {}
 }) => {
   const theme = useTheme();
+  const { activeProfile } = useProfile();
+  
+  // Check if we're in a NetworkProvider context
+  let currentNetwork = null;
+  try {
+    const networkContext = useNetwork();
+    currentNetwork = networkContext?.currentNetwork;
+  } catch (error) {
+    // Not within NetworkProvider, return null
+    return null;
+  }
+  
+  // Determine if current user owns this post
+  const isPostOwner = isOwner || (activeProfile && post.profile_id === activeProfile.id);
   const [anchorEl, setAnchorEl] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [commentCount, setCommentCount] = useState(0);
   const [imageViewerOpen, setImageViewerOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState({ url: '', title: '' });
+  const [editModalOpen, setEditModalOpen] = useState(false);
 
   // Fetch comment count on mount
   useEffect(() => {
@@ -112,18 +132,31 @@ const PostCard = ({
 
   const handleEdit = () => {
     handleMenuClose();
-    if (onEdit) onEdit(post);
+    setEditModalOpen(true);
   };
 
   const handleDelete = async () => {
     handleMenuClose();
-    if (onDelete) {
+    if (window.confirm('Are you sure you want to delete this post? This action cannot be undone.')) {
       setIsDeleting(true);
       try {
-        await onDelete(post);
+        await deletePost(post.id);
+        if (onPostDeleted) {
+          onPostDeleted(post.id);
+        }
+      } catch (error) {
+        console.error('Failed to delete post:', error);
+        alert('Failed to delete post. Please try again.');
       } finally {
         setIsDeleting(false);
       }
+    }
+  };
+
+  const handlePostUpdated = (updatedPost) => {
+    setEditModalOpen(false);
+    if (onPostUpdated) {
+      onPostUpdated(updatedPost);
     }
   };
 
@@ -261,7 +294,7 @@ const PostCard = ({
         action={
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1, mr: 1 }}>
             {/* Edit/Delete menu for owner */}
-            {isOwner && (onEdit || onDelete) && (
+            {isPostOwner && (
               <>
                 <IconButton
                   size="small"
@@ -287,18 +320,14 @@ const PostCard = ({
                   anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
                   transformOrigin={{ vertical: 'top', horizontal: 'right' }}
                 >
-                  {onEdit && (
-                    <MenuItem onClick={handleEdit}>
-                      <EditIcon sx={{ mr: 1 }} fontSize="small" />
-                      Edit
-                    </MenuItem>
-                  )}
-                  {onDelete && (
-                    <MenuItem onClick={handleDelete}>
-                      <DeleteIcon sx={{ mr: 1 }} fontSize="small" />
-                      Delete
-                    </MenuItem>
-                  )}
+                  <MenuItem onClick={handleEdit}>
+                    <EditIcon sx={{ mr: 1 }} fontSize="small" />
+                    Edit
+                  </MenuItem>
+                  <MenuItem onClick={handleDelete}>
+                    <DeleteIcon sx={{ mr: 1 }} fontSize="small" />
+                    Delete
+                  </MenuItem>
                 </Menu>
               </>
             )}
@@ -487,6 +516,17 @@ const PostCard = ({
         onClose={() => setImageViewerOpen(false)}
         imageUrl={selectedImage.url}
         title={selectedImage.title}
+      />
+
+      {/* Edit Post Modal */}
+      <CreatePostModal
+        open={editModalOpen}
+        onClose={() => setEditModalOpen(false)}
+        onPostCreated={handlePostUpdated}
+        darkMode={darkMode}
+        networkId={currentNetwork?.id}
+        mode="edit"
+        editPost={post}
       />
     </Card>
   );

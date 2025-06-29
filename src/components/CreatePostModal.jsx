@@ -33,9 +33,17 @@ import { useAuth } from '../context/authcontext';
 import { useProfile } from '../context/profileContext';
 import MediaUpload from './MediaUpload';
 import { fetchNetworkCategories } from '../api/categories';
-import { createPost } from '../api/posts';
+import { createPost, updatePost } from '../api/posts';
 
-const CreatePostModal = ({ open, onClose, onPostCreated, darkMode = false, networkId }) => {
+const CreatePostModal = ({ 
+  open, 
+  onClose, 
+  onPostCreated, 
+  darkMode = false, 
+  networkId,
+  mode = 'create', // 'create' or 'edit'
+  editPost = null // Post data for editing
+}) => {
   const { user } = useAuth();
   const { activeProfile } = useProfile();
   
@@ -70,23 +78,47 @@ const CreatePostModal = ({ open, onClose, onPostCreated, darkMode = false, netwo
     }
   }, [networkId, open]);
 
+  // Initialize form with edit data
+  useEffect(() => {
+    if (mode === 'edit' && editPost && open) {
+      setTitle(editPost.title || '');
+      setContent(editPost.description || '');
+      setUrl(editPost.url || '');
+      setSelectedCategory(editPost.category_id || '');
+      
+      // Set media fields
+      if (editPost.media_url) {
+        setMediaUrl(editPost.media_url);
+        setMediaType(editPost.media_type);
+        setMediaMetadata(editPost.media_metadata || {});
+      } else if (editPost.image_url) {
+        // Handle legacy image_url
+        setMediaUrl(editPost.image_url);
+        setMediaType('image');
+        setMediaMetadata({});
+      }
+    }
+  }, [mode, editPost, open]);
+
   // Reset form when modal opens/closes
   useEffect(() => {
     if (!open) {
       // Reset form after a short delay to avoid visual glitches
       setTimeout(() => {
-        setTitle('');
-        setContent('');
-        setUrl('');
-        setSelectedCategory('');
-        setMediaUrl(null);
-        setMediaType(null);
-        setMediaMetadata({});
+        if (mode === 'create') {
+          setTitle('');
+          setContent('');
+          setUrl('');
+          setSelectedCategory('');
+          setMediaUrl(null);
+          setMediaType(null);
+          setMediaMetadata({});
+        }
         setError('');
         setSuccess(false);
       }, 200);
     }
-  }, [open]);
+  }, [open, mode]);
 
   // Handle media upload - exact same as DashboardPage
   const handleMediaUpload = (uploadResult) => {
@@ -134,7 +166,7 @@ const CreatePostModal = ({ open, onClose, onPostCreated, darkMode = false, netwo
     }
   };
 
-  // Handle form submission - exact same logic as DashboardPage
+  // Handle form submission
   const handleSubmit = async () => {
     // Validate the form
     if (!title.trim()) {
@@ -144,20 +176,31 @@ const CreatePostModal = ({ open, onClose, onPostCreated, darkMode = false, netwo
     
     try {
       setCreating(true);
-      console.log("Publishing post:", title);
-      console.log("Current media state:", { mediaUrl, mediaType, mediaMetadata });
       
-      // Create post using API
-      const data = await createPost({
+      const postData = {
         title: title,
         description: content,
         url: url,
-        profile_id: activeProfile.id,
         category_id: selectedCategory || null,
         mediaUrl: mediaUrl,
         mediaType: mediaType,
         mediaMetadata: mediaMetadata
-      });
+      };
+      
+      let data;
+      
+      if (mode === 'edit') {
+        console.log("Updating post:", editPost.id);
+        console.log("Update data:", postData);
+        data = await updatePost(editPost.id, postData);
+      } else {
+        console.log("Creating post:", title);
+        console.log("Create data:", postData);
+        data = await createPost({
+          ...postData,
+          profile_id: activeProfile.id
+        });
+      }
       
       setSuccess(true);
       
@@ -172,8 +215,8 @@ const CreatePostModal = ({ open, onClose, onPostCreated, darkMode = false, netwo
       }, 1500);
       
     } catch (err) {
-      console.error('Error publishing post:', err);
-      setError('Failed to publish post. Please try again.');
+      console.error('Error saving post:', err);
+      setError(`Failed to ${mode === 'edit' ? 'update' : 'create'} post. Please try again.`);
     } finally {
       setCreating(false);
     }
@@ -211,7 +254,7 @@ const CreatePostModal = ({ open, onClose, onPostCreated, darkMode = false, netwo
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <AddIcon color="primary" />
           <Typography variant="h6" fontWeight={600}>
-            Create New Post
+            {mode === 'edit' ? 'Edit Post' : 'Create New Post'}
           </Typography>
         </Box>
         <IconButton 
@@ -231,7 +274,7 @@ const CreatePostModal = ({ open, onClose, onPostCreated, darkMode = false, netwo
       <DialogContent sx={{ pt: 3 }}>
         {success && (
           <Alert severity="success" sx={{ mb: 2 }}>
-            Post created successfully!
+            Post {mode === 'edit' ? 'updated' : 'created'} successfully!
           </Alert>
         )}
 
@@ -411,7 +454,7 @@ const CreatePostModal = ({ open, onClose, onPostCreated, darkMode = false, netwo
             fontWeight: 600
           }}
         >
-          {creating ? 'Creating...' : 'Create Post'}
+          {creating ? (mode === 'edit' ? 'Updating...' : 'Creating...') : (mode === 'edit' ? 'Update Post' : 'Create Post')}
         </Button>
       </DialogActions>
     </Dialog>

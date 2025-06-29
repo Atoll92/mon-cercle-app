@@ -63,6 +63,23 @@ function ProfilePage() {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [showEventDialog, setShowEventDialog] = useState(false);
   const [activeTab, setActiveTab] = useState(0);
+
+  // Handle post updates and deletions
+  const handlePostUpdated = (updatedPost) => {
+    setProfile(prev => ({
+      ...prev,
+      posts: prev.posts?.map(post => 
+        post.id === updatedPost.id ? updatedPost : post
+      ) || []
+    }));
+  };
+
+  const handlePostDeleted = (deletedPostId) => {
+    setProfile(prev => ({
+      ...prev,
+      posts: prev.posts?.filter(post => post.id !== deletedPostId) || []
+    }));
+  };
   
   // Tab indices
   const TAB_OVERVIEW = 0;
@@ -787,6 +804,8 @@ function ProfilePage() {
                               post={post}
                               author={profile}
                               isOwner={isOwnProfile}
+                              onPostUpdated={handlePostUpdated}
+                              onPostDeleted={handlePostDeleted}
                               sx={{ height: '100%' }}
                             />
                           </Grid>
@@ -814,6 +833,8 @@ function ProfilePage() {
                         post={post}
                         author={profile}
                         isOwner={isOwnProfile}
+                        onPostUpdated={handlePostUpdated}
+                        onPostDeleted={handlePostDeleted}
                         sx={{ height: '100%' }}
                       />
                     </Grid>

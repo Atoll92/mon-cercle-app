@@ -17,7 +17,7 @@ import {
 } from '@mui/icons-material';
 import { supabase } from '../supabaseclient';
 
-const LatestPostsWidget = ({ networkId, onMemberClick, darkMode = false }) => {
+const LatestPostsWidget = ({ networkId, onMemberClick, darkMode = false, onPostUpdated, onPostDeleted }) => {
   const { activeProfile } = useProfile();
 
   // First fetch network members
@@ -104,6 +104,8 @@ const LatestPostsWidget = ({ networkId, onMemberClick, darkMode = false }) => {
           darkMode={darkMode}
           isOwner={isOwner}
           onAuthorClick={onMemberClick}
+          onPostUpdated={onPostUpdated}
+          onPostDeleted={onPostDeleted}
           sx={{ height: '100%' }}
         />
       </Box>
