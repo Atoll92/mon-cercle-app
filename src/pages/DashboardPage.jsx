@@ -9,9 +9,8 @@ import PersonalMoodboardWidget from '../components/PersonalMoodboardWidget';
 import LatestNewsWidget from '../components/LatestNewsWidget';
 import LatestPostsWidget from '../components/LatestPostsWidget';
 import TestNotificationSystem from '../components/TestNotificationSystem';
-import MediaUpload from '../components/MediaUpload';
 import EventDetailsDialog from '../components/EventDetailsDialog';
-import { createPost } from '../api/posts';
+import CreatePostModal from '../components/CreatePostModal';
 import { useFadeIn, useStaggeredAnimation, ANIMATION_DURATION } from '../hooks/useAnimation';
 import { ProfileSkeleton, GridSkeleton } from '../components/LoadingSkeleton';
 import OnboardingGuide from '../components/OnboardingGuide';
@@ -22,9 +21,6 @@ import {
   Star as StarIcon,
   HourglassEmpty as HourglassEmptyIcon,
   Add as AddIcon,
-  Image as ImageIcon,
-  Language as LanguageIcon,
-  Delete as DeleteIcon,
   Preview as PreviewIcon
 } from '@mui/icons-material';
 import { 
@@ -42,16 +38,10 @@ import {
   CardActions,
   Grid,
   Chip,
-  IconButton,
   Stack,
   Tooltip,
   CardMedia,
-  CardHeader,
-  TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem
+  CardHeader
 } from '@mui/material';
 import { 
   Person as PersonIcon, 
@@ -76,7 +66,6 @@ import {
 } from '@mui/icons-material';
 import { fetchNetworkMembers } from '../api/networks';
 import { fetchNetworkCategories } from '../api/categories';
-import { alpha } from '@mui/material';
 
 // Subscription Badge Component
 const SubscriptionBadge = ({ plan, status }) => {
@@ -170,18 +159,8 @@ function DashboardPage() {
   const [recentEvents, setRecentEvents] = useState([]);
   const [loadingEvents, setLoadingEvents] = useState(true);
   
-  // State for Create New Post widget
-  const [newPostTitle, setNewPostTitle] = useState('');
-  const [newPostContent, setNewPostContent] = useState('');
-  const [newPostLink, setNewPostLink] = useState('');
-  const [newPostImagePreview, setNewPostImagePreview] = useState('');
-  const [mediaUrl, setMediaUrl] = useState(null);
-  const [mediaType, setMediaType] = useState(null);
-  const [mediaMetadata, setMediaMetadata] = useState({});
-  const [publishingPost, setPublishingPost] = useState(false);
-  const [postMessage, setPostMessage] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('');
-  const [categories, setCategories] = useState([]);
+  // State for Create Post Modal
+  const [createPostModalOpen, setCreatePostModalOpen] = useState(false);
   
   // Member detail modal state
   const [selectedMember, setSelectedMember] = useState(null);
@@ -497,85 +476,12 @@ function DashboardPage() {
     window.location.reload();
   };
   
-  // Handle media upload
-  const handleMediaUpload = (uploadResult) => {
-    console.log("=== handleMediaUpload called ===");
-    console.log("Upload result received:", uploadResult);
-    console.log("Upload result URL:", uploadResult.url);
-    console.log("Upload result type:", uploadResult.type);
-    console.log("Upload result metadata:", uploadResult.metadata);
-    
-    setMediaUrl(uploadResult.url);
-    setMediaType(uploadResult.type);
-    setMediaMetadata({
-      fileName: uploadResult.metadata?.fileName || uploadResult.fileName,
-      fileSize: uploadResult.metadata?.fileSize || uploadResult.fileSize,
-      mimeType: uploadResult.metadata?.mimeType || uploadResult.mimeType,
-      duration: uploadResult.metadata?.duration,
-      thumbnail: uploadResult.metadata?.thumbnail,
-      title: uploadResult.metadata?.title,
-      artist: uploadResult.metadata?.artist,
-      album: uploadResult.metadata?.album,
-      albumArt: uploadResult.metadata?.albumArt
-    });
-    
-    console.log("State after setting - mediaUrl:", uploadResult.url);
-    console.log("State after setting - mediaType:", uploadResult.type);
-    
-    // For backward compatibility with existing image preview
-    if (uploadResult.type === 'image') {
-      setNewPostImagePreview(uploadResult.url);
-    } else {
-      setNewPostImagePreview('');
-    }
-  };
-
-  
-  // Handle publishing a new post
-  const handlePublishNewPost = async () => {
-    // Validate the form
-    if (!newPostTitle.trim()) {
-      setPostMessage('Post title is required');
-      return;
-    }
-    
-    try {
-      setPublishingPost(true);
-      console.log("Publishing post:", newPostTitle);
-      console.log("Current media state:", { mediaUrl, mediaType, mediaMetadata });
-      console.log("💼 [DASHBOARD DEBUG] Current activeProfile:", activeProfile);
-      
-      // Create post using API
-      const data = await createPost({
-        title: newPostTitle,
-        description: newPostContent,
-        url: newPostLink,
-        profile_id: activeProfile.id,
-        category_id: selectedCategory || null,
-        mediaUrl: mediaUrl,
-        mediaType: mediaType,
-        mediaMetadata: mediaMetadata
-      });
-      
-      // Reset the form
-      setNewPostTitle('');
-      setNewPostContent('');
-      setNewPostLink('');
-      setNewPostImagePreview('');
-      setMediaUrl(null);
-      setMediaType(null);
-      setMediaMetadata({});
-      setSelectedCategory('');
-      
-      // Show success message
-      setPostMessage('Post published successfully!');
-      setTimeout(() => setPostMessage(''), 3000);
-      
-    } catch (err) {
-      console.error('Error publishing post:', err);
-      setPostMessage('Failed to publish post. Please try again.');
-    } finally {
-      setPublishingPost(false);
+  // Handle post creation callback
+  const handlePostCreated = () => {
+    setCreatePostModalOpen(false);
+    // Refresh posts data if needed
+    if (activeProfile) {
+      loadDashboardData();
     }
   };
 
@@ -1457,179 +1363,34 @@ function DashboardPage() {
                       height: '100%',
                       width: '100%',
                       display: 'flex',
-                      flexDirection: 'column'
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      textAlign: 'center',
+                      p: 3
                     }}>
-                      <CardHeader
-                        title={<Typography variant="subtitle1">Create New Post</Typography>}
-                        avatar={<AddIcon color="primary" />}
+                      <AddIcon 
                         sx={{ 
-                          bgcolor: 'rgba(25, 118, 210, 0.05)',
-                          py: 1
-                        }}
+                          fontSize: 48, 
+                          color: 'primary.main', 
+                          mb: 2 
+                        }} 
                       />
-                      <CardContent sx={{ pt: 1, pb: 1.5, flexGrow: 1 }}>
-                        {postMessage && (
-                          <Alert 
-                            severity={postMessage.includes('successfully') ? "success" : "error"} 
-                            sx={{ mb: 1 }}
-                            onClose={() => setPostMessage('')}
-                          >
-                            {postMessage}
-                          </Alert>
-                        )}
-                        
-                        <Box sx={{ mb: 1 }}>
-                          <TextField
-                            fullWidth
-                            label="Post Title"
-                            placeholder="What's on your mind?"
-                            variant="outlined"
-                            sx={{ mb: 1.5 }}
-                            value={newPostTitle}
-                            onChange={(e) => setNewPostTitle(e.target.value)}
-                            required
-                            size="small"
-                          />
-                          
-                          <TextField
-                            fullWidth
-                            label="Post Content"
-                            placeholder="Share your thoughts..."
-                            multiline
-                            rows={2}
-                            variant="outlined"
-                            sx={{ mb: 1.5 }}
-                            value={newPostContent}
-                            onChange={(e) => setNewPostContent(e.target.value)}
-                            size="small"
-                          />
-                          
-                          <TextField
-                            fullWidth
-                            placeholder="Add link (optional)"
-                            variant="outlined"
-                            size="small"
-                            sx={{ mb: 1.5 }}
-                            value={newPostLink}
-                            onChange={(e) => setNewPostLink(e.target.value)}
-                            slotProps={{
-                              input: {
-                                startAdornment: <LanguageIcon color="action" sx={{ mr: 1 }} fontSize="small" />
-                              }
-                            }}
-                          />
-                          
-                          {/* Category selection */}
-                          {categories.length > 0 && (
-                            <FormControl fullWidth size="small" sx={{ mb: 1.5 }}>
-                              <InputLabel shrink>Category (optional)</InputLabel>
-                              <Select
-                                value={selectedCategory}
-                                onChange={(e) => setSelectedCategory(e.target.value)}
-                                label="Category (optional)"
-                                displayEmpty
-                              >
-                                <MenuItem value="">
-                                  <em>No category</em>
-                                </MenuItem>
-                                {categories.map((category) => (
-                                  <MenuItem key={category.id} value={category.id}>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                      <Box
-                                        sx={{
-                                          width: 12,
-                                          height: 12,
-                                          borderRadius: '50%',
-                                          bgcolor: category.color,
-                                          flexShrink: 0
-                                        }}
-                                      />
-                                      {category.name}
-                                    </Box>
-                                  </MenuItem>
-                                ))}
-                              </Select>
-                            </FormControl>
-                          )}
-                          
-                          {/* Display image preview if available */}
-                          {newPostImagePreview && (
-                            <Box sx={{ mb: 1.5, position: 'relative', width: '100%', maxHeight: '120px', overflow: 'hidden', borderRadius: 1 }}>
-                              <img 
-                                src={newPostImagePreview} 
-                                alt="Post preview" 
-                                style={{ 
-                                  width: '100%', 
-                                  objectFit: 'cover',
-                                  maxHeight: '120px'
-                                }} 
-                              />
-                              <IconButton
-                                size="small"
-                                sx={{
-                                  position: 'absolute',
-                                  top: 8,
-                                  right: 8,
-                                  bgcolor: 'rgba(0,0,0,0.5)',
-                                  color: 'white',
-                                  '&:hover': {
-                                    bgcolor: 'rgba(0,0,0,0.7)'
-                                  }
-                                }}
-                                onClick={() => {
-                                  setNewPostImagePreview('');
-                                  setMediaUrl(null);
-                                  setMediaType(null);
-                                  setMediaMetadata({});
-                                }}
-                              >
-                                <DeleteIcon fontSize="small" />
-                              </IconButton>
-                            </Box>
-                          )}
-                          
-                          <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
-                            <MediaUpload
-                              onUpload={handleMediaUpload}
-                              allowedTypes={['IMAGE', 'VIDEO', 'AUDIO', 'PDF']}
-                              bucket="profiles"
-                              path={`portfolios/${activeProfile.id}`}
-                              maxFiles={1}
-                              autoUpload={true}
-                              showPreview={false}
-                              compact={true}
-                            />
-                            
-                            {/* Media upload feedback */}
-                            {mediaUrl && (
-                              <Chip 
-                                label={`${mediaType?.toUpperCase()}: ${mediaMetadata?.fileName}`}
-                                color="success"
-                                size="small"
-                                onDelete={() => {
-                                  setMediaUrl(null);
-                                  setMediaType(null);
-                                  setMediaMetadata({});
-                                  setNewPostImagePreview('');
-                                }}
-                              />
-                            )}
-                            
-                            
-                            <Button
-                              variant="contained" 
-                              color="primary"
-                              onClick={handlePublishNewPost}
-                              disabled={!newPostTitle.trim() || publishingPost}
-                              startIcon={publishingPost ? <CircularProgress size={16} color="inherit" /> : null}
-                              size="small"
-                            >
-                              {publishingPost ? 'Publishing...' : 'Publish'}
-                            </Button>
-                            
-                          </Box>
-                        </Box>
-                      </CardContent>
+                      <Typography variant="h6" gutterBottom>
+                        Share Your Work
+                      </Typography>
+                      <Typography variant="body2" color="textSecondary" sx={{ mb: 3 }}>
+                        Create a portfolio post to showcase your projects and share your work with the community.
+                      </Typography>
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={() => setCreatePostModalOpen(true)}
+                        startIcon={<AddIcon />}
+                        size="large"
+                      >
+                        Create Post
+                      </Button>
                     </Card>
                   </Grid>
                   
@@ -1890,6 +1651,14 @@ function DashboardPage() {
             navigate(`/network/${profile.network_id}`);
           }
         }}
+      />
+      
+      {/* Create Post Modal */}
+      <CreatePostModal
+        open={createPostModalOpen}
+        onClose={() => setCreatePostModalOpen(false)}
+        onPostCreated={handlePostCreated}
+        networkId={activeProfile?.network_id}
       />
     </Container>
   );

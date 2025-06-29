@@ -241,7 +241,7 @@ const CreatePostModal = ({ open, onClose, onPostCreated, darkMode = false, netwo
           </Alert>
         )}
 
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, mt: 2 }}>
           {/* Title Field */}
           <TextField
             label="Post Title"

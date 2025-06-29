@@ -4,7 +4,6 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/authcontext';
 import { useProfile } from '../context/profileContext';
 import { supabase } from '../supabaseclient';
-import { fetchNetworkCategories } from '../api/categories';
 import {
   Box,
   Button,
@@ -22,22 +21,15 @@ import {
   Grid,
   Stack,
   Tooltip,
-  Fade,
   Chip,
   Autocomplete,
   Tabs,
   Tab,
   LinearProgress,
   CardMedia,
-  CardActions,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  alpha
+  CardActions
 } from '@mui/material';
 import {
-  CloudUpload as UploadIcon,
   Save as SaveIcon,
   Cancel as CancelIcon,
   Person as PersonIcon,
@@ -57,7 +49,7 @@ import {
 import NotificationSettings from '../components/NotificationSettings';
 import NotificationSystemManager from '../components/NotificationSystemManager';
 import NotificationDebugger from '../components/NotificationDebugger';
-import { createPost } from '../api/posts';
+import CreatePostModal from '../components/CreatePostModal';
 
 function EditProfilePage() {
   const { user } = useAuth();
@@ -80,14 +72,8 @@ function EditProfilePage() {
   const [isDraggingAvatar, setIsDraggingAvatar] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   
-  // New state for the "Create New Post" form
-  const [newPostTitle, setNewPostTitle] = useState('');
-  const [newPostContent, setNewPostContent] = useState('');
-  const [newPostLink, setNewPostLink] = useState('');
-  const [newPostImage, setNewPostImage] = useState(null);
-  const [newPostImagePreview, setNewPostImagePreview] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('');
-  const [categories, setCategories] = useState([]);
+  // State for Create Post Modal
+  const [createPostModalOpen, setCreatePostModalOpen] = useState(false);
   
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -202,131 +188,17 @@ function EditProfilePage() {
     getProfile();
   }, [user?.id]);
 
-  // Load categories
-  useEffect(() => {
-    const loadCategories = async () => {
-      if (!user) return;
-      
-      // Get user's network ID from their profile
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('network_id')
-        .eq('id', activeProfile.id)
-        .single();
-      
-      if (profileError || !profileData?.network_id) return;
-      
-      const { data, error } = await fetchNetworkCategories(profileData.network_id, true); // Only active categories
-      if (data && !error) {
-        setCategories(data);
-      }
-    };
-    loadCategories();
-  }, [user?.id]);
 
-  const handleTabChange = (event, newValue) => {
+  const handleTabChange = (_, newValue) => {
     setActiveTab(newValue);
   };
-
-  const handleAddPostItem = () => {
-    setPostItems([...postItems, {
-      title: '',
-      description: '',
-      url: '',
-      fileType: 'image', // Default to image type
-      imageFile: null,
-      imageUrl: '',
-      pdfFile: null,
-      pdfUrl: '',
-      pdfThumbnail: ''
-    }]);
-  };
   
-  // Handle new post image change
-  const handleNewPostImageChange = (e) => {
-    if (!e.target.files || e.target.files.length === 0) {
-      return;
-    }
-    
-    const file = e.target.files[0];
-    setNewPostImage(file);
-    setNewPostImagePreview(URL.createObjectURL(file));
-    
-    console.log("New post image selected:", file.name);
-  };
-  
-  // Handle publishing a new post - immediately saves to database
-  const handlePublishNewPost = async () => {
-    // Validate the form
-    if (!newPostTitle.trim()) {
-      setError('Post title is required');
-      return;
-    }
-    
-    try {
-      setSaving(true);
-      console.log("Publishing and saving new post:", newPostTitle);
-      console.log("Saving directly to portfolio_items table in the database");
-      
-      // First, upload the image if any
-      let fileUrl = null;
-      if (newPostImage) {
-        // Upload new image
-        const fileExt = newPostImage.name.split('.').pop();
-        const fileName = `${activeProfile.id}-${Date.now()}-post.${fileExt}`;
-        const filePath = `portfolios/${fileName}`;
-
-        console.log('Uploading post image:', filePath);
-        
-        const { error: uploadError } = await supabase.storage
-          .from('profiles')
-          .upload(filePath, newPostImage);
-
-        if (uploadError) {
-          console.error('Error uploading post image:', uploadError);
-          throw uploadError;
-        }
-
-        const { data: urlData } = supabase.storage
-          .from('profiles')
-          .getPublicUrl(filePath);
-        
-        fileUrl = urlData.publicUrl;
-        console.log('Generated image URL:', fileUrl);
-      }
-      
-      // Create post using API (with image as mediaUrl if available)
-      const data = await createPost({
-        title: newPostTitle,
-        description: newPostContent,
-        url: newPostLink,
-        profile_id: activeProfile.id,
-        category_id: selectedCategory || null,
-        mediaUrl: fileUrl,
-        mediaType: fileUrl ? 'image' : null,
-        mediaMetadata: null
-      });
-      
-      // Add the new item to the local state for immediate UI update
-      setPostItems([...postItems, data]);
-      
-      // Reset the form
-      setNewPostTitle('');
-      setNewPostContent('');
-      setNewPostLink('');
-      setNewPostImage(null);
-      setNewPostImagePreview('');
-      setSelectedCategory('');
-      
-      // Show success message
-      setMessage('Post published successfully!');
-      
-    } catch (err) {
-      console.error('Error publishing post:', err);
-      setError('Failed to publish post. Please try again.');
-    } finally {
-      setSaving(false);
-    }
+  // Handle post creation callback
+  const handlePostCreated = (newPost) => {
+    setCreatePostModalOpen(false);
+    // Add the new post to the local state for immediate UI update
+    setPostItems([...postItems, newPost]);
+    setMessage('Post published successfully!');
   };
   
   const handlePostItemChange = (index, field, value) => {
@@ -515,7 +387,7 @@ function EditProfilePage() {
           image_url: fileUrl
         });
         
-        const { error, data } = await supabase
+        const { error } = await supabase
           .from('portfolio_items')
           .upsert({
             id: item.id || undefined,
@@ -1008,157 +880,33 @@ function EditProfilePage() {
                   </Typography>
                 </Box>
 
-                {/* New Post Entry - Always at the top */}
+                {/* Create New Post Button */}
                 <Paper 
                   sx={{ 
                     p: 3, 
                     mb: 4, 
                     borderRadius: 2,
                     boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-                    border: '1px solid #e0e0e0'
+                    border: '1px solid #e0e0e0',
+                    textAlign: 'center'
                   }}
                 >
-                  <Typography variant="h6" sx={{ mb: 3, display: 'flex', alignItems: 'center' }}>
+                  <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <AddIcon sx={{ mr: 1, color: 'primary.main' }} />
                     Create New Post
                   </Typography>
-                  
-                  <Box sx={{ mb: 3 }}>
-                    <TextField
-                      fullWidth
-                      label="Post Title"
-                      placeholder="What's on your mind?"
-                      variant="outlined"
-                      sx={{ mb: 2 }}
-                      value={newPostTitle}
-                      onChange={(e) => setNewPostTitle(e.target.value)}
-                      required
-                    />
-                    
-                    <TextField
-                      fullWidth
-                      label="Post Content"
-                      placeholder="Share your thoughts with the community..."
-                      multiline
-                      rows={3}
-                      variant="outlined"
-                      sx={{ mb: 2 }}
-                      value={newPostContent}
-                      onChange={(e) => setNewPostContent(e.target.value)}
-                    />
-                    
-                    {/* Category selection */}
-                    {categories.length > 0 && (
-                      <FormControl fullWidth size="small" sx={{ mb: 2 }}>
-                        <InputLabel shrink>Category (optional)</InputLabel>
-                        <Select
-                          value={selectedCategory}
-                          onChange={(e) => setSelectedCategory(e.target.value)}
-                          label="Category (optional)"
-                          displayEmpty
-                        >
-                          <MenuItem value="">
-                            <em>No category</em>
-                          </MenuItem>
-                          {categories.map((category) => (
-                            <MenuItem key={category.id} value={category.id}>
-                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                <Box
-                                  sx={{
-                                    width: 12,
-                                    height: 12,
-                                    borderRadius: '50%',
-                                    bgcolor: category.color,
-                                    flexShrink: 0
-                                  }}
-                                />
-                                {category.name}
-                              </Box>
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      </FormControl>
-                    )}
-                    
-                    {/* Display image preview if available */}
-                    {newPostImagePreview && (
-                      <Box sx={{ mb: 2, position: 'relative', width: '100%', maxHeight: '200px', overflow: 'hidden', borderRadius: 1 }}>
-                        <img 
-                          src={newPostImagePreview} 
-                          alt="Post preview" 
-                          style={{ 
-                            width: '100%', 
-                            objectFit: 'cover',
-                            maxHeight: '200px'
-                          }} 
-                        />
-                        <IconButton
-                          size="small"
-                          sx={{
-                            position: 'absolute',
-                            top: 8,
-                            right: 8,
-                            bgcolor: 'rgba(0,0,0,0.5)',
-                            color: 'white',
-                            '&:hover': {
-                              bgcolor: 'rgba(0,0,0,0.7)'
-                            }
-                          }}
-                          onClick={() => {
-                            setNewPostImage(null);
-                            setNewPostImagePreview('');
-                          }}
-                        >
-                          <DeleteIcon />
-                        </IconButton>
-                      </Box>
-                    )}
-                    
-                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                      <label htmlFor="quick-post-image">
-                        <input
-                          accept="image/*"
-                          type="file"
-                          id="quick-post-image"
-                          hidden
-                          onChange={handleNewPostImageChange}
-                        />
-                        <Button 
-                          variant="outlined" 
-                          component="span"
-                          startIcon={<ImageIcon />}
-                          sx={{ mr: 2 }}
-                        >
-                          {newPostImage ? 'Change Image' : 'Add Image'}
-                        </Button>
-                      </label>
-                      
-                      <TextField
-                        label="Add Link (Optional)"
-                        placeholder="https://example.com"
-                        variant="outlined"
-                        size="small"
-                        sx={{ flexGrow: 1 }}
-                        value={newPostLink}
-                        onChange={(e) => setNewPostLink(e.target.value)}
-                        InputProps={{
-                          startAdornment: <LanguageIcon color="action" sx={{ mr: 1 }} fontSize="small" />
-                        }}
-                      />
-                    </Box>
-                  </Box>
-                  
-                  <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-                    <Button
-                      variant="contained" 
-                      color="primary"
-                      onClick={handlePublishNewPost}
-                      disabled={!newPostTitle.trim() || saving}
-                      startIcon={saving ? <CircularProgress size={20} color="inherit" /> : null}
-                    >
-                      {saving ? 'Publishing...' : 'Publish Post'}
-                    </Button>
-                  </Box>
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                    Create a portfolio post to showcase your projects and share your work with the community.
+                  </Typography>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => setCreatePostModalOpen(true)}
+                    startIcon={<AddIcon />}
+                    size="large"
+                  >
+                    Create Post
+                  </Button>
                 </Paper>
                 
                 {/* Previously Published Posts Section */}
@@ -1339,50 +1087,6 @@ function EditProfilePage() {
                                 required
                               />
                               
-                              {/* Category display */}
-                              {item.category_id && categories.find(c => c.id === item.category_id) && (
-                                <Box sx={{ mb: 2, display: 'flex', justifyContent: 'flex-end' }}>
-                                  <Box
-                                    sx={{
-                                      display: 'inline-flex',
-                                      alignItems: 'center',
-                                      gap: 0.5,
-                                      px: 1.5,
-                                      py: 0.5,
-                                      borderRadius: '16px',
-                                      bgcolor: alpha(categories.find(c => c.id === item.category_id).color, 0.12),
-                                      border: `1px solid ${alpha(categories.find(c => c.id === item.category_id).color, 0.3)}`,
-                                      transition: 'all 0.2s ease',
-                                      '&:hover': {
-                                        bgcolor: alpha(categories.find(c => c.id === item.category_id).color, 0.18),
-                                        borderColor: alpha(categories.find(c => c.id === item.category_id).color, 0.4),
-                                      }
-                                    }}
-                                  >
-                                    <Box
-                                      sx={{
-                                        width: 6,
-                                        height: 6,
-                                        borderRadius: '50%',
-                                        bgcolor: categories.find(c => c.id === item.category_id).color,
-                                        flexShrink: 0
-                                      }}
-                                    />
-                                    <Typography
-                                      variant="caption"
-                                      sx={{
-                                        fontSize: '0.75rem',
-                                        fontWeight: 500,
-                                        color: categories.find(c => c.id === item.category_id).color,
-                                        letterSpacing: '0.02em'
-                                      }}
-                                    >
-                                      {categories.find(c => c.id === item.category_id).name}
-                                    </Typography>
-                                  </Box>
-                                </Box>
-                              )}
-                              
                               <TextField
                                 fullWidth
                                 label="Post Content"
@@ -1487,6 +1191,13 @@ function EditProfilePage() {
           </form>
         </Box>
       </Paper>
+      
+      {/* Create Post Modal */}
+      <CreatePostModal 
+        open={createPostModalOpen}
+        onClose={() => setCreatePostModalOpen(false)}
+        onPostCreated={handlePostCreated}
+      />
     </Container>
   );
 }
