@@ -806,6 +806,7 @@ function ProfilePage() {
                               isOwner={isOwnProfile}
                               onPostUpdated={handlePostUpdated}
                               onPostDeleted={handlePostDeleted}
+                              networkId={profile.network_id}
                               sx={{ height: '100%' }}
                             />
                           </Grid>
@@ -835,6 +836,7 @@ function ProfilePage() {
                         isOwner={isOwnProfile}
                         onPostUpdated={handlePostUpdated}
                         onPostDeleted={handlePostDeleted}
+                        networkId={profile.network_id}
                         sx={{ height: '100%' }}
                       />
                     </Grid>

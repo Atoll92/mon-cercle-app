@@ -53,23 +53,31 @@ const PostCard = ({
   onAuthorClick,
   onPostUpdated,
   onPostDeleted,
+  networkId, // Optional: provide networkId when not in NetworkProvider
   sx = {}
 }) => {
   const theme = useTheme();
   const { activeProfile } = useProfile();
   
-  // Check if we're in a NetworkProvider context
-  let currentNetwork = null;
-  try {
-    const networkContext = useNetwork();
-    currentNetwork = networkContext?.currentNetwork;
-  } catch (error) {
-    // Not within NetworkProvider, return null
-    return null;
+  // Get networkId from prop or context
+  let currentNetworkId = networkId;
+  let hasNetworkContext = Boolean(networkId);
+  
+  // Try to get from NetworkProvider if not provided as prop
+  if (!hasNetworkContext) {
+    try {
+      const networkContext = useNetwork();
+      currentNetworkId = networkContext?.currentNetwork?.id;
+      hasNetworkContext = Boolean(currentNetworkId);
+    } catch (error) {
+      // Not within NetworkProvider and no networkId prop - disable edit functionality
+      hasNetworkContext = false;
+    }
   }
   
   // Determine if current user owns this post
-  const isPostOwner = isOwner || (activeProfile && post.profile_id === activeProfile.id);
+  // Only allow editing if we have networkId (for the edit modal)
+  const isPostOwner = hasNetworkContext && (isOwner || (activeProfile && post.profile_id === activeProfile.id));
   const [anchorEl, setAnchorEl] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [commentCount, setCommentCount] = useState(0);
@@ -524,7 +532,7 @@ const PostCard = ({
         onClose={() => setEditModalOpen(false)}
         onPostCreated={handlePostUpdated}
         darkMode={darkMode}
-        networkId={currentNetwork?.id}
+        networkId={currentNetworkId}
         mode="edit"
         editPost={post}
       />
