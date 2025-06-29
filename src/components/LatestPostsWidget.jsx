@@ -17,12 +17,14 @@ import {
   Typography,
   Box,
   Avatar,
-  Divider
+  Divider,
+  Button
 } from '@mui/material';
 import {
   Work as WorkIcon,
   Schedule as ScheduleIcon,
-  Person as PersonIcon
+  Person as PersonIcon,
+  ArrowForward as ArrowForwardIcon
 } from '@mui/icons-material';
 import { supabase } from '../supabaseclient';
 
@@ -262,7 +264,8 @@ const LatestPostsWidget = ({ networkId, onMemberClick }) => {
               WebkitLineClamp: 3,
               WebkitBoxOrient: 'vertical',
               overflow: 'hidden',
-              lineHeight: 1.6
+              lineHeight: 1.6,
+              mb: 2
             }}
           >
             {truncateContent(latestPost.description)}
@@ -271,6 +274,7 @@ const LatestPostsWidget = ({ networkId, onMemberClick }) => {
           {latestPost.url && (
             <Box sx={{ 
               mt: 2,
+              mb: 2,
               bgcolor: 'rgba(0,0,0,0.02)', 
               borderRadius: 1, 
               overflow: 'hidden'
@@ -281,6 +285,16 @@ const LatestPostsWidget = ({ networkId, onMemberClick }) => {
               />
             </Box>
           )}
+
+          <Button
+            component={Link}
+            to={`/post/${latestPost.id}`}
+            size="small"
+            endIcon={<ArrowForwardIcon />}
+            sx={{ mt: 'auto', alignSelf: 'flex-start' }}
+          >
+            View Post
+          </Button>
         </Box>
       </CardContent>
       

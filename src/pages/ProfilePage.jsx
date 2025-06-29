@@ -892,8 +892,15 @@ function ProfilePage() {
                                 )}
                               </CardContent>
                               
-                              {post.url && (
-                                <CardActions>
+                              <CardActions>
+                                <Button 
+                                  size="small" 
+                                  component={Link}
+                                  to={`/post/${post.id}`}
+                                >
+                                  View Full Post
+                                </Button>
+                                {post.url && (
                                   <Button 
                                     size="small" 
                                     href={post.url} 
@@ -901,10 +908,10 @@ function ProfilePage() {
                                     rel="noopener noreferrer"
                                     endIcon={<LaunchIcon />}
                                   >
-                                    View Post
+                                    External Link
                                   </Button>
-                                </CardActions>
-                              )}
+                                )}
+                              </CardActions>
                             </Card>
                           </Grid>
                         ))}
@@ -996,8 +1003,15 @@ function ProfilePage() {
                           )}
                         </CardContent>
                         
-                        {post.url && (
-                          <CardActions>
+                        <CardActions>
+                          <Button 
+                            size="small" 
+                            component={Link}
+                            to={`/post/${post.id}`}
+                          >
+                            View Full Post
+                          </Button>
+                          {post.url && (
                             <Button 
                               size="small" 
                               href={post.url} 
@@ -1005,10 +1019,10 @@ function ProfilePage() {
                               rel="noopener noreferrer"
                               endIcon={<LaunchIcon />}
                             >
-                              View Post
+                              External Link
                             </Button>
-                          </CardActions>
-                        )}
+                          )}
+                        </CardActions>
                       </Card>
                     </Grid>
                   ))}

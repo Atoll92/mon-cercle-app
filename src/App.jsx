@@ -50,6 +50,7 @@ const MicroConclavPage = lazy(() => import('./pages/MicroConclavPage'));
 const SuperAdminDashboard = lazy(() => import('./pages/SuperAdminDashboard'));
 const JoinNetworkPage = lazy(() => import('./pages/JoinNetworkPage'));
 const NewsPostPage = lazy(() => import('./pages/NewsPostPage'));
+const PostPage = lazy(() => import('./pages/PostPage'));
 const MediaTest = lazy(() => import('./pages/MediaTest'));
 const TermsPage = lazy(() => import('./pages/TermsPage'));
 const PrivacyPage = lazy(() => import('./pages/PrivacyPage'));
@@ -242,6 +243,9 @@ function App() {
             <Route path="/network/:networkId" element={<NetworkLandingPage />} />
             <Route path="/network/:networkId/news/:newsId" element={<NewsPostPage />} />
             <Route path="/network/:networkId/event/:eventId" element={<EventPage />} />
+            
+            {/* Individual post route */}
+            <Route path="/post/:postId" element={<PostPage />} />
             
             {/* Test routes */}
             <Route path="/media-test" element={<MediaTest />} />
