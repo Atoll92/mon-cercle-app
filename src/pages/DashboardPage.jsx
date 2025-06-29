@@ -16,6 +16,7 @@ import { useFadeIn, useStaggeredAnimation, ANIMATION_DURATION } from '../hooks/u
 import { ProfileSkeleton, GridSkeleton } from '../components/LoadingSkeleton';
 import OnboardingGuide from '../components/OnboardingGuide';
 import WelcomeMessage from '../components/WelcomeMessage';
+import { fetchNetworkDetails } from '../api/networks';
 import { 
   AttachMoney as AttachMoneyIcon,
   Star as StarIcon,
@@ -153,27 +154,6 @@ const SubscriptionBadge = ({ plan, status }) => {
   );
 };
 
-// Network details fetching function
-const fetchNetworkDetails = async (networkId) => {
-  try {
-    console.log('Fetching network details for network:', networkId);
-    const { data, error } = await supabase
-      .from('networks')
-      .select('*')
-      .eq('id', networkId)
-      .single();
-      
-    if (error) throw error;
-    console.log('Network details:', data);
-    console.log('Subscription plan:', data?.subscription_plan);
-    console.log('Subscription status:', data?.subscription_status);
-    return data;
-  } catch (error) {
-    console.error("Error fetching network details:", error);
-    return null;
-  }
-};
-
 function DashboardPage() {
   const { user, session } = useAuth();
   const { activeProfile, userProfiles, isLoadingProfiles } = useProfile();
@@ -198,7 +178,6 @@ function DashboardPage() {
   const [mediaUrl, setMediaUrl] = useState(null);
   const [mediaType, setMediaType] = useState(null);
   const [mediaMetadata, setMediaMetadata] = useState({});
-  const [mediaUploading, setMediaUploading] = useState(false);
   const [publishingPost, setPublishingPost] = useState(false);
   const [postMessage, setPostMessage] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
