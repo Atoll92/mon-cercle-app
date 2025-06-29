@@ -60,6 +60,7 @@ function EditProfilePage() {
   const [fullName, setFullName] = useState('');
   const [contactEmail, setContactEmail] = useState('');
   const [bio, setBio] = useState('');
+  const [tagline, setTagline] = useState('');
   const [portfolioUrl, setPortfolioUrl] = useState('');
   const [linkedinUrl, setLinkedinUrl] = useState('');
   const [skillsInput, setSkillsInput] = useState([]);
@@ -156,6 +157,7 @@ function EditProfilePage() {
         setFullName(data.full_name || '');
         setContactEmail(data.contact_email || user.email || '');
         setBio(data.bio || '');
+        setTagline(data.tagline || '');
         setPortfolioUrl(data.portfolio_url || '');
         setLinkedinUrl(data.linkedin_url || '');
         setSkillsInput(data.skills || []);
@@ -417,6 +419,7 @@ function EditProfilePage() {
         full_name: fullName,
         contact_email: contactEmail,
         bio,
+        tagline,
         portfolio_url: portfolioUrl,
         linkedin_url: linkedinUrl,
         skills: skillsInput,
@@ -804,6 +807,18 @@ function EditProfilePage() {
                       placeholder="Tell others about yourself"
                       multiline
                       rows={4}
+                      InputLabelProps={{ shrink: true }}
+                      variant="outlined"
+                    />
+                    
+                    <TextField
+                      fullWidth
+                      label="Tagline"
+                      value={tagline}
+                      onChange={(e) => setTagline(e.target.value)}
+                      placeholder="Your motto or catchphrase (max 60 characters)"
+                      inputProps={{ maxLength: 60 }}
+                      helperText={`${tagline.length}/60 characters - A short, memorable phrase that represents you`}
                       InputLabelProps={{ shrink: true }}
                       variant="outlined"
                     />

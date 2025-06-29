@@ -618,10 +618,11 @@ const MembersTab = ({
           sx={{
             display: 'grid',
             gridTemplateColumns: {
-              xs: 'repeat(2, 1fr)',            // Mobile: 2 columns
-              sm: 'repeat(3, 1fr)',            // Tablet: 3 columns
-              md: 'repeat(4, 1fr)',            // Desktop: 4 columns
-              lg: 'repeat(6, 1fr)'             // Large screens: 6 columns
+              xs: 'repeat(1, 1fr)',            // Mobile: 1 column
+              sm: 'repeat(2, 1fr)',            // Small tablets: 2 columns
+              md: 'repeat(3, 1fr)',            // Tablets/Small desktop: 3 columns
+              lg: 'repeat(4, 1fr)',            // Desktop and up: 4 columns max
+              xl: 'repeat(4, 1fr)'             // Large screens: still 4 columns max
             },
             gap: 3
           }}
@@ -748,7 +749,7 @@ const MembersTab = ({
                       sx={{ 
                         width: '100%',
                         height: '2.4em',
-                        mb: 1,
+                        mb: 0.5,
                         display: 'flex',
                         justifyContent: 'center',
                         alignItems: 'center',
@@ -782,45 +783,42 @@ const MembersTab = ({
                       </Typography>
                     </Box>
                     
-                    <Box sx={{ 
-                      mb: 2, 
-                      display: 'flex', 
-                      justifyContent: 'center', 
-                      flexWrap: 'wrap', 
-                      gap: 0.7
-                    }}>
-                      <Chip 
-                        label={member.role === 'admin' ? 'Admin' : 'Member'} 
-                        color={member.role === 'admin' ? 'primary' : 'default'}
-                        size="small"
+                    {/* Tagline */}
+                    {member.tagline && (
+                      <Box 
                         sx={{ 
-                          fontWeight: 500,
-                          bgcolor: darkMode ? 
-                            (member.role === 'admin' ? alpha('#1976d2', 0.8) : alpha('#333333', 0.8)) : 
-                            undefined,
-                          '& .MuiChip-label': {
-                            px: 1
-                          }
+                          width: '100%',
+                          mb: 1.5,
+                          px: 2,
+                          display: 'flex',
+                          justifyContent: 'center',
+                          alignItems: 'center'
                         }}
-                      />
-                      
-                      {member.skills && member.skills.length > 0 && (
-                        <Tooltip title={member.skills.join(', ')}>
-                          <Chip
-                            label={`${member.skills.length} skills`}
-                            size="small"
-                            color="secondary"
-                            sx={{ 
-                              fontWeight: 500,
-                              bgcolor: darkMode ? alpha('#9c27b0', 0.8) : undefined,
-                              '& .MuiChip-label': {
-                                px: 1
-                              }
-                            }}
-                          />
-                        </Tooltip>
-                      )}
-                    </Box>
+                      >
+                        <Typography 
+                          variant="body2" 
+                          sx={{ 
+                            fontWeight: 'bold',
+                            color: darkMode ? alpha(customLightText, 0.9) : customLightText,
+                            textAlign: 'center',
+                            fontStyle: 'italic',
+                            fontSize: '0.75rem',
+                            lineHeight: 1.3,
+                            '&::before': {
+                              content: '"\\""',
+                              marginRight: '2px',
+                            },
+                            '&::after': {
+                              content: '"\\""',
+                              marginLeft: '2px',
+                            }
+                          }}
+                        >
+                          {member.tagline}
+                        </Typography>
+                      </Box>
+                    )}
+                    
                     
                     {/* User Badges */}
                     {member.badge_count > 0 && (
@@ -831,6 +829,59 @@ const MembersTab = ({
                           maxDisplay={2}
                           showTotal={true}
                         />
+                      </Box>
+                    )}
+                    
+                    {/* Skills Tags */}
+                    {member.skills && member.skills.length > 0 && (
+                      <Box sx={{ 
+                        mb: 1.5, 
+                        width: '100%', 
+                        display: 'flex', 
+                        justifyContent: 'center',
+                        flexWrap: 'wrap',
+                        gap: 0.5,
+                        px: 1
+                      }}>
+                        {member.skills.slice(0, 3).map((skill, index) => (
+                          <Chip
+                            key={index}
+                            label={skill}
+                            size="small"
+                            sx={{
+                              fontSize: '0.7rem',
+                              height: 20,
+                              bgcolor: darkMode ? alpha('#2196f3', 0.2) : alpha('#2196f3', 0.1),
+                              color: darkMode ? '#90caf9' : '#1976d2',
+                              borderColor: darkMode ? alpha('#2196f3', 0.3) : alpha('#2196f3', 0.2),
+                              border: '1px solid',
+                              '& .MuiChip-label': {
+                                px: 0.8,
+                                fontWeight: 500
+                              }
+                            }}
+                          />
+                        ))}
+                        {member.skills.length > 3 && (
+                          <Tooltip title={member.skills.slice(3).join(', ')}>
+                            <Chip
+                              label={`+${member.skills.length - 3}`}
+                              size="small"
+                              sx={{
+                                fontSize: '0.7rem',
+                                height: 20,
+                                bgcolor: darkMode ? alpha('#9c27b0', 0.2) : alpha('#9c27b0', 0.1),
+                                color: darkMode ? '#ce93d8' : '#7b1fa2',
+                                borderColor: darkMode ? alpha('#9c27b0', 0.3) : alpha('#9c27b0', 0.2),
+                                border: '1px solid',
+                                '& .MuiChip-label': {
+                                  px: 0.8,
+                                  fontWeight: 600
+                                }
+                              }}
+                            />
+                          </Tooltip>
+                        )}
                       </Box>
                     )}
                     
@@ -935,7 +986,15 @@ const MembersTab = ({
                     </Box>
                     
                     {/* Bio with consistent height */}
-                    {member.bio && (
+                    <Box sx={{ 
+                      width: '100%',
+                      minHeight: '5.6em', // 4 lines * 1.4 line height
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      justifyContent: 'center',
+                      px: 1,
+                      mt: 1
+                    }}>
                       <Typography 
                         variant="body2" 
                         color={customFadedText} 
@@ -944,18 +1003,19 @@ const MembersTab = ({
                           overflow: 'hidden',
                           textOverflow: 'ellipsis',
                           display: '-webkit-box',
-                          WebkitLineClamp: 2,
+                          WebkitLineClamp: 4,
                           WebkitBoxOrient: 'vertical',
                           lineHeight: 1.4,
-                          height: '2.8em',
                           width: '100%',
-                          padding: '0 4px',
-                          wordBreak: 'break-word'
+                          wordBreak: 'break-word',
+                          fontStyle: member.bio ? 'normal' : 'italic',
+                          fontSize: '0.875rem',
+                          whiteSpace: 'pre-line' // This preserves line breaks
                         }}
                       >
-                        {member.bio}
+                        {member.bio || 'No bio available'}
                       </Typography>
-                    )}
+                    </Box>
                   </CardContent>
                 </Card>
               </Box>

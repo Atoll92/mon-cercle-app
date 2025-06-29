@@ -177,7 +177,7 @@ const fetchNetworkMembers = async (networkId, options = {}) => {
         // Build query
         let query = supabase
             .from('profiles')
-            .select('id, full_name, contact_email, role, profile_picture_url, created_at', { count: 'exact' })
+            .select('*', { count: 'exact' })
             .eq('network_id', networkId)
             .order(orderBy, { ascending })
             .range(offset, offset + limit - 1);
