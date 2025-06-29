@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import PostCard from './PostCard';
 import ImageViewerModal from './ImageViewerModal';
@@ -8,6 +8,7 @@ import WidgetEmptyState from './shared/WidgetEmptyState';
 import WidgetErrorState from './shared/WidgetErrorState';
 import { useSupabaseQuery } from '../hooks/useSupabaseQuery';
 import { useProfile } from '../context/profileContext';
+import { getCommentCount } from '../api/comments';
 import {
   Box,
   Button
@@ -22,6 +23,7 @@ const LatestPostsWidget = ({ networkId, onMemberClick, darkMode = false }) => {
   const { activeProfile } = useProfile();
   const [imageViewerOpen, setImageViewerOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState({ url: '', title: '' });
+  const [commentCount, setCommentCount] = useState(0);
 
   // First fetch network members
   const { data: members } = useSupabaseQuery(
@@ -56,7 +58,17 @@ const LatestPostsWidget = ({ networkId, onMemberClick, darkMode = false }) => {
     { enabled: memberIds.length > 0 }
   );
 
-
+  // Fetch comment count for the latest post
+  useEffect(() => {
+    const fetchCommentCount = async () => {
+      if (latestPost) {
+        const { count } = await getCommentCount('post', latestPost.id);
+        setCommentCount(count || 0);
+      }
+    };
+    
+    fetchCommentCount();
+  }, [latestPost]);
 
   if (loading || !networkId) {
     return <WidgetSkeleton showHeader={true} contentLines={3} showImage={true} />;
@@ -116,6 +128,7 @@ const LatestPostsWidget = ({ networkId, onMemberClick, darkMode = false }) => {
           isOwner={isOwner}
           onImageClick={handleImageClick}
           onAuthorClick={onMemberClick}
+          commentCount={commentCount}
           sx={{ height: '100%' }}
         />
       </Box>

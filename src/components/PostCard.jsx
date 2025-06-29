@@ -13,24 +13,25 @@ import {
   MenuItem,
   CircularProgress,
   alpha,
-  useTheme
+  useTheme,
 } from '@mui/material';
 import {
   MoreVert as MoreVertIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
-  Launch as LaunchIcon,
-  Person as PersonIcon,
+  ArrowForward as ArrowForwardIcon,
   PictureAsPdf as PdfIcon,
   Image as ImageIcon,
   VideoLibrary as VideoIcon,
   AudioFile as AudioIcon,
-  Article as ArticleIcon
+  Article as ArticleIcon,
+  ChatBubbleOutline as CommentIcon
 } from '@mui/icons-material';
 import MediaPlayer from './MediaPlayer';
 import LazyImage from './LazyImage';
 import LinkPreview from './LinkPreview';
 import { formatDistanceToNow } from 'date-fns';
+import { Link } from 'react-router-dom';
 
 /**
  * PostCard component for displaying portfolio posts
@@ -46,6 +47,7 @@ const PostCard = ({
   onDelete,
   onImageClick,
   onAuthorClick,
+  commentCount = 0,
   sx = {}
 }) => {
   const theme = useTheme();
@@ -423,6 +425,39 @@ const PostCard = ({
             />
           </Box>
         )}
+
+        {/* Comment count and actions */}
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 2 }}>
+          <Button
+            component={Link}
+            to={`/post/${post.id}`}
+            startIcon={<CommentIcon sx={{ fontSize: 18 }} />}
+            sx={{
+              textTransform: 'none',
+              color: theme.palette.text.secondary,
+              fontSize: '0.875rem',
+              py: 0.5,
+              px: 1,
+              minHeight: 'auto',
+              '&:hover': {
+                bgcolor: alpha(theme.palette.primary.main, 0.08),
+                color: theme.palette.primary.main
+              }
+            }}
+          >
+            {commentCount > 0 ? `${commentCount} comment${commentCount !== 1 ? 's' : ''}` : 'Comment'}
+          </Button>
+          
+          <Button
+            component={Link}
+            to={`/post/${post.id}`}
+            size="small"
+            endIcon={<ArrowForwardIcon />}
+            sx={{ alignSelf: 'flex-start' }}
+          >
+            View Post
+          </Button>
+        </Box>
       </CardContent>
     </Card>
   );
