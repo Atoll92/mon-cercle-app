@@ -2,6 +2,18 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Quick Navigation
+
+### By Role
+- **Developers**: [Commands](#commands) → [Architecture](#architecture-overview) → [Components](#components)
+- **Database Changes**: [Database Protocol](#database-schema-validation-protocol) → [Schema Docs](./database.md)
+- **New Features**: [Recent Changes](#recent-changes) → [Feature Areas](#feature-areas)
+
+### By Component Type
+- **Pages**: [Pages Section](#pages-srcpages)
+- **API**: [API Layer](#api-layer-srcapi)
+- **Admin**: [Admin Components](#admin-components-srccomponentsadmin)
+
 ## Project Documentation
 
 - **[Application Status](./status.md)** - Current state of the application and production readiness
@@ -130,80 +142,103 @@ mon-cercle-app/
 - `SimpleLandingPage.jsx` - Alternative landing page
 - `DocumentationPage.jsx` - Help center with FAQ and user guides
 - `EnhancedLandingPage.jsx` - Modern privacy-focused landing page with advanced animations
+- `PostCard.jsx` - Individual post display component
 
-#### Components (`src/components/`)
+#### Components by Feature Area (`src/components/`)
 
-##### Chat & Messaging
-- `Chat.jsx` - Network chat with mentions and reply functionality
-- `DirectMessageChat.jsx` - DM interface (dark mode ready, enhanced link preview support)
-- `DirectMessagesList.jsx` - Conversation list (dark mode ready)
-- `CommentSection.jsx` - Comment system for social wall items with threaded replies
+##### Core Application Components
+- **Authentication & User Management**
+  - `ProtectedRoute.jsx` - Route protection for authenticated users
+  - `ProfileAwareRoute.jsx` - Profile-aware route wrapper for multiple profiles system
+  - `UserSearchAutocomplete.jsx` - User search with autocomplete for network members
+  - `UserBadges.jsx` - User badge display component
+  - `ErrorBoundary.jsx` - Error handling wrapper
 
-##### Network Features
-- `NetworkHeader.jsx` - Network header (80px height)
-- `NetworkOnboardingWizard.jsx` - Setup wizard
-- `NetworkDetailsModal.jsx` - Network info display
-- `EventsTab.jsx` - Events management
+- **Network Management & Navigation**
+  - `NetworkHeader.jsx` - Network header component (80px height)
+  - `NetworkSelector.jsx` - Network selection interface for users with multiple networks
+  - `NetworkSwitcher.jsx` - Quick network switching component (replaced ProfileSelector/ProfileSwitcher)
+  - `NetworkOnboardingWizard.jsx` - Step-by-step network setup wizard
+  - `NetworkDetailsModal.jsx` - Network information display modal
+  - `OnboardingGuide.jsx` - Interactive onboarding guide with tooltips
+  - `WelcomeMessage.jsx` - Welcome dialog for new network members with celebration animation
+
+##### Content Management Components
+- **Media Handling & Display**
+  - `MediaUpload.jsx` - Comprehensive file upload system
+  - `MediaPlayer.jsx` - Video/audio playback with artwork support and custom controls
+  - `ImageViewerModal.jsx` - Full-screen image viewer with zoom and gallery navigation
+  - `LazyImage.jsx` - Lazy loading image component with optimization
+  
+- **PDF Document Support**
+  - `PDFReader.jsx` - PDF document reader with page navigation
+  - `PDFModal.jsx` - PDF viewer modal wrapper
+  - `PDFPreview.jsx` - PDF preview component
+  - `PDFPreviewEnhanced.jsx` - Enhanced PDF preview with metadata
+  - `PDFFirstPageViewer.jsx` - PDF first page thumbnail generator
+  - `SimplePDFViewer.jsx` - Lightweight PDF viewer
+
+- **Content Creation & Editing**
+  - `QuillEditor.jsx` - Rich text editor for content creation
+  - `LinkPreview.jsx` - Enhanced URL preview cards with improved OpenGraph data extraction
+  - `PostCard.jsx` - Individual post display component
+  - `PostPage.jsx` - Individual portfolio post page with full content display
+
+##### Communication & Social Features
+- **Chat & Messaging**
+  - `Chat.jsx` - Real-time network chat with mentions and reply functionality
+  - `DirectMessageChat.jsx` - Direct message interface (dark mode ready, enhanced link preview support)
+  - `DirectMessagesList.jsx` - Conversation list interface (dark mode ready)
+  - `CommentSection.jsx` - Comment system for social wall items with threaded replies
+
+- **Social Wall & Content Display**
+  - `SocialWallTab.jsx` - Combined social feed with news and portfolio items
+  - `PollCard.jsx` - Interactive poll display and voting interface
+  - `NewsPostPage.jsx` - Individual news post page with full content display
+
+##### Network Feature Tabs
+- `EventsTab.jsx` - Events management and display
 - `MembersTab.jsx` - Member management (includes invitations)
-- `NewsTab.jsx` - News feed
-- `SocialWallTab.jsx` - Combined social feed
-- `WikiTab.jsx` - Wiki content
-- `FilesTab.jsx` - File sharing
-- `MoonboardTab.jsx` - Moodboard display
+- `NewsTab.jsx` - Network news feed
+- `WikiTab.jsx` - Wiki content management
+- `FilesTab.jsx` - File sharing and management
+- `MoonboardTab.jsx` - Moodboard display and interaction
 - `AboutTab.jsx` - Network about section
 - `ChatTab.jsx` - Chat interface wrapper
 - `PrivacyPage.jsx` - Privacy policy page
 
-##### Media & Content
-- `MediaUpload.jsx` - File upload system
-- `MediaPlayer.jsx` - Video/audio playback with artwork support
-- `LinkPreview.jsx` - Enhanced URL preview cards with improved OpenGraph data extraction
-- `QuillEditor.jsx` - Rich text editor
-- `moodboardGallery.jsx` - Moodboard gallery
-- `ImageViewerModal.jsx` - Full-screen image viewer with zoom and gallery navigation
-- `PDFReader.jsx` - PDF document reader with page navigation
-- `PDFModal.jsx` - PDF viewer modal wrapper
-- `PDFPreview.jsx` - PDF preview component
-- `PDFPreviewEnhanced.jsx` - Enhanced PDF preview with metadata
-- `PDFFirstPageViewer.jsx` - PDF first page thumbnail generator
-- `SimplePDFViewer.jsx` - Lightweight PDF viewer
+##### UI Framework & Visual Components
+- **Animation & Visual Effects**
+  - `AnimatedComponents.jsx` - Animation wrappers and effects
+  - `ShimmerProvider.jsx` - Shimmer effects provider
+  - `ShimmeryText.jsx` - Text animations and shimmer effects
+  - `TextCycler.jsx` - Cycling text display component
+  - `ThreeJSBackground.jsx` - 3D background graphics
+  - `LoadingSkeleton.jsx` - Loading state skeletons
+  - `ThemeProvider.jsx` - Dark/light theme management
 
-##### UI Components
-- `AnimatedComponents.jsx` - Animation wrappers
-- `ShimmerProvider.jsx` - Shimmer effects
-- `ShimmeryText.jsx` - Text animations
-- `TextCycler.jsx` - Cycling text display
-- `ThreeJSBackground.jsx` - 3D background
-- `LoadingSkeleton.jsx` - Loading states
-- `ThemeProvider.jsx` - Theme management
-- `ProtectedRoute.jsx` - Route protection
-- `ProfileAwareRoute.jsx` - **Profile-aware route wrapper for multiple profiles system**
-- `UserSearchAutocomplete.jsx` - User search with autocomplete for network members
-- `NetworkSelector.jsx` - **Network selection interface for users with multiple networks**
+- **Specialized Widgets**
+  - `LatestNewsWidget.jsx` - News widget with media support
+  - `LatestPostsWidget.jsx` - Posts widget with media support
+  - `PersonalMoodboardWidget.jsx` - Personal moodboard widget
+  - `InvitationLinkWidget.jsx` - Invitation link management
+  - `SubscriptionBadge.jsx` - Subscription status display
+  - `EventParticipation.jsx` - Event participation widget
+  - `EventParticipationStats.jsx` - Event analytics and statistics
+  - `EventsMap.jsx` - Map component for displaying events using Mapbox
+  - `TestNotificationSystem.jsx` - Notification testing component
 
-##### Widgets & Cards
-- `PollCard.jsx` - Poll display/voting
-- `LatestNewsWidget.jsx` - News widget (with media support)
-- `LatestPostsWidget.jsx` - Posts widget (with media support)
-- `PersonalMoodboardWidget.jsx` - Moodboard widget
-- `InvitationLinkWidget.jsx` - Invitation links
-- `SubscriptionBadge.jsx` - Subscription status
-- `UserBadges.jsx` - User badge display component
-- `ErrorBoundary.jsx` - Error handling wrapper
-- `EventParticipation.jsx` - Event participation widget
-- `EventParticipationStats.jsx` - Event analytics and statistics  
-- `EventsMap.jsx` - Map component for displaying events using Mapbox
-- `LazyImage.jsx` - Lazy loading image component
+##### Modal & Dialog Components
 - `MembersDetailModal.jsx` - Member details popup
-- `MoodboardItem.jsx` - Individual moodboard item component
-- `NetworkDetailsModal.jsx` - Network information modal
-- `NewsPostPage.jsx` - Individual news post page
-- `TestNotificationSystem.jsx` - Notification testing component
-- `OnboardingGuide.jsx` - Interactive onboarding guide with tooltips
 - `EditItemDialog.jsx` - Dialog for editing moodboard items
 - `EventDetailsDialog.jsx` - Reusable event details dialog with RSVP functionality
+
+##### Moodboard System
+- `moodboardGallery.jsx` - Moodboard gallery display
+- `MoodboardItem.jsx` - Individual moodboard item component
+
+##### Layout Components
 - `Footer.jsx` - Application footer component
-- `WelcomeMessage.jsx` - Welcome dialog for new network members with celebration animation
 
 ##### SuperAdmin Components (`src/components/superadmin/`)
 - `TicketsManagement.jsx` - Super admin ticket dashboard and management
@@ -266,6 +301,30 @@ mon-cercle-app/
 
 See [Recent Changes](./docs/RECENT_CHANGES.md) for a complete list of updates and new features.
 
+#### Architecture & System Changes
+- **Post Creation Unification**: Unified post creation flow across portfolio and news items for consistency
+- **Notification System API Migration**: Moved notification triggers from frontend to API level for better reliability
+- **Network Management Refactor**: Replaced ProfileSelector/ProfileSwitcher with NetworkSelector/NetworkSwitcher architecture
+- **Social Wall Chronological Sorting**: Implemented latest-first ordering for improved content discovery
+
+#### User Features & Enhancements
+- **Profile Tagline Feature**: Added tagline support to user profiles with enhanced member card display
+- **Individual Post Pages**: Portfolio items now have dedicated pages for full content display with media support
+- **ICS Calendar Integration**: Event notifications now include .ics calendar attachments for easy scheduling
+- **Enhanced Landing Page**: Added improved B2B landing page with real product screenshots and animations
+
+#### Technical Improvements
+- **Media Upload Limit**: Increased from 10MB to 20MB for better content sharing capabilities
+- **Automatic Crash Reporting**: System automatically creates support tickets for application errors
+- **Stripe Production Testing**: Added comprehensive payment integration test protocols
+- **Admin UI Polish**: Enhanced responsiveness and styling across admin interfaces
+
+#### UI/UX Updates
+- **Comprehensive Notifications**: Unified notification system across all content types
+- **Moodboard Harmonization**: Improved consistency across moodboard and micro-conclav interfaces
+- **Mobile Responsiveness**: Enhanced mobile experience across key components
+- **Dark Mode Improvements**: Better dark mode support across messaging and admin interfaces
+
 ## Commands
 
 ### Development
@@ -293,6 +352,32 @@ npm run test:watch
 npm run test:coverage
 ```
 
+## Architecture Decision Records (ADR)
+
+### ADR-001: Multiple Profiles System
+**Status**: Implemented  
+**Context**: Users needed to participate in multiple networks with different identities and roles  
+**Decision**: Implement 1:many:many User:Profile:Network relationship where each user gets a separate profile per network  
+**Consequences**: Increased complexity but improved user experience, data isolation, and role management per network
+
+### ADR-002: Post Creation Unification
+**Status**: Implemented  
+**Context**: Separate post creation flows for portfolio and news items caused UI inconsistencies and code duplication  
+**Decision**: Unified post creation interface and logic across all content types  
+**Consequences**: Simplified user experience, reduced code duplication, easier maintenance
+
+### ADR-003: API-Level Notification System
+**Status**: Implemented  
+**Context**: Notification triggers were scattered across frontend components leading to inconsistent behavior  
+**Decision**: Move all notification triggers to API level with centralized processing  
+**Consequences**: Consistent notification behavior, easier debugging, better reliability, single source of truth
+
+### ADR-004: NetworkSelector/NetworkSwitcher Architecture
+**Status**: Implemented  
+**Context**: ProfileSelector/ProfileSwitcher components were confusing users who think in terms of networks, not profiles  
+**Decision**: Replace with NetworkSelector/NetworkSwitcher while maintaining profile system underneath  
+**Consequences**: Better user mental model, clearer navigation, maintained technical benefits of multi-profile system
+
 ## Architecture Overview
 
 ### Tech Stack
@@ -311,7 +396,7 @@ npm run test:coverage
 - **3D Graphics**: Three.js
 - **Virtualization**: React Window
 - **PDF Rendering**: pdfjs-dist
-- **Media Processing**: music-metadata-browser, browser-image-compression
+- **Media Processing**: music-metadata-browser, browser-image-compression (20MB upload limit)
 - **Analytics**: Vercel Analytics
 - **Animations**: canvas-confetti
 - **Utilities**: buffer (polyfill)
@@ -488,8 +573,8 @@ Implementation details:
 
 Components involved:
 - `ProfileProvider` - Core profile state management
-- `ProfileSelector` - Profile selection interface  
-- `ProfileSwitcher` - Quick profile switching
+- `NetworkSelector` - Network selection interface (replaced ProfileSelector)
+- `NetworkSwitcher` - Quick network switching (replaced ProfileSwitcher)
 - `ProfileAwareRoute` - Profile-aware routing wrapper
 
 ### Networks
@@ -572,6 +657,9 @@ Queue-based email notification system:
 - Email templates for different notification types
 - Retry mechanism for failed sends
 - Admin monitoring of notification queue
+- **ICS Calendar Attachments**: Event notifications include calendar files
+- **Unified Notification System**: Single notifications across all content types
+- **Automatic Processing**: API-level notification triggering
 
 ### Moderation System
 
@@ -613,6 +701,8 @@ System-wide administration:
 - Support ticket management with statistics
 - Ticket assignment and prioritization
 - Internal notes for ticket collaboration
+- **Automatic Crash Reporting**: System automatically creates tickets for application errors
+- **Stripe Production Testing**: Comprehensive payment integration test protocols
 
 ### Animation System
 
@@ -634,6 +724,60 @@ Comprehensive media handling:
 - Media type detection and validation
 - Automatic thumbnail generation
 - Storage quota management
+- **Increased Upload Limit**: 20MB maximum file size (previously 10MB)
+- **Enhanced Post Display**: Individual post pages with full media support
+
+## Common Development Tasks
+
+### Adding a New Component
+1. **Create Component**: Place in appropriate category under `src/components/`
+2. **Update Documentation**: Add to component documentation in this file under correct feature area
+3. **Export Component**: Update `src/components/index.js` if using barrel exports
+4. **Add Tests**: Create test file in `__tests__/` directory following existing patterns
+5. **Update Storybook**: Add stories if using Storybook for component documentation
+
+### Adding a New API Endpoint
+1. **Choose API File**: Add function to appropriate API file in `src/api/` (auth, networks, etc.)
+2. **Database Access**: Update RLS policies if the endpoint accesses database tables
+3. **Multi-Profile Support**: Ensure endpoint works with profile-aware system using `activeProfile?.id || user.id`
+4. **Error Handling**: Add proper error handling and logging
+5. **Documentation**: Update API documentation section in this file
+
+### Database Schema Changes
+1. **REQUIRED Reading**: Read `./database.md` for complete current schema understanding
+2. **Create Migration**: Add migration file in `supabase/migrations/` with descriptive name
+3. **Update RLS Policies**: Add or modify Row-Level Security policies for new tables/columns
+4. **Multi-Profile Testing**: Test all changes with multi-profile system (User:Profile:Network relationships)
+5. **Foreign Key Validation**: Verify all foreign key relationships are correct
+6. **Use Zen MCP**: If available, use Zen for cross-model validation of database changes
+7. **Update Documentation**: Update `./database.md` and this file accordingly
+
+### Adding New Network Features
+1. **Feature Toggle**: Consider which networks should have access - add to network configuration
+2. **Admin Interface**: Update admin interface if feature needs configuration options
+3. **RLS Policies**: Ensure proper network membership restrictions in database policies
+4. **Multi-Network Testing**: Test with different network types and privacy levels
+5. **Notification Integration**: Add appropriate notifications if feature generates user activity
+
+### Working with Edge Functions
+1. **Function Structure**: Follow existing pattern in `supabase/functions/`
+2. **CORS Configuration**: Use shared CORS configuration from `_shared/cors.ts`
+3. **Environment Variables**: Add required environment variables to Supabase dashboard
+4. **Error Handling**: Implement proper error responses and logging
+5. **Testing**: Test in development environment before deploying
+
+### Frontend State Management
+1. **Context Usage**: Use existing context providers (Auth, Profile, Network, DirectMessages)
+2. **Profile Awareness**: Ensure components use `activeProfile?.id || user.id` pattern for compatibility
+3. **Real-time Subscriptions**: Use `useRealtimeChannel` hook for Supabase real-time features
+4. **Error Boundaries**: Wrap new features in error boundaries for better UX
+
+### Deployment & Testing
+1. **Local Testing**: Test with `npm run dev` and ensure all features work
+2. **Build Testing**: Run `npm run build` to check for build errors
+3. **Linting**: Run `npm run lint` to check code style
+4. **Database Testing**: Test with multiple user profiles and network scenarios
+5. **Production Deployment**: Deploy through Vercel with proper environment variables
 
 ## Database Schema Validation Protocol
 
