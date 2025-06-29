@@ -222,13 +222,23 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
     loadCategories();
   }, [networkId]);
 
-  // Filter items based on selected category
+  // Filter items based on selected category and sort by date (latest first)
   const filteredItems = React.useMemo(() => {
-    if (!selectedCategory) return socialWallItems;
+    let items = socialWallItems;
     
-    return socialWallItems.filter(item => {
-      // Check category_id for both news and portfolio items
-      return item.category_id === selectedCategory;
+    // Filter by category if selected
+    if (selectedCategory) {
+      items = items.filter(item => {
+        // Check category_id for both news and portfolio items
+        return item.category_id === selectedCategory;
+      });
+    }
+    
+    // Sort by createdAt date in descending order (latest first)
+    return [...items].sort((a, b) => {
+      const dateA = new Date(a.createdAt);
+      const dateB = new Date(b.createdAt);
+      return dateB - dateA; // Latest first
     });
   }, [socialWallItems, selectedCategory]);
 
