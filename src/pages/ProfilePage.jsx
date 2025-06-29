@@ -6,9 +6,9 @@ import { supabase } from '../supabaseclient';
 import { getUserProfile } from '../api/networks';
 import MoodboardGallery from '../components/moodboardGallery';
 import EventParticipation from '../components/EventParticipation';
-import MediaPlayer from '../components/MediaPlayer';
 import UserBadges from '../components/UserBadges';
 import EventDetailsDialog from '../components/EventDetailsDialog';
+import PostCard from '../components/PostCard';
 import {
   Button,
   Typography,
@@ -40,18 +40,14 @@ import {
   LinkedIn as LinkedInIcon,
   Language as LanguageIcon,
   Event as EventIcon,
-  Place as PlaceIcon,
   Groups as GroupsIcon,
   PersonOutline as PersonOutlineIcon,
-  Launch as LaunchIcon,
   LocationOn as LocationOnIcon,
   CalendarMonth as CalendarMonthIcon,
   MoreHoriz as MoreHorizIcon,
   Description as DescriptionIcon,
   Dashboard as DashboardIcon,
-  Badge as Badge,
-  VideoLibrary as VideoIcon,
-  AudioFile as AudioFileIcon
+  Badge as Badge
 } from '@mui/icons-material';
 
 function ProfilePage() {
@@ -787,132 +783,12 @@ function ProfilePage() {
                       <Grid container spacing={2}>
                         {profile.posts.slice(0, 2).map(post => (
                           <Grid item xs={12} sm={6} key={post.id}>
-                            <Card 
-                              sx={{ 
-                                height: '100%',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                borderRadius: 2,
-                                transition: 'all 0.2s ease',
-                                '&:hover': {
-                                  transform: 'translateY(-4px)',
-                                  boxShadow: '0 8px 24px rgba(0,0,0,0.12)'
-                                }
-                              }}
-                            >
-                              {post.media_url && post.media_type ? (
-                                <Box sx={{ height: 140, bgcolor: 'black', overflow: 'hidden', position: 'relative' }}>
-                                  {post.media_type === 'IMAGE' ? (
-                                    <CardMedia
-                                      component="img"
-                                      height="140"
-                                      image={post.media_url}
-                                      alt={post.title}
-                                      sx={{ objectFit: 'cover' }}
-                                    />
-                                  ) : post.media_type === 'VIDEO' ? (
-                                    <Box sx={{ 
-                                      height: '100%',
-                                      display: 'flex',
-                                      alignItems: 'center',
-                                      justifyContent: 'center',
-                                      bgcolor: 'black'
-                                    }}>
-                                      <video
-                                        src={post.media_url}
-                                        style={{ 
-                                          width: '100%',
-                                          height: '100%',
-                                          objectFit: 'cover'
-                                        }}
-                                      />
-                                      <Box sx={{
-                                        position: 'absolute',
-                                        inset: 0,
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        bgcolor: 'rgba(0,0,0,0.5)'
-                                      }}>
-                                        <VideoIcon sx={{ fontSize: 48, color: 'white' }} />
-                                      </Box>
-                                    </Box>
-                                  ) : (
-                                    <Box sx={{ 
-                                      height: '100%',
-                                      display: 'flex',
-                                      alignItems: 'center',
-                                      justifyContent: 'center',
-                                      bgcolor: 'grey.200'
-                                    }}>
-                                      <AudioFileIcon sx={{ fontSize: 48, color: 'primary.main' }} />
-                                    </Box>
-                                  )}
-                                </Box>
-                              ) : post.image_url ? (
-                                <CardMedia
-                                  component="img"
-                                  height="140"
-                                  image={post.image_url}
-                                  alt={post.title}
-                                />
-                              ) : (
-                                <Box 
-                                  sx={{ 
-                                    height: 140, 
-                                    bgcolor: 'grey.100',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center'
-                                  }}
-                                >
-                                  <LanguageIcon fontSize="large" color="disabled" />
-                                </Box>
-                              )}
-                              
-                              <CardContent sx={{ flexGrow: 1 }}>
-                                <Typography variant="h6" gutterBottom>
-                                  {post.title}
-                                </Typography>
-                                
-                                {post.description && (
-                                  <Typography 
-                                    variant="body2" 
-                                    color="text.secondary"
-                                    sx={{
-                                      overflow: 'hidden',
-                                      textOverflow: 'ellipsis',
-                                      display: '-webkit-box',
-                                      WebkitLineClamp: 3,
-                                      WebkitBoxOrient: 'vertical'
-                                    }}
-                                  >
-                                    {post.description}
-                                  </Typography>
-                                )}
-                              </CardContent>
-                              
-                              <CardActions>
-                                <Button 
-                                  size="small" 
-                                  component={Link}
-                                  to={`/post/${post.id}`}
-                                >
-                                  View Full Post
-                                </Button>
-                                {post.url && (
-                                  <Button 
-                                    size="small" 
-                                    href={post.url} 
-                                    target="_blank" 
-                                    rel="noopener noreferrer"
-                                    endIcon={<LaunchIcon />}
-                                  >
-                                    External Link
-                                  </Button>
-                                )}
-                              </CardActions>
-                            </Card>
+                            <PostCard
+                              post={post}
+                              author={profile}
+                              isOwner={isOwnProfile}
+                              sx={{ height: '100%' }}
+                            />
                           </Grid>
                         ))}
                       </Grid>
@@ -934,96 +810,12 @@ function ProfilePage() {
                 <Grid container spacing={3}>
                   {profile.posts.map(post => (
                     <Grid item xs={12} sm={6} md={4} key={post.id}>
-                      <Card 
-                        sx={{ 
-                          height: '100%',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          borderRadius: 2,
-                          transition: 'all 0.2s ease',
-                          '&:hover': {
-                            transform: 'translateY(-4px)',
-                            boxShadow: '0 8px 24px rgba(0,0,0,0.12)'
-                          }
-                        }}
-                      >
-                        {post.media_url && post.media_type ? (
-                          post.media_type === 'IMAGE' ? (
-                            <CardMedia
-                              component="img"
-                              height="180"
-                              image={post.media_url}
-                              alt={post.title}
-                            />
-                          ) : (
-                            <Box sx={{ height: 180, bgcolor: 'black', p: 2 }}>
-                              <MediaPlayer
-                                src={post.media_url}
-                                type={post.media_type === 'VIDEO' ? 'video' : 'audio'}
-                                title={post.media_metadata?.fileName || post.title}
-                                compact={true}
-                                darkMode={post.media_type === 'VIDEO'}
-                              />
-                            </Box>
-                          )
-                        ) : post.image_url ? (
-                          <CardMedia
-                            component="img"
-                            height="180"
-                            image={post.image_url}
-                            alt={post.title}
-                          />
-                        ) : (
-                          <Box 
-                            sx={{ 
-                              height: 180, 
-                              bgcolor: 'grey.100',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center'
-                            }}
-                          >
-                            <LanguageIcon fontSize="large" color="disabled" />
-                          </Box>
-                        )}
-                        
-                        <CardContent sx={{ flexGrow: 1 }}>
-                          <Typography variant="h6" gutterBottom>
-                            {post.title}
-                          </Typography>
-                          
-                          {post.description && (
-                            <Typography 
-                              variant="body2" 
-                              color="text.secondary"
-                              paragraph
-                            >
-                              {post.description}
-                            </Typography>
-                          )}
-                        </CardContent>
-                        
-                        <CardActions>
-                          <Button 
-                            size="small" 
-                            component={Link}
-                            to={`/post/${post.id}`}
-                          >
-                            View Full Post
-                          </Button>
-                          {post.url && (
-                            <Button 
-                              size="small" 
-                              href={post.url} 
-                              target="_blank" 
-                              rel="noopener noreferrer"
-                              endIcon={<LaunchIcon />}
-                            >
-                              External Link
-                            </Button>
-                          )}
-                        </CardActions>
-                      </Card>
+                      <PostCard
+                        post={post}
+                        author={profile}
+                        isOwner={isOwnProfile}
+                        sx={{ height: '100%' }}
+                      />
                     </Grid>
                   ))}
                 </Grid>
