@@ -16,6 +16,12 @@ interface InviteData {
   eventDate?: string;
   eventLocation?: string;
   messageContext?: string;
+  icsAttachment?: {
+    filename: string;
+    content: string;
+    type: string;
+    disposition: string;
+  };
 }
 
 const handler = async (request: Request): Promise<Response> => {
@@ -47,7 +53,7 @@ const handler = async (request: Request): Promise<Response> => {
 
     // Parse the request body
     const requestBody = await request.json() as InviteData;
-    const { toEmail, networkName, inviterName, type, inviteLink, subject, content, relatedItemId, eventDate, eventLocation, messageContext } = requestBody;
+    const { toEmail, networkName, inviterName, type, inviteLink, subject, content, relatedItemId, eventDate, eventLocation, messageContext, icsAttachment } = requestBody;
     
     console.log('🚀 [EDGE FUNCTION DEBUG] Parsed request body:', {
       toEmail,
@@ -574,12 +580,22 @@ const handler = async (request: Request): Promise<Response> => {
     }
 
     // Send email using Resend API
-    const emailPayload = {
+    const emailPayload: any = {
       from: Deno.env.get('FROM_EMAIL') || 'noreply@your-domain.com',
       to: toEmail,
       subject: emailSubject,
       html: html,
     };
+
+    // Add ICS attachment for event notifications
+    if (type === 'event' && icsAttachment) {
+      emailPayload.attachments = [icsAttachment];
+      console.log('🚀 [EDGE FUNCTION DEBUG] Adding ICS attachment:', {
+        filename: icsAttachment.filename,
+        type: icsAttachment.type,
+        contentLength: icsAttachment.content.length
+      });
+    }
     
     console.log('🚀 [EDGE FUNCTION DEBUG] Sending email to Resend:', {
       to: emailPayload.to,

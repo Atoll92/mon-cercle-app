@@ -1,5 +1,6 @@
 // Email notification service for sending notifications to network members
 import { supabase } from '../supabaseclient';
+import { formatEventForICS, createICSAttachment } from '../utils/icsGenerator';
 
 /**
  * Queue a news notification for all network members who want to receive them
@@ -135,6 +136,7 @@ export const processPendingNotifications = async () => {
         subject_line,
         content_preview,
         related_item_id,
+        metadata,
         profiles!notification_queue_recipient_id_fkey (
           contact_email,
           full_name
@@ -200,7 +202,7 @@ export const processPendingNotifications = async () => {
             // Prepare additional context based on notification type
             let additionalData = {};
             
-            // For event notifications, get event details
+            // For event notifications, get event details and ICS attachment
             if (notification.notification_type === 'event' && notification.related_item_id) {
               try {
                 const { data: eventData } = await supabase
@@ -213,6 +215,28 @@ export const processPendingNotifications = async () => {
                   additionalData.eventDate = eventData.date;
                   additionalData.eventLocation = eventData.location;
                 }
+
+                // Include ICS attachment from metadata if available
+                console.log('📨 [EMAIL PROCESS DEBUG] Checking metadata for ICS attachment:', notification.metadata);
+                if (notification.metadata) {
+                  try {
+                    const metadata = JSON.parse(notification.metadata);
+                    console.log('📨 [EMAIL PROCESS DEBUG] Parsed metadata:', metadata);
+                    if (metadata.icsAttachment) {
+                      additionalData.icsAttachment = metadata.icsAttachment;
+                      console.log('📨 [EMAIL PROCESS DEBUG] Including ICS attachment for event notification:', {
+                        filename: metadata.icsAttachment.filename,
+                        contentLength: metadata.icsAttachment.content?.length || 0
+                      });
+                    } else {
+                      console.log('📨 [EMAIL PROCESS DEBUG] No ICS attachment found in metadata');
+                    }
+                  } catch (metadataError) {
+                    console.warn('📨 [EMAIL PROCESS DEBUG] Failed to parse notification metadata:', metadataError);
+                  }
+                } else {
+                  console.log('📨 [EMAIL PROCESS DEBUG] No metadata found for this notification');
+                }
               } catch (eventError) {
                 console.warn('📨 [EMAIL PROCESS DEBUG] Failed to fetch event details:', eventError);
               }
@@ -224,17 +248,21 @@ export const processPendingNotifications = async () => {
             }
 
             // Call the edge function to send the email
+            console.log('📨 [EMAIL PROCESS DEBUG] Additional data being sent to edge function:', additionalData);
+            const requestBody = {
+              toEmail: notification.profiles.contact_email,
+              networkName: notification.networks.name,
+              inviterName: 'Network Update',
+              type: notification.notification_type, // Use the actual notification type from database
+              subject: notification.subject_line,
+              content: notification.content_preview,
+              relatedItemId: notification.related_item_id,
+              ...additionalData
+            };
+            console.log('📨 [EMAIL PROCESS DEBUG] Complete request body:', requestBody);
+            
             const { data, error } = await supabase.functions.invoke('network-invite', {
-              body: {
-                toEmail: notification.profiles.contact_email,
-                networkName: notification.networks.name,
-                inviterName: 'Network Update',
-                type: notification.notification_type, // Use the actual notification type from database
-                subject: notification.subject_line,
-                content: notification.content_preview,
-                relatedItemId: notification.related_item_id,
-                ...additionalData
-              }
+              body: requestBody
             });
 
             console.log(`📨 [EMAIL PROCESS DEBUG] Edge function result for notification ${notification.id}:`, { data, error });
@@ -524,6 +552,30 @@ export const queueEventNotifications = async (networkId, eventId, authorId, even
       minute: '2-digit'
     });
 
+    // Generate ICS attachment data for the event
+    console.log('📅 [EVENT DEBUG] Generating ICS attachment data...');
+    let icsAttachmentData = null;
+    try {
+      // Create event data for ICS generation
+      const eventForICS = {
+        id: eventId,
+        title: eventTitle,
+        description: eventDescription || '',
+        startDate: eventDate,
+        location: eventLocation || '',
+        organizer: author.full_name || 'Event Organizer',
+        organizerEmail: '', // We'll set this in the edge function if needed
+        url: `${import.meta.env.VITE_APP_URL || 'https://your-app-url.com'}/network/${networkId}/event/${eventId}`
+      };
+      
+      const icsAttachment = createICSAttachment(eventForICS);
+      icsAttachmentData = JSON.stringify(icsAttachment);
+      console.log('📅 [EVENT DEBUG] ICS attachment generated successfully');
+    } catch (icsError) {
+      console.error('📅 [EVENT DEBUG] Error generating ICS attachment:', icsError);
+      // Continue without ICS if generation fails
+    }
+
     // Create notification queue entries
     console.log('📅 [EVENT DEBUG] Creating notification queue entries...');
     const notifications = recipients.map(recipient => ({
@@ -532,7 +584,16 @@ export const queueEventNotifications = async (networkId, eventId, authorId, even
       notification_type: 'event',
       subject_line: `New event in ${network.name}: ${eventTitle}`,
       content_preview: `${author.full_name || 'Someone'} created an event: ${eventTitle} on ${formattedDate}. ${eventDescription?.substring(0, 150) || ''}${eventDescription?.length > 150 ? '...' : ''}${coverImageUrl ? ` [image:${coverImageUrl}]` : ''}`,
-      related_item_id: eventId
+      related_item_id: eventId,
+      // Add ICS attachment data to metadata
+      metadata: icsAttachmentData ? JSON.stringify({
+        eventDate: eventDate,
+        eventLocation: eventLocation,
+        icsAttachment: JSON.parse(icsAttachmentData)
+      }) : JSON.stringify({
+        eventDate: eventDate,
+        eventLocation: eventLocation
+      })
     }));
 
     console.log('📅 [EVENT DEBUG] Notification entries to insert:', notifications);
