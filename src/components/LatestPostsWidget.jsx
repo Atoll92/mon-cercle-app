@@ -9,10 +9,12 @@ import WidgetErrorState from './shared/WidgetErrorState';
 import { useSupabaseQuery } from '../hooks/useSupabaseQuery';
 import { useProfile } from '../context/profileContext';
 import {
-  Box
+  Box,
+  Button
 } from '@mui/material';
 import {
-  Work as WorkIcon
+  Work as WorkIcon,
+  ArrowForward as ArrowForwardIcon
 } from '@mui/icons-material';
 import { supabase } from '../supabaseclient';
 

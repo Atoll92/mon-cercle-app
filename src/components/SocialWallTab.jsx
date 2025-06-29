@@ -1396,7 +1396,7 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                         ) : (
                           <Link 
                             to={item.itemType === 'post' ? 
-                              `/profile/${item.memberId}` : 
+                              `/post/${item.id}` : 
                               `/network/${item.network_id}/news/${item.id}`}
                             className="view-project-btn"
                             style={{ 
@@ -1412,7 +1412,7 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                             }}
                             onClick={(e) => e.stopPropagation()} // Prevent card expansion
                           >
-                            {item.itemType === 'post' ? 'View Profile' : 'Read Full Post'}
+                            {item.itemType === 'post' ? 'View Full Post' : 'Read Full Post'}
                           </Link>
                         )}
                       </Box>
