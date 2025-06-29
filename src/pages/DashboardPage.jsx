@@ -11,7 +11,7 @@ import LatestPostsWidget from '../components/LatestPostsWidget';
 import TestNotificationSystem from '../components/TestNotificationSystem';
 import MediaUpload from '../components/MediaUpload';
 import EventDetailsDialog from '../components/EventDetailsDialog';
-import { queuePortfolioNotifications } from '../services/emailNotificationService';
+import { createPost } from '../api/posts';
 import { useFadeIn, useStaggeredAnimation, ANIMATION_DURATION } from '../hooks/useAnimation';
 import { ProfileSkeleton, GridSkeleton } from '../components/LoadingSkeleton';
 import OnboardingGuide from '../components/OnboardingGuide';
@@ -545,69 +545,17 @@ function DashboardPage() {
       console.log("Current media state:", { mediaUrl, mediaType, mediaMetadata });
       console.log("💼 [DASHBOARD DEBUG] Current activeProfile:", activeProfile);
       
-      // Save post directly to the database
-      const newPost = {
-        profile_id: activeProfile.id,
+      // Create post using API
+      const data = await createPost({
         title: newPostTitle,
         description: newPostContent,
         url: newPostLink,
-        category_id: selectedCategory || null
-      };
-
-      // Add media fields if media was uploaded via MediaUpload component
-      if (mediaUrl) {
-        newPost.media_url = mediaUrl;
-        newPost.media_type = mediaType;
-        newPost.media_metadata = mediaMetadata;
-        
-        // For backward compatibility, also set image_url if it's an image
-        if (mediaType === 'image') {
-          newPost.image_url = mediaUrl;
-        }
-      } else {
-        console.log("No media URL found - mediaUrl is:", mediaUrl);
-      }
-      
-      console.log('Saving post to portfolio_items table:', newPost);
-      
-      const { error, data } = await supabase
-        .from('portfolio_items')
-        .insert(newPost)
-        .select()
-        .single();
-        
-      if (error) {
-        throw error;
-      }
-      
-      console.log('Post saved successfully:', data);
-      console.log('Saved post media fields:', {
-        media_url: data.media_url,
-        media_type: data.media_type,
-        media_metadata: data.media_metadata
+        profile_id: activeProfile.id,
+        category_id: selectedCategory || null,
+        mediaUrl: mediaUrl,
+        mediaType: mediaType,
+        mediaMetadata: mediaMetadata
       });
-      
-      // Queue email notifications for network members
-      if (activeProfile?.network_id) {
-        try {
-          
-          const notificationResult = await queuePortfolioNotifications(
-            activeProfile.network_id,
-            data.id,
-            activeProfile.id,
-            newPostTitle,
-            newPostContent,
-            data.media_url || data.image_url,
-            data.media_type || (data.image_url ? 'image' : null)
-          );
-          
-          if (!notificationResult.success) {
-            console.error('Failed to queue email notifications:', notificationResult.error);
-          }
-        } catch (notificationError) {
-          console.error('Error queueing email notifications:', notificationError);
-        }
-      }
       
       // Reset the form
       setNewPostTitle('');

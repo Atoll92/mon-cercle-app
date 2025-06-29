@@ -57,7 +57,7 @@ import {
 import NotificationSettings from '../components/NotificationSettings';
 import NotificationSystemManager from '../components/NotificationSystemManager';
 import NotificationDebugger from '../components/NotificationDebugger';
-import { queuePortfolioNotifications } from '../services/emailNotificationService';
+import { createPost } from '../api/posts';
 
 function EditProfilePage() {
   const { user } = useAuth();
@@ -295,53 +295,17 @@ function EditProfilePage() {
         console.log('Generated image URL:', fileUrl);
       }
       
-      // Save post directly to the database
-      // Using the correct schema from portfolio_items table
-      const newPost = {
-        profile_id: activeProfile.id,
+      // Create post using API (with image as mediaUrl if available)
+      const data = await createPost({
         title: newPostTitle,
         description: newPostContent,
         url: newPostLink,
+        profile_id: activeProfile.id,
         category_id: selectedCategory || null,
-        // The only image field in the schema is image_url
-        image_url: fileUrl
-      };
-      
-      console.log('Saving post to portfolio_items table:', newPost);
-      
-      const { error, data } = await supabase
-        .from('portfolio_items')
-        .insert(newPost)
-        .select()
-        .single();
-        
-      if (error) {
-        throw error;
-      }
-      
-      console.log('Post saved successfully:', data);
-      
-      // Queue email notifications for network members
-      if (activeProfile?.network_id) {
-        try {
-          
-          const notificationResult = await queuePortfolioNotifications(
-            activeProfile.network_id,
-            data.id,
-            activeProfile.id,
-            newPostTitle,
-            newPostContent,
-            data.media_url || data.image_url,
-            data.media_type || (data.image_url ? 'image' : null)
-          );
-          
-          if (!notificationResult.success) {
-            console.error('Failed to queue email notifications:', notificationResult.error);
-          }
-        } catch (notificationError) {
-          console.error('Error queueing email notifications:', notificationError);
-        }
-      }
+        mediaUrl: fileUrl,
+        mediaType: fileUrl ? 'image' : null,
+        mediaMetadata: null
+      });
       
       // Add the new item to the local state for immediate UI update
       setPostItems([...postItems, data]);
