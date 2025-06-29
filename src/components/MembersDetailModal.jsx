@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { supabase } from '../supabaseclient';
 import { useFadeIn } from '../hooks/useAnimation';
 import { formatTimeAgo } from '../utils/dateFormatting';
+import PostCard from './PostCard';
 import {
   Dialog,
   DialogContent,
@@ -925,87 +926,15 @@ const MemberDetailsModal = ({
           ) : memberPosts.length > 0 ? (
             <>
               <Grid container spacing={2}>
-                {memberPosts.slice(0, 3).map(item => (
-                  <Grid item xs={12} sm={6} md={4} key={item.id}>
-                    <Paper 
-                      elevation={2} 
-                      sx={{ 
-                        height: '100%',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        borderRadius: 2,
-                        overflow: 'hidden',
-                        bgcolor: darkMode ? alpha('#000000', 0.3) : 'background.paper',
-                        transition: 'transform 0.2s ease',
-                        '&:hover': {
-                          transform: 'translateY(-4px)'
-                        }
-                      }}
-                    >
-                      {item.image_url && (
-                        <Box sx={{ 
-                          width: '100%', 
-                          height: 140, 
-                          overflow: 'hidden'
-                        }}>
-                          <img 
-                            src={item.image_url} 
-                            alt={item.title}
-                            style={{ 
-                              width: '100%', 
-                              height: '100%', 
-                              objectFit: 'cover'
-                            }} 
-                          />
-                        </Box>
-                      )}
-                      
-                      <Box sx={{ p: 2, flexGrow: 1 }}>
-                        <Typography 
-                          variant="subtitle1" 
-                          gutterBottom
-                          sx={{ fontWeight: 'medium' }}
-                        >
-                          {item.title}
-                        </Typography>
-                        
-                        {item.description && (
-                          <Typography 
-                            variant="body2"
-                            color={customFadedText}
-                            sx={{
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                              display: '-webkit-box',
-                              WebkitLineClamp: 2,
-                              WebkitBoxOrient: 'vertical',
-                              mb: 1
-                            }}
-                          >
-                            {item.description}
-                          </Typography>
-                        )}
-                      </Box>
-                      
-                      {item.url && (
-                        <Box sx={{ p: 1, pt: 0, borderTop: '1px solid', borderColor: customBorder }}>
-                          <Button
-                            size="small"
-                            href={item.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            sx={{ 
-                              color: darkMode ? '#90caf9' : '#1976d2',
-                              '&:hover': {
-                                bgcolor: darkMode ? alpha('#1976d2', 0.1) : undefined
-                              }
-                            }}
-                          >
-                            View Project
-                          </Button>
-                        </Box>
-                      )}
-                    </Paper>
+                {memberPosts.slice(0, 3).map(post => (
+                  <Grid item xs={12} sm={6} md={4} key={post.id}>
+                    <PostCard
+                      post={post}
+                      author={member}
+                      darkMode={darkMode}
+                      isOwner={false}
+                      sx={{ height: '100%' }}
+                    />
                   </Grid>
                 ))}
               </Grid>

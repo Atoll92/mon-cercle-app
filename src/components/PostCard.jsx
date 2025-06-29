@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Card,
   CardHeader,
@@ -30,8 +30,10 @@ import {
 import MediaPlayer from './MediaPlayer';
 import LazyImage from './LazyImage';
 import LinkPreview from './LinkPreview';
+import ImageViewerModal from './ImageViewerModal';
 import { formatDistanceToNow } from 'date-fns';
 import { Link } from 'react-router-dom';
+import { getCommentCount } from '../api/comments';
 
 /**
  * PostCard component for displaying portfolio posts
@@ -45,14 +47,33 @@ const PostCard = ({
   isOwner = false,
   onEdit,
   onDelete,
-  onImageClick,
   onAuthorClick,
-  commentCount = 0,
   sx = {}
 }) => {
   const theme = useTheme();
   const [anchorEl, setAnchorEl] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [commentCount, setCommentCount] = useState(0);
+  const [imageViewerOpen, setImageViewerOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState({ url: '', title: '' });
+
+  // Fetch comment count on mount
+  useEffect(() => {
+    const fetchCommentCount = async () => {
+      if (post?.id) {
+        const { count } = await getCommentCount('post', post.id);
+        setCommentCount(count || 0);
+      }
+    };
+    
+    fetchCommentCount();
+  }, [post?.id]);
+
+  // Handle image click internally
+  const handleImageClick = (url, title) => {
+    setSelectedImage({ url, title });
+    setImageViewerOpen(true);
+  };
 
   // Determine media type from URL and stored type
   const getMediaType = (mediaUrl, storedType) => {
@@ -163,12 +184,12 @@ const PostCard = ({
               position: 'relative', 
               width: '100%',
               pt: '56.25%', // 16:9 aspect ratio
-              cursor: onImageClick ? 'pointer' : 'default',
+              cursor: 'pointer',
               borderRadius: 1,
               overflow: 'hidden',
-              '&:hover': onImageClick ? { opacity: 0.9 } : {}
+              '&:hover': { opacity: 0.9 }
             }}
-            onClick={onImageClick ? () => onImageClick(mediaUrl, post.title) : undefined}
+            onClick={() => handleImageClick(mediaUrl, post.title)}
           >
             <LazyImage
               src={mediaUrl}
@@ -459,6 +480,14 @@ const PostCard = ({
           </Button>
         </Box>
       </CardContent>
+      
+      {/* Image Viewer Modal */}
+      <ImageViewerModal
+        open={imageViewerOpen}
+        onClose={() => setImageViewerOpen(false)}
+        imageUrl={selectedImage.url}
+        title={selectedImage.title}
+      />
     </Card>
   );
 };
