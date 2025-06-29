@@ -1498,9 +1498,9 @@ const handleUpdateItem = async (updatedItem) => {
     
     const file = e.target.files[0];
     
-    // Check file size (10MB max)
-    if (file.size > 10 * 1024 * 1024) {
-      setError('File size must be less than 10MB');
+    // Check file size (20MB max)
+    if (file.size > 20 * 1024 * 1024) {
+      setError('File size must be less than 20MB');
       return;
     }
     

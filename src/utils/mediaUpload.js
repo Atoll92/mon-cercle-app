@@ -7,7 +7,7 @@ export const MEDIA_TYPES = {
     accept: 'image/*',
     extensions: ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'],
     mimeTypes: ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'],
-    maxSize: 10 * 1024 * 1024, // 10MB
+    maxSize: 20 * 1024 * 1024, // 20MB
   },
   VIDEO: {
     accept: 'video/*',
