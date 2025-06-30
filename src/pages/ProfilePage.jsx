@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/authcontext';
+import { useProfile } from '../context/profileContext';
 import { useApp } from '../context/appContext';
 import { NetworkProvider } from '../context/networkContext';
 import { supabase } from '../supabaseclient';
@@ -55,6 +56,7 @@ import {
 function ProfilePage() {
   const { userId } = useParams();
   const { user } = useAuth();
+  const { activeProfile } = useProfile();
   const navigate = useNavigate();
   
   const [profile, setProfile] = useState(null);
@@ -95,8 +97,8 @@ function ProfilePage() {
         setLoading(true);
         setError(null);
         
-        // Check if viewing own profile
-        if (userId === user?.id) {
+        // Check if viewing own profile (compare with activeProfile.id for multiple profiles support)
+        if (userId === activeProfile?.id) {
           setIsOwnProfile(true);
         }
         
@@ -180,7 +182,7 @@ function ProfilePage() {
     if (userId) {
       fetchProfile();
     }
-  }, [userId, user]);
+  }, [userId, user, activeProfile]);
   
   const handleEventClick = (event) => {
     setSelectedEvent(event);
