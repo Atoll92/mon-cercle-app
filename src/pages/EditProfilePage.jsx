@@ -3,12 +3,12 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/authcontext';
 import { useProfile } from '../context/profileContext';
+import { useApp } from '../context/appContext';
+import { NetworkProvider } from '../context/networkContext';
 import { supabase } from '../supabaseclient';
 import {
   Box,
   Button,
-  Card,
-  CardContent,
   CircularProgress,
   Container,
   Divider,
@@ -25,9 +25,7 @@ import {
   Autocomplete,
   Tabs,
   Tab,
-  LinearProgress,
-  CardMedia,
-  CardActions
+  LinearProgress
 } from '@mui/material';
 import {
   Save as SaveIcon,
@@ -35,21 +33,18 @@ import {
   Person as PersonIcon,
   ArrowBack as ArrowBackIcon,
   Add as AddIcon,
-  Delete as DeleteIcon,
   Edit as EditIcon,
   LinkedIn as LinkedInIcon,
   Language as LanguageIcon,
   Mail as MailIcon,
   Badge as BadgeIcon,
-  PictureAsPdf as PdfIcon,
-  Image as ImageIcon,
-  FileUpload as FileUploadIcon,
   Notifications as NotificationsIcon
 } from '@mui/icons-material';
 import NotificationSettings from '../components/NotificationSettings';
 import NotificationSystemManager from '../components/NotificationSystemManager';
 import NotificationDebugger from '../components/NotificationDebugger';
 import CreatePostModal from '../components/CreatePostModal';
+import PostCard from '../components/PostCard';
 
 function EditProfilePage() {
   const { user } = useAuth();
@@ -75,6 +70,22 @@ function EditProfilePage() {
   
   // State for Create Post Modal
   const [createPostModalOpen, setCreatePostModalOpen] = useState(false);
+  
+  // Handle post updates and deletions
+  const handlePostUpdated = (updatedPost) => {
+    setPostItems(prev => prev.map(post => 
+      post.id === updatedPost.id ? updatedPost : post
+    ));
+  };
+  
+  const handlePostDeleted = (deletedPostId) => {
+    setPostItems(prev => prev.filter(post => post.id !== deletedPostId));
+  };
+  
+  const handlePostCreated = (newPost) => {
+    setPostItems(prev => [newPost, ...prev]);
+    setCreatePostModalOpen(false);
+  };
   
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -195,69 +206,6 @@ function EditProfilePage() {
     setActiveTab(newValue);
   };
   
-  // Handle post creation callback
-  const handlePostCreated = (newPost) => {
-    setCreatePostModalOpen(false);
-    // Add the new post to the local state for immediate UI update
-    setPostItems([...postItems, newPost]);
-    setMessage('Post published successfully!');
-  };
-  
-  const handlePostItemChange = (index, field, value) => {
-    const updatedItems = [...postItems];
-    updatedItems[index] = { ...updatedItems[index], [field]: value };
-    setPostItems(updatedItems);
-  };
-  
-  const handlePostImageChange = async (index, file) => {
-    if (!file) return;
-    
-    const updatedItems = [...postItems];
-    updatedItems[index] = {
-      ...updatedItems[index],
-      fileType: 'image',
-      imageFile: file,
-      imageUrl: URL.createObjectURL(file),
-      pdfFile: null,
-      pdfUrl: '',
-      pdfThumbnail: ''
-    };
-    setPostItems(updatedItems);
-  };
-  
-  const handlePostPdfChange = async (index, file) => {
-    if (!file) return;
-    
-    // Validate file size (20MB max)
-    if (file.size > 20 * 1024 * 1024) {
-      setError('PDF file size must be less than 20MB');
-      return;
-    }
-    
-    const updatedItems = [...postItems];
-    
-    // For the PDF thumbnail, we'll use a standard PDF icon for now
-    // In a production app, you might want to generate a real thumbnail from the first page
-    
-    updatedItems[index] = {
-      ...updatedItems[index],
-      fileType: 'pdf',
-      pdfFile: file,
-      pdfUrl: URL.createObjectURL(file),
-      // We'll set the thumbnail to empty string. A proper thumbnail would be generated on the server
-      // or we could use pdf.js to generate one on the client
-      pdfThumbnail: '',
-      imageFile: null,
-      imageUrl: ''
-    };
-    
-    setPostItems(updatedItems);
-  };
-  
-  const handlePostItemRemove = (index) => {
-    const updatedItems = postItems.filter((_, i) => i !== index);
-    setPostItems(updatedItems);
-  };
   
   const handleAvatarChange = (e) => {
     if (!e.target.files || e.target.files.length === 0) {
@@ -941,220 +889,22 @@ function EditProfilePage() {
                         bgcolor: 'grey.50'
                       }}
                     >
-                      <Typography variant="body1" color="text.secondary" paragraph>
+                      <Typography variant="body1" color="text.secondary">
                         You haven't created any posts yet.
                       </Typography>
                     </Paper>
                   ) : (
                     <Grid container spacing={3}>
-                      {postItems.map((item, index) => (
-                        <Grid item xs={12} md={6} key={item.id || index}>
-                          <Card 
-                            sx={{ 
-                              height: '100%',
-                              display: 'flex',
-                              flexDirection: 'column',
-                              borderRadius: 2,
-                              transition: 'all 0.2s ease',
-                              '&:hover': {
-                                boxShadow: '0 8px 24px rgba(0,0,0,0.12)'
-                              }
-                            }}
-                          >
-                            <Box sx={{ position: 'relative' }}>
-                              {/* Image Preview */}
-                              {item.fileType === 'image' && item.imageUrl ? (
-                                <CardMedia
-                                  component="img"
-                                  height="180"
-                                  image={item.imageUrl}
-                                  alt={item.title || 'Post image'}
-                                  sx={{ objectFit: 'cover' }}
-                                />
-                              ) : item.fileType === 'pdf' && item.pdfUrl ? (
-                                /* PDF Preview */
-                                <Box 
-                                  sx={{ 
-                                    height: 180, 
-                                    bgcolor: '#f5f9ff',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    flexDirection: 'column',
-                                    p: 2,
-                                    position: 'relative'
-                                  }}
-                                >
-                                  <PdfIcon fontSize="large" color="primary" sx={{ mb: 1, fontSize: 60 }} />
-                                  <Typography variant="body2" sx={{ mt: 1, fontWeight: 'medium' }}>
-                                    {item.pdfFile ? item.pdfFile.name : 'PDF Document'}
-                                  </Typography>
-                                  {item.pdfUrl && (
-                                    <Box 
-                                      sx={{ 
-                                        position: 'absolute', 
-                                        top: 8, 
-                                        left: 8,
-                                        bgcolor: 'primary.main',
-                                        color: 'white',
-                                        borderRadius: 1,
-                                        px: 1,
-                                        py: 0.5,
-                                        fontSize: '0.75rem',
-                                        fontWeight: 'bold'
-                                      }}
-                                    >
-                                      PDF
-                                    </Box>
-                                  )}
-                                </Box>
-                              ) : (
-                                /* No File Uploaded Yet */
-                                <Box 
-                                  sx={{ 
-                                    height: 180, 
-                                    bgcolor: 'grey.100',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    flexDirection: 'column',
-                                    p: 2
-                                  }}
-                                >
-                                  <FileUploadIcon fontSize="large" color="action" sx={{ mb: 1, opacity: 0.5 }} />
-                                  <Typography variant="body2" color="text.secondary" align="center">
-                                    Upload an image or PDF
-                                  </Typography>
-                                </Box>
-                              )}
-                              
-                              {/* Upload Controls */}
-                              <Box 
-                                sx={{ 
-                                  position: 'absolute',
-                                  bottom: 8,
-                                  right: 8,
-                                  display: 'flex',
-                                  gap: 1
-                                }}
-                              >
-                                {/* Image Upload Button */}
-                                <label htmlFor={`portfolio-image-${index}`}>
-                                  <input
-                                    accept="image/*"
-                                    type="file"
-                                    onChange={(e) => handlePostImageChange(index, e.target.files[0])}
-                                    id={`portfolio-image-${index}`}
-                                    hidden
-                                  />
-                                  <Tooltip title="Upload Image">
-                                    <IconButton
-                                      component="span"
-                                      sx={{
-                                        bgcolor: 'white',
-                                        boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-                                        '&:hover': {
-                                          bgcolor: 'grey.100'
-                                        }
-                                      }}
-                                    >
-                                      <ImageIcon />
-                                    </IconButton>
-                                  </Tooltip>
-                                </label>
-                                
-                                {/* PDF Upload Button */}
-                                <label htmlFor={`portfolio-pdf-${index}`}>
-                                  <input
-                                    accept="application/pdf"
-                                    type="file"
-                                    onChange={(e) => handlePostPdfChange(index, e.target.files[0])}
-                                    id={`portfolio-pdf-${index}`}
-                                    hidden
-                                  />
-                                  <Tooltip title="Upload PDF">
-                                    <IconButton
-                                      component="span"
-                                      sx={{
-                                        bgcolor: 'white',
-                                        boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-                                        '&:hover': {
-                                          bgcolor: 'grey.100'
-                                        }
-                                      }}
-                                    >
-                                      <PdfIcon />
-                                    </IconButton>
-                                  </Tooltip>
-                                </label>
-                              </Box>
-                            </Box>
-                            
-                            <CardContent sx={{ flexGrow: 1, p: 3 }}>
-                              <TextField
-                                fullWidth
-                                label="Post Title"
-                                value={item.title}
-                                onChange={(e) => handlePostItemChange(index, 'title', e.target.value)}
-                                placeholder="Give your post a title"
-                                variant="outlined"
-                                sx={{ mb: 2 }}
-                                required
-                              />
-                              
-                              <TextField
-                                fullWidth
-                                label="Post Content"
-                                value={item.description}
-                                onChange={(e) => handlePostItemChange(index, 'description', e.target.value)}
-                                placeholder="Share your thoughts with the community..."
-                                multiline
-                                rows={4}
-                                variant="outlined"
-                                sx={{ mb: 2 }}
-                              />
-                              
-                              <TextField
-                                fullWidth
-                                label="Link (Optional)"
-                                value={item.url}
-                                onChange={(e) => handlePostItemChange(index, 'url', e.target.value)}
-                                placeholder="https://example.com"
-                                variant="outlined"
-                                helperText="Add a link to your post (optional)"
-                                InputProps={{
-                                  startAdornment: <LanguageIcon color="action" sx={{ mr: 1 }} />
-                                }}
-                              />
-                            </CardContent>
-                            
-                            <CardActions sx={{ p: 2, pt: 0, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                              <Box>
-                                <Button
-                                  variant="outlined"
-                                  color="error"
-                                  startIcon={<DeleteIcon />}
-                                  onClick={() => handlePostItemRemove(index)}
-                                  size="small"
-                                >
-                                  Delete Post
-                                </Button>
-                              </Box>
-                              
-                              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                <Chip 
-                                  size="small" 
-                                  label="Published" 
-                                  color="success" 
-                                  variant="outlined"
-                                  sx={{ mr: 1 }}
-                                />
-                                <Typography variant="caption" color="text.secondary">
-                                  {item.created_at ? new Date(item.created_at).toLocaleDateString() : 'Draft'}
-                                </Typography>
-                              </Box>
-                            </CardActions>
-                          </Card>
+                      {postItems.map((post) => (
+                        <Grid item xs={12} md={6} key={post.id}>
+                          <PostCard
+                            post={post}
+                            author={profile}
+                            isOwner={true}
+                            onPostUpdated={handlePostUpdated}
+                            onPostDeleted={handlePostDeleted}
+                            sx={{ height: '100%' }}
+                          />
                         </Grid>
                       ))}
                     </Grid>
@@ -1217,4 +967,39 @@ function EditProfilePage() {
   );
 }
 
-export default EditProfilePage;
+// Wrapper component that provides NetworkProvider
+const EditProfilePageWrapper = () => {
+  const { userNetworkId, fetchingNetwork } = useApp();
+
+  if (fetchingNetwork) {
+    return (
+      <Box 
+        sx={{ 
+          display: 'flex', 
+          flexDirection: 'column',
+          alignItems: 'center', 
+          justifyContent: 'center', 
+          height: '50vh' 
+        }}
+      >
+        <CircularProgress size={40} color="primary" />
+        <Typography variant="body1" sx={{ mt: 2 }}>
+          Loading profile...
+        </Typography>
+      </Box>
+    );
+  }
+
+  if (userNetworkId) {
+    return (
+      <NetworkProvider networkId={userNetworkId}>
+        <EditProfilePage />
+      </NetworkProvider>
+    );
+  } else {
+    // No network - render without NetworkProvider
+    return <EditProfilePage />;
+  }
+};
+
+export default EditProfilePageWrapper;

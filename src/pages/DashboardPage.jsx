@@ -2,6 +2,8 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/authcontext';
 import { useProfile } from '../context/profileContext';
+import { useApp } from '../context/appContext';
+import { NetworkProvider } from '../context/networkContext';
 import { supabase } from '../supabaseclient';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import MembersDetailModal from '../components/MembersDetailModal';
@@ -1658,10 +1660,33 @@ function DashboardPage() {
         open={createPostModalOpen}
         onClose={() => setCreatePostModalOpen(false)}
         onPostCreated={handlePostCreated}
-        networkId={activeProfile?.network_id}
       />
     </Container>
   );
 }
 
-export default DashboardPage;
+// Wrapper component that provides NetworkProvider
+const DashboardPageWrapper = () => {
+  const { userNetworkId, fetchingNetwork } = useApp();
+
+  if (fetchingNetwork) {
+    return (
+      <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+        <GridSkeleton items={6} columns={3} />
+      </Container>
+    );
+  }
+
+  if (userNetworkId) {
+    return (
+      <NetworkProvider networkId={userNetworkId}>
+        <DashboardPage />
+      </NetworkProvider>
+    );
+  } else {
+    // No network - render without NetworkProvider
+    return <DashboardPage />;
+  }
+};
+
+export default DashboardPageWrapper;

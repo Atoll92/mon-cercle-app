@@ -40,7 +40,7 @@ export const ProfileProvider = ({ children }) => {
     
     try {
       // Fetch all profiles for the user
-      console.log('ProfileContext: Loading profiles for user:', user.id);
+      // console.log('ProfileContext: Loading profiles for user:', user.id);
       const { data: profiles, error } = await profilesApi.getUserProfiles(user.id);
       
       if (error) {
@@ -48,8 +48,8 @@ export const ProfileProvider = ({ children }) => {
         throw new Error(error);
       }
       
-      console.log('ProfileContext: Loaded profiles:', profiles?.length || 0, 'profiles found');
-      console.log('ProfileContext: Profile details:', profiles);
+      // console.log('ProfileContext: Loaded profiles:', profiles?.length || 0, 'profiles found');
+      // console.log('ProfileContext: Profile details:', profiles);
       setUserProfiles(profiles || []);
       
       // Try to load active profile from cookie
@@ -82,7 +82,7 @@ export const ProfileProvider = ({ children }) => {
         throw new Error(error);
       }
       
-      console.log('ProfileContext: Setting active profile:', data);
+      // console.log('ProfileContext: Setting active profile:', data);
       setActiveProfileState(data);
       return { success: true };
     } catch (error) {

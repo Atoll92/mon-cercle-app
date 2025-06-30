@@ -131,7 +131,7 @@ const LinkPreview = ({ url, compact = false, onDataLoaded = null, height = 'auto
       if (!formattedUrl) return;
       
       try {
-        console.log('LinkPreview: Fetching data for URL:', formattedUrl);
+        // console.log('LinkPreview: Fetching data for URL:', formattedUrl);
         setLoading(true);
         setError(null);
         setImageLoaded(false);
@@ -140,12 +140,12 @@ const LinkPreview = ({ url, compact = false, onDataLoaded = null, height = 'auto
         setFaviconError(false);
         
         const data = await getOpenGraphData(formattedUrl);
-        console.log('LinkPreview: Received data:', data);
-        console.log('LinkPreview: Title:', data?.title);
-        console.log('LinkPreview: Description:', data?.description);
-        console.log('LinkPreview: Image URL:', data?.image);
-        console.log('LinkPreview: Thumbnail URL:', data?.thumbnail);
-        console.log('LinkPreview: Favicon:', data?.favicon);
+        // console.log('LinkPreview: Received data:', data);
+        // console.log('LinkPreview: Title:', data?.title);
+        // console.log('LinkPreview: Description:', data?.description);
+        // console.log('LinkPreview: Image URL:', data?.image);
+        // console.log('LinkPreview: Thumbnail URL:', data?.thumbnail);
+        // console.log('LinkPreview: Favicon:', data?.favicon);
         setOgData(data);
         
         // Handle special case for YouTube videos

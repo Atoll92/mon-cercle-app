@@ -127,7 +127,7 @@ export const getOpenGraphData = async (url) => {
         return createFallbackData('#');
       }
       
-      console.log('OpenGraph Service: Getting data for URL:', url);
+      // console.log('OpenGraph Service: Getting data for URL:', url);
       
       // Normalize URL for caching
       let normalizedUrl = url;
@@ -147,7 +147,7 @@ export const getOpenGraphData = async (url) => {
       
       // If we have fresh cached data (less than 7 days old), use it
       if (cachedData && !error && new Date(cachedData.updated_at) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)) {
-        console.log('OpenGraph Service: Using cached data for URL:', cleanUrl);
+        // console.log('OpenGraph Service: Using cached data for URL:', cleanUrl);
         try {
           const parsedData = JSON.parse(cachedData.data);
           // Check if this is fallback data - if so, refetch

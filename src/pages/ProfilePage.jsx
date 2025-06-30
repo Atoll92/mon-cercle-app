@@ -2,6 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/authcontext';
+import { useApp } from '../context/appContext';
+import { NetworkProvider } from '../context/networkContext';
 import { supabase } from '../supabaseclient';
 import { getUserProfile } from '../api/networks';
 import MoodboardGallery from '../components/moodboardGallery';
@@ -806,7 +808,6 @@ function ProfilePage() {
                               isOwner={isOwnProfile}
                               onPostUpdated={handlePostUpdated}
                               onPostDeleted={handlePostDeleted}
-                              networkId={profile.network_id}
                               sx={{ height: '100%' }}
                             />
                           </Grid>
@@ -836,7 +837,6 @@ function ProfilePage() {
                         isOwner={isOwnProfile}
                         onPostUpdated={handlePostUpdated}
                         onPostDeleted={handlePostDeleted}
-                        networkId={profile.network_id}
                         sx={{ height: '100%' }}
                       />
                     </Grid>
@@ -968,4 +968,39 @@ function ProfilePage() {
   );
 }
 
-export default ProfilePage;
+// Wrapper component that provides NetworkProvider
+const ProfilePageWrapper = () => {
+  const { userNetworkId, fetchingNetwork } = useApp();
+
+  if (fetchingNetwork) {
+    return (
+      <Box 
+        sx={{ 
+          display: 'flex', 
+          flexDirection: 'column',
+          alignItems: 'center', 
+          justifyContent: 'center', 
+          height: '50vh' 
+        }}
+      >
+        <CircularProgress size={40} color="primary" />
+        <Typography variant="body1" sx={{ mt: 2 }}>
+          Loading profile...
+        </Typography>
+      </Box>
+    );
+  }
+
+  if (userNetworkId) {
+    return (
+      <NetworkProvider networkId={userNetworkId}>
+        <ProfilePage />
+      </NetworkProvider>
+    );
+  } else {
+    // No network - render without NetworkProvider
+    return <ProfilePage />;
+  }
+};
+
+export default ProfilePageWrapper;

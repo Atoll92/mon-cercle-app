@@ -87,7 +87,7 @@ export const AuthProvider = ({ children }) => {
   // };
 
   useEffect(() => {
-    console.log('AuthProvider initializing');
+    // console.log('AuthProvider initializing');
     setLoading(true); // Explicitly set loading true at start
     
     // Get the initial session
@@ -99,7 +99,7 @@ export const AuthProvider = ({ children }) => {
         setSession(null);
         setUser(null);
       } else {
-        console.log('AuthProvider: Initial session received.', { hasSession: !!data.session });
+        // console.log('AuthProvider: Initial session received.', { hasSession: !!data.session });
         setSession(data.session);
         setUser(data.session?.user ?? null);
         // --- ensureProfile could potentially be called HERE if needed AFTER session is set ---
@@ -109,7 +109,7 @@ export const AuthProvider = ({ children }) => {
         // }
       }
       // **** CRITICAL: Set loading false ONLY after initial check is done ****
-      console.log('AuthProvider: Initial loading complete.');
+      // console.log('AuthProvider: Initial loading complete.');
       setLoading(false);
 
     }).catch(error => {
@@ -125,7 +125,7 @@ export const AuthProvider = ({ children }) => {
     // Set up the auth state listener
     const { data: authListener } = supabase.auth.onAuthStateChange(
       async (event, newSession) => {
-        console.log(`AuthProvider: Auth state changed - ${event}`, { hasNewSession: !!newSession });
+        // console.log(`AuthProvider: Auth state changed - ${event}`, { hasNewSession: !!newSession });
         setSession(newSession);
         setUser(newSession?.user ?? null);
 
@@ -143,7 +143,7 @@ export const AuthProvider = ({ children }) => {
 
     // Clean up the subscription
     return () => {
-      console.log('AuthProvider: Cleaning up auth listener.');
+      // console.log('AuthProvider: Cleaning up auth listener.');
       if (authListener?.subscription) {
         authListener.subscription.unsubscribe();
       }
@@ -237,14 +237,14 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  useEffect(() => {
-    console.log('AuthProvider: State updated ->', {
-      loading,
-      hasUser: !!user,
-      hasSession: !!session,
-      hasError: !!authError
-    });
-  }, [loading, user, session, authError]);
+  // useEffect(() => {
+  //   console.log('AuthProvider: State updated ->', {
+  //     loading,
+  //     hasUser: !!user,
+  //     hasSession: !!session,
+  //     hasError: !!authError
+  //   });
+  // }, [loading, user, session, authError]);
 
   // Provide the auth context value
   const value = {

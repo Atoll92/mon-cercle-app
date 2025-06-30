@@ -8,15 +8,15 @@ function ProtectedRoute() {
   const { session, user, loading } = useAuth();
   const location = useLocation();
 
-  // Add debugging
-  useEffect(() => {
-    console.log('ProtectedRoute state:', { 
-      loading, 
-      hasSession: !!session, 
-      hasUser: !!user,
-      path: location.pathname
-    });
-  }, [loading, session, user, location]);
+  // // Add debugging
+  // useEffect(() => {
+  //   console.log('ProtectedRoute state:', { 
+  //     loading, 
+  //     hasSession: !!session, 
+  //     hasUser: !!user,
+  //     path: location.pathname
+  //   });
+  // }, [loading, session, user, location]);
 
   if (loading) {
     // Show a better loading indicator
@@ -45,7 +45,7 @@ function ProtectedRoute() {
   }
 
   // If logged in and loading is finished, render the nested route
-  console.log('User authenticated, rendering protected content');
+  // console.log('User authenticated, rendering protected content');
   return <Outlet />;
 }
 

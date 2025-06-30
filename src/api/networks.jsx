@@ -213,7 +213,7 @@ const fetchNetworkMembers = async (networkId, options = {}) => {
 
  const fetchNetworkDetails = async (networkId) => {
     try {
-      console.log('Fetching network details for network:', networkId);
+      // console.log('Fetching network details for network:', networkId);
       
       // Fetch network data
       const { data: networkData, error: networkError } = await supabase
@@ -240,7 +240,7 @@ const fetchNetworkMembers = async (networkId, options = {}) => {
         member_count: memberCount || 0
       };
       
-      console.log('Network details with member count:', dataWithCount);
+      // console.log('Network details with member count:', dataWithCount);
       return dataWithCount;
     } catch (error) {
       console.error("Error fetching network details:", error);

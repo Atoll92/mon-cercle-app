@@ -917,8 +917,8 @@ class NotificationProcessor {
       return;
     }
 
-    console.log('🤖 [AUTO PROCESSOR] Starting automatic notification processing...');
-    console.log(`🤖 [AUTO PROCESSOR] Will process notifications every ${this.processingInterval / 1000} seconds`);
+    // console.log('🤖 [AUTO PROCESSOR] Starting automatic notification processing...');
+    // console.log(`🤖 [AUTO PROCESSOR] Will process notifications every ${this.processingInterval / 1000} seconds`);
     
     this.isRunning = true;
     

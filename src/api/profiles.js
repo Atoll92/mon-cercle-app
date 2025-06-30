@@ -50,17 +50,17 @@ export const getUserProfileFields = async (userId, fields = '*') => {
  */
 export const getUserProfiles = async (userId) => {
   try {
-    console.log('getUserProfiles: Querying for user_id:', userId);
-    console.log('getUserProfiles: Current auth user:', (await supabase.auth.getUser()).data.user?.id);
+    // console.log('getUserProfiles: Querying for user_id:', userId);
+    // console.log('getUserProfiles: Current auth user:', (await supabase.auth.getUser()).data.user?.id);
     
     // Try a simple query first to test basic access
-    console.log('getUserProfiles: Testing basic profiles access...');
+    // console.log('getUserProfiles: Testing basic profiles access...');
     const { data: simpleData, error: simpleError } = await supabase
       .from('profiles')
       .select('*')
       .eq('user_id', userId);
     
-    console.log('getUserProfiles: Simple query result:', simpleData?.length || 0, 'profiles, error:', simpleError);
+    // console.log('getUserProfiles: Simple query result:', simpleData?.length || 0, 'profiles, error:', simpleError);
     
     if (simpleError) {
       console.log('getUserProfiles: Simple query failed, error details:', simpleError);
@@ -68,7 +68,7 @@ export const getUserProfiles = async (userId) => {
     }
     
     // If simple query works, try with network join
-    console.log('getUserProfiles: Testing query with network join...');
+    // console.log('getUserProfiles: Testing query with network join...');
     const { data, error } = await supabase
       .from('profiles')
       .select(`
@@ -84,8 +84,8 @@ export const getUserProfiles = async (userId) => {
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
 
-    console.log('getUserProfiles: Query result - data:', data?.length || 0, 'profiles, error:', error);
-    console.log('getUserProfiles: Full error details:', error);
+    // console.log('getUserProfiles: Query result - data:', data?.length || 0, 'profiles, error:', error);
+    // console.log('getUserProfiles: Full error details:', error);
 
     if (error) {
       // If user_id column doesn't exist yet (pre-migration), try old structure

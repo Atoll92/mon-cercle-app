@@ -34,13 +34,13 @@ export const DirectMessagesProvider = ({ children }) => {
     // Prevent redundant fetches happening too close together
     const now = Date.now();
     if (!force && fetchingRef.current) {
-      console.log('Already fetching conversations, skipping redundant fetch');
+      // console.log('Already fetching conversations, skipping redundant fetch');
       return;
     }
     
     // Don't fetch too frequently (throttle to once per second unless forced)
     if (!force && now - lastFetchRef.current < 1000) {
-      console.log('Fetch throttled, too soon since last fetch');
+      // console.log('Fetch throttled, too soon since last fetch');
       return;
     }
     
@@ -61,13 +61,13 @@ export const DirectMessagesProvider = ({ children }) => {
       }
       setError(null);
       
-      console.log('Fetching conversations for profile:', activeProfile.id);
+      // console.log('Fetching conversations for profile:', activeProfile.id);
       
       const { conversations, error } = await getUserConversations(activeProfile.id);
       
       if (error) throw error;
       
-      console.log(`Found ${conversations.length} conversations for user`);
+      // console.log(`Found ${conversations.length} conversations for user`);
       
       setConversations(conversations);
       

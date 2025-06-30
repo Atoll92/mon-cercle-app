@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   Card,
   CardHeader,
@@ -53,31 +53,35 @@ const PostCard = ({
   onAuthorClick,
   onPostUpdated,
   onPostDeleted,
-  networkId, // Optional: provide networkId when not in NetworkProvider
   sx = {}
 }) => {
   const theme = useTheme();
   const { activeProfile } = useProfile();
   
-  // Get networkId from prop or context
-  let currentNetworkId = networkId;
-  let hasNetworkContext = Boolean(networkId);
-  
-  // Try to get from NetworkProvider if not provided as prop
-  if (!hasNetworkContext) {
-    try {
-      const networkContext = useNetwork();
-      currentNetworkId = networkContext?.currentNetwork?.id;
-      hasNetworkContext = Boolean(currentNetworkId);
-    } catch (error) {
-      // Not within NetworkProvider and no networkId prop - disable edit functionality
-      hasNetworkContext = false;
-    }
+  // Get network context - component requires NetworkProvider
+  let networkContext = null;
+  try {
+    networkContext = useNetwork();
+  } catch (error) {
+    // Not within NetworkProvider - disable edit functionality
+    console.warn('PostCard: useNetwork hook failed, component should be within NetworkProvider for edit functionality');
   }
+  
+  // Get networkId from context - make it reactive
+  const { currentNetworkId, hasNetworkContext } = useMemo(() => {
+    const contextNetworkId = networkContext?.network?.id;
+    return {
+      currentNetworkId: contextNetworkId,
+      hasNetworkContext: Boolean(contextNetworkId)
+    };
+  }, [networkContext?.network?.id]);
   
   // Determine if current user owns this post
   // Only allow editing if we have networkId (for the edit modal)
-  const isPostOwner = hasNetworkContext && (isOwner || (activeProfile && post.profile_id === activeProfile.id));
+  // Use useMemo to recalculate when activeProfile changes
+  const isPostOwner = useMemo(() => {
+    return hasNetworkContext && (isOwner || (activeProfile && post.profile_id === activeProfile.id));
+  }, [hasNetworkContext, isOwner, activeProfile, post.profile_id]);
   const [anchorEl, setAnchorEl] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [commentCount, setCommentCount] = useState(0);
@@ -532,7 +536,6 @@ const PostCard = ({
         onClose={() => setEditModalOpen(false)}
         onPostCreated={handlePostUpdated}
         darkMode={darkMode}
-        networkId={currentNetworkId}
         mode="edit"
         editPost={post}
       />
