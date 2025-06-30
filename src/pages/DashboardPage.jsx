@@ -12,7 +12,6 @@ import LatestNewsWidget from '../components/LatestNewsWidget';
 import LatestPostsWidget from '../components/LatestPostsWidget';
 import TestNotificationSystem from '../components/TestNotificationSystem';
 import EventDetailsDialog from '../components/EventDetailsDialog';
-import CreatePostModal from '../components/CreatePostModal';
 import { useFadeIn, useStaggeredAnimation, ANIMATION_DURATION } from '../hooks/useAnimation';
 import { ProfileSkeleton, GridSkeleton } from '../components/LoadingSkeleton';
 import OnboardingGuide from '../components/OnboardingGuide';
@@ -68,6 +67,7 @@ import {
 } from '@mui/icons-material';
 import { fetchNetworkMembers } from '../api/networks';
 import { fetchNetworkCategories } from '../api/categories';
+import FlexFlowBox from '../components/FlexFlowBox';
 
 // Subscription Badge Component
 const SubscriptionBadge = ({ plan, status }) => {
@@ -161,8 +161,6 @@ function DashboardPage() {
   const [recentEvents, setRecentEvents] = useState([]);
   const [loadingEvents, setLoadingEvents] = useState(true);
   
-  // State for Create Post Modal
-  const [createPostModalOpen, setCreatePostModalOpen] = useState(false);
   
   // Member detail modal state
   const [selectedMember, setSelectedMember] = useState(null);
@@ -282,7 +280,6 @@ function DashboardPage() {
     
     return () => clearTimeout(timer);
   }, []);
-
 
   // Force re-render when networkDetails changes
   useEffect(() => {
@@ -478,14 +475,6 @@ function DashboardPage() {
     window.location.reload();
   };
   
-  // Handle post creation callback
-  const handlePostCreated = () => {
-    setCreatePostModalOpen(false);
-    // Refresh posts data if needed
-    if (activeProfile) {
-      loadDashboardData();
-    }
-  };
 
   // Handle member click
   const handleMemberClick = async (memberId, e) => {
@@ -712,12 +701,12 @@ function DashboardPage() {
 
       {session && profile ? (
         <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', width: '100%' }}>
-          <Grid container spacing={2} sx={{ width: '100%' }}>
+          {/* <Grid container spacing={2} sx={{ width: '100%' }}> */}
               {/* Row 1: Profile and Network Management */}
-              <Grid item xs={12} sx={{ minHeight: '300px', width: '100%' }}>
-                <Grid container spacing={2} sx={{ height: '100%', width: '100%' }}>
+              <FlexFlowBox>
+                {/* <Grid container spacing={2} sx={{ height: '100%', width: '100%' }}> */}
                   {/* Profile Card - Left Column */}
-                  <Grid item xs={12} md={4} sx={{ display: 'flex' }}>
+                  <Grid item xs={12} md={4}>
                     <Card 
                       ref={getItemRef(0)}
                       sx={{ 
@@ -885,7 +874,7 @@ function DashboardPage() {
                   </Grid>
                   
                   {/* Network Management Widget - Only for Admins */}
-                  <Grid item xs={12} md={8} sx={{flexGrow:2}}>
+                  <Grid item xs={12} md={8}>
                     {profile.network_id && profile.role === 'admin' ? (
                       <Card 
                         ref={getItemRef(1)}
@@ -1351,50 +1340,17 @@ function DashboardPage() {
                       </Card>
                     )}
                   </Grid>
-                </Grid>
-              </Grid>
-              
-              {/* Row 2: Create Post and Events */}
-                         <Grid item xs={12} sx={{ minHeight: '300px', width:'100%' }}>
-                <Grid container spacing={2} sx={{ height: '100%', width: '100%' }}>
-                  {/* Left Column: Create Post */}
-                  <Grid item xs={12} md={6} sx={{ display: 'flex', maxWidth: { md: '50%' } }}>
-                    <Card sx={{ 
-                      borderRadius: 2, 
-                      boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-                      height: '100%',
-                      width: '100%',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      textAlign: 'center',
-                      p: 3
-                    }}>
-                      <AddIcon 
-                        sx={{ 
-                          fontSize: 48, 
-                          color: 'primary.main', 
-                          mb: 2 
-                        }} 
-                      />
-                      <Typography variant="h6" gutterBottom>
-                        Share Your Work
-                      </Typography>
-                      <Typography variant="body2" color="textSecondary" sx={{ mb: 3 }}>
-                        Create a portfolio post to showcase your projects and share your work with the community.
-                      </Typography>
-                      <Button
-                        variant="contained"
-                        color="primary"
-                        onClick={() => setCreatePostModalOpen(true)}
-                        startIcon={<AddIcon />}
-                        size="large"
-                      >
-                        Create Post
-                      </Button>
-                    </Card>
-                  </Grid>
+
+                  {profile.network_id && (
+                    <>
+                      <Grid item xs={12} sm={6} md={6}>
+                        <LatestNewsWidget networkId={profile.network_id} onMemberClick={handleMemberClick} />
+                      </Grid>
+                      <Grid item xs={12} sm={6} md={6}>
+                        <LatestPostsWidget networkId={profile.network_id} onMemberClick={handleMemberClick} />
+                      </Grid>
+                    </>
+                  )}
                   
                   {/* Right Column: Upcoming Events */}
                   <Grid item xs={12} md={6} sx={{ display: 'flex', flexGrow: '1', width: { md: '40%' } }}>
@@ -1552,28 +1508,10 @@ function DashboardPage() {
                     )}
                   </Grid>
                   
-                </Grid>
-              </Grid>
-              
-              {/* Row 3: Latest News, Latest Posts, and Moodboard */}
-              <Grid item xs={12} sx={{ width: '100%' }}>
-                <Grid container spacing={2} sx={{ minHeight: 400}}>
-                  {profile.network_id && (
-                    <>
-                      <Grid item xs={12} sm={6} md={3} sx={{ display: 'flex' }}>
-                        <LatestNewsWidget networkId={profile.network_id} onMemberClick={handleMemberClick} />
-                      </Grid>
-                      <Grid item xs={12} sm={6} md={3} sx={{ display: 'flex' }}>
-                        <LatestPostsWidget networkId={profile.network_id} onMemberClick={handleMemberClick} />
-                      </Grid>
-                    </>
-                  )}
                   <Grid item xs={12} md={profile.network_id ? 6 : 12} sx={{ display: 'flex', flexGrow: 1 }}>
                     <PersonalMoodboardWidget user={user} />
                   </Grid>
-                </Grid>
-              </Grid>
-            </Grid>
+            </FlexFlowBox>
 
           {/* Test Notification System (temporary) */}
           {process.env.NODE_ENV === 'development' && (
@@ -1655,12 +1593,6 @@ function DashboardPage() {
         }}
       />
       
-      {/* Create Post Modal */}
-      <CreatePostModal
-        open={createPostModalOpen}
-        onClose={() => setCreatePostModalOpen(false)}
-        onPostCreated={handlePostCreated}
-      />
     </Container>
   );
 }

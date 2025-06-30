@@ -837,30 +837,12 @@ function EditProfilePage() {
             {/* Posts Tab */}
             {activeTab === 1 && (
               <Box>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
-                  <Typography variant="h6">
-                    Your Posts
+                {/* Previously Published Posts Section */}
+                <Box sx={{ mb: 3 }}>
+                  <Typography variant="h6" sx={{ mb: 2, borderBottom: '1px solid #e0e0e0', pb: 1 }}>
+                    Previously Published Posts
                   </Typography>
-                </Box>
-
-                {/* Create New Post Button */}
-                <Paper 
-                  sx={{ 
-                    p: 3, 
-                    mb: 4, 
-                    borderRadius: 2,
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-                    border: '1px solid #e0e0e0',
-                    textAlign: 'center'
-                  }}
-                >
-                  <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <AddIcon sx={{ mr: 1, color: 'primary.main' }} />
-                    Create New Post
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                    Create a portfolio post to showcase your projects and share your work with the community.
-                  </Typography>
+                  
                   <Button
                     variant="contained"
                     color="primary"
@@ -870,13 +852,6 @@ function EditProfilePage() {
                   >
                     Create Post
                   </Button>
-                </Paper>
-                
-                {/* Previously Published Posts Section */}
-                <Box sx={{ mb: 3 }}>
-                  <Typography variant="h6" sx={{ mb: 2, borderBottom: '1px solid #e0e0e0', pb: 1 }}>
-                    Previously Published Posts
-                  </Typography>
                   
                   {postItems.length === 0 ? (
                     <Paper 

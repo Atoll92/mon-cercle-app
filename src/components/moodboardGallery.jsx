@@ -35,6 +35,7 @@ import {
   Image as ImageIcon,
   ZoomOutMap as ZoomOutMapIcon,
 } from '@mui/icons-material';
+import FlexFlowBox from './FlexFlowBox';
 
 /**
  * Component to display a user's public moodboards in a gallery format
@@ -709,7 +710,7 @@ const MoodboardGallery = ({ userId, isOwnProfile, limit, showFeatured = false })
       
       {/* Grid of other moodboards */}
       {(!showFeatured || moodboards.length > 0) && (
-        <Grid container spacing={3}>
+        <FlexFlowBox>
           {loading 
             ? renderSkeletons() 
             : moodboards.map(moodboard => (
@@ -808,7 +809,7 @@ const MoodboardGallery = ({ userId, isOwnProfile, limit, showFeatured = false })
                   </Fade>
                 </Grid>
               ))}
-        </Grid>
+        </FlexFlowBox>
       )}
     </Box>
   );

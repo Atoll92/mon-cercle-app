@@ -28,6 +28,7 @@ import {
   Lock as LockIcon,
   CreateNewFolder as CreateNewFolderIcon
 } from '@mui/icons-material';
+import FlexFlowBox from './FlexFlowBox';
 
 const PersonalMoodboardWidget = ({ user }) => {
   const { activeProfile, isLoadingProfiles } = useProfile();
@@ -243,7 +244,7 @@ const PersonalMoodboardWidget = ({ user }) => {
               </Button>
             </Paper>
           ) : (
-            <Grid container spacing={2}>
+            <FlexFlowBox>
               {personalMoodboards.slice(0, 4).map(moodboard => (
                 <Grid item xs={12} sm={6} key={moodboard.id}>
                   <Card 
@@ -338,7 +339,7 @@ const PersonalMoodboardWidget = ({ user }) => {
                   </Card>
                 </Grid>
               ))}
-            </Grid>
+            </FlexFlowBox>
           )}
         </Box>
       </CardContent>

@@ -52,6 +52,7 @@ import {
   Dashboard as DashboardIcon,
   Badge as Badge
 } from '@mui/icons-material';
+import FlexFlowBox from '../components/FlexFlowBox';
 
 function ProfilePage() {
   const { userId } = useParams();
@@ -714,58 +715,58 @@ function ProfilePage() {
                     )}
                   </Box>
 
-{activeTab === TAB_MOODBOARDS && (
-  <Box sx={{ p: 3 }}>
-    <Typography variant="h5" gutterBottom>
-      {isOwnProfile ? 'Your Moodboards' : `${profile.full_name}'s Moodboards`}
-    </Typography>
-    
-    <MoodboardGallery
-      userId={userId}
-      isOwnProfile={isOwnProfile}
-      showFeatured={true}
-    />
-  </Box>
-)}
+                  {activeTab === TAB_MOODBOARDS && (
+                    <Box sx={{ p: 3 }}>
+                      <Typography variant="h5" gutterBottom>
+                        {isOwnProfile ? 'Your Moodboards' : `${profile.full_name}'s Moodboards`}
+                      </Typography>
+                      
+                      <MoodboardGallery
+                        userId={userId}
+                        isOwnProfile={isOwnProfile}
+                        showFeatured={true}
+                      />
+                    </Box>
+                  )}
 
-{/* Moodboards Preview Section */}
-<Box sx={{ mt: 4 }}>
-  <Box sx={{ 
-    display: 'flex', 
-    justifyContent: 'space-between', 
-    alignItems: 'center',
-    pb: 1,
-    borderBottom: '1px solid',
-    borderColor: 'divider',
-    mb: 2
-  }}>
-    <Typography 
-      variant="h6" 
-      sx={{ 
-        display: 'flex', 
-        alignItems: 'center',
-        gap: 1
-      }}
-    >
-      <DashboardIcon fontSize="small" color="primary" />
-      Moodboards
-    </Typography>
-    
-    <Button 
-      size="small" 
-      endIcon={<MoreHorizIcon />} 
-      onClick={() => setActiveTab(TAB_MOODBOARDS)}
-    >
-      See All
-    </Button>
-  </Box>
-  
-  <MoodboardGallery
-    userId={userId}
-    isOwnProfile={isOwnProfile}
-    limit={2}
-  />
-</Box>
+                  {/* Moodboards Preview Section */}
+                  <Box sx={{ mt: 4 }}>
+                    <Box sx={{ 
+                      display: 'flex', 
+                      justifyContent: 'space-between', 
+                      alignItems: 'center',
+                      pb: 1,
+                      borderBottom: '1px solid',
+                      borderColor: 'divider',
+                      mb: 2
+                    }}>
+                      <Typography 
+                        variant="h6" 
+                        sx={{ 
+                          display: 'flex', 
+                          alignItems: 'center',
+                          gap: 1
+                        }}
+                      >
+                        <DashboardIcon fontSize="small" color="primary" />
+                        Moodboards
+                      </Typography>
+                      
+                      <Button 
+                        size="small" 
+                        endIcon={<MoreHorizIcon />} 
+                        onClick={() => setActiveTab(TAB_MOODBOARDS)}
+                      >
+                        See All
+                      </Button>
+                    </Box>
+                    
+                    <MoodboardGallery
+                      userId={userId}
+                      isOwnProfile={isOwnProfile}
+                      limit={2}
+                    />
+                  </Box>
 
                   
                   {/* Posts Preview Section */}
@@ -801,20 +802,18 @@ function ProfilePage() {
                         </Button>
                       </Box>
                       
-                      <Grid container spacing={2}>
+                      <FlexFlowBox>
                         {profile.posts.slice(0, 2).map(post => (
-                          <Grid item xs={12} sm={6} key={post.id}>
                             <PostCard
+                              key={post.id}
                               post={post}
                               author={profile}
                               isOwner={isOwnProfile}
                               onPostUpdated={handlePostUpdated}
                               onPostDeleted={handlePostDeleted}
-                              sx={{ height: '100%' }}
                             />
-                          </Grid>
                         ))}
-                      </Grid>
+                      </FlexFlowBox>
                     </Box>
                   )}
                 </Box>
@@ -830,20 +829,18 @@ function ProfilePage() {
               </Typography>
               
               {profile.posts && profile.posts.length > 0 ? (
-                <Grid container spacing={3}>
+                <FlexFlowBox>
                   {profile.posts.map(post => (
-                    <Grid item xs={12} sm={6} md={4} key={post.id}>
                       <PostCard
+                        key={post.id}
                         post={post}
                         author={profile}
                         isOwner={isOwnProfile}
                         onPostUpdated={handlePostUpdated}
                         onPostDeleted={handlePostDeleted}
-                        sx={{ height: '100%' }}
                       />
-                    </Grid>
                   ))}
-                </Grid>
+                </FlexFlowBox>
               ) : (
                 <Alert severity="info" variant="outlined" sx={{ mt: 2 }}>
                   No posts have been shared yet.
