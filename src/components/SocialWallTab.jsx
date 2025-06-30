@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import MembersDetailModal from './MembersDetailModal';
 import CreatePostModal from './CreatePostModal';
+import PostCard from './PostCard';
 import {
   Typography,
   Paper,
@@ -789,6 +790,54 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
               
               const cardId = item.stableId || `${item.itemType}-${item.id}`;
               
+              // Handle posts with PostCard component
+              if (item.itemType === 'post') {
+                // Create author object from social wall data structure
+                const author = {
+                  id: item.memberId,
+                  full_name: item.memberName,
+                  profile_picture_url: item.memberAvatar
+                };
+                
+                return (
+                  <div 
+                    key={cardId}
+                    ref={(el) => {
+                      // Store card ref for animations
+                      if (el) {
+                        cardRefs.current.set(index, el);
+                      } else {
+                        cardRefs.current.delete(index);
+                      }
+                      
+                      // Handle other refs
+                      if (isRefItem && lastItemRef) {
+                        lastItemRef(el);
+                      }
+                    }}
+                    style={{ marginBottom: '24px' }}
+                  >
+                    <PostCard
+                      post={item}
+                      author={author}
+                      darkMode={darkMode}
+                      isOwner={item.profile_id === (activeProfile?.id || user?.id)}
+                      onAuthorClick={handleMemberClick}
+                      onPostUpdated={onPostDeleted}
+                      onPostDeleted={onPostDeleted}
+                      sx={{ 
+                        transition: 'transform 0.15s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.15s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease',
+                        '&:hover': {
+                          transform: 'translateY(-2px)',
+                          boxShadow: darkMode ? '0 6px 20px rgba(0,0,0,0.25)' : '0 6px 20px rgba(0,0,0,0.08)'
+                        }
+                      }}
+                    />
+                  </div>
+                );
+              }
+              
+              // Handle news items with existing Card component
               return (
                 <Card 
                   key={cardId}
