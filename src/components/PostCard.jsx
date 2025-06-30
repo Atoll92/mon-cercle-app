@@ -32,12 +32,14 @@ import LazyImage from './LazyImage';
 import LinkPreview from './LinkPreview';
 import ImageViewerModal from './ImageViewerModal';
 import CreatePostModal from './CreatePostModal';
+import MembersDetailModal from './MembersDetailModal';
 import { formatDistanceToNow } from 'date-fns';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { getCommentCount } from '../api/comments';
 import { deletePost } from '../api/posts';
 import { useProfile } from '../context/profileContext';
 import { useNetwork } from '../context/networkContext';
+import { useAuth } from '../context/authcontext';
 
 /**
  * PostCard component for displaying portfolio posts
@@ -56,6 +58,8 @@ const PostCard = ({
   sx = {}
 }) => {
   const theme = useTheme();
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const { activeProfile } = useProfile();
   
   // Get network context - component requires NetworkProvider
@@ -88,6 +92,7 @@ const PostCard = ({
   const [imageViewerOpen, setImageViewerOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState({ url: '', title: '' });
   const [editModalOpen, setEditModalOpen] = useState(false);
+  const [memberModalOpen, setMemberModalOpen] = useState(false);
 
   // Fetch comment count on mount
   useEffect(() => {
@@ -169,6 +174,34 @@ const PostCard = ({
     setEditModalOpen(false);
     if (onPostUpdated) {
       onPostUpdated(updatedPost);
+    }
+  };
+
+  // Handle author click - check if we're inside MembersDetailModal, then decide behavior
+  const handleAuthorClick = (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    
+    // Simple check: if we're inside any modal dialog, assume it's MembersDetailModal
+    const isInsideModal = e?.target?.closest('[role="dialog"]') !== null;
+    
+    if (isInsideModal) {
+      // Inside a modal - navigate to profile page to avoid modal-in-modal
+      if (author?.id) {
+        navigate(`/profile/${author.id}`);
+      }
+    } else if (onAuthorClick) {
+      // Not inside modal but callback provided - use the callback
+      if (onAuthorClick.length >= 2) {
+        onAuthorClick(author?.id, e);
+      } else {
+        onAuthorClick(author);
+      }
+    } else {
+      // Default behavior - open MembersDetailModal
+      setMemberModalOpen(true);
     }
   };
 
@@ -290,14 +323,14 @@ const PostCard = ({
         avatar={
           <Avatar 
             src={author?.profile_picture_url}
-            onClick={onAuthorClick ? () => onAuthorClick(author) : undefined}
+            onClick={handleAuthorClick}
             sx={{ 
-              cursor: onAuthorClick ? 'pointer' : 'default',
+              cursor: 'pointer',
               transition: 'all 0.3s ease',
-              '&:hover': onAuthorClick ? {
+              '&:hover': {
                 transform: 'scale(1.1)',
                 boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
-              } : {}
+              }
             }}
           >
             {author?.full_name?.[0]?.toUpperCase() || 'U'}
@@ -377,10 +410,10 @@ const PostCard = ({
             variant="subtitle2" 
             sx={{ 
               fontWeight: 600,
-              cursor: onAuthorClick ? 'pointer' : 'default',
+              cursor: 'pointer',
               color: darkMode ? 'grey.100' : 'text.primary'
             }}
-            onClick={onAuthorClick ? () => onAuthorClick(author) : undefined}
+            onClick={handleAuthorClick}
           >
             {author?.full_name || 'Unknown User'}
           </Typography>
@@ -538,6 +571,16 @@ const PostCard = ({
         darkMode={darkMode}
         mode="edit"
         editPost={post}
+      />
+
+      {/* Member Detail Modal */}
+      <MembersDetailModal
+        open={memberModalOpen}
+        onClose={() => setMemberModalOpen(false)}
+        member={author}
+        posts={[]} // Don't show posts in the modal to avoid infinite nesting
+        isCurrentUser={author?.id === (activeProfile?.id || user?.id)}
+        darkMode={darkMode}
       />
     </Card>
   );
