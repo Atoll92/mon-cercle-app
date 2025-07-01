@@ -176,7 +176,7 @@ const NewsTab = ({ networkId, userId, newsPosts, setNewsPosts, members, darkMode
       
       <Card sx={{ p: 3, mb: 3, bgcolor: darkMode ? 'background.paper' : undefined }}>
         <Typography variant="h5" gutterBottom>
-          Create News Post
+          Create a news
         </Typography>
         <TextField
           fullWidth
@@ -315,7 +315,7 @@ const NewsTab = ({ networkId, userId, newsPosts, setNewsPosts, members, darkMode
             startIcon={<SaveIcon />}
             disabled={updating}
           >
-            {updating ? <CircularProgress size={24} /> : 'Publish Post'}
+            {updating ? <CircularProgress size={24} /> : 'Publish News'}
           </Button>
           <Button
             variant="outlined"

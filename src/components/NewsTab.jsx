@@ -328,7 +328,7 @@ const NewsTab = ({ darkMode }) => {
   const renderNewsForm = () => (
     <Card sx={{ p: 3, mb: 3, bgcolor: darkMode ? 'background.paper' : undefined }}>
       <Typography variant="h5" gutterBottom>
-        Create News Post
+        Create a news
       </Typography>
       <TextField
         fullWidth
@@ -470,7 +470,7 @@ const NewsTab = ({ darkMode }) => {
           startIcon={updating ? <CircularProgress size={20} /> : <SaveIcon />}
           disabled={updating}
         >
-          Publish Post
+          Publish News
         </Button>
         <Button
           variant="outlined"
@@ -505,7 +505,7 @@ const NewsTab = ({ darkMode }) => {
             startIcon={<AddPhotoIcon />}
             onClick={() => setIsCreating(true)}
           >
-            Create News Post
+            Create a news
           </Button>
         )}
       </Box>
