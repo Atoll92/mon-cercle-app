@@ -137,7 +137,7 @@ const LatestPostsWidget = ({ networkId, onMemberClick, darkMode = false, onPostU
         title="Latest Posts"
         viewAllLink={`/network/${networkId}?tab=social`}
       />
-      
+      <div style={{ padding: '10px' }}>
         <FlexFlowBox>
           <Button
                 variant="contained"
@@ -163,6 +163,7 @@ const LatestPostsWidget = ({ networkId, onMemberClick, darkMode = false, onPostU
           })}
           </>
         </FlexFlowBox>
+      </div>
       
       <CreatePostModal
         open={createPostModalOpen}
