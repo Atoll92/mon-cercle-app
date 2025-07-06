@@ -1,8 +1,13 @@
 {
+  "functions": {
+    "src/vercel-edge-functions/_og.js": {
+      "runtime": "@vercel/edge"
+    }
+  },
   "rewrites": [
     {
-      "source": "/:path*",
-      "destination": "/vercel-edge-functions/_og?path=:path*"
+      "source": "/(.*)",
+      "destination": "/src/vercel-edge-functions/_og"
     }
   ]
 }
