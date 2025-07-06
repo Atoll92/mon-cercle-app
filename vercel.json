@@ -1,8 +1,8 @@
 {
-    "rewrites": [
-      {
-        "source": "/(.*)",
-        "destination": "/"
-      }
-    ]
-  }
+  "rewrites": [
+    {
+      "source": "/:path*",
+      "destination": "/vercel-edge-functions/_og?path=:path*"
+    }
+  ]
+}
