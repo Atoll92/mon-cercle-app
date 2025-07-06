@@ -1,0 +1,179 @@
+{
+  "schema_source": "live_supabase_database",
+  "extracted_at": "2025-01-07T16:00:00Z",
+  "database": "conclav_production",
+  "tables": [
+    "badges",
+    "direct_conversations", 
+    "direct_messages",
+    "donations",
+    "engagement_stats",
+    "event_participations",
+    "invitations",
+    "media_uploads",
+    "member_subscriptions",
+    "membership_plans",
+    "messages",
+    "messages_backup",
+    "migration_log",
+    "moderation_logs",
+    "moodboard_items",
+    "moodboards",
+    "network_categories",
+    "network_events",
+    "network_files",
+    "network_invitation_links",
+    "network_news",
+    "network_poll_votes",
+    "network_poll_votes_backup",
+    "network_polls",
+    "networks",
+    "notification_queue",
+    "notification_queue_backup",
+    "opengraph_cache",
+    "portfolio_items",
+    "profile_id_mapping",
+    "profiles",
+    "profiles_backup",
+    "social_wall_comments",
+    "support_tickets",
+    "ticket_messages",
+    "user_badges",
+    "wiki_categories",
+    "wiki_comments",
+    "wiki_page_categories",
+    "wiki_page_permissions",
+    "wiki_pages",
+    "wiki_revisions"
+  ],
+  "key_features": {
+    "multi_profile_system": {
+      "description": "1:many:many User:Profile:Network relationship",
+      "key_tables": ["profiles", "networks"],
+      "profile_network_relationship": "profiles.network_id -> networks.id"
+    },
+    "backup_tables": [
+      "messages_backup",
+      "network_poll_votes_backup", 
+      "notification_queue_backup",
+      "profiles_backup"
+    ],
+    "migration_tracking": ["migration_log", "profile_id_mapping"],
+    "content_management": {
+      "social_features": ["messages", "direct_messages", "social_wall_comments"],
+      "content_types": ["network_news", "portfolio_items", "wiki_pages"],
+      "media_support": ["media_uploads", "network_files"],
+      "interactive": ["network_polls", "network_poll_votes", "moodboards", "moodboard_items"]
+    },
+    "admin_features": {
+      "moderation": ["moderation_logs"],
+      "support": ["support_tickets", "ticket_messages"],
+      "badges": ["badges", "user_badges"],
+      "engagement": ["engagement_stats"]
+    },
+    "billing_monetization": {
+      "subscriptions": ["member_subscriptions", "membership_plans"],
+      "donations": ["donations"],
+      "events": ["event_participations"]
+    },
+    "invitation_system": {
+      "email_invites": ["invitations"],
+      "link_invites": ["network_invitation_links"]
+    }
+  },
+  "recent_additions": {
+    "profile_tagline": {
+      "migration": "20250629212751_add_profile_tagline.sql",
+      "description": "Added tagline varchar(60) field to profiles table",
+      "purpose": "Short catchy phrase for user profiles"
+    },
+    "multi_profile_migration": {
+      "migration": "20250606100000_big_multiprofile_migration.sql",
+      "description": "Major migration implementing multi-profile system",
+      "backup_tables_created": ["profiles_backup", "messages_backup", "notification_queue_backup"]
+    }
+  },
+  "security_features": {
+    "rls_enabled": true,
+    "functions_with_security_definer": [
+      "is_network_admin",
+      "is_super_admin", 
+      "get_database_stats",
+      "join_network_via_invitation_with_role",
+      "prevent_network_id_update"
+    ],
+    "super_admin_emails": [
+      "arthur.fevrier1@gmail.com",
+      "vincentfevrier9@gmail.com", 
+      "admin@conclav.com"
+    ]
+  },
+  "trial_system": {
+    "enabled": true,
+    "default_trial_days": 14,
+    "functions": ["get_trial_days_remaining", "is_trial_expired", "setup_new_network"]
+  },
+  "notification_system": {
+    "queue_based": true,
+    "email_notifications": true,
+    "preference_controls": true,
+    "table": "notification_queue"
+  },
+  "database_functions": [
+    "add_moderation_columns_to_messages",
+    "add_moderation_columns_to_news", 
+    "add_moderation_columns_to_profiles",
+    "check_and_award_badges",
+    "clean_old_opengraph_cache",
+    "create_default_badges",
+    "create_default_badges_for_network",
+    "create_moderation_logs_table",
+    "generate_fake_profiles",
+    "generate_fake_users",
+    "generate_invitation_code",
+    "generate_slug",
+    "get_active_profile_id",
+    "get_database_stats",
+    "get_parent_message_preview",
+    "get_ticket_statistics", 
+    "get_trial_days_remaining",
+    "handle_updated_at",
+    "increment_invitation_link_uses",
+    "is_network_admin",
+    "is_super_admin",
+    "is_trial_expired",
+    "join_network_via_invitation_with_role",
+    "prevent_network_id_update",
+    "set_personal_moodboard_defaults",
+    "setup_new_network",
+    "should_notify_user",
+    "update_badge_count",
+    "update_engagement_stats",
+    "update_invitation_status_on_join",
+    "update_modified_column",
+    "update_network_polls_updated_at",
+    "update_social_wall_comments_updated_at",
+    "update_trial_days_used",
+    "update_updated_at_column"
+  ],
+  "profile_table_key_fields": {
+    "id": "uuid PRIMARY KEY",
+    "network_id": "uuid REFERENCES networks(id)", 
+    "role": "text DEFAULT 'member'",
+    "full_name": "text",
+    "bio": "text",
+    "tagline": "varchar(60)",
+    "profile_picture_url": "text",
+    "skills": "text[]",
+    "badge_count": "integer DEFAULT 0",
+    "email_notifications_enabled": "boolean DEFAULT true",
+    "moderation_fields": [
+      "is_suspended",
+      "suspension_reason", 
+      "suspension_end_date",
+      "restriction_level",
+      "restriction_reason",
+      "last_active"
+    ]
+  }
+}

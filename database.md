@@ -1,6 +1,6 @@
 # Complete Database Schema & Data Documentation
 
-*Generated on 2025-06-26 using database migrations and schema analysis*
+*Generated on 2025-01-07 using live Supabase database schema*
 
 ## Overview
 
@@ -10,8 +10,9 @@ This document provides a comprehensive overview of the Conclav application datab
 
 - **Database Type**: PostgreSQL (Supabase)
 - **Connection**: https://etoxvocwsktguoddmgcu.supabase.co
-- **Migration Count**: 50+ migrations
-- **Core Tables**: 35+ application tables
+- **Migration Count**: 47+ migrations
+- **Core Tables**: 43 tables (36 main + 7 backup/migration tables)
+- **Backup Tables**: Created during multi-profile migration for data safety
 - **Key Features**: Multi-tenancy, RLS security, real-time subscriptions
 
 ## Architecture Overview
@@ -42,6 +43,18 @@ auth.users
 ```
 
 ## Application Tables
+
+### Backup Tables (Multi-Profile Migration)
+
+The following backup tables were created during the multi-profile migration for data safety:
+- `messages_backup` - Backup of messages table
+- `network_poll_votes_backup` - Backup of poll votes
+- `notification_queue_backup` - Backup of notifications
+- `profiles_backup` - Backup of original profiles
+- `migration_log` - Migration execution tracking
+- `profile_id_mapping` - ID mapping for migration verification
+
+These tables preserve original data and should not be modified directly.
 
 ### 1. User & Profile Management
 
@@ -75,6 +88,7 @@ profiles
 ├── notify_on_direct_messages (boolean, default true)
 ├── badge_count (integer, default 0)
 ├── portfolio_data (jsonb) -- Legacy field
+├── tagline (varchar(60)) -- Short tagline or motto (max 60 characters)
 ├── created_at (timestamp with time zone, NOT NULL, default now())
 └── updated_at (timestamp with time zone)
 
@@ -791,6 +805,52 @@ FOR INSERT WITH CHECK (
 
 ## Database Functions
 
+The database includes 35+ functions for business logic, security, and automation:
+
+### Authentication & Security Functions
+
+- `is_network_admin(network_uuid)` - Check if user is network admin
+- `is_super_admin()` - Check if user is super admin (hardcoded emails)
+- `get_active_profile_id()` - Helper for profile context (frontend implementation)
+- `prevent_network_id_update()` - Enforces network_id immutability
+
+### Trial & Billing Functions
+
+- `setup_new_network()` - Auto-configures 14-day trial for new networks
+- `get_trial_days_remaining(network_id)` - Calculate remaining trial days
+- `is_trial_expired(network_id)` - Check if network trial has expired
+- `update_trial_days_used()` - Update trial usage tracking
+
+### Engagement & Badge Functions
+
+- `check_and_award_badges(user_id, network_id)` - Auto-award badges based on activity
+- `create_default_badges()` - Create default badges for new networks
+- `create_default_badges_for_network(network_id)` - Initialize engagement badges
+- `update_badge_count()` - Trigger to maintain badge counts
+- `update_engagement_stats()` - Update user activity metrics
+
+### Support & Admin Functions
+
+- `get_ticket_statistics()` - Support ticket analytics (super admin only)
+- `get_database_stats()` - Comprehensive database statistics
+- `should_notify_user(user_id, notification_type)` - Check notification preferences
+
+### Utility Functions
+
+- `generate_invitation_code()` - Create unique invitation link codes
+- `generate_slug(input_text)` - Generate URL-friendly slugs
+- `increment_invitation_link_uses(link_code)` - Track invitation usage
+- `join_network_via_invitation_with_role()` - Process network invitations
+- `clean_old_opengraph_cache()` - Cleanup old URL preview cache
+- `get_parent_message_preview(message_id)` - Get message reply context
+
+### Legacy/Migration Functions
+
+- `generate_fake_profiles(num_profiles)` - Test data generation
+- `generate_fake_users(num_users)` - Test user creation
+- `add_moderation_columns_to_*()` - Migration helpers
+- `create_moderation_logs_table()` - Setup moderation infrastructure
+
 ### Core Functions
 
 #### get_active_profile_id()
@@ -914,12 +974,18 @@ auth.users (1) ←→ (many) profiles (many) ←→ (1) networks
    - Added trigger to prevent network_id changes
    - Enforced CASCADE DELETE on network deletion
 
-3. **Feature Expansions**
+3. **Profile Tagline Addition** (`20250629212751_add_profile_tagline.sql`)
+   - Added `tagline` varchar(60) field to profiles table
+   - Short catchy phrase for user profiles (60 character limit)
+   - Latest migration as of January 2025
+
+4. **Feature Expansions**
    - Media support across all content types
    - Advanced wiki system with revisions
    - Comprehensive engagement tracking
    - Support ticket system
    - Monetization features
+   - Trial system with 14-day default period
 
 ### Data Integrity Verification
 
@@ -934,10 +1000,13 @@ Migration includes comprehensive verification:
 
 ### Supabase Connection
 
+- **Project**: `cercle` (linked)
 - **URL**: `https://etoxvocwsktguoddmgcu.supabase.co`
-- **Environment**: Production/Development
+- **Environment**: Production
 - **Authentication**: Row Level Security enabled
 - **Real-time**: Enabled for messaging and notifications
+- **Region**: West EU (Paris)
+- **CLI Version**: v1.200.3 (upgrade to v2.30.4 recommended)
 
 ### External Integrations
 
@@ -948,4 +1017,4 @@ Migration includes comprehensive verification:
 
 ---
 
-*This documentation was generated from database migrations, schema analysis, and code inspection. For the most current schema state, refer to the latest migration files in `/supabase/migrations/`.*
+*This documentation was generated from the live Supabase database schema on 2025-01-07. The current schema includes 43 tables with the latest migration being `20250629212751_add_profile_tagline.sql`. For the most current schema state, use `npx supabase db dump --linked --schema public` or refer to the latest migration files in `/supabase/migrations/`.*

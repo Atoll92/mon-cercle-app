@@ -103,17 +103,14 @@ if (!data || data.length === 0) return <WidgetEmptyState />;
 **CRITICAL**: Before ANY database changes:
 
 1. **Read `./database.md`** - Complete schema understanding
-2. **Check migrations** - Review `supabase/migrations/`
-3. **Use Zen MCP** - Multi-model validation
-4. **Test multi-profile** - Ensure 1:many:many support
+2. **Test multi-profile** - Ensure 1:many:many support
 
 ```bash
 # Required workflow
 1. Read ./database.md
 2. Check latest migrations
-3. Use Zen MCP to validate
-4. Test RLS policies
-5. Verify foreign keys
+3. Test RLS policies
+4. Verify foreign keys
 ```
 
 ## 🚀 Common Development Tasks
