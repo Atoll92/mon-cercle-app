@@ -1,6 +1,19 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to Claude Code (claude.ai/code) when working with the **Conclav** codebase (formerly Mon Cercle).
+
+## 🚀 Quick Start
+
+**Conclav** is a privacy-focused social network platform. Production domains: `conclav.club` and `conclav.network`.
+
+### Essential Commands
+```bash
+npm run dev          # Start development server
+npm run build        # Build for production
+npm run lint         # Check code style
+npm run test         # Run all tests
+npm run test:watch   # Run tests in watch mode
+```
 
 ## Quick Navigation
 
@@ -85,6 +98,7 @@ mon-cercle-app/
 - `src/context/profileContext.jsx` - **Multiple profiles management and active profile selection**
 - `src/context/networkContext.jsx` - Network data management
 - `src/context/directMessagesContext.jsx` - Direct messaging state
+- `src/context/appContext.jsx` - Lightweight context for network ID and loading state
 
 #### API Layer (`src/api/`)
 - `auth.jsx` - Authentication functions
@@ -99,6 +113,9 @@ mon-cercle-app/
 - `profiles.js` - **Multiple profile system with user-network profile management** (CRUD, preferences, subscriptions, active profile selection)
 - `wiki.js` - Wiki page operations (CRUD, categories, comments, revisions)
 - `events.js` - Event participation management and statistics
+- `posts.js` - Portfolio post management (create, update with media support and notifications)
+- `badges.js` - Engagement badges system (create, award, track user stats)
+- `categories.js` - Wiki category management
 
 #### Services (`src/services/`)
 - `emailNotificationService.js` - Email notification queue
@@ -142,7 +159,10 @@ mon-cercle-app/
 - `SimpleLandingPage.jsx` - Alternative landing page
 - `DocumentationPage.jsx` - Help center with FAQ and user guides
 - `EnhancedLandingPage.jsx` - Modern privacy-focused landing page with advanced animations
-- `PostCard.jsx` - Individual post display component
+- `PostPage.jsx` - Individual portfolio post page with full content display
+- `AlternativeLandingPage.jsx` - Alternative landing page design
+- `NewLandingPage.jsx` - New landing page variant
+- `NewLandingPage2.jsx` - Another landing page variant
 
 #### Components by Feature Area (`src/components/`)
 
@@ -182,7 +202,7 @@ mon-cercle-app/
   - `QuillEditor.jsx` - Rich text editor for content creation
   - `LinkPreview.jsx` - Enhanced URL preview cards with improved OpenGraph data extraction
   - `PostCard.jsx` - Individual post display component
-  - `PostPage.jsx` - Individual portfolio post page with full content display
+  - `CreatePostModal.jsx` - Modal for creating and editing portfolio posts with media upload
 
 ##### Communication & Social Features
 - **Chat & Messaging**
@@ -228,6 +248,11 @@ mon-cercle-app/
   - `EventsMap.jsx` - Map component for displaying events using Mapbox
   - `TestNotificationSystem.jsx` - Notification testing component
 
+- **Development & Debug Components**
+  - `NotificationDebugger.jsx` - Debug tool for testing email notification queue
+  - `NotificationSystemManager.jsx` - Notification system management interface
+  - `NotificationSystemTester.jsx` - Testing component for notification features
+
 ##### Modal & Dialog Components
 - `MembersDetailModal.jsx` - Member details popup
 - `EditItemDialog.jsx` - Dialog for editing moodboard items
@@ -236,9 +261,23 @@ mon-cercle-app/
 ##### Moodboard System
 - `moodboardGallery.jsx` - Moodboard gallery display
 - `MoodboardItem.jsx` - Individual moodboard item component
+- **Moodboard Folder Components** (`src/components/Moodboard/`)
+  - `MoodboardCanvas.jsx` - Canvas-based moodboard interface
+  - `MoodboardItem.jsx` - Individual item component
+  - `MoodboardItemDisplay.jsx` - Item display logic
+  - `MoodboardItemGrid.jsx` - Grid layout for items
+  - `MoodboardSettingsDialog.jsx` - Settings configuration
+  - `ZoomControls.jsx` - Zoom interface controls
+  - `index.js` - Module exports
 
 ##### Layout Components
 - `Footer.jsx` - Application footer component
+
+##### Shared Widget Components (`src/components/shared/`)
+- `WidgetEmptyState.jsx` - Empty state display for widgets
+- `WidgetErrorState.jsx` - Error state display for widgets
+- `WidgetHeader.jsx` - Standard widget header component
+- `WidgetSkeleton.jsx` - Loading skeleton for widgets
 
 ##### SuperAdmin Components (`src/components/superadmin/`)
 - `TicketsManagement.jsx` - Super admin ticket dashboard and management
@@ -269,12 +308,21 @@ mon-cercle-app/
 - `moodboardHelpers.js` - Moodboard manipulation helpers
 - `passwordValidation.js` - Password strength validation
 - `sanitizeHtml.js` - HTML sanitization for user content
+- `errorHandling.js` - Centralized error handling utilities (handleArrayError, handleObjectError, logError)
+- `icsGenerator.js` - ICS calendar file generation for event invitations
+- `apiHelpers.js` - API utility functions
+- `dateFormatting.js` - Date formatting utilities (formatTimeAgo, etc.)
+- `mediaDetection.js` - Media type detection utilities
+- `textFormatting.js` - Text formatting utilities
 
 #### Hooks (`src/hooks/`)
 - `useAnimation.js` - Animation hook
 - `useScrollAnimation.js` - Scroll-based animations
 - `useMoodboardCanvas.js` - Moodboard canvas interaction hook
 - `useRealtimeChannel.js` - Supabase realtime subscription hook
+- `useNetworkRefresh.js` - Global event emitter for network data refreshes
+- `useWheelHandler.js` - Canvas wheel event handling
+- `useSupabaseQuery.js` - Supabase query wrapper hook
 
 #### Styles (`src/styles/`)
 - `animations.css` - Animation definitions
@@ -301,6 +349,11 @@ mon-cercle-app/
 
 See [Recent Changes](./docs/RECENT_CHANGES.md) for a complete list of updates and new features.
 
+#### 🎉 Application Rebranding
+- **Renamed from "Mon Cercle" to "Conclav"**
+- Production domains: `conclav.club` and `conclav.network`
+- Updated branding throughout the application
+
 #### Architecture & System Changes
 - **Post Creation Unification**: Unified post creation flow across portfolio and news items for consistency
 - **Notification System API Migration**: Moved notification triggers from frontend to API level for better reliability
@@ -308,7 +361,7 @@ See [Recent Changes](./docs/RECENT_CHANGES.md) for a complete list of updates an
 - **Social Wall Chronological Sorting**: Implemented latest-first ordering for improved content discovery
 
 #### User Features & Enhancements
-- **Profile Tagline Feature**: Added tagline support to user profiles with enhanced member card display
+- **Profile Tagline Feature**: Added tagline support to user profiles with enhanced member card display (`20250629212751_add_profile_tagline.sql`)
 - **Individual Post Pages**: Portfolio items now have dedicated pages for full content display with media support
 - **ICS Calendar Integration**: Event notifications now include .ics calendar attachments for easy scheduling
 - **Enhanced Landing Page**: Added improved B2B landing page with real product screenshots and animations
@@ -324,6 +377,7 @@ See [Recent Changes](./docs/RECENT_CHANGES.md) for a complete list of updates an
 - **Moodboard Harmonization**: Improved consistency across moodboard and micro-conclav interfaces
 - **Mobile Responsiveness**: Enhanced mobile experience across key components
 - **Dark Mode Improvements**: Better dark mode support across messaging and admin interfaces
+- **Multiple Landing Pages**: Added various landing page designs for A/B testing
 
 ## Commands
 
@@ -816,3 +870,161 @@ zen compare "Review this database migration for multi-profile compatibility and 
 **Practical Guide**: See `./zen-database-validation.md` for detailed examples and workflow integration.
 
 This ensures database integrity and prevents breaking changes to the complex multi-profile relationship system.
+
+## Best Practices & Coding Standards
+
+### 🎯 Key Principles
+
+1. **Multi-Profile Awareness**: Always use `activeProfile?.id || user.id` pattern for backward compatibility
+2. **Error Handling**: Use centralized error handling from `utils/errorHandling.js`
+3. **Media Limits**: Respect 20MB upload limit and use `browser-image-compression` for images
+4. **Real-time Updates**: Use `useRealtimeChannel` hook for Supabase subscriptions
+5. **Dark Mode**: All new components should support dark mode using `ThemeProvider`
+
+### 📋 Common Patterns
+
+#### API Function Pattern
+```javascript
+// src/api/example.js
+import { handleArrayError, handleObjectError } from '../utils/errorHandling';
+
+export const fetchData = async (supabase, profileId, networkId) => {
+  try {
+    const { data, error } = await supabase
+      .from('table_name')
+      .select('*')
+      .eq('profile_id', profileId)
+      .eq('network_id', networkId);
+    
+    if (error) throw error;
+    return handleArrayError(data);
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    return { error: error.message };
+  }
+};
+```
+
+#### Component Pattern
+```javascript
+// Always check for activeProfile
+const { activeProfile, user } = useAuth();
+const profileId = activeProfile?.id || user?.id;
+
+// Use loading states
+if (loading) return <LoadingSkeleton />;
+if (error) return <WidgetErrorState error={error} />;
+if (!data || data.length === 0) return <WidgetEmptyState />;
+```
+
+#### Hook Pattern
+```javascript
+// Custom hooks should handle cleanup
+useEffect(() => {
+  const subscription = supabase
+    .channel('custom-channel')
+    .on('postgres_changes', { /* ... */ }, handleChange)
+    .subscribe();
+
+  return () => {
+    subscription.unsubscribe();
+  };
+}, [dependencies]);
+```
+
+### 🔧 Development Protocols
+
+#### Protocol: Adding New Features
+1. Check if feature needs network configuration toggle
+2. Ensure RLS policies support multi-profile system
+3. Add API functions to appropriate file in `src/api/`
+4. Create UI components with dark mode support
+5. Update CLAUDE.md documentation
+6. Test with multiple profiles and networks
+
+#### Protocol: Database Changes
+1. **MUST** read `database.md` first
+2. Create migration in `supabase/migrations/`
+3. Update RLS policies for multi-profile support
+4. Test migration rollback scenario
+5. Update documentation
+
+#### Protocol: Removing Test Files
+```bash
+# Find and remove test files before production
+find . -name "*.test.js" -o -name "*.test.jsx" | grep -v node_modules
+
+# Remove test components
+rm -f src/components/Test*.jsx
+rm -f src/components/*Debugger.jsx
+rm -f src/components/*Tester.jsx
+rm -f src/pages/*Test.jsx
+
+# Clean up mock files (keep __mocks__ for testing)
+# Remove only temporary test mocks, not testing infrastructure
+```
+
+#### Protocol: Error Tracking
+1. All API errors should be logged with `logError()` from `utils/errorHandling.js`
+2. Critical errors create automatic support tickets
+3. User-facing errors should show friendly messages
+4. Development errors can show technical details
+
+#### Protocol: Media Handling
+```javascript
+// Always validate media before upload
+import { validateMediaFile } from '../utils/mediaUpload';
+
+const isValid = await validateMediaFile(file, 20); // 20MB limit
+if (!isValid.valid) {
+  console.error('Media validation failed:', isValid.error);
+  return;
+}
+
+// Compress images when possible
+if (file.type.startsWith('image/')) {
+  const compressed = await imageCompression(file, {
+    maxSizeMB: 2,
+    maxWidthOrHeight: 1920
+  });
+}
+```
+
+#### Protocol: Component Organization
+1. Group related components in folders (see Moodboard example)
+2. Create `index.js` for clean exports
+3. Separate display logic from business logic
+4. Use shared components from `components/shared/`
+
+### 🚀 Performance Guidelines
+
+1. **Lazy Loading**: Use `LazyImage` component for images
+2. **Virtualization**: Use `react-window` for long lists
+3. **Code Splitting**: Lazy load heavy components
+4. **Memoization**: Use React.memo for expensive renders
+5. **Batch Updates**: Group related API calls
+
+### 🧪 Testing Approach
+
+1. **Unit Tests**: Vitest for components and utilities
+2. **Integration Tests**: Test API functions with mocked Supabase
+3. **E2E Tests**: Playwright for critical user flows
+4. **Manual Testing**: Test with multiple profiles/networks
+
+### 🔒 Security Checklist
+
+- [ ] Never expose Supabase service key in frontend
+- [ ] Validate all user inputs with `sanitizeHtml`
+- [ ] Check RLS policies for new tables
+- [ ] Use parameterized queries (Supabase handles this)
+- [ ] Validate file uploads with `validateMediaFile`
+- [ ] Check network membership before operations
+
+### 📝 Documentation Requirements
+
+When adding new features:
+1. Update this CLAUDE.md file
+2. Add JSDoc comments to functions
+3. Update relevant documentation in `/docs`
+4. Include usage examples in comments
+5. Document any new environment variables
