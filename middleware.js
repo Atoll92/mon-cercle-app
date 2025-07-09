@@ -17,6 +17,9 @@ const supabase = createClient(
 );
 
 export default async function middleware(req) {
+
+  console.log('Middleware triggered for:', req.url);
+
   const userAgent = req.headers.get('user-agent') || '';
   
   // Enhanced bot detection
@@ -24,9 +27,12 @@ export default async function middleware(req) {
   
   // Only process for bots
   if (!isBot) {
+    console.log('Skipping middleware for non-bot user agent:', userAgent);
     return;
   }
-
+  
+  console.log('Processing middleware for bot user agent:', userAgent);
+  
   const url = new URL(req.url);
   const pathname = url.pathname;
 
