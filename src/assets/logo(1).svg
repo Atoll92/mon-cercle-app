@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="250" height="250" viewBox="-125 -125 250 250">
+  <!-- Central big disk -->
+  <circle cx="0" cy="0" r="35" fill="black"/>
+
+  <!-- Medium disks -->
+  <g fill="black">
+    <!-- 7 disks around circle of radius 70 -->
+    <circle cx="70.00" cy="0.00" r="25"/>
+    <circle cx="43.64" cy="54.72" r="25"/>
+    <circle cx="-15.57" cy="68.24" r="25"/>
+    <circle cx="-63.06" cy="30.37" r="25"/>
+    <circle cx="-63.06" cy="-30.37" r="25"/>
+    <circle cx="-15.57" cy="-68.24" r="25"/>
+    <circle cx="43.64" cy="-54.72" r="25"/>
+  </g>
+
+  <!-- Small disks -->
+  <g fill="black">
+    <!-- 7 disks around circle of radius 95, offset by half-angle -->
+    <circle cx="85.59" cy="41.21" r="12"/>
+    <circle cx="21.13" cy="92.61" r="12"/>
+    <circle cx="-59.23" cy="74.27" r="12"/>
+    <circle cx="-95.00" cy="0" r="12"/>
+    <circle cx="-59.23" cy="-74.27" r="12"/>
+    <circle cx="21.13" cy="-92.61" r="12"/>
+    <circle cx="85.59" cy="-41.21" r="12"/>
+  </g>
+</svg>

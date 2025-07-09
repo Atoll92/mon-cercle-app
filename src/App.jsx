@@ -48,6 +48,7 @@ const PasswordUpdatePage = lazy(() => import('./pages/PasswordUpdatePage'));
 const NetworkOnboardingPage = lazy(() => import('./pages/NetworkOnboardingPage'));
 const MicroConclavPage = lazy(() => import('./pages/MicroConclavPage'));
 const SuperAdminDashboard = lazy(() => import('./pages/SuperAdminDashboard'));
+const LogoAnimation = lazy(() => import('./components/LogoAnimation'));
 const JoinNetworkPage = lazy(() => import('./pages/JoinNetworkPage'));
 const NewsPostPage = lazy(() => import('./pages/NewsPostPage'));
 const PostPage = lazy(() => import('./pages/PostPage'));
@@ -185,6 +186,9 @@ function App() {
             <Route path="/docs" element={<DocumentationPage />} />
             <Route path="/help" element={<DocumentationPage />} />
             <Route path="/faq" element={<DocumentationPage />} />
+            
+            {/* Logo Animation Route */}
+            <Route path="/logo-animation" element={<LogoAnimation />} />
             
             {/* Micro Conclav routes */}
             <Route path="/micro-conclav/:userId" element={<MicroConclavPage />} />
