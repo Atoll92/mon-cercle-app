@@ -101,6 +101,11 @@ async function fetchDynamicData(pathname) {
         data.description = event.description || `${event.location ? `${event.location} - ` : ''}${eventDate}`;
         data.image = event.image_url || '/og-image.png';
       }
+
+      // if event error, log it
+      if (eventError) {
+        console.error('Error fetching event:', eventError);
+      }
       
       return data;
     }
