@@ -5,6 +5,7 @@ export const config = {
   matcher: [
     '/circles/:path*',
     '/events/:path*',
+    '/network/:path*',
     '/dashboard',
     '/portfolio/:path*',
     '/profile/:path*'
@@ -59,8 +60,7 @@ export default async function middleware(req) {
 
 async function fetchDynamicData(pathname) {
   const pathParts = pathname.split('/').filter(Boolean);
-  const [resource, id] = pathParts;
-
+  
   let data = {
     title: 'Conclav',
     description: 'Your private community platform',
@@ -69,6 +69,64 @@ async function fetchDynamicData(pathname) {
   };
 
   try {
+    // Handle network/event URLs like /network/:networkId/event/:eventId
+    if (pathParts[0] === 'network' && pathParts[2] === 'event' && pathParts[3]) {
+      const networkId = pathParts[1];
+      const eventId = pathParts[3];
+      
+      // Fetch event data
+      const { data: event, error: eventError } = await supabase
+        .from('events')
+        .select('title, description, image_url, start_date, end_date, location')
+        .eq('id', eventId)
+        .eq('network_id', networkId)
+        .single();
+
+      if (event && !eventError) {
+        // Also fetch network name for context
+        const { data: network } = await supabase
+          .from('networks')
+          .select('name')
+          .eq('id', networkId)
+          .single();
+
+        const eventDate = new Date(event.start_date).toLocaleDateString('en-US', { 
+          weekday: 'long', 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric' 
+        });
+
+        data.title = `${event.title} - ${network?.name || 'Conclav'}`;
+        data.description = event.description || `${event.location ? `${event.location} - ` : ''}${eventDate}`;
+        data.image = event.image_url || '/og-image.png';
+      }
+      
+      return data;
+    }
+
+    // Handle network URLs like /network/:networkId
+    if (pathParts[0] === 'network' && pathParts[1] && !pathParts[2]) {
+      const networkId = pathParts[1];
+      
+      const { data: network, error } = await supabase
+        .from('networks')
+        .select('name, description, image_url')
+        .eq('id', networkId)
+        .single();
+
+      if (network && !error) {
+        data.title = `${network.name} - Conclav`;
+        data.description = network.description || `Join ${network.name} on Conclav`;
+        data.image = network.image_url || '/og-image.png';
+      }
+      
+      return data;
+    }
+
+    // Handle simple routes
+    const [resource, id] = pathParts;
+    
     switch (resource) {
       case 'circles':
         if (id) {
