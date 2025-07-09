@@ -225,8 +225,38 @@ const BackgroundOrb = styled('div')(
 const LogoAnimation = () => {
   const [progress, setProgress] = useState(0);
   const [loadingText, setLoadingText] = useState('VIBE CHECKING');
+  const [baseMessage, setBaseMessage] = useState('VIBE CHECKING');
+
+  // Funny loading messages, Claude-style
+  const loadingMessages = [
+    'VIBE CHECKING',
+    'WARMING UP NEURONS',
+    'CONSULTING THE ORACLE',
+    'SYNCHRONIZING CHAKRAS',
+    'CALIBRATING EMPATHY',
+    'DOWNLOADING WISDOM',
+    'BREWING DIGITAL COFFEE',
+    'ASSEMBLING PIXELS',
+    'TUNING FREQUENCIES',
+    'CHARGING CREATIVITY',
+    'MANIFESTING CONTENT',
+    'ALIGNING ALGORITHMS',
+    'SUMMONING INSPIRATION',
+    'PARSING GOOD VIBES',
+    'LOADING SERENITY',
+    'INITIALIZING ZEN MODE',
+    'GATHERING STARDUST',
+    'COMPUTING HARMONY',
+    'BUFFERING BRILLIANCE',
+    'QUANTUM ENTANGLING'
+  ];
 
   useEffect(() => {
+    // Pick a random message on mount
+    const randomMessage = loadingMessages[Math.floor(Math.random() * loadingMessages.length)];
+    setBaseMessage(randomMessage);
+    setLoadingText(randomMessage);
+
     // Simulate loading progress
     const progressInterval = setInterval(() => {
       setProgress((prev) => {
@@ -238,17 +268,29 @@ const LogoAnimation = () => {
       });
     }, 100);
 
-    // Animate loading text
-    const texts = ['VIBE CHECKING', 'VIBE CHECKING.', 'VIBE CHECKING..', 'VIBE CHECKING...'];
-    let textIndex = 0;
+    // Animate loading text with dots
+    const dots = ['', '.', '..', '...'];
+    let dotIndex = 0;
+    let currentMessage = randomMessage;
+    
     const textInterval = setInterval(() => {
-      textIndex = (textIndex + 1) % texts.length;
-      setLoadingText(texts[textIndex]);
+      dotIndex = (dotIndex + 1) % dots.length;
+      setLoadingText(currentMessage + dots[dotIndex]);
     }, 500);
+
+    // Change message every 3 seconds
+    const messageInterval = setInterval(() => {
+      const newMessage = loadingMessages[Math.floor(Math.random() * loadingMessages.length)];
+      currentMessage = newMessage;
+      setBaseMessage(newMessage);
+      dotIndex = 0; // Reset dots when changing message
+      setLoadingText(newMessage);
+    }, 3000);
 
     return () => {
       clearInterval(progressInterval);
       clearInterval(textInterval);
+      clearInterval(messageInterval);
     };
   }, []);
 
