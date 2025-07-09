@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 
 export const config = {
+  runtime: 'edge',
   matcher: [
     '/circles/:path*',
     '/events/:path*',
@@ -147,7 +148,7 @@ async function fetchDynamicData(pathname) {
 }
 
 function generateBotHTML(data, pathname, origin) {
-  const { title, description, image, url } = data;
+  const { title, description, image } = data;
   const fullUrl = `${origin}${pathname}`;
   const imageUrl = image.startsWith('http') ? image : `${origin}${image}`;
 
