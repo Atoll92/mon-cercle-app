@@ -224,7 +224,7 @@ const BackgroundOrb = styled('div')(
 
 const LogoAnimation = () => {
   const [progress, setProgress] = useState(0);
-  const [loadingText, setLoadingText] = useState('LOADING');
+  const [loadingText, setLoadingText] = useState('VIBE CHECKING');
 
   useEffect(() => {
     // Simulate loading progress
@@ -239,7 +239,7 @@ const LogoAnimation = () => {
     }, 100);
 
     // Animate loading text
-    const texts = ['LOADING', 'LOADING.', 'LOADING..', 'LOADING...'];
+    const texts = ['VIBE CHECKING', 'VIBE CHECKING.', 'VIBE CHECKING..', 'VIBE CHECKING...'];
     let textIndex = 0;
     const textInterval = setInterval(() => {
       textIndex = (textIndex + 1) % texts.length;
