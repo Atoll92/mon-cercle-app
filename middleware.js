@@ -73,6 +73,8 @@ async function fetchDynamicData(pathname) {
     if (pathParts[0] === 'network' && pathParts[2] === 'event' && pathParts[3]) {
       const networkId = pathParts[1];
       const eventId = pathParts[3];
+
+      console.log(`Fetching event ${eventId} for network ${networkId}`);
       
       // Fetch event data
       const { data: event, error: eventError } = await supabase
@@ -83,6 +85,9 @@ async function fetchDynamicData(pathname) {
         .single();
 
       if (event && !eventError) {
+
+        console.log(`Event found: ${event.title}`);
+
         // Also fetch network name for context
         const { data: network } = await supabase
           .from('networks')
@@ -100,6 +105,17 @@ async function fetchDynamicData(pathname) {
         data.title = `${event.title} - ${network?.name || 'Conclav'}`;
         data.description = event.description || `${event.location ? `${event.location} - ` : ''}${eventDate}`;
         data.image = event.image_url || '/og-image.png';
+
+        //log the computed metadata
+        console.log('Computed metadata:', {
+          title: data.title,
+          description: data.description,
+          image: data.image,
+          url: pathname
+        });
+      }else {
+        // If event not found, log the error
+        console.error('Event not found or error fetching event:', eventError);
       }
 
       // if event error, log it
