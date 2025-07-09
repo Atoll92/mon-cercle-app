@@ -213,16 +213,47 @@ async function fetchDynamicData(pathname) {
 
       case 'profile':
         if (id) {
+          console.log(`Fetching profile ${id}`);
+          
           const { data: profile, error } = await supabase
             .from('profiles')
-            .select('display_name, bio, avatar_url')
+            .select('full_name, bio, tagline, profile_picture_url, role, network_id')
             .eq('id', id)
             .single();
 
           if (profile && !error) {
-            data.title = `${profile.display_name} - Conclav`;
-            data.description = profile.bio || `${profile.display_name} on Conclav`;
-            data.image = profile.avatar_url || '/og-image.png';
+            console.log(`Profile found: ${profile.full_name}`);
+            
+            // Also fetch the network name for context
+            const { data: network } = await supabase
+              .from('networks')
+              .select('name')
+              .eq('id', profile.network_id)
+              .single();
+            
+            data.title = `${profile.full_name}${network ? ` - ${network.name}` : ''} | Conclav`;
+            
+            // Use tagline if available, otherwise bio, otherwise a default
+            if (profile.tagline) {
+              data.description = profile.tagline;
+            } else if (profile.bio) {
+              // Truncate bio to ~160 characters for meta description
+              data.description = profile.bio.length > 160 
+                ? profile.bio.substring(0, 157) + '...' 
+                : profile.bio;
+            } else {
+              data.description = `${profile.full_name}${profile.role === 'admin' ? ' - Network Admin' : ''} on Conclav`;
+            }
+            
+            data.image = profile.profile_picture_url || '/og-image.png';
+            
+            console.log('Computed profile metadata:', {
+              title: data.title,
+              description: data.description,
+              image: data.image
+            });
+          } else {
+            console.error('Profile not found or error fetching profile:', error);
           }
         }
         break;
