@@ -130,16 +130,29 @@ async function fetchDynamicData(pathname) {
     if (pathParts[0] === 'network' && pathParts[1] && !pathParts[2]) {
       const networkId = pathParts[1];
       
+      console.log(`Fetching network ${networkId}`);
+      
       const { data: network, error } = await supabase
         .from('networks')
-        .select('name, description, image_url')
+        .select('name, description, background_image_url, logo_url')
         .eq('id', networkId)
         .single();
 
       if (network && !error) {
+        console.log(`Network found: ${network.name}`);
+        
         data.title = `${network.name} - Conclav`;
-        data.description = network.description || `Join ${network.name} on Conclav`;
-        data.image = network.image_url || '/og-image.png';
+        data.description = network.description || `Join ${network.name} on Conclav - Your private community platform`;
+        // Use background_image_url as the primary OG image, fallback to logo_url, then default
+        data.image = network.background_image_url || network.logo_url || '/og-image.png';
+        
+        console.log('Computed network metadata:', {
+          title: data.title,
+          description: data.description,
+          image: data.image
+        });
+      } else {
+        console.error('Network not found or error fetching network:', error);
       }
       
       return data;
