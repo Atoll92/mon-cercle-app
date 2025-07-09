@@ -78,8 +78,8 @@ async function fetchDynamicData(pathname) {
       
       // Fetch event data
       const { data: event, error: eventError } = await supabase
-        .from('events')
-        .select('title, description, image_url, start_date, end_date, location')
+        .from('network_events')
+        .select('title, description, cover_image_url, date, location')
         .eq('id', eventId)
         .eq('network_id', networkId)
         .single();
@@ -95,7 +95,7 @@ async function fetchDynamicData(pathname) {
           .eq('id', networkId)
           .single();
 
-        const eventDate = new Date(event.start_date).toLocaleDateString('en-US', { 
+        const eventDate = new Date(event.date).toLocaleDateString('en-US', { 
           weekday: 'long', 
           year: 'numeric', 
           month: 'long', 
@@ -104,7 +104,7 @@ async function fetchDynamicData(pathname) {
 
         data.title = `${event.title} - ${network?.name || 'Conclav'}`;
         data.description = event.description || `${event.location ? `${event.location} - ` : ''}${eventDate}`;
-        data.image = event.image_url || '/og-image.png';
+        data.image = event.cover_image_url || '/og-image.png';
 
         //log the computed metadata
         console.log('Computed metadata:', {
@@ -168,15 +168,15 @@ async function fetchDynamicData(pathname) {
       case 'events':
         if (id) {
           const { data: event, error } = await supabase
-            .from('events')
-            .select('title, description, image_url, start_date')
+            .from('network_events')
+            .select('title, description, cover_image_url, date')
             .eq('id', id)
             .single();
 
           if (event && !error) {
             data.title = `${event.title} - Conclav`;
-            data.description = event.description || `Event on ${new Date(event.start_date).toLocaleDateString()}`;
-            data.image = event.image_url || '/og-image.png';
+            data.description = event.description || `Event on ${new Date(event.date).toLocaleDateString()}`;
+            data.image = event.cover_image_url || '/og-image.png';
           }
         }
         break;
