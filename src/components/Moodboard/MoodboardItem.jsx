@@ -13,6 +13,7 @@ import {
 } from '@mui/icons-material';
 import LinkPreview from '../LinkPreview';
 import MediaPlayer from '../MediaPlayer';
+import SimplePDFViewer from '../SimplePDFViewer';
 
 const MoodboardItem = ({ 
   item, 
@@ -283,48 +284,15 @@ const MoodboardItem = ({
             position: 'relative', 
             overflow: 'hidden',
             backgroundColor: item.backgroundColor || '#f8f9fa',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center'
           }}>
-            {!imageLoaded && item.thumbnail && (
-              <Box 
-                sx={{ 
-                  position: 'absolute', 
-                  top: 0, 
-                  left: 0, 
-                  right: 0, 
-                  bottom: 0, 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'center',
-                  backgroundColor: 'rgba(0,0,0,0.1)',
-                }}
-              >
-                <CircularProgress size={24} />
-              </Box>
-            )}
-            
-            {item.thumbnail ? (
-              // If we have a thumbnail, show it
-              <img 
-                src={item.thumbnail} 
-                alt={item.title || 'PDF preview'} 
-                onLoad={() => setImageLoaded(true)}
-                style={{ 
-                  width: '100%', 
-                  height: 'calc(100% - 40px)', 
-                  objectFit: 'contain',
-                  pointerEvents: 'none',
-                  opacity: imageLoaded ? 1 : 0.3,
-                  transition: 'opacity 0.3s ease'
-                }} 
-              />
-            ) : (
-              // Otherwise show a pdf icon
-              <PdfIcon sx={{ fontSize: 64, color: 'primary.main', opacity: 0.8, mb: 2 }} />
-            )}
+            <SimplePDFViewer
+              url={item.content}
+              pageNumber={1}
+              width="100%"
+              height="100%"
+              showControls={false}
+              backgroundColor={item.backgroundColor || 'white'}
+            />
             
             {/* PDF info footer */}
             <Box sx={{ 
@@ -332,14 +300,15 @@ const MoodboardItem = ({
               bottom: 0,
               left: 0,
               right: 0,
-              bgcolor: 'rgba(0,0,0,0.05)',
+              bgcolor: 'rgba(0,0,0,0.7)',
+              color: 'white',
               p: 1,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               gap: 1
             }}>
-              <PdfIcon fontSize="small" color="primary" />
+              <PdfIcon fontSize="small" />
               <Typography variant="caption" fontWeight="medium" noWrap>
                 {item.title || 'PDF Document'}
               </Typography>

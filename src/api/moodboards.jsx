@@ -20,18 +20,39 @@ export const fetchMoodboard = async (id) => {
 };
 
 /**
- * Create a new moodboard
- * @param {object} moodboard - The moodboard data
- * @returns {Promise<object>} The created moodboard
+ * Get or create user's moodboard (micro conclav)
+ * Each user can only have one moodboard
+ * @param {string} userId - The user ID
+ * @returns {Promise<object>} The user's moodboard
  */
-export const createMoodboard = async (moodboard) => {
-  const { data, error } = await supabase
+export const getUserMoodboard = async (userId) => {
+  // First try to get existing moodboard
+  const { data: existing, error: fetchError } = await supabase
     .from('moodboards')
-    .insert([moodboard])
-    .select();
+    .select('*')
+    .eq('created_by', userId)
+    .single();
     
-  if (error) throw error;
-  return data[0];
+  if (existing) return existing;
+  
+  // If no moodboard exists, create one
+  if (fetchError && fetchError.code === 'PGRST116') { // No rows returned
+    const { data, error } = await supabase
+      .from('moodboards')
+      .insert([{
+        created_by: userId,
+        title: 'My Micro Conclav',
+        description: 'Welcome to my personal space',
+        background_color: '#f5f5f5'
+      }])
+      .select()
+      .single();
+      
+    if (error) throw error;
+    return data;
+  }
+  
+  if (fetchError) throw fetchError;
 };
 
 /**
@@ -54,28 +75,7 @@ export const updateMoodboard = async (id, updates) => {
   return data[0];
 };
 
-/**
- * Delete a moodboard
- * @param {string} id - The moodboard ID
- * @returns {Promise<void>}
- */
-export const deleteMoodboard = async (id) => {
-  // First delete all items in the moodboard
-  const { error: itemsError } = await supabase
-    .from('moodboard_items')
-    .delete()
-    .eq('moodboard_id', id);
-    
-  if (itemsError) throw itemsError;
-  
-  // Then delete the moodboard itself
-  const { error } = await supabase
-    .from('moodboards')
-    .delete()
-    .eq('id', id);
-    
-  if (error) throw error;
-};
+// Moodboard deletion is now disabled - users always have one moodboard
 
 /**
  * Add an item to a moodboard
@@ -162,34 +162,33 @@ export const uploadMoodboardImage = async (file, moodboardId) => {
  */
 export const getUserMoodboardItems = async (profileId, offset = 0, limit = 20) => {
   try {
-    // First get all moodboards created by the profile
-    const { data: moodboards, error: moodboardsError } = await supabase
+    // Get the user's single moodboard (micro conclav)
+    const { data: moodboard, error: moodboardError } = await supabase
       .from('moodboards')
       .select('id, background_color')
       .eq('created_by', profileId)
-      .eq('is_personal', true);
+      .single();
     
-    if (moodboardsError) throw moodboardsError;
+    if (moodboardError) throw moodboardError;
     
-    if (!moodboards || moodboards.length === 0) {
+    if (!moodboard) {
       return { items: [], backgroundColor: null };
     }
     
-    // Get all items from user's moodboards
-    const moodboardIds = moodboards.map(mb => mb.id);
+    // Get all items from user's moodboard
     const { data: items, error: itemsError } = await supabase
       .from('moodboard_items')
       .select('*')
-      .in('moodboard_id', moodboardIds)
+      .eq('moodboard_id', moodboard.id)
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1);
     
     if (itemsError) throw itemsError;
     
-    // Return items and the background color from the first moodboard
+    // Return items and the background color
     return {
       items: items || [],
-      backgroundColor: moodboards[0]?.background_color || null
+      backgroundColor: moodboard.background_color || null
     };
   } catch (error) {
     console.error('Error fetching user moodboard items:', error);

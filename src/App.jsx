@@ -191,7 +191,8 @@ function App() {
             <Route path="/logo-animation" element={<LogoAnimation />} />
             
             {/* Micro Conclav routes */}
-            <Route path="/micro-conclav/:userId" element={<MicroConclavPage />} />
+            <Route path="/micro-conclav/:profileId" element={<MicroConclavPage />} />
+            <Route path="/micro/:username" element={<MicroConclavPage />} />
             
             {/* Public Wiki routes */}
             <Route path="/network/:networkId/wiki" element={<WikiListPage />} />

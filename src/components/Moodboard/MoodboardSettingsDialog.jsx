@@ -6,10 +6,6 @@ import {
   DialogActions,
   TextField,
   Button,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   Box,
   Typography,
   Alert,
@@ -17,13 +13,13 @@ import {
   Stack
 } from '@mui/material';
 import {
-  Public as PublicIcon,
-  Lock as PrivateIcon
+  Public as PublicIcon
 } from '@mui/icons-material';
 
 /**
  * Dialog component for creating or editing moodboard settings
- * Allows setting/updating name, description, privacy status, and background color
+ * Allows setting/updating name, description, and background color
+ * Note: All micro conclav pages are public by default
  */
 const MoodboardSettingsDialog = ({
   open,
@@ -35,7 +31,6 @@ const MoodboardSettingsDialog = ({
 }) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [permissions, setPermissions] = useState('private');
   const [backgroundColor, setBackgroundColor] = useState('#f0f7ff');
   const [error, setError] = useState('');
   const [titleError, setTitleError] = useState('');
@@ -46,7 +41,6 @@ const MoodboardSettingsDialog = ({
       // Reset to defaults for create mode
       setTitle('');
       setDescription('');
-      setPermissions('private');
       setBackgroundColor('#f0f7ff');
       setError('');
       setTitleError('');
@@ -54,7 +48,6 @@ const MoodboardSettingsDialog = ({
       // Load existing values for edit mode
       setTitle(moodboard.title || '');
       setDescription(moodboard.description || '');
-      setPermissions(moodboard.permissions || 'private');
       setBackgroundColor(moodboard.background_color || '#f0f7ff');
       setError('');
       setTitleError('');
@@ -87,7 +80,6 @@ const MoodboardSettingsDialog = ({
       const updates = {
         title: title.trim(),
         description: description.trim(),
-        permissions: permissions,
         background_color: backgroundColor
       };
 
@@ -147,38 +139,15 @@ const MoodboardSettingsDialog = ({
           disabled={processing}
         />
         
-        <FormControl fullWidth margin="normal" disabled={processing}>
-          <InputLabel id="permissions-label">Visibility</InputLabel>
-          <Select
-            labelId="permissions-label"
-            value={permissions}
-            onChange={(e) => setPermissions(e.target.value)}
-            label="Visibility"
-          >
-            <MenuItem value="private">
-              <Stack direction="row" alignItems="center" spacing={1}>
-                <PrivateIcon fontSize="small" />
-                <Box>
-                  <Typography variant="body2">Private</Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    Only you can view and edit
-                  </Typography>
-                </Box>
-              </Stack>
-            </MenuItem>
-            <MenuItem value="public">
-              <Stack direction="row" alignItems="center" spacing={1}>
-                <PublicIcon fontSize="small" />
-                <Box>
-                  <Typography variant="body2">Public</Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    Visible to other network members
-                  </Typography>
-                </Box>
-              </Stack>
-            </MenuItem>
-          </Select>
-        </FormControl>
+        {/* Show info about public visibility for micro conclav */}
+        <Alert severity="info" sx={{ mt: 2 }}>
+          <Stack direction="row" alignItems="center" spacing={1}>
+            <PublicIcon fontSize="small" />
+            <Typography variant="body2">
+              Your Micro Conclav is always public
+            </Typography>
+          </Stack>
+        </Alert>
         
         <Box sx={{ mt: 2 }}>
           <Typography variant="subtitle2" gutterBottom>

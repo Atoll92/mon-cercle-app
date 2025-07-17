@@ -7,7 +7,7 @@ import { NetworkProvider } from '../context/networkContext';
 import { supabase } from '../supabaseclient';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import MembersDetailModal from '../components/MembersDetailModal';
-import PersonalMoodboardWidget from '../components/PersonalMoodboardWidget';
+import MicroConclavWidget from '../components/MicroConclavWidget';
 import LatestNewsWidget from '../components/LatestNewsWidget';
 import LatestPostsWidget from '../components/LatestPostsWidget';
 import TestNotificationSystem from '../components/TestNotificationSystem';
@@ -861,13 +861,13 @@ function DashboardPage() {
                           size="small" 
                           startIcon={<PreviewIcon />}
                           component={Link} 
-                          to={`/micro-conclav/${activeProfile.id}`}
+                          to={activeProfile?.username ? `/micro/${activeProfile.username}` : `/micro-conclav/${activeProfile.id}`}
                           target="_blank"
                           variant="outlined"
                           color="primary"
                           style={{margin: '0 auto'}}
                         >
-                          Micro Conclav
+                          My Micro Conclav
                         </Button>
                       </CardActions>
                     </Card>
@@ -1509,7 +1509,7 @@ function DashboardPage() {
                   </Grid>
                   
                   <Grid item xs={12} md={profile.network_id ? 6 : 12} sx={{ display: 'flex', flexGrow: 1 }}>
-                    <PersonalMoodboardWidget user={user} />
+                    <MicroConclavWidget />
                   </Grid>
             </FlexFlowBox>
 
