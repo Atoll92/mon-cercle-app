@@ -506,13 +506,29 @@ export const updateNetworkDetails = async (networkId, updates) => {
   }
 };
 
-export const fetchNetworkEvents = async (networkId) => {
+export const fetchNetworkEvents = async (networkId, options = {}) => {
   try {
-    const { data, error } = await supabase
+    const { categoryId = null } = options;
+    
+    let query = supabase
       .from('network_events')
-      .select('*')
+      .select(`
+        *,
+        category:network_categories(
+          id,
+          name,
+          color
+        )
+      `)
       .eq('network_id', networkId)
       .order('date', { ascending: true });
+    
+    // Apply category filter if provided
+    if (categoryId) {
+      query = query.eq('category_id', categoryId);
+    }
+    
+    const { data, error } = await query;
       
     if (error) throw error;
     return data || [];

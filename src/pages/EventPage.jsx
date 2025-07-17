@@ -78,7 +78,14 @@ function EventPage() {
       // Fetch event
       const { data: eventData, error: eventError } = await supabase
         .from('network_events')
-        .select('*')
+        .select(`
+          *,
+          category:network_categories(
+            id,
+            name,
+            color
+          )
+        `)
         .eq('id', eventId)
         .eq('network_id', networkId)
         .single();
@@ -375,6 +382,15 @@ function EventPage() {
                   label="Past Event"
                   color="default"
                   size="small"
+                />
+              )}
+              {event.category && (
+                <Chip 
+                  label={event.category.name}
+                  sx={{ 
+                    bgcolor: event.category.color || '#666',
+                    color: 'white'
+                  }}
                 />
               )}
             </Box>

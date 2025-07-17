@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { AnimatedCard, StaggeredListItem, PageTransition } from './AnimatedComponents';
 import EventDetailsDialog from './EventDetailsDialog';
+import { fetchNetworkCategories } from '../api/categories';
 import {
   Box,
   Typography,
@@ -15,7 +16,11 @@ import {
   CardContent,
   CardActions,
   Fade,
-  Zoom
+  Zoom,
+  FormControl,
+  Select,
+  MenuItem,
+  InputLabel
 } from '@mui/material';
 import {
   Event as EventIcon,
@@ -59,6 +64,8 @@ const EventsTab = ({
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [calendarDate, setCalendarDate] = useState(new Date());
   const [calendarView, setCalendarView] = useState('month');
+  const [categories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState('');
 
   // Debug: Log props on mount and when they change
   React.useEffect(() => {
@@ -82,6 +89,19 @@ const EventsTab = ({
     console.log('=== END DEBUG ===');
   }, [events, userParticipations, user]);
 
+  // Load categories on mount
+  useEffect(() => {
+    const loadCategories = async () => {
+      if (network?.id) {
+        const { data, error } = await fetchNetworkCategories(network.id, true); // Only active categories
+        if (data && !error) {
+          setCategories(data);
+        }
+      }
+    };
+    loadCategories();
+  }, [network?.id]);
+
   const handleEventSelect = (event) => {
     if (event.resource) {
       setSelectedEvent(event.resource);
@@ -94,13 +114,50 @@ const EventsTab = ({
     setSelectedEvent(null);
   };
 
+  // Filter events by selected category
+  const filteredEvents = selectedCategory 
+    ? events.filter(event => event.category_id === selectedCategory)
+    : events;
+
   return (
     <PageTransition>
       <Paper sx={{ p: 3 }} className="hover-lift">
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-          <Typography variant="h5" component="h2" gutterBottom>
-            Events
-          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Typography variant="h5" component="h2" gutterBottom>
+              Events
+            </Typography>
+            
+            {categories.length > 0 && (
+              <FormControl size="small" sx={{ minWidth: 200 }}>
+                <InputLabel>Filter by Category</InputLabel>
+                <Select
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  label="Filter by Category"
+                >
+                  <MenuItem value="">
+                    <em>All Categories</em>
+                  </MenuItem>
+                  {categories.map((category) => (
+                    <MenuItem key={category.id} value={category.id}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Box 
+                          sx={{ 
+                            width: 12, 
+                            height: 12, 
+                            borderRadius: '50%', 
+                            bgcolor: category.color || '#666' 
+                          }} 
+                        />
+                        {category.name}
+                      </Box>
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            )}
+          </Box>
         
         {isUserAdmin && (
           <Button
@@ -152,7 +209,7 @@ const EventsTab = ({
               </Typography>
             </Box>
             <EventsMap 
-              events={events} 
+              events={filteredEvents} 
               onEventSelect={(event) => {
                 setSelectedEvent(event);
                 setShowEventDialog(true);
@@ -194,12 +251,12 @@ const EventsTab = ({
                 </Typography>
               </Box>
               
-              <Chip label={`${events.filter(event => new Date(event.date) > new Date()).length} events`} 
+              <Chip label={`${filteredEvents.filter(event => new Date(event.date) > new Date()).length} events`} 
                 size="small" color="primary" variant="outlined" />
             </Box>
             
             <Box sx={{ flex: '1 1 auto', overflowY: 'auto', maxHeight: '380px' }}>
-              {events.filter(event => new Date(event.date) > new Date()).length === 0 ? (
+              {filteredEvents.filter(event => new Date(event.date) > new Date()).length === 0 ? (
                 <Box sx={{ textAlign: 'center', py: 4, px: 2 }}>
                   <Typography variant="body1" color="text.secondary" gutterBottom>
                     No upcoming events scheduled
@@ -219,7 +276,7 @@ const EventsTab = ({
                 </Box>
               ) : (
                 <Box sx={{ display: 'grid', gridTemplateColumns: '1fr', gap: 0 }}>
-                  {events
+                  {filteredEvents
                     .filter(event => new Date(event.date) > new Date())
                     .sort((a, b) => new Date(a.date) - new Date(b.date))
                     .map((event, index) => {
@@ -254,7 +311,7 @@ const EventsTab = ({
                           className="parent-event-row" 
                           sx={{ 
                             display: 'flex',
-                            borderBottom: index < events.filter(e => new Date(e.date) > new Date()).length - 1 ? '1px solid' : 'none',
+                            borderBottom: index < filteredEvents.filter(e => new Date(e.date) > new Date()).length - 1 ? '1px solid' : 'none',
                             borderColor: 'divider',
                             position: 'relative',
                             transition: 'all 0.2s ease',
@@ -409,6 +466,21 @@ const EventsTab = ({
                                   />
                                 )}
                               </Typography>
+                              
+                              {/* Display category if exists */}
+                              {event.category && (
+                                <Chip 
+                                  label={event.category.name}
+                                  size="small"
+                                  sx={{ 
+                                    bgcolor: event.category.color || '#666',
+                                    color: 'white',
+                                    fontSize: '0.7rem',
+                                    height: 20,
+                                    mb: 0.5
+                                  }}
+                                />
+                              )}
                               
                               <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                                 <LocationOnIcon fontSize="small" color="action" sx={{ mr: 0.5 }} />
@@ -799,7 +871,7 @@ const EventsTab = ({
 }}>
   <Calendar
     localizer={localizer}
-    events={events.map(event => {
+    events={filteredEvents.map(event => {
       // Find if user is participating in this event
       const participation = userParticipations.find(p => p.event_id === event.id);
       const eventDate = new Date(event.date);
@@ -894,7 +966,7 @@ const EventsTab = ({
         };
         
         // Find events on this date
-        const eventsOnSameDay = events.filter(e => 
+        const eventsOnSameDay = filteredEvents.filter(e => 
           sameDay(new Date(e.date), event.start)
         );
         
@@ -1058,7 +1130,7 @@ const EventsTab = ({
           Upcoming Events
         </Typography>
         <Grid container spacing={2}>
-          {events
+          {filteredEvents
             .filter(event => new Date(event.date) > new Date())
             .map(event => {
               // Find user participation for this event
@@ -1170,6 +1242,22 @@ const EventsTab = ({
                           <LinkIcon fontSize="small" color="primary" />
                         )}
                       </Typography>
+                      
+                      {/* Display category if exists */}
+                      {event.category && (
+                        <Chip 
+                          label={event.category.name}
+                          size="small"
+                          sx={{ 
+                            bgcolor: event.category.color || '#666',
+                            color: 'white',
+                            fontSize: '0.7rem',
+                            height: 20,
+                            mb: 1
+                          }}
+                        />
+                      )}
+                      
                       <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5 }}>
                         <LocationOnIcon fontSize="small" color="action" sx={{ mr: 0.5 }} />
                         <Typography variant="body2" color="text.secondary" noWrap>

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -22,7 +22,12 @@ import {
   Paper,
   Avatar,
   TableSortLabel,
-  Tooltip
+  Tooltip,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Chip
 } from '@mui/material';
 import {
   Edit as EditIcon,
@@ -38,6 +43,7 @@ import AddressSuggestions from '../AddressSuggestions';
 import EventParticipationStatsCompact from '../EventParticipationStatsCompact';
 import EventDetailsDialog from '../EventDetailsDialog';
 import { createEvent, updateEvent, deleteEvent, exportEventParticipantsList } from '../../api/networks';
+import { fetchNetworkCategories } from '../../api/categories';
 
 const EventsTab = ({ events, setEvents, user, activeProfile, networkId, network, darkMode = false }) => {
   const [openDialog, setOpenDialog] = useState(false);
@@ -53,7 +59,8 @@ const EventsTab = ({ events, setEvents, user, activeProfile, networkId, network,
     event_link: '', // Add the event_link field
     price: 0,
     currency: 'EUR',
-    max_tickets: ''
+    max_tickets: '',
+    category_id: ''
   });
   const [locationSuggestion, setLocationSuggestion] = useState(null);
   const [eventImageFile, setEventImageFile] = useState(null);
@@ -66,6 +73,19 @@ const EventsTab = ({ events, setEvents, user, activeProfile, networkId, network,
   const [participationStats, setParticipationStats] = useState({});
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [viewingEvent, setViewingEvent] = useState(null);
+  const [categories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState('');
+
+  // Load categories on mount
+  useEffect(() => {
+    const loadCategories = async () => {
+      const { data, error } = await fetchNetworkCategories(networkId, true); // Only active categories
+      if (data && !error) {
+        setCategories(data);
+      }
+    };
+    loadCategories();
+  }, [networkId]);
 
   const formatEventDateTime = (dateString) => {
     const date = new Date(dateString);
@@ -139,7 +159,8 @@ const EventsTab = ({ events, setEvents, user, activeProfile, networkId, network,
         event_link: event.event_link || '', // Set the event_link value
         price: event.price || 0,
         currency: event.currency || 'EUR',
-        max_tickets: event.max_tickets || ''
+        max_tickets: event.max_tickets || '',
+        category_id: event.category_id || ''
       });
       
       if (event.location) {
@@ -164,7 +185,8 @@ const EventsTab = ({ events, setEvents, user, activeProfile, networkId, network,
         event_link: '', // Reset the event_link field
         price: 0,
         currency: 'EUR',
-        max_tickets: ''
+        max_tickets: '',
+        category_id: ''
       });
       setLocationSuggestion(null);
       setEventImagePreview(null);
@@ -240,7 +262,8 @@ const EventsTab = ({ events, setEvents, user, activeProfile, networkId, network,
         ...eventForm,
         capacity: eventForm.capacity ? parseInt(eventForm.capacity) : null,
         price: eventForm.price || 0,
-        max_tickets: eventForm.max_tickets ? parseInt(eventForm.max_tickets) : null
+        max_tickets: eventForm.max_tickets ? parseInt(eventForm.max_tickets) : null,
+        category_id: eventForm.category_id || null
       };
       
       if (dialogMode === 'create') {
@@ -378,6 +401,7 @@ const EventsTab = ({ events, setEvents, user, activeProfile, networkId, network,
                 </TableSortLabel>
               </TableCell>
               <TableCell sx={{ width: '20%', minWidth: 120 }}>Location</TableCell>
+              <TableCell sx={{ width: 120 }}>Category</TableCell>
               <TableCell align="center" sx={{ width: 140 }}>
                 <TableSortLabel
                   active={orderBy === 'participation'}
@@ -460,6 +484,19 @@ const EventsTab = ({ events, setEvents, user, activeProfile, networkId, network,
                       </Typography>
                     )}
                   </Box>
+                </TableCell>
+                <TableCell>
+                  {event.category && (
+                    <Chip 
+                      label={event.category.name}
+                      size="small"
+                      sx={{ 
+                        bgcolor: event.category.color || '#666',
+                        color: 'white',
+                        fontSize: '0.75rem'
+                      }}
+                    />
+                  )}
                 </TableCell>
                 <TableCell align="center">
                   <EventParticipationStatsCompact 
@@ -631,87 +668,85 @@ const EventsTab = ({ events, setEvents, user, activeProfile, networkId, network,
                   />
                 </>
               )}
-            </Grid>
-            
-            <Grid item xs={12} md={6}>
-              <Typography variant="subtitle1" gutterBottom>
-                Event Cover Image
-              </Typography>
-              
-              <Box sx={{ 
-                width: '100%', 
-                height: 200, 
-                border: '1px dashed #ccc',
-                borderRadius: 1,
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                mb: 2,
-                position: 'relative',
-                overflow: 'hidden',
-                backgroundColor: '#f8f8f8'
-              }}>
-                {eventImagePreview ? (
-                  <img 
-                    src={eventImagePreview} 
-                    alt="Event cover preview" 
-                    style={{ 
-                      width: '100%', 
-                      height: '100%', 
-                      objectFit: 'cover' 
-                    }} 
-                  />
-                ) : (
-                  <Box sx={{ textAlign: 'center', p: 2 }}>
-                    <ImageIcon sx={{ fontSize: 40, color: '#ccc', mb: 1 }} />
-                    <Typography variant="body2" color="text.secondary">
-                      No cover image selected
-                    </Typography>
-                  </Box>
-                )}
-              </Box>
-              
-              <input
-                accept="image/*"
-                id="event-cover-upload"
-                type="file"
-                onChange={handleEventImageChange}
-                style={{ display: 'none' }}
-              />
-              
-              <Box sx={{ display: 'flex', gap: 2 }}>
-                <label htmlFor="event-cover-upload">
-                  <Button
-                    variant="contained"
-                    component="span"
-                    startIcon={<ImageIcon />}
-                    size="small"
-                  >
-                    {eventImagePreview ? 'Change Image' : 'Add Cover Image'}
-                  </Button>
-                </label>
+
+              <Grid item xs={12} md={6}>
+                <Typography variant="subtitle1" gutterBottom>
+                  Event Cover Image
+                </Typography>
                 
-                {eventImagePreview && (
-                  <Button
-                    variant="outlined"
-                    color="error"
-                    size="small"
-                    onClick={() => {
-                      setEventImageFile(null);
-                      setEventImagePreview(null);
-                    }}
-                  >
-                    Remove Image
-                  </Button>
-                )}
-              </Box>
-              
-              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
-                Recommended size: 1200x600 pixels. Max: 5MB.
-              </Typography>
-            </Grid>
-            
-            <Grid item xs={12}>
+                <Box sx={{ 
+                  width: '100%', 
+                  height: 200, 
+                  border: '1px dashed #ccc',
+                  borderRadius: 1,
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  mb: 2,
+                  position: 'relative',
+                  overflow: 'hidden',
+                  backgroundColor: '#f8f8f8'
+                }}>
+                  {eventImagePreview ? (
+                    <img 
+                      src={eventImagePreview} 
+                      alt="Event cover preview" 
+                      style={{ 
+                        width: '100%', 
+                        height: '100%', 
+                        objectFit: 'cover' 
+                      }} 
+                    />
+                  ) : (
+                    <Box sx={{ textAlign: 'center', p: 2 }}>
+                      <ImageIcon sx={{ fontSize: 40, color: '#ccc', mb: 1 }} />
+                      <Typography variant="body2" color="text.secondary">
+                        No cover image selected
+                      </Typography>
+                    </Box>
+                  )}
+                </Box>
+                
+                <input
+                  accept="image/*"
+                  id="event-cover-upload"
+                  type="file"
+                  onChange={handleEventImageChange}
+                  style={{ display: 'none' }}
+                />
+                
+                <Box sx={{ display: 'flex', gap: 2 }}>
+                  <label htmlFor="event-cover-upload">
+                    <Button
+                      variant="contained"
+                      component="span"
+                      startIcon={<ImageIcon />}
+                      size="small"
+                    >
+                      {eventImagePreview ? 'Change Image' : 'Add Cover Image'}
+                    </Button>
+                  </label>
+                  
+                  {eventImagePreview && (
+                    <Button
+                      variant="outlined"
+                      color="error"
+                      size="small"
+                      onClick={() => {
+                        setEventImageFile(null);
+                        setEventImagePreview(null);
+                      }}
+                    >
+                      Remove Image
+                    </Button>
+                  )}
+                </Box>
+                
+                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
+                  Recommended size: 1200x600 pixels. Max: 5MB.
+                </Typography>
+              </Grid>
+
               <TextField
                 margin="dense"
                 label="Description"
@@ -721,6 +756,24 @@ const EventsTab = ({ events, setEvents, user, activeProfile, networkId, network,
                 value={eventForm.description}
                 onChange={(e) => setEventForm({ ...eventForm, description: e.target.value })}
               />
+
+              <FormControl fullWidth margin="dense">
+                <InputLabel>Category</InputLabel>
+                <Select
+                  value={eventForm.category_id}
+                  onChange={(e) => setEventForm({ ...eventForm, category_id: e.target.value })}
+                  label="Category"
+                >
+                  <MenuItem value="">
+                    <em>None</em>
+                  </MenuItem>
+                  {categories.map((category) => (
+                    <MenuItem key={category.id} value={category.id}>
+                      {category.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
             </Grid>
           </Grid>
         </DialogContent>

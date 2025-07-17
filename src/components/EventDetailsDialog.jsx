@@ -12,6 +12,7 @@ import {
   Stack,
   Alert,
   Link as MuiLink,
+  Chip,
 } from '@mui/material';
 import {
   Event as EventIcon,
@@ -127,6 +128,23 @@ const EventDetailsDialog = ({
                       </Typography>
                     </Box>
                   </Box>
+                  
+                  {event.category && (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                      <Typography variant="body2" fontWeight="medium">
+                        Category:
+                      </Typography>
+                      <Chip 
+                        label={event.category.name}
+                        size="small"
+                        sx={{ 
+                          bgcolor: event.category.color || '#666',
+                          color: 'white',
+                          fontSize: '0.75rem'
+                        }}
+                      />
+                    </Box>
+                  )}
                   
                   <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
                     <LocationOnIcon fontSize="small" color="primary" />
