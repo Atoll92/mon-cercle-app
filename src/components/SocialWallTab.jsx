@@ -1530,7 +1530,6 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
         onClose={() => setCreatePostOpen(false)}
         onPostCreated={handlePostCreated}
         darkMode={darkMode}
-        networkId={networkId}
       />
     </Paper>
   );

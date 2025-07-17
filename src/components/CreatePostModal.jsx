@@ -39,8 +39,7 @@ const CreatePostModal = ({
   open, 
   onClose, 
   onPostCreated, 
-  darkMode = false, 
-  networkId,
+  darkMode = false,
   mode = 'create', // 'create' or 'edit'
   editPost = null // Post data for editing
 }) => {
@@ -67,8 +66,8 @@ const CreatePostModal = ({
   // Load categories on mount
   useEffect(() => {
     const loadCategories = async () => {
-      if (!networkId) return;
-      const { data, error } = await fetchNetworkCategories(networkId, true);
+      if (!activeProfile.network_id) return;
+      const { data, error } = await fetchNetworkCategories(activeProfile.network_id, true);
       if (data && !error) {
         setCategories(data);
       }
@@ -76,7 +75,7 @@ const CreatePostModal = ({
     if (open) {
       loadCategories();
     }
-  }, [networkId, open]);
+  }, [activeProfile, open]);
 
   // Initialize form with edit data
   useEffect(() => {
