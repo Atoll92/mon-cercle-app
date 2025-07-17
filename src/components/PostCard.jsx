@@ -261,7 +261,6 @@ const PostCard = ({
             sx={{ 
               position: 'relative', 
               width: '100%',
-              pt: '56.25%', // 16:9 aspect ratio
               cursor: 'pointer',
               borderRadius: 1,
               overflow: 'hidden',
@@ -273,12 +272,11 @@ const PostCard = ({
               src={mediaUrl}
               alt={post.title}
               style={{ 
-                position: 'absolute',
-                top: 0,
-                left: 0,
                 width: '100%',
-                height: '100%',
-                objectFit: 'cover'
+                height: 'auto',
+                display: 'block',
+                maxHeight: '600px',
+                objectFit: 'contain'
               }}
             />
           </Box>
