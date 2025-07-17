@@ -1,11 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Box,
   Typography,
   Button,
   Grid,
-  Card,
-  CardContent,
   TextField,
   Dialog,
   DialogTitle,
@@ -13,10 +11,18 @@ import {
   DialogActions,
   IconButton,
   CircularProgress,
-  Chip,
   Alert,
   InputAdornment,
-  Link
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Avatar,
+  TableSortLabel,
+  Tooltip
 } from '@mui/material';
 import {
   Edit as EditIcon,
@@ -26,10 +32,11 @@ import {
   People as PeopleIcon,
   Image as ImageIcon,
   Link as LinkIcon,
-  OpenInNew as OpenInNewIcon
+  Visibility as VisibilityIcon
 } from '@mui/icons-material';
 import AddressSuggestions from '../AddressSuggestions';
-import EventParticipationStats from '../EventParticipationStats';
+import EventParticipationStatsCompact from '../EventParticipationStatsCompact';
+import EventDetailsDialog from '../EventDetailsDialog';
 import { createEvent, updateEvent, deleteEvent, exportEventParticipantsList } from '../../api/networks';
 
 const EventsTab = ({ events, setEvents, user, activeProfile, networkId, network, darkMode = false }) => {
@@ -54,11 +61,66 @@ const EventsTab = ({ events, setEvents, user, activeProfile, networkId, network,
   const [updating, setUpdating] = useState(false);
   const [error, setError] = useState(null);
   const [message, setMessage] = useState('');
+  const [orderBy, setOrderBy] = useState('date');
+  const [order, setOrder] = useState('desc');
+  const [participationStats, setParticipationStats] = useState({});
+  const [viewDialogOpen, setViewDialogOpen] = useState(false);
+  const [viewingEvent, setViewingEvent] = useState(null);
 
-  const formatEventDate = (dateString) => {
-    const options = { year: 'numeric', month: 'long', day: 'numeric' };
-    return new Date(dateString).toLocaleDateString(undefined, options);
+  const formatEventDateTime = (dateString) => {
+    const date = new Date(dateString);
+    const dateOptions = { month: 'short', day: 'numeric', year: 'numeric' };
+    const timeOptions = { hour: '2-digit', minute: '2-digit' };
+    return `${date.toLocaleDateString(undefined, dateOptions)} ${date.toLocaleTimeString(undefined, timeOptions)}`;
   };
+
+  const handleRequestSort = (property) => {
+    const isAsc = orderBy === property && order === 'asc';
+    setOrder(isAsc ? 'desc' : 'asc');
+    setOrderBy(property);
+  };
+
+  const handleParticipationStatsLoad = (eventId, attendingCount) => {
+    setParticipationStats(prev => ({
+      ...prev,
+      [eventId]: attendingCount
+    }));
+  };
+
+  const handleViewEvent = (event) => {
+    setViewingEvent(event);
+    setViewDialogOpen(true);
+  };
+
+  const sortedEvents = useMemo(() => {
+    return [...events].sort((a, b) => {
+      let aValue, bValue;
+      
+      switch (orderBy) {
+        case 'date':
+          aValue = new Date(a.date).getTime();
+          bValue = new Date(b.date).getTime();
+          break;
+        case 'title':
+          aValue = a.title.toLowerCase();
+          bValue = b.title.toLowerCase();
+          break;
+        case 'participation':
+          // Sort by number of confirmed attendees
+          aValue = participationStats[a.id] || 0;
+          bValue = participationStats[b.id] || 0;
+          break;
+        default:
+          return 0;
+      }
+      
+      if (order === 'asc') {
+        return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
+      } else {
+        return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
+      }
+    });
+  }, [events, order, orderBy, participationStats]);
 
   const handleOpenDialog = (mode, event = null) => {
     setDialogMode(mode);
@@ -292,133 +354,156 @@ const EventsTab = ({ events, setEvents, user, activeProfile, networkId, network,
         </Button>
       </Box>
 
-      <Grid container spacing={3}>
-        {events.map(event => (
-          <Grid item xs={12} md={6} lg={4} key={event.id}>
-            <Card>
-              {event.cover_image_url && (
-                <Box sx={{ 
-                  height: 140, 
-                  overflow: 'hidden',
-                  position: 'relative'
-                }}>
-                  <img
-                    src={event.cover_image_url}
-                    alt={event.title}
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'cover'
-                    }}
-                  />
-                </Box>
-              )}
-              <CardContent>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <Typography variant="h6" component="div">
-                    {event.title}
-                  </Typography>
-                  <Box>
-                    <IconButton onClick={() => handleOpenDialog('edit', event)}>
-                      <EditIcon fontSize="small" />
-                    </IconButton>
-                    <IconButton onClick={() => handleDelete(event.id)}>
-                      <DeleteIcon fontSize="small" color="error" />
-                    </IconButton>
-                  </Box>
-                </Box>
-                <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                  {formatEventDate(event.date)}
-                </Typography>
-                
-                <Box sx={{ display: 'flex', alignItems: 'center', mt: 0.5 }}>
-                  <LocationOnIcon fontSize="small" sx={{ mr: 0.5, color: 'text.secondary' }} />
-                  <Typography variant="body2" color="text.secondary" noWrap>
-                    {event.location}
-                  </Typography>
-                </Box>
-                
-                {/* Display event link if it exists */}
-                {event.event_link && (
-                  <Box sx={{ display: 'flex', alignItems: 'center', mt: 0.5 }}>
-                    <LinkIcon fontSize="small" sx={{ mr: 0.5, color: 'primary.main' }} />
-                    <Link
-                      href={event.event_link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      variant="body2"
-                      sx={{ 
-                        textDecoration: 'none',
-                        '&:hover': { textDecoration: 'underline' },
-                        maxWidth: '100%',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                        display: 'block'
-                      }}
-                      onClick={(e) => e.stopPropagation()}
+      <TableContainer component={Paper} sx={{ mt: 2, overflowX: 'auto' }}>
+        <Table size="small" aria-label="events table" sx={{ minWidth: 650 }}>
+          <TableHead>
+            <TableRow>
+              <TableCell padding="checkbox" sx={{ width: 60 }}>Image</TableCell>
+              <TableCell sx={{ width: '25%', minWidth: 150 }}>
+                <TableSortLabel
+                  active={orderBy === 'title'}
+                  direction={orderBy === 'title' ? order : 'asc'}
+                  onClick={() => handleRequestSort('title')}
+                >
+                  Title
+                </TableSortLabel>
+              </TableCell>
+              <TableCell sx={{ width: 140 }}>
+                <TableSortLabel
+                  active={orderBy === 'date'}
+                  direction={orderBy === 'date' ? order : 'asc'}
+                  onClick={() => handleRequestSort('date')}
+                >
+                  Date
+                </TableSortLabel>
+              </TableCell>
+              <TableCell sx={{ width: '20%', minWidth: 120 }}>Location</TableCell>
+              <TableCell align="center" sx={{ width: 140 }}>
+                <TableSortLabel
+                  active={orderBy === 'participation'}
+                  direction={orderBy === 'participation' ? order : 'asc'}
+                  onClick={() => handleRequestSort('participation')}
+                >
+                  Participation
+                </TableSortLabel>
+              </TableCell>
+              <TableCell align="right" sx={{ width: 100 }}>Actions</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {sortedEvents.map((event) => (
+              <TableRow
+                key={event.id}
+                sx={{ 
+                  '&:hover': { 
+                    backgroundColor: darkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.04)' 
+                  },
+                  height: 60 
+                }}
+              >
+                <TableCell padding="checkbox">
+                  {event.cover_image_url ? (
+                    <Avatar
+                      variant="rounded"
+                      src={event.cover_image_url}
+                      sx={{ width: 40, height: 40 }}
                     >
-                      {event.event_link}
-                    </Link>
-                  </Box>
-                )}
-                
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
-                  {event.coordinates && (
-                    <Chip 
-                      size="small" 
-                      variant="outlined"
-                      icon={<LocationOnIcon fontSize="small" />}
-                      label="Has coordinates" 
-                      sx={{ fontSize: '0.7rem' }}
-                    />
+                      <ImageIcon />
+                    </Avatar>
+                  ) : (
+                    <Avatar
+                      variant="rounded"
+                      sx={{ 
+                        width: 40, 
+                        height: 40, 
+                        bgcolor: darkMode ? 'grey.800' : 'grey.200' 
+                      }}
+                    >
+                      <ImageIcon color="action" />
+                    </Avatar>
                   )}
-                  
-                  {/* Display event link indicator if it exists */}
-                  {event.event_link && (
-                    <Chip
-                      size="small"
-                      variant="outlined"
-                      icon={<LinkIcon fontSize="small" />}
-                      label="Has event link"
-                      color="primary"
-                      sx={{ fontSize: '0.7rem' }}
-                    />
-                  )}
-                </Box>
-                
-                {event.description && (
-                  <Typography variant="body2" sx={{ mt: 2 }}>
-                    {event.description}
-                  </Typography>
-                )}
-                {event.capacity && (
-                  <Typography variant="caption" display="block" sx={{ mt: 1 }}>
-                    Capacity: {event.capacity}
-                  </Typography>
-                )}
-                
-                {/* Show pricing if monetization is enabled and event has a price */}
-                {network?.features_config?.monetization && event.price > 0 && (
-                  <Typography variant="caption" display="block" sx={{ mt: 1, color: 'primary.main', fontWeight: 'bold' }}>
-                    Price: {new Intl.NumberFormat('en-US', {
-                      style: 'currency',
-                      currency: event.currency || 'EUR'
-                    }).format(event.price)}
-                    {event.max_tickets && (
-                      <span style={{ color: 'text.secondary', fontWeight: 'normal' }}>
-                        {' '}• {event.tickets_sold || 0}/{event.max_tickets} sold
-                      </span>
+                </TableCell>
+                <TableCell sx={{ maxWidth: 0, overflow: 'hidden' }}>
+                  <Box>
+                    <Typography variant="body2" noWrap sx={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {event.title}
+                    </Typography>
+                    {event.description && (
+                      <Typography 
+                        variant="caption" 
+                        color="text.secondary" 
+                        noWrap 
+                        sx={{ 
+                          overflow: 'hidden', 
+                          textOverflow: 'ellipsis',
+                          display: 'block'
+                        }}
+                      >
+                        {event.description}
+                      </Typography>
                     )}
+                  </Box>
+                </TableCell>
+                <TableCell>
+                  <Typography variant="body2" noWrap>
+                    {formatEventDateTime(event.date)}
                   </Typography>
-                )}
-                
-                <EventParticipationStats eventId={event.id} />
-              </CardContent>
-            </Card>
-          </Grid>
-        ))}
-      </Grid>
+                </TableCell>
+                <TableCell sx={{ maxWidth: 0, overflow: 'hidden' }}>
+                  <Box>
+                    <Typography variant="body2" noWrap sx={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {event.location}
+                    </Typography>
+                    {event.capacity && (
+                      <Typography variant="caption" color="text.secondary" noWrap>
+                        Capacity: {event.capacity}
+                      </Typography>
+                    )}
+                  </Box>
+                </TableCell>
+                <TableCell align="center">
+                  <EventParticipationStatsCompact 
+                    eventId={event.id} 
+                    onStatsLoad={handleParticipationStatsLoad}
+                  />
+                </TableCell>
+                <TableCell align="right">
+                  <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'flex-end' }}>
+                    <Tooltip title="View event">
+                      <IconButton 
+                        size="small" 
+                        onClick={() => handleViewEvent(event)}
+                        sx={{ padding: 0.5 }}
+                      >
+                        <VisibilityIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Edit event">
+                      <IconButton 
+                        size="small" 
+                        onClick={() => handleOpenDialog('edit', event)}
+                        sx={{ padding: 0.5 }}
+                      >
+                        <EditIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Delete event">
+                      <IconButton 
+                        size="small" 
+                        onClick={() => handleDelete(event.id)}
+                        sx={{ padding: 0.5 }}
+                        color="error"
+                      >
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  </Box>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
 
       <Dialog open={openDialog} onClose={() => {
         setOpenDialog(false);
@@ -446,7 +531,7 @@ const EventsTab = ({ events, setEvents, user, activeProfile, networkId, network,
                 type="date"
                 fullWidth
                 required
-                InputLabelProps={{ shrink: true }}
+                slotProps={{ inputLabel: { shrink: true } }}
                 value={eventForm.date}
                 onChange={(e) => setEventForm({ ...eventForm, date: e.target.value })}
                 sx={{ mb: 2 }}
@@ -489,12 +574,14 @@ const EventsTab = ({ events, setEvents, user, activeProfile, networkId, network,
                 value={eventForm.event_link}
                 onChange={(e) => setEventForm({ ...eventForm, event_link: e.target.value })}
                 sx={{ mb: 2 }}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <LinkIcon />
-                    </InputAdornment>
-                  ),
+                slotProps={{
+                  input: {
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <LinkIcon />
+                      </InputAdornment>
+                    ),
+                  }
                 }}
                 helperText="Add a link to the event registration page, Zoom meeting, or any external event resource."
               />
@@ -520,12 +607,14 @@ const EventsTab = ({ events, setEvents, user, activeProfile, networkId, network,
                     value={eventForm.price}
                     onChange={(e) => setEventForm({ ...eventForm, price: parseFloat(e.target.value) || 0 })}
                     sx={{ mb: 2 }}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          {eventForm.currency === 'EUR' ? '€' : eventForm.currency === 'USD' ? '$' : '£'}
-                        </InputAdornment>
-                      ),
+                    slotProps={{
+                      input: {
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            {eventForm.currency === 'EUR' ? '€' : eventForm.currency === 'USD' ? '$' : '£'}
+                          </InputAdornment>
+                        ),
+                      }
                     }}
                     helperText="Set to 0 for free events"
                   />
@@ -664,6 +753,14 @@ const EventsTab = ({ events, setEvents, user, activeProfile, networkId, network,
           </Button>
         </DialogActions>
       </Dialog>
+
+      <EventDetailsDialog
+        open={viewDialogOpen}
+        onClose={() => setViewDialogOpen(false)}
+        event={viewingEvent}
+        user={user}
+        showParticipants={true}
+      />
     </>
   );
 };
