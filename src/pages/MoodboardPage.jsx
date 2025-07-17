@@ -63,7 +63,10 @@ import {
   Close as CloseIcon,
   CloudUpload as CloudUploadIcon,
   PictureAsPdf as PdfIcon,
-  Settings as SettingsIcon
+  Settings as SettingsIcon,
+  CloudDone as CloudDoneIcon,
+  CloudOff as CloudOffIcon,
+  Cancel as CancelIcon
 } from '@mui/icons-material';
 
 // Enhanced EditItemDialog with improved UI and PDF support
@@ -88,6 +91,9 @@ const EditItemDialog = ({
     const [editedBorder_radius, setEditedBorder_radius] = useState(0);
     const [editedRotation, setEditedRotation] = useState(0);
     const [editedZIndex, setEditedZIndex] = useState(1);
+    
+    // Ref for debounced autosave
+    const saveTimeoutRef = useRef(null);
     
     // Initialize form values when dialog opens - using exact field names from database
     useEffect(() => {
@@ -170,6 +176,15 @@ const EditItemDialog = ({
       onSave(updatedItem);
     };
     
+    // Clean up timeout on unmount
+    useEffect(() => {
+      return () => {
+        if (saveTimeoutRef.current) {
+          clearTimeout(saveTimeoutRef.current);
+        }
+      };
+    }, []);
+    
     // Improved shared properties panel with better UI organization
     const renderSharedProperties = () => (
       <Box sx={{ mt: 3 }}>
@@ -184,7 +199,12 @@ const EditItemDialog = ({
               <TextField
                 label="Title (Optional)"
                 value={editedTitle}
-                onChange={(e) => setEditedTitle(e.target.value)}
+                onChange={(e) => {
+                  setEditedTitle(e.target.value);
+                  // Trigger autosave after user stops typing
+                  if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+                  saveTimeoutRef.current = setTimeout(() => handleSave(), 800);
+                }}
                 fullWidth
                 size="small"
                 InputProps={{
@@ -227,7 +247,11 @@ const EditItemDialog = ({
                   <TextField
                     type="color"
                     value={editedBackgroundColor === 'transparent' ? '#ffffff' : editedBackgroundColor}
-                    onChange={(e) => setEditedBackgroundColor(e.target.value)}
+                    onChange={(e) => {
+                      setEditedBackgroundColor(e.target.value);
+                      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+                      saveTimeoutRef.current = setTimeout(() => handleSave(), 800);
+                    }}
                     fullWidth
                     size="small"
                     InputProps={{ sx: { height: '36px' } }}
@@ -253,7 +277,12 @@ const EditItemDialog = ({
                 <Typography variant="caption" color="text.secondary">0%</Typography>
                 <Slider
                   value={editedOpacity}
-                  onChange={(e, newValue) => setEditedOpacity(newValue)}
+                  onChange={(e, newValue) => {
+                    setEditedOpacity(newValue);
+                    // Trigger autosave after slider stops moving
+                    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+                    saveTimeoutRef.current = setTimeout(() => handleSave(), 800);
+                  }}
                   min={0}
                   max={100}
                   step={1}
@@ -283,7 +312,12 @@ const EditItemDialog = ({
                 <TextField
                   type="number"
                   value={editedBorder_radius}
-                  onChange={(e) => setEditedBorder_radius(parseInt(e.target.value) || 0)}
+                  onChange={(e) => {
+                    setEditedBorder_radius(parseInt(e.target.value) || 0);
+                    // Trigger autosave
+                    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+                    saveTimeoutRef.current = setTimeout(() => handleSave(), 800);
+                  }}
                   fullWidth
                   size="small"
                   InputProps={{
@@ -412,7 +446,11 @@ const EditItemDialog = ({
                     label="Text Color"
                     type="color"
                     value={editedTextColor}
-                    onChange={(e) => setEditedTextColor(e.target.value)}
+                    onChange={(e) => {
+                      setEditedTextColor(e.target.value);
+                      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+                      saveTimeoutRef.current = setTimeout(() => handleSave(), 800);
+                    }}
                     fullWidth
                     size="small"
                     InputProps={{ sx: { height: '40px' } }}
@@ -546,7 +584,12 @@ const EditItemDialog = ({
                 <TextField
                   label="URL"
                   value={editedContent}
-                  onChange={(e) => setEditedContent(e.target.value)}
+                  onChange={(e) => {
+                    setEditedContent(e.target.value);
+                    // Auto-save after typing stops
+                    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+                    saveTimeoutRef.current = setTimeout(() => handleSave(), 800);
+                  }}
                   fullWidth
                   margin="normal"
                   variant="outlined"
@@ -789,7 +832,7 @@ const EditItemDialog = ({
           {renderSharedProperties()}
         </DialogContent>
         <DialogActions>
-          <Button onClick={onClose}>Cancel</Button>
+          <Button onClick={onClose}>Cancel Edit</Button>
           <Button 
             onClick={handleSave} 
             variant="contained" 
@@ -799,7 +842,7 @@ const EditItemDialog = ({
               !currentItem}
             startIcon={processing ? <CircularProgress size={20} /> : <SaveIcon />}
           >
-            {processing ? 'Saving...' : 'Save Changes'}
+            {processing ? 'Saving...' : 'Save'}
           </Button>
         </DialogActions>
       </Dialog>
@@ -823,6 +866,10 @@ function MoodboardPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
+  const [autoSaveStatus, setAutoSaveStatus] = useState('saved'); // 'saved', 'saving', 'error'
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const autoSaveTimeoutRef = useRef(null);
+  const originalItemsRef = useRef([]);
 
   
   // State for viewport control
@@ -906,7 +953,10 @@ function MoodboardPage() {
           .order('created_at', { ascending: true });
         
         if (itemsError) throw itemsError;
-        setItems(itemsData || []);
+        const loadedItems = itemsData || [];
+        setItems(loadedItems);
+        // Store original items for comparison
+        originalItemsRef.current = JSON.parse(JSON.stringify(loadedItems));
         
       } catch (err) {
         console.error('Error fetching moodboard:', err);
@@ -1047,6 +1097,88 @@ function MoodboardPage() {
     setSelectedItemId(null);
   };
   
+  // Debounced autosave function
+  const performAutoSave = useCallback(async (itemsToSave) => {
+    if (!isEditable) return;
+    
+    try {
+      setAutoSaveStatus('saving');
+      
+      // Save all items that have changed
+      for (const item of itemsToSave) {
+        const { error } = await supabase
+          .from('moodboard_items')
+          .update({
+            x: item.x,
+            y: item.y,
+            width: item.width,
+            height: item.height,
+            zIndex: item.zIndex || itemsToSave.indexOf(item) + 1,
+            rotation: item.rotation,
+            opacity: item.opacity,
+            border_radius: item.border_radius,
+            backgroundColor: item.backgroundColor,
+            textColor: item.textColor,
+            font_family: item.font_family,
+            font_size: item.font_size,
+            font_weight: item.font_weight,
+            text_align: item.text_align,
+            line_height: item.line_height,
+            title: item.title,
+            content: item.content,
+            updated_at: new Date()
+          })
+          .eq('id', item.id);
+        
+        if (error) throw error;
+      }
+      
+      setAutoSaveStatus('saved');
+      setHasUnsavedChanges(false);
+      // Update original items reference
+      originalItemsRef.current = JSON.parse(JSON.stringify(itemsToSave));
+      
+    } catch (err) {
+      console.error('Auto-save error:', err);
+      setAutoSaveStatus('error');
+      setError('Failed to auto-save changes');
+    }
+  }, [isEditable]);
+
+  // Trigger autosave when items change
+  useEffect(() => {
+    if (!items.length || loading || !isEditable) return;
+    
+    // Skip if we haven't loaded initial items yet
+    if (!originalItemsRef.current || originalItemsRef.current.length === 0) {
+      return;
+    }
+    
+    // Check if items have actually changed
+    const hasChanges = JSON.stringify(items) !== JSON.stringify(originalItemsRef.current);
+    
+    if (hasChanges) {
+      setHasUnsavedChanges(true);
+      setAutoSaveStatus('saving');
+      
+      // Clear existing timeout
+      if (autoSaveTimeoutRef.current) {
+        clearTimeout(autoSaveTimeoutRef.current);
+      }
+      
+      // Set new timeout for autosave (1.5 seconds delay)
+      autoSaveTimeoutRef.current = setTimeout(() => {
+        performAutoSave(items);
+      }, 1500);
+    }
+    
+    return () => {
+      if (autoSaveTimeoutRef.current) {
+        clearTimeout(autoSaveTimeoutRef.current);
+      }
+    };
+  }, [items, loading, isEditable, performAutoSave]);
+
   // Handle item manipulation
   const handleMoveItem = (itemId, newPosition) => {
     setItems(prevItems => 
@@ -1066,6 +1198,16 @@ function MoodboardPage() {
           : item
       )
     );
+  };
+
+  // Cancel edit and revert to original state
+  const handleCancelEdit = () => {
+    if (hasUnsavedChanges && window.confirm('You have unsaved changes. Are you sure you want to cancel?')) {
+      setItems(JSON.parse(JSON.stringify(originalItemsRef.current)));
+      setHasUnsavedChanges(false);
+      setAutoSaveStatus('saved');
+      setError(null);
+    }
   };
   
   const handleEditItem = (item) => {
@@ -1160,8 +1302,7 @@ function MoodboardPage() {
       setNewImageUrl('');
       setUploadDialogOpen(false);
       
-      setSuccess('Image added successfully');
-      setTimeout(() => setSuccess(null), 3000);
+      // Don't show success message with autosave
       
     } catch (err) {
       console.error('Error uploading image:', err);
@@ -1219,8 +1360,7 @@ function MoodboardPage() {
       setNewTextBgColor('#ffffff');
       setTextDialogOpen(false);
       
-      setSuccess('Text added successfully');
-      setTimeout(() => setSuccess(null), 3000);
+      // Don't show success message with autosave
       
     } catch (err) {
       console.error('Error adding text:', err);
@@ -1272,8 +1412,7 @@ function MoodboardPage() {
       setNewLinkTitle('');
       setLinkDialogOpen(false);
       
-      setSuccess('Link added successfully');
-      setTimeout(() => setSuccess(null), 3000);
+      // Don't show success message with autosave
       
     } catch (err) {
       console.error('Error adding link:', err);
@@ -1351,8 +1490,7 @@ function MoodboardPage() {
       setNewPdfThumbnail(null);
       setPdfDialogOpen(false);
       
-      setSuccess('PDF added successfully');
-      setTimeout(() => setSuccess(null), 3000);
+      // Don't show success message with autosave
       
     } catch (err) {
       console.error('Error uploading PDF:', err);
@@ -1384,8 +1522,7 @@ function MoodboardPage() {
         if (error) throw error;
       }
       
-      setSuccess('Moodboard saved successfully');
-      setTimeout(() => setSuccess(null), 3000);
+      // Don't show success message with autosave
       
     } catch (err) {
       console.error('Error saving moodboard:', err);
@@ -1401,67 +1538,16 @@ function MoodboardPage() {
 const handleUpdateItem = async (updatedItem) => {
     if (!updatedItem) return;
     
-    try {
-      setSaving(true);
-      
-      // Create an object that only includes fields that are in the database
-      const itemUpdate = {
-        title: updatedItem.title,
-        content: updatedItem.content,
-        x: updatedItem.x,
-        y: updatedItem.y,
-        width: updatedItem.width,
-        height: updatedItem.height,
-        rotation: updatedItem.rotation,
-        zIndex: updatedItem.zIndex,
-        updated_at: new Date()
-      };
-      
-      // Only add these properties if they exist in the updated item
-      // (different item types have different properties)
-      if (updatedItem.textColor !== undefined) itemUpdate.textColor = updatedItem.textColor;
-      if (updatedItem.backgroundColor !== undefined) itemUpdate.backgroundColor = updatedItem.backgroundColor;
-      if (updatedItem.font_family !== undefined) itemUpdate.font_family = updatedItem.font_family;
-      if (updatedItem.font_size !== undefined) itemUpdate.font_size = updatedItem.font_size;
-      if (updatedItem.font_weight !== undefined) itemUpdate.font_weight = updatedItem.font_weight;
-      if (updatedItem.text_align !== undefined) itemUpdate.text_align = updatedItem.text_align;
-      if (updatedItem.line_height !== undefined) itemUpdate.line_height = updatedItem.line_height;
-      if (updatedItem.opacity !== undefined) itemUpdate.opacity = updatedItem.opacity;
-      if (updatedItem.border_radius !== undefined) itemUpdate.border_radius = updatedItem.border_radius;
-      
-      console.log('Updating item with data:', itemUpdate);
-      
-      // Update in database
-      const { data, error } = await supabase
-        .from('moodboard_items')
-        .update(itemUpdate)
-        .eq('id', updatedItem.id)
-        .select();
-      
-      if (error) throw error;
-      
-      console.log('Update successful:', data);
-      
-      // Update in local state
-      setItems(prevItems => 
-        prevItems.map(item => 
-          item.id === updatedItem.id ? {...item, ...itemUpdate} : item
-        )
-      );
-      
-      // Reset and close dialog
-      setCurrentEditItem(null);
-      setEditDialogOpen(false);
-      
-      setSuccess('Item updated successfully');
-      setTimeout(() => setSuccess(null), 3000);
-      
-    } catch (err) {
-      console.error('Error updating item:', err);
-      setError('Failed to update item: ' + (err.message || 'Unknown error'));
-    } finally {
-      setSaving(false);
-    }
+    // Simply update the item in state - autosave will handle the database update
+    setItems(prevItems => 
+      prevItems.map(item => 
+        item.id === updatedItem.id ? updatedItem : item
+      )
+    );
+    
+    // Close dialog immediately for smooth UX
+    setCurrentEditItem(null);
+    setEditDialogOpen(false);
   };
   
   // Handle moodboard settings update
@@ -1478,8 +1564,7 @@ const handleUpdateItem = async (updatedItem) => {
       }));
       
       setSettingsDialogOpen(false);
-      setSuccess('Moodboard settings updated successfully');
-      setTimeout(() => setSuccess(null), 3000);
+      // Settings updated - autosave will handle it
       
     } catch (err) {
       console.error('Error updating moodboard settings:', err);
@@ -1633,7 +1718,7 @@ const handleUpdateItem = async (updatedItem) => {
           </Button>
         </Box>
         
-        <Box sx={{ display: 'flex', gap: 1 }}>
+        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
           {isEditable && (
             <>
               <Button
@@ -1646,16 +1731,45 @@ const handleUpdateItem = async (updatedItem) => {
                 Add Item
               </Button>
               
-              <Button
-                variant="outlined"
-                color="primary"
-                startIcon={<SaveIcon />}
-                onClick={handleSaveChanges}
-                disabled={saving}
-                size="small"
-              >
-                {saving ? 'Saving...' : 'Save Changes'}
-              </Button>
+              {/* Auto-save status indicator */}
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 2 }}>
+                {autoSaveStatus === 'saving' && (
+                  <>
+                    <CircularProgress size={16} />
+                    <Typography variant="caption" color="text.secondary">
+                      Saving...
+                    </Typography>
+                  </>
+                )}
+                {autoSaveStatus === 'saved' && !hasUnsavedChanges && (
+                  <>
+                    <CloudDoneIcon fontSize="small" color="success" />
+                    <Typography variant="caption" color="success.main">
+                      All changes saved
+                    </Typography>
+                  </>
+                )}
+                {autoSaveStatus === 'error' && (
+                  <>
+                    <CloudOffIcon fontSize="small" color="error" />
+                    <Typography variant="caption" color="error">
+                      Save failed
+                    </Typography>
+                  </>
+                )}
+              </Box>
+              
+              {hasUnsavedChanges && (
+                <Button
+                  variant="outlined"
+                  color="secondary"
+                  startIcon={<CancelIcon />}
+                  onClick={handleCancelEdit}
+                  size="small"
+                >
+                  Cancel Edit
+                </Button>
+              )}
               
               <Button
                 variant="outlined"
@@ -1699,6 +1813,7 @@ const handleUpdateItem = async (updatedItem) => {
         </Fade>
       )}
       
+      {/* Success alert no longer needed with autosave
       {success && (
         <Fade in={!!success}>
           <Alert 
@@ -1717,6 +1832,7 @@ const handleUpdateItem = async (updatedItem) => {
           </Alert>
         </Fade>
       )}
+      */}
       
       {/* Permission indicator */}
       <Box

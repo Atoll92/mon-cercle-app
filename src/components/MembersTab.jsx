@@ -1,14 +1,10 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import UserBadges from './UserBadges';
+import MemberCard from './MemberCard';
 import {
   Box,
   Button,
-  Card,
-  CardContent,
-  Chip,
   Typography,
-  Avatar,
   Grid,
   TextField,
   InputAdornment,
@@ -18,7 +14,6 @@ import {
   Select,
   MenuItem,
   IconButton,
-  Tooltip,
   Paper,
   Badge,
   alpha,
@@ -29,16 +24,11 @@ import {
 import {
   Search as SearchIcon,
   PersonAdd as PersonAddIcon,
-  Mail as MailIcon,
   FilterList as FilterListIcon,
   ArrowUpward as ArrowUpwardIcon,
   ArrowDownward as ArrowDownwardIcon,
   EventBusy as EventBusyIcon,
   Clear as ClearIcon,
-  Facebook as FacebookIcon,
-  Twitter as TwitterIcon,
-  LinkedIn as LinkedInIcon,
-  Language as LanguageIcon,
   ArrowUpward as ScrollTopIcon
 } from '@mui/icons-material';
 
@@ -243,15 +233,6 @@ const MembersTab = ({
     });
   };
   
-  // Sample social media profiles
-  const getSocialMedia = (member) => {
-    return {
-      facebook: member.facebook_url || null,
-      twitter: member.twitter_url || null,
-      linkedin: member.linkedin_url || null,
-      website: member.website_url || null
-    };
-  };
   
   if (loading) {
     return (
@@ -629,396 +610,17 @@ const MembersTab = ({
         >
           {displayMembers.map((member, index) => {
             const isLastMember = index === displayMembers.length - 1;
-            const socialMedia = getSocialMedia(member);
             
             return (
-              <Box
+              <MemberCard
                 key={member.id}
-                ref={isLastMember ? lastMemberRef : null}
-                sx={{ width: '100%' }}
-              >
-                <Card 
-                  sx={{ 
-                    height: '100%',
-                    width: '100%',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    transition: 'all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)',
-                    cursor: 'pointer',
-                    '&:hover': {
-                      transform: 'translateY(-8px)',
-                      boxShadow: darkMode ? '0 14px 28px rgba(0,0,0,0.4)' : '0 14px 28px rgba(0,0,0,0.1)'
-                    },
-                    bgcolor: darkMode ? alpha('#121212', 0.7) : 'background.paper',
-                    backdropFilter: 'blur(10px)',
-                    borderRadius: 3,
-                    overflow: 'hidden',
-                    border: `1px solid ${customBorder}`,
-                    position: 'relative'
-                  }}
-                  onClick={() => onMemberSelect && onMemberSelect(member)}
-                  elevation={darkMode ? 4 : 1}
-                >
-                  {/* Decorative top bar, color based on role */}
-                  <Box 
-                    sx={{ 
-                      height: 8, 
-                      width: '100%', 
-                      bgcolor: member.role === 'admin' ? 'primary.main' : 'secondary.main',
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      zIndex: 1
-                    }} 
-                  />
-                  
-                  <CardContent 
-                    sx={{ 
-                      flexGrow: 1, 
-                      display: 'flex', 
-                      flexDirection: 'column', 
-                      alignItems: 'center', 
-                      p: 3,
-                      pt: 4,
-                      position: 'relative',
-                      width: '100%'
-                    }}
-                  >
-                    <Box sx={{ position: 'relative' }}>
-                      <Badge
-                        overlap="circular"
-                        badgeContent={member.role === 'admin' ? '★' : null}
-                        color="primary"
-                        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-                        sx={{
-                          '& .MuiBadge-badge': {
-                            fontSize: '1rem',
-                            height: '22px',
-                            minWidth: '22px',
-                            fontWeight: 'bold'
-                          }
-                        }}
-                      >
-                        <Avatar
-                          src={member.profile_picture_url}
-                          sx={{ 
-                            width: 90, 
-                            height: 90, 
-                            mb: 2.5,
-                            border: `4px solid ${darkMode ? alpha('#ffffff', 0.1) : theme.palette.primary.light}`,
-                            boxShadow: darkMode ? '0 8px 16px rgba(0,0,0,0.5)' : '0 8px 16px rgba(0,0,0,0.1)'
-                          }}
-                        >
-                          {member.full_name ? member.full_name.charAt(0).toUpperCase() : '?'}
-                        </Avatar>
-                      </Badge>
-                      
-                      {/* Message button */}
-                      {member.id !== activeProfile?.id && (
-                        <Tooltip title="Send Message">
-                          <IconButton
-                            component={Link}
-                            to={`/messages/${member.id}`}
-                            size="small"
-                            onClick={(e) => e.stopPropagation()}
-                            color={darkMode ? "inherit" : "primary"}
-                            sx={{ 
-                              position: 'absolute',
-                              bottom: 10,
-                              right: -10,
-                              color: '#ffffff',
-                              bgcolor: darkMode ? theme.palette.primary.dark : theme.palette.primary.main,
-                              '&:hover': { 
-                                bgcolor: darkMode ? theme.palette.primary.main : theme.palette.primary.dark,
-                                transform: 'scale(1.1)'
-                              },
-                              transition: 'all 0.2s ease',
-                              width: 32,
-                              height: 32,
-                              boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
-                            }}
-                          >
-                            <MailIcon fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
-                      )}
-                    </Box>
-                    
-                    {/* Name with fixed width container */}
-                    <Box 
-                      sx={{ 
-                        width: '100%',
-                        height: '2.4em',
-                        mb: 0.5,
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        overflow: 'hidden'
-                      }}
-                    >
-                      <Typography 
-                        variant="h6" 
-                        component="h3"
-                        noWrap={false}
-                        sx={{ 
-                          fontWeight: 600,
-                          color: customLightText,
-                          lineHeight: 1.2,
-                          textAlign: 'center',
-                          width: '100%',
-                          maxWidth: '100%',
-                          padding: '0 4px',
-                          // Proper text truncation with ellipsis
-                          display: '-webkit-box',
-                          WebkitLineClamp: 2,
-                          WebkitBoxOrient: 'vertical',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          wordBreak: 'break-word',
-                          fontSize: '0.8rem',
-                        }}
-                      >
-                        {member.full_name || 'Unnamed User'}
-                        {member.id === activeProfile?.id && ' (You)'}
-                      </Typography>
-                    </Box>
-                    
-                    {/* Tagline */}
-                    {member.tagline && (
-                      <Box 
-                        sx={{ 
-                          width: '100%',
-                          mb: 1.5,
-                          px: 2,
-                          display: 'flex',
-                          justifyContent: 'center',
-                          alignItems: 'center'
-                        }}
-                      >
-                        <Typography 
-                          variant="body2" 
-                          sx={{ 
-                            fontWeight: 'bold',
-                            color: darkMode ? alpha(customLightText, 0.9) : customLightText,
-                            textAlign: 'center',
-                            fontStyle: 'italic',
-                            fontSize: '0.75rem',
-                            lineHeight: 1.3,
-                            '&::before': {
-                              content: '"\\""',
-                              marginRight: '2px',
-                            },
-                            '&::after': {
-                              content: '"\\""',
-                              marginLeft: '2px',
-                            }
-                          }}
-                        >
-                          {member.tagline}
-                        </Typography>
-                      </Box>
-                    )}
-                    
-                    
-                    {/* User Badges */}
-                    {member.badge_count > 0 && (
-                      <Box sx={{ mb: 1.5, width: '100%', display: 'flex', justifyContent: 'center' }}>
-                        <UserBadges 
-                          userId={member.id} 
-                          displayMode="icons"
-                          maxDisplay={2}
-                          showTotal={true}
-                        />
-                      </Box>
-                    )}
-                    
-                    {/* Skills Tags */}
-                    {member.skills && member.skills.length > 0 && (
-                      <Box sx={{ 
-                        mb: 1.5, 
-                        width: '100%', 
-                        display: 'flex', 
-                        justifyContent: 'center',
-                        flexWrap: 'wrap',
-                        gap: 0.5,
-                        px: 1
-                      }}>
-                        {member.skills.slice(0, 3).map((skill, index) => (
-                          <Chip
-                            key={index}
-                            label={skill}
-                            size="small"
-                            sx={{
-                              fontSize: '0.7rem',
-                              height: 20,
-                              bgcolor: darkMode ? alpha('#2196f3', 0.2) : alpha('#2196f3', 0.1),
-                              color: darkMode ? '#90caf9' : '#1976d2',
-                              borderColor: darkMode ? alpha('#2196f3', 0.3) : alpha('#2196f3', 0.2),
-                              border: '1px solid',
-                              '& .MuiChip-label': {
-                                px: 0.8,
-                                fontWeight: 500
-                              }
-                            }}
-                          />
-                        ))}
-                        {member.skills.length > 3 && (
-                          <Tooltip title={member.skills.slice(3).join(', ')}>
-                            <Chip
-                              label={`+${member.skills.length - 3}`}
-                              size="small"
-                              sx={{
-                                fontSize: '0.7rem',
-                                height: 20,
-                                bgcolor: darkMode ? alpha('#9c27b0', 0.2) : alpha('#9c27b0', 0.1),
-                                color: darkMode ? '#ce93d8' : '#7b1fa2',
-                                borderColor: darkMode ? alpha('#9c27b0', 0.3) : alpha('#9c27b0', 0.2),
-                                border: '1px solid',
-                                '& .MuiChip-label': {
-                                  px: 0.8,
-                                  fontWeight: 600
-                                }
-                              }}
-                            />
-                          </Tooltip>
-                        )}
-                      </Box>
-                    )}
-                    
-                    {/* Social Media Links */}
-                    <Box sx={{ 
-                      display: 'flex', 
-                      justifyContent: 'center', 
-                      mb: 2,
-                      gap: 1
-                    }}>
-                      {socialMedia.facebook && (
-                        <Tooltip title="Facebook Profile">
-                          <IconButton 
-                            size="small" 
-                            component="a" 
-                            href={socialMedia.facebook} 
-                            target="_blank"
-                            onClick={(e) => e.stopPropagation()}
-                            sx={{ 
-                              bgcolor: darkMode ? alpha('#3b5998', 0.2) : alpha('#3b5998', 0.1),
-                              color: '#3b5998',
-                              width: 30,
-                              height: 30,
-                              '&:hover': { 
-                                bgcolor: darkMode ? alpha('#3b5998', 0.3) : alpha('#3b5998', 0.2) 
-                              }
-                            }}
-                          >
-                            <FacebookIcon fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
-                      )}
-                      
-                      {socialMedia.twitter && (
-                        <Tooltip title="Twitter Profile">
-                          <IconButton 
-                            size="small" 
-                            component="a" 
-                            href={socialMedia.twitter} 
-                            target="_blank"
-                            onClick={(e) => e.stopPropagation()}
-                            sx={{ 
-                              bgcolor: darkMode ? alpha('#1DA1F2', 0.2) : alpha('#1DA1F2', 0.1),
-                              color: '#1DA1F2',
-                              width: 30,
-                              height: 30,
-                              '&:hover': { 
-                                bgcolor: darkMode ? alpha('#1DA1F2', 0.3) : alpha('#1DA1F2', 0.2) 
-                              }
-                            }}
-                          >
-                            <TwitterIcon fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
-                      )}
-                      
-                      {socialMedia.linkedin && (
-                        <Tooltip title="LinkedIn Profile">
-                          <IconButton 
-                            size="small" 
-                            component="a" 
-                            href={socialMedia.linkedin} 
-                            target="_blank"
-                            onClick={(e) => e.stopPropagation()}
-                            sx={{ 
-                              bgcolor: darkMode ? alpha('#0077B5', 0.2) : alpha('#0077B5', 0.1),
-                              color: '#0077B5',
-                              width: 30,
-                              height: 30,
-                              '&:hover': { 
-                                bgcolor: darkMode ? alpha('#0077B5', 0.3) : alpha('#0077B5', 0.2) 
-                              }
-                            }}
-                          >
-                            <LinkedInIcon fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
-                      )}
-                      
-                      {socialMedia.website && (
-                        <Tooltip title="Personal Website">
-                          <IconButton 
-                            size="small" 
-                            component="a" 
-                            href={socialMedia.website} 
-                            target="_blank"
-                            onClick={(e) => e.stopPropagation()}
-                            sx={{ 
-                              bgcolor: darkMode ? alpha('#4CAF50', 0.2) : alpha('#4CAF50', 0.1),
-                              color: '#4CAF50',
-                              width: 30,
-                              height: 30,
-                              '&:hover': { 
-                                bgcolor: darkMode ? alpha('#4CAF50', 0.3) : alpha('#4CAF50', 0.2) 
-                              }
-                            }}
-                          >
-                            <LanguageIcon fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
-                      )}
-                    </Box>
-                    
-                    {/* Bio with consistent height */}
-                    <Box sx={{ 
-                      width: '100%',
-                      minHeight: '5.6em', // 4 lines * 1.4 line height
-                      display: 'flex',
-                      alignItems: 'flex-start',
-                      justifyContent: 'center',
-                      px: 1,
-                      mt: 1
-                    }}>
-                      <Typography 
-                        variant="body2" 
-                        color={customFadedText} 
-                        align="center" 
-                        sx={{ 
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          display: '-webkit-box',
-                          WebkitLineClamp: 4,
-                          WebkitBoxOrient: 'vertical',
-                          lineHeight: 1.4,
-                          width: '100%',
-                          wordBreak: 'break-word',
-                          fontStyle: member.bio ? 'normal' : 'italic',
-                          fontSize: '0.875rem',
-                          whiteSpace: 'pre-line' // This preserves line breaks
-                        }}
-                      >
-                        {member.bio || 'No bio available'}
-                      </Typography>
-                    </Box>
-                  </CardContent>
-                </Card>
-              </Box>
+                member={member}
+                activeProfile={activeProfile}
+                darkMode={darkMode}
+                onMemberSelect={onMemberSelect}
+                isLastMember={isLastMember}
+                lastMemberRef={lastMemberRef}
+              />
             );
           })}
         </Box>
