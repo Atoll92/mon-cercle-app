@@ -56,6 +56,7 @@ function DirectMessageChat({ conversationId, partner, onBack }) {
   const fetchingRef = useRef(false);
   const lastFetchedConversationId = useRef(null);
   const textFieldRef = useRef(null);
+  const shouldRefocusRef = useRef(false);
   
   // URL regex pattern to detect links in messages
   const URL_REGEX = /(https?:\/\/)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/gi;
@@ -172,7 +173,7 @@ function DirectMessageChat({ conversationId, partner, onBack }) {
             // Explicitly refresh all conversations to update unread counts globally
             if (typeof refreshConversations === 'function') {
               setTimeout(() => {
-                console.log('Refreshing all conversations to update badge');
+                // console.log('Refreshing all conversations to update badge');
                 refreshConversations();
               }, 300);
             }
@@ -217,7 +218,7 @@ function DirectMessageChat({ conversationId, partner, onBack }) {
   // When calling refreshConversations
 if (refreshConversations) {
   setTimeout(() => {
-    console.log('Refreshing all conversations to update badge');
+    // console.log('Refreshing all conversations to update badge');
     refreshConversations();
   }, 300);
 }
@@ -228,6 +229,19 @@ if (refreshConversations) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages]);
+  
+  // Focus the input field when sending is complete
+  useEffect(() => {
+    if (!sending && shouldRefocusRef.current && textFieldRef.current) {
+      // Small delay to ensure the TextField is enabled
+      setTimeout(() => {
+        if (textFieldRef.current) {
+          textFieldRef.current.focus();
+        }
+        shouldRefocusRef.current = false;
+      }, 50);
+    }
+  }, [sending]);
   
   const handleSendMessage = async (e, mediaData = null) => {
     if (e) e.preventDefault();
@@ -243,6 +257,7 @@ if (refreshConversations) {
     setNewMessage('');
     setPendingMedia(null);
     setSending(true);
+    shouldRefocusRef.current = true;
 
     // Create a pending message for immediate display
     const pendingMsg = {
@@ -1231,7 +1246,7 @@ if (refreshConversations) {
           </IconButton>
           
           <TextField
-            ref={textFieldRef}
+            inputRef={textFieldRef}
             fullWidth
             placeholder="Type a message or paste a link..."
             variant="outlined"
@@ -1239,6 +1254,7 @@ if (refreshConversations) {
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
             autoComplete="off"
+            autoFocus
             disabled={sending}
             onKeyDown={(e) => {
               if (e.key === 'Enter' && !e.shiftKey) {

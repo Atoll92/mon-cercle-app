@@ -238,7 +238,7 @@ export const DirectMessagesProvider = ({ children }) => {
     // Only refresh if it's been at least 1 second since the last fetch
     const now = Date.now();
     if (now - lastFetchRef.current < 1000) {
-      console.log('Refresh throttled, too soon since last fetch');
+      // console.log('Refresh throttled, too soon since last fetch');
       return;
     }
     
