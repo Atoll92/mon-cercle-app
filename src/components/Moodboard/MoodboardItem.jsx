@@ -287,7 +287,6 @@ const MoodboardItem = ({
           }}>
             <SimplePDFViewer
               url={item.content}
-              pageNumber={1}
               width="100%"
               height="100%"
               showControls={false}
