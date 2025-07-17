@@ -47,7 +47,6 @@ import CreatePostModal from '../components/CreatePostModal';
 import PostCard from '../components/PostCard';
 
 function EditProfilePage() {
-  const { user } = useAuth();
   const { activeProfile } = useProfile();
   const navigate = useNavigate();
   const location = useLocation();
@@ -105,7 +104,7 @@ function EditProfilePage() {
 
   useEffect(() => {
     const getProfile = async () => {
-      if (!user) return;
+      if (!activeProfile) return;
 
       try {
         const { data: postData, error: postError } = await supabase
@@ -199,7 +198,7 @@ function EditProfilePage() {
     };
     
     getProfile();
-  }, [user?.id]);
+  }, [activeProfile]);
 
 
   const handleTabChange = (_, newValue) => {
