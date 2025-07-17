@@ -174,7 +174,7 @@ function NetworkAdminPage() {
     };
     
     fetchData();
-  }, [user]);
+  }, [user?.id, activeProfile?.id]);
 
   const refreshMembers = async () => {
     if (!profile || !profile.network_id) return;
