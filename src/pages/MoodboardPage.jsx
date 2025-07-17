@@ -888,12 +888,11 @@ function MoodboardPage() {
         if (moodboardError) throw moodboardError;
         setMoodboard(moodboardData);
         
-        // Check permissions
+        // Check permissions - simplified for micro conclav
+        // User can only edit their own moodboard
         let canEdit = false;
         if (user && activeProfile) {
           if (moodboardData.created_by === activeProfile.id) {
-            canEdit = true;
-          } else if (moodboardData.permissions === 'collaborative') {
             canEdit = true;
           }
         }

@@ -22,14 +22,19 @@ import ZoomControls from '../components/Moodboard/ZoomControls';
 import GridViewIcon from '@mui/icons-material/GridView';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import EditIcon from '@mui/icons-material/Edit';
 import LinkPreview from '../components/LinkPreview';
 import MoodboardItemDisplay from '../components/Moodboard/MoodboardItemDisplay';
 import MoodboardItemGrid from '../components/Moodboard/MoodboardItemGrid';
+import { useAuth } from '../context/authcontext';
+import { useProfile } from '../context/profileContext';
 
 const MicroConclavPage = () => {
-  const { userId } = useParams();
+  const { profileId, username } = useParams();
   const navigate = useNavigate();
   const theme = useTheme();
+  const { user } = useAuth();
+  const { activeProfile } = useProfile();
   const [profile, setProfile] = useState(null);
   const [moodboardItems, setMoodboardItems] = useState([]);
   const [primaryMoodboardItems, setPrimaryMoodboardItems] = useState([]);
@@ -40,6 +45,7 @@ const MicroConclavPage = () => {
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'moodboard'
+  const [resolvedProfileId, setResolvedProfileId] = useState(null);
   
   const containerRef = useRef(null);
   
@@ -62,35 +68,53 @@ const MicroConclavPage = () => {
 
   const fetchProfile = async () => {
     try {
-      const userProfile = await getUserProfile(userId);
+      // If we have a username, first resolve it to a profileId
+      if (username && !profileId) {
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('username', username)
+          .single();
+          
+        if (profileError) throw profileError;
+        if (profileData) {
+          setProfile(profileData);
+          setResolvedProfileId(profileData.id);
+          return;
+        }
+      }
+      
+      // Otherwise use the profileId directly
+      const userProfile = await getUserProfile(profileId);
       setProfile(userProfile);
+      setResolvedProfileId(profileId);
     } catch (error) {
       console.error('Error fetching profile:', error);
     }
   };
 
-  const fetchUserPersonalMoodboard = async () => {
+  const fetchUserMoodboard = async () => {
     try {
-      // First fetch the user's personal moodboard
-      const { data: moodboards, error: moodboardError } = await supabase
+      const profileIdToUse = resolvedProfileId || profileId;
+      if (!profileIdToUse) return null;
+      
+      // Fetch the user's single moodboard (micro conclav)
+      const { data: moodboard, error: moodboardError } = await supabase
         .from('moodboards')
         .select('*')
-        .eq('created_by', userId)
-        .eq('is_personal', true)
-        .order('created_at', { ascending: false })
-        .limit(1);
+        .eq('created_by', profileIdToUse)
+        .single();
       
       if (moodboardError) throw moodboardError;
       
-      if (moodboards && moodboards.length > 0) {
-        const moodboard = moodboards[0];
+      if (moodboard) {
         setMoodboardBackgroundColor(moodboard.background_color);
         setPrimaryMoodboardId(moodboard.id);
         return moodboard.id;
       }
       return null;
     } catch (error) {
-      console.error('Error fetching personal moodboard:', error);
+      console.error('Error fetching moodboard:', error);
       return null;
     }
   };
@@ -116,9 +140,15 @@ const MicroConclavPage = () => {
   const fetchMoodboardItems = async (pageNum = 0) => {
     if (!hasMore && pageNum > 0) return;
     
+    const profileIdToUse = resolvedProfileId || profileId;
+    if (!profileIdToUse) {
+      console.log('No profile ID available for fetching moodboard items');
+      return;
+    }
+    
     try {
       setLoadingMore(pageNum > 0);
-      const result = await getUserMoodboardItems(userId, pageNum * 20, 20);
+      const result = await getUserMoodboardItems(profileIdToUse, pageNum * 20, 20);
       
       if (result.items.length < 20) {
         setHasMore(false);
@@ -126,7 +156,7 @@ const MicroConclavPage = () => {
       
       if (pageNum === 0) {
         setMoodboardItems(result.items);
-        // Don't override background color here anymore, let fetchUserPersonalMoodboard handle it
+        // Don't override background color here anymore, let fetchUserMoodboard handle it
       } else {
         setMoodboardItems(prev => [...prev, ...result.items]);
       }
@@ -141,13 +171,22 @@ const MicroConclavPage = () => {
     const init = async () => {
       setLoading(true);
       await fetchProfile();
-      await fetchUserPersonalMoodboard();
-      await fetchMoodboardItems(0);
       setLoading(false);
     };
     
     init();
-  }, [userId]);
+  }, [profileId, username]);
+
+  // Fetch moodboard and items after we have resolved profileId
+  useEffect(() => {
+    if (resolvedProfileId) {
+      const fetchData = async () => {
+        await fetchUserMoodboard();
+        await fetchMoodboardItems(0);
+      };
+      fetchData();
+    }
+  }, [resolvedProfileId]);
 
   // Fetch primary moodboard items when primaryMoodboardId is set
   useEffect(() => {
@@ -253,7 +292,7 @@ const MicroConclavPage = () => {
           </Typography>
         </Box>
 
-        {/* View Mode Toggle */}
+        {/* View Mode Toggle and Edit Button */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <ToggleButtonGroup
             value={viewMode}
@@ -271,6 +310,18 @@ const MicroConclavPage = () => {
               Moodboard
             </ToggleButton>
           </ToggleButtonGroup>
+          
+          {/* Show edit button if this is the user's own micro conclav */}
+          {activeProfile && profile && activeProfile.id === profile.id && primaryMoodboardId && (
+            <Button
+              variant="contained"
+              startIcon={<EditIcon />}
+              onClick={() => navigate(`/moodboard/${primaryMoodboardId}`)}
+              size="small"
+            >
+              Edit
+            </Button>
+          )}
         </Box>
         
         <Box sx={{ display: 'flex', gap: 1 }}>
@@ -337,6 +388,7 @@ const MicroConclavPage = () => {
           flexGrow: 1,
           position: 'relative',
           overflow: viewMode === 'grid' ? 'auto' : 'hidden',
+          bgcolor: viewMode === 'grid' ? (moodboardBackgroundColor || '#f5f5f5') : 'transparent',
         }}
       >
         {viewMode === 'grid' ? (

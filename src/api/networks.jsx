@@ -455,6 +455,22 @@ export const getUserProfile = async (userIdOrProfileId) => {
   }
 };
 
+export const getUserProfileByUsername = async (username) => {
+  try {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('username', username)
+      .single();
+      
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error('Error fetching user profile by username:', error);
+    return null;
+  }
+};
+
 // NEW: Profile-aware function for multiple profiles migration
 export const getProfileById = async (profileId) => {
   try {
