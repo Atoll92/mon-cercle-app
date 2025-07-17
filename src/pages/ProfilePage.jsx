@@ -11,12 +11,11 @@ import MoodboardGallery from '../components/moodboardGallery';
 import EventParticipation from '../components/EventParticipation';
 import UserBadges from '../components/UserBadges';
 import EventDetailsDialog from '../components/EventDetailsDialog';
-import PostCard from '../components/PostCard';
+import PostsGrid from '../components/PostsGrid';
 import {
   Button,
   Typography,
   Box,
-  Divider,
   Container,
   Paper,
   Avatar,
@@ -52,7 +51,6 @@ import {
   Dashboard as DashboardIcon,
   Badge as Badge
 } from '@mui/icons-material';
-import FlexFlowBox from '../components/FlexFlowBox';
 
 function ProfilePage() {
   const { userId } = useParams();
@@ -69,22 +67,6 @@ function ProfilePage() {
   const [showEventDialog, setShowEventDialog] = useState(false);
   const [activeTab, setActiveTab] = useState(0);
 
-  // Handle post updates and deletions
-  const handlePostUpdated = (updatedPost) => {
-    setProfile(prev => ({
-      ...prev,
-      posts: prev.posts?.map(post => 
-        post.id === updatedPost.id ? updatedPost : post
-      ) || []
-    }));
-  };
-
-  const handlePostDeleted = (deletedPostId) => {
-    setProfile(prev => ({
-      ...prev,
-      posts: prev.posts?.filter(post => post.id !== deletedPostId) || []
-    }));
-  };
   
   // Tab indices
   const TAB_OVERVIEW = 0;
@@ -228,6 +210,9 @@ function ProfilePage() {
           <Typography variant="body1" paragraph>
             {error}
           </Typography>
+          <Typography variant="body2" sx={{ mb: 2 }}>
+            The user may not exist or you may not have permission to view their profile.
+          </Typography>
           <Button 
             variant="contained" 
             startIcon={<ArrowBackIcon />}
@@ -249,6 +234,9 @@ function ProfilePage() {
           </Typography>
           <Typography variant="body1" paragraph>
             The user you're looking for doesn't exist or you don't have permission to view their profile.
+          </Typography>
+          <Typography variant="body2" sx={{ mb: 2 }}>
+            Please check the URL or try searching for the user.
           </Typography>
           <Button 
             variant="contained" 
@@ -278,11 +266,24 @@ function ProfilePage() {
         <Box 
           sx={{ 
             p: 3, 
-            background: 'linear-gradient(120deg, #2196f3, #3f51b5)', 
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 
             color: 'white',
             display: 'flex',
             alignItems: 'center',
-            gap: 2
+            gap: 2,
+            position: 'relative',
+            overflow: 'hidden',
+            zIndex: 0,
+            '&::before': {
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'url("data:image/svg+xml,%3Csvg width=\'100\' height=\'100\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cdefs%3E%3Cpattern id=\'a\' x=\'0\' y=\'0\' width=\'100\' height=\'100\' patternUnits=\'userSpaceOnUse\'%3E%3Ccircle cx=\'50\' cy=\'50\' r=\'1\' fill=\'rgba(255,255,255,0.1)\'/%3E%3C/pattern%3E%3C/defs%3E%3Crect width=\'100\' height=\'100\' fill=\'url(%23a)\'/%3E%3C/svg%3E") repeat',
+              opacity: 0.5
+            }
           }}
         >
           <IconButton 
@@ -299,7 +300,7 @@ function ProfilePage() {
           >
             <ArrowBackIcon />
           </IconButton>
-          <Typography variant="h4" component="h1" fontWeight="500">
+          <Typography variant="h4" component="h1" fontWeight="500" sx={{ position: 'relative', zIndex: 1 }}>
             {isOwnProfile ? 'Your Profile' : `${profile.full_name || 'User'}'s Profile`}
           </Typography>
           
@@ -356,16 +357,19 @@ function ProfilePage() {
             label="Overview" 
             icon={<PersonOutlineIcon />} 
             iconPosition="start"
+            sx={{ fontWeight: activeTab === TAB_OVERVIEW ? 600 : 400 }}
           />
            <Tab 
     label="Moodboards" 
-    icon={<PersonOutlineIcon />} 
+    icon={<DashboardIcon />} 
     iconPosition="start"
+    sx={{ fontWeight: activeTab === TAB_MOODBOARDS ? 600 : 400 }}
   />
           <Tab 
-            label="Posts" 
+            label={`Posts ${profile?.posts?.length ? `(${profile.posts.length})` : ''}`}
             icon={<LanguageIcon />} 
             iconPosition="start"
+            sx={{ fontWeight: activeTab === TAB_POSTS ? 600 : 400 }}
           />
           {upcomingEvents.length > 0 && (
             <Tab 
@@ -667,7 +671,7 @@ function ProfilePage() {
                     </Typography>
                     
                     {profile.bio ? (
-                      <Typography variant="body1" paragraph>
+                      <Typography variant="body1" sx={{ mt: 2 }}>
                         {profile.bio}
                       </Typography>
                     ) : (
@@ -779,7 +783,7 @@ function ProfilePage() {
                         pb: 1,
                         borderBottom: '1px solid',
                         borderColor: 'divider',
-                        mb: 2
+                        mb: 3
                       }}>
                         <Typography 
                           variant="h6" 
@@ -798,22 +802,15 @@ function ProfilePage() {
                           endIcon={<MoreHorizIcon />} 
                           onClick={() => setActiveTab(TAB_POSTS)}
                         >
-                          See All
+                          See All ({profile.posts.length})
                         </Button>
                       </Box>
                       
-                      <FlexFlowBox>
-                        {profile.posts.slice(0, 2).map(post => (
-                            <PostCard
-                              key={post.id}
-                              post={post}
-                              author={profile}
-                              isOwner={isOwnProfile}
-                              onPostUpdated={handlePostUpdated}
-                              onPostDeleted={handlePostDeleted}
-                            />
-                        ))}
-                      </FlexFlowBox>
+                      <PostsGrid
+                        posts={profile.posts.slice(0, 3)}
+                        author={profile}
+                        isOwnProfile={isOwnProfile}
+                      />
                     </Box>
                   )}
                 </Box>
@@ -824,28 +821,36 @@ function ProfilePage() {
           {/* Posts Tab */}
           {activeTab === TAB_POSTS && (
             <Box sx={{ p: 3 }}>
-              <Typography variant="h5" gutterBottom>
-                User Posts
-              </Typography>
+              <Box sx={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                alignItems: 'center',
+                mb: 3
+              }}>
+                <Typography 
+                  variant="h5" 
+                  sx={{
+                    fontWeight: 600,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1
+                  }}
+                >
+                  <LanguageIcon color="primary" />
+                  {isOwnProfile ? 'Your Posts' : `${profile.full_name}'s Posts`}
+                </Typography>
+                
+                <Typography variant="body2" color="text.secondary">
+                  {profile.posts?.length || 0} posts
+                </Typography>
+              </Box>
               
-              {profile.posts && profile.posts.length > 0 ? (
-                <FlexFlowBox>
-                  {profile.posts.map(post => (
-                      <PostCard
-                        key={post.id}
-                        post={post}
-                        author={profile}
-                        isOwner={isOwnProfile}
-                        onPostUpdated={handlePostUpdated}
-                        onPostDeleted={handlePostDeleted}
-                      />
-                  ))}
-                </FlexFlowBox>
-              ) : (
-                <Alert severity="info" variant="outlined" sx={{ mt: 2 }}>
-                  No posts have been shared yet.
-                </Alert>
-              )}
+              <PostsGrid
+                posts={profile.posts}
+                author={profile}
+                isOwnProfile={isOwnProfile}
+                loading={loading}
+              />
             </Box>
           )}
           
