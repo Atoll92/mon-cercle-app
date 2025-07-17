@@ -7,13 +7,13 @@ import NetworkSelector from './NetworkSelector';
 
 const ProfileAwareRoute = ({ children }) => {
   const { user } = useAuth();
-  const { activeProfile, userProfiles, isLoadingProfiles, profileError } = useProfile();
+  const { activeProfile, userProfiles, isLoadingProfiles, isSelectingProfile, profileError } = useProfile();
   const [showProfileSelector, setShowProfileSelector] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
-    if (!user || isLoadingProfiles) {
+    if (!user || isLoadingProfiles || isSelectingProfile) {
       return;
     }
 
@@ -40,9 +40,9 @@ const ProfileAwareRoute = ({ children }) => {
       return;
     }
 
-    // If user has exactly one profile, automatically set it as active
+    // If user has exactly one profile, wait for it to be selected
     if (userProfiles.length === 1 && !activeProfile) {
-      // The profile context should handle this automatically
+      // Profile context is handling the selection, just wait
       return;
     }
 
@@ -60,15 +60,15 @@ const ProfileAwareRoute = ({ children }) => {
 
     // User has active profile, hide selector if it was shown
     setShowProfileSelector(false);
-  }, [user, activeProfile, userProfiles, isLoadingProfiles, profileError, location.pathname, navigate]);
+  }, [user, activeProfile, userProfiles, isLoadingProfiles, isSelectingProfile, profileError, location.pathname, navigate]);
 
   const handleProfileSelected = () => {
     setShowProfileSelector(false);
     // Profile context will handle the navigation
   };
 
-  // Show loading while profiles are loading
-  if (user && isLoadingProfiles) {
+  // Show loading while profiles are loading or being selected
+  if (user && (isLoadingProfiles || isSelectingProfile)) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
         <CircularProgress />

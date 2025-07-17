@@ -47,7 +47,8 @@ import CreatePostModal from '../components/CreatePostModal';
 import PostCard from '../components/PostCard';
 
 function EditProfilePage() {
-  const { activeProfile } = useProfile();
+  const { user } = useAuth();
+  const { activeProfile, refreshActiveProfile } = useProfile();
   const navigate = useNavigate();
   const location = useLocation();
   
@@ -198,7 +199,7 @@ function EditProfilePage() {
     };
     
     getProfile();
-  }, [activeProfile]);
+  }, [activeProfile?.id]);
 
 
   const handleTabChange = (_, newValue) => {
@@ -419,6 +420,9 @@ function EditProfilePage() {
       }
       
       setMessage(isNewProfile ? 'Profile created successfully!' : 'Profile updated successfully!');
+      
+      // Refresh the active profile in context to ensure all components see the updated data
+      await refreshActiveProfile();
       
       // Redirect after a short delay
       setTimeout(() => {

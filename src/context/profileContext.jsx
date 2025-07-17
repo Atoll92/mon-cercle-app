@@ -17,6 +17,7 @@ export const ProfileProvider = ({ children }) => {
   const [activeProfile, setActiveProfileState] = useState(null);
   const [userProfiles, setUserProfiles] = useState([]);
   const [isLoadingProfiles, setIsLoadingProfiles] = useState(true);
+  const [isSelectingProfile, setIsSelectingProfile] = useState(false);
   const [profileError, setProfileError] = useState(null);
 
   // Load user profiles when user changes
@@ -29,7 +30,9 @@ export const ProfileProvider = ({ children }) => {
       setActiveProfileState(null);
       setIsLoadingProfiles(false);
     }
-  }, [user]);
+
+    console.log('ProfileProvider: User changed, loading profiles for user:', user?.id || 'none');
+  }, [user?.id]);
 
   // Load all profiles for the current user
   const loadUserProfiles = async () => {
@@ -57,9 +60,16 @@ export const ProfileProvider = ({ children }) => {
       
       if (savedProfile && profiles?.some(p => p.id === savedProfile.id)) {
         setActiveProfileState(savedProfile);
+        setIsLoadingProfiles(false);
       } else if (profiles?.length === 1) {
         // If only one profile, automatically select it
+        setIsSelectingProfile(true);
+        setIsLoadingProfiles(false);
         await setActiveProfile(profiles[0]);
+        setIsSelectingProfile(false);
+      } else {
+        // Multiple profiles or no profiles - no auto-selection needed
+        setIsLoadingProfiles(false);
       }
       
       // Return the fresh data for immediate use
@@ -67,9 +77,9 @@ export const ProfileProvider = ({ children }) => {
     } catch (error) {
       console.error('Error loading profiles:', error);
       setProfileError(error.message);
-      return { profiles: [], error: error.message };
-    } finally {
       setIsLoadingProfiles(false);
+      setIsSelectingProfile(false);
+      return { profiles: [], error: error.message };
     }
   };
 
@@ -156,16 +166,44 @@ export const ProfileProvider = ({ children }) => {
     return await setActiveProfile(profile);
   };
 
+  // Refresh the active profile data from the database
+  const refreshActiveProfile = async () => {
+    if (!activeProfile) return { success: false, error: 'No active profile' };
+    
+    try {
+      const { data: updatedProfile, error } = await profilesApi.getProfileById(activeProfile.id);
+      
+      if (error) {
+        throw new Error(error);
+      }
+      
+      // Update the active profile state with fresh data
+      setActiveProfileState(updatedProfile);
+      
+      // Also update it in the userProfiles array
+      setUserProfiles(prev => prev.map(p => 
+        p.id === updatedProfile.id ? updatedProfile : p
+      ));
+      
+      return { success: true, profile: updatedProfile };
+    } catch (error) {
+      console.error('Error refreshing active profile:', error);
+      return { success: false, error: error.message };
+    }
+  };
+
   const value = {
     activeProfile,
     userProfiles,
     isLoadingProfiles,
+    isSelectingProfile,
     profileError,
     setActiveProfile,
     clearActiveProfile,
     createProfileForNetwork,
     getProfileForNetwork,
     switchProfile,
+    refreshActiveProfile,
     loadUserProfiles,
     hasMultipleProfiles: userProfiles.length > 1,
     profileCount: userProfiles.length
