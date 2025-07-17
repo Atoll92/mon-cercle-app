@@ -13,7 +13,7 @@ import {
 } from '@mui/icons-material';
 import LinkPreview from '../LinkPreview';
 import MediaPlayer from '../MediaPlayer';
-import SimplePDFViewer from '../SimplePDFViewer';
+import PDFPreviewEnhanced from '../PDFPreviewEnhanced';
 
 const MoodboardItem = ({ 
   item, 
@@ -285,12 +285,13 @@ const MoodboardItem = ({
             overflow: 'hidden',
             backgroundColor: item.backgroundColor || '#f8f9fa',
           }}>
-            <SimplePDFViewer
+            <PDFPreviewEnhanced
               url={item.content}
-              width="100%"
+              fileName={item.title || 'PDF Document'}
+              title={item.title || 'PDF Document'}
               height="100%"
-              showControls={false}
-              backgroundColor={item.backgroundColor || 'white'}
+              showFileName={false}
+              borderRadius={0}
             />
             
             {/* PDF info footer */}

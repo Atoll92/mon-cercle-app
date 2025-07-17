@@ -34,8 +34,10 @@ import {
   TextFields as TextFieldsIcon,
   Image as ImageIcon,
   ZoomOutMap as ZoomOutMapIcon,
+  PictureAsPdf as PdfIcon,
 } from '@mui/icons-material';
 import FlexFlowBox from './FlexFlowBox';
+import PDFPreviewEnhanced from './PDFPreviewEnhanced';
 
 /**
  * Component to display a user's public moodboards in a gallery format
@@ -340,6 +342,7 @@ const MoodboardGallery = ({ userId, isOwnProfile, limit, showFeatured = false })
   // Render MoodboardItem component - just like in MoodboardPage
   const MoodboardItem = ({ item }) => {
     const [imageLoaded, setImageLoaded] = useState(false);
+    const [pdfModalOpen, setPdfModalOpen] = useState(false);
     
     // Check for any null or undefined properties and provide defaults
     const safeItem = {
@@ -355,6 +358,30 @@ const MoodboardGallery = ({ userId, isOwnProfile, limit, showFeatured = false })
     // Render different content based on item type
     const renderContent = () => {
       switch (item.type) {
+        case 'pdf':
+          return (
+            <Box 
+              sx={{ 
+                width: '100%', 
+                height: '100%',
+                position: 'relative',
+                overflow: 'hidden'
+              }}
+              onClick={(e) => {
+                e.stopPropagation();
+                setPdfModalOpen(true);
+              }}
+            >
+              <PDFPreviewEnhanced
+                url={item.content}
+                fileName={item.title || 'PDF Document'}
+                title={item.title || 'PDF Document'}
+                height="100%"
+                showFileName={false}
+                borderRadius={0}
+              />
+            </Box>
+          );
         case 'image':
           return (
             <Box sx={{ 
@@ -664,6 +691,13 @@ const MoodboardGallery = ({ userId, isOwnProfile, limit, showFeatured = false })
                 size="small"
                 variant="outlined"
                 color="info"
+              />
+              <Chip 
+                icon={<PdfIcon fontSize="small" />} 
+                label={featuredItems.filter(item => item.type === 'pdf').length || 0} 
+                size="small"
+                variant="outlined"
+                color="error"
               />
             </Box>
           </Box>

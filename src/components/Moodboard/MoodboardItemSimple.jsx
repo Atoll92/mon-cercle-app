@@ -14,7 +14,7 @@ import {
   AudioFile as AudioIcon,
 } from '@mui/icons-material';
 import LinkPreview from '../LinkPreview';
-import SimplePDFViewer from '../SimplePDFViewer';
+import PDFPreviewEnhanced from '../PDFPreviewEnhanced';
 
 /**
  * Simple display component for moodboard items without editing capabilities
@@ -200,32 +200,17 @@ const MoodboardItemSimple = ({ item, style = {} }) => {
               height: '100%',
               bgcolor: 'background.paper',
               position: 'relative',
+              overflow: 'hidden',
             }}
           >
-            <SimplePDFViewer
+            <PDFPreviewEnhanced
               url={item.content}
-              width="100%"
+              fileName={item.title || 'PDF Document'}
+              title={item.title || 'PDF Document'}
               height="100%"
-              showControls={false}
-              backgroundColor="white"
+              showFileName={false}
+              borderRadius={0}
             />
-            {item.title && (
-              <Box
-                sx={{
-                  position: 'absolute',
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  bgcolor: 'rgba(0, 0, 0, 0.7)',
-                  color: 'white',
-                  p: 1,
-                }}
-              >
-                <Typography variant="caption" noWrap>
-                  {item.title}
-                </Typography>
-              </Box>
-            )}
           </Box>
         );
 
