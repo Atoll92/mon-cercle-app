@@ -18,6 +18,7 @@ import {
   Chip
 } from '@mui/material';
 import Spinner from './Spinner';
+import MemberDetailsModal from './MembersDetailModal';
 import {
   ChatBubbleOutline as CommentIcon,
   Send as SendIcon,
@@ -43,6 +44,8 @@ const CommentSection = ({ itemType, itemId, darkMode, isAdmin = false, initialCo
   const [submitting, setSubmitting] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedComment, setSelectedComment] = useState(null);
+  const [selectedMember, setSelectedMember] = useState(null);
+  const [showMemberDetailsModal, setShowMemberDetailsModal] = useState(false);
 
   // Update comment count when initialCount changes
   useEffect(() => {
@@ -154,6 +157,12 @@ const CommentSection = ({ itemType, itemId, darkMode, isAdmin = false, initialCo
     setSelectedComment(null);
   };
 
+  // Default member click handler that opens MemberDetailsModal
+  const handleDefaultMemberClick = (profile) => {
+    setSelectedMember(profile);
+    setShowMemberDetailsModal(true);
+  };
+
   const CommentItem = ({ comment, isReply = false, parentId = null }) => (
     <Box
       sx={{
@@ -166,10 +175,21 @@ const CommentSection = ({ itemType, itemId, darkMode, isAdmin = false, initialCo
     >
       <Avatar
         src={comment.profile?.profile_picture_url}
+        onClick={() => {
+          if (onMemberClick) {
+            onMemberClick(comment.profile_id);
+          } else if (comment.profile) {
+            handleDefaultMemberClick(comment.profile);
+          }
+        }}
         sx={{
           width: isReply ? 28 : 32,
           height: isReply ? 28 : 32,
-          bgcolor: theme.palette.primary.main
+          bgcolor: theme.palette.primary.main,
+          cursor: 'pointer',
+          '&:hover': {
+            opacity: 0.8
+          }
         }}
       >
         {comment.profile?.full_name?.[0] || '?'}
@@ -178,15 +198,21 @@ const CommentSection = ({ itemType, itemId, darkMode, isAdmin = false, initialCo
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
           <Typography
             variant="body2"
-            onClick={onMemberClick ? (e) => onMemberClick(comment.profile_id, e) : undefined}
+            onClick={(e) => {
+              if (onMemberClick) {
+                onMemberClick(comment.profile_id, e);
+              } else if (comment.profile) {
+                handleDefaultMemberClick(comment.profile);
+              }
+            }}
             sx={{
               fontWeight: 500,
               color: theme.palette.text.primary,
-              cursor: onMemberClick ? 'pointer' : 'default',
-              '&:hover': onMemberClick ? {
+              cursor: 'pointer',
+              '&:hover': {
                 color: theme.palette.primary.main,
                 textDecoration: 'underline'
-              } : {},
+              },
               transition: 'color 0.2s ease'
             }}
           >
@@ -438,6 +464,19 @@ const CommentSection = ({ itemType, itemId, darkMode, isAdmin = false, initialCo
           </MenuItem>
         )}
       </Menu>
+
+      {/* Member Details Modal */}
+      {selectedMember && (
+        <MemberDetailsModal
+          open={showMemberDetailsModal}
+          onClose={() => {
+            setShowMemberDetailsModal(false);
+            setSelectedMember(null);
+          }}
+          member={selectedMember}
+          darkMode={darkMode}
+        />
+      )}
     </Box>
   );
 };

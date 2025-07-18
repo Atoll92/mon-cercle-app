@@ -46,10 +46,13 @@ const MemberDetailsModal = ({
   onClose, 
   member, 
   posts: initialPosts = [], // Changed from portfolioItems to posts
-  isCurrentUser,
   darkMode = false
 }) => {
   const muiTheme = useTheme(); // Get the MUI theme
+  const { activeProfile } = useProfile(); // Get active profile to determine if current user
+  
+  // Compute isCurrentUser internally
+  const isCurrentUser = activeProfile?.id === member?.id;
   
   // When using theme.palette.custom, check first if it exists
   // This is for compatibility with both your custom theme and the default theme

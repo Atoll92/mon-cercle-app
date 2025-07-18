@@ -435,7 +435,6 @@ function EventParticipation({ event, showParticipants = false, onStatusChange = 
             setSelectedMember(null);
           }}
           member={selectedMember}
-          isCurrentUser={activeProfile?.id === selectedMember.id}
         />
       )}
     </>

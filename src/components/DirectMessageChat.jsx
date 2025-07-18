@@ -33,6 +33,7 @@ import MediaPlayer from './MediaPlayer';
 import ImageViewerModal from './ImageViewerModal';
 import LinkPreview from './LinkPreview';
 import MediaUpload from './MediaUpload';
+import MemberDetailsModal from './MembersDetailModal';
 
 function DirectMessageChat({ conversationId, partner, onBack }) {
   const { user } = useAuth();
@@ -48,6 +49,7 @@ function DirectMessageChat({ conversationId, partner, onBack }) {
   const [imageViewerOpen, setImageViewerOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState({ url: '', title: '' });
   const [showMediaUpload, setShowMediaUpload] = useState(false);
+  const [showMemberDetailsModal, setShowMemberDetailsModal] = useState(false);
   const [expandedMedia, setExpandedMedia] = useState({});
   const [pendingMedia, setPendingMedia] = useState(null);
   const messagesEndRef = useRef(null);
@@ -929,13 +931,35 @@ if (refreshConversations) {
           <Avatar 
             src={partner.profile_picture_url} 
             alt={partner.full_name}
-            sx={{ mr: 1.5, width: 40, height: 40 }}
+            onClick={() => setShowMemberDetailsModal(true)}
+            sx={{ 
+              mr: 1.5, 
+              width: 40, 
+              height: 40,
+              cursor: 'pointer',
+              '&:hover': {
+                opacity: 0.8
+              }
+            }}
           >
             {partner.full_name ? partner.full_name.charAt(0).toUpperCase() : 'U'}
           </Avatar>
         </Badge>
-        <Box sx={{ flexGrow: 1 }}>
-          <Typography variant="subtitle1">
+        <Box 
+          sx={{ 
+            flexGrow: 1,
+            cursor: 'pointer'
+          }}
+          onClick={() => setShowMemberDetailsModal(true)}
+        >
+          <Typography 
+            variant="subtitle1"
+            sx={{
+              '&:hover': {
+                color: 'primary.main'
+              }
+            }}
+          >
             {partner.full_name || 'Unknown User'}
           </Typography>
           <Typography variant="caption" color="text.secondary">
@@ -977,11 +1001,30 @@ if (refreshConversations) {
             <Avatar 
               src={partner.profile_picture_url} 
               alt={partner.full_name}
-              sx={{ width: 64, height: 64, mb: 2 }}
+              onClick={() => setShowMemberDetailsModal(true)}
+              sx={{ 
+                width: 64, 
+                height: 64, 
+                mb: 2,
+                cursor: 'pointer',
+                '&:hover': {
+                  opacity: 0.8
+                }
+              }}
             >
               {partner.full_name ? partner.full_name.charAt(0).toUpperCase() : 'U'}
             </Avatar>
-            <Typography variant="h6" sx={{ mb: 1 }}>
+            <Typography 
+              variant="h6" 
+              onClick={() => setShowMemberDetailsModal(true)}
+              sx={{ 
+                mb: 1,
+                cursor: 'pointer',
+                '&:hover': {
+                  color: 'primary.main'
+                }
+              }}
+            >
               {partner.full_name || 'Unknown User'}
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 3, textAlign: 'center' }}>
@@ -1321,6 +1364,15 @@ if (refreshConversations) {
         imageUrl={selectedImage.url}
         title={selectedImage.title}
       />
+
+      {/* Member Details Modal */}
+      {partner && (
+        <MemberDetailsModal
+          open={showMemberDetailsModal}
+          onClose={() => setShowMemberDetailsModal(false)}
+          member={partner}
+        />
+      )}
     </Box>
   );
 }

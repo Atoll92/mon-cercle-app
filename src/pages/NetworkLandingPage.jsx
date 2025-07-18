@@ -1007,7 +1007,6 @@ function NetworkLandingPage() {
         onClose={() => setShowMemberModal(false)}
         member={selectedMember}
         posts={selectedMember ? postItems.filter(item => item.profile_id === selectedMember.id) : []}
-        isCurrentUser={selectedMember?.id === activeProfile?.id}
         darkMode={membersTabDarkMode}
       />
       
