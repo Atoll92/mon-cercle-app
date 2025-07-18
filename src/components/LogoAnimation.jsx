@@ -298,7 +298,7 @@ const LogoAnimation = () => {
   return (<>
       Adaptable spinner :
       <Spinner
-        size={200}
+        size="large"
       />
       Fullek spinner :
       <StyledContainer>

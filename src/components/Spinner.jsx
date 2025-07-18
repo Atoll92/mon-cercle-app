@@ -21,6 +21,37 @@ const breathe = keyframes`
   }
 `;
 
+const wave = keyframes`
+  0% {
+    transform: translate(-50%, -50%) scale(0.8);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(2.5);
+    opacity: 0;
+  }
+`;
+
+// Create orbit animation dynamically based on size
+const createOrbitAnimation = (radius) => keyframes`
+  from {
+    transform: rotate(0deg) translateX(${radius}px) rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg) translateX(${radius}px) rotate(-360deg);
+  }
+`;
+
+// Create glow animation dynamically based on color
+const createGlowAnimation = (color) => keyframes`
+  0%, 100% {
+    filter: drop-shadow(0 0 15px ${color}60) drop-shadow(0 0 5px ${color}40);
+  }
+  50% {
+    filter: drop-shadow(0 0 30px ${color}90) drop-shadow(0 0 10px ${color}60);
+  }
+`;
+
 // Styled component for the spinning container
 const SpinnerContainer = styled(Box)(({ size }) => ({
   display: 'inline-flex',
@@ -29,14 +60,68 @@ const SpinnerContainer = styled(Box)(({ size }) => ({
   width: size,
   height: size,
   animation: `${rotate} 3s linear infinite`,
+  position: 'relative',
 }));
 
 // Styled component for the logo
-const AnimatedLogo = styled('div')(({ size }) => ({
+const AnimatedLogo = styled('div')(({ size, color, showGlow }) => ({
   width: size,
   height: size,
-  animation: `${breathe} 4s ease-in-out infinite`,
+  animation: showGlow 
+    ? `${breathe} 4s ease-in-out infinite, ${createGlowAnimation(color)} 3s ease-in-out infinite`
+    : `${breathe} 4s ease-in-out infinite`,
+  position: 'relative',
+  zIndex: 2,
 }));
+
+// Wave ring component
+const WaveRing = styled('div')(({ delay, color }) => ({
+  position: 'absolute',
+  top: '50%',
+  left: '50%',
+  width: '100%',
+  height: '100%',
+  border: `1px solid ${color}30`,
+  borderRadius: '50%',
+  transform: 'translate(-50%, -50%)',
+  animation: `${wave} 4s ease-out infinite`,
+  animationDelay: `${delay}s`,
+  zIndex: 1,
+}));
+
+// Orbiting dot component
+const OrbitingDot = styled('div')(({ delay, color, size }) => {
+  const orbitRadius = size * 0.6; // 60% of spinner size
+  return {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    width: size * 0.06,
+    height: size * 0.06,
+    minWidth: 4,
+    minHeight: 4,
+    maxWidth: 8,
+    maxHeight: 8,
+    backgroundColor: color,
+    borderRadius: '50%',
+    opacity: 0.8,
+    transformOrigin: '0 0',
+    animation: `${createOrbitAnimation(orbitRadius)} ${6 + delay}s linear infinite`,
+    animationDelay: `${delay * 0.5}s`,
+    filter: 'blur(0.5px)',
+    '&::after': {
+      content: '""',
+      position: 'absolute',
+      top: '-2px',
+      left: '-2px',
+      right: '-2px',
+      bottom: '-2px',
+      borderRadius: '50%',
+      backgroundColor: `${color}30`,
+      filter: 'blur(2px)',
+    },
+  };
+});
 
 /**
  * Spinner component using Conclav logo design
@@ -65,13 +150,13 @@ const Spinner = ({
     
     switch (sizeValue) {
       case 'small':
-        return 20;
-      case 'medium':
         return 40;
+      case 'medium':
+        return 70;
       case 'large':
-        return 60;
+        return 120;
       default:
-        return 40; // default to medium if unknown string
+        return 70; // default to medium if unknown string
     }
   };
 
@@ -107,6 +192,7 @@ const Spinner = ({
 
   const finalSize = getSize(size);
   const finalColor = getColor(color);
+  const showEnhancements = finalSize >= 100;
 
   return (
     <SpinnerContainer 
@@ -115,7 +201,26 @@ const Spinner = ({
       sx={sx}
       {...otherProps}
     >
-      <AnimatedLogo size={finalSize}>
+      {/* Wave rings for large spinners */}
+      {showEnhancements && (
+        <>
+          <WaveRing delay={0} color={finalColor} />
+          <WaveRing delay={1} color={finalColor} />
+          <WaveRing delay={2} color={finalColor} />
+        </>
+      )}
+      
+      {/* Orbiting dots for large spinners */}
+      {showEnhancements && (
+        <>
+          <OrbitingDot delay={0} color={finalColor} size={finalSize} />
+          <OrbitingDot delay={1} color={finalColor} size={finalSize} />
+          <OrbitingDot delay={2} color={finalColor} size={finalSize} />
+          <OrbitingDot delay={3} color={finalColor} size={finalSize} />
+        </>
+      )}
+      
+      <AnimatedLogo size={finalSize} color={finalColor} showGlow={showEnhancements}>
         <svg 
           xmlns="http://www.w3.org/2000/svg" 
           width={finalSize} 
