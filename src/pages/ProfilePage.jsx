@@ -70,9 +70,8 @@ function ProfilePage() {
   
   // Tab indices
   const TAB_OVERVIEW = 0;
-  const TAB_MOODBOARDS = 1;
-  const TAB_POSTS = 2;
-  const TAB_EVENTS = 3;
+  const TAB_POSTS = 1;
+  const TAB_EVENTS = 2;
   
   useEffect(() => {
     const fetchProfile = async () => {
@@ -359,12 +358,6 @@ function ProfilePage() {
             iconPosition="start"
             sx={{ fontWeight: activeTab === TAB_OVERVIEW ? 600 : 400 }}
           />
-           <Tab 
-    label="Moodboards" 
-    icon={<DashboardIcon />} 
-    iconPosition="start"
-    sx={{ fontWeight: activeTab === TAB_MOODBOARDS ? 600 : 400 }}
-  />
           <Tab 
             label={`Posts ${profile?.posts?.length ? `(${profile.posts.length})` : ''}`}
             icon={<LanguageIcon />} 
@@ -383,19 +376,6 @@ function ProfilePage() {
         {/* Profile Content */}
         <Box sx={{ p: 0 }}>
 
-        {activeTab === TAB_MOODBOARDS && (
-  <Box sx={{ p: 3 }}>
-    <Typography variant="h5" gutterBottom>
-      {isOwnProfile ? 'Your Moodboards' : `${profile.full_name}'s Moodboards`}
-    </Typography>
-    
-    <MoodboardGallery
-      userId={userId}
-      isOwnProfile={isOwnProfile}
-      showFeatured={true}
-    />
-  </Box>
-)}
           {/* Overview Tab */}
           {activeTab === TAB_OVERVIEW && (
             <Grid container wrap="nowrap" sx={{ 
@@ -719,20 +699,9 @@ function ProfilePage() {
                     )}
                   </Box>
 
-                  {activeTab === TAB_MOODBOARDS && (
-                    <Box sx={{ p: 3 }}>
-                      <Typography variant="h5" gutterBottom>
-                        {isOwnProfile ? 'Your Moodboards' : `${profile.full_name}'s Moodboards`}
-                      </Typography>
-                      
-                      <MoodboardGallery
-                        userId={userId}
-                        isOwnProfile={isOwnProfile}
-                        showFeatured={true}
-                      />
-                    </Box>
-                  )}
 
+
+                  
                   {/* Moodboards Preview Section */}
                   <Box sx={{ mt: 4 }}>
                     <Box sx={{ 
@@ -755,14 +724,6 @@ function ProfilePage() {
                         <DashboardIcon fontSize="small" color="primary" />
                         Moodboards
                       </Typography>
-                      
-                      <Button 
-                        size="small" 
-                        endIcon={<MoreHorizIcon />} 
-                        onClick={() => setActiveTab(TAB_MOODBOARDS)}
-                      >
-                        See All
-                      </Button>
                     </Box>
                     
                     <MoodboardGallery
@@ -771,7 +732,6 @@ function ProfilePage() {
                       limit={2}
                     />
                   </Box>
-
                   
                   {/* Posts Preview Section */}
                   {profile.posts && profile.posts.length > 0 && (

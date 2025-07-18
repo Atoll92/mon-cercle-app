@@ -50,6 +50,7 @@ const NetworkOnboardingPage = lazy(() => import('./pages/NetworkOnboardingPage')
 const MicroConclavPage = lazy(() => import('./pages/MicroConclavPage'));
 const SuperAdminDashboard = lazy(() => import('./pages/SuperAdminDashboard'));
 const LogoAnimation = lazy(() => import('./components/LogoAnimation'));
+const NetworkLandingPageOverlap = lazy(() => import('./pages/NetworkLandingPageOverlap'));
 const JoinNetworkPage = lazy(() => import('./pages/JoinNetworkPage'));
 const NewsPostPage = lazy(() => import('./pages/NewsPostPage'));
 const PostPage = lazy(() => import('./pages/PostPage'));
@@ -255,6 +256,8 @@ function App() {
             
             {/* Test routes */}
             <Route path="/media-test" element={<MediaTest />} />
+            <Route path="/network-overlap" element={<ProfileAwareRoute><NetworkLandingPageOverlap /></ProfileAwareRoute>} />
+            <Route path="/network-overlap/:networkId" element={<NetworkLandingPageOverlap />} />
             
             {/* Join network via invitation link */}
             <Route path="/join/:code" element={<JoinNetworkPage />} />
