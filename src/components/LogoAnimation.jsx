@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Typography, Fade } from '@mui/material';
 import { styled, keyframes } from '@mui/material/styles';
+import Spinner from './Spinner';
 
 // Professional keyframe animations
 const rotate = keyframes`
@@ -294,105 +295,111 @@ const LogoAnimation = () => {
     };
   }, []);
 
-  return (
-    <StyledContainer>
-      {/* Background orbs for depth */}
-      <BackgroundOrb top="10%" left="10%" size="300px" delay={0} />
-      <BackgroundOrb top="60%" left="70%" size="250px" delay={1} />
-      <BackgroundOrb top="30%" left="80%" size="200px" delay={2} />
+  return (<>
+      Adaptable spinner :
+      <Spinner
+        size={200}
+      />
+      Fullek spinner :
+      <StyledContainer>
+        {/* Background orbs for depth */}
+        <BackgroundOrb top="10%" left="10%" size="300px" delay={0} />
+        <BackgroundOrb top="60%" left="70%" size="250px" delay={1} />
+        <BackgroundOrb top="30%" left="80%" size="200px" delay={2} />
 
-      <Fade in={true} timeout={1000}>
-        <LogoContainer>
-          {/* Wave rings */}
-          <WaveRing delay={0} />
-          <WaveRing delay={1} />
-          <WaveRing delay={2} />
+        <Fade in={true} timeout={1000}>
+          <LogoContainer>
+            {/* Wave rings */}
+            <WaveRing delay={0} />
+            <WaveRing delay={1} />
+            <WaveRing delay={2} />
 
-          {/* Orbiting dots */}
-          <OrbitingDot delay={0} radius={120} />
-          <OrbitingDot delay={1} radius={120} />
-          <OrbitingDot delay={2} radius={120} />
-          <OrbitingDot delay={3} radius={120} />
+            {/* Orbiting dots */}
+            <OrbitingDot delay={0} radius={120} />
+            <OrbitingDot delay={1} radius={120} />
+            <OrbitingDot delay={2} radius={120} />
+            <OrbitingDot delay={3} radius={120} />
 
-          {/* Main logo */}
-          <AnimatedLogo>
-            <svg xmlns="http://www.w3.org/2000/svg" width="250" height="250" viewBox="-125 -125 250 250">
-              <defs>
-                <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#f9a500" stopOpacity="1" />
-                  <stop offset="100%" stopColor="#ff6b00" stopOpacity="1" />
-                </linearGradient>
-                <filter id="logoBlur">
-                  <feGaussianBlur in="SourceGraphic" stdDeviation="0.5" />
-                </filter>
-              </defs>
-              
-              {/* Central big disk */}
-              <circle cx="0" cy="0" r="35" fill="url(#logoGradient)"/>
-              
-              {/* Medium disks with animation */}
-              <g fill="url(#logoGradient)">
-                <circle cx="70.00" cy="0.00" r="25" opacity="0.9">
-                  <animate attributeName="r" values="25;27;25" dur="3s" repeatCount="indefinite" />
-                </circle>
-                <circle cx="43.64" cy="54.72" r="25" opacity="0.9">
-                  <animate attributeName="r" values="25;27;25" dur="3s" begin="0.5s" repeatCount="indefinite" />
-                </circle>
-                <circle cx="-15.57" cy="68.24" r="25" opacity="0.9">
-                  <animate attributeName="r" values="25;27;25" dur="3s" begin="1s" repeatCount="indefinite" />
-                </circle>
-                <circle cx="-63.06" cy="30.37" r="25" opacity="0.9">
-                  <animate attributeName="r" values="25;27;25" dur="3s" begin="1.5s" repeatCount="indefinite" />
-                </circle>
-                <circle cx="-63.06" cy="-30.37" r="25" opacity="0.9">
-                  <animate attributeName="r" values="25;27;25" dur="3s" begin="2s" repeatCount="indefinite" />
-                </circle>
-                <circle cx="-15.57" cy="-68.24" r="25" opacity="0.9">
-                  <animate attributeName="r" values="25;27;25" dur="3s" begin="2.5s" repeatCount="indefinite" />
-                </circle>
-                <circle cx="43.64" cy="-54.72" r="25" opacity="0.9">
-                  <animate attributeName="r" values="25;27;25" dur="3s" begin="3s" repeatCount="indefinite" />
-                </circle>
-              </g>
-              
-              {/* Small disks with staggered animation */}
-              <g fill="#f9a500">
-                <circle cx="85.59" cy="41.21" r="12" opacity="0.7">
-                  <animate attributeName="opacity" values="0.7;1;0.7" dur="2s" repeatCount="indefinite" />
-                </circle>
-                <circle cx="21.13" cy="92.61" r="12" opacity="0.7">
-                  <animate attributeName="opacity" values="0.7;1;0.7" dur="2s" begin="0.3s" repeatCount="indefinite" />
-                </circle>
-                <circle cx="-59.23" cy="74.27" r="12" opacity="0.7">
-                  <animate attributeName="opacity" values="0.7;1;0.7" dur="2s" begin="0.6s" repeatCount="indefinite" />
-                </circle>
-                <circle cx="-95.00" cy="0" r="12" opacity="0.7">
-                  <animate attributeName="opacity" values="0.7;1;0.7" dur="2s" begin="0.9s" repeatCount="indefinite" />
-                </circle>
-                <circle cx="-59.23" cy="-74.27" r="12" opacity="0.7">
-                  <animate attributeName="opacity" values="0.7;1;0.7" dur="2s" begin="1.2s" repeatCount="indefinite" />
-                </circle>
-                <circle cx="21.13" cy="-92.61" r="12" opacity="0.7">
-                  <animate attributeName="opacity" values="0.7;1;0.7" dur="2s" begin="1.5s" repeatCount="indefinite" />
-                </circle>
-                <circle cx="85.59" cy="-41.21" r="12" opacity="0.7">
-                  <animate attributeName="opacity" values="0.7;1;0.7" dur="2s" begin="1.8s" repeatCount="indefinite" />
-                </circle>
-              </g>
-            </svg>
-          </AnimatedLogo>
-        </LogoContainer>
-      </Fade>
+            {/* Main logo */}
+            <AnimatedLogo>
+              <svg xmlns="http://www.w3.org/2000/svg" width="250" height="250" viewBox="-125 -125 250 250">
+                <defs>
+                  <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#f9a500" stopOpacity="1" />
+                    <stop offset="100%" stopColor="#ff6b00" stopOpacity="1" />
+                  </linearGradient>
+                  <filter id="logoBlur">
+                    <feGaussianBlur in="SourceGraphic" stdDeviation="0.5" />
+                  </filter>
+                </defs>
+                
+                {/* Central big disk */}
+                <circle cx="0" cy="0" r="35" fill="url(#logoGradient)"/>
+                
+                {/* Medium disks with animation */}
+                <g fill="url(#logoGradient)">
+                  <circle cx="70.00" cy="0.00" r="25" opacity="0.9">
+                    <animate attributeName="r" values="25;27;25" dur="3s" repeatCount="indefinite" />
+                  </circle>
+                  <circle cx="43.64" cy="54.72" r="25" opacity="0.9">
+                    <animate attributeName="r" values="25;27;25" dur="3s" begin="0.5s" repeatCount="indefinite" />
+                  </circle>
+                  <circle cx="-15.57" cy="68.24" r="25" opacity="0.9">
+                    <animate attributeName="r" values="25;27;25" dur="3s" begin="1s" repeatCount="indefinite" />
+                  </circle>
+                  <circle cx="-63.06" cy="30.37" r="25" opacity="0.9">
+                    <animate attributeName="r" values="25;27;25" dur="3s" begin="1.5s" repeatCount="indefinite" />
+                  </circle>
+                  <circle cx="-63.06" cy="-30.37" r="25" opacity="0.9">
+                    <animate attributeName="r" values="25;27;25" dur="3s" begin="2s" repeatCount="indefinite" />
+                  </circle>
+                  <circle cx="-15.57" cy="-68.24" r="25" opacity="0.9">
+                    <animate attributeName="r" values="25;27;25" dur="3s" begin="2.5s" repeatCount="indefinite" />
+                  </circle>
+                  <circle cx="43.64" cy="-54.72" r="25" opacity="0.9">
+                    <animate attributeName="r" values="25;27;25" dur="3s" begin="3s" repeatCount="indefinite" />
+                  </circle>
+                </g>
+                
+                {/* Small disks with staggered animation */}
+                <g fill="#f9a500">
+                  <circle cx="85.59" cy="41.21" r="12" opacity="0.7">
+                    <animate attributeName="opacity" values="0.7;1;0.7" dur="2s" repeatCount="indefinite" />
+                  </circle>
+                  <circle cx="21.13" cy="92.61" r="12" opacity="0.7">
+                    <animate attributeName="opacity" values="0.7;1;0.7" dur="2s" begin="0.3s" repeatCount="indefinite" />
+                  </circle>
+                  <circle cx="-59.23" cy="74.27" r="12" opacity="0.7">
+                    <animate attributeName="opacity" values="0.7;1;0.7" dur="2s" begin="0.6s" repeatCount="indefinite" />
+                  </circle>
+                  <circle cx="-95.00" cy="0" r="12" opacity="0.7">
+                    <animate attributeName="opacity" values="0.7;1;0.7" dur="2s" begin="0.9s" repeatCount="indefinite" />
+                  </circle>
+                  <circle cx="-59.23" cy="-74.27" r="12" opacity="0.7">
+                    <animate attributeName="opacity" values="0.7;1;0.7" dur="2s" begin="1.2s" repeatCount="indefinite" />
+                  </circle>
+                  <circle cx="21.13" cy="-92.61" r="12" opacity="0.7">
+                    <animate attributeName="opacity" values="0.7;1;0.7" dur="2s" begin="1.5s" repeatCount="indefinite" />
+                  </circle>
+                  <circle cx="85.59" cy="-41.21" r="12" opacity="0.7">
+                    <animate attributeName="opacity" values="0.7;1;0.7" dur="2s" begin="1.8s" repeatCount="indefinite" />
+                  </circle>
+                </g>
+              </svg>
+            </AnimatedLogo>
+          </LogoContainer>
+        </Fade>
 
-      <Fade in={true} timeout={1500}>
-        <Box sx={{ textAlign: 'center' }}>
-          <LoadingText>{loadingText}</LoadingText>
-          <ProgressBar>
-            <ProgressFill progress={Math.min(progress, 100)} />
-          </ProgressBar>
-        </Box>
-      </Fade>
-    </StyledContainer>
+        <Fade in={true} timeout={1500}>
+          <Box sx={{ textAlign: 'center' }}>
+            <LoadingText>{loadingText}</LoadingText>
+            <ProgressBar>
+              <ProgressFill progress={Math.min(progress, 100)} />
+            </ProgressBar>
+          </Box>
+        </Fade>
+      </StyledContainer>
+    </>
   );
 };
 
