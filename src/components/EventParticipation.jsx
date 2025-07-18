@@ -300,7 +300,7 @@ function EventParticipation({ event, showParticipants = false, onStatusChange = 
 
   // Loading state
   if (isLoading) {
-    return <Spinner size={24} />;
+    return <Spinner size={48} />;
   }
 
   return (

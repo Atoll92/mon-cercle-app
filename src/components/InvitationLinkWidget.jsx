@@ -85,7 +85,7 @@ function InvitationLinkWidget({ networkId }) {
   if (loading) {
     return (
       <Paper sx={{ p: 3, textAlign: 'center' }}>
-        <Spinner size={24} />
+        <Spinner size={48} />
       </Paper>
     );
   }

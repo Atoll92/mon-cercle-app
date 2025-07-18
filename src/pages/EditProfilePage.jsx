@@ -474,7 +474,7 @@ function EditProfilePage() {
           height: '100vh' 
         }}
       >
-        <Spinner size={40} />
+        <Spinner size={80} />
         <Typography variant="body1" sx={{ mt: 2 }}>
           Loading your profile...
         </Typography>
@@ -925,7 +925,7 @@ function EditProfilePage() {
                 variant="contained"
                 color="primary"
                 disabled={saving}
-                startIcon={saving ? <Spinner size={20} color="inherit" /> : <SaveIcon />}
+                startIcon={saving ? <Spinner size={40} color="inherit" /> : <SaveIcon />}
                 sx={{ px: 4 }}
               >
                 {saving ? 'Saving...' : (isNewProfile ? 'Create Profile' : 'Save Changes')}
@@ -960,7 +960,7 @@ const EditProfilePageWrapper = () => {
           height: '50vh' 
         }}
       >
-        <Spinner size={40} color="primary" />
+        <Spinner size={80} color="primary" />
         <Typography variant="body1" sx={{ mt: 2 }}>
           Loading profile...
         </Typography>

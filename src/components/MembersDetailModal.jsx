@@ -281,7 +281,7 @@ const MemberDetailsModal = ({
                     backgroundColor: 'rgba(0,0,0,0.1)',
                   }}
                 >
-                  <Spinner size={16} />
+                  <Spinner size={32} />
                 </Box>
               )}
               
@@ -467,7 +467,7 @@ const MemberDetailsModal = ({
               }}
             >
               {loadingMoodboard ? (
-                <Spinner size={32} />
+                <Spinner size={64} />
               ) : (
                 <>
                   <DashboardIcon 
@@ -917,7 +917,7 @@ const MemberDetailsModal = ({
           
           {loading ? (
             <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
-              <Spinner size={40} />
+              <Spinner size={80} />
             </Box>
           ) : error ? (
             <Typography color="error" sx={{ p: 2 }}>

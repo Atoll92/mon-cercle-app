@@ -227,7 +227,7 @@ export default function EventsMap({ events = [], onEventSelect, initialCoordinat
           backgroundColor: 'rgba(255, 255, 255, 0.8)',
           zIndex: 10
         }}>
-          <Spinner size={40} />
+          <Spinner size={80} />
         </Box>
       )}
       

@@ -82,7 +82,7 @@ const PaymentSuccessPage = () => {
       <Paper elevation={3} sx={{ p: 4, textAlign: 'center', borderRadius: 2 }}>
         {verifying ? (
           <>
-            <Spinner size={60} sx={{ mb: 3, color: 'success.main' }} />
+            <Spinner size={120} sx={{ mb: 3, color: 'success.main' }} />
             <Typography variant="h5" gutterBottom>
               Verifying your payment...
             </Typography>

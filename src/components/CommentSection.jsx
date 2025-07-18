@@ -361,7 +361,7 @@ const CommentSection = ({ itemType, itemId, darkMode, isAdmin = false, initialCo
                     }
                   }}
                 >
-                  {submitting ? <Spinner size={20} /> : <SendIcon />}
+                  {submitting ? <Spinner size={40} /> : <SendIcon />}
                 </IconButton>
               </Box>
             </Box>
@@ -372,7 +372,7 @@ const CommentSection = ({ itemType, itemId, darkMode, isAdmin = false, initialCo
           {/* Comments list */}
           {loading ? (
             <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
-              <Spinner size={24} />
+              <Spinner size={48} />
             </Box>
           ) : comments.length === 0 ? (
             <Typography

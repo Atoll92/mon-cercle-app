@@ -64,7 +64,7 @@ const AlternativeLandingPage = lazy(() => import('./pages/AlternativeLandingPage
 // Loading component for lazy loaded routes
 const PageLoader = () => (
   <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-    <Spinner />
+    <Spinner size={120} />
   </Box>
 );
 
@@ -142,7 +142,7 @@ function App() {
     // Show loading indicator during initial auth check
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-        <Spinner />
+        <Spinner size={120} />
       </Box>
     );
   }

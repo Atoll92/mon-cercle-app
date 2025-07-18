@@ -240,7 +240,7 @@ const NotificationSettings = () => {
 
         {saving && (
           <Box display="flex" justifyContent="center" mt={2}>
-            <Spinner size={20} />
+            <Spinner size={40} />
           </Box>
         )}
       </CardContent>

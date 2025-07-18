@@ -293,7 +293,7 @@ function SignupPage() {
               {/* Invitation Info Banner */}
               {invitationLoading ? (
                 <Box sx={{ display: 'flex', justifyContent: 'center', my: 2 }}>
-                  <Spinner size={24} />
+                  <Spinner size={48} />
                   <Typography variant="body2" sx={{ ml: 2 }}>
                     Loading invitation details...
                   </Typography>

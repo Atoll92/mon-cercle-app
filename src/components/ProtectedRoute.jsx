@@ -31,7 +31,7 @@ function ProtectedRoute() {
           height: '100vh' 
         }}
       >
-        <Spinner size={40} />
+        <Spinner size={80} />
         <Typography variant="body1" sx={{ mt: 2 }}>
           Verifying your credentials...
         </Typography>

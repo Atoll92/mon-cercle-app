@@ -212,7 +212,7 @@ const NetworkInfoPanel = ({ network, members, darkMode }) => {
               
               {storageLoading ? (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
-                  <Spinner size={16} />
+                  <Spinner size={32} />
                   <Typography variant="body2">Calculating...</Typography>
                 </Box>
               ) : storageInfo ? (

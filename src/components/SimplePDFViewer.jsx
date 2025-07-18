@@ -90,7 +90,7 @@ function SimplePDFViewer({
     >
       {loading && (
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
-          <Spinner size={24} />
+          <Spinner size={48} />
           <Typography variant="caption" color="text.secondary">
             Loading PDF...
           </Typography>

@@ -483,7 +483,7 @@ function DirectMessagesPage() {
           
           {/* {initLoading && (
             <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
-              <Spinner size={24} />
+              <Spinner size={48} />
               <Typography variant="body2" sx={{ ml: 2 }}>
                 Initializing conversation...
               </Typography>

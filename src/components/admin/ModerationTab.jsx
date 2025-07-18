@@ -653,7 +653,7 @@ const ModerationTab = ({ network, user, members = [], darkMode = false }) => {
             color="info" 
             onClick={setupModerationTables}
             disabled={loading}
-            startIcon={loading ? <Spinner size={20} /> : <LockIcon />}
+            startIcon={loading ? <Spinner size={40} /> : <LockIcon />}
           >
             Setup Moderation Tables
           </Button>
@@ -1180,7 +1180,7 @@ const ModerationTab = ({ network, user, members = [], darkMode = false }) => {
             disabled={loading}
             autoFocus
           >
-            {loading ? <Spinner size={24} /> : 'Confirm'}
+            {loading ? <Spinner size={48} /> : 'Confirm'}
           </Button>
         </DialogActions>
       </Dialog>
@@ -1231,7 +1231,7 @@ const ModerationTab = ({ network, user, members = [], darkMode = false }) => {
             variant="contained"
             disabled={loading || ((userAction === 'suspend' || userAction === 'restrict') && !userActionReason)}
           >
-            {loading ? <Spinner size={24} /> : 'Confirm'}
+            {loading ? <Spinner size={48} /> : 'Confirm'}
           </Button>
         </DialogActions>
       </Dialog>

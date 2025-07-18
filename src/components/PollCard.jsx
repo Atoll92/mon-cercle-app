@@ -138,7 +138,7 @@ const PollCard = ({ poll, onVoteSubmit }) => {
       <Card>
         <CardContent>
           <Box display="flex" justifyContent="center" p={2}>
-            <Spinner size={24} />
+            <Spinner size={48} />
           </Box>
         </CardContent>
       </Card>
@@ -368,7 +368,7 @@ const PollCard = ({ poll, onVoteSubmit }) => {
               variant="contained"
               onClick={handleVote}
               disabled={submitting || selectedOptions.length === 0}
-              startIcon={submitting ? <Spinner size={16} /> : null}
+              startIcon={submitting ? <Spinner size={32} /> : null}
             >
               {submitting ? 'Submitting...' : 'Submit Vote'}
             </Button>

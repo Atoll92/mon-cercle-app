@@ -122,7 +122,7 @@ function JoinNetworkPage() {
     return (
       <Container maxWidth="sm" sx={{ mt: 8 }}>
         <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
-          <Spinner />
+          <Spinner size={120} />
         </Box>
       </Container>
     );
@@ -262,7 +262,7 @@ function JoinNetworkPage() {
               fullWidth
               onClick={handleJoin}
               disabled={joining || userProfile?.network_id}
-              startIcon={joining ? <Spinner size={20} /> : <CheckCircleIcon />}
+              startIcon={joining ? <Spinner size={40} /> : <CheckCircleIcon />}
             >
               {joining ? 'Joining...' : userProfile?.network_id ? 'Switch Network' : 'Join Network'}
             </Button>

@@ -345,7 +345,7 @@ const BadgesTab = ({ networkId, members, darkMode }) => {
         <Box sx={{ display: 'flex', gap: 1 }}>
           <Button
             variant="outlined"
-            startIcon={refreshing ? <Spinner size={20} /> : <TrendingUpIcon />}
+            startIcon={refreshing ? <Spinner size={40} /> : <TrendingUpIcon />}
             onClick={handleRefresh}
             disabled={refreshing}
           >

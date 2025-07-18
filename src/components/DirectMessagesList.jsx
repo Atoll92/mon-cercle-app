@@ -187,7 +187,7 @@ function DirectMessagesList({ onSelectConversation, onConversationDeleted }) {
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
-        <Spinner size={24} />
+        <Spinner size={48} />
       </Box>
     );
   }
@@ -443,7 +443,7 @@ function DirectMessagesList({ onSelectConversation, onConversationDeleted }) {
             onClick={handleConfirmedDelete} 
             color="error" 
             disabled={deleting}
-            startIcon={deleting ? <Spinner size={16} /> : null}
+            startIcon={deleting ? <Spinner size={32} /> : null}
           >
             {deleting ? 'Deleting...' : 'Delete'}
           </Button>

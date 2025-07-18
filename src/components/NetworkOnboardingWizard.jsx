@@ -428,7 +428,7 @@ const NetworkOnboardingWizard = ({ profile }) => {
         <Typography variant="body1" paragraph color="text.secondary">
           Your network "{networkData.name}" has been created. You can now start inviting members and customizing your space.
         </Typography>
-        <Spinner size={30} sx={{ mt: 2, mb: 3 }} />
+        <Spinner size={60} sx={{ mt: 2, mb: 3 }} />
         <Typography variant="body2" color="text.secondary">
           Redirecting to your network...
         </Typography>
@@ -473,7 +473,7 @@ const NetworkOnboardingWizard = ({ profile }) => {
                     {index === steps.length - 1 ? (
                       loading ? (
                         <>
-                          <Spinner size={24} sx={{ mr: 1, color: 'white' }} />
+                          <Spinner size={48} sx={{ mr: 1, color: 'white' }} />
                           Creating...
                         </>
                       ) : 'Create Network'
@@ -959,7 +959,7 @@ const NavigationStep = ({ networkData, setNetworkData }) => {
             <Button
               variant="outlined"
               component="label"
-              startIcon={uploading ? <Spinner size={20} /> : <UploadIcon />}
+              startIcon={uploading ? <Spinner size={40} /> : <UploadIcon />}
               disabled={uploading}
             >
               {uploading ? 'Uploading...' : 'Upload Logo'}

@@ -351,7 +351,7 @@ const PostCard = ({
                   }}
                 >
                   {isDeleting ? (
-                    <Spinner size={16} />
+                    <Spinner size={32} />
                   ) : (
                     <MoreVertIcon fontSize="small" />
                   )}

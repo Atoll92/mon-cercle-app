@@ -167,7 +167,7 @@ const MoodboardItem = ({
                   backgroundColor: 'rgba(0,0,0,0.1)',
                 }}
               >
-                <Spinner size={24} />
+                <Spinner size={48} />
               </Box>
             )}
             

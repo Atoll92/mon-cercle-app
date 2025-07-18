@@ -171,7 +171,7 @@ const NotificationQueueTab = () => {
           </Button>
           <Button
             variant="contained"
-            startIcon={processing ? <Spinner size={16} /> : <SendIcon />}
+            startIcon={processing ? <Spinner size={32} /> : <SendIcon />}
             onClick={handleProcessNotifications}
             disabled={processing}
           >

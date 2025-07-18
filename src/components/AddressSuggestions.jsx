@@ -135,7 +135,7 @@ export default function AddressSuggestions({ value, onChange, label = "Location"
               ...params.InputProps,
               endAdornment: (
                 <React.Fragment>
-                  {loading ? <Spinner color="inherit" size={20} /> : null}
+                  {loading ? <Spinner color="inherit" size={40} /> : null}
                   {params.InputProps.endAdornment}
                 </React.Fragment>
               ),

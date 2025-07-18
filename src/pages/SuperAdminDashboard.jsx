@@ -251,7 +251,7 @@ const SuperAdminDashboard = () => {
     return (
       <Container maxWidth="xl" sx={{ py: 4 }}>
         <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
-          <Spinner size={60} />
+          <Spinner size={120} />
         </Box>
       </Container>
     );

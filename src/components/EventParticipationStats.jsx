@@ -76,7 +76,7 @@ const EventParticipationStats = ({ eventId }) => {
   }, [eventId]);
 
   if (loading) {
-    return <Spinner size={20} />;
+    return <Spinner size={40} />;
   }
 
   return (

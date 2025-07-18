@@ -315,7 +315,7 @@ const NewsTab = ({ networkId, userId, newsPosts, setNewsPosts, members, darkMode
             startIcon={<SaveIcon />}
             disabled={updating}
           >
-            {updating ? <Spinner size={24} /> : 'Publish News'}
+            {updating ? <Spinner size={48} /> : 'Publish News'}
           </Button>
           <Button
             variant="outlined"

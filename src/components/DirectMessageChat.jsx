@@ -958,7 +958,7 @@ if (refreshConversations) {
       >
         {loading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
-            <Spinner size={24} />
+            <Spinner size={48} />
           </Box>
         ) : error ? (
           <Box sx={{ p: 2, color: 'error.main' }}>

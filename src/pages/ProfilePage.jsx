@@ -191,7 +191,7 @@ function ProfilePage() {
           height: '50vh' 
         }}
       >
-        <Spinner size={40} color="primary" />
+        <Spinner size={120} color="primary" />
         <Typography variant="body1" sx={{ mt: 2 }}>
           Loading profile...
         </Typography>
@@ -947,7 +947,7 @@ const ProfilePageWrapper = () => {
           height: '50vh' 
         }}
       >
-        <Spinner size={40} color="primary" />
+        <Spinner size={120} color="primary" />
         <Typography variant="body1" sx={{ mt: 2 }}>
           Loading profile...
         </Typography>

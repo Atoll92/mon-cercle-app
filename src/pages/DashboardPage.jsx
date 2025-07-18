@@ -543,7 +543,7 @@ function DashboardPage() {
             Please complete your profile setup to continue.
           </Alert>
           <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
-            <Spinner size={30} />
+            <Spinner size={120} />
           </Box>
         </Paper>
       </Container>
@@ -598,7 +598,7 @@ function DashboardPage() {
           <Typography variant="h5" component="h1" gutterBottom>
             Profile Setup in Progress
           </Typography>
-          <Spinner size={30} sx={{ my: 2 }} />
+          <Spinner size={120} sx={{ my: 2 }} />
           <Typography variant="body1" sx={{ mb: 2 }}>
             We're setting up your profile. This should only take a moment.
           </Typography>
@@ -958,7 +958,7 @@ function DashboardPage() {
                           <Box sx={{ mb: 2 }}>
                             {loadingNetworkDetails ? (
                               <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                <Spinner size={20} sx={{ mr: 1 }} />
+                                <Spinner size={40} sx={{ mr: 1 }} />
                                 <Typography variant="body2">Loading subscription info...</Typography>
                               </Box>
                             ) : networkDetails?.subscription_status === 'trial' ? (
@@ -1384,7 +1384,7 @@ function DashboardPage() {
                         
                         {loadingEvents ? (
                           <Box sx={{ p: 2, textAlign: 'center' }}>
-                            <Spinner size={30} />
+                            <Spinner size={120} />
                           </Box>
                         ) : (
                           <CardContent sx={{ py: 0.5, flexGrow: 1, overflow: 'auto' }}>

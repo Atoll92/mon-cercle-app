@@ -81,7 +81,7 @@ const NetworkSelector = ({ onProfileSelected }) => {
         alignItems="center" 
         minHeight="400px"
       >
-        <Spinner />
+        <Spinner size={120} />
       </Box>
     );
   }
@@ -244,7 +244,7 @@ const NetworkSelector = ({ onProfileSelected }) => {
               }}
             >
               {isSelecting ? (
-                <Spinner size={24} color="inherit" />
+                <Spinner size={48} color="inherit" />
               ) : (
                 'Continue'
               )}

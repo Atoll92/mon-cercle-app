@@ -95,7 +95,7 @@ const NetworkOnboardingPage = () => {
         alignItems: 'center',
         justifyContent: 'center'
       }}>
-        <Spinner size={40} />
+        <Spinner size={120} />
         <Typography variant="body1" sx={{ mt: 2 }}>
           Loading...
         </Typography>

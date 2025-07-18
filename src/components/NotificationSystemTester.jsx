@@ -212,7 +212,7 @@ const NotificationSystemTester = () => {
     switch (status) {
       case 'success': return <CheckIcon color="success" />;
       case 'error': return <ErrorIcon color="error" />;
-      case 'running': return <Spinner size={20} />;
+      case 'running': return <Spinner size={40} />;
       default: return null;
     }
   };
@@ -249,7 +249,7 @@ const NotificationSystemTester = () => {
             
             <Button
               variant="outlined"
-              startIcon={processing ? <Spinner size={16} /> : <SendIcon />}
+              startIcon={processing ? <Spinner size={32} /> : <SendIcon />}
               onClick={processTestNotifications}
               disabled={processing}
             >

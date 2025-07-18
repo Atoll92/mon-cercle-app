@@ -802,7 +802,7 @@ const EventsTab = ({ events, setEvents, user, activeProfile, networkId, network,
             variant="contained" 
             disabled={updating}
           >
-            {updating ? <Spinner size={24} /> : 'Save Event'}
+            {updating ? <Spinner size={48} /> : 'Save Event'}
           </Button>
         </DialogActions>
       </Dialog>

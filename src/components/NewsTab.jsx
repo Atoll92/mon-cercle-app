@@ -467,7 +467,7 @@ const NewsTab = ({ darkMode }) => {
         <Button
           variant="contained"
           onClick={handleNewsSubmit}
-          startIcon={updating ? <Spinner size={20} /> : <SaveIcon />}
+          startIcon={updating ? <Spinner size={40} /> : <SaveIcon />}
           disabled={updating}
         >
           Publish News

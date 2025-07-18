@@ -243,7 +243,7 @@ const MicroConclavPage = () => {
   if (loading) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
-        <Spinner />
+        <Spinner size={120} />
       </Box>
     );
   }
@@ -460,7 +460,7 @@ const MicroConclavPage = () => {
 
         {loadingMore && viewMode === 'grid' && (
           <Box display="flex" justifyContent="center" py={4}>
-            <Spinner size={24} />
+            <Spinner size={48} />
           </Box>
         )}
       </Box>

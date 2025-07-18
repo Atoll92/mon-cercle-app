@@ -840,7 +840,7 @@ const EditItemDialog = ({
               (currentItem?.type === 'text' && !editedContent?.trim()) ||
               (currentItem?.type === 'link' && !editedContent?.trim()) ||
               !currentItem}
-            startIcon={processing ? <Spinner size={20} /> : <SaveIcon />}
+            startIcon={processing ? <Spinner size={40} /> : <SaveIcon />}
           >
             {processing ? 'Saving...' : 'Save'}
           </Button>
@@ -1603,7 +1603,7 @@ const handleUpdateItem = async (updatedItem) => {
           height: '80vh' 
         }}
       >
-        <Spinner size={40} color="primary" />
+        <Spinner size={120} color="primary" />
         <Typography variant="body1" sx={{ mt: 2 }}>
           Loading moodboard...
         </Typography>
@@ -1735,7 +1735,7 @@ const handleUpdateItem = async (updatedItem) => {
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 2 }}>
                 {autoSaveStatus === 'saving' && (
                   <>
-                    <Spinner size={16} />
+                    <Spinner size={32} />
                     <Typography variant="caption" color="text.secondary">
                       Saving...
                     </Typography>
@@ -2102,7 +2102,7 @@ const handleUpdateItem = async (updatedItem) => {
             onClick={handleAddText} 
             variant="contained" 
             disabled={!newText.trim() || saving}
-            startIcon={saving ? <Spinner size={20} /> : <TextFieldsIcon />}
+            startIcon={saving ? <Spinner size={40} /> : <TextFieldsIcon />}
           >
             {saving ? 'Adding...' : 'Add Text'}
           </Button>
@@ -2171,7 +2171,7 @@ const handleUpdateItem = async (updatedItem) => {
             onClick={handleAddLink} 
             variant="contained" 
             disabled={!newLink.trim() || saving}
-            startIcon={saving ? <Spinner size={20} /> : <LinkIcon />}
+            startIcon={saving ? <Spinner size={40} /> : <LinkIcon />}
           >
             {saving ? 'Adding...' : 'Add Link'}
           </Button>
@@ -2276,7 +2276,7 @@ const handleUpdateItem = async (updatedItem) => {
             onClick={handleAddPdf} 
             variant="contained" 
             disabled={!newPdf || saving}
-            startIcon={saving ? <Spinner size={20} /> : <PdfIcon />}
+            startIcon={saving ? <Spinner size={40} /> : <PdfIcon />}
           >
             {saving ? 'Uploading...' : 'Add PDF'}
           </Button>

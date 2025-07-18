@@ -550,7 +550,7 @@ const handlePlanSelect = async (plan) => {
     disabled={loadingPlan === plan.name}
   >
     {loadingPlan === plan.name ? (
-      <Spinner size={24} color="inherit" />
+      <Spinner size={48} color="inherit" />
     ) : (
       plan.buttonText
     )}
@@ -801,7 +801,7 @@ const handlePlanSelect = async (plan) => {
                     }}
                   >
                     {loadingPlan === plan.name ? (
-                      <Spinner size={24} color="inherit" />
+                      <Spinner size={48} color="inherit" />
                     ) : (
                       plan.buttonText
                     )}

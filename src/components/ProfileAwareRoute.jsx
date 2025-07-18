@@ -72,7 +72,7 @@ const ProfileAwareRoute = ({ children }) => {
   if (user && (isLoadingProfiles || isSelectingProfile)) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
-        <Spinner />
+        <Spinner size={120} />
       </Box>
     );
   }

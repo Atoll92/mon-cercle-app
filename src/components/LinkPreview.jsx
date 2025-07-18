@@ -1171,7 +1171,7 @@ const LinkPreview = ({ url, compact = false, onDataLoaded = null, height = 'auto
                       bgcolor: 'grey.100'
                     }}
                   >
-                    <Spinner size={30} />
+                    <Spinner size={60} />
                   </Box>
                 )}
                 <Box

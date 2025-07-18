@@ -334,7 +334,7 @@ const BillingTab = ({ activeProfile, darkMode }) => {
   if (loading) {
     return (
       <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 8 }}>
-        <Spinner size={60} sx={{ mb: 4 }} />
+        <Spinner size={120} sx={{ mb: 4 }} />
         <Typography variant="h6">Loading subscription information...</Typography>
       </Box>
     );
@@ -404,7 +404,7 @@ const BillingTab = ({ activeProfile, darkMode }) => {
             zIndex: 9999
           }}
         >
-          <Spinner size={60} sx={{ mb: 3 }} />
+          <Spinner size={120} sx={{ mb: 3 }} />
           <Typography variant="h5" align="center">
             Redirecting to payment service...
           </Typography>
@@ -422,7 +422,7 @@ const BillingTab = ({ activeProfile, darkMode }) => {
         <Box sx={{ display: 'flex', gap: 1 }}>
           <Tooltip title="Refresh data">
             <IconButton onClick={handleRefresh} disabled={refreshing}>
-              {refreshing ? <Spinner size={24} /> : <RefreshIcon />}
+              {refreshing ? <Spinner size={48} /> : <RefreshIcon />}
             </IconButton>
           </Tooltip>
           <Button

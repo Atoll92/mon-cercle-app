@@ -251,7 +251,7 @@ const WikiTab = ({ networkId }) => {
     return (
       <Paper sx={{ p: 3 }}>
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
-          <Spinner />
+          <Spinner size={120} />
         </Box>
       </Paper>
     );

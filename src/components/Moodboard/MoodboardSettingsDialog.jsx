@@ -199,7 +199,7 @@ const MoodboardSettingsDialog = ({
           onClick={handleSave}
           variant="contained"
           disabled={processing || !title.trim()}
-          startIcon={processing && <Spinner size={20} />}
+          startIcon={processing && <Spinner size={40} />}
         >
           {processing ? (mode === 'create' ? 'Creating...' : 'Saving...') : (mode === 'create' ? 'Create' : 'Save Changes')}
         </Button>

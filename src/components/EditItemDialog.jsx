@@ -764,7 +764,7 @@ const EditItemDialog = ({
             (currentItem?.type === 'text' && !editedContent?.trim()) ||
             (currentItem?.type === 'link' && !editedContent?.trim()) ||
             !currentItem}
-          startIcon={processing ? <Spinner size={20} /> : <SaveIcon />}
+          startIcon={processing ? <Spinner size={40} /> : <SaveIcon />}
         >
           {processing ? 'Saving...' : 'Save Changes'}
         </Button>

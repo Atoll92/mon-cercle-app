@@ -567,7 +567,7 @@ function MediaUpload({
             handleUpload();
           }}
           disabled={uploading}
-          startIcon={uploading ? <Spinner size={20} /> : <UploadIcon />}
+          startIcon={uploading ? <Spinner size={40} /> : <UploadIcon />}
         >
           {uploading ? 'Uploading...' : `Upload ${files.length} file(s)`}
         </Button>

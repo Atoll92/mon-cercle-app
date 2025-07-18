@@ -304,7 +304,7 @@ function PDFReader({ url, fileName, open, onClose }) {
                   bgcolor: 'rgba(255,255,255,0.8)'
                 }}
               >
-                <Spinner size={24} />
+                <Spinner size={48} />
               </Box>
             )}
           </Box>

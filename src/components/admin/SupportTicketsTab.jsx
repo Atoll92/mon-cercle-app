@@ -340,7 +340,7 @@ const SupportTicketsTab = ({ network, user, activeProfile, darkMode }) => {
             variant="contained"
             disabled={!newTicket.title || !newTicket.description || submitting}
           >
-            {submitting ? <Spinner size={20} /> : 'Create Ticket'}
+            {submitting ? <Spinner size={40} /> : 'Create Ticket'}
           </Button>
         </DialogActions>
       </Dialog>

@@ -215,7 +215,7 @@ function NetworkAdminPage() {
               color: muiTheme.palette.custom.lightText
             }}
           >
-            <Spinner size={60} sx={{ mb: 3 }} />
+            <Spinner size={120} sx={{ mb: 3 }} />
             <Typography variant="h6">
               Loading admin panel...
             </Typography>

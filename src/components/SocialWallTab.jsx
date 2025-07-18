@@ -924,7 +924,7 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                             }}
                           >
                             {deletingPostId === item.id ? (
-                              <Spinner size={16} />
+                              <Spinner size={32} />
                             ) : (
                               <DeleteIcon fontSize="small" />
                             )}
@@ -1485,7 +1485,7 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
           {/* Loading indicator for infinite scroll */}
           {loading && (
             <Box sx={{ display: 'flex', justifyContent: 'center', py: 3 }}>
-              <Spinner size={32} />
+              <Spinner size={64} />
             </Box>
           )}
           

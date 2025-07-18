@@ -122,7 +122,7 @@ function UserSearchAutocomplete({ onUserSelect, excludeUserIds = [], placeholder
             ...params.InputProps,
             endAdornment: (
               <>
-                {loading ? <Spinner color="inherit" size={20} /> : null}
+                {loading ? <Spinner color="inherit" size={40} /> : null}
                 {params.InputProps.endAdornment}
               </>
             ),

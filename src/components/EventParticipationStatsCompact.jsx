@@ -56,7 +56,7 @@ const EventParticipationStatsCompact = ({ eventId, onStatsLoad }) => {
   }, [eventId]);
 
   if (loading) {
-    return <Spinner size={16} />;
+    return <Spinner size={32} />;
   }
 
   return (

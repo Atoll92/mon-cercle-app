@@ -204,7 +204,7 @@ function MediaPlayer({
       >
         <IconButton size="small" onClick={togglePlayPause} disabled={isLoading}>
           {isLoading ? (
-            <Spinner size={20} />
+            <Spinner size={40} />
           ) : isPlaying ? (
             <PauseIcon />
           ) : (
@@ -297,7 +297,7 @@ function MediaPlayer({
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <IconButton onClick={togglePlayPause} disabled={isLoading}>
                 {isLoading ? (
-                  <Spinner size={24} />
+                  <Spinner size={48} />
                 ) : isPlaying ? (
                   <PauseIcon />
                 ) : (
@@ -408,7 +408,7 @@ function MediaPlayer({
               sx={{ color: 'white' }}
             >
               {isLoading ? (
-                <Spinner size={24} color="inherit" />
+                <Spinner size={48} color="inherit" />
               ) : isPlaying ? (
                 <PauseIcon />
               ) : (

@@ -237,7 +237,7 @@ const MembersTab = ({
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
-        <Spinner />
+        <Spinner size={120} />
       </Box>
     );
   }
@@ -629,7 +629,7 @@ const MembersTab = ({
       {/* Loading indicator for infinite scroll */}
       {loadingMore && (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 3 }}>
-          <Spinner size={32} />
+          <Spinner size={64} />
         </Box>
       )}
       

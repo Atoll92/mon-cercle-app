@@ -561,7 +561,7 @@ const BatchInviteModal = ({ open, onClose, onInvite, network, activeProfile, onS
           variant="contained"
           color="primary"
           disabled={extractedEmails.length === 0 || isInviting}
-          startIcon={isInviting ? <Spinner size={20} /> : null}
+          startIcon={isInviting ? <Spinner size={40} /> : null}
         >
           {isInviting ? 'Sending...' : `Send ${extractedEmails.length} Invitation${extractedEmails.length !== 1 ? 's' : ''}`}
         </Button>

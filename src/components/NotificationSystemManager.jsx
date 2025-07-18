@@ -574,7 +574,7 @@ const NotificationSystemManager = () => {
               color="secondary"
               size="small"
               onClick={handleProcessNotifications}
-              startIcon={processing ? <Spinner size={16} color="inherit" /> : <SettingsIcon />}
+              startIcon={processing ? <Spinner size={32} color="inherit" /> : <SettingsIcon />}
               disabled={processing}
             >
               Process Queue
@@ -726,7 +726,7 @@ const NotificationSystemManager = () => {
               {loading ? (
                 <TableRow>
                   <TableCell colSpan={7} align="center">
-                    <Spinner size={20} />
+                    <Spinner size={40} />
                   </TableCell>
                 </TableRow>
               ) : (viewMode === 'received' ? notifications : triggeredNotifications).length === 0 ? (

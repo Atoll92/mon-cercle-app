@@ -561,7 +561,7 @@ const NetworkSettingsTab = ({ network, onNetworkUpdate, darkMode }) => {
           <Button
             variant="contained"
             color="primary"
-            startIcon={updating ? <Spinner size={20} color="inherit" /> : <SaveIcon />}
+            startIcon={updating ? <Spinner size={40} color="inherit" /> : <SaveIcon />}
             disabled={updating}
             type="submit"
             size="large"

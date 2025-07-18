@@ -276,7 +276,7 @@ function EventPage() {
   if (loading) {
     return (
       <Container maxWidth="md" sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
-        <Spinner />
+        <Spinner size={120} />
       </Container>
     );
   }
