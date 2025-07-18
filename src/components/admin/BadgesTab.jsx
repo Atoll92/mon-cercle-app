@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import MemberDetailsModal from '../MembersDetailModal';
 import {
   Box,
   Typography,
@@ -143,6 +144,8 @@ const BadgesTab = ({ networkId, members, darkMode }) => {
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [awardReason, setAwardReason] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedMember, setSelectedMember] = useState(null);
+  const [showMemberDetailsModal, setShowMemberDetailsModal] = useState(false);
 
   // Pagination
   const [page, setPage] = useState(0);
@@ -487,13 +490,45 @@ const BadgesTab = ({ networkId, members, darkMode }) => {
                           badgeContent={index + 1}
                           color={index < 3 ? 'primary' : 'default'}
                         >
-                          <Avatar src={stat.user?.profile_picture_url}>
+                          <Avatar 
+                            src={stat.user?.profile_picture_url}
+                            onClick={() => {
+                              if (stat.user) {
+                                setSelectedMember(stat.user);
+                                setShowMemberDetailsModal(true);
+                              }
+                            }}
+                            sx={{ 
+                              cursor: 'pointer',
+                              '&:hover': {
+                                opacity: 0.8
+                              }
+                            }}
+                          >
                             {stat.user?.full_name?.charAt(0).toUpperCase()}
                           </Avatar>
                         </MuiBadge>
                       </ListItemAvatar>
                       <ListItemText
-                        primary={stat.user?.full_name || 'Unknown User'}
+                        primary={
+                          <Typography
+                            onClick={() => {
+                              if (stat.user) {
+                                setSelectedMember(stat.user);
+                                setShowMemberDetailsModal(true);
+                              }
+                            }}
+                            sx={{ 
+                              cursor: 'pointer',
+                              '&:hover': {
+                                color: 'primary.main',
+                                textDecoration: 'underline'
+                              }
+                            }}
+                          >
+                            {stat.user?.full_name || 'Unknown User'}
+                          </Typography>
+                        }
                         secondary={
                           <Box sx={{ display: 'flex', gap: 2, mt: 0.5 }}>
                             <Chip
@@ -885,6 +920,18 @@ const BadgesTab = ({ networkId, members, darkMode }) => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Member Details Modal */}
+      {selectedMember && (
+        <MemberDetailsModal
+          open={showMemberDetailsModal}
+          onClose={() => {
+            setShowMemberDetailsModal(false);
+            setSelectedMember(null);
+          }}
+          member={selectedMember}
+        />
+      )}
     </Box>
   );
 };

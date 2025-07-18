@@ -28,6 +28,7 @@ import {
   Badge
 } from '@mui/material';
 import Spinner from '../Spinner';
+import MemberDetailsModal from '../MembersDetailModal';
 import {
   Add as AddIcon,
   Visibility as ViewIcon,
@@ -62,6 +63,8 @@ const SupportTicketsTab = ({ network, user, activeProfile, darkMode }) => {
   });
   const [newMessage, setNewMessage] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [selectedMember, setSelectedMember] = useState(null);
+  const [showMemberDetailsModal, setShowMemberDetailsModal] = useState(false);
 
   useEffect(() => {
     fetchTickets();
@@ -409,14 +412,43 @@ const SupportTicketsTab = ({ network, user, activeProfile, darkMode }) => {
                       <React.Fragment key={message.id}>
                         <ListItem alignItems="flex-start">
                           <ListItemAvatar>
-                            <Avatar src={message.sender?.profile_picture_url}>
+                            <Avatar 
+                              src={message.sender?.profile_picture_url}
+                              onClick={() => {
+                                if (message.sender) {
+                                  setSelectedMember(message.sender);
+                                  setShowMemberDetailsModal(true);
+                                }
+                              }}
+                              sx={{ 
+                                cursor: message.sender ? 'pointer' : 'default',
+                                '&:hover': message.sender ? {
+                                  opacity: 0.8
+                                } : {}
+                              }}
+                            >
                               {message.sender?.full_name?.[0]}
                             </Avatar>
                           </ListItemAvatar>
                           <ListItemText
                             primary={
                               <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                                <Typography variant="subtitle2">
+                                <Typography 
+                                  variant="subtitle2"
+                                  onClick={() => {
+                                    if (message.sender) {
+                                      setSelectedMember(message.sender);
+                                      setShowMemberDetailsModal(true);
+                                    }
+                                  }}
+                                  sx={{ 
+                                    cursor: message.sender ? 'pointer' : 'default',
+                                    '&:hover': message.sender ? {
+                                      color: 'primary.main',
+                                      textDecoration: 'underline'
+                                    } : {}
+                                  }}
+                                >
                                   {message.sender?.full_name || 'System'}
                                 </Typography>
                                 <Typography variant="caption" color="text.secondary">
@@ -477,6 +509,18 @@ const SupportTicketsTab = ({ network, user, activeProfile, darkMode }) => {
           </>
         )}
       </Dialog>
+
+      {/* Member Details Modal */}
+      {selectedMember && (
+        <MemberDetailsModal
+          open={showMemberDetailsModal}
+          onClose={() => {
+            setShowMemberDetailsModal(false);
+            setSelectedMember(null);
+          }}
+          member={selectedMember}
+        />
+      )}
     </Box>
   );
 };

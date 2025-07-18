@@ -33,6 +33,7 @@ import {
   Tooltip
 } from '@mui/material';
 import Spinner from '../components/Spinner';
+import MemberDetailsModal from '../components/MembersDetailModal';
 
 import {
   Edit as EditIcon,
@@ -68,6 +69,8 @@ const WikiPage = () => {
   const [commentText, setCommentText] = useState('');
   const [showCommentBox, setShowCommentBox] = useState(false);
   const [submittingComment, setSubmittingComment] = useState(false);
+  const [selectedMember, setSelectedMember] = useState(null);
+  const [showMemberDetailsModal, setShowMemberDetailsModal] = useState(false);
   
   // For viewing a specific revision
   const [viewingRevision, setViewingRevision] = useState(null);
@@ -714,13 +717,42 @@ const WikiPage = () => {
                   }
                 >
                   <ListItemAvatar>
-                    <Avatar src={comment.profiles?.profile_picture_url}>
+                    <Avatar 
+                      src={comment.profiles?.profile_picture_url}
+                      onClick={() => {
+                        if (comment.profiles) {
+                          setSelectedMember(comment.profiles);
+                          setShowMemberDetailsModal(true);
+                        }
+                      }}
+                      sx={{ 
+                        cursor: 'pointer',
+                        '&:hover': {
+                          opacity: 0.8
+                        }
+                      }}
+                    >
                       {comment.profiles?.full_name?.charAt(0) || '?'}
                     </Avatar>
                   </ListItemAvatar>
                   <ListItemText
                     primary={
-                      <Typography variant="subtitle2">
+                      <Typography 
+                        variant="subtitle2"
+                        onClick={() => {
+                          if (comment.profiles) {
+                            setSelectedMember(comment.profiles);
+                            setShowMemberDetailsModal(true);
+                          }
+                        }}
+                        sx={{ 
+                          cursor: 'pointer',
+                          '&:hover': {
+                            color: 'primary.main',
+                            textDecoration: 'underline'
+                          }
+                        }}
+                      >
                         {comment.profiles?.full_name || 'Unknown User'}
                       </Typography>
                     }
@@ -875,6 +907,18 @@ const WikiPage = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Member Details Modal */}
+      {selectedMember && (
+        <MemberDetailsModal
+          open={showMemberDetailsModal}
+          onClose={() => {
+            setShowMemberDetailsModal(false);
+            setSelectedMember(null);
+          }}
+          member={selectedMember}
+        />
+      )}
     </Container>
   );
 };

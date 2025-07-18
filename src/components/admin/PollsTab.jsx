@@ -38,6 +38,7 @@ import {
   Divider
 } from '@mui/material';
 import Spinner from '../Spinner';
+import MemberDetailsModal from '../MembersDetailModal';
 import {
   Add as AddIcon,
   Poll as PollIcon,
@@ -71,6 +72,8 @@ const PollsTab = ({ networkId }) => {
   const [statsDialogOpen, setStatsDialogOpen] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
+  const [selectedMember, setSelectedMember] = useState(null);
+  const [showMemberDetailsModal, setShowMemberDetailsModal] = useState(false);
   
   // Form state
   const [pollForm, setPollForm] = useState({
@@ -640,11 +643,43 @@ const PollsTab = ({ networkId }) => {
                   <List dense>
                     {selectedPoll.votes.map((vote) => (
                       <ListItem key={vote.id}>
-                        <Avatar sx={{ mr: 2 }}>
+                        <Avatar 
+                          onClick={() => {
+                            if (vote.user) {
+                              setSelectedMember(vote.user);
+                              setShowMemberDetailsModal(true);
+                            }
+                          }}
+                          sx={{ 
+                            mr: 2,
+                            cursor: 'pointer',
+                            '&:hover': {
+                              opacity: 0.8
+                            }
+                          }}
+                        >
                           {vote.user?.full_name?.[0]}
                         </Avatar>
                         <ListItemText
-                          primary={vote.user?.full_name}
+                          primary={
+                            <Typography
+                              onClick={() => {
+                                if (vote.user) {
+                                  setSelectedMember(vote.user);
+                                  setShowMemberDetailsModal(true);
+                                }
+                              }}
+                              sx={{ 
+                                cursor: 'pointer',
+                                '&:hover': {
+                                  color: 'primary.main',
+                                  textDecoration: 'underline'
+                                }
+                              }}
+                            >
+                              {vote.user?.full_name}
+                            </Typography>
+                          }
                           secondary={`Voted: ${
                             selectedPoll.poll_type === 'yes_no'
                               ? vote.selected_options[0]
@@ -662,6 +697,18 @@ const PollsTab = ({ networkId }) => {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Member Details Modal */}
+      {selectedMember && (
+        <MemberDetailsModal
+          open={showMemberDetailsModal}
+          onClose={() => {
+            setShowMemberDetailsModal(false);
+            setSelectedMember(null);
+          }}
+          member={selectedMember}
+        />
+      )}
     </Box>
   );
 };
