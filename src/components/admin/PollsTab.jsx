@@ -20,7 +20,6 @@ import {
   ListItemText,
   ListItemSecondaryAction,
   Chip,
-  Spinner,
   Alert,
   Grid,
   Paper,
@@ -38,6 +37,7 @@ import {
   Stack,
   Divider
 } from '@mui/material';
+import Spinner from '../Spinner';
 import {
   Add as AddIcon,
   Poll as PollIcon,

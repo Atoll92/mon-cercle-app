@@ -10,7 +10,6 @@ import {
   Button,
   Paper,
   Alert,
-  Spinner,
   TextField,
   Grid,
   Card,
@@ -31,6 +30,7 @@ import {
   MenuItem,
   Tooltip
 } from '@mui/material';
+import Spinner from '../components/Spinner';
 import {
   ArrowBack as ArrowBackIcon,
   CloudUpload as CloudUploadIcon,

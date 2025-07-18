@@ -14,7 +14,6 @@ import {
   Typography,
   TextField,
   Paper,
-  Spinner,
   Alert,
   Stack,
   Checkbox,
@@ -37,6 +36,7 @@ import {
   CardContent,
   CardActionArea
 } from '@mui/material';
+import Spinner from './Spinner';
 import {
   CreateNewFolder as CreateIcon,
   Public as PublicIcon,

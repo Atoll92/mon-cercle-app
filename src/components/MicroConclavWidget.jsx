@@ -8,11 +8,11 @@ import {
   Button,
   TextField,
   Alert,
-  Spinner,
   IconButton,
   Tooltip,
   Paper
 } from '@mui/material';
+import Spinner from './Spinner';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';

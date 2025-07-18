@@ -11,7 +11,6 @@ import {
   Button,
   Typography,
   Paper,
-  Spinner,
   Alert,
   List,
   ListItem,
@@ -27,6 +26,7 @@ import {
   DialogContent,
   DialogActions
 } from '@mui/material';
+import Spinner from './Spinner';
 import {
   CloudUpload as CloudUploadIcon,
   Description as FileIcon,

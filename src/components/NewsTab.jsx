@@ -22,7 +22,6 @@ import {
   DialogActions,
   TextField,
   Alert,
-  Spinner,
   IconButton,
   Chip,
   Fade,
@@ -33,6 +32,7 @@ import {
   MenuItem,
   alpha
 } from '@mui/material';
+import Spinner from './Spinner';
 import {
   Edit as EditIcon,
   AddPhotoAlternate as AddPhotoIcon,

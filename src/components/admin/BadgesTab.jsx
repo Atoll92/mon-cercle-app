@@ -27,7 +27,6 @@ import {
   ListItemSecondaryAction,
   Divider,
   Alert,
-  Spinner,
   Tooltip,
   FormHelperText,
   ToggleButton,
@@ -50,6 +49,7 @@ import {
   Autocomplete,
   Checkbox
 } from '@mui/material';
+import Spinner from '../Spinner';
 
 import {
   Add as AddIcon,

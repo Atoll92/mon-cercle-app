@@ -12,7 +12,6 @@ import {
   Divider,
   Paper,
   Alert,
-  Spinner,
   IconButton,
   Chip,
   Select,
@@ -21,6 +20,7 @@ import {
   InputLabel,
   alpha
 } from '@mui/material';
+import Spinner from '../Spinner';
 import {
   Save as SaveIcon,
   Delete as DeleteIcon,

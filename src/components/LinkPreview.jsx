@@ -4,11 +4,11 @@ import {
   Box,
   Typography,
   Paper,
-  Spinner,
   Skeleton,
   Link as MuiLink,
   IconButton
 } from '@mui/material';
+import Spinner from './Spinner';
 import {
   Link as LinkIcon,
   Language as LanguageIcon,

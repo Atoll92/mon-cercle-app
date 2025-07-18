@@ -13,7 +13,6 @@ import {
   Typography,
   Box,
   Breadcrumbs,
-  Spinner,
   Divider,
   Button,
   Chip,
@@ -33,6 +32,7 @@ import {
   Avatar,
   Tooltip
 } from '@mui/material';
+import Spinner from '../components/Spinner';
 
 import {
   Edit as EditIcon,

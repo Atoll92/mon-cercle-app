@@ -28,13 +28,13 @@ import {
   TableRow,
   Paper,
   Tooltip,
-  Spinner,
   Snackbar,
   Switch,
   FormControlLabel,
   InputAdornment,
   Stack
 } from '@mui/material';
+import Spinner from '../Spinner';
 import {
   Add as AddIcon,
   QrCode as QrCodeIcon,

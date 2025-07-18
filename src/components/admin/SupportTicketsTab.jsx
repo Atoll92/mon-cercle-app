@@ -19,7 +19,6 @@ import {
   TextField,
   MenuItem,
   Alert,
-  Spinner,
   List,
   ListItem,
   ListItemAvatar,
@@ -28,6 +27,7 @@ import {
   Divider,
   Badge
 } from '@mui/material';
+import Spinner from '../Spinner';
 import {
   Add as AddIcon,
   Visibility as ViewIcon,

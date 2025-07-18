@@ -19,9 +19,9 @@ import {
   Typography,
   Tooltip,
   Chip,
-  Spinner,
   ListItemButton
 } from '@mui/material';
+import Spinner from './Spinner';
 import {
   CheckCircle as CheckCircleIcon,
   Cancel as CancelIcon,

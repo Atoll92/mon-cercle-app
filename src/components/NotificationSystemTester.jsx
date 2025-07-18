@@ -6,11 +6,11 @@ import {
   CardContent,
   Typography,
   Alert,
-  Spinner,
   Stack,
   Divider,
   Chip
 } from '@mui/material';
+import Spinner from './Spinner';
 import {
   Science as TestIcon,
   CheckCircle as CheckIcon,

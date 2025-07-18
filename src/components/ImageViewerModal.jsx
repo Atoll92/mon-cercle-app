@@ -7,8 +7,8 @@ import {
   Fade,
   useTheme,
   useMediaQuery,
-  Spinner,
 } from '@mui/material';
+import Spinner from './Spinner';
 import {
   Close as CloseIcon,
   ZoomIn as ZoomInIcon,

@@ -9,7 +9,6 @@ import {
   Button,
   Avatar,
   Collapse,
-  Spinner,
   Fade,
   alpha,
   useTheme,
@@ -18,6 +17,7 @@ import {
   MenuItem,
   Chip
 } from '@mui/material';
+import Spinner from './Spinner';
 import {
   ChatBubbleOutline as CommentIcon,
   Send as SendIcon,

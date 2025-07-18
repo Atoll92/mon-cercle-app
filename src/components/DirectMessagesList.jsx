@@ -16,7 +16,6 @@ import {
   TextField,
   InputAdornment,
   IconButton,
-  Spinner,
   Button,
   Paper,
   Menu,
@@ -31,6 +30,7 @@ import {
   Alert,
   Snackbar
 } from '@mui/material';
+import Spinner from './Spinner';
 import {
   Search as SearchIcon,
   Message as MessageIcon,

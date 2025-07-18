@@ -8,7 +8,6 @@ import {
   Typography,
   Button,
   TextField,
-  Spinner,
   Grid,
   Paper,
   Slider,
@@ -18,6 +17,7 @@ import {
   MenuItem,
   InputAdornment
 } from '@mui/material';
+import Spinner from './Spinner';
 import {
   Save as SaveIcon,
   Link as LinkIcon,

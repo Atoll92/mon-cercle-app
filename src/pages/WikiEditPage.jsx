@@ -12,7 +12,6 @@ import {
   Typography,
   Box,
   Breadcrumbs,
-  Spinner,
   Button,
   TextField,
   FormControl,
@@ -31,6 +30,7 @@ import {
   DialogActions,
   Stack,
 } from '@mui/material';
+import Spinner from '../components/Spinner';
 
 import {
   Save as SaveIcon,

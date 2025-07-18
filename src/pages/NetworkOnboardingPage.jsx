@@ -12,9 +12,9 @@ import {
   useTheme,
   alpha,
   Divider,
-  Spinner,
   Alert
 } from '@mui/material';
+import Spinner from '../components/Spinner';
 import { AdminPanelSettings as AdminIcon } from '@mui/icons-material';
 
 const NetworkOnboardingPage = () => {

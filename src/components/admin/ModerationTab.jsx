@@ -9,7 +9,6 @@ import {
   Alert,
   Button,
   TextField,
-  Spinner,
   Table,
   TableBody,
   TableCell,
@@ -36,6 +35,7 @@ import {
   FormControlLabel,
   alpha
 } from '@mui/material';
+import Spinner from '../Spinner';
 import {
   Delete as DeleteIcon,
   Visibility as VisibilityIcon,

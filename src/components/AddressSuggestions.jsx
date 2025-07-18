@@ -3,12 +3,12 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
   TextField,
   Autocomplete,
-  Spinner,
   Box,
   Typography,
   ListItem,
   ListItemText
 } from '@mui/material';
+import Spinner from './Spinner';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import debounce from 'lodash/debounce';
 import EventsMap from './EventsMap'; // Import the fixed EventsMap component

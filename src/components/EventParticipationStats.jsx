@@ -3,10 +3,10 @@ import React, { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
-  Spinner,
   Chip,
   Avatar
 } from '@mui/material';
+import Spinner from './Spinner';
 import {
   CheckCircle as CheckCircleIcon,
   HelpOutline as MaybeIcon,

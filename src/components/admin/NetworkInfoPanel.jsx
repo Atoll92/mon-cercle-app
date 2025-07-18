@@ -11,9 +11,9 @@ import {
   useTheme as useMuiTheme,
   LinearProgress,
   Button,
-  Spinner,
   Alert
 } from '@mui/material';
+import Spinner from '../Spinner';
 import {
   People as PeopleIcon,
   AdminPanelSettings as AdminIcon,

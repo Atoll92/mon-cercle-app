@@ -22,7 +22,6 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  Spinner,
   Alert,
   Tooltip,
   Chip,
@@ -30,6 +29,7 @@ import {
   Stack,
   InputAdornment
 } from '@mui/material';
+import Spinner from './Spinner';
 import {
   Add as AddIcon,
   Edit as EditIcon,

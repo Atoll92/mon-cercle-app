@@ -8,7 +8,6 @@ import {
   DialogContent,
   DialogActions,
   Alert,
-  Spinner,
   Paper,
   Divider,
   Tabs,
@@ -20,6 +19,7 @@ import {
   Zoom,
   Fade
 } from '@mui/material';
+import Spinner from '../Spinner';
 import {
   CloudUpload as CloudUploadIcon,
   Assignment as AssignmentIcon,

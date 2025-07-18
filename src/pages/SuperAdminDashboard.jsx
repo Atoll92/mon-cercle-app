@@ -30,7 +30,6 @@ import {
   FormControl,
   InputLabel,
   Alert,
-  Spinner,
   Tooltip,
   Badge,
   LinearProgress,
@@ -38,6 +37,7 @@ import {
   Tabs,
   Tab
 } from '@mui/material';
+import Spinner from '../components/Spinner';
 import {
   Dashboard as DashboardIcon,
   Group as GroupIcon,

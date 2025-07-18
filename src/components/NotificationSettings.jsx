@@ -8,9 +8,9 @@ import {
   CardContent,
   Divider,
   Alert,
-  Spinner,
   Stack
 } from '@mui/material';
+import Spinner from './Spinner';
 import {
   Notifications as NotificationsIcon,
   Article as NewsIcon,

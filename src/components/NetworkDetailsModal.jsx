@@ -23,8 +23,8 @@ import {
   IconButton,
   Tooltip,
   Alert,
-  Spinner
 } from '@mui/material';
+import Spinner from './Spinner';
 import {
   Close as CloseIcon,
   Person as PersonIcon,

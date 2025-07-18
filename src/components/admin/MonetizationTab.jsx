@@ -38,8 +38,8 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Spinner
 } from '@mui/material';
+import Spinner from '../Spinner';
 import {
   AttachMoney as MoneyIcon,
   Event as EventIcon,

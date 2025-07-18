@@ -9,11 +9,11 @@ import {
   Box,
   Typography,
   Toolbar,
-  Spinner,
   Alert,
   Tooltip,
   TextField
 } from '@mui/material';
+import Spinner from './Spinner';
 import {
   Close as CloseIcon,
   ZoomIn as ZoomInIcon,

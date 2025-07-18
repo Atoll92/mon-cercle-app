@@ -27,7 +27,6 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  Spinner,
   Alert,
   Chip,
   Stack,
@@ -35,6 +34,7 @@ import {
   Tab,
   alpha
 } from '@mui/material';
+import Spinner from '../components/Spinner';
 import {
   Dashboard as DashboardIcon,
   Add as AddIcon,

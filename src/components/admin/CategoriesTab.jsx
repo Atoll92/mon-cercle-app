@@ -17,10 +17,10 @@ import {
   Alert,
   Switch,
   FormControlLabel,
-  Spinner,
   Tooltip,
   Grid
 } from '@mui/material';
+import Spinner from '../Spinner';
 import {
   Add as AddIcon,
   Edit as EditIcon,

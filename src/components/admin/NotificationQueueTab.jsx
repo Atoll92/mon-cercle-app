@@ -6,7 +6,6 @@ import {
   Card,
   CardContent,
   Alert,
-  Spinner,
   Table,
   TableBody,
   TableCell,
@@ -22,6 +21,7 @@ import {
   DialogContent,
   DialogActions
 } from '@mui/material';
+import Spinner from '../Spinner';
 import {
   Send as SendIcon,
   Refresh as RefreshIcon,

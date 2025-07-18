@@ -19,7 +19,6 @@ import {
   Button,
   Paper,
   Alert,
-  Spinner,
   Tabs,
   Tab,
   TextField,
@@ -29,6 +28,7 @@ import {
   AppBar,
   Toolbar
 } from '@mui/material';
+import Spinner from '../components/Spinner';
 import {
   ArrowBack as ArrowBackIcon,
   AdminPanelSettings as AdminIcon,

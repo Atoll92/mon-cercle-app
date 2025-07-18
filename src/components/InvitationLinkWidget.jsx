@@ -12,9 +12,9 @@ import {
   DialogContent,
   DialogActions,
   Tooltip,
-  Spinner,
   Alert
 } from '@mui/material';
+import Spinner from './Spinner';
 import {
   ContentCopy as CopyIcon,
   QrCode2 as QrCodeIcon,

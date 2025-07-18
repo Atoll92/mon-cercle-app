@@ -17,7 +17,6 @@ import {
   Divider,
   useMediaQuery,
   IconButton,
-  Spinner,
   Alert,
   Fab,
   Drawer,
@@ -26,6 +25,7 @@ import {
   DialogContent,
   DialogActions
 } from '@mui/material';
+import Spinner from '../components/Spinner';
 import { useTheme } from '@mui/material/styles';
 import {
   ArrowBack as ArrowBackIcon,

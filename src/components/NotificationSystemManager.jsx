@@ -6,7 +6,6 @@ import {
   CardContent,
   Typography,
   Alert,
-  Spinner,
   Divider,
   Stack,
   Chip,
@@ -20,6 +19,7 @@ import {
   IconButton,
   Tooltip
 } from '@mui/material';
+import Spinner from './Spinner';
 import {
   Notifications as NotificationsIcon,
   Refresh as RefreshIcon,

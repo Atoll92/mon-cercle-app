@@ -29,9 +29,9 @@ import {
   IconButton,
   Stack,
   FormControlLabel,
-  Spinner,
   Alert
 } from '@mui/material';
+import Spinner from '../components/Spinner';
 import { 
   Check as CheckIcon, 
   Close as CloseIcon, 

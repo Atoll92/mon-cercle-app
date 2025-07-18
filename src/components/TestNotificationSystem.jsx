@@ -6,10 +6,10 @@ import {
   CardContent,
   Typography,
   Alert,
-  Spinner,
   Divider,
   Stack
 } from '@mui/material';
+import Spinner from './Spinner';
 import { supabase } from '../supabaseclient';
 import { useAuth } from '../context/authcontext';
 import { useProfile } from '../context/profileContext';

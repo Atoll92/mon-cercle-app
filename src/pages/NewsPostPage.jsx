@@ -7,7 +7,6 @@ import {
   Typography,
   Box,
   Button,
-  Spinner,
   Alert,
   Chip,
   Avatar,
@@ -16,6 +15,7 @@ import {
   Menu,
   MenuItem
 } from '@mui/material';
+import Spinner from '../components/Spinner';
 import {
   ArrowBack as ArrowBackIcon,
   CalendarToday as CalendarIcon,

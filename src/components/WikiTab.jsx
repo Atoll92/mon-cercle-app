@@ -10,7 +10,6 @@ import {
   Divider,
   Box,
   Button,
-  Spinner,
   TextField,
   InputAdornment,
   IconButton,
@@ -35,6 +34,7 @@ import {
   DialogContentText,
   DialogActions
 } from '@mui/material';
+import Spinner from './Spinner';
 
 import {
   Description as PageIcon,

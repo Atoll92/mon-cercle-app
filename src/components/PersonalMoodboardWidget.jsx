@@ -11,7 +11,6 @@ import {
   CardActions,
   Typography,
   Button,
-  Spinner,
   Grid,
   Paper,
   Divider,
@@ -20,6 +19,7 @@ import {
   IconButton,
   alpha
 } from '@mui/material';
+import Spinner from './Spinner';
 import {
   Dashboard as DashboardIcon,
   Add as AddIcon,

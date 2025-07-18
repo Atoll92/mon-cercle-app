@@ -13,7 +13,6 @@ import {
   ListItemText,
   TextField,
   IconButton,
-  Spinner,
   Paper,
   Divider,
   Typography,
@@ -26,6 +25,7 @@ import {
   Chip,
   Menu
 } from '@mui/material';
+import Spinner from './Spinner';
 import SendIcon from '@mui/icons-material/Send';
 import PersonIcon from '@mui/icons-material/Person';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
