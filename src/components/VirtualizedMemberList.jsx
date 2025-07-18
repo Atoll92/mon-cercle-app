@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { FixedSizeList as List } from 'react-window';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import InfiniteLoader from 'react-window-infinite-loader';
+import MembersDetailModal from './MembersDetailModal';
+import { getUserProfile } from '../api/networks';
 import {
   Box,
   Typography,
@@ -21,8 +23,10 @@ import {
 } from '@mui/icons-material';
 
 // This component handles large member lists efficiently using virtualization
-const VirtualizedMemberList = ({ members, user, darkMode, onMemberSelect }) => {
+const VirtualizedMemberList = ({ members, user, darkMode, onMemberSelect, networkId }) => {
   const [expandedItems, setExpandedItems] = useState({});
+  const [selectedMember, setSelectedMember] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
   
   // The number of items to load at once when scrolling
   const LOAD_BATCH_SIZE = 30;
@@ -45,6 +49,27 @@ const VirtualizedMemberList = ({ members, user, darkMode, onMemberSelect }) => {
       ...prev,
       [memberId]: !prev[memberId]
     }));
+  };
+  
+  // Handle member click to show modal
+  const handleMemberClick = async (member) => {
+    if (onMemberSelect) {
+      onMemberSelect(member);
+    } else {
+      // Fetch complete member profile if needed
+      try {
+        const profile = await getUserProfile(member.id, networkId);
+        if (profile) {
+          setSelectedMember(profile);
+          setModalOpen(true);
+        }
+      } catch (error) {
+        console.error('Error fetching member profile:', error);
+        // Fallback to using the existing member data
+        setSelectedMember(member);
+        setModalOpen(true);
+      }
+    }
   };
   
   // Render an individual member row
@@ -102,7 +127,7 @@ const VirtualizedMemberList = ({ members, user, darkMode, onMemberSelect }) => {
               boxShadow: 4
             }
           }}
-          onClick={() => onMemberSelect && onMemberSelect(member)}
+          onClick={() => handleMemberClick(member)}
         >
           <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -317,31 +342,44 @@ const VirtualizedMemberList = ({ members, user, darkMode, onMemberSelect }) => {
   };
   
   return (
-    <Box sx={{ height: 800, width: '100%' }}>
-      <AutoSizer>
-        {({ height, width }) => (
-          <InfiniteLoader
-            isItemLoaded={isItemLoaded}
-            itemCount={members.length}
-            loadMoreItems={loadMoreItems}
-            threshold={LOAD_BATCH_SIZE}
-          >
-            {({ onItemsRendered, ref }) => (
-              <List
-                height={height}
-                width={width}
-                itemCount={members.length}
-                itemSize={expandedItems ? (index => expandedItems[members[index]?.id] ? 280 : 90) : 90}
-                onItemsRendered={onItemsRendered}
-                ref={ref}
-              >
-                {renderMember}
-              </List>
-            )}
-          </InfiniteLoader>
-        )}
-      </AutoSizer>
-    </Box>
+    <>
+      <Box sx={{ height: 800, width: '100%' }}>
+        <AutoSizer>
+          {({ height, width }) => (
+            <InfiniteLoader
+              isItemLoaded={isItemLoaded}
+              itemCount={members.length}
+              loadMoreItems={loadMoreItems}
+              threshold={LOAD_BATCH_SIZE}
+            >
+              {({ onItemsRendered, ref }) => (
+                <List
+                  height={height}
+                  width={width}
+                  itemCount={members.length}
+                  itemSize={expandedItems ? (index => expandedItems[members[index]?.id] ? 280 : 90) : 90}
+                  onItemsRendered={onItemsRendered}
+                  ref={ref}
+                >
+                  {renderMember}
+                </List>
+              )}
+            </InfiniteLoader>
+          )}
+        </AutoSizer>
+      </Box>
+      
+      {/* Member Details Modal */}
+      <MembersDetailModal
+        open={modalOpen}
+        onClose={() => {
+          setModalOpen(false);
+          setSelectedMember(null);
+        }}
+        member={selectedMember}
+        currentUserId={user?.id}
+      />
+    </>
   );
 };
 

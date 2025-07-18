@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import MembersDetailModal from '../MembersDetailModal';
 import {
   Box,
   Typography,
@@ -93,6 +94,10 @@ const ModerationTab = ({ network, user, members = [], darkMode = false }) => {
   // Moderation logs state
   const [moderationLogs, setModerationLogs] = useState([]);
   
+  // Member modal state
+  const [selectedMember, setSelectedMember] = useState(null);
+  const [memberModalOpen, setMemberModalOpen] = useState(false);
+  
   // Dialog states
   const [confirmDialog, setConfirmDialog] = useState({
     open: false,
@@ -102,6 +107,12 @@ const ModerationTab = ({ network, user, members = [], darkMode = false }) => {
     item: null
   });
 
+  // Handle member click to show modal
+  const handleMemberClick = (member) => {
+    setSelectedMember(member);
+    setMemberModalOpen(true);
+  };
+  
   // Handle tab change
   const handleTabChange = (event, newValue) => {
     setActiveTab(newValue);
@@ -808,7 +819,17 @@ const ModerationTab = ({ network, user, members = [], darkMode = false }) => {
                         />
                       </TableCell>
                       <TableCell>
-                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <Box 
+                          sx={{ 
+                            display: 'flex', 
+                            alignItems: 'center',
+                            cursor: 'pointer',
+                            '&:hover': {
+                              color: 'primary.main'
+                            }
+                          }}
+                          onClick={() => item.profiles && handleMemberClick(item.profiles)}
+                        >
                           {item.profiles?.profile_picture_url ? (
                             <Box 
                               component="img" 
@@ -957,7 +978,17 @@ const ModerationTab = ({ network, user, members = [], darkMode = false }) => {
                       }}
                     >
                       <TableCell>
-                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <Box 
+                          sx={{ 
+                            display: 'flex', 
+                            alignItems: 'center',
+                            cursor: 'pointer',
+                            '&:hover': {
+                              color: 'primary.main'
+                            }
+                          }}
+                          onClick={() => handleMemberClick(user)}
+                        >
                           {user.profile_picture_url ? (
                             <Box 
                               component="img" 
@@ -1235,6 +1266,17 @@ const ModerationTab = ({ network, user, members = [], darkMode = false }) => {
           </Button>
         </DialogActions>
       </Dialog>
+      
+      {/* Member Details Modal */}
+      <MembersDetailModal
+        open={memberModalOpen}
+        onClose={() => {
+          setMemberModalOpen(false);
+          setSelectedMember(null);
+        }}
+        member={selectedMember}
+        currentUserId={user?.id}
+      />
     </Box>
   );
 };

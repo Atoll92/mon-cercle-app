@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import MembersDetailModal from './MembersDetailModal';
 import {
   Typography,
   Paper,
@@ -8,11 +9,22 @@ import {
   Card,
   CardContent,
   Box,
-  Button
+  Button,
+  Chip
 } from '@mui/material';
 import InvitationLinkWidget from './InvitationLinkWidget';
 
-const AboutTab = ({ network, networkMembers, isUserAdmin }) => {
+const AboutTab = ({ network, networkMembers, isUserAdmin, currentUserId }) => {
+  const [selectedMember, setSelectedMember] = useState(null);
+  const [memberModalOpen, setMemberModalOpen] = useState(false);
+  
+  const handleCreatorClick = () => {
+    const creator = networkMembers.find(m => m.id === network.created_by);
+    if (creator) {
+      setSelectedMember(creator);
+      setMemberModalOpen(true);
+    }
+  };
   return (
     <Paper sx={{ p: 3 }}>
       <Typography variant="h5" component="h2" gutterBottom>
@@ -40,9 +52,18 @@ const AboutTab = ({ network, networkMembers, isUserAdmin }) => {
                 
                 {network.created_by && (
                   <Typography variant="body2" color="text.secondary" gutterBottom>
-                    <strong>Created by:</strong> {
-                      networkMembers.find(m => m.id === network.created_by)?.full_name || 'Unknown'
-                    }
+                    <strong>Created by:</strong>{' '}
+                    <Chip
+                      label={networkMembers.find(m => m.id === network.created_by)?.full_name || 'Unknown'}
+                      size="small"
+                      onClick={handleCreatorClick}
+                      sx={{ 
+                        cursor: 'pointer',
+                        '&:hover': {
+                          bgcolor: 'action.hover'
+                        }
+                      }}
+                    />
                   </Typography>
                 )}
                 
@@ -91,6 +112,17 @@ const AboutTab = ({ network, networkMembers, isUserAdmin }) => {
           </Card>
         </Grid>
       </Grid>
+      
+      {/* Member Details Modal */}
+      <MembersDetailModal
+        open={memberModalOpen}
+        onClose={() => {
+          setMemberModalOpen(false);
+          setSelectedMember(null);
+        }}
+        member={selectedMember}
+        currentUserId={currentUserId}
+      />
     </Paper>
   );
 };

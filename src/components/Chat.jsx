@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { supabase } from '../supabaseclient';
 import { useAuth } from '../context/authcontext';
 import { useProfile } from '../context/profileContext';
-import { fetchNetworkMembers, sendChatMessage } from '../api/networks';
+import { fetchNetworkMembers, sendChatMessage, getUserProfile } from '../api/networks';
 import {
   Box,
   List,
@@ -47,6 +47,7 @@ import LinkPreview from './LinkPreview'; // Import the LinkPreview component
 import MediaUpload from './MediaUpload';
 import MediaPlayer from './MediaPlayer';
 import ImageViewerModal from './ImageViewerModal';
+import MemberDetailsModal from './MembersDetailModal';
 import { uploadMediaFile } from '../utils/mediaUpload';
 import EmojiPicker from 'emoji-picker-react';
 
@@ -88,6 +89,10 @@ const Chat = ({ networkId, isFullscreen = false }) => {
   
   // State for replies
   const [replyingTo, setReplyingTo] = useState(null);
+  
+  // State for member details modal
+  const [selectedMember, setSelectedMember] = useState(null);
+  const [memberModalOpen, setMemberModalOpen] = useState(false);
 
   // Auto-scroll to the bottom when messages change
   useEffect(() => {
@@ -387,6 +392,25 @@ const Chat = ({ networkId, isFullscreen = false }) => {
       // Remove the pending message if it failed
       setMessages(prev => prev.filter(msg => msg.id !== pendingMessage.id));
       setError('Failed to send message');
+    }
+  };
+  
+  // Handle avatar click to show member details
+  const handleAvatarClick = async (profileId) => {
+    try {
+      const profile = await getUserProfile(profileId, networkId);
+      if (profile) {
+        setSelectedMember(profile);
+        setMemberModalOpen(true);
+      }
+    } catch (error) {
+      console.error('Error fetching member profile:', error);
+      // Try to find in existing network members
+      const member = networkMembers.find(m => m.id === profileId);
+      if (member) {
+        setSelectedMember(member);
+        setMemberModalOpen(true);
+      }
     }
   };
   
@@ -1383,9 +1407,12 @@ const renderMessageContent = (message) => {
                   <Avatar 
                     src={message.profiles?.profile_picture_url}
                     alt={message.profiles?.full_name}
-                    component={message.profiles?.id ? Link : 'div'}
-                    to={message.profiles?.id ? `/profile/${message.profiles.id}` : undefined}
-                    sx={{ 
+                    onClick={message.profiles?.id ? (e) => {
+                      e.preventDefault();
+                      handleAvatarClick(message.profiles.id);
+                    } : undefined}
+                    sx={{
+                      cursor: message.profiles?.id ? 'pointer' : 'default', 
                       width: 32,  // Smaller avatar
                       height: 32, // Smaller avatar
                       border: darkMode
@@ -2027,6 +2054,16 @@ const renderMessageContent = (message) => {
         onClose={() => setImageViewerOpen(false)}
         imageUrl={selectedImage.url}
         title={selectedImage.title}
+      />
+      
+      {/* Member Details Modal */}
+      <MemberDetailsModal
+        open={memberModalOpen}
+        onClose={() => {
+          setMemberModalOpen(false);
+          setSelectedMember(null);
+        }}
+        member={selectedMember}
       />
     </Paper>
   );
