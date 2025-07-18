@@ -4,8 +4,8 @@ import {
   Paper,
   Typography,
   IconButton,
-  Spinner,
 } from '@mui/material';
+import Spinner from '../Spinner';
 import {
   Edit as EditIcon,
   Delete as DeleteIcon,

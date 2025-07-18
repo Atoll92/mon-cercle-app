@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import {
   Box,
   Typography,
-  Spinner,
   Paper,
 } from '@mui/material';
+import Spinner from '../Spinner';
 import {
   Link as LinkIcon,
   Image as ImageIcon,

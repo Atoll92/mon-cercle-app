@@ -9,9 +9,9 @@ import {
   Box,
   Typography,
   Alert,
-  Spinner,
   Stack
 } from '@mui/material';
+import Spinner from '../Spinner';
 import {
   Public as PublicIcon
 } from '@mui/icons-material';

@@ -29,13 +29,13 @@ import {
   ListItemText,
   Divider,
   Alert,
-  Spinner,
   FormControlLabel,
   Checkbox,
   Tabs,
   Tab,
   Badge
 } from '@mui/material';
+import Spinner from '../Spinner';
 import {
   Visibility as ViewIcon,
   Send as SendIcon,
