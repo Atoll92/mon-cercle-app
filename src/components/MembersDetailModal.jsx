@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../supabaseclient';
+import { useProfile } from '../context/profileContext';
 import { useFadeIn } from '../hooks/useAnimation';
 import { formatTimeAgo } from '../utils/dateFormatting';
 import PostCard from './PostCard';

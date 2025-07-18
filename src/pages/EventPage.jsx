@@ -496,7 +496,19 @@ function EventPage() {
                 <Typography variant="h6" gutterBottom>
                   Organized by
                 </Typography>
-                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <Box 
+                  sx={{ 
+                    display: 'flex', 
+                    alignItems: 'center',
+                    cursor: 'pointer',
+                    padding: 1,
+                    borderRadius: 1,
+                    '&:hover': {
+                      backgroundColor: 'action.hover'
+                    }
+                  }}
+                  onClick={() => handleMemberClick(organizer)}
+                >
                   <Avatar
                     src={organizer.profile_picture_url}
                     alt={organizer.full_name}
