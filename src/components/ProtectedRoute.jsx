@@ -2,7 +2,8 @@
 import React, { useEffect } from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/authcontext';
-import { CircularProgress, Box, Typography } from '@mui/material';
+import { Box, Typography } from '@mui/material';
+import Spinner from './Spinner';
 
 function ProtectedRoute() {
   const { session, user, loading } = useAuth();
@@ -30,7 +31,7 @@ function ProtectedRoute() {
           height: '100vh' 
         }}
       >
-        <CircularProgress size={40} />
+        <Spinner size={40} />
         <Typography variant="body1" sx={{ mt: 2 }}>
           Verifying your credentials...
         </Typography>

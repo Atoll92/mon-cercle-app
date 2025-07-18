@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import MembersDetailModal from './MembersDetailModal';
 import CreatePostModal from './CreatePostModal';
 import PostCard from './PostCard';
+import Spinner from './Spinner';
 import {
   Typography,
   Paper,
@@ -10,7 +11,6 @@ import {
   Box,
   Avatar,
   Chip,
-  CircularProgress,
   Fade,
   Card,
   CardContent,
@@ -924,7 +924,7 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                             }}
                           >
                             {deletingPostId === item.id ? (
-                              <CircularProgress size={16} />
+                              <Spinner size={16} />
                             ) : (
                               <DeleteIcon fontSize="small" />
                             )}
@@ -1485,7 +1485,7 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
           {/* Loading indicator for infinite scroll */}
           {loading && (
             <Box sx={{ display: 'flex', justifyContent: 'center', py: 3 }}>
-              <CircularProgress size={32} />
+              <Spinner size={32} />
             </Box>
           )}
           

@@ -20,7 +20,7 @@ import {
   ListItemText,
   ListItemSecondaryAction,
   Chip,
-  CircularProgress,
+  Spinner,
   Alert,
   Grid,
   Paper,
@@ -235,7 +235,7 @@ const PollsTab = ({ networkId }) => {
   if (loading) {
     return (
       <Box display="flex" justifyContent="center" p={3}>
-        <CircularProgress />
+        <Spinner />
       </Box>
     );
   }

@@ -19,7 +19,7 @@ import {
   Button,
   Paper,
   Alert,
-  CircularProgress,
+  Spinner,
   Tabs,
   Tab,
   TextField,
@@ -175,7 +175,7 @@ function NetworkLandingPage() {
           alignItems: 'center',
           justifyContent: 'center'
         }}>
-          <CircularProgress sx={{ color: 'white' }} />
+          <Spinner sx={{ color: 'white' }} />
         </Box>
         <Container maxWidth="lg" sx={{ pt: 2 }}>
           <GridSkeleton items={6} columns={3} />

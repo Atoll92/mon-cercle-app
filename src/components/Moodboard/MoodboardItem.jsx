@@ -4,7 +4,7 @@ import {
   Paper,
   Typography,
   IconButton,
-  CircularProgress,
+  Spinner,
 } from '@mui/material';
 import {
   Edit as EditIcon,
@@ -167,7 +167,7 @@ const MoodboardItem = ({
                   backgroundColor: 'rgba(0,0,0,0.1)',
                 }}
               >
-                <CircularProgress size={24} />
+                <Spinner size={24} />
               </Box>
             )}
             

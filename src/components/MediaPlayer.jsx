@@ -1,11 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
+import Spinner from './Spinner';
 import {
   Box,
   IconButton,
   Typography,
   Slider,
   Paper,
-  CircularProgress,
   alpha
 } from '@mui/material';
 import {
@@ -204,7 +204,7 @@ function MediaPlayer({
       >
         <IconButton size="small" onClick={togglePlayPause} disabled={isLoading}>
           {isLoading ? (
-            <CircularProgress size={20} />
+            <Spinner size={20} />
           ) : isPlaying ? (
             <PauseIcon />
           ) : (
@@ -297,7 +297,7 @@ function MediaPlayer({
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <IconButton onClick={togglePlayPause} disabled={isLoading}>
                 {isLoading ? (
-                  <CircularProgress size={24} />
+                  <Spinner size={24} />
                 ) : isPlaying ? (
                   <PauseIcon />
                 ) : (
@@ -408,7 +408,7 @@ function MediaPlayer({
               sx={{ color: 'white' }}
             >
               {isLoading ? (
-                <CircularProgress size={24} color="inherit" />
+                <Spinner size={24} color="inherit" />
               ) : isPlaying ? (
                 <PauseIcon />
               ) : (

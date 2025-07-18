@@ -2,13 +2,13 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseclient'; // Adjust path if needed
 import { Link as RouterLink, useNavigate, useLocation } from 'react-router-dom'; // Added useLocation
+import Spinner from '../components/Spinner';
 import {
   Alert,
   Box,
   Button,
   Card,
   CardContent,
-  CircularProgress,
   Container,
   FormControl,
   FormHelperText, // Added for potential future use
@@ -293,7 +293,7 @@ function SignupPage() {
               {/* Invitation Info Banner */}
               {invitationLoading ? (
                 <Box sx={{ display: 'flex', justifyContent: 'center', my: 2 }}>
-                  <CircularProgress size={24} />
+                  <Spinner size={24} />
                   <Typography variant="body2" sx={{ ml: 2 }}>
                     Loading invitation details...
                   </Typography>
@@ -475,7 +475,7 @@ function SignupPage() {
                   >
                     {loading ? (
                       <>
-                        <CircularProgress
+                        <Spinner
                           size={24}
                           sx={{
                             color: 'white', // Make spinner visible on button

@@ -5,12 +5,12 @@ import { useAuth } from '../context/authcontext';
 import { useProfile } from '../context/profileContext';
 import { useTheme } from '../components/ThemeProvider'; // Import useTheme hook
 import { supabase } from '../supabaseclient';
+import Spinner from '../components/Spinner';
 import {
   Box,
   Typography,
   Button,
   Paper,
-  CircularProgress,
   Alert,
   useTheme as useMuiTheme
 } from '@mui/material';
@@ -215,7 +215,7 @@ function NetworkAdminPage() {
               color: muiTheme.palette.custom.lightText
             }}
           >
-            <CircularProgress size={60} sx={{ mb: 3 }} />
+            <Spinner size={60} sx={{ mb: 3 }} />
             <Typography variant="h6">
               Loading admin panel...
             </Typography>

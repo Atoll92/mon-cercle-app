@@ -4,6 +4,7 @@ import { supabase } from '../supabaseclient';
 import { useFadeIn } from '../hooks/useAnimation';
 import { formatTimeAgo } from '../utils/dateFormatting';
 import PostCard from './PostCard';
+import Spinner from './Spinner';
 import {
   Dialog,
   DialogContent,
@@ -19,7 +20,6 @@ import {
   alpha,
   Paper,
   Stack,
-  CircularProgress,
   Tooltip,
   useTheme,
   Fade,
@@ -281,7 +281,7 @@ const MemberDetailsModal = ({
                     backgroundColor: 'rgba(0,0,0,0.1)',
                   }}
                 >
-                  <CircularProgress size={16} />
+                  <Spinner size={16} />
                 </Box>
               )}
               
@@ -467,7 +467,7 @@ const MemberDetailsModal = ({
               }}
             >
               {loadingMoodboard ? (
-                <CircularProgress size={32} />
+                <Spinner size={32} />
               ) : (
                 <>
                   <DashboardIcon 
@@ -917,7 +917,7 @@ const MemberDetailsModal = ({
           
           {loading ? (
             <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
-              <CircularProgress size={40} />
+              <Spinner size={40} />
             </Box>
           ) : error ? (
             <Typography color="error" sx={{ p: 2 }}>

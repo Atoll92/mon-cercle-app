@@ -4,6 +4,7 @@ import { Link, useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseclient';
 import { useAuth } from '../context/authcontext';
 import { useProfile } from '../context/profileContext';
+import Spinner from '../components/Spinner';
 
 import {
   Container,
@@ -11,7 +12,6 @@ import {
   Typography,
   Box,
   Breadcrumbs,
-  CircularProgress,
   Button,
   Divider,
   List,
@@ -297,7 +297,7 @@ function WikiListPage() {
     return (
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
-          <CircularProgress />
+          <Spinner />
         </Box>
       </Container>
     );

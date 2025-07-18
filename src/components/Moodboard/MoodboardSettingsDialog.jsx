@@ -9,7 +9,7 @@ import {
   Box,
   Typography,
   Alert,
-  CircularProgress,
+  Spinner,
   Stack
 } from '@mui/material';
 import {
@@ -199,7 +199,7 @@ const MoodboardSettingsDialog = ({
           onClick={handleSave}
           variant="contained"
           disabled={processing || !title.trim()}
-          startIcon={processing && <CircularProgress size={20} />}
+          startIcon={processing && <Spinner size={20} />}
         >
           {processing ? (mode === 'create' ? 'Creating...' : 'Saving...') : (mode === 'create' ? 'Create' : 'Save Changes')}
         </Button>

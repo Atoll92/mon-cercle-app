@@ -11,7 +11,7 @@ import {
   useTheme as useMuiTheme,
   LinearProgress,
   Button,
-  CircularProgress,
+  Spinner,
   Alert
 } from '@mui/material';
 import {
@@ -212,7 +212,7 @@ const NetworkInfoPanel = ({ network, members, darkMode }) => {
               
               {storageLoading ? (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
-                  <CircularProgress size={16} />
+                  <Spinner size={16} />
                   <Typography variant="body2">Calculating...</Typography>
                 </Box>
               ) : storageInfo ? (

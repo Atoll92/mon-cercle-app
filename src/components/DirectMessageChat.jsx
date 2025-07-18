@@ -4,6 +4,7 @@ import { useProfile } from '../context/profileContext';
 import { useDirectMessages } from '../context/directMessagesContext';
 import { getConversationMessages, sendDirectMessage, markMessagesAsRead } from '../api/directMessages';
 import { supabase } from '../supabaseclient';
+import Spinner from './Spinner';
 import {
   Box,
   Typography,
@@ -11,7 +12,6 @@ import {
   TextField,
   IconButton,
   Paper,
-  CircularProgress,
   Badge,
   Chip,
   Tooltip
@@ -958,7 +958,7 @@ if (refreshConversations) {
       >
         {loading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
-            <CircularProgress size={24} />
+            <Spinner size={24} />
           </Box>
         ) : error ? (
           <Box sx={{ p: 2, color: 'error.main' }}>

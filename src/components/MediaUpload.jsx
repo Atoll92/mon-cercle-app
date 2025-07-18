@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
+import Spinner from './Spinner';
 import {
   Box,
   Button,
   IconButton,
   Typography,
-  CircularProgress,
   Alert,
   Card,
   CardMedia,
@@ -567,7 +567,7 @@ function MediaUpload({
             handleUpload();
           }}
           disabled={uploading}
-          startIcon={uploading ? <CircularProgress size={20} /> : <UploadIcon />}
+          startIcon={uploading ? <Spinner size={20} /> : <UploadIcon />}
         >
           {uploading ? 'Uploading...' : `Upload ${files.length} file(s)`}
         </Button>

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Box, Container, Typography, Paper, CircularProgress, Button } from '@mui/material';
+import { Box, Container, Typography, Paper, Button } from '@mui/material';
+import Spinner from '../components/Spinner';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { supabase } from '../supabaseclient';
 import { useAuth } from '../context/authcontext';
@@ -81,7 +82,7 @@ const PaymentSuccessPage = () => {
       <Paper elevation={3} sx={{ p: 4, textAlign: 'center', borderRadius: 2 }}>
         {verifying ? (
           <>
-            <CircularProgress size={60} sx={{ mb: 3, color: 'success.main' }} />
+            <Spinner size={60} sx={{ mb: 3, color: 'success.main' }} />
             <Typography variant="h5" gutterBottom>
               Verifying your payment...
             </Typography>

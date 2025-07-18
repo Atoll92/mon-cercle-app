@@ -11,7 +11,7 @@ import {
   Button,
   Typography,
   Paper,
-  CircularProgress,
+  Spinner,
   Alert,
   List,
   ListItem,
@@ -254,7 +254,7 @@ const FilesTab = ({ darkMode }) => {
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
-        <CircularProgress />
+        <Spinner />
       </Box>
     );
   }
@@ -441,7 +441,7 @@ const FilesTab = ({ darkMode }) => {
             <DialogContent>
               {loadingMoodboards ? (
                 <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
-                  <CircularProgress />
+                  <Spinner />
                 </Box>
               ) : userMoodboards.length === 0 ? (
                 <Typography>

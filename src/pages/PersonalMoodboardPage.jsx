@@ -27,7 +27,7 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  CircularProgress,
+  Spinner,
   Alert,
   Chip,
   Stack,
@@ -400,7 +400,7 @@ function PersonalMoodboardsPage() {
           height: '50vh' 
         }}
       >
-        <CircularProgress size={40} />
+        <Spinner size={40} />
         <Typography variant="body1" sx={{ mt: 2 }}>
           Loading your moodboards...
         </Typography>
@@ -809,7 +809,7 @@ function PersonalMoodboardsPage() {
             onClick={handleCreateMoodboard} 
             variant="contained" 
             disabled={!newTitle.trim() || processing}
-            startIcon={processing && <CircularProgress size={20} />}
+            startIcon={processing && <Spinner size={20} />}
           >
             {processing ? 'Creating...' : 'Create'}
           </Button>
@@ -934,7 +934,7 @@ function PersonalMoodboardsPage() {
             onClick={handleUpdateMoodboard} 
             variant="contained" 
             disabled={!newTitle.trim() || processing}
-            startIcon={processing && <CircularProgress size={20} />}
+            startIcon={processing && <Spinner size={20} />}
           >
             {processing ? 'Saving...' : 'Save Changes'}
           </Button>
@@ -964,7 +964,7 @@ function PersonalMoodboardsPage() {
             variant="contained" 
             color="error"
             disabled={processing}
-            startIcon={processing && <CircularProgress size={20} color="inherit" />}
+            startIcon={processing && <Spinner size={20} color="inherit" />}
           >
             {processing ? 'Deleting...' : 'Delete'}
           </Button>

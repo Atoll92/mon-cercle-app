@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { useProfile } from '../context/profileContext';
 import { useAuth } from '../context/authcontext';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Box, CircularProgress } from '@mui/material';
+import { Box } from '@mui/material';
+import Spinner from './Spinner';
 import NetworkSelector from './NetworkSelector';
 
 const ProfileAwareRoute = ({ children }) => {
@@ -71,7 +72,7 @@ const ProfileAwareRoute = ({ children }) => {
   if (user && (isLoadingProfiles || isSelectingProfile)) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
-        <CircularProgress />
+        <Spinner />
       </Box>
     );
   }

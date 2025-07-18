@@ -12,6 +12,7 @@ import EventParticipation from '../components/EventParticipation';
 import UserBadges from '../components/UserBadges';
 import EventDetailsDialog from '../components/EventDetailsDialog';
 import PostsGrid from '../components/PostsGrid';
+import Spinner from '../components/Spinner';
 import {
   Button,
   Typography,
@@ -25,7 +26,6 @@ import {
   CardMedia,
   CardActions,
   Chip,
-  CircularProgress,
   Tabs,
   Tab,
   IconButton,
@@ -192,7 +192,7 @@ function ProfilePage() {
           height: '50vh' 
         }}
       >
-        <CircularProgress size={40} color="primary" />
+        <Spinner size={40} color="primary" />
         <Typography variant="body1" sx={{ mt: 2 }}>
           Loading profile...
         </Typography>
@@ -987,7 +987,7 @@ const ProfilePageWrapper = () => {
           height: '50vh' 
         }}
       >
-        <CircularProgress size={40} color="primary" />
+        <Spinner size={40} color="primary" />
         <Typography variant="body1" sx={{ mt: 2 }}>
           Loading profile...
         </Typography>

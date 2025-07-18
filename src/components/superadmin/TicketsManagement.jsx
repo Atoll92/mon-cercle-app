@@ -29,7 +29,7 @@ import {
   ListItemText,
   Divider,
   Alert,
-  CircularProgress,
+  Spinner,
   FormControlLabel,
   Checkbox,
   Tabs,
@@ -378,7 +378,7 @@ const TicketsManagement = () => {
       {/* Tickets Table */}
       {loading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-          <CircularProgress />
+          <Spinner />
         </Box>
       ) : (
         <TableContainer component={Paper}>
@@ -540,7 +540,7 @@ const TicketsManagement = () => {
             <DialogContent>
               {!ticketDetails ? (
                 <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-                  <CircularProgress />
+                  <Spinner />
                 </Box>
               ) : (
                 <Grid container spacing={2}>

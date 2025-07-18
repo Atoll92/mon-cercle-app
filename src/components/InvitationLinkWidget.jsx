@@ -12,7 +12,7 @@ import {
   DialogContent,
   DialogActions,
   Tooltip,
-  CircularProgress,
+  Spinner,
   Alert
 } from '@mui/material';
 import {
@@ -85,7 +85,7 @@ function InvitationLinkWidget({ networkId }) {
   if (loading) {
     return (
       <Paper sx={{ p: 3, textAlign: 'center' }}>
-        <CircularProgress size={24} />
+        <Spinner size={24} />
       </Paper>
     );
   }

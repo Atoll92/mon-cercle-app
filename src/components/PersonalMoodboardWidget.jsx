@@ -11,7 +11,7 @@ import {
   CardActions,
   Typography,
   Button,
-  CircularProgress,
+  Spinner,
   Grid,
   Paper,
   Divider,
@@ -157,7 +157,7 @@ const PersonalMoodboardWidget = ({ user }) => {
   if (loading || isLoadingProfiles) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
-        <CircularProgress size={30} />
+        <Spinner size={30} />
       </Box>
     );
   }

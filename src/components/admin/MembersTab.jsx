@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Spinner from '../Spinner';
 import {
   Box,
   Typography,
@@ -18,7 +19,6 @@ import {
   DialogContentText,
   DialogActions,
   Alert,
-  CircularProgress,
   Tooltip,
   Tabs,
   Tab,
@@ -312,7 +312,7 @@ const MembersTab = ({ members, activeProfile, network, onMembersChange, darkMode
           {/* Pending Invitations Section */}
           {loadingInvitations ? (
             <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
-              <CircularProgress />
+              <Spinner />
             </Box>
           ) : pendingInvitations.length > 0 ? (
             <Box sx={{ mt: 4 }}>

@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import Spinner from '../Spinner';
 import {
   Box,
   Typography,
@@ -10,7 +11,6 @@ import {
   DialogContent,
   DialogActions,
   IconButton,
-  CircularProgress,
   Alert,
   InputAdornment,
   Table,
@@ -802,7 +802,7 @@ const EventsTab = ({ events, setEvents, user, activeProfile, networkId, network,
             variant="contained" 
             disabled={updating}
           >
-            {updating ? <CircularProgress size={24} /> : 'Save Event'}
+            {updating ? <Spinner size={24} /> : 'Save Event'}
           </Button>
         </DialogActions>
       </Dialog>

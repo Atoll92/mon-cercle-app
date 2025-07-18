@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
   TextField,
   Autocomplete,
-  CircularProgress,
+  Spinner,
   Box,
   Typography,
   ListItem,
@@ -135,7 +135,7 @@ export default function AddressSuggestions({ value, onChange, label = "Location"
               ...params.InputProps,
               endAdornment: (
                 <React.Fragment>
-                  {loading ? <CircularProgress color="inherit" size={20} /> : null}
+                  {loading ? <Spinner color="inherit" size={20} /> : null}
                   {params.InputProps.endAdornment}
                 </React.Fragment>
               ),

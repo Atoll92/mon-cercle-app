@@ -6,7 +6,7 @@ import {
   Card,
   CardContent,
   Alert,
-  CircularProgress,
+  Spinner,
   Table,
   TableBody,
   TableCell,
@@ -145,7 +145,7 @@ const NotificationQueueTab = () => {
   if (loading) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight={200}>
-        <CircularProgress />
+        <Spinner />
       </Box>
     );
   }
@@ -171,7 +171,7 @@ const NotificationQueueTab = () => {
           </Button>
           <Button
             variant="contained"
-            startIcon={processing ? <CircularProgress size={16} /> : <SendIcon />}
+            startIcon={processing ? <Spinner size={16} /> : <SendIcon />}
             onClick={handleProcessNotifications}
             disabled={processing}
           >

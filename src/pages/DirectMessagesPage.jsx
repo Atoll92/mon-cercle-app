@@ -17,7 +17,7 @@ import {
   Divider,
   useMediaQuery,
   IconButton,
-  CircularProgress,
+  Spinner,
   Alert,
   Fab,
   Drawer,
@@ -483,7 +483,7 @@ function DirectMessagesPage() {
           
           {/* {initLoading && (
             <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
-              <CircularProgress size={24} />
+              <Spinner size={24} />
               <Typography variant="body2" sx={{ ml: 2 }}>
                 Initializing conversation...
               </Typography>

@@ -14,6 +14,7 @@ import {
 } from '../services/subscriptionService';
 
 // UI Components
+import Spinner from '../components/Spinner';
 import {
   Box,
   Container,
@@ -28,7 +29,6 @@ import {
   Divider,
   Chip,
   Alert,
-  CircularProgress,
   List,
   ListItem,
   ListItemIcon,
@@ -383,7 +383,7 @@ const BillingPage = () => {
     return (
       <Container maxWidth="md" sx={{ mt: 8, mb: 8 }}>
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 8 }}>
-          <CircularProgress size={60} sx={{ mb: 4 }} />
+          <Spinner size={60} sx={{ mb: 4 }} />
           <Typography variant="h5">Loading subscription information...</Typography>
         </Box>
       </Container>
@@ -465,7 +465,7 @@ const BillingPage = () => {
             zIndex: 9999
           }}
         >
-          <CircularProgress size={60} sx={{ mb: 3 }} />
+          <Spinner size={60} sx={{ mb: 3 }} />
           <Typography variant="h5" align="center">
             Redirecting to payment service...
           </Typography>
@@ -516,7 +516,7 @@ const BillingPage = () => {
               color: 'white'
             }}
           >
-            {refreshing ? <CircularProgress size={24} color="inherit" /> : 'Refresh'}
+            {refreshing ? <Spinner size={24} color="inherit" /> : 'Refresh'}
           </Button>
         </Box>
       </Paper>
@@ -777,7 +777,7 @@ const BillingPage = () => {
             <CardContent sx={{ flexGrow: 1 }}>
               {loadingPaymentHistory ? (
                 <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-                  <CircularProgress />
+                  <Spinner />
                 </Box>
               ) : paymentHistory.length > 0 ? (
                 <TableContainer>
@@ -1188,7 +1188,7 @@ const BillingPage = () => {
             variant="contained"
             disabled={redirecting}
           >
-            {redirecting ? <CircularProgress size={24} /> : 'Proceed to Checkout'}
+            {redirecting ? <Spinner size={24} /> : 'Proceed to Checkout'}
           </Button>
         </DialogActions>
       </Dialog>

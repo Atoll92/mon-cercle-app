@@ -13,7 +13,7 @@ import {
   ListItemText,
   TextField,
   IconButton,
-  CircularProgress,
+  Spinner,
   Paper,
   Divider,
   Typography,
@@ -1197,7 +1197,7 @@ const renderMessageContent = (message) => {
           alignItems: 'center'
         }}
       >
-        <CircularProgress sx={{ color: darkMode ? 'white' : 'primary.main' }} />
+        <Spinner sx={{ color: darkMode ? 'white' : 'primary.main' }} />
       </Box>
     );
   }

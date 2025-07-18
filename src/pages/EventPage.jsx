@@ -3,13 +3,13 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/authcontext';
 import { useProfile } from '../context/profileContext';
 import MemberDetailsModal from '../components/MembersDetailModal';
+import Spinner from '../components/Spinner';
 import {
   Container,
   Paper,
   Typography,
   Box,
   Button,
-  CircularProgress,
   Alert,
   Chip,
   Avatar,
@@ -276,7 +276,7 @@ function EventPage() {
   if (loading) {
     return (
       <Container maxWidth="md" sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
-        <CircularProgress />
+        <Spinner />
       </Container>
     );
   }

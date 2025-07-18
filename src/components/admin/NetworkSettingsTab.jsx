@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import Spinner from '../Spinner';
 import {
   Box,
   Typography,
   TextField,
   Button,
   Alert,
-  CircularProgress,
   alpha,
   useTheme as useMuiTheme,
   FormControl,
@@ -561,7 +561,7 @@ const NetworkSettingsTab = ({ network, onNetworkUpdate, darkMode }) => {
           <Button
             variant="contained"
             color="primary"
-            startIcon={updating ? <CircularProgress size={20} color="inherit" /> : <SaveIcon />}
+            startIcon={updating ? <Spinner size={20} color="inherit" /> : <SaveIcon />}
             disabled={updating}
             type="submit"
             size="large"

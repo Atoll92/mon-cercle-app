@@ -22,7 +22,7 @@ import {
   DialogActions,
   TextField,
   Alert,
-  CircularProgress,
+  Spinner,
   IconButton,
   Chip,
   Fade,
@@ -467,7 +467,7 @@ const NewsTab = ({ darkMode }) => {
         <Button
           variant="contained"
           onClick={handleNewsSubmit}
-          startIcon={updating ? <CircularProgress size={20} /> : <SaveIcon />}
+          startIcon={updating ? <Spinner size={20} /> : <SaveIcon />}
           disabled={updating}
         >
           Publish News

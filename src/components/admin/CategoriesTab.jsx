@@ -17,7 +17,7 @@ import {
   Alert,
   Switch,
   FormControlLabel,
-  CircularProgress,
+  Spinner,
   Tooltip,
   Grid
 } from '@mui/material';
@@ -337,7 +337,7 @@ const CategoriesTab = ({ networkId }) => {
   if (loading) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight={400}>
-        <CircularProgress />
+        <Spinner />
       </Box>
     );
   }

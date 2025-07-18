@@ -6,7 +6,7 @@ import {
   CardContent,
   Typography,
   Alert,
-  CircularProgress,
+  Spinner,
   Divider,
   Stack,
   Chip,
@@ -574,7 +574,7 @@ const NotificationSystemManager = () => {
               color="secondary"
               size="small"
               onClick={handleProcessNotifications}
-              startIcon={processing ? <CircularProgress size={16} color="inherit" /> : <SettingsIcon />}
+              startIcon={processing ? <Spinner size={16} color="inherit" /> : <SettingsIcon />}
               disabled={processing}
             >
               Process Queue
@@ -726,7 +726,7 @@ const NotificationSystemManager = () => {
               {loading ? (
                 <TableRow>
                   <TableCell colSpan={7} align="center">
-                    <CircularProgress size={20} />
+                    <Spinner size={20} />
                   </TableCell>
                 </TableRow>
               ) : (viewMode === 'received' ? notifications : triggeredNotifications).length === 0 ? (

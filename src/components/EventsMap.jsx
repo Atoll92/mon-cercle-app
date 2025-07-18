@@ -1,6 +1,7 @@
 // src/components/EventsMap.jsx
 import React, { useEffect, useRef, useState } from 'react';
-import { Box, Typography, Paper, CircularProgress } from '@mui/material';
+import { Box, Typography, Paper } from '@mui/material';
+import Spinner from './Spinner';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
@@ -226,7 +227,7 @@ export default function EventsMap({ events = [], onEventSelect, initialCoordinat
           backgroundColor: 'rgba(255, 255, 255, 0.8)',
           zIndex: 10
         }}>
-          <CircularProgress size={40} />
+          <Spinner size={40} />
         </Box>
       )}
       

@@ -5,7 +5,7 @@ import {
   Avatar, 
   Box, 
   Typography,
-  CircularProgress,
+  Spinner,
   Chip
 } from '@mui/material';
 import { useAuth } from '../context/authcontext';
@@ -122,7 +122,7 @@ function UserSearchAutocomplete({ onUserSelect, excludeUserIds = [], placeholder
             ...params.InputProps,
             endAdornment: (
               <>
-                {loading ? <CircularProgress color="inherit" size={20} /> : null}
+                {loading ? <Spinner color="inherit" size={20} /> : null}
                 {params.InputProps.endAdornment}
               </>
             ),

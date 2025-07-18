@@ -8,7 +8,7 @@ import {
   CardContent,
   Divider,
   Alert,
-  CircularProgress,
+  Spinner,
   Stack
 } from '@mui/material';
 import {
@@ -113,7 +113,7 @@ const NotificationSettings = () => {
   if (loading) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight={200}>
-        <CircularProgress />
+        <Spinner />
       </Box>
     );
   }
@@ -240,7 +240,7 @@ const NotificationSettings = () => {
 
         {saving && (
           <Box display="flex" justifyContent="center" mt={2}>
-            <CircularProgress size={20} />
+            <Spinner size={20} />
           </Box>
         )}
       </CardContent>

@@ -9,7 +9,7 @@ import {
   Alert,
   Button,
   TextField,
-  CircularProgress,
+  Spinner,
   Table,
   TableBody,
   TableCell,
@@ -653,7 +653,7 @@ const ModerationTab = ({ network, user, members = [], darkMode = false }) => {
             color="info" 
             onClick={setupModerationTables}
             disabled={loading}
-            startIcon={loading ? <CircularProgress size={20} /> : <LockIcon />}
+            startIcon={loading ? <Spinner size={20} /> : <LockIcon />}
           >
             Setup Moderation Tables
           </Button>
@@ -751,7 +751,7 @@ const ModerationTab = ({ network, user, members = [], darkMode = false }) => {
           
           {loading ? (
             <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-              <CircularProgress />
+              <Spinner />
             </Box>
           ) : filteredContent.length === 0 ? (
             <Paper
@@ -916,7 +916,7 @@ const ModerationTab = ({ network, user, members = [], darkMode = false }) => {
           
           {loading ? (
             <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-              <CircularProgress />
+              <Spinner />
             </Box>
           ) : userModeration.length === 0 ? (
             <Paper
@@ -1087,7 +1087,7 @@ const ModerationTab = ({ network, user, members = [], darkMode = false }) => {
           
           {loading ? (
             <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-              <CircularProgress />
+              <Spinner />
             </Box>
           ) : moderationLogs.length === 0 ? (
             <Paper
@@ -1180,7 +1180,7 @@ const ModerationTab = ({ network, user, members = [], darkMode = false }) => {
             disabled={loading}
             autoFocus
           >
-            {loading ? <CircularProgress size={24} /> : 'Confirm'}
+            {loading ? <Spinner size={24} /> : 'Confirm'}
           </Button>
         </DialogActions>
       </Dialog>
@@ -1231,7 +1231,7 @@ const ModerationTab = ({ network, user, members = [], darkMode = false }) => {
             variant="contained"
             disabled={loading || ((userAction === 'suspend' || userAction === 'restrict') && !userActionReason)}
           >
-            {loading ? <CircularProgress size={24} /> : 'Confirm'}
+            {loading ? <Spinner size={24} /> : 'Confirm'}
           </Button>
         </DialogActions>
       </Dialog>

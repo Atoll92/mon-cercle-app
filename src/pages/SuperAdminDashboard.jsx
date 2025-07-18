@@ -30,7 +30,7 @@ import {
   FormControl,
   InputLabel,
   Alert,
-  CircularProgress,
+  Spinner,
   Tooltip,
   Badge,
   LinearProgress,
@@ -251,7 +251,7 @@ const SuperAdminDashboard = () => {
     return (
       <Container maxWidth="xl" sx={{ py: 4 }}>
         <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
-          <CircularProgress size={60} />
+          <Spinner size={60} />
         </Box>
       </Container>
     );

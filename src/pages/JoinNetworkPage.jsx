@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/authcontext';
+import Spinner from '../components/Spinner';
 import {
   Box,
   Paper,
   Typography,
   Button,
-  CircularProgress,
   Alert,
   Container,
   Avatar,
@@ -122,7 +122,7 @@ function JoinNetworkPage() {
     return (
       <Container maxWidth="sm" sx={{ mt: 8 }}>
         <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
-          <CircularProgress />
+          <Spinner />
         </Box>
       </Container>
     );
@@ -262,7 +262,7 @@ function JoinNetworkPage() {
               fullWidth
               onClick={handleJoin}
               disabled={joining || userProfile?.network_id}
-              startIcon={joining ? <CircularProgress size={20} /> : <CheckCircleIcon />}
+              startIcon={joining ? <Spinner size={20} /> : <CheckCircleIcon />}
             >
               {joining ? 'Joining...' : userProfile?.network_id ? 'Switch Network' : 'Join Network'}
             </Button>

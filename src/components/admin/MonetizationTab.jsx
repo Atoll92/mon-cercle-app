@@ -38,7 +38,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  CircularProgress
+  Spinner
 } from '@mui/material';
 import {
   AttachMoney as MoneyIcon,

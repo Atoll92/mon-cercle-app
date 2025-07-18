@@ -7,7 +7,7 @@ import {
   Fade,
   useTheme,
   useMediaQuery,
-  CircularProgress,
+  Spinner,
 } from '@mui/material';
 import {
   Close as CloseIcon,
@@ -223,7 +223,7 @@ const ImageViewerModal = ({ open, onClose, imageUrl, title = 'Image Viewer' }) =
             onWheel={handleWheel}
           >
             {loading && (
-              <CircularProgress
+              <Spinner
                 sx={{
                   position: 'absolute',
                   color: 'white',

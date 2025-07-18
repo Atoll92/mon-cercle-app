@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import Spinner from './Spinner';
 import {
   Card,
   CardHeader,
@@ -11,7 +12,6 @@ import {
   Button,
   Menu,
   MenuItem,
-  CircularProgress,
   alpha,
   useTheme,
 } from '@mui/material';
@@ -351,7 +351,7 @@ const PostCard = ({
                   }}
                 >
                   {isDeleting ? (
-                    <CircularProgress size={16} />
+                    <Spinner size={16} />
                   ) : (
                     <MoreVertIcon fontSize="small" />
                   )}

@@ -13,6 +13,7 @@ import {
 } from '../../services/subscriptionService';
 
 // UI Components
+import Spinner from '../Spinner';
 import {
   Box,
   Typography,
@@ -26,7 +27,6 @@ import {
   Divider,
   Chip,
   Alert,
-  CircularProgress,
   Table,
   TableBody,
   TableCell,
@@ -334,7 +334,7 @@ const BillingTab = ({ activeProfile, darkMode }) => {
   if (loading) {
     return (
       <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 8 }}>
-        <CircularProgress size={60} sx={{ mb: 4 }} />
+        <Spinner size={60} sx={{ mb: 4 }} />
         <Typography variant="h6">Loading subscription information...</Typography>
       </Box>
     );
@@ -404,7 +404,7 @@ const BillingTab = ({ activeProfile, darkMode }) => {
             zIndex: 9999
           }}
         >
-          <CircularProgress size={60} sx={{ mb: 3 }} />
+          <Spinner size={60} sx={{ mb: 3 }} />
           <Typography variant="h5" align="center">
             Redirecting to payment service...
           </Typography>
@@ -422,7 +422,7 @@ const BillingTab = ({ activeProfile, darkMode }) => {
         <Box sx={{ display: 'flex', gap: 1 }}>
           <Tooltip title="Refresh data">
             <IconButton onClick={handleRefresh} disabled={refreshing}>
-              {refreshing ? <CircularProgress size={24} /> : <RefreshIcon />}
+              {refreshing ? <Spinner size={24} /> : <RefreshIcon />}
             </IconButton>
           </Tooltip>
           <Button
@@ -638,7 +638,7 @@ const BillingTab = ({ activeProfile, darkMode }) => {
             <CardContent sx={{ flexGrow: 1, overflow: 'auto' }}>
               {loadingPaymentHistory ? (
                 <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-                  <CircularProgress />
+                  <Spinner />
                 </Box>
               ) : paymentHistory.length > 0 ? (
                 <TableContainer>

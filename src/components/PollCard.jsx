@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Spinner from './Spinner';
 import {
   Card,
   CardContent,
@@ -19,7 +20,6 @@ import {
   ListItemButton,
   ListItemText,
   ListItemIcon,
-  CircularProgress,
   IconButton,
   Collapse
 } from '@mui/material';
@@ -138,7 +138,7 @@ const PollCard = ({ poll, onVoteSubmit }) => {
       <Card>
         <CardContent>
           <Box display="flex" justifyContent="center" p={2}>
-            <CircularProgress size={24} />
+            <Spinner size={24} />
           </Box>
         </CardContent>
       </Card>
@@ -368,7 +368,7 @@ const PollCard = ({ poll, onVoteSubmit }) => {
               variant="contained"
               onClick={handleVote}
               disabled={submitting || selectedOptions.length === 0}
-              startIcon={submitting ? <CircularProgress size={16} /> : null}
+              startIcon={submitting ? <Spinner size={16} /> : null}
             >
               {submitting ? 'Submitting...' : 'Submit Vote'}
             </Button>

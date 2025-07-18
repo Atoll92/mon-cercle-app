@@ -10,7 +10,7 @@ import {
   Divider,
   Box,
   Button,
-  CircularProgress,
+  Spinner,
   TextField,
   InputAdornment,
   IconButton,
@@ -251,7 +251,7 @@ const WikiTab = ({ networkId }) => {
     return (
       <Paper sx={{ p: 3 }}>
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
-          <CircularProgress />
+          <Spinner />
         </Box>
       </Paper>
     );

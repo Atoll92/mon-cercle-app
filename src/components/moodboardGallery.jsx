@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../supabaseclient';
+import Spinner from './Spinner';
 import {
   Box,
   Typography,
@@ -18,7 +19,6 @@ import {
   alpha,
   Button,
   IconButton,
-  CircularProgress,
   Tooltip,
 } from '@mui/material';
 import {
@@ -406,7 +406,7 @@ const MoodboardGallery = ({ userId, isOwnProfile, limit, showFeatured = false })
                     backgroundColor: 'rgba(0,0,0,0.1)',
                   }}
                 >
-                  <CircularProgress size={24} />
+                  <Spinner size={24} />
                 </Box>
               )}
               

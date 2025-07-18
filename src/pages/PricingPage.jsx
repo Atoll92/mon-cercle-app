@@ -29,7 +29,7 @@ import {
   IconButton,
   Stack,
   FormControlLabel,
-  CircularProgress,
+  Spinner,
   Alert
 } from '@mui/material';
 import { 
@@ -550,7 +550,7 @@ const handlePlanSelect = async (plan) => {
     disabled={loadingPlan === plan.name}
   >
     {loadingPlan === plan.name ? (
-      <CircularProgress size={24} color="inherit" />
+      <Spinner size={24} color="inherit" />
     ) : (
       plan.buttonText
     )}
@@ -801,7 +801,7 @@ const handlePlanSelect = async (plan) => {
                     }}
                   >
                     {loadingPlan === plan.name ? (
-                      <CircularProgress size={24} color="inherit" />
+                      <Spinner size={24} color="inherit" />
                     ) : (
                       plan.buttonText
                     )}

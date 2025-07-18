@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
-  CircularProgress,
+  Spinner,
   Chip,
   Avatar
 } from '@mui/material';
@@ -76,7 +76,7 @@ const EventParticipationStats = ({ eventId }) => {
   }, [eventId]);
 
   if (loading) {
-    return <CircularProgress size={20} />;
+    return <Spinner size={20} />;
   }
 
   return (

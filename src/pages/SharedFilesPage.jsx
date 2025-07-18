@@ -10,7 +10,7 @@ import {
   Button,
   Paper,
   Alert,
-  CircularProgress,
+  Spinner,
   TextField,
   Grid,
   Card,
@@ -450,7 +450,7 @@ function SharedFilesPage() {
           height: '50vh' 
         }}
       >
-        <CircularProgress size={40} />
+        <Spinner size={40} />
         <Typography variant="body1" sx={{ mt: 2 }}>
           Loading files...
         </Typography>
@@ -780,7 +780,7 @@ function SharedFilesPage() {
             onClick={handleUploadFile} 
             variant="contained" 
             disabled={!selectedFile || uploading}
-            startIcon={uploading ? <CircularProgress size={20} /> : <CloudUploadIcon />}
+            startIcon={uploading ? <Spinner size={20} /> : <CloudUploadIcon />}
           >
             {uploading ? 'Uploading...' : 'Upload'}
           </Button>

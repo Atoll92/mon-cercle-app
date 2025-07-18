@@ -28,7 +28,7 @@ import {
   TableRow,
   Paper,
   Tooltip,
-  CircularProgress,
+  Spinner,
   Snackbar,
   Switch,
   FormControlLabel,
@@ -216,7 +216,7 @@ const InvitationLinksTab = ({ networkId, darkMode, refreshTrigger }) => {
   if (loading) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight={400}>
-        <CircularProgress />
+        <Spinner />
       </Box>
     );
   }

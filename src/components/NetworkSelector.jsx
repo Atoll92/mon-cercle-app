@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import Spinner from './Spinner';
 import {
   Box,
   Card,
@@ -8,7 +9,6 @@ import {
   Avatar,
   Grid,
   Button,
-  CircularProgress,
   Alert,
   Container,
   Fade,
@@ -81,7 +81,7 @@ const NetworkSelector = ({ onProfileSelected }) => {
         alignItems="center" 
         minHeight="400px"
       >
-        <CircularProgress />
+        <Spinner />
       </Box>
     );
   }
@@ -244,7 +244,7 @@ const NetworkSelector = ({ onProfileSelected }) => {
               }}
             >
               {isSelecting ? (
-                <CircularProgress size={24} color="inherit" />
+                <Spinner size={24} color="inherit" />
               ) : (
                 'Continue'
               )}

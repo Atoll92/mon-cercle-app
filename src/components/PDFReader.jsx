@@ -9,7 +9,7 @@ import {
   Box,
   Typography,
   Toolbar,
-  CircularProgress,
+  Spinner,
   Alert,
   Tooltip,
   TextField
@@ -260,7 +260,7 @@ function PDFReader({ url, fileName, open, onClose }) {
       >
         {loading && (
           <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-            <CircularProgress />
+            <Spinner />
             <Typography>Loading PDF...</Typography>
           </Box>
         )}
@@ -304,7 +304,7 @@ function PDFReader({ url, fileName, open, onClose }) {
                   bgcolor: 'rgba(255,255,255,0.8)'
                 }}
               >
-                <CircularProgress size={24} />
+                <Spinner size={24} />
               </Box>
             )}
           </Box>

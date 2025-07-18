@@ -8,7 +8,7 @@ import {
   Button,
   TextField,
   Alert,
-  CircularProgress,
+  Spinner,
   IconButton,
   Tooltip,
   Paper
@@ -98,7 +98,7 @@ const MicroConclavWidget = () => {
   if (loading || isLoadingProfiles) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
-        <CircularProgress size={30} />
+        <Spinner size={30} />
       </Box>
     );
   }

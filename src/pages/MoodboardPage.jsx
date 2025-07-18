@@ -10,6 +10,7 @@ import MediaPlayer from '../components/MediaPlayer';
 import MoodboardItem from '../components/Moodboard/MoodboardItem';
 import MoodboardSettingsDialog from '../components/Moodboard/MoodboardSettingsDialog';
 import { updateMoodboard } from '../api/moodboards';
+import Spinner from '../components/Spinner';
 import {
   Box,
   Paper,
@@ -21,7 +22,6 @@ import {
   DialogContent,
   DialogActions,
   TextField,
-  CircularProgress,
   Alert,
   Tabs,
   Tab,
@@ -840,7 +840,7 @@ const EditItemDialog = ({
               (currentItem?.type === 'text' && !editedContent?.trim()) ||
               (currentItem?.type === 'link' && !editedContent?.trim()) ||
               !currentItem}
-            startIcon={processing ? <CircularProgress size={20} /> : <SaveIcon />}
+            startIcon={processing ? <Spinner size={20} /> : <SaveIcon />}
           >
             {processing ? 'Saving...' : 'Save'}
           </Button>
@@ -1603,7 +1603,7 @@ const handleUpdateItem = async (updatedItem) => {
           height: '80vh' 
         }}
       >
-        <CircularProgress size={40} color="primary" />
+        <Spinner size={40} color="primary" />
         <Typography variant="body1" sx={{ mt: 2 }}>
           Loading moodboard...
         </Typography>
@@ -1735,7 +1735,7 @@ const handleUpdateItem = async (updatedItem) => {
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 2 }}>
                 {autoSaveStatus === 'saving' && (
                   <>
-                    <CircularProgress size={16} />
+                    <Spinner size={16} />
                     <Typography variant="caption" color="text.secondary">
                       Saving...
                     </Typography>
@@ -2102,7 +2102,7 @@ const handleUpdateItem = async (updatedItem) => {
             onClick={handleAddText} 
             variant="contained" 
             disabled={!newText.trim() || saving}
-            startIcon={saving ? <CircularProgress size={20} /> : <TextFieldsIcon />}
+            startIcon={saving ? <Spinner size={20} /> : <TextFieldsIcon />}
           >
             {saving ? 'Adding...' : 'Add Text'}
           </Button>
@@ -2171,7 +2171,7 @@ const handleUpdateItem = async (updatedItem) => {
             onClick={handleAddLink} 
             variant="contained" 
             disabled={!newLink.trim() || saving}
-            startIcon={saving ? <CircularProgress size={20} /> : <LinkIcon />}
+            startIcon={saving ? <Spinner size={20} /> : <LinkIcon />}
           >
             {saving ? 'Adding...' : 'Add Link'}
           </Button>
@@ -2276,7 +2276,7 @@ const handleUpdateItem = async (updatedItem) => {
             onClick={handleAddPdf} 
             variant="contained" 
             disabled={!newPdf || saving}
-            startIcon={saving ? <CircularProgress size={20} /> : <PdfIcon />}
+            startIcon={saving ? <Spinner size={20} /> : <PdfIcon />}
           >
             {saving ? 'Uploading...' : 'Add PDF'}
           </Button>

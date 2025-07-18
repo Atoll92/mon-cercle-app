@@ -2,7 +2,8 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from './context/authcontext';
-import { CircularProgress, Box } from '@mui/material';
+import { Box } from '@mui/material';
+import Spinner from './components/Spinner';
 import NetworkHeader from './components/NetworkHeader';
 import Footer from './components/Footer';
 import { preventResizeAnimations } from './utils/animationHelpers';
@@ -62,7 +63,7 @@ const AlternativeLandingPage = lazy(() => import('./pages/AlternativeLandingPage
 // Loading component for lazy loaded routes
 const PageLoader = () => (
   <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-    <CircularProgress />
+    <Spinner />
   </Box>
 );
 
@@ -140,7 +141,7 @@ function App() {
     // Show loading indicator during initial auth check
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-        <CircularProgress />
+        <Spinner />
       </Box>
     );
   }

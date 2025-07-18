@@ -19,7 +19,7 @@ import {
   Typography,
   Tooltip,
   Chip,
-  CircularProgress,
+  Spinner,
   ListItemButton
 } from '@mui/material';
 import {
@@ -300,7 +300,7 @@ function EventParticipation({ event, showParticipants = false, onStatusChange = 
 
   // Loading state
   if (isLoading) {
-    return <CircularProgress size={24} />;
+    return <Spinner size={24} />;
   }
 
   return (

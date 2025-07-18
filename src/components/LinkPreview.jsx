@@ -4,7 +4,7 @@ import {
   Box,
   Typography,
   Paper,
-  CircularProgress,
+  Spinner,
   Skeleton,
   Link as MuiLink,
   IconButton
@@ -1171,7 +1171,7 @@ const LinkPreview = ({ url, compact = false, onDataLoaded = null, height = 'auto
                       bgcolor: 'grey.100'
                     }}
                   >
-                    <CircularProgress size={30} />
+                    <Spinner size={30} />
                   </Box>
                 )}
                 <Box

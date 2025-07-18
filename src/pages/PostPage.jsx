@@ -8,7 +8,7 @@ import {
   Typography,
   Box,
   Button,
-  CircularProgress,
+  Spinner,
   Alert,
   Chip,
   Avatar,
@@ -169,7 +169,7 @@ function PostPage() {
   if (loading) {
     return (
       <Container maxWidth="md" sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
-        <CircularProgress />
+        <Spinner />
       </Container>
     );
   }

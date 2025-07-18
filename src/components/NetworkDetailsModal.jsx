@@ -23,7 +23,7 @@ import {
   IconButton,
   Tooltip,
   Alert,
-  CircularProgress
+  Spinner
 } from '@mui/material';
 import {
   Close as CloseIcon,
@@ -110,7 +110,7 @@ const NetworkDetailsModal = ({ open, onClose, networkId }) => {
       <DialogContent>
         {loading && (
           <Box display="flex" justifyContent="center" py={4}>
-            <CircularProgress />
+            <Spinner />
           </Box>
         )}
 

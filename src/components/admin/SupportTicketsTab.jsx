@@ -19,7 +19,7 @@ import {
   TextField,
   MenuItem,
   Alert,
-  CircularProgress,
+  Spinner,
   List,
   ListItem,
   ListItemAvatar,
@@ -205,7 +205,7 @@ const SupportTicketsTab = ({ network, user, activeProfile, darkMode }) => {
 
       {loading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-          <CircularProgress />
+          <Spinner />
         </Box>
       ) : tickets.length === 0 ? (
         <Paper sx={{ p: 4, textAlign: 'center' }}>
@@ -340,7 +340,7 @@ const SupportTicketsTab = ({ network, user, activeProfile, darkMode }) => {
             variant="contained"
             disabled={!newTicket.title || !newTicket.description || submitting}
           >
-            {submitting ? <CircularProgress size={20} /> : 'Create Ticket'}
+            {submitting ? <Spinner size={20} /> : 'Create Ticket'}
           </Button>
         </DialogActions>
       </Dialog>
@@ -384,7 +384,7 @@ const SupportTicketsTab = ({ network, user, activeProfile, darkMode }) => {
             <DialogContent>
               {!ticketDetails ? (
                 <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-                  <CircularProgress />
+                  <Spinner />
                 </Box>
               ) : (
                 <>

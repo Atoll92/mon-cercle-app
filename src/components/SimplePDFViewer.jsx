@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import { Box, CircularProgress, Typography } from '@mui/material';
+import { Box, Typography } from '@mui/material';
+import Spinner from './Spinner';
 import { PictureAsPdf as PdfIcon } from '@mui/icons-material';
 
 function SimplePDFViewer({ 
@@ -89,7 +90,7 @@ function SimplePDFViewer({
     >
       {loading && (
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
-          <CircularProgress size={24} />
+          <Spinner size={24} />
           <Typography variant="caption" color="text.secondary">
             Loading PDF...
           </Typography>

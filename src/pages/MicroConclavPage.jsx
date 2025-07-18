@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import Spinner from '../components/Spinner';
 import { 
   Box, 
   Paper, 
   Avatar, 
   Typography, 
-  CircularProgress, 
   ToggleButton, 
   ToggleButtonGroup, 
   Button,
@@ -243,7 +243,7 @@ const MicroConclavPage = () => {
   if (loading) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
-        <CircularProgress />
+        <Spinner />
       </Box>
     );
   }
@@ -460,7 +460,7 @@ const MicroConclavPage = () => {
 
         {loadingMore && viewMode === 'grid' && (
           <Box display="flex" justifyContent="center" py={4}>
-            <CircularProgress size={24} />
+            <Spinner size={24} />
           </Box>
         )}
       </Box>

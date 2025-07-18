@@ -12,7 +12,7 @@ import {
   Divider,
   Paper,
   Alert,
-  CircularProgress,
+  Spinner,
   IconButton,
   Chip,
   Select,
@@ -315,7 +315,7 @@ const NewsTab = ({ networkId, userId, newsPosts, setNewsPosts, members, darkMode
             startIcon={<SaveIcon />}
             disabled={updating}
           >
-            {updating ? <CircularProgress size={24} /> : 'Publish News'}
+            {updating ? <Spinner size={24} /> : 'Publish News'}
           </Button>
           <Button
             variant="outlined"

@@ -22,7 +22,7 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  CircularProgress,
+  Spinner,
   Alert,
   Tooltip,
   Chip,
@@ -356,7 +356,7 @@ const MoodboardsTab = ({
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-        <CircularProgress size={40} />
+        <Spinner size={40} />
       </Box>
     );
   }
@@ -786,7 +786,7 @@ const MoodboardsTab = ({
             onClick={handleCreateMoodboard} 
             variant="contained" 
             disabled={!newTitle.trim() || processing}
-            startIcon={processing && <CircularProgress size={20} />}
+            startIcon={processing && <Spinner size={20} />}
           >
             {processing ? 'Creating...' : 'Create'}
           </Button>
@@ -912,7 +912,7 @@ const MoodboardsTab = ({
             onClick={handleUpdateMoodboard} 
             variant="contained" 
             disabled={!newTitle.trim() || processing}
-            startIcon={processing && <CircularProgress size={20} />}
+            startIcon={processing && <Spinner size={20} />}
           >
             {processing ? 'Saving...' : 'Save Changes'}
           </Button>
@@ -942,7 +942,7 @@ const MoodboardsTab = ({
             variant="contained" 
             color="error"
             disabled={processing}
-            startIcon={processing && <CircularProgress size={20} color="inherit" />}
+            startIcon={processing && <Spinner size={20} color="inherit" />}
           >
             {processing ? 'Deleting...' : 'Delete'}
           </Button>

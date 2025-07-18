@@ -12,7 +12,7 @@ import {
   useTheme,
   alpha,
   Divider,
-  CircularProgress,
+  Spinner,
   Alert
 } from '@mui/material';
 import { AdminPanelSettings as AdminIcon } from '@mui/icons-material';
@@ -95,7 +95,7 @@ const NetworkOnboardingPage = () => {
         alignItems: 'center',
         justifyContent: 'center'
       }}>
-        <CircularProgress size={40} />
+        <Spinner size={40} />
         <Typography variant="body1" sx={{ mt: 2 }}>
           Loading...
         </Typography>

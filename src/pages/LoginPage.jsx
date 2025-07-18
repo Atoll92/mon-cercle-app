@@ -2,12 +2,12 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseclient';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import Spinner from '../components/Spinner';
 import {
   Box,
   Button,
   Card,
   CardContent,
-  CircularProgress,
   Container,
   Divider,
   FormControl,
@@ -298,7 +298,7 @@ function LoginPage() {
                   >
                     {loading ? (
                       <>
-                        <CircularProgress
+                        <Spinner
                           size={24}
                           sx={{
                             position: 'absolute',

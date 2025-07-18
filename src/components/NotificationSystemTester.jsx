@@ -6,7 +6,7 @@ import {
   CardContent,
   Typography,
   Alert,
-  CircularProgress,
+  Spinner,
   Stack,
   Divider,
   Chip
@@ -212,7 +212,7 @@ const NotificationSystemTester = () => {
     switch (status) {
       case 'success': return <CheckIcon color="success" />;
       case 'error': return <ErrorIcon color="error" />;
-      case 'running': return <CircularProgress size={20} />;
+      case 'running': return <Spinner size={20} />;
       default: return null;
     }
   };
@@ -249,7 +249,7 @@ const NotificationSystemTester = () => {
             
             <Button
               variant="outlined"
-              startIcon={processing ? <CircularProgress size={16} /> : <SendIcon />}
+              startIcon={processing ? <Spinner size={16} /> : <SendIcon />}
               onClick={processTestNotifications}
               disabled={processing}
             >

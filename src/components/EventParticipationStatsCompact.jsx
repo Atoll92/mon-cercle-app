@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Box, Typography, CircularProgress, Tooltip } from '@mui/material';
+import { Box, Typography, Tooltip } from '@mui/material';
+import Spinner from './Spinner';
 import { CheckCircle as CheckCircleIcon, HelpOutline as MaybeIcon, Cancel as CancelIcon } from '@mui/icons-material';
 import { supabase } from '../supabaseclient';
 
@@ -55,7 +56,7 @@ const EventParticipationStatsCompact = ({ eventId, onStatsLoad }) => {
   }, [eventId]);
 
   if (loading) {
-    return <CircularProgress size={16} />;
+    return <Spinner size={16} />;
   }
 
   return (

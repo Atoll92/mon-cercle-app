@@ -27,7 +27,7 @@ import {
   ListItemSecondaryAction,
   Divider,
   Alert,
-  CircularProgress,
+  Spinner,
   Tooltip,
   FormHelperText,
   ToggleButton,
@@ -330,7 +330,7 @@ const BadgesTab = ({ networkId, members, darkMode }) => {
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-        <CircularProgress />
+        <Spinner />
       </Box>
     );
   }
@@ -345,7 +345,7 @@ const BadgesTab = ({ networkId, members, darkMode }) => {
         <Box sx={{ display: 'flex', gap: 1 }}>
           <Button
             variant="outlined"
-            startIcon={refreshing ? <CircularProgress size={20} /> : <TrendingUpIcon />}
+            startIcon={refreshing ? <Spinner size={20} /> : <TrendingUpIcon />}
             onClick={handleRefresh}
             disabled={refreshing}
           >

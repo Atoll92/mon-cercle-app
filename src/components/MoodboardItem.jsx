@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import Spinner from './Spinner';
 import {
   Box,
   Paper,
   Typography,
-  IconButton,
-  CircularProgress
+  IconButton
 } from '@mui/material';
 import {
   Delete as DeleteIcon,
@@ -157,7 +157,7 @@ const MoodboardItem = ({
                   backgroundColor: 'rgba(0,0,0,0.1)',
                 }}
               >
-                <CircularProgress size={24} />
+                <Spinner size={24} />
               </Box>
             )}
             
@@ -304,7 +304,7 @@ const MoodboardItem = ({
                   backgroundColor: 'rgba(0,0,0,0.1)',
                 }}
               >
-                <CircularProgress size={24} />
+                <Spinner size={24} />
               </Box>
             )}
             

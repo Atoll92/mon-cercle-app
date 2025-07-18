@@ -6,10 +6,10 @@ import { useProfile } from '../context/profileContext';
 import { useApp } from '../context/appContext';
 import { NetworkProvider } from '../context/networkContext';
 import { supabase } from '../supabaseclient';
+import Spinner from '../components/Spinner';
 import {
   Box,
   Button,
-  CircularProgress,
   Container,
   Divider,
   TextField,
@@ -474,7 +474,7 @@ function EditProfilePage() {
           height: '100vh' 
         }}
       >
-        <CircularProgress size={40} />
+        <Spinner size={40} />
         <Typography variant="body1" sx={{ mt: 2 }}>
           Loading your profile...
         </Typography>
@@ -925,7 +925,7 @@ function EditProfilePage() {
                 variant="contained"
                 color="primary"
                 disabled={saving}
-                startIcon={saving ? <CircularProgress size={20} color="inherit" /> : <SaveIcon />}
+                startIcon={saving ? <Spinner size={20} color="inherit" /> : <SaveIcon />}
                 sx={{ px: 4 }}
               >
                 {saving ? 'Saving...' : (isNewProfile ? 'Create Profile' : 'Save Changes')}
@@ -960,7 +960,7 @@ const EditProfilePageWrapper = () => {
           height: '50vh' 
         }}
       >
-        <CircularProgress size={40} color="primary" />
+        <Spinner size={40} color="primary" />
         <Typography variant="body1" sx={{ mt: 2 }}>
           Loading profile...
         </Typography>

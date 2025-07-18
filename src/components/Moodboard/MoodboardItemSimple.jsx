@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import {
   Box,
   Typography,
-  CircularProgress,
+  Spinner,
   Paper,
 } from '@mui/material';
 import {
@@ -40,7 +40,7 @@ const MoodboardItemSimple = ({ item, style = {} }) => {
             }}
           >
             {!imageLoaded && !mediaError && (
-              <CircularProgress size={24} sx={{ position: 'absolute' }} />
+              <Spinner size={24} sx={{ position: 'absolute' }} />
             )}
             {mediaError ? (
               <Box sx={{ textAlign: 'center', p: 2 }}>

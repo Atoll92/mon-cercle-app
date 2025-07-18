@@ -8,7 +8,7 @@ import {
   Typography,
   Button,
   TextField,
-  CircularProgress,
+  Spinner,
   Grid,
   Paper,
   Slider,
@@ -764,7 +764,7 @@ const EditItemDialog = ({
             (currentItem?.type === 'text' && !editedContent?.trim()) ||
             (currentItem?.type === 'link' && !editedContent?.trim()) ||
             !currentItem}
-          startIcon={processing ? <CircularProgress size={20} /> : <SaveIcon />}
+          startIcon={processing ? <Spinner size={20} /> : <SaveIcon />}
         >
           {processing ? 'Saving...' : 'Save Changes'}
         </Button>

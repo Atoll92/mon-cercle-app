@@ -6,7 +6,7 @@ import {
   CardContent,
   Typography,
   Alert,
-  CircularProgress,
+  Spinner,
   Divider,
   Stack
 } from '@mui/material';
@@ -279,7 +279,7 @@ const TestNotificationSystem = () => {
               size="small"
               onClick={testDatabaseColumns}
               disabled={testing}
-              startIcon={testing ? <CircularProgress size={16} /> : null}
+              startIcon={testing ? <Spinner size={16} /> : null}
             >
               Test Columns
             </Button>
@@ -289,7 +289,7 @@ const TestNotificationSystem = () => {
               size="small"
               onClick={testNotificationQueue}
               disabled={testing}
-              startIcon={testing ? <CircularProgress size={16} /> : null}
+              startIcon={testing ? <Spinner size={16} /> : null}
             >
               Test Queue Table
             </Button>
@@ -299,7 +299,7 @@ const TestNotificationSystem = () => {
               size="small"
               onClick={testUserProfile}
               disabled={testing}
-              startIcon={testing ? <CircularProgress size={16} /> : null}
+              startIcon={testing ? <Spinner size={16} /> : null}
             >
               Test User Profile
             </Button>
@@ -314,7 +314,7 @@ const TestNotificationSystem = () => {
               size="small"
               onClick={testCreateFakeNotification}
               disabled={testing}
-              startIcon={testing ? <CircularProgress size={16} /> : null}
+              startIcon={testing ? <Spinner size={16} /> : null}
             >
               Queue Fake Notification
             </Button>
@@ -325,7 +325,7 @@ const TestNotificationSystem = () => {
               color="secondary"
               onClick={testProcessNotifications}
               disabled={testing}
-              startIcon={testing ? <CircularProgress size={16} /> : null}
+              startIcon={testing ? <Spinner size={16} /> : null}
             >
               Process Pending
             </Button>
