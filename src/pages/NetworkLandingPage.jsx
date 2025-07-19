@@ -698,8 +698,8 @@ function NetworkLandingPage() {
             right: 0,
             bottom: 0,
             background: darkMode 
-              ? 'linear-gradient(180deg, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.2) 70%, rgba(0, 0, 0, 0.3) 100%)'
-              : 'linear-gradient(180deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.2) 70%, rgba(255, 255, 255, 0.1) 100%)',
+              ? 'linear-gradient(180deg, rgba(0, 0, 0, 0.05) 0%, rgba(0, 0, 0, 0.1) 70%, rgba(0, 0, 0, 0.15) 100%)'
+              : 'linear-gradient(180deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.1) 70%, rgba(255, 255, 255, 0.05) 100%)',
             zIndex: 1
           },
           '& > *': {
