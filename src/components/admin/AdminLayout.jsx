@@ -38,6 +38,8 @@ import {
   Support as SupportIcon,
   Category as CategoryIcon
 } from '@mui/icons-material';
+import LanguageSwitcher from '../LanguageSwitcher';
+import { useTranslation } from '../../hooks/useTranslation.jsx';
 
 // Drawer width for desktop view
 const drawerWidth = 260;
@@ -53,6 +55,7 @@ const AdminLayout = ({
   clearMessage 
 }) => {
   const muiTheme = useMuiTheme();
+  const { t } = useTranslation();
   const isMobile = useMediaQuery(muiTheme.breakpoints.down('md'));
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -70,62 +73,62 @@ const AdminLayout = ({
   // Navigation items for the drawer
   const navItems = [
     { 
-      name: 'Network Settings', 
+      name: t('admin.tabs.settings'), 
       icon: <SettingsIcon />, 
       index: 0 
     },
     { 
-      name: 'Members', 
+      name: t('admin.tabs.members'), 
       icon: <PersonAddIcon />, 
       index: 1 
     },
     { 
-      name: 'Categories', 
+      name: t('admin.tabs.categories'), 
       icon: <CategoryIcon />, 
       index: 2 
     },
     { 
-      name: 'News', 
+      name: t('admin.tabs.news'), 
       icon: <ArticleIcon />, 
       index: 3 
     },
     { 
-      name: 'Events', 
+      name: t('admin.tabs.events'), 
       icon: <EventIcon />, 
       index: 4 
     },
     { 
-      name: 'Polls', 
+      name: t('admin.tabs.polls'), 
       icon: <PollIcon />, 
       index: 5 
     },
     { 
-      name: 'Theme & Branding', 
+      name: t('admin.tabs.theme'), 
       icon: <PaletteIcon />, 
       index: 6 
     },
     { 
-      name: 'Moderation', 
+      name: t('admin.tabs.moderation'), 
       icon: <SecurityIcon />, 
       index: 7 
     },
     { 
-      name: 'Monetization', 
+      name: t('admin.tabs.monetization'), 
       icon: <MonetizationIcon />, 
       index: 8 
     },
     { 
-      name: 'Billing & Plan', 
+      name: t('admin.tabs.billing'), 
       icon: <CreditCardIcon />, 
       index: 9 
     },
     { 
-      name: 'Badges & Engagement', 
+      name: t('admin.tabs.badges'), 
       icon: <BadgeIcon />, 
       index: 10 
     },
     { 
-      name: 'Support Tickets', 
+      name: t('admin.tabs.support'), 
       icon: <SupportIcon />, 
       index: 11 
     }
@@ -149,11 +152,14 @@ const AdminLayout = ({
             Admin Panel
           </Typography>
         </Box>
-        {isMobile && (
-          <IconButton onClick={handleDrawerToggle} size="small">
-            <ChevronLeftIcon />
-          </IconButton>
-        )}
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          {!isMobile && <LanguageSwitcher />}
+          {isMobile && (
+            <IconButton onClick={handleDrawerToggle} size="small">
+              <ChevronLeftIcon />
+            </IconButton>
+          )}
+        </Box>
       </Toolbar>
       <Divider />
       
@@ -297,9 +303,10 @@ const AdminLayout = ({
           >
             <MenuIcon />
           </IconButton>
-          <Typography variant="h6" noWrap component="div">
+          <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
             {navItems.find(item => item.index === activeTab)?.name || 'Admin Panel'}
           </Typography>
+          <LanguageSwitcher />
         </Toolbar>
       </AppBar>
 

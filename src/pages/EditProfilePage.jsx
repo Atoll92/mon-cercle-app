@@ -25,7 +25,12 @@ import {
   Autocomplete,
   Tabs,
   Tab,
-  LinearProgress
+  LinearProgress,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions
 } from '@mui/material';
 import {
   Save as SaveIcon,
@@ -38,7 +43,8 @@ import {
   Language as LanguageIcon,
   Mail as MailIcon,
   Badge as BadgeIcon,
-  Notifications as NotificationsIcon
+  Settings as SettingsIcon,
+  Delete as DeleteIcon
 } from '@mui/icons-material';
 import NotificationSettings from '../components/NotificationSettings';
 import NotificationSystemManager from '../components/NotificationSystemManager';
@@ -67,6 +73,8 @@ function EditProfilePage() {
   const [activeTab, setActiveTab] = useState(0);
   const [isDraggingAvatar, setIsDraggingAvatar] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [deleteAccountDialogOpen, setDeleteAccountDialogOpen] = useState(false);
+  const [deleteAccountLoading, setDeleteAccountLoading] = useState(false);
   
   // State for Create Post Modal
   const [createPostModalOpen, setCreatePostModalOpen] = useState(false);
@@ -463,6 +471,32 @@ function EditProfilePage() {
     }
   };
   
+  const handleDeleteAccount = async () => {
+    try {
+      setDeleteAccountLoading(true);
+      setError(null);
+      
+      // Call Supabase function to delete the user account
+      const { error } = await supabase.rpc('delete_user_account', {
+        user_id: user.id
+      });
+      
+      if (error) throw error;
+      
+      // Sign out the user
+      await supabase.auth.signOut();
+      
+      // Redirect to home page
+      navigate('/');
+    } catch (error) {
+      console.error('Error deleting account:', error);
+      setError('Failed to delete account. Please try again or contact support.');
+    } finally {
+      setDeleteAccountLoading(false);
+      setDeleteAccountDialogOpen(false);
+    }
+  };
+  
   if (loading) {
     return (
       <Box 
@@ -544,8 +578,8 @@ function EditProfilePage() {
             iconPosition="start"
           />
           <Tab 
-            label="Notifications" 
-            icon={<NotificationsIcon />} 
+            label="Settings" 
+            icon={<SettingsIcon />} 
             iconPosition="start"
           />
         </Tabs>
@@ -891,7 +925,7 @@ function EditProfilePage() {
               </Box>
             )}
             
-            {/* Notifications Tab */}
+            {/* Settings Tab */}
             {activeTab === 2 && (
               <Box>
                 <Stack spacing={3}>
@@ -902,6 +936,36 @@ function EditProfilePage() {
                       Notification System Diagnostics
                     </Typography>
                     <NotificationDebugger />
+                  </Box>
+                  
+                  <Divider sx={{ my: 4 }} />
+                  
+                  <Box sx={{ mt: 4 }}>
+                    <Typography variant="h6" gutterBottom color="error">
+                      Danger Zone
+                    </Typography>
+                    <Paper 
+                      variant="outlined" 
+                      sx={{ 
+                        p: 3, 
+                        border: '1px solid',
+                        borderColor: 'error.main',
+                        borderRadius: 2
+                      }}
+                    >
+                      <Typography variant="body1" gutterBottom>
+                        Once you delete your account, there is no going back. Please be certain.
+                      </Typography>
+                      <Button
+                        variant="outlined"
+                        color="error"
+                        onClick={() => setDeleteAccountDialogOpen(true)}
+                        startIcon={<DeleteIcon />}
+                        sx={{ mt: 2 }}
+                      >
+                        Delete Account
+                      </Button>
+                    </Paper>
                   </Box>
                 </Stack>
               </Box>
@@ -941,6 +1005,41 @@ function EditProfilePage() {
         onClose={() => setCreatePostModalOpen(false)}
         onPostCreated={handlePostCreated}
       />
+      
+      {/* Delete Account Confirmation Dialog */}
+      <Dialog
+        open={deleteAccountDialogOpen}
+        onClose={() => setDeleteAccountDialogOpen(false)}
+        aria-labelledby="delete-account-dialog-title"
+        aria-describedby="delete-account-dialog-description"
+      >
+        <DialogTitle id="delete-account-dialog-title">
+          Delete Account
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="delete-account-dialog-description">
+            Are you sure you want to delete your account? This action cannot be undone.
+            All your data, including your profile, posts, and network memberships will be permanently deleted.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button 
+            onClick={() => setDeleteAccountDialogOpen(false)}
+            disabled={deleteAccountLoading}
+          >
+            Cancel
+          </Button>
+          <Button 
+            onClick={handleDeleteAccount} 
+            color="error"
+            variant="contained"
+            disabled={deleteAccountLoading}
+            startIcon={deleteAccountLoading ? <Spinner size={20} color="inherit" /> : <DeleteIcon />}
+          >
+            {deleteAccountLoading ? 'Deleting...' : 'Delete Account'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 }

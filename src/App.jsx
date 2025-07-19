@@ -16,6 +16,7 @@ import { Analytics } from '@vercel/analytics/react';
 import { ProfileProvider, useProfile } from './context/profileContext';
 import NetworkSelector from './components/NetworkSelector';
 import ProfileAwareRoute from './components/ProfileAwareRoute';
+import { LanguageProvider } from './hooks/useTranslation.jsx';
 
 // Eagerly loaded pages (small, frequently accessed)
 import LoginPage from './pages/LoginPage';
@@ -149,11 +150,12 @@ function App() {
 
   return (
     <ErrorBoundary>
-      <ProfileProvider>
-        <ThemeProvider>
-          <AppWithProfileContext>
-            <DirectMessagesProvider>
-              <Box className="App" sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+      <LanguageProvider>
+        <ProfileProvider>
+          <ThemeProvider>
+            <AppWithProfileContext>
+              <DirectMessagesProvider>
+                <Box className="App" sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
             {/* Pass the network name to the header */}
             {window.location.pathname !== "/" && window.location.pathname !== "/pricing" && window.location.pathname !== "/terms" && window.location.pathname !== "/old" && window.location.pathname !== "/profiles/select" && window.location.pathname !== "/login" && !window.location.pathname.startsWith("/micro-conclav/") && (
               <NetworkHeader/>
@@ -274,6 +276,7 @@ function App() {
           </AppWithProfileContext>
         </ThemeProvider>
       </ProfileProvider>
+    </LanguageProvider>
     </ErrorBoundary>
   );
 }

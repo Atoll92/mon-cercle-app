@@ -4,6 +4,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/authcontext';
 import { useProfile } from '../context/profileContext';
 import { useTheme } from '../components/ThemeProvider'; // Import useTheme hook
+import { useTranslation } from '../hooks/useTranslation.jsx'; // Import translation hook
 import { supabase } from '../supabaseclient';
 import Spinner from '../components/Spinner';
 import {
@@ -70,6 +71,7 @@ function NetworkAdminPage() {
   const { user } = useAuth();
   const { activeProfile } = useProfile();
   const { darkMode } = useTheme(); // Get darkMode from theme context
+  const { t } = useTranslation(); // Get translation function
   const muiTheme = useMuiTheme(); // Get the MUI theme for accessing custom colors
   const [searchParams, setSearchParams] = useSearchParams();
   
@@ -133,12 +135,12 @@ function NetworkAdminPage() {
         setProfile(profileData);
         
         if (profileData.role !== 'admin') {
-          setError('You do not have admin privileges.');
+          setError(t('admin.errors.noAdminPrivileges'));
           return;
         }
         
         if (!profileData.network_id) {
-          setError('You are not part of any network.');
+          setError(t('admin.errors.notInNetwork'));
           return;
         }
         
@@ -167,7 +169,7 @@ function NetworkAdminPage() {
         
       } catch (error) {
         console.error('Error loading data:', error);
-        setError('Failed to load network information: ' + error.message);
+        setError(t('admin.errors.loadNetworkFailed', { error: error.message }));
       } finally {
         setLoading(false);
       }
@@ -186,7 +188,7 @@ function NetworkAdminPage() {
       setMembers(membersData);
     } catch (error) {
       console.error('Error refreshing members:', error);
-      setError('Failed to refresh members list');
+      setError(t('admin.errors.refreshMembersFailed'));
     }
   };
 
@@ -217,7 +219,7 @@ function NetworkAdminPage() {
           >
             <Spinner size={120} sx={{ mb: 3 }} />
             <Typography variant="h6">
-              Loading admin panel...
+              {t('admin.loading.adminPanel')}
             </Typography>
           </Box>
         </AdminLayout>
@@ -247,7 +249,7 @@ function NetworkAdminPage() {
             }}
           >
             <Typography variant="h5" component="h1" gutterBottom sx={{ color: muiTheme.palette.error.main }}>
-              Admin Panel Access Error
+              {t('admin.errors.accessError')}
             </Typography>
             
             <Alert severity="error" sx={{ mb: 4, justifyContent: 'center' }}>
@@ -262,7 +264,7 @@ function NetworkAdminPage() {
                 startIcon={<ArrowBackIcon />}
                 size="large"
               >
-                Return to Dashboard
+                {t('admin.buttons.returnToDashboard')}
               </Button>
             </Box>
           </Paper>
@@ -314,18 +316,18 @@ function NetworkAdminPage() {
             component="h1" 
             sx={{ mb: 3, color: muiTheme.palette.custom.lightText, fontWeight: 'medium' }}
           >
-            {activeTab === 0 && "Network Settings"}
-            {activeTab === 1 && "Members Management"}
-            {activeTab === 2 && "Content Categories"}
-            {activeTab === 3 && "News Management"}
-            {activeTab === 4 && "Events Management"}
-            {activeTab === 5 && "Polls Management"}
-            {activeTab === 6 && "Theme & Branding"}
-            {activeTab === 7 && "Moderation Tools"}
-            {activeTab === 8 && "Monetization"}
-            {activeTab === 9 && "Billing & Plan"}
-            {activeTab === 10 && "Badges & Engagement"}
-            {activeTab === 11 && "Support Tickets"}
+            {activeTab === 0 && t('admin.tabs.settings')}
+            {activeTab === 1 && t('admin.tabs.members')}
+            {activeTab === 2 && t('admin.tabs.categories')}
+            {activeTab === 3 && t('admin.tabs.news')}
+            {activeTab === 4 && t('admin.tabs.events')}
+            {activeTab === 5 && t('admin.tabs.polls')}
+            {activeTab === 6 && t('admin.tabs.theme')}
+            {activeTab === 7 && t('admin.tabs.moderation')}
+            {activeTab === 8 && t('admin.tabs.monetization')}
+            {activeTab === 9 && t('admin.tabs.billing')}
+            {activeTab === 10 && t('admin.tabs.badges')}
+            {activeTab === 11 && t('admin.tabs.support')}
           </Typography>
         </Box>
 

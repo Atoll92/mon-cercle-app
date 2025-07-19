@@ -1,0 +1,31 @@
+{
+  "admin": {
+    "tabs": {
+      "settings": "Network Settings",
+      "members": "Members Management",
+      "categories": "Content Categories",
+      "news": "News Management",
+      "events": "Events Management",
+      "polls": "Polls Management",
+      "theme": "Theme & Branding",
+      "moderation": "Moderation Tools",
+      "monetization": "Monetization",
+      "billing": "Billing & Plan",
+      "badges": "Badges & Engagement",
+      "support": "Support Tickets"
+    },
+    "errors": {
+      "noAdminPrivileges": "You do not have admin privileges.",
+      "notInNetwork": "You are not part of any network.",
+      "loadNetworkFailed": "Failed to load network information: {{error}}",
+      "refreshMembersFailed": "Failed to refresh members list",
+      "accessError": "Admin Panel Access Error"
+    },
+    "loading": {
+      "adminPanel": "Loading admin panel..."
+    },
+    "buttons": {
+      "returnToDashboard": "Return to Dashboard"
+    }
+  }
+}

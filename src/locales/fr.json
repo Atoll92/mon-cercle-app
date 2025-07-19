@@ -1,0 +1,31 @@
+{
+  "admin": {
+    "tabs": {
+      "settings": "Paramètres du réseau",
+      "members": "Gestion des membres",
+      "categories": "Catégories de contenu",
+      "news": "Gestion des actualités",
+      "events": "Gestion des événements",
+      "polls": "Gestion des sondages",
+      "theme": "Thème et image de marque",
+      "moderation": "Outils de modération",
+      "monetization": "Monétisation",
+      "billing": "Facturation et plan",
+      "badges": "Badges et engagement",
+      "support": "Tickets de support"
+    },
+    "errors": {
+      "noAdminPrivileges": "Vous ne disposez pas des privilèges d'administrateur.",
+      "notInNetwork": "Vous ne faites partie d'aucun réseau.",
+      "loadNetworkFailed": "Échec du chargement des informations du réseau : {{error}}",
+      "refreshMembersFailed": "Échec de l'actualisation de la liste des membres",
+      "accessError": "Erreur d'accès au panneau d'administration"
+    },
+    "loading": {
+      "adminPanel": "Chargement du panneau d'administration..."
+    },
+    "buttons": {
+      "returnToDashboard": "Retour au tableau de bord"
+    }
+  }
+}
