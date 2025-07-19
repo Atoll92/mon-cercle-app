@@ -154,7 +154,8 @@ const NetworkHeader = () => {
           flexWrap: 'wrap',
           alignItems: 'stretch', // Changed from 'center' to 'stretch' to allow full height
           justifyContent: 'space-between',
-          padding: 2,
+          paddingX: 2,
+          paddingY:0,
           minHeight: '80px', // Set a consistent minimum height
           backgroundColor: darkMode ? '#1e1e1e' : '#ffffff',
           color: darkMode ? '#ffffff' : 'inherit',
