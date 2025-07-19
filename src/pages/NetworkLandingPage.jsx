@@ -130,6 +130,7 @@ function NetworkLandingPage() {
   const [showWelcomeMessage, setShowWelcomeMessage] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [isTabsFixed, setIsTabsFixed] = useState(false);
+  const [scrollProgress, setScrollProgress] = useState(0);
   
   // Animation setup - must be at top level, not conditional
   const contentRef = useFadeIn(200);
@@ -584,13 +585,19 @@ function NetworkLandingPage() {
     return combinedFeed;
   }, [networkNews, postItems, initialItemOrder]);
 
-  // Handle scroll to make tabs sticky
+  // Handle scroll to make tabs sticky with smooth transition
   useEffect(() => {
     const handleScroll = () => {
       const tabsContainer = document.getElementById('tabs-original-position');
       if (tabsContainer) {
         const rect = tabsContainer.getBoundingClientRect();
         const headerHeight = 80; // NetworkHeader height
+        const scrollY = window.scrollY;
+        
+        // Calculate scroll progress for smooth transitions
+        const maxScroll = 300; // Adjust this value to control transition speed
+        const progress = Math.min(scrollY / maxScroll, 1);
+        setScrollProgress(progress);
         
         // If the tabs would go above the header, make them fixed
         if (rect.top <= headerHeight) {
@@ -601,7 +608,7 @@ function NetworkLandingPage() {
       }
     };
 
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
@@ -691,8 +698,8 @@ function NetworkLandingPage() {
             right: 0,
             bottom: 0,
             background: darkMode 
-              ? 'linear-gradient(180deg, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0.4) 70%, rgba(0, 0, 0, 0.6) 100%)'
-              : 'linear-gradient(180deg, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0.4) 70%, rgba(255, 255, 255, 0.2) 100%)',
+              ? 'linear-gradient(180deg, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.2) 70%, rgba(0, 0, 0, 0.3) 100%)'
+              : 'linear-gradient(180deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.2) 70%, rgba(255, 255, 255, 0.1) 100%)',
             zIndex: 1
           },
           '& > *': {
@@ -700,23 +707,6 @@ function NetworkLandingPage() {
             zIndex: 2
           }
         }}>
-          {network.description && (
-            <Typography 
-              variant="h5" 
-              sx={{ 
-                color: darkMode ? '#ffffff' : '#333333',
-                textShadow: darkMode ? '0px 2px 4px rgba(0,0,0,0.8)' : '0px 2px 4px rgba(255,255,255,0.8)',
-                fontSize: { xs: '1rem', sm: '1.2rem' },
-                lineHeight: 1.4,
-                maxWidth: '800px',
-                textAlign: 'center',
-                px: 3,
-                fontWeight: 400
-              }}
-            >
-              {network.description}
-            </Typography>
-          )}
         </Box>
       )}
       
@@ -729,12 +719,29 @@ function NetworkLandingPage() {
           position: 'relative',
           zIndex: 100, // Above background image
           visibility: isTabsFixed ? 'hidden' : 'visible',
-          backgroundColor: darkMode ? alpha('#1e1e1e', 0.85) : alpha('#ffffff', 0.85),
-          backdropFilter: 'blur(20px) saturate(180%)',
-          borderBottom: `1px solid ${darkMode ? alpha('#ffffff', 0.12) : alpha('#000000', 0.08)}`,
+          backgroundColor: darkMode 
+            ? alpha('#121212', 0.7 + (scrollProgress * 0.2)) 
+            : alpha('#ffffff', 0.7 + (scrollProgress * 0.2)),
+          backdropFilter: `blur(${30 - (scrollProgress * 10)}px) saturate(${200 - (scrollProgress * 50)}%)`,
+          WebkitBackdropFilter: `blur(${30 - (scrollProgress * 10)}px) saturate(${200 - (scrollProgress * 50)}%)`,
+          borderBottom: `1px solid ${darkMode 
+            ? alpha('#ffffff', 0.08) 
+            : alpha('#000000', 0.05)}`,
           boxShadow: darkMode 
-            ? '0 8px 24px rgba(0,0,0,0.4)' 
-            : '0 4px 16px rgba(0,0,0,0.1)',
+            ? `0 12px 40px ${alpha('#000000', 0.5)}, inset 0 1px 0 ${alpha('#ffffff', 0.06)}` 
+            : `0 8px 32px ${alpha('#000000', 0.1)}, inset 0 1px 0 ${alpha('#ffffff', 0.8)}`,
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: darkMode
+              ? `radial-gradient(ellipse at top, ${alpha('#2196f3', 0.08)} 0%, transparent 70%)`
+              : `radial-gradient(ellipse at top, ${alpha('#2196f3', 0.04)} 0%, transparent 70%)`,
+            pointerEvents: 'none',
+          },
         }}
       >
         <Container maxWidth="lg" sx={{ px: 0 }}>
@@ -744,10 +751,8 @@ function NetworkLandingPage() {
               width: '100%', 
               borderRadius: 0,
               overflow: 'hidden',
-              background: darkMode
-                ? alpha('#1e1e1e', 0.7)
-                : alpha('#ffffff', 0.8),
-              backdropFilter: 'blur(15px)',
+              background: 'transparent',
+              backdropFilter: 'none',
               border: 'none',
               boxShadow: 'none',
               transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -761,42 +766,42 @@ function NetworkLandingPage() {
               allowScrollButtonsMobile
               sx={{
                 minHeight: 56,
-                borderBottom: `1px solid ${darkMode ? alpha('#ffffff', 0.08) : alpha('#000000', 0.06)}`,
-                background: darkMode
-                  ? alpha('#000000', 0.1)
-                  : alpha('#ffffff', 0.3),
+                borderBottom: 'none',
+                background: 'transparent',
+                px: 2,
                 '& .MuiTab-root': {
                   minHeight: 56,
-                  color: darkMode ? alpha('#ffffff', 0.8) : alpha('#000000', 0.7),
+                  color: darkMode ? alpha('#ffffff', 0.9) : alpha('#000000', 0.8),
                   fontWeight: 500,
                   fontSize: '0.875rem',
                   letterSpacing: '0.02em',
                   textTransform: 'none',
-                  transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                  transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
                   position: 'relative',
+                  mx: 0.5,
+                  borderRadius: '12px',
                   '&:hover': {
                     color: darkMode ? '#ffffff' : '#000000',
                     background: darkMode
-                      ? alpha('#ffffff', 0.1)
+                      ? alpha('#ffffff', 0.12)
                       : alpha('#000000', 0.08),
+                    transform: 'translateY(-1px)',
+                    boxShadow: darkMode
+                      ? `0 4px 12px ${alpha('#000000', 0.3)}`
+                      : `0 4px 12px ${alpha('#000000', 0.1)}`,
                   },
                   '&.Mui-selected': {
-                    color: muiTheme.palette.primary.main,
+                    color: darkMode ? '#ffffff' : muiTheme.palette.primary.main,
                     fontWeight: 600,
+                    background: darkMode
+                      ? alpha('#ffffff', 0.15)
+                      : alpha(muiTheme.palette.primary.main, 0.12),
+                    boxShadow: darkMode
+                      ? `0 2px 8px ${alpha('#ffffff', 0.1)}, inset 0 1px 0 ${alpha('#ffffff', 0.2)}`
+                      : `0 2px 8px ${alpha(muiTheme.palette.primary.main, 0.2)}, inset 0 1px 0 ${alpha('#ffffff', 0.5)}`,
                   },
                   '&::after': {
-                    content: '""',
-                    position: 'absolute',
-                    bottom: 0,
-                    left: '50%',
-                    transform: 'translateX(-50%) scaleX(0)',
-                    width: '80%',
-                    height: '2px',
-                    background: muiTheme.palette.primary.main,
-                    transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                  },
-                  '&.Mui-selected::after': {
-                    transform: 'translateX(-50%) scaleX(1)',
+                    display: 'none',
                   },
                   [muiTheme.breakpoints.up('md')]: {
                     minWidth: 0,
@@ -812,6 +817,7 @@ function NetworkLandingPage() {
                   },
                   '-ms-overflow-style': 'none',
                   'scrollbar-width': 'none',
+                  px: 1,
                   [muiTheme.breakpoints.up('md')]: {
                     '& .MuiTabs-flexContainer': {
                       width: '100%',
@@ -846,14 +852,32 @@ function NetworkLandingPage() {
             right: 0,
             zIndex: 1250,
             width: '100%',
-            backgroundColor: darkMode ? alpha('#1e1e1e', 0.98) : alpha('#ffffff', 0.98),
-            backdropFilter: 'blur(20px) saturate(180%)',
-            borderBottom: `1px solid ${darkMode ? alpha('#ffffff', 0.12) : alpha('#000000', 0.08)}`,
+            backgroundColor: darkMode 
+              ? alpha('#121212', 0.75) 
+              : alpha('#ffffff', 0.75),
+            backdropFilter: 'blur(25px) saturate(200%)',
+            WebkitBackdropFilter: 'blur(25px) saturate(200%)',
+            borderBottom: `1px solid ${darkMode 
+              ? alpha('#ffffff', 0.1) 
+              : alpha('#000000', 0.06)}`,
             boxShadow: darkMode 
-              ? '0 4px 12px rgba(0,0,0,0.3)' 
-              : '0 2px 8px rgba(0,0,0,0.15)',
+              ? `0 8px 32px ${alpha('#000000', 0.4)}, inset 0 1px 0 ${alpha('#ffffff', 0.08)}` 
+              : `0 8px 32px ${alpha('#000000', 0.12)}, inset 0 1px 0 ${alpha('#ffffff', 0.9)}`,
             transform: 'translateZ(0)',
-            animation: 'slideDown 0.2s ease-out',
+            animation: 'slideDown 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            '&::before': {
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: darkMode
+                ? `linear-gradient(180deg, ${alpha('#1e1e1e', 0.2)} 0%, transparent 100%)`
+                : `linear-gradient(180deg, ${alpha('#ffffff', 0.3)} 0%, transparent 100%)`,
+              pointerEvents: 'none',
+              zIndex: -1,
+            },
             '@keyframes slideDown': {
               '0%': {
                 transform: 'translateY(-100%)',
@@ -874,10 +898,8 @@ function NetworkLandingPage() {
                 width: '100%', 
                 borderRadius: 0,
                 overflow: 'hidden',
-                background: darkMode
-                  ? alpha('#1e1e1e', 0.9)
-                  : alpha('#ffffff', 0.95),
-                backdropFilter: 'blur(10px)',
+                background: 'transparent',
+                backdropFilter: 'none',
                 border: 'none',
                 boxShadow: 'none',
                 transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -891,42 +913,41 @@ function NetworkLandingPage() {
                 allowScrollButtonsMobile
                 sx={{
                   minHeight: 56,
-                  borderBottom: `1px solid ${darkMode ? alpha('#ffffff', 0.08) : alpha('#000000', 0.06)}`,
-                  background: darkMode
-                    ? alpha('#000000', 0.2)
-                    : alpha('#ffffff', 0.5),
+                  borderBottom: 'none',
+                  background: 'transparent',
                   '& .MuiTab-root': {
                     minHeight: 56,
-                    color: darkMode ? alpha('#ffffff', 0.6) : muiTheme.palette.text.secondary,
+                    color: darkMode ? alpha('#ffffff', 0.85) : alpha('#000000', 0.75),
                     fontWeight: 500,
                     fontSize: '0.875rem',
                     letterSpacing: '0.02em',
                     textTransform: 'none',
-                    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                    transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
                     position: 'relative',
+                    mx: 0.5,
+                    borderRadius: '12px',
                     '&:hover': {
-                      color: darkMode ? alpha('#ffffff', 0.9) : muiTheme.palette.text.primary,
+                      color: darkMode ? '#ffffff' : '#000000',
                       background: darkMode
-                        ? alpha('#ffffff', 0.05)
-                        : alpha('#000000', 0.02),
+                        ? alpha('#ffffff', 0.12)
+                        : alpha('#000000', 0.08),
+                      transform: 'translateY(-1px)',
+                      boxShadow: darkMode
+                        ? `0 4px 12px ${alpha('#000000', 0.3)}`
+                        : `0 4px 12px ${alpha('#000000', 0.1)}`,
                     },
                     '&.Mui-selected': {
-                      color: muiTheme.palette.primary.main,
+                      color: darkMode ? '#ffffff' : muiTheme.palette.primary.main,
                       fontWeight: 600,
+                      background: darkMode
+                        ? alpha('#ffffff', 0.15)
+                        : alpha(muiTheme.palette.primary.main, 0.12),
+                      boxShadow: darkMode
+                        ? `0 2px 8px ${alpha('#ffffff', 0.1)}, inset 0 1px 0 ${alpha('#ffffff', 0.2)}`
+                        : `0 2px 8px ${alpha(muiTheme.palette.primary.main, 0.2)}, inset 0 1px 0 ${alpha('#ffffff', 0.5)}`,
                     },
                     '&::after': {
-                      content: '""',
-                      position: 'absolute',
-                      bottom: 0,
-                      left: '50%',
-                      transform: 'translateX(-50%) scaleX(0)',
-                      width: '80%',
-                      height: '2px',
-                      background: muiTheme.palette.primary.main,
-                      transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                    },
-                    '&.Mui-selected::after': {
-                      transform: 'translateX(-50%) scaleX(1)',
+                      display: 'none',
                     },
                     [muiTheme.breakpoints.up('md')]: {
                       minWidth: 0,
@@ -942,6 +963,7 @@ function NetworkLandingPage() {
                     },
                     '-ms-overflow-style': 'none',
                     'scrollbar-width': 'none',
+                    px: 1,
                     [muiTheme.breakpoints.up('md')]: {
                       '& .MuiTabs-flexContainer': {
                         width: '100%',
@@ -967,8 +989,97 @@ function NetworkLandingPage() {
         </Box>
       )}
 
+      {/* Left sidebar with description - positioned absolutely in gutter */}
+      {network.description && (
+        <Box
+          sx={{
+            position: 'absolute',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            width: '100%',
+            maxWidth: 'calc(1200px + 600px)', // Container max width + extra space for gutters
+            display: { xs: 'none', lg: 'block' },
+            pt: isTabsFixed ? '80px' : 3,
+            zIndex: 1050,
+            pointerEvents: 'none',
+          }}
+        >
+          <Box
+            sx={{
+              position: 'sticky',
+              top: isTabsFixed ? '160px' : '100px',
+              width: '250px',
+              height: 'fit-content',
+              pointerEvents: 'auto',
+              ml: 2,
+            }}
+          >
+            <Paper
+              elevation={0}
+              sx={{
+                p: 2.5,
+                backgroundColor: darkMode 
+                  ? alpha('#ffffff', 0.03)
+                  : alpha('#000000', 0.02),
+                border: `1px solid ${darkMode 
+                  ? alpha('#ffffff', 0.08)
+                  : alpha('#000000', 0.06)}`,
+                borderRadius: 2,
+              }}
+            >
+              <Typography
+                variant="body2"
+                sx={{
+                  color: darkMode 
+                    ? alpha('#ffffff', 0.7)
+                    : alpha('#000000', 0.6),
+                  fontSize: '0.875rem',
+                  lineHeight: 1.6,
+                  fontWeight: 400,
+                }}
+              >
+                {network.description}
+              </Typography>
+            </Paper>
+          </Box>
+        </Box>
+      )}
+
       {/* Main content container */}
       <Container maxWidth="lg" sx={{ mb: 4, position: 'relative', zIndex: 1050 }}>
+        {/* Mobile description - full width at top */}
+        {network.description && (
+          <Paper
+            elevation={0}
+            sx={{
+              display: { xs: 'block', lg: 'none' },
+              p: 2.5,
+              mb: 3,
+              backgroundColor: darkMode 
+                ? alpha('#ffffff', 0.03)
+                : alpha('#000000', 0.02),
+              border: `1px solid ${darkMode 
+                ? alpha('#ffffff', 0.08)
+                : alpha('#000000', 0.06)}`,
+              borderRadius: 2,
+            }}
+          >
+            <Typography
+              variant="body2"
+              sx={{
+                color: darkMode 
+                  ? alpha('#ffffff', 0.7)
+                  : alpha('#000000', 0.6),
+                fontSize: '0.875rem',
+                lineHeight: 1.6,
+                fontWeight: 400,
+              }}
+            >
+              {network.description}
+            </Typography>
+          </Paper>
+        )}
+        
         {/* Content area with subtle animation */}
         <Box
           sx={{

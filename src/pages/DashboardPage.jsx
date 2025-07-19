@@ -13,6 +13,7 @@ import LatestPostsWidget from '../components/LatestPostsWidget';
 import TestNotificationSystem from '../components/TestNotificationSystem';
 import EventDetailsDialog from '../components/EventDetailsDialog';
 import CreateEventDialog from '../components/CreateEventDialog';
+import NetworkHeader from '../components/NetworkHeader';
 import { useFadeIn, useStaggeredAnimation, ANIMATION_DURATION } from '../hooks/useAnimation';
 import { ProfileSkeleton, GridSkeleton } from '../components/LoadingSkeleton';
 import OnboardingGuide from '../components/OnboardingGuide';
@@ -50,7 +51,6 @@ import {
   Edit as EditIcon,
   AdminPanelSettings as AdminIcon,
   ArrowForward as ArrowForwardIcon,
-  Dashboard as DashboardIcon,
   Event as EventIcon,
   Refresh as RefreshIcon,
   NetworkWifi as NetworkIcon,
@@ -63,7 +63,6 @@ import {
   Groups as GroupsIcon,
   Business as BusinessIcon,
   School as SchoolIcon,
-  SupervisorAccount as SuperAdminIcon,
   AccessTime as AccessTimeIcon,
   CheckCircle as CheckCircleIcon,
   Cancel as CancelIcon,
@@ -642,87 +641,47 @@ function DashboardPage() {
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 3, display: 'flex', flexDirection: 'column' }}>
-      {/* Header Card */}
-      <Paper 
+    <Box sx={{ minHeight: '100vh' }}>
+      {/* Network Header */}
+      <NetworkHeader />
+      
+      <Container maxWidth="lg" sx={{ pt: 12, pb: 3, display: 'flex', flexDirection: 'column' }}>
+        {/* Dashboard Title */}
+        <Box sx={{ mb: 3 }}>
+          <Typography 
+            variant="h4" 
+            component="h1" 
+            sx={{ 
+              fontWeight: 600,
+              color: theme => theme.palette.text.primary,
+              letterSpacing: '-0.5px'
+            }}
+          >
+            Dashboard
+          </Typography>
+          <Typography 
+            variant="body1" 
+            sx={{ 
+              color: theme => theme.palette.text.secondary,
+              mt: 0.5
+            }}
+          >
+            Welcome back, {profile?.full_name || user?.email?.split('@')[0] || 'there'}
+          </Typography>
+        </Box>
+        
+        {/* Header Card */}
+        <Paper 
         ref={headerRef}
         elevation={3} 
         sx={{ 
           borderRadius: 2,
           overflow: 'hidden',
           boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-          mb: 2
+          mb: 2,
+          display: 'none' // Hide the old header since we're using NetworkHeader
         }}
-       
       >
-        {/* Blue header banner */}
-        <Box 
-          sx={{ 
-            p: { xs: 1.5, md: 2 }, 
-            background: 'linear-gradient(120deg, #2196f3, #3f51b5)', 
-            color: 'white',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            flexDirection: { xs: 'column', sm: 'row' },
-            gap: { xs: 1.5, sm: 0 }
-          }}
-        >
-          <Box sx={{ 
-            display: 'flex', 
-            alignItems: 'center',
-            width: { xs: '100%', sm: 'auto' },
-            justifyContent: { xs: 'center', sm: 'flex-start' }
-          }}>
-            <DashboardIcon sx={{ mr: 2, fontSize: { xs: 24, md: 28 } }} />
-            <Typography variant={{ xs: 'h6', md: 'h5' }} component="h1" fontWeight="500">
-              Dashboard
-            </Typography>
-          </Box>
-
-          <Box sx={{ display: 'flex', gap: 1 }}>
-            {/* Super Admin Button */}
-            {(user?.email === 'admin@conclav.com' || user?.app_metadata?.role === 'super_admin') && (
-              <Button
-                variant="contained"
-                component={Link}
-                to="/super-admin"
-                startIcon={<SuperAdminIcon />}
-                sx={{ 
-                  bgcolor: 'rgba(255,255,255,0.15)', 
-                  '&:hover': { 
-                    bgcolor: 'rgba(255,255,255,0.25)'
-                  },
-                  color: 'white'
-                }}
-                size="small"
-              >
-                Super Admin
-              </Button>
-            )}
-            
-            {profile.network_id && (
-              <Button
-                variant="contained" 
-                color="error" 
-                component={Link}
-                to="/network"
-                endIcon={<ArrowForwardIcon />}
-                sx={{ 
-                  bgcolor: 'rgba(255,255,255,0.15)', 
-                  '&:hover': { 
-                    bgcolor: 'rgba(255,255,255,0.25)'
-                  },
-                  color: 'white'
-                }}
-                size="small"
-              >
-                Go to Network
-              </Button>
-            )}
-          </Box>
-        </Box>
-
       </Paper>
 
       {session && profile ? (
@@ -1687,7 +1646,8 @@ function DashboardPage() {
         }}
       />
       
-    </Container>
+      </Container>
+    </Box>
   );
 }
 
