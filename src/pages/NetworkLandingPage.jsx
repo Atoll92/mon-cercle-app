@@ -129,9 +129,9 @@ function NetworkLandingPage() {
   }, [networkMembers]);
   const [showWelcomeMessage, setShowWelcomeMessage] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [isTabsFixed, setIsTabsFixed] = useState(false);
   
   // Animation setup - must be at top level, not conditional
-  const headerRef = useFadeIn(0);
   const contentRef = useFadeIn(200);
   
   // Parse enabled tabs from network configuration
@@ -584,6 +584,27 @@ function NetworkLandingPage() {
     return combinedFeed;
   }, [networkNews, postItems, initialItemOrder]);
 
+  // Handle scroll to make tabs sticky
+  useEffect(() => {
+    const handleScroll = () => {
+      const tabsContainer = document.getElementById('tabs-original-position');
+      if (tabsContainer) {
+        const rect = tabsContainer.getBoundingClientRect();
+        const headerHeight = 80; // NetworkHeader height
+        
+        // If the tabs would go above the header, make them fixed
+        if (rect.top <= headerHeight) {
+          setIsTabsFixed(true);
+        } else {
+          setIsTabsFixed(false);
+        }
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   if (loading) {
     return (
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
@@ -641,15 +662,17 @@ function NetworkLandingPage() {
   }
 
   return (
-    <>
+    <Box sx={{ minHeight: '100vh' }}>
       {/* Network Header */}
       <NetworkHeader />
       
-      {/* Full-width Background Header */}
+      {/* Full-width Background Header - Extended to include tabs area */}
       {network && (
         <Box sx={{
           width: '100%',
-          minHeight: '200px',
+          minHeight: '320px', // Increased height to accommodate tabs overlay
+          paddingTop: '80px', // Account for fixed header
+          paddingBottom: '60px', // Space for tabs overlay
           backgroundImage: network.background_image_url 
             ? `url(${network.background_image_url})` 
             : 'linear-gradient(135deg, #4568dc 0%, #b06ab3 100%)',
@@ -667,7 +690,9 @@ function NetworkLandingPage() {
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundColor: darkMode ? 'rgba(0, 0, 0, 0.3)' : 'rgba(255, 255, 255, 0.7)',
+            background: darkMode 
+              ? 'linear-gradient(180deg, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0.4) 70%, rgba(0, 0, 0, 0.6) 100%)'
+              : 'linear-gradient(180deg, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0.4) 70%, rgba(255, 255, 255, 0.2) 100%)',
             zIndex: 1
           },
           '& > *': {
@@ -695,79 +720,274 @@ function NetworkLandingPage() {
         </Box>
       )}
       
-      <Container maxWidth="lg" sx={{ mt: 2, mb: 4 }}>
-      
-      <Paper 
-        ref={contentRef}
-        sx={{ 
-          width: '100%', 
-          mb: 3, 
-          // Adjust background color based on dark mode
-          backgroundColor: muiTheme.palette.background.paper,
-          // Add a subtle border in dark mode to improve visibility
-          border: `1px solid ${muiTheme.palette.custom.border}`,
-          // Add shadow for better separation in dark mode
-          boxShadow: darkMode ? '0 4px 20px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.1)',
-          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+      {/* Original tabs section - normal position overlaying background */}
+      <Box
+        id="tabs-original-position"
+        sx={{
+          width: '100%',
+          marginTop: '-60px', // Negative margin to overlay the background image
+          position: 'relative',
+          zIndex: 100, // Above background image
+          visibility: isTabsFixed ? 'hidden' : 'visible',
+          backgroundColor: darkMode ? alpha('#1e1e1e', 0.85) : alpha('#ffffff', 0.85),
+          backdropFilter: 'blur(20px) saturate(180%)',
+          borderBottom: `1px solid ${darkMode ? alpha('#ffffff', 0.12) : alpha('#000000', 0.08)}`,
+          boxShadow: darkMode 
+            ? '0 8px 24px rgba(0,0,0,0.4)' 
+            : '0 4px 16px rgba(0,0,0,0.1)',
         }}
       >
-        <Tabs
-          value={activeTab}
-          onChange={handleTabChange}
-          indicatorColor="primary"
-          // Adjust text color for better contrast in dark mode
-          textColor={darkMode ? "secondary" : "primary"}
-          variant="scrollable"
-          scrollButtons="auto"
-          allowScrollButtonsMobile
-          sx={{
-            // Add custom styles for dark mode
-            '& .MuiTab-root': {
-              color: muiTheme.palette.custom.fadedText,
-              '&.Mui-selected': {
-                color: muiTheme.palette.custom.lightText,
-              },
-              // Make tabs take full width on desktop
-              [muiTheme.breakpoints.up('md')]: {
-                minWidth: 0,
-                flex: 1,
-              },
-            },
-            // Make the indicator more visible in dark mode
-            '& .MuiTabs-indicator': {
-              backgroundColor: darkMode ? '#90caf9' : undefined,
-              height: darkMode ? 3 : undefined,
-            },
-            // Hide scrollbar while allowing scrolling on mobile
-            '& .MuiTabs-scroller': {
-              '&::-webkit-scrollbar': {
-                display: 'none',
-              },
-              '-ms-overflow-style': 'none',
-              'scrollbar-width': 'none',
-              // On desktop, make tabs fill width
-              [muiTheme.breakpoints.up('md')]: {
-                '& .MuiTabs-flexContainer': {
-                  width: '100%',
+        <Container maxWidth="lg" sx={{ px: 0 }}>
+          <Paper 
+            elevation={0}
+            sx={{ 
+              width: '100%', 
+              borderRadius: 0,
+              overflow: 'hidden',
+              background: darkMode
+                ? alpha('#1e1e1e', 0.7)
+                : alpha('#ffffff', 0.8),
+              backdropFilter: 'blur(15px)',
+              border: 'none',
+              boxShadow: 'none',
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            }}
+          >
+            <Tabs
+              value={activeTab}
+              onChange={handleTabChange}
+              variant="scrollable"
+              scrollButtons="auto"
+              allowScrollButtonsMobile
+              sx={{
+                minHeight: 56,
+                borderBottom: `1px solid ${darkMode ? alpha('#ffffff', 0.08) : alpha('#000000', 0.06)}`,
+                background: darkMode
+                  ? alpha('#000000', 0.1)
+                  : alpha('#ffffff', 0.3),
+                '& .MuiTab-root': {
+                  minHeight: 56,
+                  color: darkMode ? alpha('#ffffff', 0.8) : alpha('#000000', 0.7),
+                  fontWeight: 500,
+                  fontSize: '0.875rem',
+                  letterSpacing: '0.02em',
+                  textTransform: 'none',
+                  transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                  position: 'relative',
+                  '&:hover': {
+                    color: darkMode ? '#ffffff' : '#000000',
+                    background: darkMode
+                      ? alpha('#ffffff', 0.1)
+                      : alpha('#000000', 0.08),
+                  },
+                  '&.Mui-selected': {
+                    color: muiTheme.palette.primary.main,
+                    fontWeight: 600,
+                  },
+                  '&::after': {
+                    content: '""',
+                    position: 'absolute',
+                    bottom: 0,
+                    left: '50%',
+                    transform: 'translateX(-50%) scaleX(0)',
+                    width: '80%',
+                    height: '2px',
+                    background: muiTheme.palette.primary.main,
+                    transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  },
+                  '&.Mui-selected::after': {
+                    transform: 'translateX(-50%) scaleX(1)',
+                  },
+                  [muiTheme.breakpoints.up('md')]: {
+                    minWidth: 0,
+                    flex: 1,
+                  },
                 },
+                '& .MuiTabs-indicator': {
+                  display: 'none',
+                },
+                '& .MuiTabs-scroller': {
+                  '&::-webkit-scrollbar': {
+                    display: 'none',
+                  },
+                  '-ms-overflow-style': 'none',
+                  'scrollbar-width': 'none',
+                  [muiTheme.breakpoints.up('md')]: {
+                    '& .MuiTabs-flexContainer': {
+                      width: '100%',
+                    },
+                  },
+                },
+                '& .MuiTabs-scrollButtons': {
+                  '&.Mui-disabled': {
+                    opacity: 0.3,
+                  },
+                  [muiTheme.breakpoints.up('md')]: {
+                    display: 'none',
+                  },
+                },
+              }}
+            >
+              {visibleTabs.map((tab) => (
+                <Tab key={tab.id} icon={tab.icon} label={tab.label} />
+              ))}
+            </Tabs>
+          </Paper>
+        </Container>
+      </Box>
+
+      {/* Fixed tabs section - appears when scrolled */}
+      {isTabsFixed && (
+        <Box
+          sx={{
+            position: 'fixed',
+            top: '80px',
+            left: 0,
+            right: 0,
+            zIndex: 1250,
+            width: '100%',
+            backgroundColor: darkMode ? alpha('#1e1e1e', 0.98) : alpha('#ffffff', 0.98),
+            backdropFilter: 'blur(20px) saturate(180%)',
+            borderBottom: `1px solid ${darkMode ? alpha('#ffffff', 0.12) : alpha('#000000', 0.08)}`,
+            boxShadow: darkMode 
+              ? '0 4px 12px rgba(0,0,0,0.3)' 
+              : '0 2px 8px rgba(0,0,0,0.15)',
+            transform: 'translateZ(0)',
+            animation: 'slideDown 0.2s ease-out',
+            '@keyframes slideDown': {
+              '0%': {
+                transform: 'translateY(-100%)',
+                opacity: 0,
               },
-            },
-            // Hide scroll buttons on desktop
-            '& .MuiTabs-scrollButtons': {
-              '&.Mui-disabled': {
-                opacity: 0.3,
-              },
-              [muiTheme.breakpoints.up('md')]: {
-                display: 'none',
+              '100%': {
+                transform: 'translateY(0)',
+                opacity: 1,
               },
             },
           }}
         >
-          {visibleTabs.map((tab) => (
-            <Tab key={tab.id} icon={tab.icon} label={tab.label} />
-          ))}
-        </Tabs>
-      </Paper>
+          <Container maxWidth="lg" sx={{ px: 0 }}>
+            <Paper 
+              ref={contentRef}
+              elevation={0}
+              sx={{ 
+                width: '100%', 
+                borderRadius: 0,
+                overflow: 'hidden',
+                background: darkMode
+                  ? alpha('#1e1e1e', 0.9)
+                  : alpha('#ffffff', 0.95),
+                backdropFilter: 'blur(10px)',
+                border: 'none',
+                boxShadow: 'none',
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              }}
+            >
+              <Tabs
+                value={activeTab}
+                onChange={handleTabChange}
+                variant="scrollable"
+                scrollButtons="auto"
+                allowScrollButtonsMobile
+                sx={{
+                  minHeight: 56,
+                  borderBottom: `1px solid ${darkMode ? alpha('#ffffff', 0.08) : alpha('#000000', 0.06)}`,
+                  background: darkMode
+                    ? alpha('#000000', 0.2)
+                    : alpha('#ffffff', 0.5),
+                  '& .MuiTab-root': {
+                    minHeight: 56,
+                    color: darkMode ? alpha('#ffffff', 0.6) : muiTheme.palette.text.secondary,
+                    fontWeight: 500,
+                    fontSize: '0.875rem',
+                    letterSpacing: '0.02em',
+                    textTransform: 'none',
+                    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                    position: 'relative',
+                    '&:hover': {
+                      color: darkMode ? alpha('#ffffff', 0.9) : muiTheme.palette.text.primary,
+                      background: darkMode
+                        ? alpha('#ffffff', 0.05)
+                        : alpha('#000000', 0.02),
+                    },
+                    '&.Mui-selected': {
+                      color: muiTheme.palette.primary.main,
+                      fontWeight: 600,
+                    },
+                    '&::after': {
+                      content: '""',
+                      position: 'absolute',
+                      bottom: 0,
+                      left: '50%',
+                      transform: 'translateX(-50%) scaleX(0)',
+                      width: '80%',
+                      height: '2px',
+                      background: muiTheme.palette.primary.main,
+                      transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    },
+                    '&.Mui-selected::after': {
+                      transform: 'translateX(-50%) scaleX(1)',
+                    },
+                    [muiTheme.breakpoints.up('md')]: {
+                      minWidth: 0,
+                      flex: 1,
+                    },
+                  },
+                  '& .MuiTabs-indicator': {
+                    display: 'none',
+                  },
+                  '& .MuiTabs-scroller': {
+                    '&::-webkit-scrollbar': {
+                      display: 'none',
+                    },
+                    '-ms-overflow-style': 'none',
+                    'scrollbar-width': 'none',
+                    [muiTheme.breakpoints.up('md')]: {
+                      '& .MuiTabs-flexContainer': {
+                        width: '100%',
+                      },
+                    },
+                  },
+                  '& .MuiTabs-scrollButtons': {
+                    '&.Mui-disabled': {
+                      opacity: 0.3,
+                    },
+                    [muiTheme.breakpoints.up('md')]: {
+                      display: 'none',
+                    },
+                  },
+                }}
+              >
+                {visibleTabs.map((tab) => (
+                  <Tab key={tab.id} icon={tab.icon} label={tab.label} />
+                ))}
+              </Tabs>
+            </Paper>
+          </Container>
+        </Box>
+      )}
+
+      {/* Main content container */}
+      <Container maxWidth="lg" sx={{ mb: 4, position: 'relative', zIndex: 1050 }}>
+        {/* Content area with subtle animation */}
+        <Box
+          sx={{
+            p: { xs: 2, sm: 3 },
+            pt: isTabsFixed ? '80px' : { xs: 2, sm: 3 }, // Only add top padding when tabs are fixed
+            minHeight: '600px', // Ensure enough content to scroll and test sticky behavior
+            animation: 'fadeInUp 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+            '@keyframes fadeInUp': {
+              '0%': {
+                opacity: 0,
+                transform: 'translateY(20px)',
+              },
+              '100%': {
+                opacity: 1,
+                transform: 'translateY(0)',
+              },
+            },
+          }}
+        >
 
       {/* Conditionally render the appropriate tab component */}
       {currentTabId === 'members' && (
@@ -848,6 +1068,7 @@ function NetworkLandingPage() {
           files={files}
         />
       )}
+        </Box>
       
       {/* Member details modal */}
       <MemberDetailsModal
@@ -957,7 +1178,7 @@ function NetworkLandingPage() {
         </Box>
       )}
       </Container>
-    </>
+    </Box>
   );
 }
 

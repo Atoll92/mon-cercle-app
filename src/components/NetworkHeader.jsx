@@ -161,8 +161,11 @@ const NetworkHeader = () => {
           color: darkMode ? '#ffffff' : 'inherit',
           borderBottom: `1px solid ${darkMode ? '#333333' : '#eeeeee'}`,
           boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-          position: 'relative',
-          zIndex: 1200, // Ensure header is above other content
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: 1300, // Sticky header above all content
           gap: { xs: 1, sm: 2 }
         }}
       >
