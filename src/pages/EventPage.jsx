@@ -275,7 +275,12 @@ function EventPage() {
 
   if (loading) {
     return (
-      <Container maxWidth="md" sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
+      <Container maxWidth="md" sx={{ 
+        paddingTop: '80px', // Account for fixed header
+        mt: 0,
+        display: 'flex', 
+        justifyContent: 'center' 
+      }}>
         <Spinner size={120} />
       </Container>
     );
@@ -283,16 +288,45 @@ function EventPage() {
 
   if (error || !event) {
     return (
-      <Container maxWidth="md" sx={{ mt: 4 }}>
-        <Alert severity="error" sx={{ mb: 2 }}>
-          {error || 'Event not found'}
-        </Alert>
-        <Button
-          startIcon={<ArrowBackIcon />}
-          onClick={() => navigate(`/network/${networkId}`)}
-        >
-          Back to Network
-        </Button>
+      <Container maxWidth="md" sx={{ 
+        paddingTop: '80px', // Account for fixed header
+        paddingBottom: 4,
+        mt: 0,
+        mb: 4 
+      }}>
+        <Grid container spacing={3}>
+          {/* Sidebar with Error and Navigation */}
+          <Grid item xs={12} md={4} sx={{ width: '100%' }}>
+            <Card sx={{ mb: 3 }}>
+              <CardContent>
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  startIcon={<ArrowBackIcon />}
+                  onClick={() => navigate(`/network/${networkId}`)}
+                  sx={{ mb: 2 }}
+                >
+                  Back to Network
+                </Button>
+                <Alert severity="error">
+                  {error || 'Event not found'}
+                </Alert>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          {/* Main Content */}
+          <Grid item xs={12} md={8} sx={{ width: '100%' }}>
+            <Paper sx={{ p: 4 }}>
+              <Typography variant="h4" gutterBottom>
+                Event Not Available
+              </Typography>
+              <Typography variant="body1" color="text.secondary">
+                The event you're looking for is not available or may have been removed.
+              </Typography>
+            </Paper>
+          </Grid>
+        </Grid>
       </Container>
     );
   }
@@ -305,7 +339,12 @@ function EventPage() {
   const maybeCount = participants.filter(p => p.status === 'maybe').length;
 
   return (
-    <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
+    <Container maxWidth="md" sx={{ 
+      paddingTop: '80px', // Account for fixed header
+      paddingBottom: 4,
+      mt: 0, // Remove margin-top since we're using paddingTop
+      mb: 4 
+    }}>
       {/* Header */}
       <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Button
