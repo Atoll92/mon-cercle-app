@@ -6,6 +6,8 @@ import { useFadeIn } from '../hooks/useAnimation';
 import { formatTimeAgo } from '../utils/dateFormatting';
 import PostCard from './PostCard';
 import Spinner from './Spinner';
+import MoodboardItemSimple from './Moodboard/MoodboardItemSimple';
+import { getUserMoodboardItems } from '../api/moodboards';
 import {
   Dialog,
   DialogContent,
@@ -70,12 +72,6 @@ const MemberDetailsModal = ({
   const [loadingMoodboard, setLoadingMoodboard] = useState(false);
   const [moodboardError, setMoodboardError] = useState(null);
   
-  // State for cover display
-  const [scale, setScale] = useState(0.5);
-  const [position, setPosition] = useState({ x: 0, y: 0 });
-  
-  // Ref for cover canvas
-  const canvasRef = useRef(null);
   
   // Fetch posts only if not provided through props
   useEffect(() => {
@@ -122,128 +118,40 @@ const MemberDetailsModal = ({
     }
   }, [member?.id, open]); // Only depend on member.id and open
 
-  // Fetch member's featured moodboard
+  // Fetch member's moodboard items using same API as MicroConclavWidget
   useEffect(() => {
-    const fetchFeaturedMoodboard = async () => {
+    const fetchMemberMoodboard = async () => {
       if (!member || !open) return;
       
       try {
         setLoadingMoodboard(true);
         setMoodboardError(null);
         
-        // Get the member's most recent public moodboard
-        const { data, error } = await supabase
-          .from('moodboards')
-          .select('*')
-          .eq('created_by', member.id)
-          .in('permissions', ['public', 'collaborative'])
-          .order('updated_at', { ascending: false })
-          .limit(1);
-          
-        if (error) throw error;
+        // Get the member's moodboard and items
+        const { items, backgroundColor } = await getUserMoodboardItems(member.id, 0, 10);
         
-        if (data && data.length > 0) {
-          setFeaturedMoodboard(data[0]);
-          
-          // Fetch items for the featured moodboard
-          const { data: itemsData, error: itemsError } = await supabase
-            .from('moodboard_items')
-            .select('*')
-            .eq('moodboard_id', data[0].id)
-            .order('created_at', { ascending: true });
-            
-          if (itemsError) throw itemsError;
-          
-          setMoodboardItems(itemsData || []);
-          
-          // Auto fit the canvas to show all items
-          setTimeout(() => {
-            fitContentToView();
-          }, 300);
+        if (items && items.length > 0) {
+          setMoodboardItems(items);
+          // Create a mock moodboard object for compatibility
+          setFeaturedMoodboard({
+            background_color: backgroundColor,
+            title: 'Micro Conclav'
+          });
+        } else {
+          setMoodboardItems([]);
+          setFeaturedMoodboard(null);
         }
       } catch (err) {
-        console.error('Error fetching featured moodboard:', err);
+        console.error('Error fetching member moodboard:', err);
         setMoodboardError('Failed to load moodboard');
       } finally {
         setLoadingMoodboard(false);
       }
     };
     
-    fetchFeaturedMoodboard();
+    fetchMemberMoodboard();
   }, [member, open]);
   
-  // Function to fit all moodboard content to view
-  const fitContentToView = () => {
-    if (!moodboardItems.length || !canvasRef.current) return;
-    
-    // Find the bounds of all items
-    const bounds = moodboardItems.reduce((acc, item) => {
-      // Skip background elements
-      if (item.type === 'background') return acc;
-      
-      // Update min and max coordinates
-      acc.minX = Math.min(acc.minX, item.x || 0);
-      acc.minY = Math.min(acc.minY, item.y || 0);
-      acc.maxX = Math.max(acc.maxX, (item.x || 0) + (item.width || 200));
-      acc.maxY = Math.max(acc.maxY, (item.y || 0) + (item.height || 200));
-      return acc;
-    }, { 
-      minX: Number.MAX_SAFE_INTEGER, 
-      minY: Number.MAX_SAFE_INTEGER, 
-      maxX: Number.MIN_SAFE_INTEGER, 
-      maxY: Number.MIN_SAFE_INTEGER 
-    });
-    
-    // Check if we have valid bounds
-    if (bounds.minX === Number.MAX_SAFE_INTEGER || bounds.maxX === Number.MIN_SAFE_INTEGER) {
-      setScale(0.5);
-      setPosition({ x: 0, y: 0 });
-      return;
-    }
-    
-    // Calculate content dimensions
-    const contentWidth = bounds.maxX - bounds.minX;
-    const contentHeight = bounds.maxY - bounds.minY;
-    
-    // Get canvas dimensions
-    const canvasWidth = canvasRef.current.clientWidth || 600;
-    const canvasHeight = canvasRef.current.clientHeight || 200;
-    
-    // Add padding
-    const paddingX = canvasWidth * 0.1;
-    const paddingY = canvasHeight * 0.1;
-    
-    // Calculate scale needed to fit content
-    const scaleX = (canvasWidth - paddingX * 2) / contentWidth;
-    const scaleY = (canvasHeight - paddingY * 2) / contentHeight;
-    const newScale = Math.min(scaleX, scaleY, 0.8);
-    
-    // Calculate position to center content
-    const centerX = canvasWidth / 2;
-    const centerY = canvasHeight / 2;
-    const contentCenterX = bounds.minX + contentWidth / 2;
-    const contentCenterY = bounds.minY + contentHeight / 2;
-    
-    // Set new position and scale
-    setScale(newScale);
-    setPosition({
-      x: centerX - contentCenterX * newScale,
-      y: centerY - contentCenterY * newScale
-    });
-  };
-  
-  // Zoom handlers
-  const handleZoomIn = () => {
-    setScale(prev => Math.min(prev + 0.1, 1.5));
-  };
-  
-  const handleZoomOut = () => {
-    setScale(prev => Math.max(prev - 0.1, 0.2));
-  };
-  
-  const handleZoomReset = () => {
-    fitContentToView();
-  };
   
   // MoodboardItem component - a simplified version
   const MoodboardItem = ({ item }) => {
@@ -445,21 +353,19 @@ const MemberDetailsModal = ({
           color: customLightText
         }}
       >
-        {/* Moodboard Cover Image Section */}
+        {/* Moodboard Cover Image Section - Carousel Background */}
         <Box 
           sx={{ 
             position: 'relative',
             height: '200px',
             width: '100%',
-            bgcolor: featuredMoodboard?.background_color || (darkMode ? alpha('#333333', 0.5) : alpha('#f5f5f5', 0.8)),
             overflow: 'hidden',
             borderBottom: '1px solid',
             borderColor: customBorder
           }}
-          ref={canvasRef}
         >
           {/* If there's no moodboard or it's loading, show a placeholder */}
-          {(loadingMoodboard || !featuredMoodboard) ? (
+          {(loadingMoodboard || !featuredMoodboard || moodboardItems.length === 0) ? (
             <Box 
               sx={{ 
                 display: 'flex', 
@@ -467,7 +373,8 @@ const MemberDetailsModal = ({
                 justifyContent: 'center', 
                 alignItems: 'center',
                 height: '100%',
-                width: '100%'
+                width: '100%',
+                bgcolor: darkMode ? alpha('#333333', 0.5) : alpha('#f5f5f5', 0.8)
               }}
             >
               {loadingMoodboard ? (
@@ -491,124 +398,166 @@ const MemberDetailsModal = ({
               )}
             </Box>
           ) : (
-            <>
-              {/* The interactive moodboard canvas */}
+            /* Infinite Sliding Carousel Background */
+            <Box 
+              sx={{ 
+                position: 'relative',
+                width: '100%',
+                height: '100%',
+                overflow: 'hidden',
+                bgcolor: featuredMoodboard?.background_color || (darkMode ? alpha('#333333', 0.5) : alpha('#f5f5f5', 0.8)),
+                '@keyframes infiniteSlide': {
+                  '0%': { transform: 'translateX(0)' },
+                  '100%': { transform: 'translateX(-50%)' }
+                }
+              }}
+            >
+              {/* Infinite sliding container */}
               <Box
                 sx={{
-                  width: '100%',
+                  display: 'flex',
+                  width: 'max-content',
                   height: '100%',
-                  position: 'relative'
+                  animation: `infiniteSlide ${moodboardItems.length * 8}s linear infinite`,
+                  '&:hover': {
+                    animationPlayState: 'paused'
+                  }
                 }}
               >
-                {/* Only show grid background if no background color is set */}
-                {!featuredMoodboard.background_color && (
-                  <Box 
-                    sx={{ 
-                      position: 'absolute',
-                      inset: '-5000px',
-                      width: '10000px',
-                      height: '10000px',
-                      backgroundImage: `linear-gradient(#dddddd 1px, transparent 1px), 
-                                      linear-gradient(90deg, #dddddd 1px, transparent 1px)`,
-                      backgroundSize: '20px 20px',
-                      zIndex: 0,
-                      pointerEvents: 'none'
-                    }} 
-                  />
-                )}
-                
-                {/* Canvas with transform for items */}
-                <Box
-                  sx={{
-                    position: 'absolute',
-                    width: '100%',
-                    height: '100%',
-                    transformOrigin: 'center center',
-                    transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
-                    transition: 'transform 0.2s ease'
-                  }}
-                >
-                  {/* Render all moodboard items */}
-                  {moodboardItems.map(item => (
-                    <MoodboardItem key={item.id} item={item} />
-                  ))}
-                </Box>
+                {/* First set of items */}
+                {moodboardItems.map((item) => (
+                  <Box
+                    key={`first-${item.id}`}
+                    sx={{
+                      height: '100%',
+                      flexShrink: 0,
+                      display: 'flex'
+                    }}
+                  >
+                    <Box 
+                      sx={{ 
+                        height: '100%',
+                        display: 'flex',
+                        alignItems: 'stretch',
+                        '& .MuiPaper-root': {
+                          borderRadius: '0 !important',
+                          boxShadow: 'none !important',
+                          margin: '0 !important',
+                          height: '100% !important',
+                          display: 'flex !important',
+                          alignItems: 'stretch !important',
+                          '&:hover': {
+                            transform: 'none !important',
+                            boxShadow: 'none !important'
+                          }
+                        },
+                        '& img, & video': {
+                          height: '100% !important',
+                          width: 'auto !important',
+                          objectFit: 'contain !important',
+                          maxWidth: 'none !important'
+                        }
+                      }}
+                    >
+                      <MoodboardItemSimple 
+                        item={item}
+                        style={{
+                          height: '100%',
+                          borderRadius: 0,
+                          boxShadow: 'none',
+                          border: 'none',
+                          margin: 0,
+                          padding: 0,
+                          display: 'flex',
+                          alignItems: 'stretch',
+                          '&:hover': {
+                            transform: 'none',
+                            boxShadow: 'none'
+                          }
+                        }}
+                      />
+                    </Box>
+                  </Box>
+                ))}
+                {/* Identical duplicate set for seamless infinite loop */}
+                {moodboardItems.map((item) => (
+                  <Box
+                    key={`second-${item.id}`}
+                    sx={{
+                      height: '100%',
+                      flexShrink: 0,
+                      display: 'flex'
+                    }}
+                  >
+                    <Box 
+                      sx={{ 
+                        height: '100%',
+                        display: 'flex',
+                        alignItems: 'stretch',
+                        '& .MuiPaper-root': {
+                          borderRadius: '0 !important',
+                          boxShadow: 'none !important',
+                          margin: '0 !important',
+                          height: '100% !important',
+                          display: 'flex !important',
+                          alignItems: 'stretch !important',
+                          '&:hover': {
+                            transform: 'none !important',
+                            boxShadow: 'none !important'
+                          }
+                        },
+                        '& img, & video': {
+                          height: '100% !important',
+                          width: 'auto !important',
+                          objectFit: 'contain !important',
+                          maxWidth: 'none !important'
+                        }
+                      }}
+                    >
+                      <MoodboardItemSimple 
+                        item={item}
+                        style={{
+                          height: '100%',
+                          borderRadius: 0,
+                          boxShadow: 'none',
+                          border: 'none',
+                          margin: 0,
+                          padding: 0,
+                          display: 'flex',
+                          alignItems: 'stretch',
+                          '&:hover': {
+                            transform: 'none',
+                            boxShadow: 'none'
+                          }
+                        }}
+                      />
+                    </Box>
+                  </Box>
+                ))}
               </Box>
               
-              {/* Zoom controls and moodboard title overlay */}
+              {/* Optional overlay for member name */}
               <Box
                 sx={{
                   position: 'absolute',
-                  bottom: 10,
-                  left: 0,
-                  right: 0,
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  px: 2,
-                  zIndex: 10
+                  bottom: 8,
+                  left: 8,
+                  bgcolor: darkMode ? alpha('#000000', 0.7) : alpha('#ffffff', 0.7),
+                  borderRadius: 1,
+                  px: 1,
+                  py: 0.5,
+                  zIndex: 5
                 }}
               >
-                <Box
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    bgcolor: darkMode ? alpha('#000000', 0.7) : alpha('#ffffff', 0.7),
-                    borderRadius: 1,
-                    px: 1,
-                    py: 0.5
-                  }}
+                <Typography
+                  variant="caption"
+                  fontWeight="medium"
+                  color={customLightText}
                 >
-                  <Typography
-                    variant="body2"
-                    fontWeight="medium"
-                    color={customLightText}
-                  >
-                    {featuredMoodboard.title}
-                  </Typography>
-                </Box>
-                
-                <Box 
-                  sx={{ 
-                    display: 'flex',
-                    gap: 0.5,
-                    bgcolor: darkMode ? alpha('#000000', 0.7) : alpha('#ffffff', 0.7),
-                    borderRadius: 1,
-                    p: 0.5
-                  }}
-                >
-                  <Tooltip title="Zoom Out">
-                    <IconButton onClick={handleZoomOut} size="small">
-                      <ZoomOutIcon fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                  
-                  <Tooltip title="Fit Content">
-                    <IconButton onClick={handleZoomReset} size="small" color="primary">
-                      <DashboardIcon fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                  
-                  <Tooltip title="Zoom In">
-                    <IconButton onClick={handleZoomIn} size="small">
-                      <ZoomInIcon fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                  
-                  <Tooltip title="Open Moodboard">
-                    <IconButton 
-                      component={Link}
-                      to={`/moodboard/${featuredMoodboard.id}`}
-                      size="small"
-                      color="primary"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <OpenInNewIcon fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                </Box>
+                  {member.full_name}'s Micro Conclav
+                </Typography>
               </Box>
-            </>
+            </Box>
           )}
         </Box>
         
