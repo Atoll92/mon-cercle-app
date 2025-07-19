@@ -1,34 +1,30 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Card,
-  CardContent,
   Box,
   Typography,
   Button,
   TextField,
   Alert,
-  IconButton,
-  Tooltip,
-  Paper
+  IconButton
 } from '@mui/material';
 import Spinner from './Spinner';
+import WidgetHeader from './shared/WidgetHeader';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Cancel';
 import PublicIcon from '@mui/icons-material/Public';
 import ColorLensIcon from '@mui/icons-material/ColorLens';
-import { getUserMoodboard, updateMoodboard } from '../api/moodboards';
-import { supabase } from '../supabaseclient';
-import { useAuth } from '../context/authcontext';
+import { getUserMoodboard, updateMoodboard, getUserMoodboardItems } from '../api/moodboards';
 import { useProfile } from '../context/profileContext';
+import MoodboardItemSimple from './Moodboard/MoodboardItemSimple';
 
 const MicroConclavWidget = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
   const { activeProfile, userProfiles, isLoadingProfiles } = useProfile();
   const [moodboard, setMoodboard] = useState(null);
+  const [moodboardItems, setMoodboardItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -51,6 +47,7 @@ const MicroConclavWidget = () => {
     }
   }, [profileId, userProfiles, isLoadingProfiles]);
 
+
   const fetchMoodboard = async () => {
     try {
       setLoading(true);
@@ -61,6 +58,10 @@ const MicroConclavWidget = () => {
         description: data.description || 'Welcome to my personal space',
         background_color: data.background_color || '#f5f5f5'
       });
+
+      // Fetch moodboard items for the carousel
+      const { items } = await getUserMoodboardItems(profileId, 0, 10);
+      setMoodboardItems(items || []);
     } catch (error) {
       console.error('Error fetching moodboard:', error);
       setError('Failed to load your micro conclav');
@@ -97,7 +98,13 @@ const MicroConclavWidget = () => {
 
   if (loading || isLoadingProfiles) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
+      <Box sx={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center',
+        p: 3, 
+        minHeight: 400
+      }}>
         <Spinner size={60} />
       </Box>
     );
@@ -109,31 +116,23 @@ const MicroConclavWidget = () => {
     : `/micro-conclav/${profileId}`;
 
   return (
-    <Card sx={{ height: '100%', width: '100%', display: 'flex', flexDirection: 'column' }}>
-      <CardContent sx={{ p: 0, flexGrow: 1 }}>
-        {/* Header */}
-        <Box 
-          sx={{ 
-            p: 1.5, 
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            borderBottom: '1px solid',
-            borderColor: 'divider',
-            bgcolor: 'rgba(25, 118, 210, 0.05)'
-          }}
-        >
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <DashboardIcon color="primary" sx={{ mr: 1.5 }} />
-            <Typography variant="subtitle1" fontWeight="medium">
-              My Micro Conclav
-            </Typography>
-            <Tooltip title="Always public">
-              <PublicIcon sx={{ ml: 1, fontSize: 20, color: 'text.secondary' }} />
-            </Tooltip>
-          </Box>
-          
-          {!editing ? (
+    <Box sx={{ 
+      height: 400,
+      width: '100%', 
+      display: 'flex', 
+      flexDirection: 'column', 
+      overflow: 'hidden',
+      bgcolor: 'background.paper',
+      borderRadius: 2,
+      boxShadow: '0 4px 12px rgba(0,0,0,0.08)'
+    }}>
+      <WidgetHeader
+        icon={<DashboardIcon color="primary" />}
+        title="My Micro Conclav"
+        viewAllLink={microConclavUrl}
+        viewAllText="View Page"
+        action={
+          !editing ? (
             <IconButton 
               size="small" 
               onClick={() => setEditing(true)}
@@ -142,7 +141,7 @@ const MicroConclavWidget = () => {
               <EditIcon />
             </IconButton>
           ) : (
-            <Box>
+            <Box sx={{ display: 'flex', gap: 0.5 }}>
               <IconButton 
                 size="small" 
                 onClick={handleSave}
@@ -159,19 +158,38 @@ const MicroConclavWidget = () => {
                 <CancelIcon />
               </IconButton>
             </Box>
-          )}
-        </Box>
+          )
+        }
+      />
 
-        {/* Content */}
-        <Box sx={{ p: 2 }}>
-          {error && (
-            <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
-              {error}
-            </Alert>
-          )}
-
-          {editing ? (
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+      {/* Full-Screen Content Area */}
+      <Box sx={{ flexGrow: 1, position: 'relative', overflow: 'hidden' }}>
+        {loading || isLoadingProfiles ? (
+          <Box sx={{ 
+            display: 'flex', 
+            justifyContent: 'center', 
+            alignItems: 'center', 
+            height: '100%',
+            bgcolor: moodboard?.background_color || '#f5f5f5'
+          }}>
+            <Spinner size={60} />
+          </Box>
+        ) : editing ? (
+          /* Edit Mode - Full Height */
+          <Box sx={{ 
+            p: 2, 
+            height: '100%', 
+            display: 'flex', 
+            flexDirection: 'column',
+            justifyContent: 'center',
+            bgcolor: 'background.paper'
+          }}>
+            {error && (
+              <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
+                {error}
+              </Alert>
+            )}
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, maxWidth: 400, mx: 'auto' }}>
               <TextField
                 label="Title"
                 value={editForm.title}
@@ -197,64 +215,200 @@ const MicroConclavWidget = () => {
                   fullWidth
                   size="small"
                   type="color"
-                  InputProps={{
-                    sx: { cursor: 'pointer' }
+                  slotProps={{
+                    input: {
+                      sx: { cursor: 'pointer' }
+                    }
                   }}
                 />
               </Box>
             </Box>
-          ) : (
-            <Box>
-              {moodboard && (
-                <Paper 
-                  elevation={0}
-                  sx={{ 
-                    p: 2, 
-                    bgcolor: moodboard.background_color || '#f5f5f5',
-                    borderRadius: 2,
-                    mb: 2
+          </Box>
+        ) : moodboardItems.length > 0 ? (
+          /* Infinite Sliding Carousel with CSS Animation */
+          <Box 
+            sx={{ 
+              position: 'relative',
+              width: '100%',
+              height: '100%',
+              overflow: 'hidden',
+              bgcolor: moodboard?.background_color || '#f5f5f5',
+              '@keyframes infiniteSlide': {
+                '0%': { transform: 'translateX(0)' },
+                '100%': { transform: 'translateX(-50%)' }
+              }
+            }}
+          >
+            {/* Infinite sliding container */}
+            <Box
+              sx={{
+                display: 'flex',
+                width: 'max-content',
+                height: '100%',
+                animation: `infiniteSlide ${moodboardItems.length * 8}s linear infinite`,
+                '&:hover': {
+                  animationPlayState: 'paused'
+                }
+              }}
+            >
+              {/* First set of items */}
+              {moodboardItems.map((item) => (
+                <Box
+                  key={`first-${item.id}`}
+                  sx={{
+                    height: '100%',
+                    flexShrink: 0,
+                    display: 'flex'
                   }}
                 >
-                  <Typography variant="h6" gutterBottom>
-                    {moodboard.title}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {moodboard.description}
-                  </Typography>
-                </Paper>
-              )}
-
-              <Box sx={{ display: 'flex', gap: 1, mt: 2 }}>
-                <Button
-                  variant="contained"
-                  fullWidth
-                  onClick={() => navigate(microConclavUrl)}
-                  startIcon={<PublicIcon />}
+                  <Box 
+                    sx={{ 
+                      height: '100%',
+                      display: 'flex',
+                      alignItems: 'stretch',
+                      '& .MuiPaper-root': {
+                        borderRadius: '0 !important',
+                        boxShadow: 'none !important',
+                        margin: '0 !important',
+                        height: '100% !important',
+                        display: 'flex !important',
+                        alignItems: 'stretch !important',
+                        '&:hover': {
+                          transform: 'none !important',
+                          boxShadow: 'none !important'
+                        }
+                      },
+                      '& img, & video': {
+                        height: '100% !important',
+                        width: 'auto !important',
+                        objectFit: 'contain !important',
+                        maxWidth: 'none !important'
+                      }
+                    }}
+                  >
+                    <MoodboardItemSimple 
+                      item={item}
+                      style={{
+                        height: '100%',
+                        borderRadius: 0,
+                        boxShadow: 'none',
+                        border: 'none',
+                        margin: 0,
+                        padding: 0,
+                        display: 'flex',
+                        alignItems: 'stretch',
+                        '&:hover': {
+                          transform: 'none',
+                          boxShadow: 'none'
+                        }
+                      }}
+                    />
+                  </Box>
+                </Box>
+              ))}
+              {/* Identical duplicate set for seamless infinite loop */}
+              {moodboardItems.map((item) => (
+                <Box
+                  key={`second-${item.id}`}
+                  sx={{
+                    height: '100%',
+                    flexShrink: 0,
+                    display: 'flex'
+                  }}
                 >
-                  View My Page
-                </Button>
-                <Button
-                  variant="outlined"
-                  fullWidth
-                  onClick={() => navigate(`/moodboard/${moodboard.id}`)}
-                  disabled={!moodboard}
-                >
-                  Edit Content
-                </Button>
-              </Box>
-
-              <Typography 
-                variant="caption" 
-                color="text.secondary" 
-                sx={{ display: 'block', mt: 2, textAlign: 'center' }}
-              >
-                Your public profile at: {window.location.origin}{microConclavUrl}
-              </Typography>
+                  <Box 
+                    sx={{ 
+                      height: '100%',
+                      display: 'flex',
+                      alignItems: 'stretch',
+                      '& .MuiPaper-root': {
+                        borderRadius: '0 !important',
+                        boxShadow: 'none !important',
+                        margin: '0 !important',
+                        height: '100% !important',
+                        display: 'flex !important',
+                        alignItems: 'stretch !important',
+                        '&:hover': {
+                          transform: 'none !important',
+                          boxShadow: 'none !important'
+                        }
+                      },
+                      '& img, & video': {
+                        height: '100% !important',
+                        width: 'auto !important',
+                        objectFit: 'contain !important',
+                        maxWidth: 'none !important'
+                      }
+                    }}
+                  >
+                    <MoodboardItemSimple 
+                      item={item}
+                      style={{
+                        height: '100%',
+                        borderRadius: 0,
+                        boxShadow: 'none',
+                        border: 'none',
+                        margin: 0,
+                        padding: 0,
+                        display: 'flex',
+                        alignItems: 'stretch',
+                        '&:hover': {
+                          transform: 'none',
+                          boxShadow: 'none'
+                        }
+                      }}
+                    />
+                  </Box>
+                </Box>
+              ))}
             </Box>
-          )}
-        </Box>
-      </CardContent>
-    </Card>
+          </Box>
+        ) : (
+          /* Empty State - Full Height */
+          <Box sx={{ 
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            height: '100%',
+            p: 3,
+            textAlign: 'center',
+            bgcolor: moodboard?.background_color || '#f5f5f5'
+          }}>
+            {moodboard && (
+              <>
+                <Typography variant="h6" gutterBottom>
+                  {moodboard.title}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                  {moodboard.description}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 3, opacity: 0.7 }}>
+                  Add content to see it previewed here
+                </Typography>
+              </>
+            )}
+            
+            <Box sx={{ display: 'flex', gap: 1 }}>
+              <Button
+                variant="contained"
+                onClick={() => navigate(microConclavUrl)}
+                startIcon={<PublicIcon />}
+              >
+                View My Page
+              </Button>
+              <Button
+                variant="outlined"
+                onClick={() => navigate(`/moodboard/${moodboard?.id}`)}
+                disabled={!moodboard}
+              >
+                Add Content
+              </Button>
+            </Box>
+          </Box>
+        )}
+      </Box>
+    </Box>
   );
 };
 

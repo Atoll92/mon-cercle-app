@@ -1582,11 +1582,16 @@ function DashboardPage() {
                     </>
                   )}
                   
-                  {/* Micro Conclav Widget - Full width row */}
-                  <Grid item xs={12} sx={{ width: '100%' }}>
-                    <MicroConclavWidget />
-                  </Grid>
-            </FlexFlowBox>
+              </FlexFlowBox>
+              
+              {/* Micro Conclav Widget - Always visible, full width row */}
+              <Box sx={{ 
+                mt: 2, 
+                minHeight: 400, 
+                width: '100%'
+              }}>
+                <MicroConclavWidget />
+              </Box>
 
           {/* Test Notification System (temporary) */}
           {process.env.NODE_ENV === 'development' && (
