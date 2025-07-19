@@ -157,7 +157,15 @@ function App() {
               <DirectMessagesProvider>
                 <Box className="App" sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
             {/* Pass the network name to the header */}
-            {window.location.pathname !== "/" && window.location.pathname !== "/pricing" && window.location.pathname !== "/terms" && window.location.pathname !== "/old" && window.location.pathname !== "/profiles/select" && window.location.pathname !== "/login" && !window.location.pathname.startsWith("/micro-conclav/") && (
+            {window.location.pathname !== "/" && 
+             window.location.pathname !== "/pricing" && 
+             window.location.pathname !== "/terms" && 
+             window.location.pathname !== "/old" && 
+             window.location.pathname !== "/profiles/select" && 
+             window.location.pathname !== "/login" && 
+             !window.location.pathname.startsWith("/micro-conclav/") &&
+             window.location.pathname !== "/network" &&
+             !window.location.pathname.match(/^\/network\/[^\/]+$/) && (
               <NetworkHeader/>
             )}
             <Box component="main" sx={{ 

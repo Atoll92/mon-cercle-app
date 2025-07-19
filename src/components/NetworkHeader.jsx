@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Box, Typography, Skeleton, Badge, Tooltip, alpha, Divider } from '@mui/material';
+import { Box, Typography, Skeleton, Badge, Tooltip, alpha, Divider, Paper } from '@mui/material';
 import { 
   Logout as LogoutIcon, 
   Person as PersonIcon,
@@ -16,6 +16,7 @@ import { fetchNetworkDetails } from '../api/networks';
 import { logout } from '../api/auth';
 import { useProfile } from '../context/profileContext';
 import { useNetworkRefresh } from '../hooks/useNetworkRefresh';
+import { useNetwork } from '../context/networkContext';
 
 // Simple badge component for unread messages
 const MessageBadge = React.memo(() => {
@@ -58,6 +59,7 @@ const NetworkHeader = () => {
   const [networkInfo, setNetworkInfo] = useState(null);
   const [loading, setLoading] = useState(false);
   const { hasMultipleProfiles, activeProfile } = useProfile();
+  
 
   function getNetworkIdFromUrl(pathname) {
     const urlParts = pathname.split('/');
@@ -104,6 +106,7 @@ const NetworkHeader = () => {
   // Subscribe to network refresh events
   useNetworkRefresh(networkInfo?.id, getNetworkInfo);
   
+  
   if (!networkInfo) return null;
   
   const displayedNetworkName = networkInfo?.name;
@@ -144,23 +147,24 @@ const NetworkHeader = () => {
   };
   
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        flexWrap: 'wrap',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: 2,
-        minHeight: '80px', // Set a consistent minimum height
-        backgroundColor: darkMode ? '#1e1e1e' : '#ffffff', // Apply dark/light mode
-        borderBottom: `1px solid ${darkMode ? '#333333' : '#eeeeee'}`,
-        boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-        color: darkMode ? '#ffffff' : 'inherit', // Apply dark/light mode to text color
-        position: 'relative',
-        zIndex: 1200, // Ensure header is above other content
-        gap: { xs: 1, sm: 2 }
-      }}
-    >
+    <>
+      <Box
+        sx={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          alignItems: 'stretch', // Changed from 'center' to 'stretch' to allow full height
+          justifyContent: 'space-between',
+          padding: '0,2',
+          minHeight: '80px', // Set a consistent minimum height
+          backgroundColor: darkMode ? '#1e1e1e' : '#ffffff',
+          color: darkMode ? '#ffffff' : 'inherit',
+          borderBottom: `1px solid ${darkMode ? '#333333' : '#eeeeee'}`,
+          boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+          position: 'relative',
+          zIndex: 1200, // Ensure header is above other content
+          gap: { xs: 1, sm: 2 }
+        }}
+      >
       {/* Logo Block */}
       <Box sx={{ 
         display: 'flex', 
@@ -168,7 +172,8 @@ const NetworkHeader = () => {
         justifyContent: { xs: 'center', sm: 'flex-start' },
         flexShrink: 0,
         order: { xs: 1, sm: 1 },
-        minWidth: { xs: '100%', sm: 'auto' }
+        minWidth: { xs: '100%', sm: 'auto' },
+        alignSelf: 'center' // Override stretch for logo block
       }}>
         {displayedLogoUrl ? (
           <Link to={user && networkId ? '/network' : (networkId ? `/network/${networkId}` : '/dashboard')}>
@@ -193,7 +198,8 @@ const NetworkHeader = () => {
         justifyContent: { xs: 'center', sm: 'flex-start' },
         order: { xs: 2, sm: 2 },
         minWidth: { xs: '100%', sm: 'auto' },
-        paddingX: { xs: 0, sm: 2 }
+        paddingX: { xs: 0, sm: 2 },
+        alignSelf: 'center' // Override stretch for network name block
       }}>
         {loading ? (
           <Skeleton width={150} height={40} />
@@ -204,7 +210,7 @@ const NetworkHeader = () => {
             to={user && networkId ? '/network' : (networkId ? `/network/${networkId}` : undefined)}
             sx={{
               fontWeight: displayedLogoUrl ? 700 : 900,
-              color: darkMode ? '#ffffff' : '#333333', // Apply dark/light mode
+              color: darkMode ? '#ffffff' : '#333333',
               textDecoration: 'none',
               textAlign: { xs: 'center', sm: 'left' },
               '&:hover': {
@@ -222,11 +228,12 @@ const NetworkHeader = () => {
         <Box sx={{ 
           display: 'flex', 
           alignItems: 'center',
-          order: { xs: 3, sm: 3 },
+          order: { xs: 4, sm: 4 },
           justifyContent: { xs: 'center', sm: 'flex-end' },
           minWidth: { xs: '100%', sm: 'auto' },
           flexWrap: 'wrap',
-          gap: 0.5
+          gap: 0.5,
+          alignSelf: 'center' // Override stretch for buttons block
         }}>
           {/* Profile */}
           <Box 
@@ -355,7 +362,9 @@ const NetworkHeader = () => {
           </Tooltip>
         </Box>
       )}
-    </Box>
+      </Box>
+      
+    </>
   );
 };
 

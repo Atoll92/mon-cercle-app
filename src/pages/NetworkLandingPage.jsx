@@ -8,6 +8,7 @@ import { useApp } from '../context/appContext';
 import { supabase } from '../supabaseclient';
 import { useFadeIn } from '../hooks/useAnimation';
 import { GridSkeleton } from '../components/LoadingSkeleton';
+import NetworkHeader from '../components/NetworkHeader';
 import ArticleIcon from '@mui/icons-material/Article';
 import ChatIcon from '@mui/icons-material/Chat';
 import TimelineIcon from '@mui/icons-material/Timeline';
@@ -23,15 +24,11 @@ import {
   Alert,
   Tabs,
   Tab,
-  TextField,
-  IconButton,
   alpha,
   useTheme as useMuiTheme
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
-  AdminPanelSettings as AdminIcon,
-  ContentCopy as ContentCopyIcon,
   Groups as GroupsIcon,
   Info as InfoIcon,
   Event as EventIcon,
@@ -119,8 +116,6 @@ function NetworkLandingPage() {
   
   // Initialize activeTab state (will be updated based on URL params after visibleTabs is computed)
   const [activeTab, setActiveTab] = useState(0);
-  const [copied, setCopied] = useState(false);
-  const [showShareLink, setShowShareLink] = useState(false);
   const [selectedMember, setSelectedMember] = useState(null);
   const [showMemberModal, setShowMemberModal] = useState(false);
   const [userParticipations, setUserParticipations] = useState([]);
@@ -222,9 +217,6 @@ function NetworkLandingPage() {
     }
   }, [searchParams, getTabIndexFromId, activeTab]);
   
-  // Generate shareable link
-  const shareableLink = network ? `${window.location.origin}/network/${network.id}` : '';
-  
   // Use the global darkMode state for members tab
   const membersTabDarkMode = darkMode;
   
@@ -239,13 +231,6 @@ function NetworkLandingPage() {
   
   // Get the current tab ID based on the active tab index
   const currentTabId = visibleTabs[activeTab]?.id || 'members';
-  
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(shareableLink).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    });
-  };
   
   const isUserMember = user && network && userRole !== null;
   
@@ -656,198 +641,61 @@ function NetworkLandingPage() {
   }
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-      <Paper 
-        ref={headerRef}
-        sx={{ 
-          p: 3, 
-          mb: 3,
-          borderRadius: 2,
+    <>
+      {/* Network Header */}
+      <NetworkHeader />
+      
+      {/* Full-width Background Header */}
+      {network && (
+        <Box sx={{
+          width: '100%',
+          minHeight: '200px',
           backgroundImage: network.background_image_url 
             ? `url(${network.background_image_url})` 
-            : 'linear-gradient(135deg, #4568dc 0%, #b06ab3 100%)', // Default gradient if no image
+            : 'linear-gradient(135deg, #4568dc 0%, #b06ab3 100%)',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
           position: 'relative',
-          boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
-          overflow: 'hidden'
-        }}
-      >
-        {/* Dark overlay for better text readability */}
-        <Box 
-          sx={{ 
+          overflow: 'hidden',
+          '&::before': {
+            content: '""',
             position: 'absolute',
             top: 0,
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.2)',
+            backgroundColor: 'rgba(0, 0, 0, 0.3)',
             zIndex: 1
-          }} 
-        />
-        
-        {/* Content with increased z-index to be above the overlay */}
-        <Box sx={{ position: 'relative', zIndex: 2 }}>
-          {/* Top row with back button */}
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-            <Button
-              component={Link}
-              to="/dashboard"
-              startIcon={<ArrowBackIcon />}
-              sx={{ 
-                bgcolor: 'rgba(255, 255, 255, 0.2)', 
-                color: '#ffffff',
-                '&:hover': {
-                  bgcolor: 'rgba(255, 255, 255, 0.3)',
-                }
-              }}
-            >
-              Dashboard
-            </Button>
-          </Box>
-          
-          {/* Title and action buttons row */}
-          <Box sx={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'space-between', 
-            flexWrap: 'wrap', 
-            gap: 2,
-            width: '100%'
-          }}>
-            <Typography 
-              variant="h4" 
-              component="h1" 
-              sx={{ 
-                color: '#ffffff',
-                textShadow: '1px 1px 3px rgba(0,0,0,0.7)',
-                mb: 0,
-                flexGrow: { xs: 1, sm: 0 }
-              }}
-            >
-              {network.name}
-            </Typography>
-            
-            {/* Action buttons aligned together */}
-            <Box sx={{ 
-              display: 'flex', 
-              gap: 1, 
-              alignItems: 'center',
-              flexWrap: 'wrap'
-            }}>
-              {isUserAdmin && (
-                <WithOnboardingHighlight 
-                  shouldHighlight={isUserAdmin && memberCount <= 2}
-                  highlightType="glow"
-                >
-                  <Button
-                    component={Link}
-                    to={`/admin`}
-                    startIcon={<AdminIcon />}
-                    color="primary"
-                    variant="contained"
-                    sx={{ 
-                      bgcolor: 'rgba(255, 255, 255, 0.85)',
-                      color: 'primary.dark',
-                      fontWeight: 'medium',
-                      '&:hover': {
-                        bgcolor: 'rgba(255, 255, 255, 0.95)',
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
-                      },
-                      backdropFilter: 'blur(8px)',
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                      transition: 'all 0.2s ease-in-out'
-                    }}
-                  >
-                    Admin Panel
-                  </Button>
-                </WithOnboardingHighlight>
-              )}
-              
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={() => setShowShareLink(!showShareLink)}
-                startIcon={<ContentCopyIcon />}
-                sx={{ 
-                  bgcolor: 'rgba(255, 255, 255, 0.85)',
-                  color: 'primary.dark',
-                  fontWeight: 'medium',
-                  '&:hover': {
-                    bgcolor: 'rgba(255, 255, 255, 0.95)',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
-                  },
-                  backdropFilter: 'blur(8px)',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                  transition: 'all 0.2s ease-in-out'
-                }}
-              >
-                Share Network
-              </Button>
-            </Box>
-          </Box>
-          
-          {showShareLink && (
-            <Box sx={{ mt: 2, mb: 3, display: 'flex', alignItems: 'center' }}>
-              <TextField
-                value={shareableLink}
-                size="small"
-                fullWidth
-                variant="outlined"
-                slotProps={{
-                  input: {
-                    readOnly: true
-                  }
-                }}
-                sx={{
-                  '& .MuiInputBase-root': {
-                    bgcolor: 'rgba(255,255,255,0.9)',
-                    '&:hover': {
-                      bgcolor: 'rgba(255,255,255,1)',
-                    }
-                  }
-                }}
-              />
-              <IconButton 
-                onClick={copyToClipboard} 
-                color="primary"
-                sx={{ 
-                  bgcolor: '#ffffff', 
-                  ml: 1,
-                  '&:hover': {
-                    bgcolor: 'rgba(255,255,255,0.9)',
-                  }
-                }}
-              >
-                <ContentCopyIcon />
-              </IconButton>
-              {copied && (
-                <Typography variant="caption" sx={{ ml: 1, color: '#ffffff', bgcolor: 'success.main', px: 1, py: 0.5, borderRadius: 1 }}>
-                  Copied!
-                </Typography>
-              )}
-            </Box>
-          )}
-          
+          },
+          '& > *': {
+            position: 'relative',
+            zIndex: 2
+          }
+        }}>
           {network.description && (
-            <Box sx={{ mt: 3, width: '100%' }}>
-              <Typography 
-                variant="body1" 
-                sx={{ 
-                  color: '#ffffff',
-                  textShadow: '0px 1px 2px rgba(0,0,0,0.6)',
-                  bgcolor: 'rgba(0,0,0,0.3)',
-                  p: 2,
-                  borderRadius: 1,
-                  width: '100%'
-                }}
-              >
-                {network.description}
-              </Typography>
-            </Box>
+            <Typography 
+              variant="h5" 
+              sx={{ 
+                color: '#ffffff',
+                textShadow: '0px 2px 4px rgba(0,0,0,0.8)',
+                fontSize: { xs: '1.2rem', sm: '1.5rem' },
+                lineHeight: 1.4,
+                maxWidth: '800px',
+                textAlign: 'center',
+                px: 3,
+                fontWeight: 500
+              }}
+            >
+              {network.description}
+            </Typography>
           )}
         </Box>
-      </Paper>
+      )}
+      
+      <Container maxWidth="lg" sx={{ mt: 2, mb: 4 }}>
       
       <Paper 
         ref={contentRef}
@@ -1108,7 +956,8 @@ function NetworkLandingPage() {
           </Button>
         </Box>
       )}
-    </Container>
+      </Container>
+    </>
   );
 }
 
