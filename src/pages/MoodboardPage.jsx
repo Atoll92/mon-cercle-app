@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/authcontext';
 import { useProfile } from '../context/profileContext';
+import NetworkHeader from '../components/NetworkHeader';
 import { supabase } from '../supabaseclient';
 import LinkPreview from '../components/LinkPreview';
 import MediaUpload from '../components/MediaUpload';
@@ -1654,10 +1655,13 @@ const handleUpdateItem = async (updatedItem) => {
   
   return (
     <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden', position: 'relative' }}>
-      {/* Toolbar */}
+      {/* NetworkHeader */}
+      <NetworkHeader />
+      {/* Toolbar - positioned below NetworkHeader */}
       <Box 
         sx={{ 
           p: 1, 
+          mt: '80px', // Account for NetworkHeader height
           display: 'flex', 
           justifyContent: 'space-between',
           bgcolor: alpha(theme.palette.primary.main, 0.05),
@@ -1800,7 +1804,7 @@ const handleUpdateItem = async (updatedItem) => {
             severity="error" 
             sx={{ 
               position: 'absolute', 
-              top: '4rem', 
+              top: 'calc(80px + 4rem)', // Account for NetworkHeader
               right: '1rem', 
               zIndex: 1100,
               maxWidth: '80%',
@@ -1838,7 +1842,7 @@ const handleUpdateItem = async (updatedItem) => {
       <Box
         sx={{ 
           position: 'absolute',
-          top: '4rem',
+          top: 'calc(80px + 4rem)', // Account for NetworkHeader + toolbar
           left: '1rem',
           zIndex: 1000,
           bgcolor: isEditable ? alpha(theme.palette.success.light, 0.9) : alpha(theme.palette.warning.light, 0.9),
@@ -1876,7 +1880,9 @@ const handleUpdateItem = async (updatedItem) => {
     position: 'relative', 
     overflow: 'hidden',
     bgcolor: moodboard.background_color || '#f5f5f5', // Use background_color from database
-    cursor: isDraggingCanvas ? 'grabbing' : 'default'
+    cursor: isDraggingCanvas ? 'grabbing' : 'default',
+    // Ensure content area starts below the NetworkHeader and toolbar
+    minHeight: 'calc(100vh - 135px)' // Account for NetworkHeader (80px) + toolbar (~55px)
   }}
   onClick={handleCanvasClick}
   onMouseDown={handleCanvasMouseDown}

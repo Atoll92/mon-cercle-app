@@ -28,6 +28,7 @@ import MoodboardItemDisplay from '../components/Moodboard/MoodboardItemDisplay';
 import MoodboardItemGrid from '../components/Moodboard/MoodboardItemGrid';
 import { useAuth } from '../context/authcontext';
 import { useProfile } from '../context/profileContext';
+import NetworkHeader from '../components/NetworkHeader';
 
 const MicroConclavPage = () => {
   const { profileId, username } = useParams();
@@ -259,10 +260,13 @@ const MicroConclavPage = () => {
 
   return (
     <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden', position: 'relative' }}>
-      {/* Toolbar */}
+      {/* NetworkHeader */}
+      <NetworkHeader />
+      {/* Toolbar - positioned below NetworkHeader */}
       <Box 
         sx={{ 
           p: 1, 
+          mt: '80px', // Account for NetworkHeader height
           display: 'flex', 
           justifyContent: 'space-between',
           bgcolor: alpha(theme.palette.primary.main, 0.05),
@@ -342,7 +346,7 @@ const MicroConclavPage = () => {
         elevation={4}
         sx={{
           position: 'absolute',
-          top: '4rem',
+          top: 'calc(80px + 4rem)', // Account for NetworkHeader + toolbar height
           right: '1rem',
           p: 2,
           borderRadius: 2,
@@ -389,6 +393,8 @@ const MicroConclavPage = () => {
           position: 'relative',
           overflow: viewMode === 'grid' ? 'auto' : 'hidden',
           bgcolor: viewMode === 'grid' ? (moodboardBackgroundColor || '#f5f5f5') : 'transparent',
+          // Ensure content starts below the header elements
+          minHeight: 'calc(100vh - 135px)',
         }}
       >
         {viewMode === 'grid' ? (
@@ -397,8 +403,9 @@ const MicroConclavPage = () => {
             sx={{
               maxWidth: 1200,
               margin: '0 auto',
-              padding: '80px 20px',
-              minHeight: '100vh',
+              padding: '20px',
+              paddingTop: '100px', // Extra space for user info card
+              minHeight: 'calc(100vh - 135px)', // Account for header heights
             }}
           >
             <Box
@@ -431,7 +438,7 @@ const MicroConclavPage = () => {
             onCanvasMouseUp={handleCanvasMouseUp}
             onCanvasMouseLeave={handleCanvasMouseUp}
             showGrid={!moodboardBackgroundColor}
-            height="calc(100vh - 55px)"
+            height="calc(100vh - 135px)" // Account for NetworkHeader (80px) + toolbar (55px)
           >
             {/* Render items from primary moodboard only */}
             {primaryMoodboardItems.map((item, index) => {
