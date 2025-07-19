@@ -667,7 +667,7 @@ function NetworkLandingPage() {
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.3)',
+            backgroundColor: darkMode ? 'rgba(0, 0, 0, 0.3)' : 'rgba(255, 255, 255, 0.7)',
             zIndex: 1
           },
           '& > *': {
@@ -679,8 +679,8 @@ function NetworkLandingPage() {
             <Typography 
               variant="h5" 
               sx={{ 
-                color: '#ffffff',
-                textShadow: '0px 2px 4px rgba(0,0,0,0.8)',
+                color: darkMode ? '#ffffff' : '#333333',
+                textShadow: darkMode ? '0px 2px 4px rgba(0,0,0,0.8)' : '0px 2px 4px rgba(255,255,255,0.8)',
                 fontSize: { xs: '1rem', sm: '1.2rem' },
                 lineHeight: 1.4,
                 maxWidth: '800px',
