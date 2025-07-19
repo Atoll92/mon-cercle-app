@@ -1601,7 +1601,8 @@ const handleUpdateItem = async (updatedItem) => {
           flexDirection: 'column',
           alignItems: 'center', 
           justifyContent: 'center', 
-          height: '80vh' 
+          height: '100vh',
+          paddingTop: '80px' // Account for fixed header
         }}
       >
         <Spinner size={120} color="primary" />
@@ -1614,7 +1615,10 @@ const handleUpdateItem = async (updatedItem) => {
   
   if (error && !moodboard) {
     return (
-      <Container maxWidth="md" sx={{ mt: 4 }}>
+      <Container maxWidth="md" sx={{ 
+        paddingTop: '80px', // Account for fixed header
+        mt: 0 
+      }}>
         <Alert severity="error" sx={{ mb: 3 }}>
           {error}
         </Alert>
@@ -1633,7 +1637,10 @@ const handleUpdateItem = async (updatedItem) => {
   
   if (!moodboard) {
     return (
-      <Container maxWidth="md" sx={{ mt: 4 }}>
+      <Container maxWidth="md" sx={{ 
+        paddingTop: '80px', // Account for fixed header
+        mt: 0 
+      }}>
         <Paper sx={{ p: 3, textAlign: 'center' }}>
           <Typography variant="h5" component="h1" gutterBottom>
             Moodboard Not Found
@@ -1657,11 +1664,15 @@ const handleUpdateItem = async (updatedItem) => {
     <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden', position: 'relative' }}>
       {/* NetworkHeader */}
       <NetworkHeader />
-      {/* Toolbar - positioned below NetworkHeader */}
+      {/* Toolbar - positioned directly below NetworkHeader */}
       <Box 
         sx={{ 
           p: 1, 
-          mt: '80px', // Account for NetworkHeader height
+          position: 'fixed',
+          top: '80px', // Position directly below NetworkHeader
+          left: 0,
+          right: 0,
+          zIndex: 1000,
           display: 'flex', 
           justifyContent: 'space-between',
           bgcolor: alpha(theme.palette.primary.main, 0.05),
@@ -1803,8 +1814,8 @@ const handleUpdateItem = async (updatedItem) => {
           <Alert 
             severity="error" 
             sx={{ 
-              position: 'absolute', 
-              top: 'calc(80px + 4rem)', // Account for NetworkHeader
+              position: 'fixed', 
+              top: 'calc(80px + 56px + 1rem)', // Account for NetworkHeader + fixed toolbar
               right: '1rem', 
               zIndex: 1100,
               maxWidth: '80%',
@@ -1841,10 +1852,10 @@ const handleUpdateItem = async (updatedItem) => {
       {/* Permission indicator */}
       <Box
         sx={{ 
-          position: 'absolute',
-          top: 'calc(80px + 4rem)', // Account for NetworkHeader + toolbar
+          position: 'fixed',
+          top: 'calc(80px + 56px + 1rem)', // Account for NetworkHeader + fixed toolbar
           left: '1rem',
-          zIndex: 1000,
+          zIndex: 1001,
           bgcolor: isEditable ? alpha(theme.palette.success.light, 0.9) : alpha(theme.palette.warning.light, 0.9),
           color: 'white',
           borderRadius: 1,
@@ -1881,8 +1892,8 @@ const handleUpdateItem = async (updatedItem) => {
     overflow: 'hidden',
     bgcolor: moodboard.background_color || '#f5f5f5', // Use background_color from database
     cursor: isDraggingCanvas ? 'grabbing' : 'default',
-    // Ensure content area starts below the NetworkHeader and toolbar
-    minHeight: 'calc(100vh - 135px)' // Account for NetworkHeader (80px) + toolbar (~55px)
+    paddingTop: 'calc(80px + 56px)', // Account for fixed NetworkHeader + toolbar
+    minHeight: '100vh'
   }}
   onClick={handleCanvasClick}
   onMouseDown={handleCanvasMouseDown}

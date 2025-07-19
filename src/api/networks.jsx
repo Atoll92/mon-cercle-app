@@ -645,23 +645,34 @@ export const toggleMemberAdmin = async (memberId, currentRole) => {
 
 export const removeMemberFromNetwork = async (memberId) => {
   try {
-    // In the multiple profiles system, removing from network means deleting the profile
-    const { error } = await supabase
-      .from('profiles')
-      .delete()
-      .eq('id', memberId);
-      
-    if (error) throw error;
+    console.log('Starting member removal process for profile:', memberId);
     
-    return { 
-      success: true, 
-      message: 'Member removed from network.'
-    };
+    // Use the database cascade delete function to handle all foreign key constraints
+    // This bypasses RLS policies and handles direct messages properly
+    const { data: result, error: sqlError } = await supabase.rpc('delete_profile_cascade', {
+      profile_id_param: memberId
+    });
+    
+    if (sqlError) {
+      console.error('SQL cascade delete failed:', sqlError);
+      throw new Error(`Failed to remove member: ${sqlError.message}`);
+    }
+    
+    if (result?.success) {
+      console.log('Successfully deleted profile using cascade function:', result);
+      return { 
+        success: true, 
+        message: result.message || 'Member removed from network.'
+      };
+    } else {
+      console.error('Cascade delete function returned error:', result);
+      throw new Error(result?.message || 'Failed to remove member');
+    }
   } catch (error) {
     console.error('Error removing member:', error);
     return { 
       success: false, 
-      message: 'Failed to remove member. Please try again.' 
+      message: error.details || error.message || 'Failed to remove member. Please try again.' 
     };
   }
 };

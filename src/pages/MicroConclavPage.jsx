@@ -243,7 +243,13 @@ const MicroConclavPage = () => {
 
   if (loading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
+      <Box sx={{ 
+        display: "flex", 
+        justifyContent: "center", 
+        alignItems: "center", 
+        height: "100vh",
+        paddingTop: '80px' // Account for fixed header
+      }}>
         <Spinner size={120} />
       </Box>
     );
@@ -251,7 +257,12 @@ const MicroConclavPage = () => {
 
   if (!profile) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
+      <Box sx={{
+        display: "flex", 
+        justifyContent: "center", 
+        alignItems: "center", 
+        height: "100vh",
+      }}>
         <Typography>Profile not found</Typography>
       </Box>
     );
@@ -262,11 +273,15 @@ const MicroConclavPage = () => {
     <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden', position: 'relative' }}>
       {/* NetworkHeader */}
       <NetworkHeader />
-      {/* Toolbar - positioned below NetworkHeader */}
+      {/* Toolbar - positioned directly below NetworkHeader */}
       <Box 
         sx={{ 
           p: 1, 
-          mt: '80px', // Account for NetworkHeader height
+          position: 'fixed',
+          top: '80px', // Position directly below NetworkHeader
+          left: 0,
+          right: 0,
+          zIndex: 1000,
           display: 'flex', 
           justifyContent: 'space-between',
           bgcolor: alpha(theme.palette.primary.main, 0.05),
@@ -345,13 +360,13 @@ const MicroConclavPage = () => {
       <Paper
         elevation={4}
         sx={{
-          position: 'absolute',
-          top: 'calc(80px + 4rem)', // Account for NetworkHeader + toolbar height
+          position: 'fixed',
+          top: 'calc(80px + 56px + 1rem)', // Account for NetworkHeader + fixed toolbar + margin
           right: '1rem',
           p: 2,
           borderRadius: 2,
           backgroundColor: theme.palette.background.paper,
-          zIndex: 1000,
+          zIndex: 1001,
           minWidth: 250,
           maxWidth: 300,
         }}
@@ -393,8 +408,7 @@ const MicroConclavPage = () => {
           position: 'relative',
           overflow: viewMode === 'grid' ? 'auto' : 'hidden',
           bgcolor: viewMode === 'grid' ? (moodboardBackgroundColor || '#f5f5f5') : 'transparent',
-          // Ensure content starts below the header elements
-          minHeight: 'calc(100vh - 135px)',
+          minHeight: '100vh',
         }}
       >
         {viewMode === 'grid' ? (
@@ -404,8 +418,7 @@ const MicroConclavPage = () => {
               maxWidth: 1200,
               margin: '0 auto',
               padding: '20px',
-              paddingTop: '100px', // Extra space for user info card
-              minHeight: 'calc(100vh - 135px)', // Account for header heights
+              paddingTop: '80px', // Space for user info card
             }}
           >
             <Box
@@ -438,7 +451,7 @@ const MicroConclavPage = () => {
             onCanvasMouseUp={handleCanvasMouseUp}
             onCanvasMouseLeave={handleCanvasMouseUp}
             showGrid={!moodboardBackgroundColor}
-            height="calc(100vh - 135px)" // Account for NetworkHeader (80px) + toolbar (55px)
+            height="calc(100vh - 136px)" // Account for NetworkHeader (80px) + toolbar (56px)
           >
             {/* Render items from primary moodboard only */}
             {primaryMoodboardItems.map((item, index) => {
