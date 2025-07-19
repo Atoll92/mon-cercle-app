@@ -681,12 +681,12 @@ function NetworkLandingPage() {
               sx={{ 
                 color: '#ffffff',
                 textShadow: '0px 2px 4px rgba(0,0,0,0.8)',
-                fontSize: { xs: '1.2rem', sm: '1.5rem' },
+                fontSize: { xs: '1rem', sm: '1.2rem' },
                 lineHeight: 1.4,
                 maxWidth: '800px',
                 textAlign: 'center',
                 px: 3,
-                fontWeight: 500
+                fontWeight: 400
               }}
             >
               {network.description}
