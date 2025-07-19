@@ -44,7 +44,6 @@ import mockDashboard from '../assets/mock-dashboard.png';
 import mockProfiles from '../assets/mock-profiles.png';
 import mockAdmin from '../assets/mock-admin.png';
 import mockEvents from '../assets/mock-events.png';
-import Logo from '../assets/logo.svg';
 
 const DemoPage = () => {
   const [activeTab, setActiveTab] = useState(0);

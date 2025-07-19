@@ -131,6 +131,8 @@ function NetworkLandingPage() {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [isTabsFixed, setIsTabsFixed] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
+  const [tabsTransition, setTabsTransition] = useState('none'); // 'none', 'fixing', 'unfixing'
+  const [smoothTransitionProgress, setSmoothTransitionProgress] = useState(0);
   
   // Animation setup - must be at top level, not conditional
   const contentRef = useFadeIn(200);
@@ -585,8 +587,11 @@ function NetworkLandingPage() {
     return combinedFeed;
   }, [networkNews, postItems, initialItemOrder]);
 
-  // Handle scroll to make tabs sticky with smooth transition
+  // Handle scroll to make tabs sticky with ultra smooth transition
   useEffect(() => {
+    let transitionTimeout;
+    let animationFrame;
+    
     const handleScroll = () => {
       const tabsContainer = document.getElementById('tabs-original-position');
       if (tabsContainer) {
@@ -594,23 +599,51 @@ function NetworkLandingPage() {
         const headerHeight = 80; // NetworkHeader height
         const scrollY = window.scrollY;
         
-        // Calculate scroll progress for smooth transitions
-        const maxScroll = 300; // Adjust this value to control transition speed
-        const progress = Math.min(scrollY / maxScroll, 1);
+        // Calculate scroll progress for smooth transitions with extended range
+        const maxScroll = 400; // Extended for more gradual transition
+        const progress = Math.min(Math.max(scrollY / maxScroll, 0), 1);
         setScrollProgress(progress);
         
-        // If the tabs would go above the header, make them fixed
-        if (rect.top <= headerHeight) {
-          setIsTabsFixed(true);
-        } else {
-          setIsTabsFixed(false);
-        }
+        // Calculate smooth transition progress based on distance to trigger point
+        const distanceToTrigger = Math.max(rect.top - headerHeight, 0);
+        const transitionRange = 60; // Pixels over which to smooth the transition
+        const smoothProgress = Math.min(Math.max(1 - (distanceToTrigger / transitionRange), 0), 1);
+        setSmoothTransitionProgress(smoothProgress);
+        
+        // Use requestAnimationFrame for smoother state updates
+        if (animationFrame) cancelAnimationFrame(animationFrame);
+        animationFrame = requestAnimationFrame(() => {
+          // If the tabs would go above the header, make them fixed
+          if (rect.top <= headerHeight && !isTabsFixed) {
+            clearTimeout(transitionTimeout);
+            setTabsTransition('fixing');
+            setIsTabsFixed(true);
+            
+            // Reset transition state after animation completes
+            transitionTimeout = setTimeout(() => {
+              setTabsTransition('none');
+            }, 400); // Increased duration for smoother animation
+          } else if (rect.top > headerHeight + 20 && isTabsFixed) { // Add hysteresis
+            clearTimeout(transitionTimeout);
+            setTabsTransition('unfixing');
+            setIsTabsFixed(false);
+            
+            // Reset transition state after animation completes
+            transitionTimeout = setTimeout(() => {
+              setTabsTransition('none');
+            }, 400);
+          }
+        });
       }
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      clearTimeout(transitionTimeout);
+      if (animationFrame) cancelAnimationFrame(animationFrame);
+    };
+  }, [isTabsFixed]);
 
   if (loading) {
     return (
@@ -718,12 +751,18 @@ function NetworkLandingPage() {
           marginTop: '-60px', // Negative margin to overlay the background image
           position: 'relative',
           zIndex: 100, // Above background image
-          visibility: isTabsFixed ? 'hidden' : 'visible',
+          opacity: 1 - (smoothTransitionProgress * 0.8), // Gradual fade based on proximity
+          transform: `translateY(${smoothTransitionProgress * -30}px) scale(${1 - (smoothTransitionProgress * 0.02)})`,
+          transition: tabsTransition !== 'none' 
+            ? 'opacity 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1)' 
+            : 'opacity 0.1s ease-out, transform 0.1s ease-out',
+          pointerEvents: isTabsFixed ? 'none' : 'auto',
+          willChange: 'opacity, transform',
           backgroundColor: darkMode 
-            ? alpha('#121212', 0.7 + (scrollProgress * 0.2)) 
-            : alpha('#ffffff', 0.7 + (scrollProgress * 0.2)),
-          backdropFilter: `blur(${30 - (scrollProgress * 10)}px) saturate(${200 - (scrollProgress * 50)}%)`,
-          WebkitBackdropFilter: `blur(${30 - (scrollProgress * 10)}px) saturate(${200 - (scrollProgress * 50)}%)`,
+            ? alpha('#121212', 0.65 + (scrollProgress * 0.25) + (smoothTransitionProgress * 0.1)) 
+            : alpha('#ffffff', 0.65 + (scrollProgress * 0.25) + (smoothTransitionProgress * 0.1)),
+          backdropFilter: `blur(${25 + (scrollProgress * 15) + (smoothTransitionProgress * 10)}px) saturate(${180 + (scrollProgress * 40) + (smoothTransitionProgress * 20)}%)`,
+          WebkitBackdropFilter: `blur(${25 + (scrollProgress * 15) + (smoothTransitionProgress * 10)}px) saturate(${180 + (scrollProgress * 40) + (smoothTransitionProgress * 20)}%)`,
           borderBottom: `1px solid ${darkMode 
             ? alpha('#ffffff', 0.08) 
             : alpha('#000000', 0.05)}`,
@@ -776,29 +815,31 @@ function NetworkLandingPage() {
                   fontSize: '0.875rem',
                   letterSpacing: '0.02em',
                   textTransform: 'none',
-                  transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+                  transition: 'all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)',
                   position: 'relative',
                   mx: 0.5,
-                  borderRadius: '12px',
+                  borderRadius: '14px',
+                  willChange: 'transform, background-color, box-shadow',
                   '&:hover': {
                     color: darkMode ? '#ffffff' : '#000000',
                     background: darkMode
-                      ? alpha('#ffffff', 0.12)
-                      : alpha('#000000', 0.08),
-                    transform: 'translateY(-1px)',
+                      ? alpha('#ffffff', 0.14)
+                      : alpha('#000000', 0.09),
+                    transform: 'translateY(-2px) scale(1.02)',
                     boxShadow: darkMode
-                      ? `0 4px 12px ${alpha('#000000', 0.3)}`
-                      : `0 4px 12px ${alpha('#000000', 0.1)}`,
+                      ? `0 6px 20px ${alpha('#000000', 0.4)}, 0 2px 8px ${alpha('#000000', 0.2)}`
+                      : `0 6px 20px ${alpha('#000000', 0.15)}, 0 2px 8px ${alpha('#000000', 0.05)}`,
                   },
                   '&.Mui-selected': {
                     color: darkMode ? '#ffffff' : muiTheme.palette.primary.main,
                     fontWeight: 600,
                     background: darkMode
-                      ? alpha('#ffffff', 0.15)
-                      : alpha(muiTheme.palette.primary.main, 0.12),
+                      ? alpha('#ffffff', 0.18)
+                      : alpha(muiTheme.palette.primary.main, 0.15),
+                    transform: 'translateY(-1px) scale(1.01)',
                     boxShadow: darkMode
-                      ? `0 2px 8px ${alpha('#ffffff', 0.1)}, inset 0 1px 0 ${alpha('#ffffff', 0.2)}`
-                      : `0 2px 8px ${alpha(muiTheme.palette.primary.main, 0.2)}, inset 0 1px 0 ${alpha('#ffffff', 0.5)}`,
+                      ? `0 4px 16px ${alpha('#ffffff', 0.12)}, inset 0 1px 0 ${alpha('#ffffff', 0.25)}, 0 1px 3px ${alpha('#000000', 0.2)}`
+                      : `0 4px 16px ${alpha(muiTheme.palette.primary.main, 0.25)}, inset 0 1px 0 ${alpha('#ffffff', 0.6)}, 0 1px 3px ${alpha('#000000', 0.1)}`,
                   },
                   '&::after': {
                     display: 'none',
@@ -843,28 +884,37 @@ function NetworkLandingPage() {
       </Box>
 
       {/* Fixed tabs section - appears when scrolled */}
-      {isTabsFixed && (
-        <Box
-          sx={{
-            position: 'fixed',
-            top: '80px',
-            left: 0,
-            right: 0,
-            zIndex: 1250,
-            width: '100%',
-            backgroundColor: darkMode 
-              ? alpha('#121212', 0.75) 
-              : alpha('#ffffff', 0.75),
-            backdropFilter: 'blur(25px) saturate(200%)',
-            WebkitBackdropFilter: 'blur(25px) saturate(200%)',
-            borderBottom: `1px solid ${darkMode 
-              ? alpha('#ffffff', 0.1) 
-              : alpha('#000000', 0.06)}`,
-            boxShadow: darkMode 
-              ? `0 8px 32px ${alpha('#000000', 0.4)}, inset 0 1px 0 ${alpha('#ffffff', 0.08)}` 
-              : `0 8px 32px ${alpha('#000000', 0.12)}, inset 0 1px 0 ${alpha('#ffffff', 0.9)}`,
-            transform: 'translateZ(0)',
-            animation: 'slideDown 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+      <Box
+        sx={{
+          position: 'fixed',
+          top: '80px',
+          left: 0,
+          right: 0,
+          zIndex: 1250,
+          width: '100%',
+          backgroundColor: darkMode 
+            ? alpha('#121212', 0.8 + (smoothTransitionProgress * 0.05)) 
+            : alpha('#ffffff', 0.8 + (smoothTransitionProgress * 0.05)),
+          backdropFilter: `blur(${30 + (smoothTransitionProgress * 10)}px) saturate(${220 + (smoothTransitionProgress * 30)}%)`,
+          WebkitBackdropFilter: `blur(${30 + (smoothTransitionProgress * 10)}px) saturate(${220 + (smoothTransitionProgress * 30)}%)`,
+          borderBottom: `1px solid ${darkMode 
+            ? alpha('#ffffff', 0.12 + (smoothTransitionProgress * 0.03)) 
+            : alpha('#000000', 0.08 + (smoothTransitionProgress * 0.02))}`,
+          boxShadow: darkMode 
+            ? `0 ${8 + (smoothTransitionProgress * 4)}px ${32 + (smoothTransitionProgress * 8)}px ${alpha('#000000', 0.4 + (smoothTransitionProgress * 0.1))}, inset 0 1px 0 ${alpha('#ffffff', 0.08 + (smoothTransitionProgress * 0.02))}` 
+            : `0 ${8 + (smoothTransitionProgress * 4)}px ${32 + (smoothTransitionProgress * 8)}px ${alpha('#000000', 0.12 + (smoothTransitionProgress * 0.03))}, inset 0 1px 0 ${alpha('#ffffff', 0.9)}`,
+          transform: tabsTransition === 'unfixing' 
+            ? 'translateY(-120%) scale(0.98)' 
+            : `translateY(${smoothTransitionProgress * -5}px) scale(${0.98 + (smoothTransitionProgress * 0.02)})`,
+          opacity: tabsTransition === 'unfixing' 
+            ? 0 
+            : Math.max(smoothTransitionProgress, isTabsFixed ? 1 : 0),
+          visibility: isTabsFixed || tabsTransition === 'unfixing' || smoothTransitionProgress > 0.1 ? 'visible' : 'hidden',
+          transition: tabsTransition !== 'none' 
+            ? 'all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1)' 
+            : 'opacity 0.1s ease-out, transform 0.1s ease-out, backdrop-filter 0.1s ease-out',
+          pointerEvents: isTabsFixed && tabsTransition !== 'unfixing' ? 'auto' : 'none',
+          willChange: 'opacity, transform, backdrop-filter',
             '&::before': {
               content: '""',
               position: 'absolute',
@@ -878,19 +928,9 @@ function NetworkLandingPage() {
               pointerEvents: 'none',
               zIndex: -1,
             },
-            '@keyframes slideDown': {
-              '0%': {
-                transform: 'translateY(-100%)',
-                opacity: 0,
-              },
-              '100%': {
-                transform: 'translateY(0)',
-                opacity: 1,
-              },
-            },
-          }}
-        >
-          <Container maxWidth="lg" sx={{ px: 0 }}>
+        }}
+      >
+        <Container maxWidth="lg" sx={{ px: 0 }}>
             <Paper 
               ref={contentRef}
               elevation={0}
@@ -917,34 +957,36 @@ function NetworkLandingPage() {
                   background: 'transparent',
                   '& .MuiTab-root': {
                     minHeight: 56,
-                    color: darkMode ? alpha('#ffffff', 0.85) : alpha('#000000', 0.75),
+                    color: darkMode ? alpha('#ffffff', 0.9) : alpha('#000000', 0.8),
                     fontWeight: 500,
                     fontSize: '0.875rem',
                     letterSpacing: '0.02em',
                     textTransform: 'none',
-                    transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+                    transition: 'all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)',
                     position: 'relative',
                     mx: 0.5,
-                    borderRadius: '12px',
+                    borderRadius: '14px',
+                    willChange: 'transform, background-color, box-shadow',
                     '&:hover': {
                       color: darkMode ? '#ffffff' : '#000000',
                       background: darkMode
-                        ? alpha('#ffffff', 0.12)
-                        : alpha('#000000', 0.08),
-                      transform: 'translateY(-1px)',
+                        ? alpha('#ffffff', 0.14)
+                        : alpha('#000000', 0.09),
+                      transform: 'translateY(-2px) scale(1.02)',
                       boxShadow: darkMode
-                        ? `0 4px 12px ${alpha('#000000', 0.3)}`
-                        : `0 4px 12px ${alpha('#000000', 0.1)}`,
+                        ? `0 6px 20px ${alpha('#000000', 0.4)}, 0 2px 8px ${alpha('#000000', 0.2)}`
+                        : `0 6px 20px ${alpha('#000000', 0.15)}, 0 2px 8px ${alpha('#000000', 0.05)}`,
                     },
                     '&.Mui-selected': {
                       color: darkMode ? '#ffffff' : muiTheme.palette.primary.main,
                       fontWeight: 600,
                       background: darkMode
-                        ? alpha('#ffffff', 0.15)
-                        : alpha(muiTheme.palette.primary.main, 0.12),
+                        ? alpha('#ffffff', 0.18)
+                        : alpha(muiTheme.palette.primary.main, 0.15),
+                      transform: 'translateY(-1px) scale(1.01)',
                       boxShadow: darkMode
-                        ? `0 2px 8px ${alpha('#ffffff', 0.1)}, inset 0 1px 0 ${alpha('#ffffff', 0.2)}`
-                        : `0 2px 8px ${alpha(muiTheme.palette.primary.main, 0.2)}, inset 0 1px 0 ${alpha('#ffffff', 0.5)}`,
+                        ? `0 4px 16px ${alpha('#ffffff', 0.12)}, inset 0 1px 0 ${alpha('#ffffff', 0.25)}, 0 1px 3px ${alpha('#000000', 0.2)}`
+                        : `0 4px 16px ${alpha(muiTheme.palette.primary.main, 0.25)}, inset 0 1px 0 ${alpha('#ffffff', 0.6)}, 0 1px 3px ${alpha('#000000', 0.1)}`,
                     },
                     '&::after': {
                       display: 'none',
@@ -987,7 +1029,6 @@ function NetworkLandingPage() {
             </Paper>
           </Container>
         </Box>
-      )}
 
       {/* Left sidebar with description - positioned absolutely in gutter */}
       {network.description && (

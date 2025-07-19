@@ -27,7 +27,6 @@ import MicroLogo from '../assets/micro.svg';
 
 
 import EuFlag from '../assets/eu_flag.jpg';
-import Logo from '../assets/logo.svg';
 
 import ThreeJSBackground from '../components/ThreeJSBackground';
 

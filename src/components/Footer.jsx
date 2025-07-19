@@ -36,17 +36,46 @@ const Footer = () => {
           }}
         >
           <Box sx={{ display: 'flex', alignItems: 'center', mb: { xs: 2, sm: 0 } }}>
-            <Box 
-              component="img"
-              src="/logo.png"
-              alt="Conclav Logo"
-              sx={{ 
-                height: 32,
-                width: 'auto',
-                mr: 1.5,
-                filter: theme.palette.mode === 'dark' ? 'brightness(1.5)' : 'none'
-              }}
-            />
+            <Box sx={{ mr: 1.5 }}>
+              <svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                width="32" 
+                height="32" 
+                viewBox="-125 -125 250 250"
+              >
+                <defs>
+                  <linearGradient id="footer-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor={theme.palette.primary.main} stopOpacity="1" />
+                    <stop offset="100%" stopColor={theme.palette.primary.main} stopOpacity="0.8" />
+                  </linearGradient>
+                </defs>
+                
+                {/* Central big disk */}
+                <circle cx="0" cy="0" r="35" fill="url(#footer-gradient)"/>
+                
+                {/* Medium disks */}
+                <g fill="url(#footer-gradient)">
+                  <circle cx="70.00" cy="0.00" r="25" opacity="0.9"/>
+                  <circle cx="43.64" cy="54.72" r="25" opacity="0.9"/>
+                  <circle cx="-15.57" cy="68.24" r="25" opacity="0.9"/>
+                  <circle cx="-63.06" cy="30.37" r="25" opacity="0.9"/>
+                  <circle cx="-63.06" cy="-30.37" r="25" opacity="0.9"/>
+                  <circle cx="-15.57" cy="-68.24" r="25" opacity="0.9"/>
+                  <circle cx="43.64" cy="-54.72" r="25" opacity="0.9"/>
+                </g>
+                
+                {/* Small disks */}
+                <g fill={theme.palette.primary.main}>
+                  <circle cx="85.59" cy="41.21" r="12" opacity="0.7"/>
+                  <circle cx="21.13" cy="92.61" r="12" opacity="0.7"/>
+                  <circle cx="-59.23" cy="74.27" r="12" opacity="0.7"/>
+                  <circle cx="-95.00" cy="0" r="12" opacity="0.7"/>
+                  <circle cx="-59.23" cy="-74.27" r="12" opacity="0.7"/>
+                  <circle cx="21.13" cy="-92.61" r="12" opacity="0.7"/>
+                  <circle cx="85.59" cy="-41.21" r="12" opacity="0.7"/>
+                </g>
+              </svg>
+            </Box>
             <Typography 
               variant="h6" 
               sx={{ 
