@@ -109,7 +109,7 @@ const MicroConclavWidget = () => {
     : `/micro-conclav/${profileId}`;
 
   return (
-    <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+    <Card sx={{ height: '100%', width: '100%', display: 'flex', flexDirection: 'column' }}>
       <CardContent sx={{ p: 0, flexGrow: 1 }}>
         {/* Header */}
         <Box 

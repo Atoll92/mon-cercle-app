@@ -7,7 +7,6 @@ import WidgetEmptyState from './shared/WidgetEmptyState';
 import WidgetErrorState from './shared/WidgetErrorState';
 import CreatePostModal from './CreatePostModal';
 import { useSupabaseQuery } from '../hooks/useSupabaseQuery';
-import { useProfile } from '../context/profileContext';
 import {
   Box,
   Button,
@@ -19,10 +18,8 @@ import {
   Add as AddIcon
 } from '@mui/icons-material';
 import { supabase } from '../supabaseclient';
-import FlexFlowBox from './FlexFlowBox';
 
 const LatestPostsWidget = ({ networkId, onMemberClick, darkMode = false, onPostUpdated, onPostDeleted }) => {
-  const { activeProfile } = useProfile();
   const [createPostModalOpen, setCreatePostModalOpen] = useState(false);
 
   // First fetch network members
@@ -136,34 +133,44 @@ const LatestPostsWidget = ({ networkId, onMemberClick, darkMode = false, onPostU
         icon={<WorkIcon color="primary" />}
         title="Latest Posts"
         viewAllLink={`/network/${networkId}?tab=social`}
-      />
-      <div style={{ padding: '10px' }}>
-        <FlexFlowBox>
+        action={
           <Button
-                variant="contained"
-                size="small"
-                onClick={() => setCreatePostModalOpen(true)}
-                startIcon={<AddIcon />}
-                sx={{ m: 2, alignSelf: 'center' }}
-              >
-                Create Post
+            variant="contained"
+            size="small"
+            onClick={() => setCreatePostModalOpen(true)}
+            startIcon={<AddIcon />}
+          >
+            Create Post
           </Button>
-          <>
-          {latestPosts.map((post) => {
-            const isOwner = post.profile_id === activeProfile?.id;
-            return (
-              <PostCard
-                key={post.id}
-                post={post}
-                author={post.profiles}
-                onPostUpdated={onPostUpdated}
-                onPostDeleted={onPostDeleted}
-              />
-            );
-          })}
-          </>
-        </FlexFlowBox>
-      </div>
+        }
+      />
+      <Box sx={{ 
+        flex: 1,
+        p: 2,
+        overflow: 'auto',
+        display: 'flex',
+        flexWrap: 'wrap',
+        gap: 2,
+        alignContent: 'flex-start'
+      }}>
+        {latestPosts.map((post) => (
+          <Box
+            key={post.id}
+            sx={{
+              width: { xs: '100%', sm: 'calc(50% - 8px)' },
+              maxWidth: { xs: '100%', sm: 'calc(50% - 8px)' },
+              flexShrink: 0
+            }}
+          >
+            <PostCard
+              post={post}
+              author={post.profiles}
+              onPostUpdated={onPostUpdated}
+              onPostDeleted={onPostDeleted}
+            />
+          </Box>
+        ))}
+      </Box>
       
       <CreatePostModal
         open={createPostModalOpen}

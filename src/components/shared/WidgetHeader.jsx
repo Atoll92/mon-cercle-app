@@ -10,13 +10,15 @@ import { Link } from 'react-router-dom';
  * @param {string} props.viewAllLink - Optional link for "View All" button
  * @param {string} props.viewAllText - Custom text for view all button
  * @param {function} props.onViewAll - Optional callback for view all click
+ * @param {React.ReactNode} props.action - Optional custom action component
  */
 const WidgetHeader = ({ 
   icon, 
   title, 
   viewAllLink, 
   viewAllText = 'View All',
-  onViewAll 
+  onViewAll,
+  action 
 }) => {
   const viewAllButton = viewAllLink || onViewAll ? (
     <Button
@@ -53,7 +55,10 @@ const WidgetHeader = ({
           {title}
         </Typography>
       </Box>
-      {viewAllButton}
+      <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+        {action}
+        {viewAllButton}
+      </Box>
     </Box>
   );
 };

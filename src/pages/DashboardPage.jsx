@@ -12,6 +12,7 @@ import LatestNewsWidget from '../components/LatestNewsWidget';
 import LatestPostsWidget from '../components/LatestPostsWidget';
 import TestNotificationSystem from '../components/TestNotificationSystem';
 import EventDetailsDialog from '../components/EventDetailsDialog';
+import CreateEventDialog from '../components/CreateEventDialog';
 import { useFadeIn, useStaggeredAnimation, ANIMATION_DURATION } from '../hooks/useAnimation';
 import { ProfileSkeleton, GridSkeleton } from '../components/LoadingSkeleton';
 import OnboardingGuide from '../components/OnboardingGuide';
@@ -63,7 +64,10 @@ import {
   Business as BusinessIcon,
   School as SchoolIcon,
   SupervisorAccount as SuperAdminIcon,
-  AccessTime as AccessTimeIcon
+  AccessTime as AccessTimeIcon,
+  CheckCircle as CheckCircleIcon,
+  Cancel as CancelIcon,
+  Help as HelpIcon
 } from '@mui/icons-material';
 import { fetchNetworkMembers } from '../api/networks';
 import { fetchNetworkCategories } from '../api/categories';
@@ -160,6 +164,7 @@ function DashboardPage() {
   const [retryCount, setRetryCount] = useState(0);
   const [recentEvents, setRecentEvents] = useState([]);
   const [loadingEvents, setLoadingEvents] = useState(true);
+  const [eventParticipation, setEventParticipation] = useState({});
   
   
   // Member detail modal state
@@ -169,6 +174,7 @@ function DashboardPage() {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [showEventDialog, setShowEventDialog] = useState(false);
   const [memberModalOpen, setMemberModalOpen] = useState(false);
+  const [createEventOpen, setCreateEventOpen] = useState(false);
   
   // Onboarding guide state
   const [showOnboardingGuide, setShowOnboardingGuide] = useState(false);
@@ -438,29 +444,6 @@ function DashboardPage() {
       }
     };
     
-    const fetchUpcomingEvents = async (networkId) => {
-      try {
-        setLoadingEvents(true);
-        const now = new Date().toISOString();
-        
-        const { data, error } = await supabase
-          .from('network_events')
-          .select('*')
-          .eq('network_id', networkId)
-          .gte('date', now)
-          .order('date', { ascending: true })
-          .limit(3);
-          
-        if (error) throw error;
-        
-        setRecentEvents(data || []);
-      } catch (err) {
-        console.error("Error fetching events:", err);
-      } finally {
-        setLoadingEvents(false);
-      }
-    };
-    
     if (user) {
       fetchProfile();
     } else {
@@ -470,6 +453,49 @@ function DashboardPage() {
       setLoadingNetworkDetails(false);
     }
   }, [user, activeProfile, retryCount, navigate, isLoadingProfiles, location.search]);
+
+  // Define fetchUpcomingEvents as a standalone function
+  const fetchUpcomingEvents = async (networkId) => {
+    try {
+      setLoadingEvents(true);
+      const now = new Date().toISOString();
+      
+      const { data, error } = await supabase
+        .from('network_events')
+        .select('*')
+        .eq('network_id', networkId)
+        .gte('date', now)
+        .order('date', { ascending: true })
+        .limit(3);
+        
+      if (error) throw error;
+      
+      setRecentEvents(data || []);
+      
+      // Fetch participation status for each event
+      if (data && data.length > 0 && activeProfile?.id) {
+        const eventIds = data.map(event => event.id);
+        
+        const { data: participationData, error: participationError } = await supabase
+          .from('event_participations')
+          .select('event_id, status')
+          .eq('profile_id', activeProfile.id)
+          .in('event_id', eventIds);
+          
+        if (!participationError && participationData) {
+          const participationMap = {};
+          participationData.forEach(p => {
+            participationMap[p.event_id] = p.status;
+          });
+          setEventParticipation(participationMap);
+        }
+      }
+    } catch (err) {
+      console.error("Error fetching events:", err);
+    } finally {
+      setLoadingEvents(false);
+    }
+  };
 
   const handleRefresh = () => {
     window.location.reload();
@@ -1341,19 +1367,8 @@ function DashboardPage() {
                     )}
                   </Grid>
 
-                  {profile.network_id && (
-                    <>
-                      <Grid item xs={12} sm={6} md={6}>
-                        <LatestNewsWidget networkId={profile.network_id} onMemberClick={handleMemberClick} />
-                      </Grid>
-                      <Grid item xs={12} sm={6} md={6}>
-                        <LatestPostsWidget networkId={profile.network_id} onMemberClick={handleMemberClick} />
-                      </Grid>
-                    </>
-                  )}
-                  
-                  {/* Right Column: Upcoming Events */}
-                  <Grid item xs={12} md={6} sx={{ display: 'flex', flexGrow: '1', width: { md: '40%' } }}>
+                  {/* Upcoming Events - Full width */}
+                  <Grid item xs={12} sx={{ display: 'flex', flexGrow: '1' }}>
                     {profile.network_id && recentEvents.length > 0 ? (
                       <Card sx={{ 
                         borderRadius: 2, 
@@ -1367,14 +1382,26 @@ function DashboardPage() {
                           title={<Typography variant="subtitle1">Upcoming Events</Typography>}
                           avatar={<EventIcon color="primary" />}
                           action={
-                            <Button 
-                              component={Link}
-                              to="/network?tab=events"
-                              endIcon={<ArrowForwardIcon />}
-                              size="small"
-                            >
-                              View All
-                            </Button>
+                            <Box sx={{ display: 'flex', gap: 1 }}>
+                              {profile.role === 'admin' && (
+                                <Button
+                                  variant="contained"
+                                  size="small"
+                                  startIcon={<AddIcon />}
+                                  onClick={() => setCreateEventOpen(true)}
+                                >
+                                  Create Event
+                                </Button>
+                              )}
+                              <Button 
+                                component={Link}
+                                to="/network?tab=events"
+                                endIcon={<ArrowForwardIcon />}
+                                size="small"
+                              >
+                                View All
+                              </Button>
+                            </Box>
                           }
                           sx={{ 
                             bgcolor: 'rgba(25, 118, 210, 0.05)',
@@ -1389,80 +1416,115 @@ function DashboardPage() {
                         ) : (
                           <CardContent sx={{ py: 0.5, flexGrow: 1, overflow: 'auto' }}>
                             <Stack spacing={1}>
-                              {recentEvents.map(event => (
-                                <Paper
-                                  key={event.id}
-                                  variant="outlined"
-                                  sx={{ 
-                                    p: 1, 
-                                    borderRadius: 2,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: 1
-                                  }}
-                                >
-                                  <Box sx={{ 
-                                    width: 40, 
-                                    height: 40, 
-                                    bgcolor: event.cover_image_url ? 'transparent' : 'primary.light',
-                                    borderRadius: 1,
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    color: 'white',
-                                    overflow: 'hidden',
-                                    flexShrink: 0
-                                  }}>
-                                    {event.cover_image_url ? (
-                                      <img 
-                                        src={event.cover_image_url} 
-                                        alt={event.title}
-                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                      />
-                                    ) : (
-                                      <>
-                                        <Typography variant="caption" fontWeight="bold" sx={{ lineHeight: 1 }}>
-                                          {new Date(event.date).toLocaleDateString('en-US', { month: 'short' })}
-                                        </Typography>
-                                        <Typography variant="subtitle2" fontWeight="bold" sx={{ lineHeight: 1 }}>
-                                          {new Date(event.date).getDate()}
-                                        </Typography>
-                                      </>
-                                    )}
-                                  </Box>
-                                  
-                                  <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-                                    <Typography variant="subtitle2" noWrap>
-                                      {event.title}
-                                    </Typography>
+                              {recentEvents.map(event => {
+                                const participationStatus = eventParticipation[event.id];
+                                const getParticipationIcon = (status) => {
+                                  switch (status) {
+                                    case 'attending':
+                                      return <CheckCircleIcon fontSize="small" sx={{ color: 'success.main' }} />;
+                                    case 'not_attending':
+                                      return <CancelIcon fontSize="small" sx={{ color: 'error.main' }} />;
+                                    case 'maybe':
+                                      return <HelpIcon fontSize="small" sx={{ color: 'warning.main' }} />;
+                                    default:
+                                      return null;
+                                  }
+                                };
+                                
+                                return (
+                                  <Paper
+                                    key={event.id}
+                                    variant="outlined"
+                                    sx={{ 
+                                      p: 1, 
+                                      borderRadius: 2,
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      gap: 1.5,
+                                      minHeight: 80
+                                    }}
+                                  >
+                                    <Box sx={{ 
+                                      width: 120, // 3x larger than original 40px
+                                      height: 80,  // Landscape aspect ratio
+                                      bgcolor: event.cover_image_url ? 'transparent' : 'primary.light',
+                                      borderRadius: 1,
+                                      display: 'flex',
+                                      flexDirection: 'column',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      color: 'white',
+                                      overflow: 'hidden',
+                                      flexShrink: 0
+                                    }}>
+                                      {event.cover_image_url ? (
+                                        <img 
+                                          src={event.cover_image_url} 
+                                          alt={event.title}
+                                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                        />
+                                      ) : (
+                                        <>
+                                          <Typography variant="body2" fontWeight="bold" sx={{ lineHeight: 1 }}>
+                                            {new Date(event.date).toLocaleDateString('en-US', { month: 'short' })}
+                                          </Typography>
+                                          <Typography variant="h5" fontWeight="bold" sx={{ lineHeight: 1 }}>
+                                            {new Date(event.date).getDate()}
+                                          </Typography>
+                                        </>
+                                      )}
+                                    </Box>
                                     
-                                    <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
-                                      <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center' }}>
-                                        <EventIcon fontSize="inherit" sx={{ mr: 0.5 }} />
-                                        {new Date(event.date).toLocaleDateString()}
+                                    <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+                                      <Typography variant="subtitle2" noWrap sx={{ mb: 0.5 }}>
+                                        {event.title}
                                       </Typography>
                                       
-                                      <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center' }}>
-                                        <LocationOnIcon fontSize="inherit" sx={{ mr: 0.5 }} />
-                                        {event.location}
-                                      </Typography>
+                                      <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1, mb: 0.5 }}>
+                                        <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center' }}>
+                                          <EventIcon fontSize="inherit" sx={{ mr: 0.5 }} />
+                                          {new Date(event.date).toLocaleDateString()}
+                                        </Typography>
+                                        
+                                        <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center' }}>
+                                          <LocationOnIcon fontSize="inherit" sx={{ mr: 0.5 }} />
+                                          {event.location}
+                                        </Typography>
+                                      </Box>
+                                      
+                                      {/* Participation Status */}
+                                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                        {participationStatus ? (
+                                          <>
+                                            {getParticipationIcon(participationStatus)}
+                                            <Typography variant="caption" color="text.secondary">
+                                              {participationStatus === 'attending' ? 'Attending' :
+                                               participationStatus === 'not_attending' ? 'Not attending' :
+                                               participationStatus === 'maybe' ? 'Maybe' : ''}
+                                            </Typography>
+                                          </>
+                                        ) : (
+                                          <Typography variant="caption" color="text.secondary" sx={{ fontStyle: 'italic' }}>
+                                            No response yet
+                                          </Typography>
+                                        )}
+                                      </Box>
                                     </Box>
-                                  </Box>
-                                  
-                                  <Button
-                                    variant="outlined"
-                                    size="small"
-                                    onClick={() => {
-                                      setSelectedEvent(event);
-                                      setShowEventDialog(true);
-                                    }}
-                                    sx={{ flexShrink: 0, minWidth: 'auto', px: 1 }}
-                                  >
-                                    View
-                                  </Button>
-                                </Paper>
-                              ))}
+                                    
+                                    <Button
+                                      variant="outlined"
+                                      size="small"
+                                      onClick={() => {
+                                        setSelectedEvent(event);
+                                        setShowEventDialog(true);
+                                      }}
+                                      sx={{ flexShrink: 0, minWidth: 'auto', px: 1 }}
+                                    >
+                                      View
+                                    </Button>
+                                  </Paper>
+                                );
+                              })}
                             </Stack>
                           </CardContent>
                         )}
@@ -1508,7 +1570,20 @@ function DashboardPage() {
                     )}
                   </Grid>
                   
-                  <Grid item xs={12} md={profile.network_id ? 6 : 12} sx={{ display: 'flex', flexGrow: 1 }}>
+                  {/* Latest News and Latest Posts - Side by side */}
+                  {profile.network_id && (
+                    <>
+                      <Grid item xs={12} sm={6} md={6}>
+                        <LatestNewsWidget networkId={profile.network_id} onMemberClick={handleMemberClick} />
+                      </Grid>
+                      <Grid item xs={12} sm={6} md={6}>
+                        <LatestPostsWidget networkId={profile.network_id} onMemberClick={handleMemberClick} />
+                      </Grid>
+                    </>
+                  )}
+                  
+                  {/* Micro Conclav Widget - Full width row */}
+                  <Grid item xs={12} sx={{ width: '100%' }}>
                     <MicroConclavWidget />
                   </Grid>
             </FlexFlowBox>
@@ -1589,6 +1664,20 @@ function DashboardPage() {
           // Navigate to network page if user wants a tour
           if (profile?.network_id) {
             navigate(`/network/${profile.network_id}`);
+          }
+        }}
+      />
+      
+      {/* Create Event Dialog */}
+      <CreateEventDialog
+        open={createEventOpen}
+        onClose={() => setCreateEventOpen(false)}
+        networkId={profile?.network_id}
+        profileId={profile?.id}
+        onEventCreated={() => {
+          // Refresh events by triggering fetchUpcomingEvents
+          if (profile?.network_id) {
+            fetchUpcomingEvents(profile.network_id);
           }
         }}
       />
