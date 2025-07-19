@@ -731,6 +731,12 @@ function EditProfilePage() {
                           {fullName || 'Your Name'}
                         </Typography>
                         
+                        {tagline && (
+                          <Typography variant="caption" color="text.secondary" sx={{ fontStyle: 'italic' }}>
+                            "{tagline}"
+                          </Typography>
+                        )}
+                        
                         <Typography variant="body2" color="text.secondary" noWrap>
                           {bio ? (bio.length > 50 ? bio.substring(0, 50) + '...' : bio) : 'Your bio will appear here'}
                         </Typography>

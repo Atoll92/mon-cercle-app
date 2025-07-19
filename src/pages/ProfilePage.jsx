@@ -12,6 +12,7 @@ import EventParticipation from '../components/EventParticipation';
 import UserBadges from '../components/UserBadges';
 import EventDetailsDialog from '../components/EventDetailsDialog';
 import PostsGrid from '../components/PostsGrid';
+import PostCard from '../components/PostCard';
 import Spinner from '../components/Spinner';
 import {
   Button,
@@ -66,6 +67,7 @@ function ProfilePage() {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [showEventDialog, setShowEventDialog] = useState(false);
   const [activeTab, setActiveTab] = useState(0);
+  const [posts, setPosts] = useState([]);
 
   
   // Tab indices
@@ -153,6 +155,7 @@ function ProfilePage() {
           networks: networkData,
           posts: postItems || [] // Add posts to the profile object
         });
+        setPosts(postItems || []);
       } catch (error) {
         console.error('Error fetching profile:', error);
         setError('Failed to load profile. The user may not exist or you may not have permission to view their profile.');
@@ -178,6 +181,27 @@ function ProfilePage() {
 
   const handleTabChange = (_, newValue) => {
     setActiveTab(newValue);
+  };
+
+  // Handle post updates and deletions
+  const handlePostUpdated = (updatedPost) => {
+    setPosts(prev => prev.map(post => 
+      post.id === updatedPost.id ? updatedPost : post
+    ));
+    setProfile(prev => ({
+      ...prev,
+      posts: prev.posts.map(post => 
+        post.id === updatedPost.id ? updatedPost : post
+      )
+    }));
+  };
+  
+  const handlePostDeleted = (deletedPostId) => {
+    setPosts(prev => prev.filter(post => post.id !== deletedPostId));
+    setProfile(prev => ({
+      ...prev,
+      posts: prev.posts.filter(post => post.id !== deletedPostId)
+    }));
   };
 
   if (loading) {
@@ -359,7 +383,7 @@ function ProfilePage() {
             sx={{ fontWeight: activeTab === TAB_OVERVIEW ? 600 : 400 }}
           />
           <Tab 
-            label={`Posts ${profile?.posts?.length ? `(${profile.posts.length})` : ''}`}
+            label={`Posts ${posts.length > 0 ? `(${posts.length})` : ''}`}
             icon={<LanguageIcon />} 
             iconPosition="start"
             sx={{ fontWeight: activeTab === TAB_POSTS ? 600 : 400 }}
@@ -415,6 +439,17 @@ function ProfilePage() {
                   <Typography variant="h5" align="center" gutterBottom fontWeight="500">
                     {profile.full_name || 'Unnamed User'}
                   </Typography>
+                  
+                  {profile.tagline && (
+                    <Typography 
+                      variant="body2" 
+                      align="center" 
+                      color="text.secondary" 
+                      sx={{ mb: 2, fontStyle: 'italic' }}
+                    >
+                      "{profile.tagline}"
+                    </Typography>
+                  )}
                   
                   <Stack direction="row" spacing={1} mb={2}>
                     {profile.role === 'admin' && (
@@ -734,7 +769,7 @@ function ProfilePage() {
                   </Box>
                   
                   {/* Posts Preview Section */}
-                  {profile.posts && profile.posts.length > 0 && (
+                  {posts.length > 0 && (
                     <Box>
                       <Box sx={{ 
                         display: 'flex', 
@@ -762,15 +797,23 @@ function ProfilePage() {
                           endIcon={<MoreHorizIcon />} 
                           onClick={() => setActiveTab(TAB_POSTS)}
                         >
-                          See All ({profile.posts.length})
+                          See All ({posts.length})
                         </Button>
                       </Box>
                       
-                      <PostsGrid
-                        posts={profile.posts.slice(0, 3)}
-                        author={profile}
-                        isOwnProfile={isOwnProfile}
-                      />
+                      <Grid container spacing={2}>
+                        {posts.slice(0, 2).map((post) => (
+                          <Grid item xs={12} key={post.id}>
+                            <PostCard
+                              post={post}
+                              author={profile}
+                              isOwner={isOwnProfile}
+                              onPostUpdated={handlePostUpdated}
+                              onPostDeleted={handlePostDeleted}
+                            />
+                          </Grid>
+                        ))}
+                      </Grid>
                     </Box>
                   )}
                 </Box>
@@ -801,16 +844,41 @@ function ProfilePage() {
                 </Typography>
                 
                 <Typography variant="body2" color="text.secondary">
-                  {profile.posts?.length || 0} posts
+                  {posts.length} posts
                 </Typography>
               </Box>
               
-              <PostsGrid
-                posts={profile.posts}
-                author={profile}
-                isOwnProfile={isOwnProfile}
-                loading={loading}
-              />
+              {posts.length === 0 ? (
+                <Paper 
+                  variant="outlined"
+                  sx={{ 
+                    p: 4, 
+                    textAlign: 'center',
+                    borderRadius: 2,
+                    borderStyle: 'dashed',
+                    bgcolor: 'grey.50'
+                  }}
+                >
+                  <Typography variant="body1" color="text.secondary">
+                    {isOwnProfile ? "You haven't created any posts yet." : "No posts to display."}
+                  </Typography>
+                </Paper>
+              ) : (
+                <Grid container spacing={3}>
+                  {posts.map((post) => (
+                    <Grid item xs={12} md={6} key={post.id}>
+                      <PostCard
+                        post={post}
+                        author={profile}
+                        isOwner={isOwnProfile}
+                        onPostUpdated={handlePostUpdated}
+                        onPostDeleted={handlePostDeleted}
+                        sx={{ height: '100%' }}
+                      />
+                    </Grid>
+                  ))}
+                </Grid>
+              )}
             </Box>
           )}
           

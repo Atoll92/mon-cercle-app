@@ -161,6 +161,17 @@ export const getNetworkStorageInfo = async (networkId) => {
 const fetchNetworkMembers = async (networkId, options = {}) => {
     //the callers of this function never seem to pass options or check for paging. with enough members this might start to cause issues.
     try {
+        if (!networkId) {
+            console.error('fetchNetworkMembers: networkId is required');
+            return {
+                members: [],
+                totalCount: 0,
+                currentPage: 1,
+                totalPages: 0,
+                hasMore: false
+            };
+        }
+
         const { 
             page = 1, 
             limit = 5000,
@@ -174,7 +185,7 @@ const fetchNetworkMembers = async (networkId, options = {}) => {
         // Calculate offset for pagination
         const offset = (page - 1) * limit;
         
-        // Build query
+        // Build query with badge count
         let query = supabase
             .from('profiles')
             .select('*', { count: 'exact' })
@@ -189,11 +200,27 @@ const fetchNetworkMembers = async (networkId, options = {}) => {
         
         const { data, error, count } = await query;
     
-        if (error) throw error;
-        console.log(`Found ${data?.length || 0} network members (total: ${count})`);
+        if (error) {
+            console.error("Error fetching network members:", {
+                error,
+                networkId,
+                options,
+                errorCode: error.code,
+                errorMessage: error.message
+            });
+            throw error;
+        }
+        
+        // Process members and add badge count as 0 for now (can be fetched separately if needed)
+        const processedMembers = (data || []).map(member => ({
+            ...member,
+            badge_count: 0 // TODO: Fetch badge count separately if needed
+        }));
+        
+        console.log(`Found ${processedMembers.length} network members (total: ${count})`);
 
         return {
-            members: data || [],
+            members: processedMembers,
             totalCount: count || 0,
             currentPage: page,
             totalPages: Math.ceil((count || 0) / limit),

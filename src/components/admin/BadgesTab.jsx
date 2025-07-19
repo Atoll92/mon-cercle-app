@@ -118,6 +118,15 @@ const BADGE_ICONS = {
 const BadgesTab = ({ networkId, members, darkMode }) => {
   const theme = useTheme();
   const { activeProfile } = useProfile();
+
+  // Debug logging
+  React.useEffect(() => {
+    console.log('BadgesTab props:', { 
+      networkId, 
+      membersCount: members?.length || 0, 
+      membersArray: members 
+    });
+  }, [networkId, members]);
   const [activeTab, setActiveTab] = useState(0);
   const [badges, setBadges] = useState([]);
   const [topUsers, setTopUsers] = useState([]);
