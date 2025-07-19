@@ -288,16 +288,14 @@ const MemberCard = ({
           )}
           
           {/* User Badges */}
-          {member.badge_count > 0 && (
-            <Box sx={{ mb: 2, display: 'flex', justifyContent: 'center' }}>
-              <UserBadges 
-                userId={member.id} 
-                displayMode="icons"
-                maxDisplay={3}
-                showTotal={true}
-              />
-            </Box>
-          )}
+          <Box sx={{ mb: 2, display: 'flex', justifyContent: 'center' }}>
+            <UserBadges 
+              userId={member.id} 
+              displayMode="icons"
+              maxDisplay={3}
+              showTotal={true}
+            />
+          </Box>
           
           {/* Skills */}
           {member.skills && member.skills.length > 0 && (

@@ -864,9 +864,21 @@ function ProfilePage() {
                   </Typography>
                 </Paper>
               ) : (
-                <Grid container spacing={3}>
+                <Box sx={{ 
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  gap: 2,
+                  alignContent: 'flex-start'
+                }}>
                   {posts.map((post) => (
-                    <Grid item xs={12} md={6} key={post.id}>
+                    <Box
+                      key={post.id}
+                      sx={{
+                        width: { xs: '100%', sm: 'calc(50% - 8px)' },
+                        maxWidth: { xs: '100%', sm: 'calc(50% - 8px)' },
+                        flexShrink: 0
+                      }}
+                    >
                       <PostCard
                         post={post}
                         author={profile}
@@ -875,9 +887,9 @@ function ProfilePage() {
                         onPostDeleted={handlePostDeleted}
                         sx={{ height: '100%' }}
                       />
-                    </Grid>
+                    </Box>
                   ))}
-                </Grid>
+                </Box>
               )}
             </Box>
           )}
