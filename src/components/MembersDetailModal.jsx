@@ -4,7 +4,7 @@ import { supabase } from '../supabaseclient';
 import { useProfile } from '../context/profileContext';
 import { useFadeIn } from '../hooks/useAnimation';
 import { formatTimeAgo } from '../utils/dateFormatting';
-import PostCard from './PostCard';
+import PostsGrid from './PostsGrid';
 import Spinner from './Spinner';
 import MoodboardItemSimple from './Moodboard/MoodboardItemSimple';
 import { getUserMoodboardItems } from '../api/moodboards';
@@ -536,27 +536,7 @@ const MemberDetailsModal = ({
                 ))}
               </Box>
               
-              {/* Optional overlay for member name */}
-              <Box
-                sx={{
-                  position: 'absolute',
-                  bottom: 8,
-                  left: 8,
-                  bgcolor: darkMode ? alpha('#000000', 0.7) : alpha('#ffffff', 0.7),
-                  borderRadius: 1,
-                  px: 1,
-                  py: 0.5,
-                  zIndex: 5
-                }}
-              >
-                <Typography
-                  variant="caption"
-                  fontWeight="medium"
-                  color={customLightText}
-                >
-                  {member.full_name}'s Micro Conclav
-                </Typography>
-              </Box>
+              
             </Box>
           )}
         </Box>
@@ -589,7 +569,19 @@ const MemberDetailsModal = ({
 
             <Grid item xs={12} sm>
               <Box>
-                <Typography variant="h5" component="h2" gutterBottom>
+                <Typography 
+                  variant="h5" 
+                  component="h2" 
+                  gutterBottom
+                  sx={{
+                    backgroundColor: darkMode ? alpha('#000000', 0.7) : alpha('#ffffff', 0.9),
+                    backdropFilter: 'blur(8px)',
+                    padding: '8px 12px',
+                    borderRadius: 1,
+                    display: 'inline-block',
+                    boxShadow: darkMode ? '0 2px 8px rgba(0,0,0,0.3)' : '0 2px 8px rgba(0,0,0,0.1)'
+                  }}
+                >
                   {member.full_name || 'Unnamed User'}
                   {isCurrentUser && ' (You)'}
                 </Typography>
@@ -878,21 +870,14 @@ const MemberDetailsModal = ({
             </Typography>
           ) : memberPosts.length > 0 ? (
             <>
-              <Grid container spacing={2}>
-                {memberPosts.slice(0, 3).map(post => (
-                  <Grid item xs={12} sm={6} md={4} key={post.id}>
-                    <PostCard
-                      post={post}
-                      author={member}
-                      darkMode={darkMode}
-                      isOwner={false}
-                      sx={{ height: '100%' }}
-                    />
-                  </Grid>
-                ))}
-              </Grid>
+              <PostsGrid 
+                posts={memberPosts.slice(0, 6)} 
+                author={member}
+                isOwnProfile={isCurrentUser}
+                loading={false}
+              />
               
-              {memberPosts.length > 3 && (
+              {memberPosts.length > 6 && (
                 <Box sx={{ mt: 2, textAlign: 'center' }}>
                   <Button
                     component={Link}

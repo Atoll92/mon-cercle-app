@@ -492,7 +492,7 @@ const NewsTab = ({ darkMode }) => {
   // Main component render
   return (
     <PageTransition>
-      <Paper sx={{ p: 3, bgcolor: darkMode ? 'background.paper' : undefined }} className="hover-lift">
+      <Paper sx={{ p: 3, bgcolor: darkMode ? 'background.paper' : undefined }} >
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
           <Typography variant="h5" gutterBottom>
             Network News

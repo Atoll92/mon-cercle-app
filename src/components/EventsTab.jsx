@@ -121,7 +121,7 @@ const EventsTab = ({
 
   return (
     <PageTransition>
-      <Paper sx={{ p: 3 }} className="hover-lift">
+      <Paper sx={{ p: 3 }} >
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <Typography variant="h5" component="h2" gutterBottom>
