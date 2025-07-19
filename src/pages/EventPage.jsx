@@ -4,6 +4,7 @@ import { useAuth } from '../context/authcontext';
 import { useProfile } from '../context/profileContext';
 import MemberDetailsModal from '../components/MembersDetailModal';
 import Spinner from '../components/Spinner';
+import CommentSection from '../components/CommentSection';
 import {
   Container,
   Paper,
@@ -276,8 +277,7 @@ function EventPage() {
   if (loading) {
     return (
       <Container maxWidth="md" sx={{ 
-        paddingTop: '80px', // Account for fixed header
-        mt: 0,
+        py: 4,
         display: 'flex', 
         justifyContent: 'center' 
       }}>
@@ -289,9 +289,7 @@ function EventPage() {
   if (error || !event) {
     return (
       <Container maxWidth="md" sx={{ 
-        paddingTop: '80px', // Account for fixed header
-        paddingBottom: 4,
-        mt: 0,
+        py: 4,
         mb: 4 
       }}>
         <Grid container spacing={3}>
@@ -340,9 +338,7 @@ function EventPage() {
 
   return (
     <Container maxWidth="md" sx={{ 
-      paddingTop: '80px', // Account for fixed header
-      paddingBottom: 4,
-      mt: 0, // Remove margin-top since we're using paddingTop
+      py: 4,
       mb: 4 
     }}>
       {/* Header */}
@@ -566,6 +562,15 @@ function EventPage() {
                 </Box>
               </>
             )}
+
+            {/* Comments Section */}
+            <Divider sx={{ my: 3 }} />
+            <CommentSection
+              itemType="event"
+              itemId={eventId}
+              isAdmin={isAdmin}
+              onMemberClick={handleMemberClick}
+            />
           </Paper>
         </Grid>
 

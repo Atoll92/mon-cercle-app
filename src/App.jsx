@@ -173,7 +173,16 @@ function App() {
               flex: 1, 
               display: 'flex',
               flexDirection: 'column',
-              overflow: 'auto'
+              overflow: 'auto',
+              pt: window.location.pathname !== "/" && 
+                 window.location.pathname !== "/pricing" && 
+                 window.location.pathname !== "/terms" && 
+                 window.location.pathname !== "/old" && 
+                 window.location.pathname !== "/profiles/select" && 
+                 window.location.pathname !== "/login" && 
+                 !window.location.pathname.startsWith("/micro-conclav/") &&
+                 window.location.pathname !== "/network" &&
+                 !window.location.pathname.match(/^\/network\/[^\/]+$/) ? '80px' : 0
             }}>
               <Suspense fallback={<PageLoader />}>
                 <Routes>

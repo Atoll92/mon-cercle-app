@@ -372,9 +372,8 @@ const AdminLayout = ({
         sx={{
           flexGrow: 1,
           p: { xs: 2, sm: 3 },
-          // pt: { xs: 2, md: 3 },
+          pt: { xs: 2, md: 3 },
           mt: { xs: 8, md: 0 }, // Account for app bar on mobile
-          // ml: { md: `${drawerWidth}px` },
           width: { xs: '100%', md: `calc(100% - ${drawerWidth}px)` },
           overflow: 'auto',
         }}

@@ -13,7 +13,6 @@ import LatestPostsWidget from '../components/LatestPostsWidget';
 import TestNotificationSystem from '../components/TestNotificationSystem';
 import EventDetailsDialog from '../components/EventDetailsDialog';
 import CreateEventDialog from '../components/CreateEventDialog';
-import NetworkHeader from '../components/NetworkHeader';
 import { useFadeIn, useStaggeredAnimation, ANIMATION_DURATION } from '../hooks/useAnimation';
 import { ProfileSkeleton, GridSkeleton } from '../components/LoadingSkeleton';
 import OnboardingGuide from '../components/OnboardingGuide';
@@ -548,7 +547,7 @@ function DashboardPage() {
 
   if (error && error.includes("Redirecting")) {
     return (
-      <Container maxWidth="sm" sx={{ mt: 8 }}>
+      <Container maxWidth="sm" sx={{ py: 4 }}>
         <Paper 
           elevation={3}
           sx={{ 
@@ -577,7 +576,7 @@ function DashboardPage() {
 
   if (error) {
     return (
-      <Container maxWidth="sm" sx={{ mt: 8 }}>
+      <Container maxWidth="sm" sx={{ py: 4 }}>
         <Paper 
           elevation={3}
           sx={{ 
@@ -610,7 +609,7 @@ function DashboardPage() {
 
   if (!profile) {
     return (
-      <Container maxWidth="sm" sx={{ mt: 8 }}>
+      <Container maxWidth="sm" sx={{ py: 4 }}>
         <Paper 
           elevation={3}
           sx={{ 
@@ -642,10 +641,7 @@ function DashboardPage() {
 
   return (
     <Box sx={{ minHeight: '100vh' }}>
-      {/* Network Header */}
-      <NetworkHeader />
-      
-      <Container maxWidth="lg" sx={{ pt: 12, pb: 3, display: 'flex', flexDirection: 'column' }}>
+      <Container maxWidth="lg" sx={{ py: 3, display: 'flex', flexDirection: 'column' }}>
         {/* Dashboard Title */}
         <Box sx={{ mb: 3 }}>
           <Typography 
