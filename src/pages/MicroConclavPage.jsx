@@ -284,9 +284,11 @@ const MicroConclavPage = () => {
           zIndex: 1000,
           display: 'flex', 
           justifyContent: 'space-between',
-          bgcolor: alpha(theme.palette.primary.main, 0.05),
-          borderBottom: '1px solid',
-          borderColor: 'divider',
+          background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)}, ${alpha(theme.palette.background.paper, 0.6)})`,
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          borderBottom: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+          boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.1)}`,
           flexWrap: 'wrap',
           gap: 1
         }}
