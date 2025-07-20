@@ -54,7 +54,6 @@ import {
   CloudUpload as UploadIcon,
   FolderShared as SharedFolderIcon,
   Image as ImageIcon,
-  NotificationsActive as NotificationsIcon,
   Close as CloseIcon,
   DragIndicator as DragIndicatorIcon,
 } from '@mui/icons-material';
@@ -159,8 +158,7 @@ const NetworkOnboardingWizard = ({ profile }) => {
       files: true,
       chat: true,
       wiki: true,
-      moodboards: true,
-      notifications: true
+      moodboards: true
     },
     enabledTabs: ['news', 'members', 'events', 'chat', 'files', 'wiki', 'social'],
     themeColor: theme.palette.primary.main
@@ -258,8 +256,7 @@ const NetworkOnboardingWizard = ({ profile }) => {
             files: networkData.features.files,
             chat: networkData.features.chat,
             wiki: networkData.features.wiki,
-            moodboards: networkData.features.moodboards,
-            notifications: networkData.features.notifications
+            moodboards: networkData.features.moodboards
           }),
           privacy_level: networkData.privacyLevel,
           purpose: networkData.purpose,
@@ -692,12 +689,6 @@ const FeaturesStep = ({ networkData, setNetworkData }) => {
       title: 'Moodboards',
       icon: <ImageIcon fontSize="large" sx={{ color: theme.palette.error.main }} />,
       description: 'Visual collaboration and inspiration boards',
-    },
-    {
-      name: 'notifications',
-      title: 'Notifications',
-      icon: <NotificationsIcon fontSize="large" sx={{ color: theme.palette.primary.dark }} />,
-      description: 'Alert members of important updates',
     }
   ];
 
@@ -1374,6 +1365,19 @@ const ReviewStep = ({ networkData }) => {
                 <Box>
                   <Typography variant="subtitle2" color="text.secondary">Background Image</Typography>
                   <Typography variant="body1">Custom background uploaded</Typography>
+                  <Box
+                    sx={{
+                      width: 120,
+                      height: 80,
+                      mt: 1,
+                      backgroundImage: `url(${networkData.backgroundImageUrl})`,
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center',
+                      borderRadius: 1,
+                      border: '1px solid',
+                      borderColor: 'divider'
+                    }}
+                  />
                 </Box>
               )}
             </Stack>
