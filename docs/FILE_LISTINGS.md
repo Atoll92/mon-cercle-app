@@ -39,8 +39,6 @@ This document contains detailed file listings for the Conclav codebase, organize
 - `EnhancedLandingPage.jsx` - Modern privacy-focused landing page with advanced animations
 - `PostPage.jsx` - Individual portfolio post page with full content display
 - `AlternativeLandingPage.jsx` - Alternative landing page design
-- `NewLandingPage.jsx` - New landing page variant
-- `NewLandingPage2.jsx` - Another landing page variant
 
 ## API Layer (`src/api/`)
 - `auth.jsx` - Authentication functions
