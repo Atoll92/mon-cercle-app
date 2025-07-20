@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Box, Typography, Skeleton, Badge, Tooltip, alpha, Divider, Paper } from '@mui/material';
+import { Box, Typography, Skeleton, Badge, Tooltip, alpha, Divider, Paper, Button } from '@mui/material';
 import { 
   Logout as LogoutIcon, 
   Person as PersonIcon,
@@ -10,7 +10,7 @@ import MailIcon from '@mui/icons-material/Mail';
 import BusinessIcon from '@mui/icons-material/Business'; // Icon for network
 import { useAuth } from '../context/authcontext';
 import { useTheme } from '../components/ThemeProvider'; // Import directly from ThemeProvider
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useDirectMessages } from '../context/directMessagesContext';
 import { fetchNetworkDetails } from '../api/networks';
 import { logout } from '../api/auth';
@@ -56,6 +56,7 @@ const NetworkHeader = () => {
   const { user } = useAuth();
   const { darkMode, toggleDarkMode } = useTheme(); // Get theme context
   const location = useLocation();
+  const navigate = useNavigate();
   const [networkInfo, setNetworkInfo] = useState(null);
   const [loading, setLoading] = useState(false);
   const { hasMultipleProfiles, activeProfile } = useProfile();
@@ -106,12 +107,21 @@ const NetworkHeader = () => {
   // Subscribe to network refresh events
   useNetworkRefresh(networkInfo?.id, getNetworkInfo);
   
+  // Default values for non-logged-in users
+  const defaultNetworkName = "Conclav";
+  const showDefaultHeader = !user && !networkInfo;
   
-  if (!networkInfo) return null;
-  
-  const displayedNetworkName = networkInfo?.name;
+  const displayedNetworkName = showDefaultHeader ? defaultNetworkName : networkInfo?.name;
   const displayedLogoUrl = networkInfo?.logo_url;
   const networkId = networkInfo?.id;
+  
+  // Show header if user is logged in OR if we have network info OR always show for non-logged-in users
+  if (!user && !networkInfo) {
+    // Always show header for non-logged-in users with default content
+  } else if (!networkInfo && user) {
+    // Hide header only if logged-in user has no network context
+    return null;
+  }
   
   // Simplified icon button style with consistent transitions
   const iconButtonStyle = {
@@ -191,6 +201,52 @@ const NetworkHeader = () => {
               }}
             />
           </Link>
+        ) : showDefaultHeader ? (
+          // Default Conclav logo for non-logged-in users
+          <Link to="/" style={{ textDecoration: 'none' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              {/* Simple Conclav logo */}
+              <svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                width="50" 
+                height="50" 
+                viewBox="-125 -125 250 250"
+                style={{ marginRight: '8px' }}
+              >
+                <defs>
+                  <linearGradient id="logo-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#667eea" stopOpacity="1" />
+                    <stop offset="100%" stopColor="#764ba2" stopOpacity="1" />
+                  </linearGradient>
+                </defs>
+                
+                {/* Central big disk */}
+                <circle cx="0" cy="0" r="35" fill="url(#logo-gradient)" />
+                
+                {/* Medium disks */}
+                <g fill="url(#logo-gradient)" opacity="0.8">
+                  <circle cx="70.00" cy="0.00" r="20" />
+                  <circle cx="43.64" cy="54.72" r="20" />
+                  <circle cx="-15.57" cy="68.24" r="20" />
+                  <circle cx="-63.06" cy="30.37" r="20" />
+                  <circle cx="-63.06" cy="-30.37" r="20" />
+                  <circle cx="-15.57" cy="-68.24" r="20" />
+                  <circle cx="43.64" cy="-54.72" r="20" />
+                </g>
+                
+                {/* Small disks */}
+                <g fill="#667eea" opacity="0.6">
+                  <circle cx="85.59" cy="41.21" r="10" />
+                  <circle cx="21.13" cy="92.61" r="10" />
+                  <circle cx="-59.23" cy="74.27" r="10" />
+                  <circle cx="-95.00" cy="0" r="10" />
+                  <circle cx="-59.23" cy="-74.27" r="10" />
+                  <circle cx="21.13" cy="-92.61" r="10" />
+                  <circle cx="85.59" cy="-41.21" r="10" />
+                </g>
+              </svg>
+            </Box>
+          </Link>
         ) : null}
       </Box>
       
@@ -227,145 +283,168 @@ const NetworkHeader = () => {
         ) : null}
       </Box>
       
-      {/* Buttons Block */}
-      {user && (
-        <Box sx={{ 
-          display: 'flex', 
-          alignItems: 'center',
-          order: { xs: 4, sm: 4 },
-          justifyContent: { xs: 'center', sm: 'flex-end' },
-          minWidth: { xs: '100%', sm: 'auto' },
-          flexWrap: 'wrap',
-          gap: 0.5,
-          alignSelf: 'center' // Override stretch for buttons block
-        }}>
-          {/* Profile */}
-          <Box 
-            component={Link} 
-            to={`/dashboard`}
-            sx={iconButtonStyle}
-          >
-            <PersonIcon />
-            <Typography
-              className="buttonText"
-              sx={buttonTextStyle}
+      {/* Sign Up CTA for non-logged-in users or full buttons for logged-in users */}
+      <Box sx={{ 
+        display: 'flex', 
+        alignItems: 'center',
+        order: { xs: 4, sm: 4 },
+        justifyContent: { xs: 'center', sm: 'flex-end' },
+        minWidth: { xs: '100%', sm: 'auto' },
+        flexWrap: 'wrap',
+        gap: 0.5,
+        alignSelf: 'center' // Override stretch for buttons block
+      }}>
+        {user ? (
+          <>
+            {/* Profile */}
+            <Box 
+              component={Link} 
+              to={`/dashboard`}
+              sx={iconButtonStyle}
             >
-              Dashboard
-            </Typography>
-          </Box>
-          
-          {/* Network */}
-          <Box 
-            component={Link} 
-            to={user && networkId ? '/network' : (networkId ? `/network/${networkId}` : '/dashboard')}
-            sx={iconButtonStyle}
-          >
-            <BusinessIcon />
-            <Typography
-              className="buttonText"
-              sx={buttonTextStyle}
+              <PersonIcon />
+              <Typography
+                className="buttonText"
+                sx={buttonTextStyle}
+              >
+                Dashboard
+              </Typography>
+            </Box>
+            
+            {/* Network */}
+            <Box 
+              component={Link} 
+              to={user && networkId ? '/network' : (networkId ? `/network/${networkId}` : '/dashboard')}
+              sx={iconButtonStyle}
             >
-              Network
-            </Typography>
-          </Box>
-          
-          {/* Messages */}
-          <Box 
-            component={Link} 
-            to="/messages"
-            sx={iconButtonStyle}
-          >
-            <MessageBadge />
-            <Typography
-              className="buttonText"
-              sx={buttonTextStyle}
+              <BusinessIcon />
+              <Typography
+                className="buttonText"
+                sx={buttonTextStyle}
+              >
+                Network
+              </Typography>
+            </Box>
+            
+            {/* Messages */}
+            <Box 
+              component={Link} 
+              to="/messages"
+              sx={iconButtonStyle}
             >
-              Messages
-            </Typography>
-          </Box>
-          
-          {/* Profile Switcher - only show if user has multiple profiles */}
-          {hasMultipleProfiles && (
-            <>
-            </>
-          )}
-          
-          {/* Logout */}
-          <Box 
-            component="div"
-            onClick={logout}
+              <MessageBadge />
+              <Typography
+                className="buttonText"
+                sx={buttonTextStyle}
+              >
+                Messages
+              </Typography>
+            </Box>
+            
+            {/* Profile Switcher - only show if user has multiple profiles */}
+            {hasMultipleProfiles && (
+              <>
+              </>
+            )}
+            
+            {/* Logout */}
+            <Box 
+              component="div"
+              onClick={logout}
+              sx={{
+                ...iconButtonStyle,
+                cursor: 'pointer',
+              }}
+            >
+              <LogoutIcon />
+              <Typography
+                className="buttonText"
+                sx={buttonTextStyle}
+              >
+                Logout
+              </Typography>
+            </Box>
+            
+            {/* Small vertical divider */}
+            <Divider orientation="vertical" flexItem sx={{ 
+              mx: 1, 
+              height: '24px', 
+              alignSelf: 'center',
+              borderColor: darkMode ? alpha('#ffffff', 0.2) : alpha('#000000', 0.1)
+            }} />
+            
+            {/* Dark Mode Toggle - Small Sun/Moon Toggle */}
+            <Tooltip title={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  backgroundColor: darkMode ? alpha('#ffffff', 0.05) : alpha('#000000', 0.02),
+                  borderRadius: '14px',
+                  padding: '3px',
+                  border: `1px solid ${darkMode ? alpha('#ffffff', 0.1) : alpha('#000000', 0.08)}`,
+                  height: '28px',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease-in-out',
+                  '&:hover': {
+                    backgroundColor: darkMode ? alpha('#ffffff', 0.1) : alpha('#000000', 0.05),
+                  }
+                }}
+                onClick={toggleDarkMode}
+              >
+                <Box
+                  sx={{ 
+                    width: '22px',
+                    position: 'relative',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center'
+                  }}
+                >
+                  {darkMode ? (
+                    <SunIcon 
+                      fontSize="small" 
+                      sx={{ 
+                        color: '#FFA000',
+                        fontSize: '16px'
+                      }} 
+                    />
+                  ) : (
+                    <MoonIcon 
+                      fontSize="small"
+                      sx={{ 
+                        color: '#424242',
+                        fontSize: '16px'
+                      }} 
+                    />
+                  )}
+                </Box>
+              </Box>
+            </Tooltip>
+          </>
+        ) : (
+          // Sign Up CTA for non-logged-in users
+          <Button
+            variant="contained"
+            onClick={() => navigate('/signup')}
             sx={{
-              ...iconButtonStyle,
-              cursor: 'pointer',
+              bgcolor: '#667eea',
+              color: 'white',
+              fontWeight: 'bold',
+              px: 3,
+              py: 1,
+              borderRadius: 2,
+              '&:hover': {
+                bgcolor: '#5a6fd8',
+                transform: 'translateY(-1px)',
+              },
+              transition: 'all 0.2s ease-in-out',
             }}
           >
-            <LogoutIcon />
-            <Typography
-              className="buttonText"
-              sx={buttonTextStyle}
-            >
-              Logout
-            </Typography>
-          </Box>
-          
-          {/* Small vertical divider */}
-          <Divider orientation="vertical" flexItem sx={{ 
-            mx: 1, 
-            height: '24px', 
-            alignSelf: 'center',
-            borderColor: darkMode ? alpha('#ffffff', 0.2) : alpha('#000000', 0.1)
-          }} />
-          
-          {/* Dark Mode Toggle - Small Sun/Moon Toggle */}
-          <Tooltip title={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}>
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                backgroundColor: darkMode ? alpha('#ffffff', 0.05) : alpha('#000000', 0.02),
-                borderRadius: '14px',
-                padding: '3px',
-                border: `1px solid ${darkMode ? alpha('#ffffff', 0.1) : alpha('#000000', 0.08)}`,
-                height: '28px',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease-in-out',
-                '&:hover': {
-                  backgroundColor: darkMode ? alpha('#ffffff', 0.1) : alpha('#000000', 0.05),
-                }
-              }}
-              onClick={toggleDarkMode}
-            >
-              <Box
-                sx={{ 
-                  width: '22px',
-                  position: 'relative',
-                  display: 'flex',
-                  justifyContent: 'center',
-                  alignItems: 'center'
-                }}
-              >
-                {darkMode ? (
-                  <SunIcon 
-                    fontSize="small" 
-                    sx={{ 
-                      color: '#FFA000',
-                      fontSize: '16px'
-                    }} 
-                  />
-                ) : (
-                  <MoonIcon 
-                    fontSize="small"
-                    sx={{ 
-                      color: '#424242',
-                      fontSize: '16px'
-                    }} 
-                  />
-                )}
-              </Box>
-            </Box>
-          </Tooltip>
-        </Box>
-      )}
+            Sign Up
+          </Button>
+        )}
+      </Box>
       </Box>
       
     </>

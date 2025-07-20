@@ -187,7 +187,8 @@ function App() {
               <Suspense fallback={<PageLoader />}>
                 <Routes>
             {/* Public Routes */}
-            <Route path="/" element={<EnhancedLandingPage/>}/>
+            <Route path="/" element={<SimpleConclavLanding/>}/>
+            <Route path="/enhanced" element={<EnhancedLandingPage/>}/>
             <Route path="/simple" element={<SimpleLandingPage/>}/>
             <Route path="/simple-conclav" element={<SimpleConclavLanding/>}/>
             <Route path="/old" element={<LandingPage/>}/>
