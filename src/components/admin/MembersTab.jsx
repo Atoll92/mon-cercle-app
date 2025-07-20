@@ -28,7 +28,8 @@ import {
   Stack,
   Card,
   CardContent,
-  Grid
+  Grid,
+  InputAdornment
 } from '@mui/material';
 import {
   PersonAdd as PersonAddIcon,
@@ -42,7 +43,9 @@ import {
   Check as CheckIcon,
   AccessTime as TimeIcon,
   Groups as GroupsIcon2,
-  CheckCircle as CheckCircleIcon
+  CheckCircle as CheckCircleIcon,
+  Close as CloseIcon,
+  Add as AddIcon
 } from '@mui/icons-material';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
@@ -51,10 +54,18 @@ import { inviteUserToNetwork, toggleMemberAdmin, removeMemberFromNetwork, getNet
 import BatchInviteModal from './BatchInviteModal';
 import InvitationLinksTab from './InvitationLinksTab';
 
+// Helper function to validate emails
+const isValidEmail = (email) => {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+};
+
 const MembersTab = ({ members, activeProfile, network, onMembersChange, darkMode = false }) => {
   const [inviteEmail, setInviteEmail] = useState('');
+  const [emailList, setEmailList] = useState([]);
   const [inviteAsAdmin, setInviteAsAdmin] = useState(false);
   const [inviting, setInviting] = useState(false);
+  const [batchInviting, setBatchInviting] = useState(false);
+  const [invitationProgress, setInvitationProgress] = useState(0);
   const [message, setMessage] = useState('');
   const [error, setError] = useState(null);
   const [openDialog, setOpenDialog] = useState(false);
@@ -88,24 +99,42 @@ const MembersTab = ({ members, activeProfile, network, onMembersChange, darkMode
     }
   }, [network?.id, members]);
 
-  const handleInvite = async (e) => {
-    e.preventDefault();
-    
-    if (!inviteEmail || !inviteEmail.includes('@')) {
+  const addEmailToList = () => {
+    if (!inviteEmail || !isValidEmail(inviteEmail)) {
       setError('Please enter a valid email address.');
       return;
     }
     
+    if (emailList.includes(inviteEmail)) {
+      setError('This email has already been added.');
+      return;
+    }
+    
+    setEmailList([...emailList, inviteEmail]);
+    setInviteEmail('');
+    setError(null);
+  };
+
+  const removeEmailFromList = (emailToRemove) => {
+    setEmailList(emailList.filter(email => email !== emailToRemove));
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter' || e.key === ',' || e.key === ';') {
+      e.preventDefault();
+      addEmailToList();
+    }
+  };
+
+  const handleSingleInvite = async (email) => {
     setInviting(true);
     setError(null);
     setMessage('');
     
-    const result = await inviteUserToNetwork(inviteEmail, network.id, activeProfile.id, inviteAsAdmin ? 'admin' : 'member');
+    const result = await inviteUserToNetwork(email, network.id, activeProfile.id, inviteAsAdmin ? 'admin' : 'member');
     
     if (result.success) {
       setMessage(result.message);
-      setInviteEmail('');
-      setInviteAsAdmin(false);
       // Refresh members if needed
       if (result.message.includes('added to your network')) {
         onMembersChange();
@@ -123,6 +152,80 @@ const MembersTab = ({ members, activeProfile, network, onMembersChange, darkMode
     }
     
     setInviting(false);
+    return result;
+  };
+
+  const handleBatchInvite = async () => {
+    if (emailList.length === 0) {
+      setError('Please add at least one email address.');
+      return;
+    }
+    
+    setBatchInviting(true);
+    setInvitationProgress(0);
+    setError(null);
+    setMessage('');
+    
+    let successful = 0;
+    let failed = 0;
+    const failedEmails = [];
+    
+    try {
+      for (let i = 0; i < emailList.length; i++) {
+        const email = emailList[i];
+        
+        try {
+          const result = await inviteUserToNetwork(email, network.id, activeProfile.id, inviteAsAdmin ? 'admin' : 'member');
+          
+          if (result.success) {
+            successful++;
+          } else {
+            failed++;
+            failedEmails.push(`${email} (${result.message})`);
+          }
+        } catch (err) {
+          console.error(`Error inviting ${email}:`, err);
+          failed++;
+          failedEmails.push(`${email} (Error: ${err.message || 'Unknown error'})`);
+        }
+        
+        // Update progress
+        setInvitationProgress(Math.round(((i + 1) / emailList.length) * 100));
+      }
+      
+      // Show final result
+      if (failed === 0) {
+        setMessage(`Successfully sent ${successful} invitations.`);
+        setEmailList([]); // Clear the list on success
+        setInviteAsAdmin(false);
+      } else if (successful === 0) {
+        setError(`Failed to send all ${failed} invitations.`);
+      } else {
+        setMessage(`Successfully sent ${successful} invitations. Failed to send ${failed} invitations.`);
+        if (failedEmails.length > 0) {
+          setError(`Failed emails: ${failedEmails.join(', ')}`);
+        }
+        // Remove successful emails from the list
+        const successfulCount = successful;
+        const remainingEmails = emailList.slice(-failed);
+        setEmailList(remainingEmails);
+      }
+      
+      // Refresh data
+      onMembersChange();
+      const invitationsResult = await getNetworkPendingInvitations(network.id);
+      if (invitationsResult.success) {
+        setPendingInvitations(invitationsResult.invitations);
+      }
+      setInvitationLinksRefresh(prev => prev + 1);
+      
+    } catch (error) {
+      console.error('Error sending invitations:', error);
+      setError('Error sending invitations. Please try again.');
+    } finally {
+      setBatchInviting(false);
+      setInvitationProgress(0);
+    }
   };
 
   const confirmAction = (action, member) => {
@@ -389,42 +492,82 @@ const MembersTab = ({ members, activeProfile, network, onMembersChange, darkMode
         <Box>
           <Box sx={{ mb: 4 }}>
             <Typography variant="h5" component="h2" gutterBottom>
-              Invite via Email
+              Invite Members via Email
             </Typography>
-            <form onSubmit={handleInvite}>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <Box sx={{ display: 'flex', gap: 2 }}>
-                  <TextField
-                    fullWidth
-                    label="Email Address"
-                    type="email"
-                    value={inviteEmail}
-                    onChange={(e) => setInviteEmail(e.target.value)}
-                    required
+            
+            {/* Email Collection Interface */}
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Box sx={{ display: 'flex', gap: 2 }}>
+                <TextField
+                  fullWidth
+                  label="Add Email Address"
+                  type="email"
+                  value={inviteEmail}
+                  onChange={(e) => setInviteEmail(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  variant="outlined"
+                  placeholder="Enter email and press Enter, comma, or semicolon to add"
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          onClick={addEmailToList}
+                          disabled={!inviteEmail || !isValidEmail(inviteEmail) || emailList.includes(inviteEmail)}
+                          edge="end"
+                        >
+                          <AddIcon />
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+                <Tooltip title="Invite multiple members from a CSV, Excel, or text file">
+                  <Button
                     variant="outlined"
-                  />
-                  <Button 
-                    type="submit" 
-                    variant="contained"
                     color="primary"
-                    startIcon={<PersonAddIcon />}
-                    disabled={inviting}
+                    startIcon={<GroupAddIcon />}
+                    onClick={() => setBatchInviteOpen(true)}
                     sx={{ whiteSpace: 'nowrap' }}
                   >
-                    {inviting ? 'Sending...' : 'Invite'}
+                    File Import
                   </Button>
-                  <Tooltip title="Invite multiple members from a CSV, Excel, or text file">
-                    <Button
-                      variant="outlined"
-                      color="primary"
-                      startIcon={<GroupAddIcon />}
-                      onClick={() => setBatchInviteOpen(true)}
-                      sx={{ whiteSpace: 'nowrap' }}
-                    >
-                      Batch Invite
-                    </Button>
-                  </Tooltip>
+                </Tooltip>
+              </Box>
+              
+              {/* Email Chips Display */}
+              {emailList.length > 0 && (
+                <Box>
+                  <Typography variant="subtitle2" gutterBottom>
+                    Emails to invite ({emailList.length})
+                  </Typography>
+                  <Paper 
+                    variant="outlined" 
+                    sx={{ 
+                      p: 2, 
+                      display: 'flex', 
+                      flexWrap: 'wrap', 
+                      gap: 1,
+                      maxHeight: 200,
+                      overflow: 'auto'
+                    }}
+                  >
+                    {emailList.map((email, index) => (
+                      <Chip
+                        key={index}
+                        label={email}
+                        onDelete={() => removeEmailFromList(email)}
+                        deleteIcon={<CloseIcon />}
+                        variant="outlined"
+                        color="primary"
+                        size="small"
+                      />
+                    ))}
+                  </Paper>
                 </Box>
+              )}
+              
+              {/* Admin checkbox and action buttons */}
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 2 }}>
                 <FormControlLabel
                   control={
                     <Checkbox
@@ -435,8 +578,58 @@ const MembersTab = ({ members, activeProfile, network, onMembersChange, darkMode
                   }
                   label="Invite as Admin"
                 />
+                
+                {emailList.length > 0 && (
+                  <Box sx={{ display: 'flex', gap: 1 }}>
+                    <Button
+                      variant="outlined"
+                      color="secondary"
+                      onClick={() => setEmailList([])}
+                      disabled={batchInviting}
+                      size="small"
+                    >
+                      Clear All
+                    </Button>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      startIcon={<PersonAddIcon />}
+                      onClick={handleBatchInvite}
+                      disabled={batchInviting || emailList.length === 0}
+                    >
+                      {batchInviting ? `Inviting... (${invitationProgress}%)` : `Invite ${emailList.length} ${emailList.length === 1 ? 'Person' : 'People'}`}
+                    </Button>
+                  </Box>
+                )}
               </Box>
-            </form>
+              
+              {/* Progress indicator for batch invites */}
+              {batchInviting && (
+                <Box sx={{ mt: 1 }}>
+                  <Typography variant="body2" color="text.secondary" gutterBottom>
+                    Sending invitations... ({invitationProgress}%)
+                  </Typography>
+                  <Box 
+                    sx={{ 
+                      width: '100%', 
+                      height: 6, 
+                      backgroundColor: 'grey.300', 
+                      borderRadius: 1,
+                      overflow: 'hidden'
+                    }}
+                  >
+                    <Box 
+                      sx={{ 
+                        width: `${invitationProgress}%`, 
+                        height: '100%', 
+                        backgroundColor: 'primary.main',
+                        transition: 'width 0.3s ease'
+                      }}
+                    />
+                  </Box>
+                </Box>
+              )}
+            </Box>
           </Box>
 
           <Box sx={{ mt: 4 }}>
