@@ -50,7 +50,7 @@ import WelcomeMessage from '../components/WelcomeMessage';
 import { getTabDescription } from '../utils/tabDescriptions';
 
 // Simplified wrapper component that uses App context
-const NetworkLandingPageWrapper = () => {
+const NetworkLandingPageAltWrapper = () => {
   const { networkId } = useParams();
   const { userNetworkId, fetchingNetwork } = useApp();
 
@@ -81,20 +81,20 @@ const NetworkLandingPageWrapper = () => {
     // Public access with URL param - use existing NetworkProviderWithParams
     return (
       <NetworkProviderWithParams>
-        <NetworkLandingPage />
+        <NetworkLandingPageAlt />
       </NetworkProviderWithParams>
     );
   } else {
     // Authenticated access without URL param - use NetworkProvider directly
     return (
       <NetworkProvider networkId={effectiveNetworkId}>
-        <NetworkLandingPage />
+        <NetworkLandingPageAlt />
       </NetworkProvider>
     );
   }
 };
 
-function NetworkLandingPage() {
+function NetworkLandingPageAlt() {
   const { user } = useAuth();
   const { activeProfile } = useProfile();
   const { darkMode } = useTheme();
@@ -704,27 +704,24 @@ function NetworkLandingPage() {
   }
 
   return (
-    <Box sx={{ minHeight: '100vh' }}>
-      {/* Network Header */}
-      <NetworkHeader />
-      
-      {/* Full-width Background Header - Extended to include tabs area */}
+    <Box sx={{ minHeight: '100vh', position: 'relative' }}>
+      {/* Full-screen background image container */}
       {network && (
         <Box sx={{
           position: 'fixed',
-          width: '100%',
-          minHeight: '390px', // Increased height to accommodate tabs overlay
-          paddingTop: '80px', // Account for fixed header
-          paddingBottom: '60px', // Space for tabs overlay
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          width: '100vw',
+          height: '100vh',
           backgroundImage: network.background_image_url 
             ? `url(${network.background_image_url})` 
             : 'linear-gradient(135deg, #4568dc 0%, #b06ab3 100%)',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          overflow: 'hidden',
+          backgroundAttachment: 'fixed',
+          zIndex: -1,
           '&::before': {
             content: '""',
             position: 'absolute',
@@ -733,28 +730,33 @@ function NetworkLandingPage() {
             right: 0,
             bottom: 0,
             background: darkMode 
-              ? 'linear-gradient(180deg, rgba(0, 0, 0, 0.05) 0%, rgba(0, 0, 0, 0.1) 70%, rgba(0, 0, 0, 0.15) 100%)'
-              : 'linear-gradient(180deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.1) 70%, rgba(255, 255, 255, 0.05) 100%)',
+              ? 'linear-gradient(180deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.4) 100%)'
+              : 'linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.2) 100%)',
             zIndex: 1
-          },
-          '& > *': {
-            position: 'relative',
-            zIndex: 2
-          },
-          '&::after': {
-            content: '""',
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            height: '30px',
-            background: 'linear-gradient(to top, rgba(0, 0, 0, 0.1) 0%, transparent 100%)',
-            zIndex: 3,
-            pointerEvents: 'none'
           }
-        }}>
-        </Box>
+        }} />
       )}
+      
+      {/* Transparent Network Header */}
+      <Box sx={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        zIndex: 1300,
+        '& > div': {
+          backgroundColor: 'transparent !important',
+          borderBottom: 'none !important',
+          boxShadow: 'none !important',
+          backdropFilter: 'blur(10px)',
+          WebkitBackdropFilter: 'blur(10px)',
+          background: darkMode 
+            ? 'linear-gradient(180deg, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.3) 100%)'
+            : 'linear-gradient(180deg, rgba(255, 255, 255, 0.7) 0%, rgba(255, 255, 255, 0.4) 100%)',
+        }
+      }}>
+        <NetworkHeader />
+      </Box>
       
       {/* Original tabs section - normal position overlaying background */}
       <Box
@@ -763,7 +765,9 @@ function NetworkLandingPage() {
         sx={{
           mt: 40,
           mx: 'auto',
-          px: 6
+          px: 6,
+          position: 'relative',
+          zIndex: 100
         }}
       >
         <Box sx={{
@@ -771,10 +775,10 @@ function NetworkLandingPage() {
           width: '100%',
           mx: 'auto',
           px: 3,
-          marginTop: '-60px', // Negative margin to overlay the background image
+          marginTop: '-60px',
           position: 'relative',
-          zIndex: 100, // Above background image
-          opacity: 1 - (smoothTransitionProgress * 0.8), // Gradual fade based on proximity
+          zIndex: 100,
+          opacity: 1 - (smoothTransitionProgress * 0.8),
           transform: `translateY(${smoothTransitionProgress * -30}px) scale(${1 - (smoothTransitionProgress * 0.02)})`,
           transition: tabsTransition !== 'none' 
             ? 'opacity 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1)' 
@@ -788,10 +792,9 @@ function NetworkLandingPage() {
               borderRadius: '12px',
               overflow: 'hidden',
               position: 'relative',
-              // Strong background for better contrast
               backgroundColor: darkMode 
-                ? alpha('#000000', 0.9 + (scrollProgress * 0.05)) 
-                : alpha('#ffffff', 0.95 + (scrollProgress * 0.03)),
+                ? alpha('#000000', 0.8 + (scrollProgress * 0.05)) 
+                : alpha('#ffffff', 0.9 + (scrollProgress * 0.03)),
               backdropFilter: `blur(${20 + (scrollProgress * 8)}px) saturate(150%)`,
               WebkitBackdropFilter: `blur(${20 + (scrollProgress * 8)}px) saturate(150%)`,
               border: `1px solid ${darkMode 
@@ -801,21 +804,6 @@ function NetworkLandingPage() {
                 ? `0 16px 40px ${alpha('#000000', 0.7)}, 0 0 0 1px ${alpha('#ffffff', 0.05)}, inset 0 1px 0 ${alpha('#ffffff', 0.1)}` 
                 : `0 16px 40px ${alpha('#000000', 0.12)}, 0 0 0 1px ${alpha('#000000', 0.04)}, inset 0 1px 0 ${alpha('#ffffff', 0.9)}`,
               transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-              // Add strong overlay for image protection
-              '&::before': {
-                content: '""',
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                background: darkMode
-                  ? `linear-gradient(135deg, ${alpha('#0a0a0a', 0.3)} 0%, ${alpha('#1a1a1a', 0.2)} 50%, ${alpha('#0a0a0a', 0.1)} 100%)`
-                  : `linear-gradient(135deg, ${alpha('#ffffff', 0.6)} 0%, ${alpha('#f8f9fa', 0.4)} 50%, ${alpha('#ffffff', 0.2)} 100%)`,
-                pointerEvents: 'none',
-                zIndex: 1,
-                borderRadius: '12px',
-              },
             }}
           >
             <Tabs
@@ -830,7 +818,6 @@ function NetworkLandingPage() {
                 px: 2,
                 py: 1,
                 '& .MuiTab-root': {
-                  // High contrast text for readability
                   color: darkMode 
                     ? alpha('#ffffff', 0.9)
                     : alpha('#000000', 0.85),
@@ -846,13 +833,10 @@ function NetworkLandingPage() {
                   minHeight: 48,
                   minWidth: 'auto',
                   padding: '8px 16px',
-                  // Clean, minimal style without individual borders
                   background: 'transparent',
                   border: 'none',
                   boxShadow: 'none',
-                  // Remove text shadow for cleaner look
                   textShadow: 'none',
-                  // Icon and text styling
                   '& .MuiTab-iconWrapper': {
                     marginBottom: '2px',
                     fontSize: '1.1rem',
@@ -861,12 +845,10 @@ function NetworkLandingPage() {
                     color: darkMode 
                       ? '#ffffff'
                       : '#000000',
-                    // Subtle hover background
                     background: darkMode 
                       ? alpha('#ffffff', 0.08)
                       : alpha('#000000', 0.06),
                     transform: 'translateY(-1px)',
-                    // Clean hover shadow
                     boxShadow: darkMode
                       ? `0 4px 12px ${alpha('#000000', 0.3)}`
                       : `0 4px 12px ${alpha('#000000', 0.1)}`,
@@ -876,23 +858,19 @@ function NetworkLandingPage() {
                       ? '#ffffff'
                       : '#000000',
                     fontWeight: 600,
-                    // Clean selected background with high contrast
                     background: darkMode 
                       ? alpha('#ffffff', 0.12)
                       : alpha('#000000', 0.08),
-                    // Clean selected shadow
                     boxShadow: darkMode
                       ? `0 2px 8px ${alpha('#000000', 0.4)}, inset 0 1px 0 ${alpha('#ffffff', 0.15)}`
                       : `0 2px 8px ${alpha('#000000', 0.15)}, inset 0 1px 0 ${alpha('#ffffff', 0.8)}`,
                   },
-                  // Responsive design
                   [muiTheme.breakpoints.up('md')]: {
                     minWidth: 0,
                     flex: 1,
                     fontSize: '0.95rem',
                   },
                 },
-                // Clean, prominent indicator
                 '& .MuiTabs-indicator': {
                   backgroundColor: darkMode 
                     ? '#90caf9' 
@@ -900,41 +878,9 @@ function NetworkLandingPage() {
                   height: 4,
                   borderRadius: '4px 4px 0 0',
                   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                  // Add subtle glow for better visibility
                   boxShadow: darkMode
                     ? `0 0 8px ${alpha('#90caf9', 0.6)}`
                     : `0 0 8px ${alpha(muiTheme.palette.primary.main, 0.4)}`,
-                },
-                '& .MuiTabs-scroller': {
-                  // Hide scrollbar but keep functionality
-                  '&::-webkit-scrollbar': {
-                    display: 'none',
-                  },
-                  '-ms-overflow-style': 'none',
-                  'scrollbar-width': 'none',
-                  // Better responsive handling
-                  [muiTheme.breakpoints.up('md')]: {
-                    '& .MuiTabs-flexContainer': {
-                      width: '100%',
-                    },
-                  },
-                },
-                '& .MuiTabs-scrollButtons': {
-                  // Style scroll buttons for mobile
-                  color: darkMode 
-                    ? alpha('#ffffff', 0.7)
-                    : alpha('#000000', 0.6),
-                  '&.Mui-disabled': {
-                    opacity: 0.3,
-                  },
-                  '&:hover': {
-                    backgroundColor: darkMode 
-                      ? alpha('#ffffff', 0.08)
-                      : alpha('#000000', 0.04),
-                  },
-                  [muiTheme.breakpoints.up('md')]: {
-                    display: 'none',
-                  },
                 },
               }}
             >
@@ -977,19 +923,6 @@ function NetworkLandingPage() {
             : 'opacity 0.1s ease-out, transform 0.1s ease-out, backdrop-filter 0.1s ease-out',
           pointerEvents: isTabsFixed && tabsTransition !== 'unfixing' ? 'auto' : 'none',
           willChange: 'opacity, transform, backdrop-filter',
-            '&::before': {
-              content: '""',
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              background: darkMode
-                ? `linear-gradient(180deg, ${alpha('#1e1e1e', 0.2)} 0%, transparent 100%)`
-                : `linear-gradient(180deg, ${alpha('#ffffff', 0.3)} 0%, transparent 100%)`,
-              pointerEvents: 'none',
-              zIndex: -1,
-            },
         }}
       >
         <Box sx={{ 
@@ -997,181 +930,140 @@ function NetworkLandingPage() {
           mx: 'auto', 
           px: 3 
         }}>
-            <Paper 
-              ref={contentRef}
-              elevation={0}
-              sx={{ 
-                width: '100%', 
-                borderRadius: '12px',
-                overflow: 'hidden',
+          <Paper 
+            ref={contentRef}
+            elevation={0}
+            sx={{ 
+              width: '100%', 
+              borderRadius: '12px',
+              overflow: 'hidden',
+              position: 'relative',
+              backgroundColor: darkMode 
+                ? alpha('#000000', 0.92 + (smoothTransitionProgress * 0.05)) 
+                : alpha('#ffffff', 0.96 + (smoothTransitionProgress * 0.03)),
+              backdropFilter: `blur(${20 + (smoothTransitionProgress * 8)}px) saturate(150%)`,
+              WebkitBackdropFilter: `blur(${20 + (smoothTransitionProgress * 8)}px) saturate(150%)`,
+              border: `1px solid ${darkMode 
+                ? alpha('#ffffff', 0.15) 
+                : alpha('#000000', 0.08)}`,
+              boxShadow: darkMode 
+                ? `0 16px 40px ${alpha('#000000', 0.7)}, 0 0 0 1px ${alpha('#ffffff', 0.05)}, inset 0 1px 0 ${alpha('#ffffff', 0.1)}` 
+                : `0 16px 40px ${alpha('#000000', 0.12)}, 0 0 0 1px ${alpha('#000000', 0.04)}, inset 0 1px 0 ${alpha('#ffffff', 0.9)}`,
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            }}
+          >
+            <Tabs
+              value={activeTab}
+              onChange={handleTabChange}
+              variant="scrollable"
+              scrollButtons="auto"
+              allowScrollButtonsMobile
+              sx={{
                 position: 'relative',
-                // Strong background for better contrast
-                backgroundColor: darkMode 
-                  ? alpha('#000000', 0.92 + (smoothTransitionProgress * 0.05)) 
-                  : alpha('#ffffff', 0.96 + (smoothTransitionProgress * 0.03)),
-                backdropFilter: `blur(${20 + (smoothTransitionProgress * 8)}px) saturate(150%)`,
-                WebkitBackdropFilter: `blur(${20 + (smoothTransitionProgress * 8)}px) saturate(150%)`,
-                border: `1px solid ${darkMode 
-                  ? alpha('#ffffff', 0.15) 
-                  : alpha('#000000', 0.08)}`,
-                boxShadow: darkMode 
-                  ? `0 16px 40px ${alpha('#000000', 0.7)}, 0 0 0 1px ${alpha('#ffffff', 0.05)}, inset 0 1px 0 ${alpha('#ffffff', 0.1)}` 
-                  : `0 16px 40px ${alpha('#000000', 0.12)}, 0 0 0 1px ${alpha('#000000', 0.04)}, inset 0 1px 0 ${alpha('#ffffff', 0.9)}`,
-                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                // Add strong overlay for image protection
-                '&::before': {
-                  content: '""',
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  background: darkMode
-                    ? `linear-gradient(135deg, ${alpha('#0a0a0a', 0.3)} 0%, ${alpha('#1a1a1a', 0.2)} 50%, ${alpha('#0a0a0a', 0.1)} 100%)`
-                    : `linear-gradient(135deg, ${alpha('#ffffff', 0.6)} 0%, ${alpha('#f8f9fa', 0.4)} 50%, ${alpha('#ffffff', 0.2)} 100%)`,
-                  pointerEvents: 'none',
-                  zIndex: 1,
-                  borderRadius: '12px',
+                zIndex: 2,
+                px: 2,
+                py: 1,
+                '& .MuiTab-root': {
+                  color: darkMode 
+                    ? alpha('#ffffff', 0.9)
+                    : alpha('#000000', 0.85),
+                  fontWeight: 500,
+                  fontSize: '0.9rem',
+                  letterSpacing: '0.02em',
+                  textTransform: 'none',
+                  transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+                  position: 'relative',
+                  borderRadius: '10px',
+                  mx: 0.5,
+                  my: 0.5,
+                  minHeight: 48,
+                  minWidth: 'auto',
+                  padding: '8px 16px',
+                  background: 'transparent',
+                  border: 'none',
+                  boxShadow: 'none',
+                  textShadow: 'none',
+                  '& .MuiTab-iconWrapper': {
+                    marginBottom: '2px',
+                    fontSize: '1.1rem',
+                  },
+                  '&:hover': {
+                    color: darkMode 
+                      ? '#ffffff'
+                      : '#000000',
+                    background: darkMode 
+                      ? alpha('#ffffff', 0.08)
+                      : alpha('#000000', 0.06),
+                    transform: 'translateY(-1px)',
+                    boxShadow: darkMode
+                      ? `0 4px 12px ${alpha('#000000', 0.3)}`
+                      : `0 4px 12px ${alpha('#000000', 0.1)}`,
+                  },
+                  '&.Mui-selected': {
+                    color: darkMode 
+                      ? '#ffffff'
+                      : '#000000',
+                    fontWeight: 600,
+                    background: darkMode 
+                      ? alpha('#ffffff', 0.12)
+                      : alpha('#000000', 0.08),
+                    boxShadow: darkMode
+                      ? `0 2px 8px ${alpha('#000000', 0.4)}, inset 0 1px 0 ${alpha('#ffffff', 0.15)}`
+                      : `0 2px 8px ${alpha('#000000', 0.15)}, inset 0 1px 0 ${alpha('#ffffff', 0.8)}`,
+                  },
+                  [muiTheme.breakpoints.up('md')]: {
+                    minWidth: 0,
+                    flex: 1,
+                    fontSize: '0.95rem',
+                  },
+                },
+                '& .MuiTabs-indicator': {
+                  backgroundColor: darkMode 
+                    ? '#90caf9' 
+                    : muiTheme.palette.primary.main,
+                  height: 4,
+                  borderRadius: '4px 4px 0 0',
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  boxShadow: darkMode
+                    ? `0 0 8px ${alpha('#90caf9', 0.6)}`
+                    : `0 0 8px ${alpha(muiTheme.palette.primary.main, 0.4)}`,
                 },
               }}
             >
-              <Tabs
-                value={activeTab}
-                onChange={handleTabChange}
-                variant="scrollable"
-                scrollButtons="auto"
-                allowScrollButtonsMobile
-                sx={{
-                  position: 'relative',
-                  zIndex: 2,
-                  px: 2,
-                  py: 1,
-                  '& .MuiTab-root': {
-                    // High contrast text for readability
-                    color: darkMode 
-                      ? alpha('#ffffff', 0.9)
-                      : alpha('#000000', 0.85),
-                    fontWeight: 500,
-                    fontSize: '0.9rem',
-                    letterSpacing: '0.02em',
-                    textTransform: 'none',
-                    transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
-                    position: 'relative',
-                    borderRadius: '10px',
-                    mx: 0.5,
-                    my: 0.5,
-                    minHeight: 48,
-                    minWidth: 'auto',
-                    padding: '8px 16px',
-                    // Clean, minimal style without individual borders
-                    background: 'transparent',
-                    border: 'none',
-                    boxShadow: 'none',
-                    // Remove text shadow for cleaner look
-                    textShadow: 'none',
-                    // Icon and text styling
-                    '& .MuiTab-iconWrapper': {
-                      marginBottom: '2px',
-                      fontSize: '1.1rem',
-                    },
-                    '&:hover': {
-                      color: darkMode 
-                        ? '#ffffff'
-                        : '#000000',
-                      // Subtle hover background
-                      background: darkMode 
-                        ? alpha('#ffffff', 0.08)
-                        : alpha('#000000', 0.06),
-                      transform: 'translateY(-1px)',
-                      // Clean hover shadow
-                      boxShadow: darkMode
-                        ? `0 4px 12px ${alpha('#000000', 0.3)}`
-                        : `0 4px 12px ${alpha('#000000', 0.1)}`,
-                    },
-                    '&.Mui-selected': {
-                      color: darkMode 
-                        ? '#ffffff'
-                        : '#000000',
-                      fontWeight: 600,
-                      // Clean selected background with high contrast
-                      background: darkMode 
-                        ? alpha('#ffffff', 0.12)
-                        : alpha('#000000', 0.08),
-                      // Clean selected shadow
-                      boxShadow: darkMode
-                        ? `0 2px 8px ${alpha('#000000', 0.4)}, inset 0 1px 0 ${alpha('#ffffff', 0.15)}`
-                        : `0 2px 8px ${alpha('#000000', 0.15)}, inset 0 1px 0 ${alpha('#ffffff', 0.8)}`,
-                    },
-                    // Responsive design
-                    [muiTheme.breakpoints.up('md')]: {
-                      minWidth: 0,
-                      flex: 1,
-                      fontSize: '0.95rem',
-                    },
-                  },
-                  // Clean, prominent indicator
-                  '& .MuiTabs-indicator': {
-                    backgroundColor: darkMode 
-                      ? '#90caf9' 
-                      : muiTheme.palette.primary.main,
-                    height: 4,
-                    borderRadius: '4px 4px 0 0',
-                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                    // Add subtle glow for better visibility
-                    boxShadow: darkMode
-                      ? `0 0 8px ${alpha('#90caf9', 0.6)}`
-                      : `0 0 8px ${alpha(muiTheme.palette.primary.main, 0.4)}`,
-                  },
-                  '& .MuiTabs-scroller': {
-                    // Hide scrollbar but keep functionality
-                    '&::-webkit-scrollbar': {
-                      display: 'none',
-                    },
-                    '-ms-overflow-style': 'none',
-                    'scrollbar-width': 'none',
-                    // Better responsive handling
-                    [muiTheme.breakpoints.up('md')]: {
-                      '& .MuiTabs-flexContainer': {
-                        width: '100%',
-                      },
-                    },
-                  },
-                  '& .MuiTabs-scrollButtons': {
-                    // Style scroll buttons for mobile
-                    color: darkMode 
-                      ? alpha('#ffffff', 0.7)
-                      : alpha('#000000', 0.6),
-                    '&.Mui-disabled': {
-                      opacity: 0.3,
-                    },
-                    '&:hover': {
-                      backgroundColor: darkMode 
-                        ? alpha('#ffffff', 0.08)
-                        : alpha('#000000', 0.04),
-                    },
-                    [muiTheme.breakpoints.up('md')]: {
-                      display: 'none',
-                    },
-                  },
-                }}
-              >
-                {visibleTabs.map((tab) => (
-                  <Tab key={tab.id} icon={tab.icon} label={tab.label} />
-                ))}
-              </Tabs>
-            </Paper>
-          </Box>
+              {visibleTabs.map((tab) => (
+                <Tab key={tab.id} icon={tab.icon} label={tab.label} />
+              ))}
+            </Tabs>
+          </Paper>
         </Box>
+      </Box>
 
-
-      {/* Main content container */}
-      <Container maxWidth="lg" sx={{ mb: 4, position: 'relative', zIndex: 1050 }}>        
+      {/* Main content container with background overlay */}
+      <Container maxWidth="lg" sx={{ 
+        mb: 4, 
+        position: 'relative', 
+        zIndex: 1050,
+        '&::before': {
+          content: '""',
+          position: 'absolute',
+          top: 0,
+          left: '-50vw',
+          right: '-50vw',
+          bottom: 0,
+          background: darkMode 
+            ? alpha('#121212', 0.85)
+            : alpha('#ffffff', 0.9),
+          zIndex: -1,
+          backdropFilter: 'blur(5px)',
+          WebkitBackdropFilter: 'blur(5px)',
+        }
+      }}>        
         {/* Content area with subtle animation */}
         <Box
           sx={{
             p: { xs: 2, sm: 3 },
-            pt: isTabsFixed ? '80px' : { xs: 3, sm: 3 }, // Consistent top padding
-            minHeight: '600px', // Ensure enough content to scroll and test sticky behavior
+            pt: isTabsFixed ? '80px' : { xs: 3, sm: 3 },
+            minHeight: '600px',
             animation: 'fadeInUp 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
             '@keyframes fadeInUp': {
               '0%': {
@@ -1249,8 +1141,8 @@ function NetworkLandingPage() {
                         ? alpha('#90caf9', 0.8)
                         : alpha('#1976d2', 0.7),
                       fontSize: '1.1rem',
-                      mt: 0.1, // Slight vertical alignment with text
-                      flexShrink: 0, // Prevent icon from shrinking
+                      mt: 0.1,
+                      flexShrink: 0,
                       cursor: 'help',
                       transition: 'color 0.2s ease',
                       '&:hover': {
@@ -1270,7 +1162,7 @@ function NetworkLandingPage() {
                     fontSize: { xs: '0.875rem', lg: '1rem' },
                     lineHeight: 1.6,
                     fontWeight: { xs: 400, lg: 500 },
-                    flex: 1, // Take remaining space
+                    flex: 1,
                   }}
                 >
                   {getTabDescription(currentTabId, network?.tab_descriptions)}
@@ -1279,198 +1171,198 @@ function NetworkLandingPage() {
             </Paper>
           )}
 
-      {/* Conditionally render the appropriate tab component */}
-      {currentTabId === 'members' && (
-        <MembersTab 
-          networkMembers={networkMembers}
-          user={user}
-          activeProfile={activeProfile}
-          isUserAdmin={isUserAdmin}
-          networkId={network.id}
-          loading={loading}
+          {/* Conditionally render the appropriate tab component */}
+          {currentTabId === 'members' && (
+            <MembersTab 
+              networkMembers={networkMembers}
+              user={user}
+              activeProfile={activeProfile}
+              isUserAdmin={isUserAdmin}
+              networkId={network.id}
+              loading={loading}
+              darkMode={membersTabDarkMode}
+              onMemberSelect={handleMemberSelect}
+              onMemberCountChange={setMemberCount}
+            />
+          )}
+
+          {currentTabId === 'events' && (
+            <EventsTab
+              events={events}
+              user={user}
+              isUserAdmin={isUserAdmin}
+              userParticipations={userParticipations}
+              onParticipationChange={handleParticipationChange}
+              network={network}
+              darkMode={darkMode}
+            />
+          )}
+
+          {currentTabId === 'news' && (
+            <NewsTab
+              networkNews={networkNews}
+              networkMembers={networkMembers}
+              darkMode={darkMode}
+            />
+          )}
+
+          {currentTabId === 'chat' && (
+            <ChatTab
+              networkId={network.id}
+              isUserMember={isUserMember}
+              darkMode={darkMode}
+            />
+          )}
+
+          {currentTabId === 'social' && (
+            <SocialWallTab
+              socialWallItems={socialWallItems}
+              networkMembers={networkMembers}
+              darkMode={darkMode}
+              isAdmin={isUserAdmin}
+              networkId={network.id}
+              onPostDeleted={handlePostDeleted}
+            />
+          )}
+
+          {currentTabId === 'wiki' && (
+            <WikiTab
+              networkId={network.id}
+              isUserMember={isUserMember}
+              darkMode={darkMode}
+            />
+          )}
+
+          {currentTabId === 'about' && (
+            <AboutTab
+              network={network}
+              networkMembers={networkMembers}
+              isUserAdmin={isUserAdmin}
+              darkMode={darkMode}
+            />
+          )}
+
+          {currentTabId === 'files' && (
+            <FilesTab
+              networkId={network.id}
+              isUserMember={isUserMember}
+              darkMode={darkMode}
+              files={files}
+            />
+          )}
+        </Box>
+      
+        {/* Member details modal */}
+        <MemberDetailsModal
+          open={showMemberModal}
+          onClose={() => setShowMemberModal(false)}
+          member={selectedMember}
+          posts={selectedMember ? postItems.filter(item => item.profile_id === selectedMember.id) : []}
           darkMode={membersTabDarkMode}
-          onMemberSelect={handleMemberSelect}
-          onMemberCountChange={setMemberCount}
         />
-      )}
-
-      {currentTabId === 'events' && (
-        <EventsTab
-          events={events}
+        
+        {!isUserMember && user && (
+          <Paper 
+            sx={{ 
+              p: 3, 
+              mt: 3, 
+              backgroundColor: darkMode ? alpha('#1976d2', 0.2) : 'primary.light', 
+              color: muiTheme.palette.custom.lightText,
+              border: darkMode ? `1px solid ${alpha('#1976d2', 0.5)}` : 'none',
+            }}
+          >
+            <Typography variant="h6" gutterBottom>
+              You're not a member of this network
+            </Typography>
+            <Typography variant="body1" gutterBottom>
+              Contact a network administrator to request joining this network.
+            </Typography>
+          </Paper>
+        )}
+        
+        {/* Welcome Message Dialog */}
+        <WelcomeMessage
+          open={showWelcomeMessage}
+          onClose={() => setShowWelcomeMessage(false)}
+          network={network}
           user={user}
-          isUserAdmin={isUserAdmin}
-          userParticipations={userParticipations}
-          onParticipationChange={handleParticipationChange}
-          network={network}
-          darkMode={darkMode} // Pass dark mode to events tab
-        />
-      )}
-
-      {currentTabId === 'news' && (
-        <NewsTab
-          networkNews={networkNews}
-          networkMembers={networkMembers}
-          darkMode={darkMode} // Pass dark mode to news tab
-        />
-      )}
-
-      {currentTabId === 'chat' && (
-        <ChatTab
-          networkId={network.id}
-          isUserMember={isUserMember}
-          darkMode={darkMode} // Pass dark mode to chat tab
-        />
-      )}
-
-      {currentTabId === 'social' && (
-        <SocialWallTab
-          socialWallItems={socialWallItems}
-          networkMembers={networkMembers}
-          darkMode={darkMode} // Pass dark mode to social wall tab
-          isAdmin={isUserAdmin}
-          networkId={network.id}
-          onPostDeleted={handlePostDeleted}
-        />
-      )}
-
-      {currentTabId === 'wiki' && (
-        <WikiTab
-          networkId={network.id}
-          isUserMember={isUserMember}
-          darkMode={darkMode} // Pass dark mode to wiki tab
-        />
-      )}
-
-      {currentTabId === 'about' && (
-        <AboutTab
-          network={network}
-          networkMembers={networkMembers}
-          isUserAdmin={isUserAdmin}
-          darkMode={darkMode} // Pass dark mode to about tab
-        />
-      )}
-
-      {currentTabId === 'files' && (
-        <FilesTab
-          networkId={network.id}
-          isUserMember={isUserMember}
-          darkMode={darkMode} // Pass dark mode to files tab
-          files={files}
-        />
-      )}
-        </Box>
-      
-      {/* Member details modal */}
-      <MemberDetailsModal
-        open={showMemberModal}
-        onClose={() => setShowMemberModal(false)}
-        member={selectedMember}
-        posts={selectedMember ? postItems.filter(item => item.profile_id === selectedMember.id) : []}
-        darkMode={membersTabDarkMode}
-      />
-      
-      {!isUserMember && user && (
-        <Paper 
-          sx={{ 
-            p: 3, 
-            mt: 3, 
-            backgroundColor: darkMode ? alpha('#1976d2', 0.2) : 'primary.light', 
-            color: muiTheme.palette.custom.lightText,
-            border: darkMode ? `1px solid ${alpha('#1976d2', 0.5)}` : 'none',
+          onStartTour={() => {
+            setShowWelcomeMessage(false);
+            setShowOnboarding(true);
           }}
-        >
-          <Typography variant="h6" gutterBottom>
-            You're not a member of this network
-          </Typography>
-          <Typography variant="body1" gutterBottom>
-            Contact a network administrator to request joining this network.
-          </Typography>
-        </Paper>
-      )}
-      
-      {/* Welcome Message Dialog */}
-      <WelcomeMessage
-        open={showWelcomeMessage}
-        onClose={() => setShowWelcomeMessage(false)}
-        network={network}
-        user={user}
-        onStartTour={() => {
-          setShowWelcomeMessage(false);
-          setShowOnboarding(true);
-        }}
-      />
+        />
 
-      {/* Onboarding Guide */}
-      <OnboardingGuide
-        networkId={network?.id}
-        isNetworkAdmin={isUserAdmin}
-        memberCount={memberCount}
-        currentPage="network"
-        forceShow={showOnboarding}
-        onComplete={() => setShowOnboarding(false)}
-      />
-      
-      {/* Debug button for testing - remove in production */}
-      {process.env.NODE_ENV === 'development' && (
-        <Box sx={{ position: 'fixed', bottom: 20, right: 20, zIndex: 9999 }}>
-          <Button
-            variant="contained"
-            size="small"
-            onClick={() => {
-              // Clear welcome shown flag
-              const welcomeShownKey = `welcome_shown_${network?.id}_${user?.id}`;
-              localStorage.removeItem(welcomeShownKey);
-              localStorage.removeItem(`onboarding-dismissed-${network?.id}`);
-              console.log('[Debug] Cleared welcome flags, reloading...');
-              window.location.reload();
-            }}
-            sx={{ mb: 1, display: 'block' }}
-          >
-            Reset Welcome
-          </Button>
-          <Button
-            variant="contained"
-            size="small"
-            color="secondary"
-            onClick={() => {
-              console.log('[Debug] Manually showing welcome message');
-              setShowWelcomeMessage(true);
-            }}
-            sx={{ mb: 1, display: 'block' }}
-          >
-            Show Welcome
-          </Button>
-          <Button
-            variant="contained"
-            size="small"
-            color="info"
-            onClick={() => {
-              console.log('[Debug] Setting profile created flag for testing');
-              localStorage.setItem(`profile_created_${network?.id}_${activeProfile?.id}`, 'true');
-              console.log('[Debug] Flag set, reloading...');
-              window.location.reload();
-            }}
-            sx={{ mb: 1, display: 'block' }}
-          >
-            Test New Member
-          </Button>
-          <Button
-            variant="contained"
-            size="small"
-            color="warning"
-            onClick={() => {
-              console.log('[Debug] Simulating from_invite URL parameter');
-              window.location.href = window.location.pathname + '?from_invite=true';
-            }}
-          >
-            Test from_invite
-          </Button>
-        </Box>
-      )}
+        {/* Onboarding Guide */}
+        <OnboardingGuide
+          networkId={network?.id}
+          isNetworkAdmin={isUserAdmin}
+          memberCount={memberCount}
+          currentPage="network"
+          forceShow={showOnboarding}
+          onComplete={() => setShowOnboarding(false)}
+        />
+        
+        {/* Debug button for testing - remove in production */}
+        {process.env.NODE_ENV === 'development' && (
+          <Box sx={{ position: 'fixed', bottom: 20, right: 20, zIndex: 9999 }}>
+            <Button
+              variant="contained"
+              size="small"
+              onClick={() => {
+                // Clear welcome shown flag
+                const welcomeShownKey = `welcome_shown_${network?.id}_${user?.id}`;
+                localStorage.removeItem(welcomeShownKey);
+                localStorage.removeItem(`onboarding-dismissed-${network?.id}`);
+                console.log('[Debug] Cleared welcome flags, reloading...');
+                window.location.reload();
+              }}
+              sx={{ mb: 1, display: 'block' }}
+            >
+              Reset Welcome
+            </Button>
+            <Button
+              variant="contained"
+              size="small"
+              color="secondary"
+              onClick={() => {
+                console.log('[Debug] Manually showing welcome message');
+                setShowWelcomeMessage(true);
+              }}
+              sx={{ mb: 1, display: 'block' }}
+            >
+              Show Welcome
+            </Button>
+            <Button
+              variant="contained"
+              size="small"
+              color="info"
+              onClick={() => {
+                console.log('[Debug] Setting profile created flag for testing');
+                localStorage.setItem(`profile_created_${network?.id}_${activeProfile?.id}`, 'true');
+                console.log('[Debug] Flag set, reloading...');
+                window.location.reload();
+              }}
+              sx={{ mb: 1, display: 'block' }}
+            >
+              Test New Member
+            </Button>
+            <Button
+              variant="contained"
+              size="small"
+              color="warning"
+              onClick={() => {
+                console.log('[Debug] Simulating from_invite URL parameter');
+                window.location.href = window.location.pathname + '?from_invite=true';
+              }}
+            >
+              Test from_invite
+            </Button>
+          </Box>
+        )}
       </Container>
     </Box>
   );
 }
 
 // Export the wrapper component instead of the base component
-export default NetworkLandingPageWrapper;
+export default NetworkLandingPageAltWrapper;

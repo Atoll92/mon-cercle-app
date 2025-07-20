@@ -57,6 +57,7 @@ const MediaTest = lazy(() => import('./pages/MediaTest'));
 const TermsPage = lazy(() => import('./pages/TermsPage'));
 const PrivacyPage = lazy(() => import('./pages/PrivacyPage'));
 const NetworkLandingPageFloatingElements = lazy(() => import('./pages/NetworkLandingPageFloatingElements'));
+const NetworkLandingPageAlt = lazy(() => import('./pages/NetworkLandingPageAlt'));
 const DocumentationPage = lazy(() => import('./pages/DocumentationPage'));
 const EnhancedLandingPage = lazy(() => import('./pages/EnhancedLandingPage'));
 const AlternativeLandingPage = lazy(() => import('./pages/AlternativeLandingPage'));
@@ -166,7 +167,9 @@ function App() {
              !window.location.pathname.startsWith("/micro-conclav/") &&
              window.location.pathname !== "/network" &&
              window.location.pathname !== "/network-floating" &&
-             !window.location.pathname.match(/^\/network\/[^\/]+$/) && (
+             window.location.pathname !== "/network-alt" &&
+             !window.location.pathname.match(/^\/network\/[^\/]+$/) &&
+             !window.location.pathname.match(/^\/network-alt\/[^\/]+$/) && (
               <NetworkHeader/>
             )}
             <Box component="main" sx={{ 
@@ -182,8 +185,10 @@ function App() {
                  window.location.pathname !== "/login" && 
                  !window.location.pathname.startsWith("/micro-conclav/") &&
                  window.location.pathname !== "/network" &&
-             window.location.pathname !== "/network-floating" &&
-                 !window.location.pathname.match(/^\/network\/[^\/]+$/)) ? '80px' : 0
+                 window.location.pathname !== "/network-floating" &&
+                 window.location.pathname !== "/network-alt" &&
+                 !window.location.pathname.match(/^\/network\/[^\/]+$/) &&
+                 !window.location.pathname.match(/^\/network-alt\/[^\/]+$/)) ? '80px' : 0
             }}>
               <Suspense fallback={<PageLoader />}>
                 <Routes>
@@ -281,6 +286,8 @@ function App() {
             <Route path="/network-overlap/:networkId" element={<NetworkLandingPageOverlap />} />
             <Route path="/network-floating" element={<ProfileAwareRoute><NetworkLandingPageFloatingElements /></ProfileAwareRoute>} />
             <Route path="/network-floating/:networkId" element={<NetworkLandingPageFloatingElements />} />
+            <Route path="/network-alt" element={<ProfileAwareRoute><NetworkLandingPageAlt /></ProfileAwareRoute>} />
+            <Route path="/network-alt/:networkId" element={<NetworkLandingPageAlt />} />
             
             {/* Join network via invitation link */}
             <Route path="/join/:code" element={<JoinNetworkPage />} />
