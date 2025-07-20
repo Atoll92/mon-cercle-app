@@ -710,8 +710,9 @@ function NetworkLandingPage() {
       {/* Full-width Background Header - Extended to include tabs area */}
       {network && (
         <Box sx={{
+          position: 'fixed',
           width: '100%',
-          minHeight: '320px', // Increased height to accommodate tabs overlay
+          minHeight: '390px', // Increased height to accommodate tabs overlay
           paddingTop: '80px', // Account for fixed header
           paddingBottom: '60px', // Space for tabs overlay
           backgroundImage: network.background_image_url 
@@ -722,7 +723,6 @@ function NetworkLandingPage() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          position: 'relative',
           overflow: 'hidden',
           '&::before': {
             content: '""',
@@ -739,6 +739,17 @@ function NetworkLandingPage() {
           '& > *': {
             position: 'relative',
             zIndex: 2
+          },
+          '&::after': {
+            content: '""',
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: '30px',
+            background: 'linear-gradient(to top, rgba(0, 0, 0, 0.1) 0%, transparent 100%)',
+            zIndex: 3,
+            pointerEvents: 'none'
           }
         }}>
         </Box>
@@ -747,8 +758,17 @@ function NetworkLandingPage() {
       {/* Original tabs section - normal position overlaying background */}
       <Box
         id="tabs-original-position"
+        maxWidth="lg"
         sx={{
-          width: '100%',
+          mt: 40,
+          mx: 'auto',
+          px: 6
+        }}
+      >
+        <Container maxWidth="lg" sx={{
+          borderRadius: 2,
+          width: 'auto',
+          mx: 'auto',
           marginTop: '-60px', // Negative margin to overlay the background image
           position: 'relative',
           zIndex: 100, // Above background image
@@ -782,13 +802,10 @@ function NetworkLandingPage() {
               : `radial-gradient(ellipse at top, ${alpha('#2196f3', 0.04)} 0%, transparent 70%)`,
             pointerEvents: 'none',
           },
-        }}
-      >
-        <Container maxWidth="lg" sx={{ px: 0 }}>
+        }}>
           <Paper 
             elevation={0}
             sx={{ 
-              width: '100%', 
               borderRadius: 0,
               overflow: 'hidden',
               background: 'transparent',
@@ -882,7 +899,6 @@ function NetworkLandingPage() {
           left: 0,
           right: 0,
           zIndex: 1250,
-          width: '100%',
           backgroundColor: darkMode 
             ? alpha('#121212', 0.8 + (smoothTransitionProgress * 0.05)) 
             : alpha('#ffffff', 0.8 + (smoothTransitionProgress * 0.05)),
