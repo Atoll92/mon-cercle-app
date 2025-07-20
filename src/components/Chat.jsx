@@ -1373,9 +1373,9 @@ const renderMessageContent = (message) => {
                       ? alpha('#e3f2fd', 0.9) 
                       : alpha('#fff', 0.85)),
                   borderRadius: 2,
-                  mb: 1,
-                  py: 0.5, // Reduced vertical padding
-                  px: 1.5, // Slightly reduced horizontal padding
+                  mb: 0.5, // Reduced margin between messages
+                  py: 0.25, // Further reduced vertical padding
+                  px: 1, // Reduced horizontal padding
                   backdropFilter: 'blur(8px)',
                   boxShadow: darkMode
                     ? '0 1px 3px rgba(0,0,0,0.2)'
@@ -1407,7 +1407,7 @@ const renderMessageContent = (message) => {
                   }
                 }}
               >
-                <ListItemAvatar sx={{ minWidth: 42 }}> {/* Reduced avatar area width */}
+                <ListItemAvatar sx={{ minWidth: 36 }}> {/* Further reduced avatar area width */}
                   <Avatar 
                     src={message.profiles?.profile_picture_url}
                     alt={message.profiles?.full_name}
@@ -1417,8 +1417,8 @@ const renderMessageContent = (message) => {
                     } : undefined}
                     sx={{
                       cursor: message.profiles?.id ? 'pointer' : 'default', 
-                      width: 32,  // Smaller avatar
-                      height: 32, // Smaller avatar
+                      width: 28,  // Smaller avatar
+                      height: 28, // Smaller avatar
                       border: darkMode
                         ? '2px solid white'
                         : '2px solid #e0e0e0',
@@ -1435,46 +1435,65 @@ const renderMessageContent = (message) => {
                 </ListItemAvatar>
                 <ListItemText
                   primary={
-                    message.profiles?.id ? (
-                      <Link 
-                        to={`/profile/${message.profiles.id}`}
-                        style={{ 
-                          textDecoration: 'none',
-                          color: darkMode 
-                            ? 'white' 
-                            : (message.user_id === activeProfile.id ? '#1565c0' : '#424242')
-                        }}
-                      >
-                        <Typography 
-                          variant="subtitle2" 
-                          component="span"
-                          sx={{ 
-                            fontWeight: 500,
-                            fontSize: '0.85rem', // Slightly smaller text
-                            '&:hover': {
-                              textDecoration: 'underline'
-                            }
-                          }}
-                        >
-                          {message.profiles?.full_name || 'Anonymous'}
-                          {message.user_id === activeProfile.id && ' (You)'}
-                        </Typography>
-                      </Link>
-                    ) : (
-                      <Typography 
-                        variant="subtitle2" 
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.25 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        {message.profiles?.id ? (
+                          <Link 
+                            to={`/profile/${message.profiles.id}`}
+                            style={{ 
+                              textDecoration: 'none',
+                              color: darkMode 
+                                ? 'white' 
+                                : (message.user_id === activeProfile.id ? '#1565c0' : '#424242')
+                            }}
+                          >
+                            <Typography 
+                              variant="subtitle2" 
+                              component="span"
+                              sx={{ 
+                                fontWeight: 500,
+                                fontSize: '0.8rem', // Smaller text for compactness
+                                '&:hover': {
+                                  textDecoration: 'underline'
+                                }
+                              }}
+                            >
+                              {message.profiles?.full_name || 'Anonymous'}
+                              {message.user_id === activeProfile.id && ' (You)'}
+                            </Typography>
+                          </Link>
+                        ) : (
+                          <Typography 
+                            variant="subtitle2" 
+                            sx={{ 
+                              color: darkMode 
+                                ? 'white' 
+                                : (message.user_id === activeProfile.id ? '#1565c0' : '#424242'),
+                              fontWeight: 500,
+                              fontSize: '0.8rem' // Smaller text for compactness
+                            }}
+                          >
+                            {message.profiles?.full_name || 'Anonymous'}
+                            {message.user_id === activeProfile.id && ' (You)'}
+                          </Typography>
+                        )}
+                      </Box>
+                      <Typography
+                        component="span"
+                        variant="caption"
                         sx={{ 
                           color: darkMode 
-                            ? 'white' 
-                            : (message.user_id === activeProfile.id ? '#1565c0' : '#424242'),
-                          fontWeight: 500,
-                          fontSize: '0.85rem' // Slightly smaller text
+                            ? 'rgba(255, 255, 255, 0.5)'
+                            : 'rgba(0, 0, 0, 0.4)',
+                          fontSize: '0.65rem',
+                          fontStyle: 'italic',
+                          ml: 1
                         }}
                       >
-                        {message.profiles?.full_name || 'Anonymous'}
-                        {message.user_id === activeProfile.id && ' (You)'}
+                        {new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        {message.pending && ' (sending...)'}
                       </Typography>
-                    )
+                    </Box>
                   }
                   secondary={
                     <>
@@ -1486,9 +1505,9 @@ const renderMessageContent = (message) => {
                             borderLeftColor: darkMode 
                               ? 'rgba(255, 255, 255, 0.3)' 
                               : 'rgba(0, 0, 0, 0.2)',
-                            pl: 1.5,
-                            mb: 0.5,
-                            py: 0.5,
+                            pl: 1,
+                            mb: 0.25,
+                            py: 0.25,
                             bgcolor: darkMode 
                               ? 'rgba(255, 255, 255, 0.05)' 
                               : 'rgba(0, 0, 0, 0.02)',
@@ -1501,7 +1520,7 @@ const renderMessageContent = (message) => {
                               color: darkMode 
                                 ? 'rgba(255, 255, 255, 0.6)' 
                                 : 'rgba(0, 0, 0, 0.5)',
-                              fontSize: '0.7rem',
+                              fontSize: '0.65rem',
                               fontWeight: 500
                             }}
                           >
@@ -1514,7 +1533,7 @@ const renderMessageContent = (message) => {
                               color: darkMode 
                                 ? 'rgba(255, 255, 255, 0.5)' 
                                 : 'rgba(0, 0, 0, 0.4)',
-                              fontSize: '0.75rem',
+                              fontSize: '0.7rem',
                               fontStyle: 'italic',
                               overflow: 'hidden',
                               textOverflow: 'ellipsis',
@@ -1526,29 +1545,18 @@ const renderMessageContent = (message) => {
                         </Box>
                       )}
                       {renderMessageContent(message)}
-                      <Typography
-                        component="span"
-                        variant="caption"
-                        sx={{ 
-                          display: 'flex', 
-                          alignItems: 'center', 
-                          gap: 0.5,
-                          color: darkMode 
-                            ? 'rgba(255, 255, 255, 0.5)'
-                            : 'rgba(0, 0, 0, 0.4)',
-                          fontSize: '0.65rem',
-                          mt: 0.5,
-                          fontStyle: 'italic'
-                        }}
-                      >
-                        {new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        {message.pending && ' (sending...)'}
-                      </Typography>
                     </>
                   }
                   sx={{
                     // Expand width for link previews
-                    width: containsLink ? '100%' : 'auto'
+                    width: containsLink ? '100%' : 'auto',
+                    // Reduce margins for compactness
+                    '& .MuiListItemText-primary': {
+                      marginBottom: 0
+                    },
+                    '& .MuiListItemText-secondary': {
+                      marginTop: 0
+                    }
                   }}
                 />
                 
