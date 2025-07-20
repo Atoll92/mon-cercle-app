@@ -32,8 +32,6 @@ const ProfilePage = lazy(() => import('./pages/ProfilePage'));
 const EditProfilePage = lazy(() => import('./pages/EditProfilePage'));
 const NetworkAdminPage = lazy(() => import('./pages/NetworkAdminPage'));
 const LandingPage = lazy(() => import('./pages/LandingPage'));
-const NewLandingPage = lazy(() => import('./pages/NewLandingPage'));
-const NewLandingPage2 = lazy(() => import('./pages/NewLandingPage2'));
 const WikiListPage = lazy(() => import('./pages/WikiListPage'));
 const WikiPage = lazy(() => import('./pages/WikiPage'));
 const WikiEditPage = lazy(() => import('./pages/WikiEditPage'));
@@ -196,8 +194,6 @@ function App() {
             <Route path="/simple-conclav" element={<SimpleConclavLanding/>}/>
             <Route path="/old" element={<LandingPage/>}/>
             <Route path="/alt" element={<AlternativeLandingPage/>}/>
-            <Route path="/new" element={<NewLandingPage/>}/>
-            <Route path="/new2" element={<NewLandingPage2/>}/>
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignupPage />} />
             <Route path="/password-reset" element={<PasswordResetPage />} />

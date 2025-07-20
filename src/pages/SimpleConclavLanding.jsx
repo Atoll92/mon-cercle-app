@@ -59,6 +59,14 @@ const translations = {
     startFreeTrial: "Start Free Trial",
     seeDemo: "See Demo",
     trialInfo: "30 days free • No credit card • Cancel anytime",
+    howItWorks: "How It Works",
+    howItWorksSubtitle: "Get started in 3 simple steps",
+    step1Title: "Create Your Network",
+    step1Description: "Set up your private community in seconds. Choose your name, upload your logo, and customize your space.",
+    step2Title: "Invite Your Community",
+    step2Description: "Send invitations to your members via email or share your network link. Control who joins and when.",
+    step3Title: "Share & Connect",
+    step3Description: "Start sharing portfolios, organizing events, and building authentic connections without Big Tech interference.",
     breakFree: "Break Free from Big Tech",
     noTracking: "No Google. No Meta. No Amazon. No Apple. No Microsoft tracking you.",
     europeanPrivacy: "European Privacy",
@@ -85,6 +93,14 @@ const translations = {
     startFreeTrial: "Commencer l'essai gratuit",
     seeDemo: "Voir la démo",
     trialInfo: "30 jours gratuits • Aucune carte de crédit • Annulez à tout moment",
+    howItWorks: "Comment ça marche",
+    howItWorksSubtitle: "Commencez en 3 étapes simples",
+    step1Title: "Créez votre réseau",
+    step1Description: "Configurez votre communauté privée en quelques secondes. Choisissez votre nom, téléchargez votre logo et personnalisez votre espace.",
+    step2Title: "Invitez votre communauté",
+    step2Description: "Envoyez des invitations à vos membres par email ou partagez le lien de votre réseau. Contrôlez qui rejoint et quand.",
+    step3Title: "Partagez et connectez",
+    step3Description: "Commencez à partager des portfolios, organiser des événements et créer des connexions authentiques sans l'interférence des Big Tech.",
     breakFree: "Libérez-vous des Big Tech",
     noTracking: "Pas de Google. Pas de Meta. Pas d'Amazon. Pas d'Apple. Pas de Microsoft qui vous traque.",
     europeanPrivacy: "Confidentialité européenne",
@@ -372,6 +388,285 @@ const SimpleConclavLanding = () => {
             {t.trialInfo}
           </Typography>
         </Box>
+        </Container>
+      </Box>
+
+      {/* How It Works Section */}
+      <Box sx={{ py: 8, bgcolor: 'white' }}>
+        <Container maxWidth="lg">
+          <Box
+            sx={{
+              animation: `${fadeInUp} 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.2s both`,
+              textAlign: 'center',
+            }}
+          >
+            <Typography variant="h3" gutterBottom fontWeight="bold" color="#2c3e50" sx={{ mb: 2 }}>
+              {t.howItWorks}
+            </Typography>
+            <Typography variant="h6" sx={{ color: '#7f8c8d', maxWidth: '600px', mx: 'auto', mb: 6, lineHeight: 1.6 }}>
+              {t.howItWorksSubtitle}
+            </Typography>
+
+            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', lg: 'row' }, gap: 4, justifyContent: 'center', alignItems: 'stretch' }}>
+              {/* Step 1 */}
+              <Box
+                sx={{
+                  flex: 1,
+                  maxWidth: { xs: '100%', lg: '350px' },
+                  animation: `${fadeInUp} 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.3s both`,
+                }}
+              >
+                <Box sx={{ position: 'relative', mb: 3 }}>
+                  {/* Post-it style wrapper */}
+                  <Paper
+                    elevation={4}
+                    sx={{
+                      position: 'relative',
+                      borderRadius: 2,
+                      backgroundColor: '#fff8e1',
+                      border: '1px solid #ffc107',
+                      transform: 'rotate(-1deg)',
+                      transition: 'all 0.3s ease',
+                      '&:hover': {
+                        transform: 'rotate(0deg) translateY(-4px)',
+                        boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
+                      },
+                      '&::before': {
+                        content: '""',
+                        position: 'absolute',
+                        top: 10,
+                        left: '50%',
+                        transform: 'translateX(-50%)',
+                        width: 40,
+                        height: 15,
+                        backgroundColor: 'rgba(0,0,0,0.1)',
+                        borderRadius: '0 0 8px 8px',
+                        opacity: 0.3
+                      }
+                    }}
+                  >
+                    {/* Big step number */}
+                    <Box
+                      sx={{
+                        position: 'absolute',
+                        top: -15,
+                        left: -15,
+                        width: 60,
+                        height: 60,
+                        backgroundColor: '#667eea',
+                        color: 'white',
+                        borderRadius: '50%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '2rem',
+                        fontWeight: 'bold',
+                        boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)',
+                        zIndex: 10
+                      }}
+                    >
+                      1
+                    </Box>
+
+                    {/* Screenshot */}
+                    <Box sx={{ p: 3, pt: 4 }}>
+                      <img
+                        src="/src/assets/screensforsteps/1.png"
+                        alt="Create Your Network Screenshot"
+                        style={{
+                          width: '100%',
+                          height: 'auto',
+                          borderRadius: '8px',
+                          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                        }}
+                      />
+                    </Box>
+                  </Paper>
+                </Box>
+                
+                <Box sx={{ textAlign: 'center', px: 2 }}>
+                  <Typography variant="h5" gutterBottom fontWeight="bold" color="#2c3e50" sx={{ mb: 2 }}>
+                    {t.step1Title}
+                  </Typography>
+                  <Typography color="#7f8c8d" sx={{ lineHeight: 1.6, fontSize: '1rem' }}>
+                    {t.step1Description}
+                  </Typography>
+                </Box>
+              </Box>
+
+              {/* Step 2 */}
+              <Box
+                sx={{
+                  flex: 1,
+                  maxWidth: { xs: '100%', lg: '350px' },
+                  animation: `${fadeInUp} 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.4s both`,
+                }}
+              >
+                <Box sx={{ position: 'relative', mb: 3 }}>
+                  {/* Post-it style wrapper */}
+                  <Paper
+                    elevation={4}
+                    sx={{
+                      position: 'relative',
+                      borderRadius: 2,
+                      backgroundColor: '#e8f5e8',
+                      border: '1px solid #4caf50',
+                      transform: 'rotate(1deg)',
+                      transition: 'all 0.3s ease',
+                      '&:hover': {
+                        transform: 'rotate(0deg) translateY(-4px)',
+                        boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
+                      },
+                      '&::before': {
+                        content: '""',
+                        position: 'absolute',
+                        top: 10,
+                        left: '50%',
+                        transform: 'translateX(-50%)',
+                        width: 40,
+                        height: 15,
+                        backgroundColor: 'rgba(0,0,0,0.1)',
+                        borderRadius: '0 0 8px 8px',
+                        opacity: 0.3
+                      }
+                    }}
+                  >
+                    {/* Big step number */}
+                    <Box
+                      sx={{
+                        position: 'absolute',
+                        top: -15,
+                        left: -15,
+                        width: 60,
+                        height: 60,
+                        backgroundColor: '#4caf50',
+                        color: 'white',
+                        borderRadius: '50%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '2rem',
+                        fontWeight: 'bold',
+                        boxShadow: '0 4px 12px rgba(76, 175, 80, 0.3)',
+                        zIndex: 10
+                      }}
+                    >
+                      2
+                    </Box>
+
+                    {/* Screenshot */}
+                    <Box sx={{ p: 3, pt: 4 }}>
+                      <img
+                        src="/src/assets/screensforsteps/2.png"
+                        alt="Invite Your Community Screenshot"
+                        style={{
+                          width: '100%',
+                          height: 'auto',
+                          borderRadius: '8px',
+                          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                        }}
+                      />
+                    </Box>
+                  </Paper>
+                </Box>
+                
+                <Box sx={{ textAlign: 'center', px: 2 }}>
+                  <Typography variant="h5" gutterBottom fontWeight="bold" color="#2c3e50" sx={{ mb: 2 }}>
+                    {t.step2Title}
+                  </Typography>
+                  <Typography color="#7f8c8d" sx={{ lineHeight: 1.6, fontSize: '1rem' }}>
+                    {t.step2Description}
+                  </Typography>
+                </Box>
+              </Box>
+
+              {/* Step 3 */}
+              <Box
+                sx={{
+                  flex: 1,
+                  maxWidth: { xs: '100%', lg: '350px' },
+                  animation: `${fadeInUp} 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.5s both`,
+                }}
+              >
+                <Box sx={{ position: 'relative', mb: 3 }}>
+                  {/* Post-it style wrapper */}
+                  <Paper
+                    elevation={4}
+                    sx={{
+                      position: 'relative',
+                      borderRadius: 2,
+                      backgroundColor: '#fce4ec',
+                      border: '1px solid #e91e63',
+                      transform: 'rotate(1.5deg)',
+                      transition: 'all 0.3s ease',
+                      '&:hover': {
+                        transform: 'rotate(0deg) translateY(-4px)',
+                        boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
+                      },
+                      '&::before': {
+                        content: '""',
+                        position: 'absolute',
+                        top: 10,
+                        left: '50%',
+                        transform: 'translateX(-50%)',
+                        width: 40,
+                        height: 15,
+                        backgroundColor: 'rgba(0,0,0,0.1)',
+                        borderRadius: '0 0 8px 8px',
+                        opacity: 0.3
+                      }
+                    }}
+                  >
+                    {/* Big step number */}
+                    <Box
+                      sx={{
+                        position: 'absolute',
+                        top: -15,
+                        left: -15,
+                        width: 60,
+                        height: 60,
+                        backgroundColor: '#e91e63',
+                        color: 'white',
+                        borderRadius: '50%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '2rem',
+                        fontWeight: 'bold',
+                        boxShadow: '0 4px 12px rgba(233, 30, 99, 0.3)',
+                        zIndex: 10
+                      }}
+                    >
+                      3
+                    </Box>
+
+                    {/* Screenshot */}
+                    <Box sx={{ p: 3, pt: 4 }}>
+                      <img
+                        src="/src/assets/screensforsteps/3.png"
+                        alt="Share & Connect Screenshot"
+                        style={{
+                          width: '100%',
+                          height: 'auto',
+                          borderRadius: '8px',
+                          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                        }}
+                      />
+                    </Box>
+                  </Paper>
+                </Box>
+                
+                <Box sx={{ textAlign: 'center', px: 2 }}>
+                  <Typography variant="h5" gutterBottom fontWeight="bold" color="#2c3e50" sx={{ mb: 2 }}>
+                    {t.step3Title}
+                  </Typography>
+                  <Typography color="#7f8c8d" sx={{ lineHeight: 1.6, fontSize: '1rem' }}>
+                    {t.step3Description}
+                  </Typography>
+                </Box>
+              </Box>
+            </Box>
+          </Box>
         </Container>
       </Box>
 

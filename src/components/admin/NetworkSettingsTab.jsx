@@ -57,10 +57,13 @@ import {
   LocationOn as LocationIcon,
   NotificationsActive as NotificationsIcon,
   Timeline as TimelineIcon,
-  DragIndicator as DragIndicatorIcon
+  DragIndicator as DragIndicatorIcon,
+  Edit as EditIcon,
+  Description as DescriptionIcon
 } from '@mui/icons-material';
 import { updateNetworkDetails } from '../../api/networks';
 import { triggerNetworkRefresh } from '../../hooks/useNetworkRefresh';
+import { defaultTabDescriptions } from '../../utils/tabDescriptions';
 
 // Sortable Chip Component
 const SortableTabChip = ({ tab, isSelected, onToggle, darkMode }) => {
@@ -193,6 +196,21 @@ const NetworkSettingsTab = ({ network, onNetworkUpdate, darkMode }) => {
     return ['news', 'members', 'events', 'chat', 'files', 'wiki'];
   });
   
+  // Tab descriptions
+  const [tabDescriptions, setTabDescriptions] = useState(() => {
+    if (network?.tab_descriptions) {
+      try {
+        return typeof network.tab_descriptions === 'string' 
+          ? JSON.parse(network.tab_descriptions) 
+          : network.tab_descriptions || {};
+      } catch (e) {
+        console.error('Error parsing tab descriptions:', e);
+        return {};
+      }
+    }
+    return {};
+  });
+  
   const [updating, setUpdating] = useState(false);
   const [error, setError] = useState(null);
   const [message, setMessage] = useState('');
@@ -224,7 +242,8 @@ const NetworkSettingsTab = ({ network, onNetworkUpdate, darkMode }) => {
         location_sharing: features.location,
         notifications: features.notifications
       }),
-      enabled_tabs: enabledTabs
+      enabled_tabs: enabledTabs,
+      tab_descriptions: tabDescriptions
     };
     
     const result = await updateNetworkDetails(network.id, updates);
@@ -259,6 +278,13 @@ const NetworkSettingsTab = ({ network, onNetworkUpdate, darkMode }) => {
     });
   };
   
+  const handleTabDescriptionChange = (tabId, description) => {
+    setTabDescriptions(prev => ({
+      ...prev,
+      [tabId]: description
+    }));
+  };
+  
   // Handle drag end for tab reordering
   const handleDragEnd = (event) => {
     const { active, over } = event;
@@ -273,13 +299,48 @@ const NetworkSettingsTab = ({ network, onNetworkUpdate, darkMode }) => {
   };
   
   const availableTabs = [
-    { id: 'news', label: 'News', icon: <ArticleIcon fontSize="small" /> },
-    { id: 'members', label: 'Members', icon: <GroupsIcon fontSize="small" /> },
-    { id: 'events', label: 'Events', icon: <EventIcon fontSize="small" /> },
-    { id: 'chat', label: 'Chat', icon: <ForumIcon fontSize="small" /> },
-    { id: 'files', label: 'Files', icon: <FileIcon fontSize="small" /> },
-    { id: 'wiki', label: 'Wiki', icon: <WikiIcon fontSize="small" /> },
-    { id: 'social', label: 'Social Wall', icon: <TimelineIcon fontSize="small" /> }
+    { 
+      id: 'news', 
+      label: 'News', 
+      icon: <ArticleIcon fontSize="small" />,
+      defaultDescription: defaultTabDescriptions.news
+    },
+    { 
+      id: 'members', 
+      label: 'Members', 
+      icon: <GroupsIcon fontSize="small" />,
+      defaultDescription: defaultTabDescriptions.members
+    },
+    { 
+      id: 'events', 
+      label: 'Events', 
+      icon: <EventIcon fontSize="small" />,
+      defaultDescription: defaultTabDescriptions.events
+    },
+    { 
+      id: 'chat', 
+      label: 'Chat', 
+      icon: <ForumIcon fontSize="small" />,
+      defaultDescription: defaultTabDescriptions.chat
+    },
+    { 
+      id: 'files', 
+      label: 'Files', 
+      icon: <FileIcon fontSize="small" />,
+      defaultDescription: defaultTabDescriptions.files
+    },
+    { 
+      id: 'wiki', 
+      label: 'Wiki', 
+      icon: <WikiIcon fontSize="small" />,
+      defaultDescription: defaultTabDescriptions.wiki
+    },
+    { 
+      id: 'social', 
+      label: 'Social Wall', 
+      icon: <TimelineIcon fontSize="small" />,
+      defaultDescription: defaultTabDescriptions.social
+    }
   ];
   
   const featuresList = [
@@ -553,6 +614,90 @@ const NetworkSettingsTab = ({ network, onNetworkUpdate, darkMode }) => {
                   ))}
               </Box>
             </Box>
+          </AccordionDetails>
+        </Accordion>
+
+        {/* Tab Descriptions */}
+        <Accordion defaultExpanded sx={{ mt: 2 }}>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography sx={{ display: 'flex', alignItems: 'center', fontWeight: 'medium' }}>
+              <DescriptionIcon sx={{ mr: 1 }} />
+              Tab Feature Guidelines
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+              Add custom descriptions for each tab to help members understand their purpose and usage guidelines.
+            </Typography>
+            
+            <Grid container spacing={2}>
+              {availableTabs
+                .filter(tab => enabledTabs.includes(tab.id) && features[tab.id] !== false)
+                .map((tab) => (
+                  <Grid item xs={12} key={tab.id}>
+                    <Paper
+                      variant="outlined"
+                      sx={{
+                        p: 2,
+                        borderColor: 'divider',
+                        bgcolor: 'background.paper',
+                        '&:hover': {
+                          borderColor: 'primary.main',
+                          bgcolor: alpha(muiTheme.palette.primary.main, 0.02)
+                        }
+                      }}
+                    >
+                      <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 1 }}>
+                        <Box sx={{ color: 'primary.main', mr: 1 }}>
+                          {tab.icon}
+                        </Box>
+                        <Typography variant="subtitle1" sx={{ flexGrow: 1, fontWeight: 'medium' }}>
+                          {tab.label}
+                        </Typography>
+                      </Box>
+                      
+                      {/* Show default description if no custom description is set */}
+                      {!tabDescriptions[tab.id] && (
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2, fontStyle: 'italic' }}>
+                          Default: {tab.defaultDescription}
+                        </Typography>
+                      )}
+                      
+                      <TextField
+                        fullWidth
+                        multiline
+                        minRows={2}
+                        maxRows={4}
+                        placeholder={`Customize the description for the ${tab.label} tab...`}
+                        value={tabDescriptions[tab.id] || ''}
+                        onChange={(e) => {
+                          if (e.target.value.length <= 200) {
+                            handleTabDescriptionChange(tab.id, e.target.value);
+                          }
+                        }}
+                        variant="outlined"
+                        size="small"
+                        sx={{
+                          '& .MuiInputBase-input': {
+                            fontSize: '0.875rem'
+                          }
+                        }}
+                        helperText={
+                          tabDescriptions[tab.id] 
+                            ? `${tabDescriptions[tab.id].length}/200 characters` 
+                            : 'Leave empty to use the default description'
+                        }
+                      />
+                    </Paper>
+                  </Grid>
+                ))}
+            </Grid>
+            
+            {enabledTabs.length === 0 && (
+              <Alert severity="info">
+                Enable some tabs in the Navigation Tabs section above to add descriptions for them.
+              </Alert>
+            )}
           </AccordionDetails>
         </Accordion>
         
