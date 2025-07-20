@@ -1012,35 +1012,35 @@ function NetworkLandingPage() {
           </Container>
         </Box>
 
-      {/* Left sidebar with tab description - positioned absolutely in gutter */}
-      {currentTabId && (
+
+      {/* Main content container */}
+      <Container maxWidth="lg" sx={{ mb: 4, position: 'relative', zIndex: 1050 }}>        
+        {/* Content area with subtle animation */}
         <Box
           sx={{
-            position: 'absolute',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            width: '100%',
-            maxWidth: 'calc(1200px + 600px)', // Container max width + extra space for gutters
-            display: { xs: 'none', lg: 'block' },
-            pt: isTabsFixed ? '80px' : 3,
-            zIndex: 1050,
-            pointerEvents: 'none',
+            p: { xs: 2, sm: 3 },
+            pt: isTabsFixed ? '80px' : { xs: 3, sm: 3 }, // Consistent top padding
+            minHeight: '600px', // Ensure enough content to scroll and test sticky behavior
+            animation: 'fadeInUp 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+            '@keyframes fadeInUp': {
+              '0%': {
+                opacity: 0,
+                transform: 'translateY(20px)',
+              },
+              '100%': {
+                opacity: 1,
+                transform: 'translateY(0)',
+              },
+            },
           }}
         >
-          <Box
-            sx={{
-              position: 'sticky',
-              top: isTabsFixed ? '160px' : '100px',
-              width: '250px',
-              height: 'fit-content',
-              pointerEvents: 'auto',
-              ml: 2,
-            }}
-          >
+          {/* Tab description - inline below tabs, same width as content */}
+          {currentTabId && (
             <Paper
               elevation={0}
               sx={{
                 p: 2.5,
+                mb: 3, // Same margin bottom as top padding creates even spacing
                 backgroundColor: darkMode 
                   ? alpha('#000000', 0.4)
                   : alpha('#ffffff', 0.7),
@@ -1060,76 +1060,15 @@ function NetworkLandingPage() {
                   color: darkMode 
                     ? alpha('#ffffff', 0.9)
                     : alpha('#000000', 0.8),
-                  fontSize: '1rem',
+                  fontSize: { xs: '0.875rem', lg: '1rem' },
                   lineHeight: 1.6,
-                  fontWeight: 500,
+                  fontWeight: { xs: 400, lg: 500 },
                 }}
               >
                 {getTabDescription(currentTabId, network?.tab_descriptions)}
               </Typography>
             </Paper>
-          </Box>
-        </Box>
-      )}
-
-      {/* Main content container */}
-      <Container maxWidth="lg" sx={{ mb: 4, position: 'relative', zIndex: 1050 }}>
-        {/* Mobile tab description - full width at top */}
-        {currentTabId && (
-          <Paper
-            elevation={0}
-            sx={{
-              display: { xs: 'block', lg: 'none' },
-              p: 2.5,
-              mb: 3,
-              backgroundColor: darkMode 
-                ? alpha('#000000', 0.4)
-                : alpha('#ffffff', 0.7),
-              backdropFilter: 'blur(8px)',
-              border: `1px solid ${darkMode 
-                ? alpha('#ffffff', 0.1)
-                : alpha('#000000', 0.1)}`,
-              borderRadius: 2,
-              boxShadow: darkMode
-                ? '0 4px 20px rgba(0,0,0,0.3)'
-                : '0 2px 8px rgba(0,0,0,0.06)',
-            }}
-          >
-            <Typography
-              variant="body2"
-              sx={{
-                color: darkMode 
-                  ? alpha('#ffffff', 0.9)
-                  : alpha('#000000', 0.8),
-                fontSize: '0.875rem',
-                lineHeight: 1.6,
-                fontWeight: 400,
-              }}
-            >
-              {getTabDescription(currentTabId, network?.tab_descriptions)}
-            </Typography>
-          </Paper>
-        )}
-        
-        {/* Content area with subtle animation */}
-        <Box
-          sx={{
-            p: { xs: 2, sm: 3 },
-            pt: isTabsFixed ? '80px' : { xs: 2, sm: 3 }, // Only add top padding when tabs are fixed
-            minHeight: '600px', // Ensure enough content to scroll and test sticky behavior
-            animation: 'fadeInUp 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
-            '@keyframes fadeInUp': {
-              '0%': {
-                opacity: 0,
-                transform: 'translateY(20px)',
-              },
-              '100%': {
-                opacity: 1,
-                transform: 'translateY(0)',
-              },
-            },
-          }}
-        >
+          )}
 
       {/* Conditionally render the appropriate tab component */}
       {currentTabId === 'members' && (
