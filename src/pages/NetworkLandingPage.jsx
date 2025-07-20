@@ -1060,23 +1060,27 @@ function NetworkLandingPage() {
               sx={{
                 p: 2.5,
                 backgroundColor: darkMode 
-                  ? alpha('#ffffff', 0.03)
-                  : alpha('#000000', 0.02),
+                  ? alpha('#000000', 0.4)
+                  : alpha('#ffffff', 0.7),
+                backdropFilter: 'blur(8px)',
                 border: `1px solid ${darkMode 
-                  ? alpha('#ffffff', 0.08)
-                  : alpha('#000000', 0.06)}`,
+                  ? alpha('#ffffff', 0.1)
+                  : alpha('#000000', 0.1)}`,
                 borderRadius: 2,
+                boxShadow: darkMode
+                  ? '0 4px 20px rgba(0,0,0,0.3)'
+                  : '0 2px 8px rgba(0,0,0,0.06)',
               }}
             >
               <Typography
                 variant="body2"
                 sx={{
                   color: darkMode 
-                    ? alpha('#ffffff', 0.7)
-                    : alpha('#000000', 0.6),
-                  fontSize: '0.875rem',
+                    ? alpha('#ffffff', 0.9)
+                    : alpha('#000000', 0.8),
+                  fontSize: '1rem',
                   lineHeight: 1.6,
-                  fontWeight: 400,
+                  fontWeight: 500,
                 }}
               >
                 {network.description}
@@ -1097,20 +1101,24 @@ function NetworkLandingPage() {
               p: 2.5,
               mb: 3,
               backgroundColor: darkMode 
-                ? alpha('#ffffff', 0.03)
-                : alpha('#000000', 0.02),
+                ? alpha('#000000', 0.4)
+                : alpha('#ffffff', 0.7),
+              backdropFilter: 'blur(8px)',
               border: `1px solid ${darkMode 
-                ? alpha('#ffffff', 0.08)
-                : alpha('#000000', 0.06)}`,
+                ? alpha('#ffffff', 0.1)
+                : alpha('#000000', 0.1)}`,
               borderRadius: 2,
+              boxShadow: darkMode
+                ? '0 4px 20px rgba(0,0,0,0.3)'
+                : '0 2px 8px rgba(0,0,0,0.06)',
             }}
           >
             <Typography
               variant="body2"
               sx={{
                 color: darkMode 
-                  ? alpha('#ffffff', 0.7)
-                  : alpha('#000000', 0.6),
+                  ? alpha('#ffffff', 0.9)
+                  : alpha('#000000', 0.8),
                 fontSize: '0.875rem',
                 lineHeight: 1.6,
                 fontWeight: 400,
