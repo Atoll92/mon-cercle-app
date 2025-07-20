@@ -42,13 +42,7 @@ const ChatTab = ({ networkId, isUserMember, darkMode = false }) => {
   return (
     <PageTransition>
       <Paper sx={{ p: 3, mt: 2, position: 'relative' }} >
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-          <Fade in timeout={500}>
-            <Typography variant="h5">
-              Network Chat
-            </Typography>
-          </Fade>
-        
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>        
         {isUserMember && (
           <IconButton 
             onClick={handleFullscreenOpen} 

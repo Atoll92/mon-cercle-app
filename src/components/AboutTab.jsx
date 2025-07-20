@@ -26,11 +26,7 @@ const AboutTab = ({ network, networkMembers, isUserAdmin, currentUserId }) => {
     }
   };
   return (
-    <Paper sx={{ p: 3 }}>
-      <Typography variant="h5" component="h2" gutterBottom>
-        About This Network
-      </Typography>
-      
+    <Paper sx={{ p: 3 }}>      
       <Divider sx={{ mb: 3 }} />
       
       <Grid container spacing={3}>

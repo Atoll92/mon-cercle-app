@@ -261,49 +261,6 @@ const MembersTab = ({
         mb: 3,
         gap: 2
       }}>
-        <Typography 
-          variant="h5" 
-          component="h2"
-          sx={{
-            color: customLightText,
-            fontWeight: 600,
-            display: 'flex',
-            alignItems: 'center'
-          }}
-        >
-          <Box 
-            component="span" 
-            sx={{ 
-              display: 'inline-flex', 
-              alignItems: 'center', 
-              justifyContent: 'center',
-              bgcolor: darkMode ? alpha(theme.palette.primary.main, 0.2) : alpha(theme.palette.primary.light, 0.1),
-              color: darkMode ? theme.palette.primary.light : theme.palette.primary.main,
-              borderRadius: '50%',
-              width: 40,
-              height: 40,
-              mr: 1.5
-            }}
-          >
-            <Badge
-              badgeContent={networkMembers.length}
-              color="primary"
-              max={999}
-              sx={{
-                '& .MuiBadge-badge': {
-                  fontSize: '0.7rem',
-                  height: 20,
-                  minWidth: 20,
-                  padding: '0 4px'
-                }
-              }}
-            >
-              <PersonAddIcon />
-            </Badge>
-          </Box>
-          Network Members
-        </Typography>
-        
         <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', justifyContent: { xs: 'center', sm: 'flex-end' } }}>
           {isUserAdmin && (
             <Button

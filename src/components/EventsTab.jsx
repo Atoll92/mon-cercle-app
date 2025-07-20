@@ -135,11 +135,7 @@ const EventsTab = ({
     <PageTransition>
       <Paper sx={{ p: 3 }} >
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Typography variant="h5" component="h2" gutterBottom>
-              Events
-            </Typography>
-            
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>            
             {categories.length > 0 && (
               <FormControl size="small" sx={{ minWidth: 200 }}>
                 <InputLabel>Filter by Category</InputLabel>

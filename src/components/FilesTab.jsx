@@ -267,11 +267,7 @@ const FilesTab = ({ darkMode }) => {
         color: darkMode ? 'text.primary' : undefined
       }}
     >
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h5" component="h2">
-          Network Files
-        </Typography>
-        
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>        
         <Button
           component={Link}
           to={`/network/${network?.id}/files`}

@@ -493,11 +493,7 @@ const NewsTab = ({ darkMode }) => {
   return (
     <PageTransition>
       <Paper sx={{ p: 3, bgcolor: darkMode ? 'background.paper' : undefined }} >
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-          <Typography variant="h5" gutterBottom>
-            Network News
-          </Typography>
-        
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>        
         {isAdmin && !isCreating && (
           <Button 
             variant="contained" 

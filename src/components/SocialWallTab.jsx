@@ -648,30 +648,6 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
         flexWrap: 'wrap',
         gap: 2
       }}>
-        <Typography 
-          variant="h5" 
-          component="h2" 
-          sx={{
-            fontWeight: 600,
-            color: customLightText,
-            position: 'relative',
-            display: 'inline-flex',
-            alignItems: 'center',
-            '&::after': {
-              content: '""',
-              position: 'absolute',
-              bottom: -8,
-              left: 0,
-              width: 40,
-              height: 3,
-              borderRadius: 4,
-              bgcolor: muiTheme.palette.primary.main
-            }
-          }}
-        >
-          Network Social Wall
-        </Typography>
-        
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
           {/* Create Post Button */}
           <Button

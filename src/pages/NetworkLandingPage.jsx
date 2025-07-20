@@ -1051,13 +1051,13 @@ function NetworkLandingPage() {
             },
           }}
         >
-          {/* Tab description - inline below tabs, same width as content */}
+          {/* Tab title and description - inline below tabs */}
           {currentTabId && (
             <Paper
               elevation={0}
               sx={{
                 p: 2.5,
-                mb: 3, // Same margin bottom as top padding creates even spacing
+                mb: 3,
                 backgroundColor: darkMode 
                   ? alpha('#000000', 0.4)
                   : alpha('#ffffff', 0.7),
@@ -1071,6 +1071,38 @@ function NetworkLandingPage() {
                   : '0 2px 8px rgba(0,0,0,0.06)',
               }}
             >
+              {/* Title section */}
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
+                {visibleTabs[activeTab]?.icon && (
+                  <Box 
+                    sx={{ 
+                      color: darkMode 
+                        ? alpha('#90caf9', 0.9)
+                        : alpha('#1976d2', 0.8),
+                      display: 'flex',
+                      alignItems: 'center',
+                      fontSize: '1.2rem',
+                    }} 
+                  >
+                    {visibleTabs[activeTab].icon}
+                  </Box>
+                )}
+                <Typography
+                  variant="h6"
+                  sx={{
+                    color: darkMode 
+                      ? alpha('#ffffff', 0.95)
+                      : alpha('#000000', 0.9),
+                    fontSize: { xs: '1.1rem', lg: '1.25rem' },
+                    fontWeight: 600,
+                    flex: 1,
+                  }}
+                >
+                  {visibleTabs[activeTab]?.label}
+                </Typography>
+              </Box>
+
+              {/* Description section */}
               <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
                 <Tooltip 
                   title={`Information about the ${visibleTabs[activeTab]?.label} tab`}
