@@ -20,13 +20,16 @@ import {
   FormControl,
   Select,
   MenuItem,
-  InputLabel
+  InputLabel,
+  IconButton
 } from '@mui/material';
 import {
   Event as EventIcon,
   LocationOn as LocationOnIcon,
   ArrowForward as ArrowForwardIcon,
-  Link as LinkIcon
+  Link as LinkIcon,
+  ChevronLeft as ChevronLeftIcon,
+  ChevronRight as ChevronRightIcon
 } from '@mui/icons-material';
 import TimelineIcon from '@mui/icons-material/Timeline';
 import { Calendar, dateFnsLocalizer } from 'react-big-calendar';
@@ -34,6 +37,7 @@ import format from 'date-fns/format';
 import parse from 'date-fns/parse';
 import startOfWeek from 'date-fns/startOfWeek';
 import getDay from 'date-fns/getDay';
+import { addMonths, subMonths } from 'date-fns';
 import enUS from 'date-fns/locale/en-US';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 
@@ -63,7 +67,6 @@ const EventsTab = ({
   const [showEventDialog, setShowEventDialog] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [calendarDate, setCalendarDate] = useState(new Date());
-  const [calendarView, setCalendarView] = useState('month');
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('');
 
@@ -112,6 +115,15 @@ const EventsTab = ({
   const closeEventDialog = () => {
     setShowEventDialog(false);
     setSelectedEvent(null);
+  };
+
+  // Calendar navigation functions
+  const navigateToPreviousMonth = () => {
+    setCalendarDate(prev => subMonths(prev, 1));
+  };
+
+  const navigateToNextMonth = () => {
+    setCalendarDate(prev => addMonths(prev, 1));
   };
 
   // Filter events by selected category
@@ -605,32 +617,17 @@ const EventsTab = ({
                 </Typography>
               </Box>
               
-              {/* Calendar view toggles */}
-              <Box sx={{ display: 'flex', gap: 1 }}>
-                <Button 
-                  variant={calendarView === 'month' ? 'contained' : 'outlined'} 
-                  size="small"
-                  color="primary"
-                  onClick={() => setCalendarView('month')}
-                >
-                  Month
-                </Button>
-                <Button 
-                  variant={calendarView === 'week' ? 'contained' : 'outlined'} 
-                  size="small"
-                  color="primary"
-                  onClick={() => setCalendarView('week')}
-                >
-                  Week
-                </Button>
-                <Button 
-                  variant={calendarView === 'day' ? 'contained' : 'outlined'}
-                  size="small" 
-                  color="primary"
-                  onClick={() => setCalendarView('day')}
-                >
-                  Day
-                </Button>
+              {/* Calendar navigation */}
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <IconButton onClick={navigateToPreviousMonth} size="small">
+                  <ChevronLeftIcon />
+                </IconButton>
+                <Typography variant="h6" sx={{ fontWeight: 'medium', minWidth: '140px', textAlign: 'center' }}>
+                  {format(calendarDate, 'MMMM yyyy')}
+                </Typography>
+                <IconButton onClick={navigateToNextMonth} size="small">
+                  <ChevronRightIcon />
+                </IconButton>
               </Box>
             </Box>
             
@@ -929,8 +926,7 @@ const EventsTab = ({
       return calendarEvent;
     })}
     date={calendarDate}
-    view={calendarView}
-    onView={setCalendarView}
+    view="month"
     onNavigate={setCalendarDate}
     startAccessor="start"
     endAccessor="end"
@@ -1117,7 +1113,7 @@ const EventsTab = ({
     }}
     popup
     selectable
-    views={['month', 'week', 'day']}
+    views={['month']}
   />
 </Box>
           </Paper>

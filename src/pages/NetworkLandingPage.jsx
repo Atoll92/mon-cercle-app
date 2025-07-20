@@ -804,53 +804,43 @@ function NetworkLandingPage() {
               scrollButtons="auto"
               allowScrollButtonsMobile
               sx={{
-                minHeight: 56,
-                borderBottom: 'none',
-                background: 'transparent',
-                px: 2,
                 '& .MuiTab-root': {
-                  minHeight: 56,
-                  color: darkMode ? alpha('#ffffff', 0.9) : alpha('#000000', 0.8),
+                  color: muiTheme.palette.custom.fadedText,
                   fontWeight: 500,
                   fontSize: '0.875rem',
-                  letterSpacing: '0.02em',
+                  letterSpacing: '0.01em',
                   textTransform: 'none',
-                  transition: 'all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)',
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                   position: 'relative',
+                  borderRadius: '8px',
                   mx: 0.5,
-                  borderRadius: '14px',
-                  willChange: 'transform, background-color, box-shadow',
+                  minHeight: 52,
                   '&:hover': {
-                    color: darkMode ? '#ffffff' : '#000000',
-                    background: darkMode
-                      ? alpha('#ffffff', 0.14)
-                      : alpha('#000000', 0.09),
-                    transform: 'translateY(-2px) scale(1.02)',
-                    boxShadow: darkMode
-                      ? `0 6px 20px ${alpha('#000000', 0.4)}, 0 2px 8px ${alpha('#000000', 0.2)}`
-                      : `0 6px 20px ${alpha('#000000', 0.15)}, 0 2px 8px ${alpha('#000000', 0.05)}`,
+                    color: muiTheme.palette.custom.lightText,
+                    background: darkMode 
+                      ? alpha('#ffffff', 0.06)
+                      : alpha('#000000', 0.04),
+                    transform: 'translateY(-1px)',
                   },
                   '&.Mui-selected': {
-                    color: darkMode ? '#ffffff' : muiTheme.palette.primary.main,
+                    color: muiTheme.palette.custom.lightText,
                     fontWeight: 600,
-                    background: darkMode
-                      ? alpha('#ffffff', 0.18)
-                      : alpha(muiTheme.palette.primary.main, 0.15),
-                    transform: 'translateY(-1px) scale(1.01)',
-                    boxShadow: darkMode
-                      ? `0 4px 16px ${alpha('#ffffff', 0.12)}, inset 0 1px 0 ${alpha('#ffffff', 0.25)}, 0 1px 3px ${alpha('#000000', 0.2)}`
-                      : `0 4px 16px ${alpha(muiTheme.palette.primary.main, 0.25)}, inset 0 1px 0 ${alpha('#ffffff', 0.6)}, 0 1px 3px ${alpha('#000000', 0.1)}`,
+                    background: darkMode 
+                      ? alpha('#90caf9', 0.12)
+                      : alpha(muiTheme.palette.primary.main, 0.08),
                   },
-                  '&::after': {
-                    display: 'none',
-                  },
+                  // Make tabs take full width on desktop
                   [muiTheme.breakpoints.up('md')]: {
                     minWidth: 0,
                     flex: 1,
                   },
                 },
+                // Enhanced indicator styling
                 '& .MuiTabs-indicator': {
-                  display: 'none',
+                  backgroundColor: darkMode ? '#90caf9' : muiTheme.palette.primary.main,
+                  height: 3,
+                  borderRadius: '2px 2px 0 0',
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                 },
                 '& .MuiTabs-scroller': {
                   '&::-webkit-scrollbar': {
@@ -952,52 +942,43 @@ function NetworkLandingPage() {
                 scrollButtons="auto"
                 allowScrollButtonsMobile
                 sx={{
-                  minHeight: 56,
-                  borderBottom: 'none',
-                  background: 'transparent',
                   '& .MuiTab-root': {
-                    minHeight: 56,
-                    color: darkMode ? alpha('#ffffff', 0.9) : alpha('#000000', 0.8),
+                    color: muiTheme.palette.custom.fadedText,
                     fontWeight: 500,
                     fontSize: '0.875rem',
-                    letterSpacing: '0.02em',
+                    letterSpacing: '0.01em',
                     textTransform: 'none',
-                    transition: 'all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)',
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                     position: 'relative',
+                    borderRadius: '8px',
                     mx: 0.5,
-                    borderRadius: '14px',
-                    willChange: 'transform, background-color, box-shadow',
+                    minHeight: 52,
                     '&:hover': {
-                      color: darkMode ? '#ffffff' : '#000000',
-                      background: darkMode
-                        ? alpha('#ffffff', 0.14)
-                        : alpha('#000000', 0.09),
-                      transform: 'translateY(-2px) scale(1.02)',
-                      boxShadow: darkMode
-                        ? `0 6px 20px ${alpha('#000000', 0.4)}, 0 2px 8px ${alpha('#000000', 0.2)}`
-                        : `0 6px 20px ${alpha('#000000', 0.15)}, 0 2px 8px ${alpha('#000000', 0.05)}`,
+                      color: muiTheme.palette.custom.lightText,
+                      background: darkMode 
+                        ? alpha('#ffffff', 0.06)
+                        : alpha('#000000', 0.04),
+                      transform: 'translateY(-1px)',
                     },
                     '&.Mui-selected': {
-                      color: darkMode ? '#ffffff' : muiTheme.palette.primary.main,
+                      color: muiTheme.palette.custom.lightText,
                       fontWeight: 600,
-                      background: darkMode
-                        ? alpha('#ffffff', 0.18)
-                        : alpha(muiTheme.palette.primary.main, 0.15),
-                      transform: 'translateY(-1px) scale(1.01)',
-                      boxShadow: darkMode
-                        ? `0 4px 16px ${alpha('#ffffff', 0.12)}, inset 0 1px 0 ${alpha('#ffffff', 0.25)}, 0 1px 3px ${alpha('#000000', 0.2)}`
-                        : `0 4px 16px ${alpha(muiTheme.palette.primary.main, 0.25)}, inset 0 1px 0 ${alpha('#ffffff', 0.6)}, 0 1px 3px ${alpha('#000000', 0.1)}`,
+                      background: darkMode 
+                        ? alpha('#90caf9', 0.12)
+                        : alpha(muiTheme.palette.primary.main, 0.08),
                     },
-                    '&::after': {
-                      display: 'none',
-                    },
+                    // Make tabs take full width on desktop
                     [muiTheme.breakpoints.up('md')]: {
                       minWidth: 0,
                       flex: 1,
                     },
                   },
+                  // Enhanced indicator styling
                   '& .MuiTabs-indicator': {
-                    display: 'none',
+                    backgroundColor: darkMode ? '#90caf9' : muiTheme.palette.primary.main,
+                    height: 3,
+                    borderRadius: '2px 2px 0 0',
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                   },
                   '& .MuiTabs-scroller': {
                     '&::-webkit-scrollbar': {
