@@ -24,6 +24,7 @@ import {
   Alert,
   Tabs,
   Tab,
+  Tooltip,
   alpha,
   useTheme as useMuiTheme
 } from '@mui/material';
@@ -1070,19 +1071,45 @@ function NetworkLandingPage() {
                   : '0 2px 8px rgba(0,0,0,0.06)',
               }}
             >
-              <Typography
-                variant="body2"
-                sx={{
-                  color: darkMode 
-                    ? alpha('#ffffff', 0.9)
-                    : alpha('#000000', 0.8),
-                  fontSize: { xs: '0.875rem', lg: '1rem' },
-                  lineHeight: 1.6,
-                  fontWeight: { xs: 400, lg: 500 },
-                }}
-              >
-                {getTabDescription(currentTabId, network?.tab_descriptions)}
-              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+                <Tooltip 
+                  title={`Information about the ${visibleTabs[activeTab]?.label} tab`}
+                  placement="top"
+                  arrow
+                >
+                  <InfoIcon 
+                    sx={{ 
+                      color: darkMode 
+                        ? alpha('#90caf9', 0.8)
+                        : alpha('#1976d2', 0.7),
+                      fontSize: '1.1rem',
+                      mt: 0.1, // Slight vertical alignment with text
+                      flexShrink: 0, // Prevent icon from shrinking
+                      cursor: 'help',
+                      transition: 'color 0.2s ease',
+                      '&:hover': {
+                        color: darkMode 
+                          ? '#90caf9'
+                          : '#1976d2',
+                      }
+                    }} 
+                  />
+                </Tooltip>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    color: darkMode 
+                      ? alpha('#ffffff', 0.9)
+                      : alpha('#000000', 0.8),
+                    fontSize: { xs: '0.875rem', lg: '1rem' },
+                    lineHeight: 1.6,
+                    fontWeight: { xs: 400, lg: 500 },
+                    flex: 1, // Take remaining space
+                  }}
+                >
+                  {getTabDescription(currentTabId, network?.tab_descriptions)}
+                </Typography>
+              </Box>
             </Paper>
           )}
 
