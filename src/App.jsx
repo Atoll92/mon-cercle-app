@@ -58,6 +58,7 @@ const PostPage = lazy(() => import('./pages/PostPage'));
 const MediaTest = lazy(() => import('./pages/MediaTest'));
 const TermsPage = lazy(() => import('./pages/TermsPage'));
 const PrivacyPage = lazy(() => import('./pages/PrivacyPage'));
+const NetworkLandingPageFloatingElements = lazy(() => import('./pages/NetworkLandingPageFloatingElements'));
 const DocumentationPage = lazy(() => import('./pages/DocumentationPage'));
 const EnhancedLandingPage = lazy(() => import('./pages/EnhancedLandingPage'));
 const AlternativeLandingPage = lazy(() => import('./pages/AlternativeLandingPage'));
@@ -166,6 +167,7 @@ function App() {
              window.location.pathname !== "/login" && 
              !window.location.pathname.startsWith("/micro-conclav/") &&
              window.location.pathname !== "/network" &&
+             window.location.pathname !== "/network-floating" &&
              !window.location.pathname.match(/^\/network\/[^\/]+$/) && (
               <NetworkHeader/>
             )}
@@ -182,6 +184,7 @@ function App() {
                  window.location.pathname !== "/login" && 
                  !window.location.pathname.startsWith("/micro-conclav/") &&
                  window.location.pathname !== "/network" &&
+             window.location.pathname !== "/network-floating" &&
                  !window.location.pathname.match(/^\/network\/[^\/]+$/)) ? '80px' : 0
             }}>
               <Suspense fallback={<PageLoader />}>
@@ -280,6 +283,8 @@ function App() {
             <Route path="/media-test" element={<MediaTest />} />
             <Route path="/network-overlap" element={<ProfileAwareRoute><NetworkLandingPageOverlap /></ProfileAwareRoute>} />
             <Route path="/network-overlap/:networkId" element={<NetworkLandingPageOverlap />} />
+            <Route path="/network-floating" element={<ProfileAwareRoute><NetworkLandingPageFloatingElements /></ProfileAwareRoute>} />
+            <Route path="/network-floating/:networkId" element={<NetworkLandingPageFloatingElements />} />
             
             {/* Join network via invitation link */}
             <Route path="/join/:code" element={<JoinNetworkPage />} />
