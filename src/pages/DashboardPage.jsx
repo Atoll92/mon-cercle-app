@@ -207,8 +207,21 @@ function DashboardPage() {
     const searchParams = new URLSearchParams(location.search);
     const fromInvite = searchParams.get('from_invite');
     
+    // Check if member onboarding has been completed
+    const onboardingCompletedFlags = [
+      `member_onboarding_completed_${profile.network_id}_${profile.id}`,
+      `member_onboarding_completed_user_${user.id}_network_${profile.network_id}`
+    ];
+    const hasCompletedOnboarding = onboardingCompletedFlags.some(flag => 
+      localStorage.getItem(flag) === 'true'
+    );
+    
     if (fromInvite === 'true') {
-      console.log('[Dashboard] User came from invitation');
+      console.log('[Dashboard] User came from invitation', {
+        role: profile.role,
+        hasCompletedOnboarding,
+        profileComplete: !!(profile.full_name && profile.full_name.trim())
+      });
       
       // Clean up the URL parameter after a delay
       setTimeout(() => {
@@ -217,18 +230,18 @@ function DashboardPage() {
         window.history.replaceState({}, '', newUrl);
       }, 3000);
       
-      // Show WelcomeMessage for regular members who were invited
-      if (profile.role !== 'admin') {
+      // Show WelcomeMessage for regular members who completed onboarding
+      if (profile.role !== 'admin' && hasCompletedOnboarding) {
         // Check if we've already shown the welcome message
         const welcomeShownKey = `dashboard_welcome_shown_${profile.network_id}_${profile.id}`;
         const hasShownWelcome = localStorage.getItem(welcomeShownKey);
         
         if (!hasShownWelcome) {
-          console.log('[Dashboard] Regular member from invitation, showing welcome message');
+          console.log('[Dashboard] Regular member completed onboarding, showing welcome message');
           setTimeout(() => {
             setShowWelcomeMessage(true);
             localStorage.setItem(welcomeShownKey, 'true');
-          }, 2000);
+          }, 1500);
         }
       }
     }
@@ -330,32 +343,75 @@ function DashboardPage() {
         setLoadingProfile(false);
         setRetryCount(0); // Reset retry count on success
         
-        // Check if profile is incomplete (e.g., no full name or other important fields)
-        if (!data.full_name || data.full_name.trim() === '') {
-          console.log('Profile found but incomplete');
+        // Check for invited member flags first
+        const urlParams = new URLSearchParams(window.location.search);
+        const fromProfileSetup = urlParams.get('from_profile_setup') === 'true';
+        const fromInvite = urlParams.get('from_invite') === 'true';
+        
+        // Also check session storage for recent join flags (more reliable than URL params)
+        const recentJoinFlags = [
+          `recent_join_${data.network_id}_${data.id}`,
+          `recent_join_user_${user.id}_network_${data.network_id}`,
+          `profile_created_${data.network_id}_${data.id}`,
+          `profile_created_user_${user.id}_network_${data.network_id}`
+        ];
+        const hasRecentJoinFlag = recentJoinFlags.some(flag => 
+          sessionStorage.getItem(flag) === 'true' || localStorage.getItem(flag) === 'true'
+        );
+        
+        // Check if member onboarding has already been completed
+        const onboardingCompletedFlags = [
+          `member_onboarding_completed_${data.network_id}_${data.id}`,
+          `member_onboarding_completed_user_${user.id}_network_${data.network_id}`
+        ];
+        const hasCompletedOnboarding = onboardingCompletedFlags.some(flag => 
+          localStorage.getItem(flag) === 'true'
+        );
+        
+        console.log('Dashboard profile check:', {
+          fromProfileSetup,
+          fromInvite,
+          hasRecentJoinFlag,
+          hasCompletedOnboarding,
+          hasNetwork: !!data.network_id,
+          fullName: data.full_name,
+          profileId: data.id,
+          userId: user.id
+        });
+        
+        // If user just joined via invitation and hasn't completed onboarding, redirect them to complete profile
+        if ((fromInvite || hasRecentJoinFlag) && data.network_id && !hasCompletedOnboarding) {
+          console.log('Redirecting invited member to profile edit page for onboarding');
+          setProfile(data);
+          setLoadingProfile(false);
           
-          // Check if user just joined via invitation (within last 5 minutes)
+          // Redirect to profile edit page with member onboarding wizard
+          setTimeout(() => {
+            navigate('/profile/edit?from_invite=true');
+          }, 1000);
+          return;
+        }
+        
+        // Check if profile is incomplete (for non-invited users)
+        if (!data.full_name || data.full_name.trim() === '') {
+          console.log('Profile found but incomplete (non-invited user)');
+          
+          // Check if user just joined (within last 5 minutes)
           const joinedAt = new Date(data.updated_at);
           const now = new Date();
           const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000);
           const justJoined = joinedAt > fiveMinutesAgo;
           
-          // Check for from_profile_setup flag in URL
-          const urlParams = new URLSearchParams(window.location.search);
-          const fromProfileSetup = urlParams.get('from_profile_setup') === 'true';
-          const fromInvite = urlParams.get('from_invite') === 'true';
-          
-          console.log('Profile completion check:', {
+          console.log('Non-invited profile completion check:', {
             justJoined,
             fromProfileSetup,
-            fromInvite,
             joinedAt: joinedAt.toISOString(),
             now: now.toISOString(),
             hasNetwork: !!data.network_id
           });
           
           // If user just joined or is coming back from profile setup, don't redirect
-          if (justJoined || fromProfileSetup || fromInvite) {
+          if (justJoined || fromProfileSetup) {
             console.log('User just joined or coming from profile setup, showing dashboard');
             setProfile(data);
             setLoadingProfile(false);
@@ -365,32 +421,20 @@ function DashboardPage() {
               if (fromProfileSetup) {
                 urlParams.delete('from_profile_setup');
               }
-              if (fromInvite) {
-                urlParams.delete('from_invite');
-              }
-              if (fromProfileSetup || fromInvite) {
+              if (fromProfileSetup) {
                 const newUrl = `${window.location.pathname}${urlParams.toString() ? '?' + urlParams.toString() : ''}`;
                 window.history.replaceState({}, '', newUrl);
                 console.log('Cleaned up URL parameters after successful profile load');
               }
             }, 2000); // Wait 2 seconds before cleaning up parameters
           } else {
-            // Otherwise redirect to complete profile
+            // Otherwise redirect to regular profile edit
             console.log('Redirecting to profile edit page');
             setProfile(data);
             setLoadingProfile(false);
             
-            // Check if we have from_invite in the current URL to pass it along
-            const currentUrlParams = new URLSearchParams(window.location.search);
-            const hasFromInvite = currentUrlParams.get('from_invite') === 'true';
-            
-            // Redirect to profile edit page
             setTimeout(() => {
-              if (hasFromInvite) {
-                navigate('/profile/edit?from_invite=true');
-              } else {
-                navigate('/profile/edit');
-              }
+              navigate('/profile/edit');
             }, 1500);
             return;
           }

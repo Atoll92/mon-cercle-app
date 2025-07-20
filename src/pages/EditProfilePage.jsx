@@ -51,6 +51,7 @@ import NotificationSystemManager from '../components/NotificationSystemManager';
 import NotificationDebugger from '../components/NotificationDebugger';
 import CreatePostModal from '../components/CreatePostModal';
 import PostCard from '../components/PostCard';
+import MemberOnboardingWizard from '../components/MemberOnboardingWizard';
 
 function EditProfilePage() {
   const { user } = useAuth();
@@ -101,6 +102,8 @@ function EditProfilePage() {
   const [message, setMessage] = useState('');
   const [isNewProfile, setIsNewProfile] = useState(false);
   const [profile, setProfile] = useState(null);
+  const [showOnboardingWizard, setShowOnboardingWizard] = useState(false);
+  const [networkDetails, setNetworkDetails] = useState(null);
 
   // Common skill suggestions
   const commonSkills = [
@@ -171,6 +174,88 @@ function EditProfilePage() {
         
         // Store the profile data
         setProfile(data);
+        
+        // Check if this is an invited member who needs onboarding
+        const urlParams = new URLSearchParams(window.location.search);
+        const fromInvite = urlParams.get('from_invite') === 'true';
+        
+        // Also check session storage for recent join flags (more reliable than URL params)
+        const recentJoinFlags = [
+          `recent_join_${data.network_id}_${data.id}`,
+          `recent_join_user_${user.id}_network_${data.network_id}`,
+          `profile_created_${data.network_id}_${data.id}`,
+          `profile_created_user_${user.id}_network_${data.network_id}`
+        ];
+        const hasRecentJoinFlag = recentJoinFlags.some(flag => 
+          sessionStorage.getItem(flag) === 'true' || localStorage.getItem(flag) === 'true'
+        );
+        
+        // Check if member onboarding has already been completed
+        const onboardingCompletedFlags = [
+          `member_onboarding_completed_${data.network_id}_${data.id}`,
+          `member_onboarding_completed_user_${user.id}_network_${data.network_id}`
+        ];
+        const hasCompletedOnboarding = onboardingCompletedFlags.some(flag => 
+          localStorage.getItem(flag) === 'true'
+        );
+        
+        console.log('Invitation check:', {
+          fromInvite,
+          hasRecentJoinFlag,
+          hasCompletedOnboarding,
+          networkId: data.network_id,
+          profileId: data.id,
+          userId: user.id,
+          fullName: data.full_name
+        });
+        
+        if ((fromInvite || hasRecentJoinFlag) && data.network_id && !hasCompletedOnboarding) {
+          console.log('Invited member detected, showing onboarding wizard');
+          
+          // Clear the join flags since we're now handling the onboarding
+          recentJoinFlags.forEach(flag => {
+            sessionStorage.removeItem(flag);
+            localStorage.removeItem(flag);
+          });
+          
+          // Also clear any other potential invitation flags
+          try {
+            // Clear all items that might be invitation-related
+            for (let i = sessionStorage.length - 1; i >= 0; i--) {
+              const key = sessionStorage.key(i);
+              if (key && (key.includes('recent_join') || key.includes('profile_created'))) {
+                sessionStorage.removeItem(key);
+              }
+            }
+            for (let i = localStorage.length - 1; i >= 0; i--) {
+              const key = localStorage.key(i);
+              if (key && (key.includes('recent_join') || key.includes('profile_created'))) {
+                localStorage.removeItem(key);
+              }
+            }
+          } catch (err) {
+            console.warn('Error clearing storage flags:', err);
+          }
+          
+          // Fetch network details for the wizard
+          try {
+            const { data: networkData, error: networkError } = await supabase
+              .from('networks')
+              .select('*')
+              .eq('id', data.network_id)
+              .single();
+              
+            if (!networkError && networkData) {
+              setNetworkDetails(networkData);
+            }
+          } catch (err) {
+            console.error('Error fetching network details:', err);
+          }
+          
+          setShowOnboardingWizard(true);
+          setLoading(false);
+          return;
+        }
         
         // Set the form data
         setFullName(data.full_name || '');
@@ -513,6 +598,45 @@ function EditProfilePage() {
           Loading your profile...
         </Typography>
       </Box>
+    );
+  }
+  
+  // Show onboarding wizard for invited members
+  if (showOnboardingWizard && profile) {
+    return (
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Paper 
+          elevation={3} 
+          sx={{ 
+            borderRadius: 2,
+            overflow: 'hidden',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
+          }}
+        >
+          {/* Header */}
+          <Box 
+            sx={{ 
+              p: 3, 
+              background: 'linear-gradient(120deg, #2196f3, #3f51b5)', 
+              color: 'white',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 2
+            }}
+          >
+            <Typography variant="h4" component="h1" fontWeight="500">
+              Welcome! Complete Your Profile
+            </Typography>
+          </Box>
+          
+          <Box sx={{ p: 3 }}>
+            <MemberOnboardingWizard 
+              profile={profile}
+              network={networkDetails}
+            />
+          </Box>
+        </Paper>
+      </Container>
     );
   }
   

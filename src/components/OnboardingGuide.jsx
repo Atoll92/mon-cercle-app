@@ -64,7 +64,8 @@ const ONBOARDING_STEPS = {
   NETWORK_LANDING: 0,    // Show guide to go to admin panel
   ADMIN_PANEL: 1,        // Show guide to go to members tab
   MEMBERS_TAB: 2,        // Show guide to invite members
-  COMPLETED: 3
+  MEMBER_SETUP: 3,       // Show guide for new members to complete profile
+  COMPLETED: 4
 };
 
 const OnboardingGuide = ({ 
@@ -222,6 +223,16 @@ const OnboardingGuide = ({
           action: "Got it!",
           actionIcon: <GroupAddIcon />,
           pointer: "Invite by email adress or create an invitation link"
+        };
+      
+      case ONBOARDING_STEPS.MEMBER_SETUP:
+        return {
+          icon: <GroupsIcon sx={{ color: 'primary.main' }} />,
+          title: "Welcome to the network!",
+          description: "Complete your profile to get started and connect with other members.",
+          action: "Complete Profile",
+          actionIcon: <NextIcon />,
+          pointer: "Fill in your basic information to join the community"
         };
       
       default:
