@@ -54,7 +54,7 @@ import EmojiPicker from 'emoji-picker-react';
 // URL regex pattern to detect links in messages
 // const URL_REGEX = /(https?:\/\/[^\s]+)/g;
 
-const Chat = ({ networkId, isFullscreen = false }) => {
+const Chat = ({ networkId, isFullscreen = false, backgroundImageUrl }) => {
   const { user } = useAuth();
   const { activeProfile } = useProfile();
   const [messages, setMessages] = useState([]);
@@ -1214,7 +1214,9 @@ const renderMessageContent = (message) => {
           display: 'flex', 
           justifyContent: 'center', 
           p: 3,
-          background: `url(${backgroundImage}) no-repeat center center`,
+          background: backgroundImageUrl 
+            ? `url(${backgroundImageUrl}) no-repeat center center`
+            : `url(${backgroundImage}) no-repeat center center`,
           backgroundSize: 'cover',
           height: '70vh',
           borderRadius: 2,
@@ -1243,7 +1245,9 @@ const renderMessageContent = (message) => {
         overflow: 'hidden',
         borderRadius: isFullscreen ? 0 : 2,
         boxShadow: isFullscreen ? 0 : 8,
-        backgroundImage: darkMode ? `url(${backgroundImage})` : 'none',
+        backgroundImage: darkMode 
+          ? (backgroundImageUrl ? `url(${backgroundImageUrl})` : `url(${backgroundImage})`)
+          : 'none',
         backgroundColor: darkMode ? 'transparent' : '#f5f7fa',
         backgroundSize: 'cover',
         backgroundPosition: 'center',

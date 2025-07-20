@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { PageTransition } from './AnimatedComponents';
+import { useNetwork } from '../context/networkContext';
 import {
   Typography,
   Paper,
@@ -28,6 +29,7 @@ const Transition = React.forwardRef(function Transition(props, ref) {
 
 const ChatTab = ({ networkId, isUserMember, darkMode = false }) => {
   const [fullscreen, setFullscreen] = useState(false);
+  const { network } = useNetwork();
 
   const handleFullscreenOpen = () => {
     setFullscreen(true);
@@ -72,7 +74,7 @@ const ChatTab = ({ networkId, isUserMember, darkMode = false }) => {
       <Divider sx={{ mb: 2 }} />
       
       {isUserMember ? (
-        <Chat networkId={networkId} isFullscreen={false} />
+        <Chat networkId={networkId} isFullscreen={false} backgroundImageUrl={network?.background_image_url} />
       ) : (
         <Alert severity="info">
           You must be a member of this network to participate in the chat
@@ -128,7 +130,7 @@ const ChatTab = ({ networkId, isUserMember, darkMode = false }) => {
           p: { xs: 1, sm: 2 },
           bgcolor: darkMode ? 'rgba(18,18,18,0.9)' : 'rgba(245,245,245,0.9)'
         }}>
-          <Chat networkId={networkId} isFullscreen={true} />
+          <Chat networkId={networkId} isFullscreen={true} backgroundImageUrl={network?.background_image_url} />
         </Box>
       </Dialog>
       </Paper>
