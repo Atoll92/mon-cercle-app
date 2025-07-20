@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Box, 
   Container, 
@@ -47,9 +47,78 @@ const fadeIn = keyframes`
   }
 `;
 
+// Translations object
+const translations = {
+  en: {
+    europeanBadge: "🇪🇺 Made in Europe • No Silicon Valley",
+    subtitle: "The micro social network that respects you",
+    description: "Create your own networks instantly. No tracking. No ads. No corporate surveillance.",
+    descriptionStrong: "Just authentic connections.",
+    startFreeTrial: "Start Free Trial",
+    seeDemo: "See Demo",
+    trialInfo: "30 days free • No credit card • Cancel anytime",
+    breakFree: "Break Free from Big Tech",
+    noTracking: "No Google. No Meta. No Amazon. No Apple. No Microsoft tracking you.",
+    europeanPrivacy: "European Privacy",
+    europeanPrivacyDesc: "GDPR compliant by design. Your data stays in Europe, protected by the world's strongest privacy laws.",
+    zeroBloat: "Zero Bloat",
+    zeroBloatDesc: "No ads, no tracking scripts, no analytics. Just pure functionality that loads instantly.",
+    yourNetworks: "Your Networks",
+    yourNetworksDesc: "Create unlimited private communities. You control who joins and what gets shared.",
+    everythingYouNeed: "Everything you need. Nothing you don't.",
+    simpleSecure: "Simple & Secure",
+    simpleSecureDesc: "Create networks in seconds. Share portfolios, organize events, message members. All with bank-level security and zero corporate surveillance.",
+    europeanAlternative: "European Alternative",
+    europeanAlternativeDesc: "Built in France, hosted in Europe. A real alternative to Silicon Valley platforms that respect your privacy and digital sovereignty.",
+    readyToOwn: "Ready to own your digital space?",
+    joinThousands: "Join thousands creating authentic communities without Big Tech interference",
+    startYourFreeTrial: "Start Your Free Trial",
+    finalTrialInfo: "30 days free • Setup in under 5 minutes • Cancel anytime"
+  },
+  fr: {
+    europeanBadge: "🇪🇺 Conçu en Europe • Pas de Silicon Valley",
+    subtitle: "Le micro réseau social qui vous respecte",
+    description: "Créez vos propres réseaux instantanément. Pas de traçage. Pas de publicité. Pas de surveillance d'entreprise.",
+    descriptionStrong: "Juste des connexions authentiques.",
+    startFreeTrial: "Commencer l'essai gratuit",
+    seeDemo: "Voir la démo",
+    trialInfo: "30 jours gratuits • Aucune carte de crédit • Annulez à tout moment",
+    breakFree: "Libérez-vous des Big Tech",
+    noTracking: "Pas de Google. Pas de Meta. Pas d'Amazon. Pas d'Apple. Pas de Microsoft qui vous traque.",
+    europeanPrivacy: "Confidentialité européenne",
+    europeanPrivacyDesc: "Conforme RGPD par conception. Vos données restent en Europe, protégées par les lois de confidentialité les plus strictes au monde.",
+    zeroBloat: "Zéro bloatware",
+    zeroBloatDesc: "Pas de publicité, pas de scripts de traçage, pas d'analytics. Juste une fonctionnalité pure qui se charge instantanément.",
+    yourNetworks: "Vos réseaux",
+    yourNetworksDesc: "Créez des communautés privées illimitées. Vous contrôlez qui rejoint et ce qui est partagé.",
+    everythingYouNeed: "Tout ce dont vous avez besoin. Rien que vous n'avez pas.",
+    simpleSecure: "Simple et sécurisé",
+    simpleSecureDesc: "Créez des réseaux en quelques secondes. Partagez des portfolios, organisez des événements, envoyez des messages aux membres. Le tout avec une sécurité bancaire et zéro surveillance d'entreprise.",
+    europeanAlternative: "Alternative européenne",
+    europeanAlternativeDesc: "Construit en France, hébergé en Europe. Une véritable alternative aux plateformes de la Silicon Valley qui respectent votre vie privée et votre souveraineté numérique.",
+    readyToOwn: "Prêt à posséder votre espace numérique ?",
+    joinThousands: "Rejoignez des milliers de personnes créant des communautés authentiques sans l'interférence des Big Tech",
+    startYourFreeTrial: "Commencez votre essai gratuit",
+    finalTrialInfo: "30 jours gratuits • Configuration en moins de 5 minutes • Annulez à tout moment"
+  }
+};
+
+// Function to detect browser language
+const detectBrowserLanguage = () => {
+  const browserLang = navigator.language || navigator.languages[0] || 'en';
+  return browserLang.startsWith('fr') ? 'fr' : 'en';
+};
+
 const SimpleConclavLanding = () => {
   const navigate = useNavigate();
   const theme = useTheme();
+  const [language, setLanguage] = useState(detectBrowserLanguage());
+  
+  useEffect(() => {
+    setLanguage(detectBrowserLanguage());
+  }, []);
+  
+  const t = translations[language];
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: '#fafafa' }}>
@@ -80,7 +149,7 @@ const SimpleConclavLanding = () => {
         >
           {/* European Badge */}
           <Chip 
-            label="🇪🇺 Made in Europe • No Silicon Valley" 
+            label={t.europeanBadge} 
             sx={{ 
               mb: 4, 
               bgcolor: 'rgba(255, 255, 255, 0.2)', 
@@ -210,7 +279,7 @@ const SimpleConclavLanding = () => {
               fontSize: { xs: '1.5rem', md: '2rem' }
             }}
           >
-            The micro social network that respects you
+            {t.subtitle}
           </Typography>
           
           {/* Description */}
@@ -225,8 +294,8 @@ const SimpleConclavLanding = () => {
               fontSize: { xs: '1.1rem', md: '1.25rem' }
             }}
           >
-            Create your own networks instantly. No tracking. No ads. No corporate surveillance. 
-            <strong style={{ color: 'white' }}> Just authentic connections.</strong>
+            {t.description} 
+            <strong style={{ color: 'white' }}> {t.descriptionStrong}</strong>
           </Typography>
 
           {/* CTA Buttons */}
@@ -253,7 +322,7 @@ const SimpleConclavLanding = () => {
                 transition: 'all 0.3s ease'
               }}
             >
-              Start Free Trial
+              {t.startFreeTrial}
             </Button>
             
             <Button
@@ -277,13 +346,13 @@ const SimpleConclavLanding = () => {
                 transition: 'all 0.3s ease'
               }}
             >
-              See Demo
+              {t.seeDemo}
             </Button>
           </Stack>
 
           {/* Trial Info */}
           <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: '0.95rem' }}>
-            30 days free • No credit card • Cancel anytime
+            {t.trialInfo}
           </Typography>
         </Box>
         </Container>
@@ -301,10 +370,10 @@ const SimpleConclavLanding = () => {
           <Box mb={8}>
             <Block sx={{ fontSize: 80, color: '#ff4757', mb: 3 }} />
             <Typography variant="h3" gutterBottom fontWeight="bold" color="#2c3e50" sx={{ mb: 3 }}>
-              Break Free from Big Tech
+              {t.breakFree}
             </Typography>
             <Typography variant="h5" sx={{ color: '#7f8c8d', maxWidth: '600px', mx: 'auto', lineHeight: 1.6 }}>
-              No Google. No Meta. No Amazon. No Apple. No Microsoft tracking you.
+              {t.noTracking}
             </Typography>
           </Box>
 
@@ -334,10 +403,10 @@ const SimpleConclavLanding = () => {
               }}>
                 <Shield sx={{ fontSize: 60, color: '#667eea', mb: 2 }} />
                 <Typography variant="h6" gutterBottom fontWeight="bold" color="#2c3e50">
-                  European Privacy
+                  {t.europeanPrivacy}
                 </Typography>
                 <Typography color="#7f8c8d" sx={{ lineHeight: 1.6 }}>
-                  GDPR compliant by design. Your data stays in Europe, protected by the world's strongest privacy laws.
+                  {t.europeanPrivacyDesc}
                 </Typography>
               </Box>
             </Grid>
@@ -367,10 +436,10 @@ const SimpleConclavLanding = () => {
               }}>
                 <Speed sx={{ fontSize: 60, color: '#667eea', mb: 2 }} />
                 <Typography variant="h6" gutterBottom fontWeight="bold" color="#2c3e50">
-                  Zero Bloat
+                  {t.zeroBloat}
                 </Typography>
                 <Typography color="#7f8c8d" sx={{ lineHeight: 1.6 }}>
-                  No ads, no tracking scripts, no analytics. Just pure functionality that loads instantly.
+                  {t.zeroBloatDesc}
                 </Typography>
               </Box>
             </Grid>
@@ -400,10 +469,10 @@ const SimpleConclavLanding = () => {
               }}>
                 <Group sx={{ fontSize: 60, color: '#667eea', mb: 2 }} />
                 <Typography variant="h6" gutterBottom fontWeight="bold" color="#2c3e50">
-                  Your Networks
+                  {t.yourNetworks}
                 </Typography>
                 <Typography color="#7f8c8d" sx={{ lineHeight: 1.6 }}>
-                  Create unlimited private communities. You control who joins and what gets shared.
+                  {t.yourNetworksDesc}
                 </Typography>
               </Box>
             </Grid>
@@ -422,7 +491,7 @@ const SimpleConclavLanding = () => {
             }}
           >
           <Typography variant="h3" textAlign="center" gutterBottom fontWeight="bold" mb={8} color="#2c3e50">
-            Everything you need. Nothing you don't.
+            {t.everythingYouNeed}
           </Typography>
           
           <Grid container spacing={4}>
@@ -452,11 +521,10 @@ const SimpleConclavLanding = () => {
             >
               <Security sx={{ fontSize: 48, color: '#667eea', mb: 3 }} />
               <Typography variant="h5" gutterBottom fontWeight="bold" color="#2c3e50">
-                Simple & Secure
+                {t.simpleSecure}
               </Typography>
               <Typography variant="body1" sx={{ lineHeight: 1.8, color: '#7f8c8d' }}>
-                Create networks in seconds. Share portfolios, organize events, message members. 
-                All with bank-level security and zero corporate surveillance.
+                {t.simpleSecureDesc}
               </Typography>
             </Paper>
           </Grid>
@@ -487,11 +555,10 @@ const SimpleConclavLanding = () => {
             >
               <Public sx={{ fontSize: 48, color: '#667eea', mb: 3 }} />
               <Typography variant="h5" gutterBottom fontWeight="bold" color="#2c3e50">
-                European Alternative
+                {t.europeanAlternative}
               </Typography>
               <Typography variant="body1" sx={{ lineHeight: 1.8, color: '#7f8c8d' }}>
-                Built in France, hosted in Europe. A real alternative to Silicon Valley platforms 
-                that respect your privacy and digital sovereignty.
+                {t.europeanAlternativeDesc}
               </Typography>
             </Paper>
           </Grid>
@@ -510,10 +577,10 @@ const SimpleConclavLanding = () => {
             }}
           >
           <Typography variant="h3" gutterBottom fontWeight="bold" color="white" sx={{ mb: 3 }}>
-            Ready to own your digital space?
+            {t.readyToOwn}
           </Typography>
           <Typography variant="h6" sx={{ mb: 5, color: 'rgba(255, 255, 255, 0.9)', lineHeight: 1.6 }}>
-            Join thousands creating authentic communities without Big Tech interference
+            {t.joinThousands}
           </Typography>
           
           <Button
@@ -538,11 +605,11 @@ const SimpleConclavLanding = () => {
               transition: 'all 0.3s ease'
             }}
           >
-            Start Your Free Trial
+            {t.startYourFreeTrial}
           </Button>
           
           <Typography variant="body2" sx={{ mt: 3, opacity: 0.8 }}>
-            30 days free • Setup in under 5 minutes • Cancel anytime
+            {t.finalTrialInfo}
           </Typography>
           </Box>
         </Container>
