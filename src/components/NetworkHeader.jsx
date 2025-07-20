@@ -423,26 +423,49 @@ const NetworkHeader = () => {
             </Tooltip>
           </>
         ) : (
-          // Sign Up CTA for non-logged-in users
-          <Button
-            variant="contained"
-            onClick={() => navigate('/signup')}
-            sx={{
-              bgcolor: '#667eea',
-              color: 'white',
-              fontWeight: 'bold',
-              px: 3,
-              py: 1,
-              borderRadius: 2,
-              '&:hover': {
-                bgcolor: '#5a6fd8',
-                transform: 'translateY(-1px)',
-              },
-              transition: 'all 0.2s ease-in-out',
-            }}
-          >
-            Sign Up
-          </Button>
+          // Sign Up and Login buttons for non-logged-in users
+          <>
+            <Button
+              variant="outlined"
+              onClick={() => navigate('/login')}
+              sx={{
+                color: darkMode ? '#ffffff' : '#667eea',
+                borderColor: darkMode ? '#ffffff' : '#667eea',
+                fontWeight: 'bold',
+                px: 3,
+                py: 1,
+                borderRadius: 2,
+                mr: 1,
+                '&:hover': {
+                  borderColor: darkMode ? '#ffffff' : '#5a6fd8',
+                  backgroundColor: darkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(102, 126, 234, 0.05)',
+                  transform: 'translateY(-1px)',
+                },
+                transition: 'all 0.2s ease-in-out',
+              }}
+            >
+              Login
+            </Button>
+            <Button
+              variant="contained"
+              onClick={() => navigate('/signup')}
+              sx={{
+                bgcolor: '#667eea',
+                color: 'white',
+                fontWeight: 'bold',
+                px: 3,
+                py: 1,
+                borderRadius: 2,
+                '&:hover': {
+                  bgcolor: '#5a6fd8',
+                  transform: 'translateY(-1px)',
+                },
+                transition: 'all 0.2s ease-in-out',
+              }}
+            >
+              Sign Up
+            </Button>
+          </>
         )}
       </Box>
       </Box>

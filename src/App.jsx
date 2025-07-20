@@ -158,7 +158,7 @@ function App() {
               <DirectMessagesProvider>
                 <Box className="App" sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
             {/* Pass the network name to the header */}
-            {window.location.pathname !== "/" && 
+            {(window.location.pathname !== "/" || !session) && 
              window.location.pathname !== "/pricing" && 
              window.location.pathname !== "/terms" && 
              window.location.pathname !== "/old" && 
@@ -174,7 +174,7 @@ function App() {
               display: 'flex',
               flexDirection: 'column',
               overflow: 'auto',
-              pt: window.location.pathname !== "/" && 
+              pt: ((window.location.pathname !== "/" || !session) && 
                  window.location.pathname !== "/pricing" && 
                  window.location.pathname !== "/terms" && 
                  window.location.pathname !== "/old" && 
@@ -182,7 +182,7 @@ function App() {
                  window.location.pathname !== "/login" && 
                  !window.location.pathname.startsWith("/micro-conclav/") &&
                  window.location.pathname !== "/network" &&
-                 !window.location.pathname.match(/^\/network\/[^\/]+$/) ? '80px' : 0
+                 !window.location.pathname.match(/^\/network\/[^\/]+$/)) ? '80px' : 0
             }}>
               <Suspense fallback={<PageLoader />}>
                 <Routes>
