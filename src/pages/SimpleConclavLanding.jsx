@@ -597,7 +597,7 @@ const SimpleConclavLanding = () => {
                       borderRadius: 2,
                       backgroundColor: '#fce4ec',
                       border: '1px solid #e91e63',
-                      transform: 'rotate(-0.5deg)',
+                      transform: 'rotate(1.5deg)',
                       transition: 'all 0.3s ease',
                       '&:hover': {
                         transform: 'rotate(0deg) translateY(-4px)',
