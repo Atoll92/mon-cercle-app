@@ -25,6 +25,8 @@ import {
   ArrowForward
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/authcontext';
+import { useProfile } from '../context/profileContext';
 
 // Define animation keyframes
 const fadeInUp = keyframes`
@@ -112,7 +114,22 @@ const detectBrowserLanguage = () => {
 const SimpleConclavLanding = () => {
   const navigate = useNavigate();
   const theme = useTheme();
+  const { user } = useAuth();
+  const { profiles } = useProfile();
   const [language, setLanguage] = useState(detectBrowserLanguage());
+  
+  // Redirect logged-in users to their network
+  useEffect(() => {
+    if (user) {
+      if (profiles && profiles.length > 0) {
+        // User has profiles, redirect to network
+        navigate('/network', { replace: true });
+      } else {
+        // User has no profiles, redirect to dashboard
+        navigate('/dashboard', { replace: true });
+      }
+    }
+  }, [user, profiles, navigate]);
   
   useEffect(() => {
     setLanguage(detectBrowserLanguage());
