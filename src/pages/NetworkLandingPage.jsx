@@ -46,6 +46,7 @@ import MemberDetailsModal from '../components/MembersDetailModal';
 import FilesTab from '../components/FilesTab';
 import OnboardingGuide, { WithOnboardingHighlight } from '../components/OnboardingGuide';
 import WelcomeMessage from '../components/WelcomeMessage';
+import { getTabDescription } from '../utils/tabDescriptions';
 
 // Simplified wrapper component that uses App context
 const NetworkLandingPageWrapper = () => {
@@ -1011,8 +1012,8 @@ function NetworkLandingPage() {
           </Container>
         </Box>
 
-      {/* Left sidebar with description - positioned absolutely in gutter */}
-      {network.description && (
+      {/* Left sidebar with tab description - positioned absolutely in gutter */}
+      {currentTabId && (
         <Box
           sx={{
             position: 'absolute',
@@ -1064,7 +1065,7 @@ function NetworkLandingPage() {
                   fontWeight: 500,
                 }}
               >
-                {network.description}
+                {getTabDescription(currentTabId, network?.tab_descriptions)}
               </Typography>
             </Paper>
           </Box>
@@ -1073,8 +1074,8 @@ function NetworkLandingPage() {
 
       {/* Main content container */}
       <Container maxWidth="lg" sx={{ mb: 4, position: 'relative', zIndex: 1050 }}>
-        {/* Mobile description - full width at top */}
-        {network.description && (
+        {/* Mobile tab description - full width at top */}
+        {currentTabId && (
           <Paper
             elevation={0}
             sx={{
@@ -1105,7 +1106,7 @@ function NetworkLandingPage() {
                 fontWeight: 400,
               }}
             >
-              {network.description}
+              {getTabDescription(currentTabId, network?.tab_descriptions)}
             </Typography>
           </Paper>
         )}
