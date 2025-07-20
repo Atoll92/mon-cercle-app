@@ -156,11 +156,11 @@ const OnboardingGuide = ({
         navigate('/network');
       } else {
         // From network page, navigate to admin panel
-        navigate(`/admin/${networkId}`);
+        navigate(`/admin/`);
       }
     } else if (currentStep === ONBOARDING_STEPS.ADMIN_PANEL) {
-      // User should click on Members tab (we'll detect this via currentAdminTab prop)
-      // This step will be handled by the parent component updating currentAdminTab
+      // Navigate directly to the members tab
+      navigate(`/admin/?tab=members`);
     } else if (currentStep === ONBOARDING_STEPS.MEMBERS_TAB) {
       // User should find the invite button - we'll highlight it
       handleDismissGuide();

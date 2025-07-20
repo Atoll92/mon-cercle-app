@@ -48,7 +48,6 @@ import {
   Article as ArticleIcon,
   MenuBook as WikiIcon,
   Palette as ThemeIcon,
-  LocationOn as LocationIcon,
   ArrowForward as ArrowForwardIcon,
   Check as CheckIcon,
   Settings as SettingsIcon,
@@ -153,6 +152,7 @@ const NetworkOnboardingWizard = ({ profile }) => {
     purpose: 'general',
     privacyLevel: 'private',
     logoUrl: '',
+    backgroundImageUrl: '',
     features: {
       events: true,
       news: true,
@@ -160,7 +160,6 @@ const NetworkOnboardingWizard = ({ profile }) => {
       chat: true,
       wiki: true,
       moodboards: true,
-      location: false,
       notifications: true
     },
     enabledTabs: ['news', 'members', 'events', 'chat', 'files', 'wiki', 'social'],
@@ -260,14 +259,13 @@ const NetworkOnboardingWizard = ({ profile }) => {
             chat: networkData.features.chat,
             wiki: networkData.features.wiki,
             moodboards: networkData.features.moodboards,
-            location_sharing: networkData.features.location,
             notifications: networkData.features.notifications
           }),
           privacy_level: networkData.privacyLevel,
           purpose: networkData.purpose,
           enabled_tabs: networkData.enabledTabs,
           theme_color: networkData.themeColor,
-          background_image_url: null
+          background_image_url: networkData.backgroundImageUrl || null
         }])
         .select()
         .single();
@@ -696,12 +694,6 @@ const FeaturesStep = ({ networkData, setNetworkData }) => {
       description: 'Visual collaboration and inspiration boards',
     },
     {
-      name: 'location',
-      title: 'Location Sharing',
-      icon: <LocationIcon fontSize="large" sx={{ color: theme.palette.grey[700] }} />,
-      description: 'Allow members to share their location',
-    },
-    {
       name: 'notifications',
       title: 'Notifications',
       icon: <NotificationsIcon fontSize="large" sx={{ color: theme.palette.primary.dark }} />,
@@ -778,6 +770,8 @@ const NavigationStep = ({ networkData, setNetworkData }) => {
   const theme = useTheme();
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState(null);
+  const [uploadingBackground, setUploadingBackground] = useState(false);
+  const [backgroundUploadError, setBackgroundUploadError] = useState(null);
   
   // Drag and drop sensors
   const sensors = useSensors(
@@ -857,6 +851,69 @@ const NavigationStep = ({ networkData, setNetworkData }) => {
     setNetworkData(prev => ({
       ...prev,
       logoUrl: ''
+    }));
+  };
+  
+  // Handle background image upload
+  const handleBackgroundUpload = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Check file type
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      setBackgroundUploadError('Please upload a valid image file (JPEG, PNG, GIF, or WebP)');
+      return;
+    }
+
+    // Check file size (max 10MB for backgrounds)
+    if (file.size > 10 * 1024 * 1024) {
+      setBackgroundUploadError('Background image size must be less than 10MB');
+      return;
+    }
+
+    try {
+      setUploadingBackground(true);
+      setBackgroundUploadError(null);
+
+      // Create a unique file name
+      const fileExt = file.name.split('.').pop();
+      const fileName = `temp-backgrounds/${Date.now()}-network-background.${fileExt}`;
+
+      // Upload to Supabase storage
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('networks')
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: true,
+          contentType: file.type
+        });
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('networks')
+        .getPublicUrl(fileName);
+
+      // Update network data with background URL
+      setNetworkData(prev => ({
+        ...prev,
+        backgroundImageUrl: publicUrl
+      }));
+    } catch (error) {
+      console.error('Error uploading background:', error);
+      setBackgroundUploadError('Failed to upload background image. Please try again.');
+    } finally {
+      setUploadingBackground(false);
+    }
+  };
+
+  // Handle background removal
+  const handleRemoveBackground = () => {
+    setNetworkData(prev => ({
+      ...prev,
+      backgroundImageUrl: ''
     }));
   };
   
@@ -1095,6 +1152,125 @@ const NavigationStep = ({ networkData, setNetworkData }) => {
           }} 
         />
       </Paper>
+
+      <Paper 
+        elevation={0} 
+        sx={{ 
+          p: 3, 
+          borderRadius: 2, 
+          border: '1px solid',
+          borderColor: 'divider'
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+          <ImageIcon sx={{ mr: 1, color: 'primary.main' }} />
+          <Typography variant="subtitle1" fontWeight="medium">
+            Landing Page Background Image
+          </Typography>
+        </Box>
+        
+        <Typography variant="body2" color="text.secondary" paragraph>
+          Upload a background image for your network's landing page. This creates a more immersive welcome experience.
+        </Typography>
+
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          {networkData.backgroundImageUrl ? (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, width: '100%' }}>
+              <Box
+                sx={{
+                  width: '100%',
+                  height: 200,
+                  backgroundImage: `url(${networkData.backgroundImageUrl})`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                  borderRadius: 1,
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  position: 'relative',
+                  overflow: 'hidden'
+                }}
+              >
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    p: 1,
+                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                    color: 'white',
+                    fontSize: '0.8rem'
+                  }}
+                >
+                  Preview of landing page background
+                </Box>
+              </Box>
+            </Box>
+          ) : (
+            <Box 
+              sx={{ 
+                width: '100%',
+                height: 200,
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                border: '1px dashed #aaa',
+                borderRadius: 1,
+                backgroundColor: 'grey.100',
+                flexDirection: 'column'
+              }}
+            >
+              <ImageIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 1 }} />
+              <Typography variant="body2" color="text.secondary">
+                No background image set
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                A default gradient will be used
+              </Typography>
+            </Box>
+          )}
+        </Box>
+
+        <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
+          <Button
+            variant="outlined"
+            component="label"
+            startIcon={uploadingBackground ? <Spinner size={40} /> : <UploadIcon />}
+            disabled={uploadingBackground}
+          >
+            {uploadingBackground ? 'Uploading...' : networkData.backgroundImageUrl ? 'Change Background' : 'Upload Background'}
+            <input
+              type="file"
+              hidden
+              accept="image/*"
+              onChange={handleBackgroundUpload}
+            />
+          </Button>
+
+          {networkData.backgroundImageUrl && (
+            <Button
+              variant="outlined"
+              color="error"
+              size="small"
+              onClick={handleRemoveBackground}
+              startIcon={<CloseIcon />}
+            >
+              Remove
+            </Button>
+          )}
+        </Box>
+
+        {backgroundUploadError && (
+          <Alert severity="error" sx={{ mt: 2 }}>
+            {backgroundUploadError}
+          </Alert>
+        )}
+
+        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 2 }}>
+          Recommended size: 1920x1080 pixels (16:9 ratio). Max file size: 10MB.
+          For best results, use an image with good contrast for text visibility.
+        </Typography>
+      </Paper>
     </Stack>
   );
 };
@@ -1193,6 +1369,13 @@ const ReviewStep = ({ networkData }) => {
                   <Typography>Custom</Typography>
                 </Box>
               </Box>
+              
+              {networkData.backgroundImageUrl && (
+                <Box>
+                  <Typography variant="subtitle2" color="text.secondary">Background Image</Typography>
+                  <Typography variant="body1">Custom background uploaded</Typography>
+                </Box>
+              )}
             </Stack>
           </Grid>
           
