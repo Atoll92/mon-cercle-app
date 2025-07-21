@@ -112,7 +112,7 @@ const translations = {
     zeroBloatDesc: "Pas de publicité, pas de scripts de traçage, pas d'analytics. Juste une fonctionnalité pure qui se charge instantanément.",
     yourNetworks: "Vos réseaux",
     yourNetworksDesc: "Créez des communautés privées illimitées. Vous contrôlez qui rejoint et ce qui est partagé.",
-    everythingYouNeed: "Tout ce dont vous avez besoin. Rien que vous n'avez pas.",
+    everythingYouNeed: "Tout ce dont vous avez besoin. Rien de superflu.",
     simpleSecure: "Simple et sécurisé",
     simpleSecureDesc: "Créez des réseaux en quelques secondes. Partagez des portfolios, organisez des événements, envoyez des messages aux membres. Le tout avec une sécurité bancaire et zéro surveillance d'entreprise.",
     europeanAlternative: "Alternative européenne",
