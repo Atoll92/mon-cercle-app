@@ -27,6 +27,9 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/authcontext';
 import { useProfile } from '../context/profileContext';
+import screenshot1 from '../assets/screensforsteps/1.png';
+import screenshot2 from '../assets/screensforsteps/2.png';
+import screenshot3 from '../assets/screensforsteps/3.png';
 
 // Define animation keyframes
 const fadeInUp = keyframes`
@@ -471,7 +474,7 @@ const SimpleConclavLanding = () => {
                     {/* Screenshot */}
                     <Box sx={{ p: 3, pt: 4 }}>
                       <img
-                        src="/src/assets/screensforsteps/1.png"
+                        src={screenshot1}
                         alt="Create Your Network Screenshot"
                         style={{
                           width: '100%',
@@ -557,7 +560,7 @@ const SimpleConclavLanding = () => {
                     {/* Screenshot */}
                     <Box sx={{ p: 3, pt: 4 }}>
                       <img
-                        src="/src/assets/screensforsteps/2.png"
+                        src={screenshot2}
                         alt="Invite Your Community Screenshot"
                         style={{
                           width: '100%',
@@ -643,7 +646,7 @@ const SimpleConclavLanding = () => {
                     {/* Screenshot */}
                     <Box sx={{ p: 3, pt: 4 }}>
                       <img
-                        src="/src/assets/screensforsteps/3.png"
+                        src={screenshot3}
                         alt="Share & Connect Screenshot"
                         style={{
                           width: '100%',
