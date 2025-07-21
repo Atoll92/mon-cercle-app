@@ -626,78 +626,184 @@ const NetworkSettingsTab = ({ network, onNetworkUpdate, darkMode }) => {
             </Typography>
           </AccordionSummary>
           <AccordionDetails>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-              Add custom descriptions for each tab to help members understand their purpose and usage guidelines.
-            </Typography>
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                Customize how each feature appears to your network members. Set clear guidelines and expectations for each section.
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                These descriptions will be shown when members hover over navigation tabs or visit each section.
+              </Typography>
+            </Box>
             
-            <Grid container spacing={2}>
+            {/* Table header */}
+            <Box 
+              sx={{ 
+                display: 'grid', 
+                gridTemplateColumns: '40px 140px 1fr 100px',
+                gap: 2,
+                mb: 2,
+                px: 2,
+                py: 1,
+                bgcolor: alpha(muiTheme.palette.primary.main, 0.08),
+                borderRadius: 1,
+                alignItems: 'center'
+              }}
+            >
+              <Typography variant="caption" sx={{ fontWeight: 'bold', textAlign: 'center' }}>
+                Icon
+              </Typography>
+              <Typography variant="caption" sx={{ fontWeight: 'bold' }}>
+                Feature
+              </Typography>
+              <Typography variant="caption" sx={{ fontWeight: 'bold' }}>
+                Guidelines & Description
+              </Typography>
+              <Typography variant="caption" sx={{ fontWeight: 'bold', textAlign: 'center' }}>
+                Status
+              </Typography>
+            </Box>
+            
+            {/* Tab items */}
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
               {availableTabs
                 .filter(tab => enabledTabs.includes(tab.id) && features[tab.id] !== false)
+                .sort((a, b) => enabledTabs.indexOf(a.id) - enabledTabs.indexOf(b.id))
                 .map((tab) => (
-                  <Grid item xs={12} key={tab.id}>
-                    <Paper
-                      variant="outlined"
-                      sx={{
-                        p: 2,
-                        borderColor: 'divider',
-                        bgcolor: 'background.paper',
-                        '&:hover': {
-                          borderColor: 'primary.main',
-                          bgcolor: alpha(muiTheme.palette.primary.main, 0.02)
-                        }
+                  <Paper
+                    key={tab.id}
+                    variant="outlined"
+                    sx={{
+                      p: 2,
+                      borderColor: tabDescriptions[tab.id] ? 'primary.main' : 'divider',
+                      bgcolor: 'background.paper',
+                      transition: 'all 0.2s ease',
+                      '&:hover': {
+                        borderColor: 'primary.main',
+                        bgcolor: alpha(muiTheme.palette.primary.main, 0.02),
+                        transform: 'translateY(-1px)',
+                        boxShadow: darkMode ? '0 4px 12px rgba(0,0,0,0.1)' : '0 2px 6px rgba(0,0,0,0.05)'
+                      }
+                    }}
+                  >
+                    <Box 
+                      sx={{ 
+                        display: 'grid', 
+                        gridTemplateColumns: '40px 140px 1fr 100px',
+                        gap: 2,
+                        alignItems: 'start'
                       }}
                     >
-                      <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 1 }}>
-                        <Box sx={{ color: 'primary.main', mr: 1 }}>
-                          {tab.icon}
-                        </Box>
-                        <Typography variant="subtitle1" sx={{ flexGrow: 1, fontWeight: 'medium' }}>
+                      {/* Icon */}
+                      <Box 
+                        sx={{ 
+                          display: 'flex',
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                          height: '40px',
+                          width: '40px',
+                          borderRadius: 1,
+                          bgcolor: alpha(muiTheme.palette.primary.main, 0.1),
+                          color: 'primary.main'
+                        }}
+                      >
+                        {tab.icon}
+                      </Box>
+                      
+                      {/* Feature name and default */}
+                      <Box>
+                        <Typography variant="subtitle2" sx={{ fontWeight: 'medium', mb: 0.5 }}>
                           {tab.label}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', lineHeight: 1.2 }}>
+                          {tabDescriptions[tab.id] ? 'Customized' : 'Using default'}
                         </Typography>
                       </Box>
                       
-                      {/* Show default description if no custom description is set */}
-                      {!tabDescriptions[tab.id] && (
-                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2, fontStyle: 'italic' }}>
-                          Default: {tab.defaultDescription}
-                        </Typography>
-                      )}
+                      {/* Description field */}
+                      <Box>
+                        <TextField
+                          fullWidth
+                          multiline
+                          minRows={2}
+                          maxRows={4}
+                          placeholder={tab.defaultDescription}
+                          value={tabDescriptions[tab.id] || ''}
+                          onChange={(e) => {
+                            if (e.target.value.length <= 200) {
+                              handleTabDescriptionChange(tab.id, e.target.value);
+                            }
+                          }}
+                          variant="outlined"
+                          size="small"
+                          sx={{
+                            '& .MuiInputBase-input': {
+                              fontSize: '0.875rem',
+                              lineHeight: 1.4
+                            },
+                            '& .MuiOutlinedInput-root': {
+                              '&:hover fieldset': {
+                                borderColor: 'primary.main',
+                              },
+                            }
+                          }}
+                        />
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 0.5 }}>
+                          <Typography variant="caption" color="text.secondary">
+                            {tabDescriptions[tab.id] 
+                              ? `${tabDescriptions[tab.id].length}/200 characters` 
+                              : 'Using default description'}
+                          </Typography>
+                          {tabDescriptions[tab.id] && (
+                            <Button
+                              size="small"
+                              onClick={() => handleTabDescriptionChange(tab.id, '')}
+                              sx={{ 
+                                fontSize: '0.75rem', 
+                                py: 0,
+                                minHeight: 'auto',
+                                textTransform: 'none'
+                              }}
+                            >
+                              Reset to default
+                            </Button>
+                          )}
+                        </Box>
+                      </Box>
                       
-                      <TextField
-                        fullWidth
-                        multiline
-                        minRows={2}
-                        maxRows={4}
-                        placeholder={`Customize the description for the ${tab.label} tab...`}
-                        value={tabDescriptions[tab.id] || ''}
-                        onChange={(e) => {
-                          if (e.target.value.length <= 200) {
-                            handleTabDescriptionChange(tab.id, e.target.value);
-                          }
-                        }}
-                        variant="outlined"
-                        size="small"
-                        sx={{
-                          '& .MuiInputBase-input': {
-                            fontSize: '0.875rem'
-                          }
-                        }}
-                        helperText={
-                          tabDescriptions[tab.id] 
-                            ? `${tabDescriptions[tab.id].length}/200 characters` 
-                            : 'Leave empty to use the default description'
-                        }
-                      />
-                    </Paper>
-                  </Grid>
+                      {/* Status */}
+                      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'start', pt: 1 }}>
+                        <Chip
+                          label={tabDescriptions[tab.id] ? 'Custom' : 'Default'}
+                          size="small"
+                          color={tabDescriptions[tab.id] ? 'primary' : 'default'}
+                          variant={tabDescriptions[tab.id] ? 'filled' : 'outlined'}
+                          sx={{ fontSize: '0.75rem' }}
+                        />
+                      </Box>
+                    </Box>
+                  </Paper>
                 ))}
-            </Grid>
+            </Box>
             
             {enabledTabs.length === 0 && (
-              <Alert severity="info">
+              <Alert severity="info" sx={{ mt: 2 }}>
                 Enable some tabs in the Navigation Tabs section above to add descriptions for them.
               </Alert>
             )}
+            
+            {/* Help section */}
+            <Box sx={{ mt: 3, p: 2, bgcolor: alpha(muiTheme.palette.info.main, 0.08), borderRadius: 1 }}>
+              <Typography variant="caption" sx={{ display: 'flex', alignItems: 'center', fontWeight: 'medium', mb: 1 }}>
+                <EditIcon sx={{ fontSize: '0.875rem', mr: 0.5 }} />
+                Tips for Writing Good Guidelines
+              </Typography>
+              <Box component="ul" sx={{ m: 0, pl: 2.5, '& li': { fontSize: '0.75rem', color: 'text.secondary', mb: 0.5 } }}>
+                <li>Keep descriptions concise and action-oriented</li>
+                <li>Explain what members can do in each section</li>
+                <li>Set clear expectations about content and behavior</li>
+                <li>Use welcoming, inclusive language</li>
+              </Box>
+            </Box>
           </AccordionDetails>
         </Accordion>
         
