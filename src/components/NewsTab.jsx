@@ -492,7 +492,7 @@ const NewsTab = ({ darkMode }) => {
   // Main component render
   return (
     <PageTransition>
-      <Paper sx={{ p: 3, bgcolor: darkMode ? 'background.paper' : undefined }} >
+      <Paper sx={{ p: 3, mt: 1.5, bgcolor: darkMode ? 'background.paper' : undefined }} >
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>        
         {isAdmin && !isCreating && (
           <Button 

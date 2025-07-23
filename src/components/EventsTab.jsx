@@ -133,7 +133,7 @@ const EventsTab = ({
 
   return (
     <PageTransition>
-      <Paper sx={{ p: 3 }} >
+      <Paper sx={{ p: 3, mt: 1.5 }} >
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>            
             {categories.length > 0 && (

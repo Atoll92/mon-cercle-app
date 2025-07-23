@@ -26,7 +26,7 @@ const AboutTab = ({ network, networkMembers, isUserAdmin, currentUserId }) => {
     }
   };
   return (
-    <Paper sx={{ p: 3 }}>      
+    <Paper sx={{ p: 3, mt: 1.5 }}>      
       <Divider sx={{ mb: 3 }} />
       
       <Grid container spacing={3}>

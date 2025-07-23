@@ -246,6 +246,7 @@ const MembersTab = ({
     <Paper 
       sx={{ 
         p: { xs: 2, md: 3 },
+        mt: 1.5,
         borderRadius: 2,
         bgcolor: darkMode ? alpha('#000000', 0.2) : 'background.paper',
         boxShadow: darkMode ? '0 8px 32px rgba(0,0,0,0.3)' : '0 4px 20px rgba(0,0,0,0.05)'

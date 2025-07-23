@@ -258,7 +258,7 @@ const WikiTab = ({ networkId }) => {
   }
 
   return (
-    <Paper sx={{ p: 3 }}>
+    <Paper sx={{ p: 3, mt: 1.5 }}>
       {error && (
         <Alert severity="error" sx={{ mb: 3 }}>
           {error}

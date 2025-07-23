@@ -263,6 +263,7 @@ const FilesTab = ({ darkMode }) => {
     <Paper 
       sx={{ 
         p: 3,
+        mt: 1.5,
         bgcolor: darkMode ? 'background.paper' : undefined,
         color: darkMode ? 'text.primary' : undefined
       }}

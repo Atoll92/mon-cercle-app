@@ -631,6 +631,7 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
     <Paper 
       sx={{ 
         p: { xs: 2, md: 3 },
+        mt: 1.5,
         position: 'relative',
         borderRadius: 3,
         bgcolor: darkMode ? alpha('#121212', 0.7) : 'background.paper',

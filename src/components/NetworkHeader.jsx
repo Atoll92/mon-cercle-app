@@ -165,7 +165,7 @@ const NetworkHeader = () => {
           alignItems: 'stretch', // Changed from 'center' to 'stretch' to allow full height
           justifyContent: 'space-between',
           paddingX: 2,
-          paddingY:0,
+          paddingY: { xs: 2, sm: 0 }, // Add vertical padding on mobile
           minHeight: '80px', // Set a consistent minimum height
           backgroundColor: darkMode ? '#1e1e1e' : '#ffffff',
           color: darkMode ? '#ffffff' : 'inherit',
