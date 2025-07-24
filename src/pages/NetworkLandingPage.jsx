@@ -1193,10 +1193,10 @@ function NetworkLandingPage() {
                   py: { xs: 0.5, sm: 0.5 }, // Consistent padding
                   minHeight: { xs: 48, sm: 56 },
                   '& .MuiTab-root': {
-                    // Responsive colors: normal on mobile, white on desktop
+                    // Responsive colors with proper theme support
                     color: {
                       xs: darkMode ? '#ffffff' : '#000000', // Normal colors on mobile
-                      sm: '#ffffff' // Always white on desktop for image contrast
+                      sm: darkMode ? '#ffffff' : '#000000' // Theme-aware colors on desktop
                     },
                     fontWeight: 500,
                     fontSize: { xs: '0.75rem', sm: '0.9rem' },
@@ -1228,12 +1228,12 @@ function NetworkLandingPage() {
                     '&:hover': {
                       color: {
                         xs: darkMode ? '#ffffff' : '#000000',
-                        sm: '#ffffff'
+                        sm: darkMode ? '#ffffff' : '#000000'
                       },
                       // Subtle hover background
                       background: {
                         xs: darkMode ? alpha('#ffffff', 0.08) : alpha('#000000', 0.04),
-                        sm: alpha('#ffffff', 0.15)
+                        sm: darkMode ? alpha('#ffffff', 0.15) : alpha('#000000', 0.08)
                       },
                       transform: 'translateY(-1px)',
                       // Clean hover shadow
@@ -1242,13 +1242,13 @@ function NetworkLandingPage() {
                     '&.Mui-selected': {
                       color: {
                         xs: darkMode ? '#ffffff' : '#000000',
-                        sm: '#ffffff'
+                        sm: darkMode ? '#ffffff' : '#000000'
                       },
                       fontWeight: 600,
                       // Clean selected background with high contrast
                       background: {
                         xs: darkMode ? alpha('#ffffff', 0.12) : alpha('#000000', 0.08),
-                        sm: alpha('#ffffff', 0.2)
+                        sm: darkMode ? alpha('#ffffff', 0.2) : alpha('#000000', 0.12)
                       },
                       // Clean selected shadow
                       boxShadow: `0 2px 8px ${alpha('#000000', 0.4)}, inset 0 1px 0 ${alpha('#ffffff', 0.2)}`,
@@ -1264,7 +1264,7 @@ function NetworkLandingPage() {
                   '& .MuiTabs-indicator': {
                     backgroundColor: {
                       xs: darkMode ? '#90caf9' : muiTheme.palette.primary.main, // Normal colors on mobile
-                      sm: '#ffffff' // White on desktop for image contrast
+                      sm: darkMode ? '#90caf9' : muiTheme.palette.primary.main // Theme-aware colors on desktop
                     },
                     height: 4,
                     borderRadius: '4px 4px 0 0',
@@ -1274,7 +1274,9 @@ function NetworkLandingPage() {
                       xs: darkMode 
                         ? `0 0 8px ${alpha('#90caf9', 0.6)}` 
                         : `0 0 8px ${alpha(muiTheme.palette.primary.main, 0.4)}`,
-                      sm: `0 0 8px ${alpha('#ffffff', 0.8)}`
+                      sm: darkMode 
+                        ? `0 0 8px ${alpha('#90caf9', 0.6)}` 
+                        : `0 0 8px ${alpha(muiTheme.palette.primary.main, 0.4)}`
                     },
                   },
                   '& .MuiTabs-scroller': {
@@ -1295,7 +1297,7 @@ function NetworkLandingPage() {
                     // Style scroll buttons for mobile with proper theme support
                     color: {
                       xs: darkMode ? alpha('#ffffff', 0.7) : alpha('#000000', 0.6),
-                      sm: alpha('#ffffff', 0.7) // White on desktop for image contrast
+                      sm: darkMode ? alpha('#ffffff', 0.7) : alpha('#000000', 0.6) // Theme-aware colors on desktop
                     },
                     '&.Mui-disabled': {
                       opacity: 0.3,
@@ -1305,7 +1307,9 @@ function NetworkLandingPage() {
                         xs: darkMode 
                           ? alpha('#ffffff', 0.08)
                           : alpha('#000000', 0.04),
-                        sm: alpha('#ffffff', 0.08)
+                        sm: darkMode 
+                          ? alpha('#ffffff', 0.08)
+                          : alpha('#000000', 0.04)
                       },
                     },
                     [muiTheme.breakpoints.up('md')]: {
