@@ -174,26 +174,75 @@ function JoinNetworkPage() {
 
   return (
     <Container maxWidth="sm" sx={{ mt: 8 }}>
-      <Paper sx={{ p: 4 }}>
-        {/* Network Info */}
-        <Box sx={{ textAlign: 'center', mb: 4 }}>
-          <Avatar
+      <Paper sx={{ p: 0, overflow: 'hidden' }}>
+        {/* Network Background Image */}
+        {network?.background_image_url && (
+          <Box
             sx={{
-              width: 80,
-              height: 80,
-              mx: 'auto',
-              mb: 2,
-              bgcolor: 'primary.main'
+              height: 200,
+              backgroundImage: `url(${network.background_image_url})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat',
+              position: 'relative',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
             }}
           >
-            {network?.logo_url ? (
-              <img src={network.logo_url} alt={network.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-            ) : (
-              <GroupIcon sx={{ fontSize: 40 }} />
-            )}
-          </Avatar>
+            {/* Optional overlay for better text readability */}
+            <Box
+              sx={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                background: 'linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.6))',
+                zIndex: 1
+              }}
+            />
+            <Avatar
+              sx={{
+                width: 80,
+                height: 80,
+                zIndex: 2,
+                bgcolor: 'primary.main',
+                border: '3px solid white',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
+              }}
+            >
+              {network?.logo_url ? (
+                <img src={network.logo_url} alt={network.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              ) : (
+                <GroupIcon sx={{ fontSize: 40 }} />
+              )}
+            </Avatar>
+          </Box>
+        )}
+        
+        {/* Network Info */}
+        <Box sx={{ p: 4, textAlign: 'center', mb: 0 }}>
+          {/* Show avatar here if no background image */}
+          {!network?.background_image_url && (
+            <Avatar
+              sx={{
+                width: 80,
+                height: 80,
+                mx: 'auto',
+                mb: 2,
+                bgcolor: 'primary.main'
+              }}
+            >
+              {network?.logo_url ? (
+                <img src={network.logo_url} alt={network.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              ) : (
+                <GroupIcon sx={{ fontSize: 40 }} />
+              )}
+            </Avatar>
+          )}
           
-          <Typography variant="h4" gutterBottom>
+          <Typography variant="h4" gutterBottom sx={{ mt: network?.background_image_url ? 2 : 0 }}>
             Join {network?.name}
           </Typography>
           
@@ -203,7 +252,7 @@ function JoinNetworkPage() {
             </Typography>
           )}
 
-          <Stack direction="row" spacing={2} justifyContent="center" sx={{ mb: 2 }}>
+          <Stack direction="row" spacing={2} justifyContent="center" sx={{ mb: 4 }}>
             <Chip
               icon={<PeopleIcon />}
               label={`${network?.member_count || 0} members`}
@@ -217,95 +266,97 @@ function JoinNetworkPage() {
           </Stack>
         </Box>
 
-        <Divider sx={{ mb: 3 }} />
+        <Box sx={{ px: 4, pb: 4 }}>
+          <Divider sx={{ mb: 3 }} />
 
-        {/* Invitation Details */}
-        {invitation?.name && (
-          <Box sx={{ mb: 3 }}>
-            <Typography variant="subtitle1" gutterBottom>
-              Invitation: <strong>{invitation.name}</strong>
-            </Typography>
-            {invitation?.description && (
-              <Typography variant="body2" color="text.secondary">
-                {invitation.description}
+          {/* Invitation Details */}
+          {invitation?.name && (
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="subtitle1" gutterBottom>
+                Invitation: <strong>{invitation.name}</strong>
               </Typography>
+              {invitation?.description && (
+                <Typography variant="body2" color="text.secondary">
+                  {invitation.description}
+                </Typography>
+              )}
+            </Box>
+          )}
+
+          {/* Usage/Expiration Info */}
+          <Stack spacing={1} sx={{ mb: 3 }}>
+            {invitation?.max_uses && (
+              <Alert severity="info" icon={false}>
+                Uses: {invitation.uses_count} / {invitation.max_uses}
+              </Alert>
             )}
-          </Box>
-        )}
+            {invitation?.expires_at && (
+              <Alert 
+                severity={new Date(invitation.expires_at) < new Date() ? "error" : "info"} 
+                icon={false}
+              >
+                {new Date(invitation.expires_at) < new Date() 
+                  ? "This invitation has expired"
+                  : `Expires: ${new Date(invitation.expires_at).toLocaleDateString()}`
+                }
+              </Alert>
+            )}
+          </Stack>
 
-        {/* Usage/Expiration Info */}
-        <Stack spacing={1} sx={{ mb: 3 }}>
-          {invitation?.max_uses && (
-            <Alert severity="info" icon={false}>
-              Uses: {invitation.uses_count} / {invitation.max_uses}
-            </Alert>
-          )}
-          {invitation?.expires_at && (
-            <Alert 
-              severity={new Date(invitation.expires_at) < new Date() ? "error" : "info"} 
-              icon={false}
-            >
-              {new Date(invitation.expires_at) < new Date() 
-                ? "This invitation has expired"
-                : `Expires: ${new Date(invitation.expires_at).toLocaleDateString()}`
-              }
-            </Alert>
-          )}
-        </Stack>
-
-        {/* Action Buttons */}
-        <Box sx={{ display: 'flex', gap: 2, flexDirection: 'column' }}>
-          {user ? (
-            <Button
-              variant="contained"
-              size="large"
-              fullWidth
-              onClick={handleJoin}
-              disabled={joining || userProfile?.network_id}
-              startIcon={joining ? <Spinner size={40} /> : <CheckCircleIcon />}
-            >
-              {joining ? 'Joining...' : userProfile?.network_id ? 'Switch Network' : 'Join Network'}
-            </Button>
-          ) : (
-            <>
+          {/* Action Buttons */}
+          <Box sx={{ display: 'flex', gap: 2, flexDirection: 'column' }}>
+            {user ? (
               <Button
                 variant="contained"
                 size="large"
                 fullWidth
                 onClick={handleJoin}
-                startIcon={<LoginIcon />}
+                disabled={joining || userProfile?.network_id}
+                startIcon={joining ? <Spinner size={40} /> : <CheckCircleIcon />}
               >
-                Sign Up to Join
+                {joining ? 'Joining...' : userProfile?.network_id ? 'Switch Network' : 'Join Network'}
               </Button>
-              <Button
-                variant="outlined"
-                size="large"
-                fullWidth
-                component={Link}
-                to={inviteeEmail 
-                  ? `/login?redirect=/join/${code}&email=${encodeURIComponent(inviteeEmail)}`
-                  : `/login?redirect=/join/${code}`}
-              >
-                Already have an account? Sign In
-              </Button>
-            </>
-          )}
-          
-          <Button
-            variant="outlined"
-            fullWidth
-            component={Link}
-            to="/"
-          >
-            Cancel
-          </Button>
-        </Box>
+            ) : (
+              <>
+                <Button
+                  variant="contained"
+                  size="large"
+                  fullWidth
+                  onClick={handleJoin}
+                  startIcon={<LoginIcon />}
+                >
+                  Sign Up to Join
+                </Button>
+                <Button
+                  variant="outlined"
+                  size="large"
+                  fullWidth
+                  component={Link}
+                  to={inviteeEmail 
+                    ? `/login?redirect=/join/${code}&email=${encodeURIComponent(inviteeEmail)}`
+                    : `/login?redirect=/join/${code}`}
+                >
+                  Already have an account? Sign In
+                </Button>
+              </>
+            )}
+            
+            <Button
+              variant="outlined"
+              fullWidth
+              component={Link}
+              to="/"
+            >
+              Cancel
+            </Button>
+          </Box>
 
-        {userProfile?.network_id && userProfile.network_id !== network?.id && (
-          <Alert severity="warning" sx={{ mt: 2 }}>
-            Note: Joining this network will switch you from your current network.
-          </Alert>
-        )}
+          {userProfile?.network_id && userProfile.network_id !== network?.id && (
+            <Alert severity="warning" sx={{ mt: 2 }}>
+              Note: Joining this network will switch you from your current network.
+            </Alert>
+          )}
+        </Box>
       </Paper>
     </Container>
   );
