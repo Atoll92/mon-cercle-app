@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseclient';
 import { useAuth } from '../context/authcontext';
 import { useProfile } from '../context/profileContext';
+import { useTranslation } from '../hooks/useTranslation';
 import {
   Box,
   Stepper,
@@ -137,6 +138,7 @@ const NetworkOnboardingWizard = ({ profile }) => {
   const { loadUserProfiles, setActiveProfile } = useProfile();
   const navigate = useNavigate();
   const theme = useTheme();
+  const { t } = useTranslation();
 
   // State for the wizard
   const [activeStep, setActiveStep] = useState(0);
@@ -167,8 +169,8 @@ const NetworkOnboardingWizard = ({ profile }) => {
   // Steps of the wizard
   const steps = [
     {
-      label: 'Network Basics',
-      description: `Let's start by creating your network. What would you like to call it?`,
+      label: t('networkOnboarding.steps.basics'),
+      description: t('networkOnboarding.basics.description'),
       component: (
         <BasicInfoStep 
           networkData={networkData} 
@@ -177,8 +179,8 @@ const NetworkOnboardingWizard = ({ profile }) => {
       )
     },
     {
-      label: 'Privacy & Access',
-      description: 'Configure how members will join and what they can see',
+      label: t('networkOnboarding.steps.privacy'),
+      description: t('networkOnboarding.privacy.description'),
       component: (
         <PrivacyStep 
           networkData={networkData} 
@@ -187,8 +189,8 @@ const NetworkOnboardingWizard = ({ profile }) => {
       )
     },
     {
-      label: 'Features & Modules',
-      description: 'Select which features you\'d like to enable for your network',
+      label: t('networkOnboarding.steps.features'),
+      description: t('networkOnboarding.features.description'),
       component: (
         <FeaturesStep 
           networkData={networkData} 
@@ -197,8 +199,8 @@ const NetworkOnboardingWizard = ({ profile }) => {
       )
     },
     {
-      label: 'Branding & Layout',
-      description: 'Configure your network logo, theme, and navigation',
+      label: t('networkOnboarding.steps.branding'),
+      description: t('networkOnboarding.branding.description'),
       component: (
         <NavigationStep 
           networkData={networkData} 
@@ -207,8 +209,8 @@ const NetworkOnboardingWizard = ({ profile }) => {
       )
     },
     {
-      label: 'Review & Create',
-      description: 'Review your settings and create your network',
+      label: t('networkOnboarding.steps.review'),
+      description: t('networkOnboarding.review.description'),
       component: (
         <ReviewStep 
           networkData={networkData} 
@@ -234,7 +236,7 @@ const NetworkOnboardingWizard = ({ profile }) => {
   // Handle network creation
   const handleCreateNetwork = async () => {
     if (!user) {
-      setError("You must be logged in to create a network");
+      setError(t('networkOnboarding.errors.notLoggedIn'));
       return;
     }
 
@@ -382,7 +384,7 @@ const NetworkOnboardingWizard = ({ profile }) => {
       
     } catch (error) {
       console.error("Error creating network:", error);
-      setError(error.message || "An error occurred while creating your network");
+      setError(error.message || t('networkOnboarding.errors.createError'));
     } finally {
       setLoading(false);
     }
@@ -418,14 +420,14 @@ const NetworkOnboardingWizard = ({ profile }) => {
           <CheckIcon sx={{ fontSize: 40, color: '#fff' }} />
         </Box>
         <Typography variant="h5" gutterBottom sx={{ fontWeight: 'medium', color: 'success.dark' }}>
-          Network Created Successfully!
+          {t('networkOnboarding.success.title')}
         </Typography>
         <Typography variant="body1" paragraph color="text.secondary">
-          Your network "{networkData.name}" has been created. You can now start inviting members and customizing your space.
+          {t('networkOnboarding.success.message', { networkName: networkData.name })}
         </Typography>
         <Spinner size={60} sx={{ mt: 2, mb: 3 }} />
         <Typography variant="body2" color="text.secondary">
-          Redirecting to your network...
+          {t('networkOnboarding.success.redirecting')}
         </Typography>
       </Paper>
     );
@@ -469,17 +471,17 @@ const NetworkOnboardingWizard = ({ profile }) => {
                       loading ? (
                         <>
                           <Spinner size={48} sx={{ mr: 1, color: 'white' }} />
-                          Creating...
+                          {t('networkOnboarding.buttons.creating')}
                         </>
-                      ) : 'Create Network'
-                    ) : 'Continue'}
+                      ) : t('networkOnboarding.buttons.createNetwork')
+                    ) : t('networkOnboarding.buttons.continue')}
                   </Button>
                   <Button
                     disabled={index === 0 || loading}
                     onClick={handleBack}
                     sx={{ mt: 1, mr: 1 }}
                   >
-                    Back
+                    {t('networkOnboarding.buttons.back')}
                   </Button>
                 </div>
               </Box>
@@ -493,6 +495,7 @@ const NetworkOnboardingWizard = ({ profile }) => {
 
 // Step 1: Basic network information
 const BasicInfoStep = ({ networkData, setNetworkData }) => {
+  const { t } = useTranslation();
   const handleChange = (e) => {
     const { name, value } = e.target;
     setNetworkData(prev => ({
@@ -504,30 +507,30 @@ const BasicInfoStep = ({ networkData, setNetworkData }) => {
   return (
     <Stack spacing={3}>
       <TextField
-        label="Network Name"
+        label={t('networkOnboarding.basics.networkName')}
         name="name"
         value={networkData.name}
         onChange={handleChange}
         fullWidth
         required
-        helperText="Choose a name for your network"
+        helperText={t('networkOnboarding.basics.networkNameHelper')}
         variant="outlined"
       />
       
       <TextField
-        label="Description"
+        label={t('networkOnboarding.basics.description')}
         name="description"
         value={networkData.description}
         onChange={handleChange}
         multiline
         rows={3}
         fullWidth
-        helperText="Briefly describe your network's purpose"
+        helperText={t('networkOnboarding.basics.descriptionHelper')}
         variant="outlined"
       />
       
       <FormControl fullWidth>
-        <FormLabel id="purpose-type-label">Network Type</FormLabel>
+        <FormLabel id="purpose-type-label">{t('networkOnboarding.basics.networkType')}</FormLabel>
         <RadioGroup
           aria-labelledby="purpose-type-label"
           name="purpose"
@@ -535,11 +538,11 @@ const BasicInfoStep = ({ networkData, setNetworkData }) => {
           onChange={handleChange}
           row
         >
-          <FormControlLabel value="general" control={<Radio />} label="General Community" />
-          <FormControlLabel value="professional" control={<Radio />} label="Professional Team" />
-          <FormControlLabel value="interest" control={<Radio />} label="Interest Group" />
-          <FormControlLabel value="education" control={<Radio />} label="Educational" />
-          <FormControlLabel value="nonprofit" control={<Radio />} label="Non-profit" />
+          <FormControlLabel value="general" control={<Radio />} label={t('networkOnboarding.basics.types.general')} />
+          <FormControlLabel value="professional" control={<Radio />} label={t('networkOnboarding.basics.types.professional')} />
+          <FormControlLabel value="interest" control={<Radio />} label={t('networkOnboarding.basics.types.interest')} />
+          <FormControlLabel value="education" control={<Radio />} label={t('networkOnboarding.basics.types.education')} />
+          <FormControlLabel value="nonprofit" control={<Radio />} label={t('networkOnboarding.basics.types.nonprofit')} />
         </RadioGroup>
       </FormControl>
     </Stack>
@@ -549,6 +552,7 @@ const BasicInfoStep = ({ networkData, setNetworkData }) => {
 // Step 2: Privacy settings
 const PrivacyStep = ({ networkData, setNetworkData }) => {
   const theme = useTheme();
+  const { t } = useTranslation();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -571,7 +575,7 @@ const PrivacyStep = ({ networkData, setNetworkData }) => {
         }}
       >
         <Typography variant="subtitle1" fontWeight="medium" gutterBottom>
-          Network Privacy
+          {t('networkOnboarding.privacy.title')}
         </Typography>
         
         <FormControl component="fieldset">
@@ -587,9 +591,9 @@ const PrivacyStep = ({ networkData, setNetworkData }) => {
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
                   <LockIcon color="primary" sx={{ mr: 1 }} />
                   <Box>
-                    <Typography variant="body1">Private Network</Typography>
+                    <Typography variant="body1">{t('networkOnboarding.privacy.private')}</Typography>
                     <Typography variant="body2" color="text.secondary">
-                      Only invited members can join and view content
+                      {t('networkOnboarding.privacy.privateDesc')}
                     </Typography>
                   </Box>
                 </Box>
@@ -603,9 +607,9 @@ const PrivacyStep = ({ networkData, setNetworkData }) => {
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
                   <GroupsIcon color="primary" sx={{ mr: 1 }} />
                   <Box>
-                    <Typography variant="body1">Restricted Membership</Typography>
+                    <Typography variant="body1">{t('networkOnboarding.privacy.restricted')}</Typography>
                     <Typography variant="body2" color="text.secondary">
-                      Members need approval, but non-members can see basic info
+                      {t('networkOnboarding.privacy.restrictedDesc')}
                     </Typography>
                   </Box>
                 </Box>
@@ -619,9 +623,9 @@ const PrivacyStep = ({ networkData, setNetworkData }) => {
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
                   <PublicIcon color="primary" sx={{ mr: 1 }} />
                   <Box>
-                    <Typography variant="body1">Public Network</Typography>
+                    <Typography variant="body1">{t('networkOnboarding.privacy.public')}</Typography>
                     <Typography variant="body2" color="text.secondary">
-                      Anyone can join and view content
+                      {t('networkOnboarding.privacy.publicDesc')}
                     </Typography>
                   </Box>
                 </Box>
@@ -632,7 +636,7 @@ const PrivacyStep = ({ networkData, setNetworkData }) => {
       </Paper>
       
       <Alert severity="info">
-        You can always change these settings later from the Admin Panel.
+        {t('networkOnboarding.privacy.changeInfo')}
       </Alert>
     </Stack>
   );
@@ -641,6 +645,7 @@ const PrivacyStep = ({ networkData, setNetworkData }) => {
 // Step 3: Features and modules
 const FeaturesStep = ({ networkData, setNetworkData }) => {
   const theme = useTheme();
+  const { t } = useTranslation();
   
   const handleFeatureChange = (feature) => (e) => {
     setNetworkData(prev => ({
@@ -656,46 +661,46 @@ const FeaturesStep = ({ networkData, setNetworkData }) => {
   const featureCards = [
     {
       name: 'events',
-      title: 'Events',
+      title: t('networkOnboarding.features.events'),
       icon: <EventIcon fontSize="large" sx={{ color: theme.palette.primary.main }} />,
-      description: 'Create and manage events for your network',
+      description: t('networkOnboarding.features.eventsDesc'),
     },
     {
       name: 'news',
-      title: 'News & Announcements',
+      title: t('networkOnboarding.features.news'),
       icon: <ArticleIcon fontSize="large" sx={{ color: theme.palette.secondary.main }} />,
-      description: 'Share news, updates and announcements',
+      description: t('networkOnboarding.features.newsDesc'),
     },
     {
       name: 'files',
-      title: 'File Sharing',
+      title: t('networkOnboarding.features.files'),
       icon: <FileIcon fontSize="large" sx={{ color: theme.palette.success.main }} />,
-      description: 'Share files and documents with your members',
+      description: t('networkOnboarding.features.filesDesc'),
     },
     {
       name: 'chat',
-      title: 'Group Chat',
+      title: t('networkOnboarding.features.chat'),
       icon: <ForumIcon fontSize="large" sx={{ color: theme.palette.info.main }} />,
-      description: 'Real-time communication between members',
+      description: t('networkOnboarding.features.chatDesc'),
     },
     {
       name: 'wiki',
-      title: 'Knowledge Wiki',
+      title: t('networkOnboarding.features.wiki'),
       icon: <WikiIcon fontSize="large" sx={{ color: theme.palette.warning.main }} />,
-      description: 'Create and maintain knowledge resources',
+      description: t('networkOnboarding.features.wikiDesc'),
     },
     {
       name: 'moodboards',
-      title: 'Moodboards',
+      title: t('networkOnboarding.features.moodboards'),
       icon: <ImageIcon fontSize="large" sx={{ color: theme.palette.error.main }} />,
-      description: 'Visual collaboration and inspiration boards',
+      description: t('networkOnboarding.features.moodboardsDesc'),
     }
   ];
 
   return (
     <Box>
       <Typography variant="body1" paragraph>
-        Select which features to enable for your network:
+        {t('networkOnboarding.features.description')}
       </Typography>
       
       <Grid container spacing={2}>
@@ -750,7 +755,7 @@ const FeaturesStep = ({ networkData, setNetworkData }) => {
       </Grid>
       
       <Alert severity="info" sx={{ mt: 3 }}>
-        You can enable or disable features later from the Admin Panel.
+        {t('networkOnboarding.features.changeInfo')}
       </Alert>
     </Box>
   );
@@ -759,6 +764,7 @@ const FeaturesStep = ({ networkData, setNetworkData }) => {
 // Step 4: Navigation configuration
 const NavigationStep = ({ networkData, setNetworkData }) => {
   const theme = useTheme();
+  const { t } = useTranslation();
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState(null);
   const [uploadingBackground, setUploadingBackground] = useState(false);
@@ -773,13 +779,13 @@ const NavigationStep = ({ networkData, setNetworkData }) => {
   );
   
   const availableTabs = [
-    { id: 'news', label: 'News', icon: <ArticleIcon fontSize="small" /> },
-    { id: 'members', label: 'Members', icon: <GroupsIcon fontSize="small" /> },
-    { id: 'events', label: 'Events', icon: <EventIcon fontSize="small" /> },
-    { id: 'chat', label: 'Chat', icon: <ForumIcon fontSize="small" /> },
-    { id: 'files', label: 'Files', icon: <FileIcon fontSize="small" /> },
-    { id: 'wiki', label: 'Wiki', icon: <WikiIcon fontSize="small" /> },
-    { id: 'social', label: 'Social Wall', icon: <ImageIcon fontSize="small" /> }
+    { id: 'news', label: t('networkOnboarding.branding.navigation.tabs.news'), icon: <ArticleIcon fontSize="small" /> },
+    { id: 'members', label: t('networkOnboarding.branding.navigation.tabs.members'), icon: <GroupsIcon fontSize="small" /> },
+    { id: 'events', label: t('networkOnboarding.branding.navigation.tabs.events'), icon: <EventIcon fontSize="small" /> },
+    { id: 'chat', label: t('networkOnboarding.branding.navigation.tabs.chat'), icon: <ForumIcon fontSize="small" /> },
+    { id: 'files', label: t('networkOnboarding.branding.navigation.tabs.files'), icon: <FileIcon fontSize="small" /> },
+    { id: 'wiki', label: t('networkOnboarding.branding.navigation.tabs.wiki'), icon: <WikiIcon fontSize="small" /> },
+    { id: 'social', label: t('networkOnboarding.branding.navigation.tabs.social'), icon: <ImageIcon fontSize="small" /> }
   ];
   
   // Handle logo upload
@@ -790,13 +796,13 @@ const NavigationStep = ({ networkData, setNetworkData }) => {
     // Check file type
     const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
     if (!allowedTypes.includes(file.type)) {
-      setUploadError('Please upload a valid image file (JPEG, PNG, GIF, or WebP)');
+      setUploadError(t('networkOnboarding.branding.logo.error.invalidType'));
       return;
     }
 
     // Check file size (max 2MB)
     if (file.size > 2 * 1024 * 1024) {
-      setUploadError('Image size must be less than 2MB');
+      setUploadError(t('networkOnboarding.branding.logo.error.tooLarge'));
       return;
     }
 
@@ -831,7 +837,7 @@ const NavigationStep = ({ networkData, setNetworkData }) => {
       }));
     } catch (error) {
       console.error('Error uploading logo:', error);
-      setUploadError('Failed to upload logo. Please try again.');
+      setUploadError(t('networkOnboarding.branding.logo.error.failed'));
     } finally {
       setUploading(false);
     }
@@ -853,13 +859,13 @@ const NavigationStep = ({ networkData, setNetworkData }) => {
     // Check file type
     const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
     if (!allowedTypes.includes(file.type)) {
-      setBackgroundUploadError('Please upload a valid image file (JPEG, PNG, GIF, or WebP)');
+      setBackgroundUploadError(t('networkOnboarding.branding.background.error.invalidType'));
       return;
     }
 
     // Check file size (max 10MB for backgrounds)
     if (file.size > 10 * 1024 * 1024) {
-      setBackgroundUploadError('Background image size must be less than 10MB');
+      setBackgroundUploadError(t('networkOnboarding.branding.background.error.tooLarge'));
       return;
     }
 
@@ -894,7 +900,7 @@ const NavigationStep = ({ networkData, setNetworkData }) => {
       }));
     } catch (error) {
       console.error('Error uploading background:', error);
-      setBackgroundUploadError('Failed to upload background image. Please try again.');
+      setBackgroundUploadError(t('networkOnboarding.branding.background.error.failed'));
     } finally {
       setUploadingBackground(false);
     }
@@ -968,12 +974,12 @@ const NavigationStep = ({ networkData, setNetworkData }) => {
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
           <ImageIcon sx={{ mr: 1, color: 'primary.main' }} />
           <Typography variant="subtitle1" fontWeight="medium">
-            Network Logo
+            {t('networkOnboarding.branding.logo.title')}
           </Typography>
         </Box>
         
         <Typography variant="body2" color="text.secondary" paragraph>
-          Upload a logo for your network. This will appear in the header and represent your network.
+          {t('networkOnboarding.branding.logo.description')}
         </Typography>
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -1000,7 +1006,7 @@ const NavigationStep = ({ networkData, setNetworkData }) => {
                 onClick={handleRemoveLogo}
                 startIcon={<CloseIcon />}
               >
-                Remove
+                {t('networkOnboarding.branding.logo.remove')}
               </Button>
             </Box>
           ) : (
@@ -1010,7 +1016,7 @@ const NavigationStep = ({ networkData, setNetworkData }) => {
               startIcon={uploading ? <Spinner size={40} /> : <UploadIcon />}
               disabled={uploading}
             >
-              {uploading ? 'Uploading...' : 'Upload Logo'}
+              {uploading ? t('networkOnboarding.branding.logo.uploading') : t('networkOnboarding.branding.logo.upload')}
               <input
                 type="file"
                 hidden
@@ -1038,16 +1044,16 @@ const NavigationStep = ({ networkData, setNetworkData }) => {
         }}
       >
         <Typography variant="subtitle1" fontWeight="medium" gutterBottom>
-          Navigation Tabs
+          {t('networkOnboarding.branding.navigation.title')}
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-          Select which tabs will appear in your network navigation. Drag to reorder them.
+          {t('networkOnboarding.branding.navigation.description')}
         </Typography>
         
         {/* Enabled Tabs - Sortable */}
         <Box sx={{ mb: 3 }}>
           <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 'medium' }}>
-            Enabled Tabs (Drag to reorder)
+            {t('networkOnboarding.branding.navigation.enabledTabs')}
           </Typography>
           <DndContext
             sensors={sensors}
@@ -1078,7 +1084,7 @@ const NavigationStep = ({ networkData, setNetworkData }) => {
         {/* Available Tabs - Not enabled */}
         <Box>
           <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 'medium' }}>
-            Available Tabs (Click to enable)
+            {t('networkOnboarding.branding.navigation.availableTabs')}
           </Typography>
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
             {availableTabs
@@ -1111,26 +1117,26 @@ const NavigationStep = ({ networkData, setNetworkData }) => {
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
           <ThemeIcon sx={{ mr: 1, color: 'primary.main' }} />
           <Typography variant="subtitle1" fontWeight="medium">
-            Theme Color
+            {t('networkOnboarding.branding.theme.title')}
           </Typography>
         </Box>
         
         <FormControl fullWidth>
-          <InputLabel id="theme-color-label">Theme Color</InputLabel>
+          <InputLabel id="theme-color-label">{t('networkOnboarding.branding.theme.title')}</InputLabel>
           <Select
             labelId="theme-color-label"
             value={networkData.themeColor}
             onChange={handleColorChange}
             label="Theme Color"
           >
-            <MenuItem value={theme.palette.primary.main}>Blue (Default)</MenuItem>
-            <MenuItem value={theme.palette.secondary.main}>Purple</MenuItem>
-            <MenuItem value={theme.palette.success.main}>Green</MenuItem>
-            <MenuItem value={theme.palette.error.main}>Red</MenuItem>
-            <MenuItem value={theme.palette.warning.main}>Orange</MenuItem>
-            <MenuItem value={theme.palette.info.main}>Light Blue</MenuItem>
-            <MenuItem value="#000000">Black</MenuItem>
-            <MenuItem value="#424242">Gray</MenuItem>
+            <MenuItem value={theme.palette.primary.main}>{t('networkOnboarding.branding.theme.colors.blue')}</MenuItem>
+            <MenuItem value={theme.palette.secondary.main}>{t('networkOnboarding.branding.theme.colors.purple')}</MenuItem>
+            <MenuItem value={theme.palette.success.main}>{t('networkOnboarding.branding.theme.colors.green')}</MenuItem>
+            <MenuItem value={theme.palette.error.main}>{t('networkOnboarding.branding.theme.colors.red')}</MenuItem>
+            <MenuItem value={theme.palette.warning.main}>{t('networkOnboarding.branding.theme.colors.orange')}</MenuItem>
+            <MenuItem value={theme.palette.info.main}>{t('networkOnboarding.branding.theme.colors.lightBlue')}</MenuItem>
+            <MenuItem value="#000000">{t('networkOnboarding.branding.theme.colors.black')}</MenuItem>
+            <MenuItem value="#424242">{t('networkOnboarding.branding.theme.colors.gray')}</MenuItem>
           </Select>
         </FormControl>
         
@@ -1156,12 +1162,12 @@ const NavigationStep = ({ networkData, setNetworkData }) => {
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
           <ImageIcon sx={{ mr: 1, color: 'primary.main' }} />
           <Typography variant="subtitle1" fontWeight="medium">
-            Landing Page Background Image
+            {t('networkOnboarding.branding.background.title')}
           </Typography>
         </Box>
         
         <Typography variant="body2" color="text.secondary" paragraph>
-          Upload a background image for your network's landing page. This creates a more immersive welcome experience.
+          {t('networkOnboarding.branding.background.description')}
         </Typography>
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -1193,7 +1199,7 @@ const NavigationStep = ({ networkData, setNetworkData }) => {
                     fontSize: '0.8rem'
                   }}
                 >
-                  Preview of landing page background
+                  {t('networkOnboarding.branding.background.preview')}
                 </Box>
               </Box>
             </Box>
@@ -1213,10 +1219,10 @@ const NavigationStep = ({ networkData, setNetworkData }) => {
             >
               <ImageIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 1 }} />
               <Typography variant="body2" color="text.secondary">
-                No background image set
+                {t('networkOnboarding.branding.background.noImage')}
               </Typography>
               <Typography variant="caption" color="text.secondary">
-                A default gradient will be used
+                {t('networkOnboarding.branding.background.defaultGradient')}
               </Typography>
             </Box>
           )}
@@ -1229,7 +1235,7 @@ const NavigationStep = ({ networkData, setNetworkData }) => {
             startIcon={uploadingBackground ? <Spinner size={40} /> : <UploadIcon />}
             disabled={uploadingBackground}
           >
-            {uploadingBackground ? 'Uploading...' : networkData.backgroundImageUrl ? 'Change Background' : 'Upload Background'}
+            {uploadingBackground ? t('networkOnboarding.branding.background.uploading') : networkData.backgroundImageUrl ? t('networkOnboarding.branding.background.change') : t('networkOnboarding.branding.background.upload')}
             <input
               type="file"
               hidden
@@ -1246,7 +1252,7 @@ const NavigationStep = ({ networkData, setNetworkData }) => {
               onClick={handleRemoveBackground}
               startIcon={<CloseIcon />}
             >
-              Remove
+              {t('networkOnboarding.branding.background.remove')}
             </Button>
           )}
         </Box>
@@ -1258,8 +1264,7 @@ const NavigationStep = ({ networkData, setNetworkData }) => {
         )}
 
         <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 2 }}>
-          Recommended size: 1920x1080 pixels (16:9 ratio). Max file size: 10MB.
-          For best results, use an image with good contrast for text visibility.
+          {t('networkOnboarding.branding.background.recommendation')}
         </Typography>
       </Paper>
     </Stack>
@@ -1269,13 +1274,14 @@ const NavigationStep = ({ networkData, setNetworkData }) => {
 // Step 5: Review configuration before creating
 const ReviewStep = ({ networkData }) => {
   const theme = useTheme();
+  const { t } = useTranslation();
   
   // Helper function to get readable privacy level
   const getPrivacyLabel = (level) => {
     switch (level) {
-      case 'private': return 'Private (Invite Only)';
-      case 'restricted': return 'Restricted (Approval Required)';
-      case 'public': return 'Public (Open)';
+      case 'private': return t('networkOnboarding.privacy.private') + ' (' + t('networkOnboarding.privacy.privateDesc').substring(0, 15) + '...)';
+      case 'restricted': return t('networkOnboarding.privacy.restricted') + ' (' + t('networkOnboarding.privacy.restrictedDesc').substring(0, 15) + '...)';
+      case 'public': return t('networkOnboarding.privacy.public') + ' (' + t('networkOnboarding.privacy.publicDesc').substring(0, 15) + '...)';
       default: return level;
     }
   };
@@ -1283,11 +1289,11 @@ const ReviewStep = ({ networkData }) => {
   // Helper function to get readable purpose type
   const getPurposeLabel = (purpose) => {
     switch (purpose) {
-      case 'general': return 'General Community';
-      case 'professional': return 'Professional Team';
-      case 'interest': return 'Interest Group';
-      case 'education': return 'Educational';
-      case 'nonprofit': return 'Non-profit';
+      case 'general': return t('networkOnboarding.basics.types.general');
+      case 'professional': return t('networkOnboarding.basics.types.professional');
+      case 'interest': return t('networkOnboarding.basics.types.interest');
+      case 'education': return t('networkOnboarding.basics.types.education');
+      case 'nonprofit': return t('networkOnboarding.basics.types.nonprofit');
       default: return purpose;
     }
   };
@@ -1295,7 +1301,7 @@ const ReviewStep = ({ networkData }) => {
   return (
     <Box>
       <Alert severity="info" sx={{ mb: 3 }}>
-        Please review your network settings before creating. You can modify all these settings later from the admin panel.
+        {t('networkOnboarding.review.infoMessage')}
       </Alert>
       
       <Paper elevation={0} sx={{ p: 3, borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
@@ -1331,12 +1337,12 @@ const ReviewStep = ({ networkData }) => {
           <Grid item xs={12} sm={6}>
             <Stack spacing={2}>
               <Box>
-                <Typography variant="subtitle2" color="text.secondary">Network Type</Typography>
+                <Typography variant="subtitle2" color="text.secondary">{t('networkOnboarding.review.networkType')}</Typography>
                 <Typography variant="body1">{getPurposeLabel(networkData.purpose)}</Typography>
               </Box>
               
               <Box>
-                <Typography variant="subtitle2" color="text.secondary">Privacy Level</Typography>
+                <Typography variant="subtitle2" color="text.secondary">{t('networkOnboarding.review.privacyLevel')}</Typography>
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
                   {networkData.privacyLevel === 'private' && <LockIcon fontSize="small" sx={{ mr: 0.5 }} />}
                   {networkData.privacyLevel === 'public' && <PublicIcon fontSize="small" sx={{ mr: 0.5 }} />}
@@ -1346,7 +1352,7 @@ const ReviewStep = ({ networkData }) => {
               </Box>
               
               <Box>
-                <Typography variant="subtitle2" color="text.secondary">Theme Color</Typography>
+                <Typography variant="subtitle2" color="text.secondary">{t('networkOnboarding.review.themeColor')}</Typography>
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
                   <Box 
                     sx={{ 
@@ -1357,14 +1363,14 @@ const ReviewStep = ({ networkData }) => {
                       mr: 1
                     }} 
                   />
-                  <Typography>Custom</Typography>
+                  <Typography>{t('networkOnboarding.review.custom')}</Typography>
                 </Box>
               </Box>
               
               {networkData.backgroundImageUrl && (
                 <Box>
-                  <Typography variant="subtitle2" color="text.secondary">Background Image</Typography>
-                  <Typography variant="body1">Custom background uploaded</Typography>
+                  <Typography variant="subtitle2" color="text.secondary">{t('networkOnboarding.review.backgroundImage')}</Typography>
+                  <Typography variant="body1">{t('networkOnboarding.review.customBackground')}</Typography>
                   <Box
                     sx={{
                       width: 120,
@@ -1385,7 +1391,7 @@ const ReviewStep = ({ networkData }) => {
           
           <Grid item xs={12} sm={6}>
             <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-              Enabled Features
+              {t('networkOnboarding.review.enabledFeatures')}
             </Typography>
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
               {Object.entries(networkData.features)
@@ -1402,7 +1408,7 @@ const ReviewStep = ({ networkData }) => {
             </Box>
             
             <Typography variant="subtitle2" color="text.secondary" sx={{ mt: 2, mb: 0.5 }}>
-              Default Navigation Tabs
+              {t('networkOnboarding.review.defaultNavTabs')}
             </Typography>
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
               {networkData.enabledTabs.map((tab) => (

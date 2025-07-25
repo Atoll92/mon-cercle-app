@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseclient';
 import { useAuth } from '../context/authcontext';
 import { useProfile } from '../context/profileContext';
+import { useTranslation } from '../hooks/useTranslation';
 import {
   Box,
   Stepper,
@@ -65,6 +66,7 @@ const MemberOnboardingWizard = ({ profile, network }) => {
   const { refreshActiveProfile } = useProfile();
   const navigate = useNavigate();
   const theme = useTheme();
+  const { t } = useTranslation();
 
   console.log('MemberOnboardingWizard rendered with:', {
     profile: profile?.id,
@@ -117,8 +119,8 @@ const MemberOnboardingWizard = ({ profile, network }) => {
   // Steps of the wizard
   const steps = [
     {
-      label: 'Welcome',
-      description: `Welcome to ${network?.name || 'the network'}! Let's set up your profile.`,
+      label: t('memberOnboarding.steps.welcome'),
+      description: t('memberOnboarding.welcome.description', { networkName: network?.name || 'the network' }),
       component: (
         <WelcomeStep 
           network={network}
@@ -126,8 +128,8 @@ const MemberOnboardingWizard = ({ profile, network }) => {
       )
     },
     {
-      label: 'Basic Information',
-      description: 'Tell us about yourself',
+      label: t('memberOnboarding.steps.basicInfo'),
+      description: t('memberOnboarding.basicInfo.description'),
       component: (
         <BasicInfoStep 
           profileData={profileData} 
@@ -136,8 +138,8 @@ const MemberOnboardingWizard = ({ profile, network }) => {
       )
     },
     {
-      label: 'Profile Picture',
-      description: 'Add a photo to help others recognize you',
+      label: t('memberOnboarding.steps.profilePicture'),
+      description: t('memberOnboarding.profilePicture.description'),
       component: (
         <AvatarStep 
           profileData={profileData} 
@@ -149,8 +151,8 @@ const MemberOnboardingWizard = ({ profile, network }) => {
       )
     },
     {
-      label: 'Professional Details',
-      description: 'Share your skills and professional links',
+      label: t('memberOnboarding.steps.professionalDetails'),
+      description: t('memberOnboarding.professionalDetails.description'),
       component: (
         <ProfessionalStep 
           profileData={profileData} 
@@ -160,8 +162,8 @@ const MemberOnboardingWizard = ({ profile, network }) => {
       )
     },
     {
-      label: 'Introduction Post (Optional)',
-      description: 'Share an introduction post with the community',
+      label: t('memberOnboarding.steps.introPost'),
+      description: t('memberOnboarding.introPost.description'),
       component: (
         <IntroPostStep 
           createIntroPost={createIntroPost}
@@ -182,8 +184,8 @@ const MemberOnboardingWizard = ({ profile, network }) => {
       )
     },
     {
-      label: 'Review',
-      description: 'Review your profile before joining',
+      label: t('memberOnboarding.steps.review'),
+      description: t('memberOnboarding.review.description'),
       component: (
         <ReviewStep 
           profileData={profileData}
@@ -261,7 +263,7 @@ const MemberOnboardingWizard = ({ profile, network }) => {
   // Handle profile completion
   const handleCompleteProfile = async () => {
     if (!user || !profile) {
-      setError("Session error. Please try logging in again.");
+      setError(t('memberOnboarding.errors.sessionError'));
       return;
     }
 
@@ -332,7 +334,7 @@ const MemberOnboardingWizard = ({ profile, network }) => {
       
     } catch (error) {
       console.error("Error updating profile:", error);
-      setError(error.message || "An error occurred while updating your profile");
+      setError(error.message || t('memberOnboarding.errors.updateError'));
     } finally {
       setLoading(false);
     }
@@ -368,14 +370,14 @@ const MemberOnboardingWizard = ({ profile, network }) => {
           <CheckIcon sx={{ fontSize: 40, color: '#fff' }} />
         </Box>
         <Typography variant="h5" gutterBottom sx={{ fontWeight: 'medium', color: 'success.dark' }}>
-          Profile Completed!
+          {t('memberOnboarding.success.title')}
         </Typography>
         <Typography variant="body1" paragraph color="text.secondary">
-          Welcome to {network?.name}! You're all set to start exploring and connecting.
+          {t('memberOnboarding.success.message', { networkName: network?.name })}
         </Typography>
         <Spinner size={60} sx={{ mt: 2, mb: 3 }} />
         <Typography variant="body2" color="text.secondary">
-          Taking you to your dashboard...
+          {t('memberOnboarding.success.redirecting')}
         </Typography>
       </Paper>
     );
@@ -420,17 +422,17 @@ const MemberOnboardingWizard = ({ profile, network }) => {
                       loading ? (
                         <>
                           <Spinner size={48} sx={{ mr: 1, color: 'white' }} />
-                          Saving...
+                          {t('memberOnboarding.buttons.saving')}
                         </>
-                      ) : 'Complete Profile'
-                    ) : 'Continue'}
+                      ) : t('memberOnboarding.buttons.completeProfile')
+                    ) : t('memberOnboarding.buttons.continue')}
                   </Button>
                   <Button
                     disabled={index === 0 || loading}
                     onClick={handleBack}
                     sx={{ mt: 1, mr: 1 }}
                   >
-                    Back
+                    {t('memberOnboarding.buttons.back')}
                   </Button>
                 </div>
               </Box>
@@ -444,6 +446,7 @@ const MemberOnboardingWizard = ({ profile, network }) => {
 
 // Step 1: Welcome
 const WelcomeStep = ({ network }) => {
+  const { t } = useTranslation();
   
   return (
     <Card sx={{ borderRadius: 2 }}>
@@ -465,12 +468,11 @@ const WelcomeStep = ({ network }) => {
           )}
           
           <Typography variant="h5" gutterBottom>
-            Welcome to {network?.name || 'our network'}!
+            {t('memberOnboarding.welcome.title', { networkName: network?.name || 'our network' })}
           </Typography>
           
           <Typography variant="body1" paragraph color="text.secondary">
-            You've been invited to join this private network. Before you can access the full experience, 
-            we need you to complete your profile.
+            {t('memberOnboarding.welcome.subtitle')}
           </Typography>
           
           {network?.description && (
@@ -490,18 +492,18 @@ const WelcomeStep = ({ network }) => {
           >
             <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
               <InfoIcon fontSize="small" sx={{ mr: 1 }} />
-              What happens next:
+              {t('memberOnboarding.welcome.whatHappensNext')}
             </Typography>
             <Stack spacing={1} sx={{ textAlign: 'left', ml: 3 }}>
-              <Typography variant="body2">• Set up your basic profile information</Typography>
-              <Typography variant="body2">• Add a profile picture</Typography>
-              <Typography variant="body2">• Share your skills and interests</Typography>
-              <Typography variant="body2">• Join the {network?.name} community!</Typography>
+              <Typography variant="body2">• {t('memberOnboarding.welcome.setupProfile')}</Typography>
+              <Typography variant="body2">• {t('memberOnboarding.welcome.addPicture')}</Typography>
+              <Typography variant="body2">• {t('memberOnboarding.welcome.shareSkills')}</Typography>
+              <Typography variant="body2">• {t('memberOnboarding.welcome.joinCommunity', { networkName: network?.name })}</Typography>
             </Stack>
           </Paper>
           
           <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 3 }}>
-            This will only take a few minutes
+            {t('memberOnboarding.welcome.timeEstimate')}
           </Typography>
         </Box>
       </CardContent>
@@ -511,6 +513,7 @@ const WelcomeStep = ({ network }) => {
 
 // Step 2: Basic Information
 const BasicInfoStep = ({ profileData, setProfileData }) => {
+  const { t } = useTranslation();
   const handleChange = (e) => {
     const { name, value } = e.target;
     setProfileData(prev => ({
@@ -522,13 +525,13 @@ const BasicInfoStep = ({ profileData, setProfileData }) => {
   return (
     <Stack spacing={3}>
       <TextField
-        label="Full Name"
+        label={t('memberOnboarding.basicInfo.fullName')}
         name="fullName"
         value={profileData.fullName}
         onChange={handleChange}
         fullWidth
         required
-        helperText="How you'll appear to other members"
+        helperText={t('memberOnboarding.basicInfo.fullNameHelper')}
         variant="outlined"
         InputProps={{
           startAdornment: <PersonIcon color="action" sx={{ mr: 1 }} />
@@ -536,14 +539,14 @@ const BasicInfoStep = ({ profileData, setProfileData }) => {
       />
       
       <TextField
-        label="Contact Email"
+        label={t('memberOnboarding.basicInfo.contactEmail')}
         name="contactEmail"
         type="email"
         value={profileData.contactEmail}
         onChange={handleChange}
         fullWidth
         required
-        helperText="This will be visible to other network members"
+        helperText={t('memberOnboarding.basicInfo.contactEmailHelper')}
         variant="outlined"
         InputProps={{
           startAdornment: <MailIcon color="action" sx={{ mr: 1 }} />
@@ -551,25 +554,25 @@ const BasicInfoStep = ({ profileData, setProfileData }) => {
       />
       
       <TextField
-        label="Bio"
+        label={t('memberOnboarding.basicInfo.bio')}
         name="bio"
         value={profileData.bio}
         onChange={handleChange}
         multiline
         rows={4}
         fullWidth
-        helperText="Tell others about yourself (optional)"
+        helperText={t('memberOnboarding.basicInfo.bioHelper')}
         variant="outlined"
       />
       
       <TextField
-        label="Tagline"
+        label={t('memberOnboarding.basicInfo.tagline')}
         name="tagline"
         value={profileData.tagline}
         onChange={handleChange}
         fullWidth
         inputProps={{ maxLength: 60 }}
-        helperText={`${profileData.tagline.length}/60 - A short phrase that represents you (optional)`}
+        helperText={t('memberOnboarding.basicInfo.taglineHelper', { count: profileData.tagline.length })}
         variant="outlined"
       />
     </Stack>
@@ -578,6 +581,7 @@ const BasicInfoStep = ({ profileData, setProfileData }) => {
 
 // Step 3: Avatar Upload
 const AvatarStep = ({ profileData, setProfileData, uploadProgress, isDraggingAvatar, setIsDraggingAvatar }) => {
+  const { t } = useTranslation();
   
   const handleAvatarChange = (e) => {
     if (!e.target.files || e.target.files.length === 0) {
@@ -674,12 +678,12 @@ const AvatarStep = ({ profileData, setProfileData, uploadProgress, isDraggingAva
               sx={{ width: '80%', borderRadius: 1 }}
             />
             <Typography variant="caption" color="white">
-              {uploadProgress}%
+              {t('memberOnboarding.profilePicture.uploadProgress', { progress: uploadProgress })}
             </Typography>
           </Box>
         )}
         
-        <Tooltip title="Change profile picture">
+        <Tooltip title={t('memberOnboarding.profilePicture.changePhoto')}>
           <IconButton
             sx={{
               position: 'absolute',
@@ -705,11 +709,11 @@ const AvatarStep = ({ profileData, setProfileData, uploadProgress, isDraggingAva
       </Box>
       
       <Typography variant="body2" color="text.secondary" textAlign="center">
-        Drag & drop an image or click the edit icon
+        {t('memberOnboarding.profilePicture.dragDrop')}
       </Typography>
       
       <Typography variant="caption" color="text.secondary" textAlign="center" sx={{ mt: 1 }}>
-        Recommended: Square image, at least 200x200px
+        {t('memberOnboarding.profilePicture.recommended')}
       </Typography>
       
       {profileData.avatarUrl && (
@@ -721,12 +725,12 @@ const AvatarStep = ({ profileData, setProfileData, uploadProgress, isDraggingAva
           startIcon={<CloseIcon />}
           sx={{ mt: 2 }}
         >
-          Remove Photo
+          {t('memberOnboarding.profilePicture.removePhoto')}
         </Button>
       )}
       
       <Alert severity="info" sx={{ mt: 3, width: '100%' }}>
-        Adding a profile picture helps other members recognize and connect with you
+        {t('memberOnboarding.profilePicture.infoMessage')}
       </Alert>
     </Box>
   );
@@ -734,6 +738,7 @@ const AvatarStep = ({ profileData, setProfileData, uploadProgress, isDraggingAva
 
 // Step 4: Professional Details
 const ProfessionalStep = ({ profileData, setProfileData, commonSkills }) => {
+  const { t } = useTranslation();
   const handleChange = (e) => {
     const { name, value } = e.target;
     setProfileData(prev => ({
@@ -745,13 +750,13 @@ const ProfessionalStep = ({ profileData, setProfileData, commonSkills }) => {
   return (
     <Stack spacing={3}>
       <TextField
-        label="Portfolio URL"
+        label={t('memberOnboarding.professionalDetails.portfolioUrl')}
         name="portfolioUrl"
         value={profileData.portfolioUrl}
         onChange={handleChange}
         fullWidth
-        placeholder="https://your-portfolio.com"
-        helperText="Your personal website or portfolio (optional)"
+        placeholder={t('memberOnboarding.professionalDetails.portfolioUrlPlaceholder')}
+        helperText={t('memberOnboarding.professionalDetails.portfolioUrlHelper')}
         variant="outlined"
         InputProps={{
           startAdornment: <LanguageIcon color="action" sx={{ mr: 1 }} />
@@ -759,13 +764,13 @@ const ProfessionalStep = ({ profileData, setProfileData, commonSkills }) => {
       />
       
       <TextField
-        label="LinkedIn URL"
+        label={t('memberOnboarding.professionalDetails.linkedinUrl')}
         name="linkedinUrl"
         value={profileData.linkedinUrl}
         onChange={handleChange}
         fullWidth
-        placeholder="https://linkedin.com/in/your-profile"
-        helperText="Your LinkedIn profile (optional)"
+        placeholder={t('memberOnboarding.professionalDetails.linkedinUrlPlaceholder')}
+        helperText={t('memberOnboarding.professionalDetails.linkedinUrlHelper')}
         variant="outlined"
         InputProps={{
           startAdornment: <LinkedInIcon color="action" sx={{ mr: 1 }} />
@@ -791,9 +796,9 @@ const ProfessionalStep = ({ profileData, setProfileData, commonSkills }) => {
           <TextField
             {...params}
             variant="outlined"
-            label="Skills"
-            placeholder="Add a skill"
-            helperText="Enter your skills and press Enter (optional)"
+            label={t('memberOnboarding.professionalDetails.skills')}
+            placeholder={t('memberOnboarding.professionalDetails.skillsPlaceholder')}
+            helperText={t('memberOnboarding.professionalDetails.skillsHelper')}
             InputProps={{
               ...params.InputProps,
               startAdornment: (
@@ -808,7 +813,7 @@ const ProfessionalStep = ({ profileData, setProfileData, commonSkills }) => {
       />
       
       <Alert severity="info">
-        These professional details help other members understand your expertise and interests
+        {t('memberOnboarding.professionalDetails.infoMessage')}
       </Alert>
     </Stack>
   );
@@ -831,6 +836,7 @@ const IntroPostStep = ({
   network,
   user
 }) => {
+  const { t } = useTranslation();
   // Handle media upload - same pattern as CreatePostModal
   const handleMediaUpload = (uploadResult) => {
     console.log("=== Introduction post media upload ===");
@@ -871,7 +877,7 @@ const IntroPostStep = ({
   return (
     <Stack spacing={3}>
       <Alert severity="info">
-        Would you like to introduce yourself to the {network?.name} community with your first post?
+        {t('memberOnboarding.introPost.wouldYouLike', { networkName: network?.name })}
       </Alert>
       
       <FormControlLabel
@@ -882,7 +888,7 @@ const IntroPostStep = ({
             value={false}
           />
         }
-        label="Skip for now - I'll introduce myself later"
+        label={t('memberOnboarding.introPost.skipForNow')}
       />
       
       <FormControlLabel
@@ -893,19 +899,19 @@ const IntroPostStep = ({
             value={true}
           />
         }
-        label="Yes, I'd like to create an introduction post"
+        label={t('memberOnboarding.introPost.yesCreate')}
       />
       
       {createIntroPost && (
         <Box sx={{ pl: 4, pt: 2 }}>
           <Stack spacing={2}>
             <TextField
-              label="Introduction Post Title"
+              label={t('memberOnboarding.introPost.postTitle')}
               value={introPostTitle}
               onChange={(e) => setIntroPostTitle(e.target.value)}
               fullWidth
               required
-              placeholder="Hello everyone! Let me introduce myself..."
+              placeholder={t('memberOnboarding.introPost.postTitlePlaceholder')}
               variant="outlined"
               InputProps={{
                 startAdornment: <PostAddIcon color="action" sx={{ mr: 1 }} />
@@ -913,25 +919,25 @@ const IntroPostStep = ({
             />
             
             <TextField
-              label="Tell everyone about yourself"
+              label={t('memberOnboarding.introPost.postContent')}
               value={introPostContent}
               onChange={(e) => setIntroPostContent(e.target.value)}
               fullWidth
               required
               multiline
               rows={4}
-              placeholder="Share your background, interests, what you're looking forward to in this community..."
+              placeholder={t('memberOnboarding.introPost.postContentPlaceholder')}
               variant="outlined"
             />
             
             <Alert severity="success" sx={{ mt: 2 }}>
-              Your introduction post will be published after you complete your profile setup.
+              {t('memberOnboarding.introPost.successMessage')}
             </Alert>
             
             {/* Media Upload Section - Same pattern as CreatePostModal */}
             <Box sx={{ mt: 3 }}>
               <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
-                Add Media (Optional)
+                {t('memberOnboarding.introPost.addMedia')}
               </Typography>
               
               {introMediaUrl ? (
@@ -957,7 +963,7 @@ const IntroPostStep = ({
                     >
                       {getMediaIcon(introMediaType)}
                       <Typography variant="body2" sx={{ mt: 1 }}>
-                        {introMediaMetadata?.fileName || 'Media file uploaded'}
+                        {introMediaMetadata?.fileName || t('memberOnboarding.introPost.mediaUploaded')}
                       </Typography>
                       <Chip 
                         label={introMediaType?.toUpperCase() || 'FILE'} 
@@ -1004,6 +1010,7 @@ const IntroPostStep = ({
 
 // Step 6: Review
 const ReviewStep = ({ profileData, network, createIntroPost, introPostTitle, introPostContent, introMediaUrl, introMediaType, introMediaMetadata }) => {
+  const { t } = useTranslation();
   // Get media icon for preview
   const getMediaIcon = (type) => {
     switch (type?.toLowerCase()) {
@@ -1017,7 +1024,7 @@ const ReviewStep = ({ profileData, network, createIntroPost, introPostTitle, int
   return (
     <Box>
       <Alert severity="success" sx={{ mb: 3 }}>
-        Great! Your profile is ready. Review your information before joining {network?.name}.
+        {t('memberOnboarding.review.successMessage', { networkName: network?.name })}
       </Alert>
       
       <Paper elevation={0} sx={{ p: 3, borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
@@ -1051,13 +1058,13 @@ const ReviewStep = ({ profileData, network, createIntroPost, introPostTitle, int
           <Grid item xs={12} sm={6}>
             <Stack spacing={2}>
               <Box>
-                <Typography variant="subtitle2" color="text.secondary">Email</Typography>
+                <Typography variant="subtitle2" color="text.secondary">{t('memberOnboarding.review.email')}</Typography>
                 <Typography variant="body1">{profileData.contactEmail}</Typography>
               </Box>
               
               {profileData.bio && (
                 <Box>
-                  <Typography variant="subtitle2" color="text.secondary">Bio</Typography>
+                  <Typography variant="subtitle2" color="text.secondary">{t('memberOnboarding.review.bio')}</Typography>
                   <Typography variant="body2">{profileData.bio}</Typography>
                 </Box>
               )}
@@ -1068,21 +1075,21 @@ const ReviewStep = ({ profileData, network, createIntroPost, introPostTitle, int
             <Stack spacing={2}>
               {profileData.portfolioUrl && (
                 <Box>
-                  <Typography variant="subtitle2" color="text.secondary">Portfolio</Typography>
+                  <Typography variant="subtitle2" color="text.secondary">{t('memberOnboarding.review.portfolio')}</Typography>
                   <Typography variant="body2">{profileData.portfolioUrl}</Typography>
                 </Box>
               )}
               
               {profileData.linkedinUrl && (
                 <Box>
-                  <Typography variant="subtitle2" color="text.secondary">LinkedIn</Typography>
+                  <Typography variant="subtitle2" color="text.secondary">{t('memberOnboarding.review.linkedin')}</Typography>
                   <Typography variant="body2">{profileData.linkedinUrl}</Typography>
                 </Box>
               )}
               
               {profileData.skills.length > 0 && (
                 <Box>
-                  <Typography variant="subtitle2" color="text.secondary" gutterBottom>Skills</Typography>
+                  <Typography variant="subtitle2" color="text.secondary" gutterBottom>{t('memberOnboarding.review.skills')}</Typography>
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                     {profileData.skills.map((skill, index) => (
                       <Chip 
@@ -1103,7 +1110,7 @@ const ReviewStep = ({ profileData, network, createIntroPost, introPostTitle, int
       {createIntroPost && introPostTitle && introPostContent && (
         <Box sx={{ mt: 3 }}>
           <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 600 }}>
-            Your Introduction Post Preview
+            {t('memberOnboarding.review.introPostPreview')}
           </Typography>
           <Paper elevation={0} sx={{ p: 2, borderRadius: 2, border: '1px solid', borderColor: 'divider', bgcolor: alpha('#2196f3', 0.05) }}>
             <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
@@ -1142,7 +1149,7 @@ const ReviewStep = ({ profileData, network, createIntroPost, introPostTitle, int
                   >
                     {getMediaIcon(introMediaType)}
                     <Typography variant="body2">
-                      {introMediaMetadata?.fileName || 'Media file'}
+                      {introMediaMetadata?.fileName || t('memberOnboarding.review.mediaFile')}
                     </Typography>
                     <Chip 
                       label={introMediaType?.toUpperCase() || 'FILE'} 
@@ -1156,7 +1163,7 @@ const ReviewStep = ({ profileData, network, createIntroPost, introPostTitle, int
             <Box sx={{ mt: 2, display: 'flex', alignItems: 'center' }}>
               <PostAddIcon fontSize="small" sx={{ mr: 1, color: 'primary.main' }} />
               <Typography variant="caption" color="primary.main">
-                This post will be published when you complete setup
+                {t('memberOnboarding.introPost.postWillBePublished')}
               </Typography>
             </Box>
           </Paper>
@@ -1166,7 +1173,7 @@ const ReviewStep = ({ profileData, network, createIntroPost, introPostTitle, int
       <Box sx={{ mt: 3, p: 2, bgcolor: alpha('#2196f3', 0.1), borderRadius: 1 }}>
         <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center' }}>
           <GroupsIcon sx={{ mr: 1 }} />
-          Ready to join {network?.name}?
+          {t('memberOnboarding.review.readyToJoin', { networkName: network?.name })}
         </Typography>
       </Box>
     </Box>

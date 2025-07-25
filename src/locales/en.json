@@ -27,5 +27,248 @@
     "buttons": {
       "returnToDashboard": "Return to Dashboard"
     }
+  },
+  "memberOnboarding": {
+    "steps": {
+      "welcome": "Welcome",
+      "basicInfo": "Basic Information",
+      "profilePicture": "Profile Picture",
+      "professionalDetails": "Professional Details",
+      "introPost": "Introduction Post (Optional)",
+      "review": "Review"
+    },
+    "welcome": {
+      "title": "Welcome to {{networkName}}!",
+      "description": "Welcome to {{networkName}}! Let's set up your profile.",
+      "subtitle": "You've been invited to join this private network. Before you can access the full experience, we need you to complete your profile.",
+      "whatHappensNext": "What happens next:",
+      "setupProfile": "Set up your basic profile information",
+      "addPicture": "Add a profile picture",
+      "shareSkills": "Share your skills and interests",
+      "joinCommunity": "Join the {{networkName}} community!",
+      "timeEstimate": "This will only take a few minutes"
+    },
+    "basicInfo": {
+      "description": "Tell us about yourself",
+      "fullName": "Full Name",
+      "fullNameHelper": "How you'll appear to other members",
+      "contactEmail": "Contact Email",
+      "contactEmailHelper": "This will be visible to other network members",
+      "bio": "Bio",
+      "bioHelper": "Tell others about yourself (optional)",
+      "tagline": "Tagline",
+      "taglineHelper": "{{count}}/60 - A short phrase that represents you (optional)"
+    },
+    "profilePicture": {
+      "description": "Add a photo to help others recognize you",
+      "dragDrop": "Drag & drop an image or click the edit icon",
+      "recommended": "Recommended: Square image, at least 200x200px",
+      "removePhoto": "Remove Photo",
+      "changePhoto": "Change profile picture",
+      "uploadProgress": "{{progress}}%",
+      "infoMessage": "Adding a profile picture helps other members recognize and connect with you"
+    },
+    "professionalDetails": {
+      "description": "Share your skills and professional links",
+      "portfolioUrl": "Portfolio URL",
+      "portfolioUrlPlaceholder": "https://your-portfolio.com",
+      "portfolioUrlHelper": "Your personal website or portfolio (optional)",
+      "linkedinUrl": "LinkedIn URL",
+      "linkedinUrlPlaceholder": "https://linkedin.com/in/your-profile",
+      "linkedinUrlHelper": "Your LinkedIn profile (optional)",
+      "skills": "Skills",
+      "skillsPlaceholder": "Add a skill",
+      "skillsHelper": "Enter your skills and press Enter (optional)",
+      "infoMessage": "These professional details help other members understand your expertise and interests"
+    },
+    "introPost": {
+      "description": "Share an introduction post with the community",
+      "wouldYouLike": "Would you like to introduce yourself to the {{networkName}} community with your first post?",
+      "skipForNow": "Skip for now - I'll introduce myself later",
+      "yesCreate": "Yes, I'd like to create an introduction post",
+      "postTitle": "Introduction Post Title",
+      "postTitlePlaceholder": "Hello everyone! Let me introduce myself...",
+      "postContent": "Tell everyone about yourself",
+      "postContentPlaceholder": "Share your background, interests, what you're looking forward to in this community...",
+      "successMessage": "Your introduction post will be published after you complete your profile setup.",
+      "addMedia": "Add Media (Optional)",
+      "mediaUploaded": "Media file uploaded",
+      "postWillBePublished": "This post will be published when you complete setup"
+    },
+    "review": {
+      "description": "Review your profile before joining",
+      "successMessage": "Great! Your profile is ready. Review your information before joining {{networkName}}.",
+      "email": "Email",
+      "bio": "Bio",
+      "portfolio": "Portfolio",
+      "linkedin": "LinkedIn",
+      "skills": "Skills",
+      "introPostPreview": "Your Introduction Post Preview",
+      "readyToJoin": "Ready to join {{networkName}}?",
+      "mediaPreview": "Media preview",
+      "mediaFile": "Media file"
+    },
+    "buttons": {
+      "continue": "Continue",
+      "back": "Back",
+      "completeProfile": "Complete Profile",
+      "saving": "Saving..."
+    },
+    "success": {
+      "title": "Profile Completed!",
+      "message": "Welcome to {{networkName}}! You're all set to start exploring and connecting.",
+      "redirecting": "Taking you to your dashboard..."
+    },
+    "errors": {
+      "sessionError": "Session error. Please try logging in again.",
+      "updateError": "An error occurred while updating your profile"
+    }
+  },
+  "networkOnboarding": {
+    "steps": {
+      "basics": "Network Basics",
+      "privacy": "Privacy & Access",
+      "features": "Features & Modules",
+      "branding": "Branding & Layout",
+      "review": "Review & Create"
+    },
+    "basics": {
+      "description": "Let's start by creating your network. What would you like to call it?",
+      "networkName": "Network Name",
+      "networkNameHelper": "Choose a name for your network",
+      "description": "Description",
+      "descriptionHelper": "Briefly describe your network's purpose",
+      "networkType": "Network Type",
+      "types": {
+        "general": "General Community",
+        "professional": "Professional Team",
+        "interest": "Interest Group",
+        "education": "Educational",
+        "nonprofit": "Non-profit"
+      }
+    },
+    "privacy": {
+      "description": "Configure how members will join and what they can see",
+      "title": "Network Privacy",
+      "private": "Private Network",
+      "privateDesc": "Only invited members can join and view content",
+      "restricted": "Restricted Membership",
+      "restrictedDesc": "Members need approval, but non-members can see basic info",
+      "public": "Public Network",
+      "publicDesc": "Anyone can join and view content",
+      "changeInfo": "You can always change these settings later from the Admin Panel."
+    },
+    "features": {
+      "description": "Select which features you'd like to enable for your network:",
+      "events": "Events",
+      "eventsDesc": "Create and manage events for your network",
+      "news": "News & Announcements",
+      "newsDesc": "Share news, updates and announcements",
+      "files": "File Sharing",
+      "filesDesc": "Share files and documents with your members",
+      "chat": "Group Chat",
+      "chatDesc": "Real-time communication between members",
+      "wiki": "Knowledge Wiki",
+      "wikiDesc": "Create and maintain knowledge resources",
+      "moodboards": "Moodboards",
+      "moodboardsDesc": "Visual collaboration and inspiration boards",
+      "changeInfo": "You can enable or disable features later from the Admin Panel."
+    },
+    "branding": {
+      "description": "Configure your network logo, theme, and navigation",
+      "logo": {
+        "title": "Network Logo",
+        "description": "Upload a logo for your network. This will appear in the header and represent your network.",
+        "upload": "Upload Logo",
+        "uploading": "Uploading...",
+        "remove": "Remove",
+        "error": {
+          "invalidType": "Please upload a valid image file (JPEG, PNG, GIF, or WebP)",
+          "tooLarge": "Image size must be less than 2MB",
+          "failed": "Failed to upload logo. Please try again."
+        }
+      },
+      "navigation": {
+        "title": "Navigation Tabs",
+        "description": "Select which tabs will appear in your network navigation. Drag to reorder them.",
+        "enabledTabs": "Enabled Tabs (Drag to reorder)",
+        "availableTabs": "Available Tabs (Click to enable)",
+        "tabs": {
+          "news": "News",
+          "members": "Members",
+          "events": "Events",
+          "chat": "Chat",
+          "files": "Files",
+          "wiki": "Wiki",
+          "social": "Social Wall"
+        }
+      },
+      "theme": {
+        "title": "Theme Color",
+        "colors": {
+          "blue": "Blue (Default)",
+          "purple": "Purple",
+          "green": "Green",
+          "red": "Red",
+          "orange": "Orange",
+          "lightBlue": "Light Blue",
+          "black": "Black",
+          "gray": "Gray"
+        }
+      },
+      "background": {
+        "title": "Landing Page Background Image",
+        "description": "Upload a background image for your network's landing page. This creates a more immersive welcome experience.",
+        "noImage": "No background image set",
+        "defaultGradient": "A default gradient will be used",
+        "upload": "Upload Background",
+        "change": "Change Background",
+        "uploading": "Uploading...",
+        "remove": "Remove",
+        "preview": "Preview of landing page background",
+        "recommendation": "Recommended size: 1920x1080 pixels (16:9 ratio). Max file size: 10MB. For best results, use an image with good contrast for text visibility.",
+        "error": {
+          "invalidType": "Please upload a valid image file (JPEG, PNG, GIF, or WebP)",
+          "tooLarge": "Background image size must be less than 10MB",
+          "failed": "Failed to upload background image. Please try again."
+        }
+      }
+    },
+    "review": {
+      "description": "Review your settings and create your network",
+      "infoMessage": "Please review your network settings before creating. You can modify all these settings later from the admin panel.",
+      "networkType": "Network Type",
+      "privacyLevel": "Privacy Level",
+      "themeColor": "Theme Color",
+      "custom": "Custom",
+      "backgroundImage": "Background Image",
+      "customBackground": "Custom background uploaded",
+      "enabledFeatures": "Enabled Features",
+      "defaultNavTabs": "Default Navigation Tabs"
+    },
+    "buttons": {
+      "continue": "Continue",
+      "back": "Back",
+      "createNetwork": "Create Network",
+      "creating": "Creating..."
+    },
+    "success": {
+      "title": "Network Created Successfully!",
+      "message": "Your network \"{{networkName}}\" has been created. You can now start inviting members and customizing your space.",
+      "redirecting": "Redirecting to your network..."
+    },
+    "errors": {
+      "notLoggedIn": "You must be logged in to create a network",
+      "createError": "An error occurred while creating your network"
+    },
+    "page": {
+      "title": "Set Up Your Network",
+      "welcome": "Welcome, {{name}}! Let's configure your new community space.",
+      "description": "This wizard will guide you through creating and customizing your network. You can change any of these settings later through the admin panel.",
+      "loading": "Loading...",
+      "errorLoadingProfile": "Failed to load profile information. Please try again.",
+      "loginRequired": "Please log in to create a network.",
+      "questionsHelp": "Still have questions? Refer to our documentation for more detailed information about setting up your network."
+    }
   }
 }

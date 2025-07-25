@@ -27,5 +27,248 @@
     "buttons": {
       "returnToDashboard": "Retour au tableau de bord"
     }
+  },
+  "memberOnboarding": {
+    "steps": {
+      "welcome": "Bienvenue",
+      "basicInfo": "Informations de base",
+      "profilePicture": "Photo de profil",
+      "professionalDetails": "Détails professionnels",
+      "introPost": "Message d'introduction (Optionnel)",
+      "review": "Révision"
+    },
+    "welcome": {
+      "title": "Bienvenue sur {{networkName}} !",
+      "description": "Bienvenue sur {{networkName}} ! Configurons votre profil.",
+      "subtitle": "Vous avez été invité à rejoindre ce réseau privé. Avant de pouvoir accéder à l'expérience complète, nous devons compléter votre profil.",
+      "whatHappensNext": "Ce qui se passe ensuite :",
+      "setupProfile": "Configurer vos informations de profil de base",
+      "addPicture": "Ajouter une photo de profil",
+      "shareSkills": "Partager vos compétences et intérêts",
+      "joinCommunity": "Rejoindre la communauté {{networkName}} !",
+      "timeEstimate": "Cela ne prendra que quelques minutes"
+    },
+    "basicInfo": {
+      "description": "Parlez-nous de vous",
+      "fullName": "Nom complet",
+      "fullNameHelper": "Comment vous apparaîtrez aux autres membres",
+      "contactEmail": "Email de contact",
+      "contactEmailHelper": "Ceci sera visible aux autres membres du réseau",
+      "bio": "Biographie",
+      "bioHelper": "Parlez aux autres de vous (optionnel)",
+      "tagline": "Phrase d'accroche",
+      "taglineHelper": "{{count}}/60 - Une courte phrase qui vous représente (optionnel)"
+    },
+    "profilePicture": {
+      "description": "Ajoutez une photo pour aider les autres à vous reconnaître",
+      "dragDrop": "Glissez-déposez une image ou cliquez sur l'icône d'édition",
+      "recommended": "Recommandé : Image carrée, au moins 200x200px",
+      "removePhoto": "Supprimer la photo",
+      "changePhoto": "Changer la photo de profil",
+      "uploadProgress": "{{progress}}%",
+      "infoMessage": "Ajouter une photo de profil aide les autres membres à vous reconnaître et à se connecter avec vous"
+    },
+    "professionalDetails": {
+      "description": "Partagez vos compétences et liens professionnels",
+      "portfolioUrl": "URL du portfolio",
+      "portfolioUrlPlaceholder": "https://votre-portfolio.com",
+      "portfolioUrlHelper": "Votre site web personnel ou portfolio (optionnel)",
+      "linkedinUrl": "URL LinkedIn",
+      "linkedinUrlPlaceholder": "https://linkedin.com/in/votre-profil",
+      "linkedinUrlHelper": "Votre profil LinkedIn (optionnel)",
+      "skills": "Compétences",
+      "skillsPlaceholder": "Ajouter une compétence",
+      "skillsHelper": "Entrez vos compétences et appuyez sur Entrée (optionnel)",
+      "infoMessage": "Ces détails professionnels aident les autres membres à comprendre votre expertise et vos intérêts"
+    },
+    "introPost": {
+      "description": "Partagez un message d'introduction avec la communauté",
+      "wouldYouLike": "Souhaitez-vous vous présenter à la communauté {{networkName}} avec votre premier message ?",
+      "skipForNow": "Passer pour le moment - Je me présenterai plus tard",
+      "yesCreate": "Oui, j'aimerais créer un message d'introduction",
+      "postTitle": "Titre du message d'introduction",
+      "postTitlePlaceholder": "Bonjour tout le monde ! Permettez-moi de me présenter...",
+      "postContent": "Parlez de vous à tout le monde",
+      "postContentPlaceholder": "Partagez votre parcours, vos intérêts, ce que vous attendez de cette communauté...",
+      "successMessage": "Votre message d'introduction sera publié après avoir complété la configuration de votre profil.",
+      "addMedia": "Ajouter un média (Optionnel)",
+      "mediaUploaded": "Fichier média téléchargé",
+      "postWillBePublished": "Ce message sera publié lorsque vous aurez terminé la configuration"
+    },
+    "review": {
+      "description": "Révisez votre profil avant de rejoindre",
+      "successMessage": "Parfait ! Votre profil est prêt. Révisez vos informations avant de rejoindre {{networkName}}.",
+      "email": "Email",
+      "bio": "Biographie",
+      "portfolio": "Portfolio",
+      "linkedin": "LinkedIn",
+      "skills": "Compétences",
+      "introPostPreview": "Aperçu de votre message d'introduction",
+      "readyToJoin": "Prêt à rejoindre {{networkName}} ?",
+      "mediaPreview": "Aperçu du média",
+      "mediaFile": "Fichier média"
+    },
+    "buttons": {
+      "continue": "Continuer",
+      "back": "Retour",
+      "completeProfile": "Compléter le profil",
+      "saving": "Enregistrement..."
+    },
+    "success": {
+      "title": "Profil complété !",
+      "message": "Bienvenue sur {{networkName}} ! Vous êtes prêt à explorer et vous connecter.",
+      "redirecting": "Redirection vers votre tableau de bord..."
+    },
+    "errors": {
+      "sessionError": "Erreur de session. Veuillez essayer de vous reconnecter.",
+      "updateError": "Une erreur s'est produite lors de la mise à jour de votre profil"
+    }
+  },
+  "networkOnboarding": {
+    "steps": {
+      "basics": "Informations de base",
+      "privacy": "Confidentialité et accès",
+      "features": "Fonctionnalités et modules",
+      "branding": "Image de marque et mise en page",
+      "review": "Révision et création"
+    },
+    "basics": {
+      "description": "Commençons par créer votre réseau. Comment souhaitez-vous l'appeler ?",
+      "networkName": "Nom du réseau",
+      "networkNameHelper": "Choisissez un nom pour votre réseau",
+      "description": "Description",
+      "descriptionHelper": "Décrivez brièvement l'objectif de votre réseau",
+      "networkType": "Type de réseau",
+      "types": {
+        "general": "Communauté générale",
+        "professional": "Équipe professionnelle",
+        "interest": "Groupe d'intérêt",
+        "education": "Éducatif",
+        "nonprofit": "Organisation à but non lucratif"
+      }
+    },
+    "privacy": {
+      "description": "Configurez comment les membres rejoindront et ce qu'ils peuvent voir",
+      "title": "Confidentialité du réseau",
+      "private": "Réseau privé",
+      "privateDesc": "Seuls les membres invités peuvent rejoindre et voir le contenu",
+      "restricted": "Adhésion restreinte",
+      "restrictedDesc": "Les membres ont besoin d'approbation, mais les non-membres peuvent voir les informations de base",
+      "public": "Réseau public",
+      "publicDesc": "N'importe qui peut rejoindre et voir le contenu",
+      "changeInfo": "Vous pouvez toujours modifier ces paramètres plus tard depuis le panneau d'administration."
+    },
+    "features": {
+      "description": "Sélectionnez les fonctionnalités que vous souhaitez activer pour votre réseau :",
+      "events": "Événements",
+      "eventsDesc": "Créer et gérer des événements pour votre réseau",
+      "news": "Actualités et annonces",
+      "newsDesc": "Partager des actualités, mises à jour et annonces",
+      "files": "Partage de fichiers",
+      "filesDesc": "Partager des fichiers et documents avec vos membres",
+      "chat": "Chat de groupe",
+      "chatDesc": "Communication en temps réel entre les membres",
+      "wiki": "Wiki de connaissances",
+      "wikiDesc": "Créer et maintenir des ressources de connaissances",
+      "moodboards": "Tableaux d'inspiration",
+      "moodboardsDesc": "Tableaux de collaboration visuelle et d'inspiration",
+      "changeInfo": "Vous pouvez activer ou désactiver des fonctionnalités plus tard depuis le panneau d'administration."
+    },
+    "branding": {
+      "description": "Configurez le logo, le thème et la navigation de votre réseau",
+      "logo": {
+        "title": "Logo du réseau",
+        "description": "Téléchargez un logo pour votre réseau. Il apparaîtra dans l'en-tête et représentera votre réseau.",
+        "upload": "Télécharger le logo",
+        "uploading": "Téléchargement...",
+        "remove": "Supprimer",
+        "error": {
+          "invalidType": "Veuillez télécharger un fichier image valide (JPEG, PNG, GIF ou WebP)",
+          "tooLarge": "La taille de l'image doit être inférieure à 2 Mo",
+          "failed": "Échec du téléchargement du logo. Veuillez réessayer."
+        }
+      },
+      "navigation": {
+        "title": "Onglets de navigation",
+        "description": "Sélectionnez les onglets qui apparaîtront dans la navigation de votre réseau. Glissez pour les réorganiser.",
+        "enabledTabs": "Onglets activés (Glisser pour réorganiser)",
+        "availableTabs": "Onglets disponibles (Cliquer pour activer)",
+        "tabs": {
+          "news": "Actualités",
+          "members": "Membres",
+          "events": "Événements",
+          "chat": "Chat",
+          "files": "Fichiers",
+          "wiki": "Wiki",
+          "social": "Mur social"
+        }
+      },
+      "theme": {
+        "title": "Couleur du thème",
+        "colors": {
+          "blue": "Bleu (Par défaut)",
+          "purple": "Violet",
+          "green": "Vert",
+          "red": "Rouge",
+          "orange": "Orange",
+          "lightBlue": "Bleu clair",
+          "black": "Noir",
+          "gray": "Gris"
+        }
+      },
+      "background": {
+        "title": "Image de fond de la page d'accueil",
+        "description": "Téléchargez une image de fond pour la page d'accueil de votre réseau. Cela crée une expérience d'accueil plus immersive.",
+        "noImage": "Aucune image de fond définie",
+        "defaultGradient": "Un dégradé par défaut sera utilisé",
+        "upload": "Télécharger le fond",
+        "change": "Changer le fond",
+        "uploading": "Téléchargement...",
+        "remove": "Supprimer",
+        "preview": "Aperçu de l'image de fond de la page d'accueil",
+        "recommendation": "Taille recommandée : 1920x1080 pixels (ratio 16:9). Taille maximale du fichier : 10 Mo. Pour de meilleurs résultats, utilisez une image avec un bon contraste pour la visibilité du texte.",
+        "error": {
+          "invalidType": "Veuillez télécharger un fichier image valide (JPEG, PNG, GIF ou WebP)",
+          "tooLarge": "La taille de l'image de fond doit être inférieure à 10 Mo",
+          "failed": "Échec du téléchargement de l'image de fond. Veuillez réessayer."
+        }
+      }
+    },
+    "review": {
+      "description": "Révisez vos paramètres et créez votre réseau",
+      "infoMessage": "Veuillez réviser les paramètres de votre réseau avant de le créer. Vous pouvez modifier tous ces paramètres plus tard depuis le panneau d'administration.",
+      "networkType": "Type de réseau",
+      "privacyLevel": "Niveau de confidentialité",
+      "themeColor": "Couleur du thème",
+      "custom": "Personnalisé",
+      "backgroundImage": "Image de fond",
+      "customBackground": "Fond personnalisé téléchargé",
+      "enabledFeatures": "Fonctionnalités activées",
+      "defaultNavTabs": "Onglets de navigation par défaut"
+    },
+    "buttons": {
+      "continue": "Continuer",
+      "back": "Retour",
+      "createNetwork": "Créer le réseau",
+      "creating": "Création..."
+    },
+    "success": {
+      "title": "Réseau créé avec succès !",
+      "message": "Votre réseau \"{{networkName}}\" a été créé. Vous pouvez maintenant commencer à inviter des membres et personnaliser votre espace.",
+      "redirecting": "Redirection vers votre réseau..."
+    },
+    "errors": {
+      "notLoggedIn": "Vous devez être connecté pour créer un réseau",
+      "createError": "Une erreur s'est produite lors de la création de votre réseau"
+    },
+    "page": {
+      "title": "Configurer votre réseau",
+      "welcome": "Bienvenue, {{name}} ! Configurons votre nouvel espace communautaire.",
+      "description": "Cet assistant vous guidera dans la création et la personnalisation de votre réseau. Vous pourrez modifier tous ces paramètres plus tard depuis le panneau d'administration.",
+      "loading": "Chargement...",
+      "errorLoadingProfile": "Échec du chargement des informations du profil. Veuillez réessayer.",
+      "loginRequired": "Veuillez vous connecter pour créer un réseau.",
+      "questionsHelp": "Vous avez encore des questions ? Consultez notre documentation pour des informations plus détaillées sur la configuration de votre réseau."
+    }
   }
 }

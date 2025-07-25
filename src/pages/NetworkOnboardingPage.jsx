@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/authcontext';
 import { supabase } from '../supabaseclient';
 import NetworkOnboardingWizard from '../components/NetworkOnboardingWizard';
+import { useTranslation } from '../hooks/useTranslation';
 import {
   Box,
   Container,
@@ -24,6 +25,7 @@ const NetworkOnboardingPage = () => {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
   const theme = useTheme();
+  const { t } = useTranslation();
 
   // Fetch user profile (if exists) or allow network creation without profile
   useEffect(() => {
@@ -76,7 +78,7 @@ const NetworkOnboardingPage = () => {
         }
       } catch (err) {
         console.error("Error fetching profile:", err);
-        setError("Failed to load profile information. Please try again.");
+        setError(t('networkOnboarding.page.errorLoadingProfile'));
       } finally {
         setLoadingProfile(false);
       }
@@ -97,7 +99,7 @@ const NetworkOnboardingPage = () => {
       }}>
         <Spinner size={120} />
         <Typography variant="body1" sx={{ mt: 2 }}>
-          Loading...
+          {t('networkOnboarding.page.loading')}
         </Typography>
       </Box>
     );
@@ -131,7 +133,7 @@ const NetworkOnboardingPage = () => {
         justifyContent: 'center'
       }}>
         <Alert severity="warning" sx={{ maxWidth: 500 }}>
-          Please log in to create a network.
+          {t('networkOnboarding.page.loginRequired')}
         </Alert>
       </Box>
     );
@@ -160,17 +162,16 @@ const NetworkOnboardingPage = () => {
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
             <AdminIcon sx={{ mr: 1.5, fontSize: 32 }} />
             <Typography variant="h4" component="h1" fontWeight="500">
-              Set Up Your Network
+              {t('networkOnboarding.page.title')}
             </Typography>
           </Box>
           
           <Typography variant="h6" sx={{ mb: 2, fontWeight: 'normal' }}>
-            Welcome, {profile?.full_name || user?.email?.split('@')[0] || 'there'}! Let's configure your new community space.
+            {t('networkOnboarding.page.welcome', { name: profile?.full_name || user?.email?.split('@')[0] || 'there' })}
           </Typography>
           
           <Typography variant="body1">
-            This wizard will guide you through creating and customizing your network.
-            You can change any of these settings later through the admin panel.
+            {t('networkOnboarding.page.description')}
           </Typography>
         </Paper>
         
@@ -192,7 +193,7 @@ const NetworkOnboardingPage = () => {
         }}>
           <Divider sx={{ mb: 2 }} />
           <Typography variant="body2">
-            Still have questions? Refer to our documentation for more detailed information about setting up your network.
+            {t('networkOnboarding.page.questionsHelp')}
           </Typography>
         </Box>
       </Container>
