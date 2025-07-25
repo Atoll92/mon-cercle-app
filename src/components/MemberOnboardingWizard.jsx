@@ -32,6 +32,7 @@ import {
   Divider,
   Card,
   CardContent,
+  CardMedia,
   Grid
 } from '@mui/material';
 import Spinner from './Spinner';
@@ -48,8 +49,16 @@ import {
   Groups as GroupsIcon,
   Info as InfoIcon,
   Upload as UploadIcon,
-  Close as CloseIcon
+  Close as CloseIcon,
+  PostAdd as PostAddIcon,
+  Add as AddIcon,
+  Delete as DeleteIcon,
+  Image as ImageIcon,
+  VideoLibrary as VideoIcon,
+  AudioFile as AudioIcon,
+  PictureAsPdf as PdfIcon
 } from '@mui/icons-material';
+import MediaUpload from './MediaUpload';
 
 const MemberOnboardingWizard = ({ profile, network }) => {
   const { user } = useAuth();
@@ -85,6 +94,16 @@ const MemberOnboardingWizard = ({ profile, network }) => {
   // State for avatar upload
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isDraggingAvatar, setIsDraggingAvatar] = useState(false);
+  
+  // Intro post state
+  const [createIntroPost, setCreateIntroPost] = useState(false);
+  const [introPostTitle, setIntroPostTitle] = useState('');
+  const [introPostContent, setIntroPostContent] = useState('');
+  
+  // Intro post media state
+  const [introMediaUrl, setIntroMediaUrl] = useState(null);
+  const [introMediaType, setIntroMediaType] = useState(null);
+  const [introMediaMetadata, setIntroMediaMetadata] = useState({});
 
   // Common skill suggestions
   const commonSkills = [
@@ -141,12 +160,40 @@ const MemberOnboardingWizard = ({ profile, network }) => {
       )
     },
     {
+      label: 'Introduction Post (Optional)',
+      description: 'Share an introduction post with the community',
+      component: (
+        <IntroPostStep 
+          createIntroPost={createIntroPost}
+          setCreateIntroPost={setCreateIntroPost}
+          introPostTitle={introPostTitle}
+          setIntroPostTitle={setIntroPostTitle}
+          introPostContent={introPostContent}
+          setIntroPostContent={setIntroPostContent}
+          introMediaUrl={introMediaUrl}
+          setIntroMediaUrl={setIntroMediaUrl}
+          introMediaType={introMediaType}
+          setIntroMediaType={setIntroMediaType}
+          introMediaMetadata={introMediaMetadata}
+          setIntroMediaMetadata={setIntroMediaMetadata}
+          network={network}
+          user={user}
+        />
+      )
+    },
+    {
       label: 'Review',
       description: 'Review your profile before joining',
       component: (
         <ReviewStep 
           profileData={profileData}
           network={network}
+          createIntroPost={createIntroPost}
+          introPostTitle={introPostTitle}
+          introPostContent={introPostContent}
+          introMediaUrl={introMediaUrl}
+          introMediaType={introMediaType}
+          introMediaMetadata={introMediaMetadata}
         />
       )
     }
@@ -249,6 +296,26 @@ const MemberOnboardingWizard = ({ profile, network }) => {
       // Refresh the active profile in context
       await refreshActiveProfile();
 
+      // Create introduction post if requested
+      if (createIntroPost && introPostTitle.trim() && introPostContent.trim()) {
+        try {
+          const { createPost } = await import('../api/posts');
+          await createPost({
+            title: introPostTitle,
+            description: introPostContent,
+            profile_id: profile.id,
+            category_id: null,
+            mediaUrl: introMediaUrl,
+            mediaType: introMediaType,
+            mediaMetadata: introMediaMetadata
+          });
+          console.log('Introduction post created successfully');
+        } catch (postError) {
+          console.error('Error creating introduction post:', postError);
+          // Don't fail the onboarding if post creation fails
+        }
+      }
+
       // Mark onboarding as completed to prevent future triggers
       if (typeof window !== 'undefined' && profile?.id && profile?.network_id) {
         localStorage.setItem(`member_onboarding_completed_${profile.network_id}_${profile.id}`, 'true');
@@ -344,6 +411,7 @@ const MemberOnboardingWizard = ({ profile, network }) => {
                     sx={{ mt: 1, mr: 1 }}
                     disabled={loading || 
                       (index === 1 && !profileData.fullName) || 
+                      (index === 4 && createIntroPost && (!introPostTitle.trim() || !introPostContent.trim())) ||
                       (index === steps.length - 1 && loading)
                     }
                     endIcon={index === steps.length - 1 ? <SaveIcon /> : <ArrowForwardIcon />}
@@ -746,8 +814,206 @@ const ProfessionalStep = ({ profileData, setProfileData, commonSkills }) => {
   );
 };
 
-// Step 5: Review
-const ReviewStep = ({ profileData, network }) => {
+// Step 5: Introduction Post (Optional)
+const IntroPostStep = ({ 
+  createIntroPost, 
+  setCreateIntroPost, 
+  introPostTitle, 
+  setIntroPostTitle, 
+  introPostContent, 
+  setIntroPostContent, 
+  introMediaUrl,
+  setIntroMediaUrl,
+  introMediaType,
+  setIntroMediaType,
+  introMediaMetadata,
+  setIntroMediaMetadata,
+  network,
+  user
+}) => {
+  // Handle media upload - same pattern as CreatePostModal
+  const handleMediaUpload = (uploadResult) => {
+    console.log("=== Introduction post media upload ===");
+    console.log("Upload result received:", uploadResult);
+    
+    setIntroMediaUrl(uploadResult.url);
+    setIntroMediaType(uploadResult.type);
+    setIntroMediaMetadata({
+      fileName: uploadResult.metadata?.fileName || uploadResult.fileName,
+      fileSize: uploadResult.metadata?.fileSize || uploadResult.fileSize,
+      mimeType: uploadResult.metadata?.mimeType || uploadResult.mimeType,
+      duration: uploadResult.metadata?.duration,
+      thumbnail: uploadResult.metadata?.thumbnail,
+      title: uploadResult.metadata?.title,
+      artist: uploadResult.metadata?.artist,
+      album: uploadResult.metadata?.album,
+      albumArt: uploadResult.metadata?.albumArt
+    });
+  };
+
+  // Handle media deletion
+  const handleDeleteMedia = () => {
+    setIntroMediaUrl(null);
+    setIntroMediaType(null);
+    setIntroMediaMetadata({});
+  };
+
+  // Get media icon
+  const getMediaIcon = (type) => {
+    switch (type?.toLowerCase()) {
+      case 'image': return <ImageIcon fontSize="small" />;
+      case 'video': return <VideoIcon fontSize="small" />;
+      case 'audio': return <AudioIcon fontSize="small" />;
+      case 'pdf': return <PdfIcon fontSize="small" />;
+      default: return <AddIcon fontSize="small" />;
+    }
+  };
+  return (
+    <Stack spacing={3}>
+      <Alert severity="info">
+        Would you like to introduce yourself to the {network?.name} community with your first post?
+      </Alert>
+      
+      <FormControlLabel
+        control={
+          <Radio
+            checked={!createIntroPost}
+            onChange={() => setCreateIntroPost(false)}
+            value={false}
+          />
+        }
+        label="Skip for now - I'll introduce myself later"
+      />
+      
+      <FormControlLabel
+        control={
+          <Radio
+            checked={createIntroPost}
+            onChange={() => setCreateIntroPost(true)}
+            value={true}
+          />
+        }
+        label="Yes, I'd like to create an introduction post"
+      />
+      
+      {createIntroPost && (
+        <Box sx={{ pl: 4, pt: 2 }}>
+          <Stack spacing={2}>
+            <TextField
+              label="Introduction Post Title"
+              value={introPostTitle}
+              onChange={(e) => setIntroPostTitle(e.target.value)}
+              fullWidth
+              required
+              placeholder="Hello everyone! Let me introduce myself..."
+              variant="outlined"
+              InputProps={{
+                startAdornment: <PostAddIcon color="action" sx={{ mr: 1 }} />
+              }}
+            />
+            
+            <TextField
+              label="Tell everyone about yourself"
+              value={introPostContent}
+              onChange={(e) => setIntroPostContent(e.target.value)}
+              fullWidth
+              required
+              multiline
+              rows={4}
+              placeholder="Share your background, interests, what you're looking forward to in this community..."
+              variant="outlined"
+            />
+            
+            <Alert severity="success" sx={{ mt: 2 }}>
+              Your introduction post will be published after you complete your profile setup.
+            </Alert>
+            
+            {/* Media Upload Section - Same pattern as CreatePostModal */}
+            <Box sx={{ mt: 3 }}>
+              <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
+                Add Media (Optional)
+              </Typography>
+              
+              {introMediaUrl ? (
+                <Card sx={{ position: 'relative', mb: 2 }}>
+                  {introMediaType === 'image' ? (
+                    <CardMedia
+                      component="img"
+                      image={introMediaUrl}
+                      alt="Preview"
+                      sx={{ 
+                        maxHeight: 200, 
+                        objectFit: 'contain',
+                        bgcolor: 'rgba(0,0,0,0.02)'
+                      }}
+                    />
+                  ) : (
+                    <Box 
+                      sx={{ 
+                        p: 3, 
+                        textAlign: 'center',
+                        bgcolor: 'rgba(0,0,0,0.02)'
+                      }}
+                    >
+                      {getMediaIcon(introMediaType)}
+                      <Typography variant="body2" sx={{ mt: 1 }}>
+                        {introMediaMetadata?.fileName || 'Media file uploaded'}
+                      </Typography>
+                      <Chip 
+                        label={introMediaType?.toUpperCase() || 'FILE'} 
+                        size="small" 
+                        sx={{ mt: 1 }} 
+                      />
+                    </Box>
+                  )}
+                  <IconButton
+                    onClick={handleDeleteMedia}
+                    sx={{
+                      position: 'absolute',
+                      top: 8,
+                      right: 8,
+                      bgcolor: 'rgba(0,0,0,0.6)',
+                      color: 'white',
+                      '&:hover': {
+                        bgcolor: 'rgba(0,0,0,0.8)'
+                      }
+                    }}
+                  >
+                    <DeleteIcon fontSize="small" />
+                  </IconButton>
+                </Card>
+              ) : (
+                <MediaUpload
+                  onUpload={handleMediaUpload}
+                  allowedTypes={['IMAGE', 'VIDEO', 'AUDIO', 'PDF']}
+                  bucket="profiles"
+                  path={`portfolios/${user?.id}`}
+                  maxFiles={1}
+                  autoUpload={true}
+                  showPreview={false}
+                  compact={true}
+                />
+              )}
+            </Box>
+          </Stack>
+        </Box>
+      )}
+    </Stack>
+  );
+};
+
+// Step 6: Review
+const ReviewStep = ({ profileData, network, createIntroPost, introPostTitle, introPostContent, introMediaUrl, introMediaType, introMediaMetadata }) => {
+  // Get media icon for preview
+  const getMediaIcon = (type) => {
+    switch (type?.toLowerCase()) {
+      case 'image': return <ImageIcon fontSize="small" />;
+      case 'video': return <VideoIcon fontSize="small" />;
+      case 'audio': return <AudioIcon fontSize="small" />;
+      case 'pdf': return <PdfIcon fontSize="small" />;
+      default: return <AddIcon fontSize="small" />;
+    }
+  };
   return (
     <Box>
       <Alert severity="success" sx={{ mb: 3 }}>
@@ -833,6 +1099,69 @@ const ReviewStep = ({ profileData, network }) => {
           </Grid>
         </Grid>
       </Paper>
+      
+      {createIntroPost && introPostTitle && introPostContent && (
+        <Box sx={{ mt: 3 }}>
+          <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 600 }}>
+            Your Introduction Post Preview
+          </Typography>
+          <Paper elevation={0} sx={{ p: 2, borderRadius: 2, border: '1px solid', borderColor: 'divider', bgcolor: alpha('#2196f3', 0.05) }}>
+            <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+              {introPostTitle}
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ whiteSpace: 'pre-wrap' }}>
+              {introPostContent}
+            </Typography>
+            
+            {/* Show media preview if uploaded */}
+            {introMediaUrl && (
+              <Box sx={{ mt: 2 }}>
+                {introMediaType === 'image' ? (
+                  <CardMedia
+                    component="img"
+                    image={introMediaUrl}
+                    alt="Media preview"
+                    sx={{ 
+                      maxHeight: 150, 
+                      objectFit: 'contain',
+                      borderRadius: 1,
+                      bgcolor: 'rgba(0,0,0,0.02)'
+                    }}
+                  />
+                ) : (
+                  <Box 
+                    sx={{ 
+                      p: 2, 
+                      textAlign: 'center',
+                      bgcolor: 'rgba(0,0,0,0.02)',
+                      borderRadius: 1,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 1
+                    }}
+                  >
+                    {getMediaIcon(introMediaType)}
+                    <Typography variant="body2">
+                      {introMediaMetadata?.fileName || 'Media file'}
+                    </Typography>
+                    <Chip 
+                      label={introMediaType?.toUpperCase() || 'FILE'} 
+                      size="small" 
+                    />
+                  </Box>
+                )}
+              </Box>
+            )}
+            
+            <Box sx={{ mt: 2, display: 'flex', alignItems: 'center' }}>
+              <PostAddIcon fontSize="small" sx={{ mr: 1, color: 'primary.main' }} />
+              <Typography variant="caption" color="primary.main">
+                This post will be published when you complete setup
+              </Typography>
+            </Box>
+          </Paper>
+        </Box>
+      )}
       
       <Box sx={{ mt: 3, p: 2, bgcolor: alpha('#2196f3', 0.1), borderRadius: 1 }}>
         <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center' }}>
