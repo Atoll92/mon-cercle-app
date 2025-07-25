@@ -570,6 +570,7 @@ function EventPage() {
               itemId={eventId}
               isAdmin={isAdmin}
               onMemberClick={handleMemberClick}
+              defaultExpanded={true}
             />
           </Paper>
         </Grid>

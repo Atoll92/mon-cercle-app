@@ -32,14 +32,14 @@ import {
 import { getItemComments, addComment, deleteComment, toggleCommentVisibility } from '../api/comments';
 import { formatDistanceToNow } from 'date-fns';
 
-const CommentSection = ({ itemType, itemId, darkMode, isAdmin = false, initialCount = 0, onMemberClick }) => {
+const CommentSection = ({ itemType, itemId, darkMode, isAdmin = false, initialCount = 0, onMemberClick, defaultExpanded = false }) => {
   const { t } = useTranslation();
   const { user } = useAuth();
   const { activeProfile } = useProfile();
   const theme = useTheme();
   const [comments, setComments] = useState([]);
   const [commentCount, setCommentCount] = useState(initialCount);
-  const [showComments, setShowComments] = useState(false);
+  const [showComments, setShowComments] = useState(defaultExpanded);
   const [newComment, setNewComment] = useState('');
   const [replyingTo, setReplyingTo] = useState(null);
   const [loading, setLoading] = useState(false);
