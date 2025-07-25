@@ -1,5 +1,6 @@
 // File: src/components/admin/NetworkInfoPanel.jsx
 import { useState, useEffect } from 'react';
+import { useTranslation } from '../../hooks/useTranslation.jsx';
 import { 
   Box, 
   Typography, 
@@ -27,6 +28,7 @@ import { getNetworkStorageInfo } from '../../api/networks';
 import { useNavigate } from 'react-router-dom';
 
 const NetworkInfoPanel = ({ network, members, darkMode }) => {
+  const { t } = useTranslation();
   const muiTheme = useMuiTheme();
   const navigate = useNavigate();
   const [storageInfo, setStorageInfo] = useState(null);
@@ -93,7 +95,7 @@ const NetworkInfoPanel = ({ network, members, darkMode }) => {
           }}
         >
           <IdIcon sx={{ mr: 1 }} />
-          Network Information
+{t('admin.networkInfo.title')}
         </Typography>
         <Divider sx={{ mb: 3 }} />
         
@@ -115,7 +117,7 @@ const NetworkInfoPanel = ({ network, members, darkMode }) => {
             </Box>
             <Box>
               <Typography variant="body2" color="text.secondary">
-                Network ID
+{t('admin.networkInfo.networkId')}
               </Typography>
               <Typography variant="body1" sx={{ fontFamily: 'monospace', letterSpacing: 0.5 }}>
                 {network?.id || 'N/A'}
@@ -140,7 +142,7 @@ const NetworkInfoPanel = ({ network, members, darkMode }) => {
             </Box>
             <Box>
               <Typography variant="body2" color="text.secondary">
-                Created On
+{t('admin.networkInfo.createdOn')}
               </Typography>
               <Typography variant="body1">
                 {network?.created_at ? formatDate(network.created_at) : 'N/A'}
@@ -167,17 +169,17 @@ const NetworkInfoPanel = ({ network, members, darkMode }) => {
             </Box>
             <Box>
               <Typography variant="body2" color="text.secondary">
-                Members
+{t('admin.networkInfo.members')}
               </Typography>
               <Box sx={{ display: 'flex', gap: 1, mt: 0.5 }}>
                 <Chip 
-                  label={`${members.length} Total`}
+label={t('admin.networkInfo.membersTotal', { count: members.length })}
                   size="small"
                   color="default"
                   sx={{ fontWeight: 'medium' }}
                 />
                 <Chip 
-                  label={`${members.filter(m => m.role === 'admin').length} Admins`}
+label={t('admin.networkInfo.adminsCount', { count: members.filter(m => m.role === 'admin').length })}
                   size="small"
                   color="primary"
                   icon={<AdminIcon sx={{ fontSize: '1rem !important' }} />}
@@ -207,19 +209,19 @@ const NetworkInfoPanel = ({ network, members, darkMode }) => {
             </Box>
             <Box sx={{ flex: 1 }}>
               <Typography variant="body2" color="text.secondary">
-                Storage Usage
+{t('admin.networkInfo.storageUsage')}
               </Typography>
               
               {storageLoading ? (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
                   <Spinner size={32} />
-                  <Typography variant="body2">Calculating...</Typography>
+                  <Typography variant="body2">{t('admin.networkInfo.calculating')}</Typography>
                 </Box>
               ) : storageInfo ? (
                 <Box sx={{ mt: 1 }}>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
                     <Typography variant="body1">
-                      {formatStorageSize(storageInfo.usageMB)} / {storageInfo.isUnlimited ? 'Unlimited' : formatStorageSize(storageInfo.limitMB)}
+{formatStorageSize(storageInfo.usageMB)} / {storageInfo.isUnlimited ? t('admin.networkInfo.unlimited') : formatStorageSize(storageInfo.limitMB)}
                     </Typography>
                     {!storageInfo.isUnlimited && (
                       <Typography variant="body2" color={storageInfo.percentageUsed >= 90 ? 'error' : 'text.secondary'}>
@@ -238,7 +240,7 @@ const NetworkInfoPanel = ({ network, members, darkMode }) => {
                   )}
                   
                   <Chip 
-                    label={storageInfo.plan.charAt(0).toUpperCase() + storageInfo.plan.slice(1) + ' Plan'}
+label={t('admin.networkInfo.planLabel', { plan: storageInfo.plan.charAt(0).toUpperCase() + storageInfo.plan.slice(1) })}
                     size="small"
                     color="default"
                     sx={{ fontWeight: 'medium' }}
@@ -256,12 +258,12 @@ const NetworkInfoPanel = ({ network, members, darkMode }) => {
                           startIcon={<UpgradeIcon />}
                           onClick={() => navigate('/pricing')}
                         >
-                          Upgrade
+{t('admin.networkInfo.upgrade')}
                         </Button>
                       }
                     >
                       <Typography variant="body2">
-                        <strong>Storage limit reached!</strong> Upgrade your plan to continue uploading files.
+{t('admin.networkInfo.storageLimitReached')}
                       </Typography>
                     </Alert>
                   )}
@@ -277,19 +279,19 @@ const NetworkInfoPanel = ({ network, members, darkMode }) => {
                           size="small"
                           onClick={() => navigate('/pricing')}
                         >
-                          View Plans
+{t('admin.networkInfo.viewPlans')}
                         </Button>
                       }
                     >
                       <Typography variant="body2">
-                        You're using {storageInfo.percentageUsed}% of your storage.
+{t('admin.networkInfo.storageUsageWarning', { percentage: storageInfo.percentageUsed })}
                       </Typography>
                     </Alert>
                   )}
                 </Box>
               ) : (
                 <Typography variant="body2" color="error">
-                  Unable to load storage info
+{t('admin.networkInfo.unableToLoadStorage')}
                 </Typography>
               )}
             </Box>

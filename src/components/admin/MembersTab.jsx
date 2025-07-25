@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from '../../hooks/useTranslation.jsx';
 import Spinner from '../Spinner';
 import {
   Box,
@@ -60,6 +61,7 @@ const isValidEmail = (email) => {
 };
 
 const MembersTab = ({ members, activeProfile, network, onMembersChange, darkMode = false }) => {
+  const { t } = useTranslation();
   const [inviteEmail, setInviteEmail] = useState('');
   const [emailList, setEmailList] = useState([]);
   const [inviteAsAdmin, setInviteAsAdmin] = useState(false);
@@ -101,12 +103,12 @@ const MembersTab = ({ members, activeProfile, network, onMembersChange, darkMode
 
   const addEmailToList = () => {
     if (!inviteEmail || !isValidEmail(inviteEmail)) {
-      setError('Please enter a valid email address.');
+      setError(t('admin.members.errors.invalidEmail'));
       return;
     }
     
     if (emailList.includes(inviteEmail)) {
-      setError('This email has already been added.');
+      setError(t('admin.members.errors.emailAlreadyAdded'));
       return;
     }
     
@@ -157,7 +159,7 @@ const MembersTab = ({ members, activeProfile, network, onMembersChange, darkMode
 
   const handleBatchInvite = async () => {
     if (emailList.length === 0) {
-      setError('Please add at least one email address.');
+      setError(t('admin.members.errors.addAtLeastOneEmail'));
       return;
     }
     
@@ -195,15 +197,15 @@ const MembersTab = ({ members, activeProfile, network, onMembersChange, darkMode
       
       // Show final result
       if (failed === 0) {
-        setMessage(`Successfully sent ${successful} invitations.`);
+        setMessage(t('admin.members.success.invitationsSent', { count: successful }));
         setEmailList([]); // Clear the list on success
         setInviteAsAdmin(false);
       } else if (successful === 0) {
-        setError(`Failed to send all ${failed} invitations.`);
+        setError(t('admin.members.errors.allInvitationsFailed', { count: failed }));
       } else {
-        setMessage(`Successfully sent ${successful} invitations. Failed to send ${failed} invitations.`);
+        setMessage(t('admin.members.success.partialInvitationsSent', { successful, failed }));
         if (failedEmails.length > 0) {
-          setError(`Failed emails: ${failedEmails.join(', ')}`);
+          setError(t('admin.members.errors.failedEmails', { emails: failedEmails.join(', ') }));
         }
         // Remove successful emails from the list
         const successfulCount = successful;
@@ -221,7 +223,7 @@ const MembersTab = ({ members, activeProfile, network, onMembersChange, darkMode
       
     } catch (error) {
       console.error('Error sending invitations:', error);
-      setError('Error sending invitations. Please try again.');
+      setError(t('admin.members.errors.sendInvitationsError'));
     } finally {
       setBatchInviting(false);
       setInvitationProgress(0);
@@ -257,7 +259,7 @@ const MembersTab = ({ members, activeProfile, network, onMembersChange, darkMode
 
   const handleRemoveMember = async (memberId) => {
     if (memberId === activeProfile.id) {
-      setError('You cannot remove yourself from the network.');
+      setError(t('admin.members.errors.cannotRemoveSelf'));
       return;
     }
     
@@ -276,7 +278,7 @@ const MembersTab = ({ members, activeProfile, network, onMembersChange, darkMode
 
   const handleToggleAdmin = async (memberId, currentRole) => {
     if (memberId === activeProfile.id) {
-      setError('You cannot change your own admin status.');
+      setError(t('admin.members.errors.cannotChangeOwnAdmin'));
       return;
     }
     
@@ -310,8 +312,8 @@ const MembersTab = ({ members, activeProfile, network, onMembersChange, darkMode
       {/* Tabs for switching between members list and invitations */}
       <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
         <Tabs value={activeTab} onChange={(_, newValue) => setActiveTab(newValue)}>
-          <Tab label="Current Members" />
-          <Tab label="Invite Members" />
+          <Tab label={t('admin.members.tabs.currentMembers')} />
+          <Tab label={t('admin.members.tabs.inviteMembers')} />
         </Tabs>
       </Box>
 
@@ -319,7 +321,7 @@ const MembersTab = ({ members, activeProfile, network, onMembersChange, darkMode
       {activeTab === 0 && (
         <Box>
           <Typography variant="h5" component="h2" gutterBottom>
-            Network Members ({members.length})
+{t('admin.members.networkMembers', { count: members.length })}
           </Typography>
           
           {members.length > 0 ? (
@@ -327,9 +329,9 @@ const MembersTab = ({ members, activeProfile, network, onMembersChange, darkMode
               <Table aria-label="members table">
                 <TableHead>
                   <TableRow>
-                    <TableCell>Name</TableCell>
-                    <TableCell>Role</TableCell>
-                    <TableCell>Actions</TableCell>
+                    <TableCell>{t('admin.members.table.name')}</TableCell>
+                    <TableCell>{t('admin.members.table.role')}</TableCell>
+                    <TableCell>{t('admin.members.table.actions')}</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -351,8 +353,8 @@ const MembersTab = ({ members, activeProfile, network, onMembersChange, darkMode
                           </Avatar>
                           <Box>
                             <Typography variant="body1">
-                              {member.full_name || 'Unnamed User'}
-                              {member.id === activeProfile?.id && ' (You)'}
+                              {member.full_name || t('admin.members.unnamedUser')}
+                              {member.id === activeProfile?.id && ` (${t('admin.members.you')})`}
                             </Typography>
                             <Typography variant="body2" color="text.secondary">
                               {member.contact_email}
@@ -375,7 +377,7 @@ const MembersTab = ({ members, activeProfile, network, onMembersChange, darkMode
                             component={Link}
                             to={`/profile/${member.id}`}
                           >
-                            View
+{t('admin.members.buttons.view')}
                           </Button>
                           {member.id !== activeProfile.id && (
                             <>
@@ -386,7 +388,7 @@ const MembersTab = ({ members, activeProfile, network, onMembersChange, darkMode
                                 startIcon={<AdminIcon />}
                                 onClick={() => confirmAction('toggleAdmin', member)}
                               >
-                                {member.role === 'admin' ? 'Remove Admin' : 'Make Admin'}
+{member.role === 'admin' ? t('admin.members.buttons.removeAdmin') : t('admin.members.buttons.makeAdmin')}
                               </Button>
                               <Button 
                                 size="small"
@@ -395,7 +397,7 @@ const MembersTab = ({ members, activeProfile, network, onMembersChange, darkMode
                                 startIcon={<PersonRemoveIcon />}
                                 onClick={() => confirmAction('remove', member)}
                               >
-                                Remove
+{t('admin.members.buttons.remove')}
                               </Button>
                             </>
                           )}
@@ -408,7 +410,7 @@ const MembersTab = ({ members, activeProfile, network, onMembersChange, darkMode
             </TableContainer>
           ) : (
             <Typography align="center" sx={{ py: 3 }}>
-              No members found in your network.
+{t('admin.members.noMembersFound')}
             </Typography>
           )}
 
@@ -420,17 +422,17 @@ const MembersTab = ({ members, activeProfile, network, onMembersChange, darkMode
           ) : pendingInvitations.length > 0 ? (
             <Box sx={{ mt: 4 }}>
               <Typography variant="h6" component="h3" gutterBottom>
-                Invitations ({pendingInvitations.length})
+{t('admin.members.invitations', { count: pendingInvitations.length })}
               </Typography>
               <TableContainer component={Paper}>
                 <Table aria-label="pending invitations table">
                   <TableHead>
                     <TableRow>
-                      <TableCell>Email</TableCell>
-                      <TableCell>Invited By</TableCell>
-                      <TableCell>Invited On</TableCell>
-                      <TableCell>Role</TableCell>
-                      <TableCell>Status</TableCell>
+                      <TableCell>{t('admin.members.table.email')}</TableCell>
+                      <TableCell>{t('admin.members.table.invitedBy')}</TableCell>
+                      <TableCell>{t('admin.members.table.invitedOn')}</TableCell>
+                      <TableCell>{t('admin.members.table.role')}</TableCell>
+                      <TableCell>{t('admin.members.table.status')}</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
@@ -443,7 +445,7 @@ const MembersTab = ({ members, activeProfile, network, onMembersChange, darkMode
                         </TableCell>
                         <TableCell>
                           <Typography variant="body2" color="text.secondary">
-                            {invitation.inviter?.full_name || 'System'}
+{invitation.inviter?.full_name || t('admin.members.system')}
                           </Typography>
                         </TableCell>
                         <TableCell>
@@ -460,9 +462,9 @@ const MembersTab = ({ members, activeProfile, network, onMembersChange, darkMode
                         </TableCell>
                         <TableCell>
                           {invitation.status === 'accepted' ? (
-                            <Tooltip title={`Accepted on ${new Date(invitation.updated_at || invitation.created_at).toLocaleDateString()}`}>
+                            <Tooltip title={t('admin.members.acceptedOn', { date: new Date(invitation.updated_at || invitation.created_at).toLocaleDateString() })}>
                               <Chip 
-                                label="Accepted" 
+                                label={t('admin.members.status.accepted')} 
                                 color="success"
                                 size="small"
                                 icon={<CheckCircleIcon />}
@@ -470,7 +472,7 @@ const MembersTab = ({ members, activeProfile, network, onMembersChange, darkMode
                             </Tooltip>
                           ) : (
                             <Chip 
-                              label="Pending" 
+                              label={t('admin.members.status.pending')} 
                               color="warning"
                               size="small"
                               icon={<TimeIcon />}
@@ -492,7 +494,7 @@ const MembersTab = ({ members, activeProfile, network, onMembersChange, darkMode
         <Box>
           <Box sx={{ mb: 4 }}>
             <Typography variant="h5" component="h2" gutterBottom>
-              Invite Members via Email
+{t('admin.members.inviteViaEmail')}
             </Typography>
             
             {/* Email Collection Interface */}
@@ -500,13 +502,13 @@ const MembersTab = ({ members, activeProfile, network, onMembersChange, darkMode
               <Box sx={{ display: 'flex', gap: 2 }}>
                 <TextField
                   fullWidth
-                  label="Add Email Address"
+label={t('admin.members.addEmailAddress')}
                   type="email"
                   value={inviteEmail}
                   onChange={(e) => setInviteEmail(e.target.value)}
                   onKeyPress={handleKeyPress}
                   variant="outlined"
-                  placeholder="Enter email and press Enter, comma, or semicolon to add"
+placeholder={t('admin.members.emailPlaceholder')}
                   InputProps={{
                     endAdornment: (
                       <InputAdornment position="end">
@@ -521,7 +523,7 @@ const MembersTab = ({ members, activeProfile, network, onMembersChange, darkMode
                     ),
                   }}
                 />
-                <Tooltip title="Invite multiple members from a CSV, Excel, or text file">
+                <Tooltip title={t('admin.members.fileImportTooltip')}>
                   <Button
                     variant="outlined"
                     color="primary"
@@ -529,7 +531,7 @@ const MembersTab = ({ members, activeProfile, network, onMembersChange, darkMode
                     onClick={() => setBatchInviteOpen(true)}
                     sx={{ whiteSpace: 'nowrap' }}
                   >
-                    File Import
+{t('admin.members.fileImport')}
                   </Button>
                 </Tooltip>
               </Box>
@@ -538,7 +540,7 @@ const MembersTab = ({ members, activeProfile, network, onMembersChange, darkMode
               {emailList.length > 0 && (
                 <Box>
                   <Typography variant="subtitle2" gutterBottom>
-                    Emails to invite ({emailList.length})
+{t('admin.members.emailsToInvite', { count: emailList.length })}
                   </Typography>
                   <Paper 
                     variant="outlined" 
@@ -576,7 +578,7 @@ const MembersTab = ({ members, activeProfile, network, onMembersChange, darkMode
                       color="primary"
                     />
                   }
-                  label="Invite as Admin"
+label={t('admin.members.inviteAsAdmin')}
                 />
                 
                 {emailList.length > 0 && (
@@ -588,7 +590,7 @@ const MembersTab = ({ members, activeProfile, network, onMembersChange, darkMode
                       disabled={batchInviting}
                       size="small"
                     >
-                      Clear All
+{t('admin.members.buttons.clearAll')}
                     </Button>
                     <Button
                       variant="contained"
@@ -597,7 +599,7 @@ const MembersTab = ({ members, activeProfile, network, onMembersChange, darkMode
                       onClick={handleBatchInvite}
                       disabled={batchInviting || emailList.length === 0}
                     >
-                      {batchInviting ? `Inviting... (${invitationProgress}%)` : `Invite ${emailList.length} ${emailList.length === 1 ? 'Person' : 'People'}`}
+{batchInviting ? t('admin.members.invitingProgress', { progress: invitationProgress }) : t('admin.members.inviteCount', { count: emailList.length, people: emailList.length === 1 ? t('admin.members.person') : t('admin.members.people') })}
                     </Button>
                   </Box>
                 )}
@@ -607,7 +609,7 @@ const MembersTab = ({ members, activeProfile, network, onMembersChange, darkMode
               {batchInviting && (
                 <Box sx={{ mt: 1 }}>
                   <Typography variant="body2" color="text.secondary" gutterBottom>
-                    Sending invitations... ({invitationProgress}%)
+{t('admin.members.sendingInvitations', { progress: invitationProgress })}
                   </Typography>
                   <Box 
                     sx={{ 
@@ -634,10 +636,10 @@ const MembersTab = ({ members, activeProfile, network, onMembersChange, darkMode
 
           <Box sx={{ mt: 4 }}>
             <Typography variant="h5" component="h2" gutterBottom>
-              Invitation Links
+{t('admin.members.invitationLinks')}
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-              Create reusable invitation links that anyone can use to join your network
+{t('admin.members.invitationLinksDescription')}
             </Typography>
             
             {/* Embed the InvitationLinksTab component here */}
@@ -649,17 +651,17 @@ const MembersTab = ({ members, activeProfile, network, onMembersChange, darkMode
       {/* Confirmation Dialog */}
       <Dialog open={openDialog} onClose={handleDialogClose}>
         <DialogTitle>
-          {dialogAction === 'remove' ? 'Remove Member' : 
-           dialogAction === 'toggleAdmin' && dialogMember?.role === 'admin' ? 'Remove Admin Privileges' : 
-           'Grant Admin Privileges'}
+{dialogAction === 'remove' ? t('admin.members.dialogs.removeMember') : 
+           dialogAction === 'toggleAdmin' && dialogMember?.role === 'admin' ? t('admin.members.dialogs.removeAdminPrivileges') : 
+           t('admin.members.dialogs.grantAdminPrivileges')}
         </DialogTitle>
         <DialogContent>
           <DialogContentText>
-            {dialogAction === 'remove' ? 
-              `Are you sure you want to remove ${dialogMember?.full_name || 'this user'}?` : 
+{dialogAction === 'remove' ? 
+              t('admin.members.dialogs.confirmRemove', { name: dialogMember?.full_name || t('admin.members.thisUser') }) : 
               dialogAction === 'toggleAdmin' && dialogMember?.role === 'admin' ? 
-                `Remove admin privileges from ${dialogMember?.full_name || 'this user'}?` : 
-                `Grant admin privileges to ${dialogMember?.full_name || 'this user'}?`
+                t('admin.members.dialogs.confirmRemoveAdmin', { name: dialogMember?.full_name || t('admin.members.thisUser') }) : 
+                t('admin.members.dialogs.confirmGrantAdmin', { name: dialogMember?.full_name || t('admin.members.thisUser') })
             }
           </DialogContentText>
         </DialogContent>
@@ -669,9 +671,9 @@ const MembersTab = ({ members, activeProfile, network, onMembersChange, darkMode
               {error}
             </Alert>
           )}
-          <Button onClick={handleDialogClose}>Cancel</Button>
+          <Button onClick={handleDialogClose}>{t('admin.members.buttons.cancel')}</Button>
           <Button onClick={handleConfirmedAction} autoFocus>
-            Confirm
+            {t('admin.members.buttons.confirm')}
           </Button>
         </DialogActions>
       </Dialog>

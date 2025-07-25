@@ -26,6 +26,215 @@
     },
     "buttons": {
       "returnToDashboard": "Retour au tableau de bord"
+    },
+    "members": {
+      "tabs": {
+        "currentMembers": "Membres actuels",
+        "inviteMembers": "Inviter des membres"
+      },
+      "networkMembers": "Membres du réseau ({{count}})",
+      "table": {
+        "name": "Nom",
+        "role": "Rôle",
+        "actions": "Actions",
+        "email": "Email",
+        "invitedBy": "Invité par",
+        "invitedOn": "Invité le",
+        "status": "Statut"
+      },
+      "unnamedUser": "Utilisateur sans nom",
+      "you": "Vous",
+      "system": "Système",
+      "noMembersFound": "Aucun membre trouvé dans votre réseau.",
+      "invitations": "Invitations ({{count}})",
+      "acceptedOn": "Accepté le {{date}}",
+      "status": {
+        "accepted": "Accepté",
+        "pending": "En attente"
+      },
+      "inviteViaEmail": "Inviter des membres par email",
+      "addEmailAddress": "Ajouter une adresse email",
+      "emailPlaceholder": "Entrez l'email et appuyez sur Entrée, virgule ou point-virgule pour ajouter",
+      "fileImportTooltip": "Inviter plusieurs membres à partir d'un fichier CSV, Excel ou texte",
+      "fileImport": "Import de fichier",
+      "emailsToInvite": "Emails à inviter ({{count}})",
+      "inviteAsAdmin": "Inviter comme administrateur",
+      "invitationLinks": "Liens d'invitation",
+      "invitationLinksDescription": "Créer des liens d'invitation réutilisables que n'importe qui peut utiliser pour rejoindre votre réseau",
+      "sendingInvitations": "Envoi des invitations... ({{progress}}%)",
+      "person": "Personne",
+      "people": "Personnes",
+      "thisUser": "cet utilisateur",
+      "buttons": {
+        "view": "Voir",
+        "makeAdmin": "Nommer administrateur",
+        "removeAdmin": "Retirer l'admin",
+        "remove": "Supprimer",
+        "clearAll": "Tout effacer",
+        "cancel": "Annuler",
+        "confirm": "Confirmer"
+      },
+      "invitingProgress": "Invitation... ({{progress}}%)",
+      "inviteCount": "Inviter {{count}} {{people}}",
+      "dialogs": {
+        "removeMember": "Supprimer le membre",
+        "removeAdminPrivileges": "Retirer les privilèges d'administrateur",
+        "grantAdminPrivileges": "Accorder les privilèges d'administrateur",
+        "confirmRemove": "Êtes-vous sûr de vouloir supprimer {{name}} ?",
+        "confirmRemoveAdmin": "Retirer les privilèges d'administrateur de {{name}} ?",
+        "confirmGrantAdmin": "Accorder les privilèges d'administrateur à {{name}} ?"
+      },
+      "errors": {
+        "invalidEmail": "Veuillez entrer une adresse email valide.",
+        "emailAlreadyAdded": "Cet email a déjà été ajouté.",
+        "addAtLeastOneEmail": "Veuillez ajouter au moins une adresse email.",
+        "allInvitationsFailed": "Échec de l'envoi de toutes les {{count}} invitations.",
+        "failedEmails": "Emails en échec : {{emails}}",
+        "sendInvitationsError": "Erreur lors de l'envoi des invitations. Veuillez réessayer.",
+        "cannotRemoveSelf": "Vous ne pouvez pas vous supprimer du réseau.",
+        "cannotChangeOwnAdmin": "Vous ne pouvez pas modifier votre propre statut d'administrateur."
+      },
+      "success": {
+        "invitationsSent": "{{count}} invitations envoyées avec succès.",
+        "partialInvitationsSent": "{{successful}} invitations envoyées avec succès. Échec de l'envoi de {{failed}} invitations."
+      }
+    },
+    "networkSettings": {
+      "sections": {
+        "networkInformation": "Informations du réseau",
+        "privacyPurpose": "Confidentialité et objectif",
+        "featuresModules": "Fonctionnalités et modules",
+        "navigationTabs": "Onglets de navigation",
+        "tabGuidelines": "Directives des fonctionnalités d'onglets"
+      },
+      "fields": {
+        "networkName": "Nom du réseau",
+        "networkDescription": "Description du réseau",
+        "networkPrivacy": "Confidentialité du réseau",
+        "networkPurpose": "Objectif du réseau"
+      },
+      "privacy": {
+        "private": {
+          "label": "Privé",
+          "description": "Seuls les membres invités peuvent rejoindre"
+        },
+        "restricted": {
+          "label": "Restreint",
+          "description": "Les membres ont besoin d'approbation"
+        },
+        "public": {
+          "label": "Public",
+          "description": "N'importe qui peut rejoindre"
+        }
+      },
+      "purpose": {
+        "general": "Communauté générale",
+        "professional": "Équipe professionnelle",
+        "interest": "Groupe d'intérêt",
+        "education": "Éducatif",
+        "nonprofit": "Organisation à but non lucratif"
+      },
+      "features": {
+        "events": {
+          "label": "Événements",
+          "description": "Créer et gérer des événements"
+        },
+        "news": {
+          "label": "Actualités et annonces",
+          "description": "Partager actualités et mises à jour"
+        },
+        "files": {
+          "label": "Partage de fichiers",
+          "description": "Partager fichiers et documents"
+        },
+        "chat": {
+          "label": "Chat de groupe",
+          "description": "Communication en temps réel"
+        },
+        "wiki": {
+          "label": "Wiki de connaissances",
+          "description": "Créer des ressources de connaissances"
+        },
+        "moodboards": {
+          "label": "Tableaux d'humeur",
+          "description": "Tableaux de collaboration visuelle"
+        },
+        "location": {
+          "label": "Partage de localisation",
+          "description": "Partage de localisation des membres"
+        },
+        "notifications": {
+          "label": "Notifications",
+          "description": "Notifications par email"
+        }
+      },
+      "tabs": {
+        "news": "Actualités",
+        "members": "Membres",
+        "events": "Événements",
+        "chat": "Chat",
+        "files": "Fichiers",
+        "wiki": "Wiki",
+        "social": "Mur social"
+      },
+      "navigationTabs": {
+        "description": "Sélectionnez les onglets qui apparaîtront dans la navigation de votre réseau. Glissez pour les réorganiser.",
+        "enabledTabs": "Onglets activés (Glisser pour réorganiser)",
+        "availableTabs": "Onglets disponibles (Cliquer pour activer)"
+      },
+      "tabGuidelines": {
+        "description": "Personnalisez comment chaque fonctionnalité apparaît aux membres de votre réseau. Définissez des directives et attentes claires pour chaque section.",
+        "helpText": "Ces descriptions seront affichées lorsque les membres survolent les onglets de navigation ou visitent chaque section.",
+        "headers": {
+          "icon": "Icône",
+          "feature": "Fonctionnalité",
+          "description": "Directives et description",
+          "status": "Statut"
+        },
+        "customized": "Personnalisé",
+        "usingDefault": "Utilise par défaut",
+        "characters": "caractères",
+        "usingDefaultDescription": "Utilise la description par défaut",
+        "resetToDefault": "Réinitialiser par défaut",
+        "custom": "Personnalisé",
+        "default": "Par défaut",
+        "enableTabsToAddDescriptions": "Activez quelques onglets dans la section Onglets de navigation ci-dessus pour y ajouter des descriptions.",
+        "tipsForWriting": "Conseils pour rédiger de bonnes directives",
+        "tips": {
+          "concise": "Gardez les descriptions concises et orientées action",
+          "explain": "Expliquez ce que les membres peuvent faire dans chaque section",
+          "expectations": "Définissez des attentes claires sur le contenu et le comportement",
+          "inclusive": "Utilisez un langage accueillant et inclusif"
+        }
+      },
+      "buttons": {
+        "saving": "Enregistrement de tous les paramètres...",
+        "saveAll": "Enregistrer toutes les modifications"
+      },
+      "errors": {
+        "nameCannotBeEmpty": "Le nom du réseau ne peut pas être vide.",
+        "updateFailed": "Échec de la mise à jour du réseau. Veuillez réessayer."
+      },
+      "success": {
+        "settingsUpdated": "Paramètres du réseau mis à jour avec succès !"
+      }
+    },
+    "networkInfo": {
+      "title": "Informations du réseau",
+      "networkId": "ID du réseau",
+      "createdOn": "Créé le",
+      "members": "Membres",
+      "membersTotal": "{{count}} Total",
+      "adminsCount": "{{count}} Administrateurs",
+      "storageUsage": "Utilisation du stockage",
+      "calculating": "Calcul en cours...",
+      "unlimited": "Illimité",
+      "planLabel": "Plan {{plan}}",
+      "upgrade": "Mettre à niveau",
+      "viewPlans": "Voir les plans",
+      "storageLimitReached": "Limite de stockage atteinte ! Mettez à niveau votre plan pour continuer à télécharger des fichiers.",
+      "storageUsageWarning": "Vous utilisez {{percentage}}% de votre stockage.",
+      "unableToLoadStorage": "Impossible de charger les informations de stockage"
     }
   },
   "memberOnboarding": {

@@ -26,6 +26,215 @@
     },
     "buttons": {
       "returnToDashboard": "Return to Dashboard"
+    },
+    "members": {
+      "tabs": {
+        "currentMembers": "Current Members",
+        "inviteMembers": "Invite Members"
+      },
+      "networkMembers": "Network Members ({{count}})",
+      "table": {
+        "name": "Name",
+        "role": "Role", 
+        "actions": "Actions",
+        "email": "Email",
+        "invitedBy": "Invited By",
+        "invitedOn": "Invited On",
+        "status": "Status"
+      },
+      "unnamedUser": "Unnamed User",
+      "you": "You",
+      "system": "System",
+      "noMembersFound": "No members found in your network.",
+      "invitations": "Invitations ({{count}})",
+      "acceptedOn": "Accepted on {{date}}",
+      "status": {
+        "accepted": "Accepted",
+        "pending": "Pending"
+      },
+      "inviteViaEmail": "Invite Members via Email",
+      "addEmailAddress": "Add Email Address",
+      "emailPlaceholder": "Enter email and press Enter, comma, or semicolon to add",
+      "fileImportTooltip": "Invite multiple members from a CSV, Excel, or text file",
+      "fileImport": "File Import",
+      "emailsToInvite": "Emails to invite ({{count}})",
+      "inviteAsAdmin": "Invite as Admin",
+      "invitationLinks": "Invitation Links",
+      "invitationLinksDescription": "Create reusable invitation links that anyone can use to join your network",
+      "sendingInvitations": "Sending invitations... ({{progress}}%)",
+      "person": "Person",
+      "people": "People",
+      "thisUser": "this user",
+      "buttons": {
+        "view": "View",
+        "makeAdmin": "Make Admin",
+        "removeAdmin": "Remove Admin",
+        "remove": "Remove",
+        "clearAll": "Clear All",
+        "cancel": "Cancel",
+        "confirm": "Confirm"
+      },
+      "invitingProgress": "Inviting... ({{progress}}%)",
+      "inviteCount": "Invite {{count}} {{people}}",
+      "dialogs": {
+        "removeMember": "Remove Member",
+        "removeAdminPrivileges": "Remove Admin Privileges",
+        "grantAdminPrivileges": "Grant Admin Privileges",
+        "confirmRemove": "Are you sure you want to remove {{name}}?",
+        "confirmRemoveAdmin": "Remove admin privileges from {{name}}?",
+        "confirmGrantAdmin": "Grant admin privileges to {{name}}?"
+      },
+      "errors": {
+        "invalidEmail": "Please enter a valid email address.",
+        "emailAlreadyAdded": "This email has already been added.",
+        "addAtLeastOneEmail": "Please add at least one email address.",
+        "allInvitationsFailed": "Failed to send all {{count}} invitations.",
+        "failedEmails": "Failed emails: {{emails}}",
+        "sendInvitationsError": "Error sending invitations. Please try again.",
+        "cannotRemoveSelf": "You cannot remove yourself from the network.",
+        "cannotChangeOwnAdmin": "You cannot change your own admin status."
+      },
+      "success": {
+        "invitationsSent": "Successfully sent {{count}} invitations.",
+        "partialInvitationsSent": "Successfully sent {{successful}} invitations. Failed to send {{failed}} invitations."
+      }
+    },
+    "networkSettings": {
+      "sections": {
+        "networkInformation": "Network Information",
+        "privacyPurpose": "Privacy & Purpose",
+        "featuresModules": "Features & Modules",
+        "navigationTabs": "Navigation Tabs",
+        "tabGuidelines": "Tab Feature Guidelines"
+      },
+      "fields": {
+        "networkName": "Network Name",
+        "networkDescription": "Network Description",
+        "networkPrivacy": "Network Privacy",
+        "networkPurpose": "Network Purpose"
+      },
+      "privacy": {
+        "private": {
+          "label": "Private",
+          "description": "Only invited members can join"
+        },
+        "restricted": {
+          "label": "Restricted",
+          "description": "Members need approval"
+        },
+        "public": {
+          "label": "Public",
+          "description": "Anyone can join"
+        }
+      },
+      "purpose": {
+        "general": "General Community",
+        "professional": "Professional Team",
+        "interest": "Interest Group",
+        "education": "Educational",
+        "nonprofit": "Non-profit"
+      },
+      "features": {
+        "events": {
+          "label": "Events",
+          "description": "Create and manage events"
+        },
+        "news": {
+          "label": "News & Announcements",
+          "description": "Share news and updates"
+        },
+        "files": {
+          "label": "File Sharing",
+          "description": "Share files and documents"
+        },
+        "chat": {
+          "label": "Group Chat",
+          "description": "Real-time communication"
+        },
+        "wiki": {
+          "label": "Knowledge Wiki",
+          "description": "Create knowledge resources"
+        },
+        "moodboards": {
+          "label": "Moodboards",
+          "description": "Visual collaboration boards"
+        },
+        "location": {
+          "label": "Location Sharing",
+          "description": "Member location sharing"
+        },
+        "notifications": {
+          "label": "Notifications",
+          "description": "Email notifications"
+        }
+      },
+      "tabs": {
+        "news": "News",
+        "members": "Members",
+        "events": "Events",
+        "chat": "Chat",
+        "files": "Files",
+        "wiki": "Wiki",
+        "social": "Social Wall"
+      },
+      "navigationTabs": {
+        "description": "Select which tabs will appear in your network navigation. Drag to reorder them.",
+        "enabledTabs": "Enabled Tabs (Drag to reorder)",
+        "availableTabs": "Available Tabs (Click to enable)"
+      },
+      "tabGuidelines": {
+        "description": "Customize how each feature appears to your network members. Set clear guidelines and expectations for each section.",
+        "helpText": "These descriptions will be shown when members hover over navigation tabs or visit each section.",
+        "headers": {
+          "icon": "Icon",
+          "feature": "Feature",
+          "description": "Guidelines & Description",
+          "status": "Status"
+        },
+        "customized": "Customized",
+        "usingDefault": "Using default",
+        "characters": "characters",
+        "usingDefaultDescription": "Using default description",
+        "resetToDefault": "Reset to default",
+        "custom": "Custom",
+        "default": "Default",
+        "enableTabsToAddDescriptions": "Enable some tabs in the Navigation Tabs section above to add descriptions for them.",
+        "tipsForWriting": "Tips for Writing Good Guidelines",
+        "tips": {
+          "concise": "Keep descriptions concise and action-oriented",
+          "explain": "Explain what members can do in each section",
+          "expectations": "Set clear expectations about content and behavior",
+          "inclusive": "Use welcoming, inclusive language"
+        }
+      },
+      "buttons": {
+        "saving": "Saving All Settings...",
+        "saveAll": "Save All Changes"
+      },
+      "errors": {
+        "nameCannotBeEmpty": "Network name cannot be empty.",
+        "updateFailed": "Failed to update network. Please try again."
+      },
+      "success": {
+        "settingsUpdated": "Network settings updated successfully!"
+      }
+    },
+    "networkInfo": {
+      "title": "Network Information",
+      "networkId": "Network ID",
+      "createdOn": "Created On",
+      "members": "Members",
+      "membersTotal": "{{count}} Total",
+      "adminsCount": "{{count}} Admins",
+      "storageUsage": "Storage Usage",
+      "calculating": "Calculating...",
+      "unlimited": "Unlimited",
+      "planLabel": "{{plan}} Plan",
+      "upgrade": "Upgrade",
+      "viewPlans": "View Plans",
+      "storageLimitReached": "Storage limit reached! Upgrade your plan to continue uploading files.",
+      "storageUsageWarning": "You're using {{percentage}}% of your storage.",
+      "unableToLoadStorage": "Unable to load storage info"
     }
   },
   "memberOnboarding": {

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from '../../hooks/useTranslation.jsx';
 import Spinner from '../Spinner';
 import {
   Box,
@@ -121,6 +122,7 @@ const SortableTabChip = ({ tab, isSelected, onToggle, darkMode }) => {
 };
 
 const NetworkSettingsTab = ({ network, onNetworkUpdate, darkMode }) => {
+  const { t } = useTranslation();
   const muiTheme = useMuiTheme();
   
   // Drag and drop sensors
@@ -219,7 +221,7 @@ const NetworkSettingsTab = ({ network, onNetworkUpdate, darkMode }) => {
     e.preventDefault();
     
     if (!networkName.trim()) {
-      setError('Network name cannot be empty.');
+      setError(t('admin.networkSettings.errors.nameCannotBeEmpty'));
       return;
     }
     
@@ -252,9 +254,9 @@ const NetworkSettingsTab = ({ network, onNetworkUpdate, darkMode }) => {
       onNetworkUpdate({ ...network, ...updates });
       // Trigger global network refresh to update NetworkHeader and other components
       triggerNetworkRefresh(network.id);
-      setMessage('Network settings updated successfully!');
+      setMessage(t('admin.networkSettings.success.settingsUpdated'));
     } else {
-      setError(result.message || 'Failed to update network. Please try again.');
+      setError(result.message || t('admin.networkSettings.errors.updateFailed'));
     }
     
     setUpdating(false);
@@ -301,57 +303,57 @@ const NetworkSettingsTab = ({ network, onNetworkUpdate, darkMode }) => {
   const availableTabs = [
     { 
       id: 'news', 
-      label: 'News', 
+      label: t('admin.networkSettings.tabs.news'), 
       icon: <ArticleIcon fontSize="small" />,
       defaultDescription: defaultTabDescriptions.news
     },
     { 
       id: 'members', 
-      label: 'Members', 
+      label: t('admin.networkSettings.tabs.members'), 
       icon: <GroupsIcon fontSize="small" />,
       defaultDescription: defaultTabDescriptions.members
     },
     { 
       id: 'events', 
-      label: 'Events', 
+      label: t('admin.networkSettings.tabs.events'), 
       icon: <EventIcon fontSize="small" />,
       defaultDescription: defaultTabDescriptions.events
     },
     { 
       id: 'chat', 
-      label: 'Chat', 
+      label: t('admin.networkSettings.tabs.chat'), 
       icon: <ForumIcon fontSize="small" />,
       defaultDescription: defaultTabDescriptions.chat
     },
     { 
       id: 'files', 
-      label: 'Files', 
+      label: t('admin.networkSettings.tabs.files'), 
       icon: <FileIcon fontSize="small" />,
       defaultDescription: defaultTabDescriptions.files
     },
     { 
       id: 'wiki', 
-      label: 'Wiki', 
+      label: t('admin.networkSettings.tabs.wiki'), 
       icon: <WikiIcon fontSize="small" />,
       defaultDescription: defaultTabDescriptions.wiki
     },
     { 
       id: 'social', 
-      label: 'Social Wall', 
+      label: t('admin.networkSettings.tabs.social'), 
       icon: <TimelineIcon fontSize="small" />,
       defaultDescription: defaultTabDescriptions.social
     }
   ];
   
   const featuresList = [
-    { key: 'events', label: 'Events', icon: <EventIcon />, description: 'Create and manage events' },
-    { key: 'news', label: 'News & Announcements', icon: <ArticleIcon />, description: 'Share news and updates' },
-    { key: 'files', label: 'File Sharing', icon: <FileIcon />, description: 'Share files and documents' },
-    { key: 'chat', label: 'Group Chat', icon: <ForumIcon />, description: 'Real-time communication' },
-    { key: 'wiki', label: 'Knowledge Wiki', icon: <WikiIcon />, description: 'Create knowledge resources' },
-    { key: 'moodboards', label: 'Moodboards', icon: <ImageIcon />, description: 'Visual collaboration boards' },
-    { key: 'location', label: 'Location Sharing', icon: <LocationIcon />, description: 'Member location sharing' },
-    { key: 'notifications', label: 'Notifications', icon: <NotificationsIcon />, description: 'Email notifications' }
+    { key: 'events', label: t('admin.networkSettings.features.events.label'), icon: <EventIcon />, description: t('admin.networkSettings.features.events.description') },
+    { key: 'news', label: t('admin.networkSettings.features.news.label'), icon: <ArticleIcon />, description: t('admin.networkSettings.features.news.description') },
+    { key: 'files', label: t('admin.networkSettings.features.files.label'), icon: <FileIcon />, description: t('admin.networkSettings.features.files.description') },
+    { key: 'chat', label: t('admin.networkSettings.features.chat.label'), icon: <ForumIcon />, description: t('admin.networkSettings.features.chat.description') },
+    { key: 'wiki', label: t('admin.networkSettings.features.wiki.label'), icon: <WikiIcon />, description: t('admin.networkSettings.features.wiki.description') },
+    { key: 'moodboards', label: t('admin.networkSettings.features.moodboards.label'), icon: <ImageIcon />, description: t('admin.networkSettings.features.moodboards.description') },
+    { key: 'location', label: t('admin.networkSettings.features.location.label'), icon: <LocationIcon />, description: t('admin.networkSettings.features.location.description') },
+    { key: 'notifications', label: t('admin.networkSettings.features.notifications.label'), icon: <NotificationsIcon />, description: t('admin.networkSettings.features.notifications.description') }
   ];
 
   return (
@@ -374,7 +376,7 @@ const NetworkSettingsTab = ({ network, onNetworkUpdate, darkMode }) => {
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography sx={{ display: 'flex', alignItems: 'center', fontWeight: 'medium' }}>
               <SettingsIcon sx={{ mr: 1 }} />
-              Network Information
+{t('admin.networkSettings.sections.networkInformation')}
             </Typography>
           </AccordionSummary>
           <AccordionDetails>
@@ -382,7 +384,7 @@ const NetworkSettingsTab = ({ network, onNetworkUpdate, darkMode }) => {
               <Grid item xs={12} sx={{ width: '100%' }}>
                 <TextField 
                   fullWidth
-                  label="Network Name"
+label={t('admin.networkSettings.fields.networkName')}
                   variant="outlined"
                   value={networkName}
                   onChange={(e) => setNetworkName(e.target.value)}
@@ -394,7 +396,7 @@ const NetworkSettingsTab = ({ network, onNetworkUpdate, darkMode }) => {
               <Grid item xs={12} sx={{ width: '100%' }}>
                 <TextField 
                   fullWidth
-                  label="Network Description"
+label={t('admin.networkSettings.fields.networkDescription')}
                   variant="outlined"
                   value={networkDescription}
                   onChange={(e) => setNetworkDescription(e.target.value)}
@@ -419,14 +421,14 @@ const NetworkSettingsTab = ({ network, onNetworkUpdate, darkMode }) => {
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography sx={{ display: 'flex', alignItems: 'center', fontWeight: 'medium' }}>
               <LockIcon sx={{ mr: 1 }} />
-              Privacy & Purpose
+{t('admin.networkSettings.sections.privacyPurpose')}
             </Typography>
           </AccordionSummary>
           <AccordionDetails>
             <Grid container spacing={3}>
               <Grid item xs={12} md={6}>
                 <FormControl component="fieldset">
-                  <FormLabel component="legend">Network Privacy</FormLabel>
+                  <FormLabel component="legend">{t('admin.networkSettings.fields.networkPrivacy')}</FormLabel>
                   <RadioGroup
                     value={privacyLevel}
                     onChange={(e) => setPrivacyLevel(e.target.value)}
@@ -438,9 +440,9 @@ const NetworkSettingsTab = ({ network, onNetworkUpdate, darkMode }) => {
                         <Box sx={{ display: 'flex', alignItems: 'center' }}>
                           <LockIcon fontSize="small" sx={{ mr: 1 }} />
                           <Box>
-                            <Typography variant="body1">Private</Typography>
+                            <Typography variant="body1">{t('admin.networkSettings.privacy.private.label')}</Typography>
                             <Typography variant="caption" color="text.secondary">
-                              Only invited members can join
+                              {t('admin.networkSettings.privacy.private.description')}
                             </Typography>
                           </Box>
                         </Box>
@@ -453,9 +455,9 @@ const NetworkSettingsTab = ({ network, onNetworkUpdate, darkMode }) => {
                         <Box sx={{ display: 'flex', alignItems: 'center' }}>
                           <GroupsIcon fontSize="small" sx={{ mr: 1 }} />
                           <Box>
-                            <Typography variant="body1">Restricted</Typography>
+                            <Typography variant="body1">{t('admin.networkSettings.privacy.restricted.label')}</Typography>
                             <Typography variant="caption" color="text.secondary">
-                              Members need approval
+                              {t('admin.networkSettings.privacy.restricted.description')}
                             </Typography>
                           </Box>
                         </Box>
@@ -468,9 +470,9 @@ const NetworkSettingsTab = ({ network, onNetworkUpdate, darkMode }) => {
                         <Box sx={{ display: 'flex', alignItems: 'center' }}>
                           <PublicIcon fontSize="small" sx={{ mr: 1 }} />
                           <Box>
-                            <Typography variant="body1">Public</Typography>
+                            <Typography variant="body1">{t('admin.networkSettings.privacy.public.label')}</Typography>
                             <Typography variant="caption" color="text.secondary">
-                              Anyone can join
+                              {t('admin.networkSettings.privacy.public.description')}
                             </Typography>
                           </Box>
                         </Box>
@@ -482,16 +484,16 @@ const NetworkSettingsTab = ({ network, onNetworkUpdate, darkMode }) => {
               
               <Grid item xs={12} md={6}>
                 <FormControl component="fieldset">
-                  <FormLabel component="legend">Network Purpose</FormLabel>
+                  <FormLabel component="legend">{t('admin.networkSettings.fields.networkPurpose')}</FormLabel>
                   <RadioGroup
                     value={purpose}
                     onChange={(e) => setPurpose(e.target.value)}
                   >
-                    <FormControlLabel value="general" control={<Radio />} label="General Community" />
-                    <FormControlLabel value="professional" control={<Radio />} label="Professional Team" />
-                    <FormControlLabel value="interest" control={<Radio />} label="Interest Group" />
-                    <FormControlLabel value="education" control={<Radio />} label="Educational" />
-                    <FormControlLabel value="nonprofit" control={<Radio />} label="Non-profit" />
+                    <FormControlLabel value="general" control={<Radio />} label={t('admin.networkSettings.purpose.general')} />
+                    <FormControlLabel value="professional" control={<Radio />} label={t('admin.networkSettings.purpose.professional')} />
+                    <FormControlLabel value="interest" control={<Radio />} label={t('admin.networkSettings.purpose.interest')} />
+                    <FormControlLabel value="education" control={<Radio />} label={t('admin.networkSettings.purpose.education')} />
+                    <FormControlLabel value="nonprofit" control={<Radio />} label={t('admin.networkSettings.purpose.nonprofit')} />
                   </RadioGroup>
                 </FormControl>
               </Grid>
@@ -504,7 +506,7 @@ const NetworkSettingsTab = ({ network, onNetworkUpdate, darkMode }) => {
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography sx={{ display: 'flex', alignItems: 'center', fontWeight: 'medium' }}>
               <FeaturesIcon sx={{ mr: 1 }} />
-              Features & Modules
+{t('admin.networkSettings.sections.featuresModules')}
             </Typography>
           </AccordionSummary>
           <AccordionDetails>
@@ -553,18 +555,18 @@ const NetworkSettingsTab = ({ network, onNetworkUpdate, darkMode }) => {
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography sx={{ display: 'flex', alignItems: 'center', fontWeight: 'medium' }}>
               <ViewModuleIcon sx={{ mr: 1 }} />
-              Navigation Tabs
+{t('admin.networkSettings.sections.navigationTabs')}
             </Typography>
           </AccordionSummary>
           <AccordionDetails>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              Select which tabs will appear in your network navigation. Drag to reorder them.
+{t('admin.networkSettings.navigationTabs.description')}
             </Typography>
             
             {/* Enabled Tabs - Sortable */}
             <Box sx={{ mb: 3 }}>
               <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 'medium' }}>
-                Enabled Tabs (Drag to reorder)
+{t('admin.networkSettings.navigationTabs.enabledTabs')}
               </Typography>
               <DndContext
                 sensors={sensors}
@@ -596,7 +598,7 @@ const NetworkSettingsTab = ({ network, onNetworkUpdate, darkMode }) => {
             {/* Available Tabs - Not enabled */}
             <Box>
               <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 'medium' }}>
-                Available Tabs (Click to enable)
+{t('admin.networkSettings.navigationTabs.availableTabs')}
               </Typography>
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                 {availableTabs
@@ -622,16 +624,16 @@ const NetworkSettingsTab = ({ network, onNetworkUpdate, darkMode }) => {
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography sx={{ display: 'flex', alignItems: 'center', fontWeight: 'medium' }}>
               <DescriptionIcon sx={{ mr: 1 }} />
-              Tab Feature Guidelines
+{t('admin.networkSettings.sections.tabGuidelines')}
             </Typography>
           </AccordionSummary>
           <AccordionDetails>
             <Box sx={{ mb: 3 }}>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                Customize how each feature appears to your network members. Set clear guidelines and expectations for each section.
+{t('admin.networkSettings.tabGuidelines.description')}
               </Typography>
               <Typography variant="caption" color="text.secondary">
-                These descriptions will be shown when members hover over navigation tabs or visit each section.
+{t('admin.networkSettings.tabGuidelines.helpText')}
               </Typography>
             </Box>
             
@@ -650,16 +652,16 @@ const NetworkSettingsTab = ({ network, onNetworkUpdate, darkMode }) => {
               }}
             >
               <Typography variant="caption" sx={{ fontWeight: 'bold', textAlign: 'center' }}>
-                Icon
+{t('admin.networkSettings.tabGuidelines.headers.icon')}
               </Typography>
               <Typography variant="caption" sx={{ fontWeight: 'bold' }}>
-                Feature
+{t('admin.networkSettings.tabGuidelines.headers.feature')}
               </Typography>
               <Typography variant="caption" sx={{ fontWeight: 'bold' }}>
-                Guidelines & Description
+{t('admin.networkSettings.tabGuidelines.headers.description')}
               </Typography>
               <Typography variant="caption" sx={{ fontWeight: 'bold', textAlign: 'center' }}>
-                Status
+{t('admin.networkSettings.tabGuidelines.headers.status')}
               </Typography>
             </Box>
             
@@ -715,7 +717,7 @@ const NetworkSettingsTab = ({ network, onNetworkUpdate, darkMode }) => {
                           {tab.label}
                         </Typography>
                         <Typography variant="caption" color="text.secondary" sx={{ display: 'block', lineHeight: 1.2 }}>
-                          {tabDescriptions[tab.id] ? 'Customized' : 'Using default'}
+{tabDescriptions[tab.id] ? t('admin.networkSettings.tabGuidelines.customized') : t('admin.networkSettings.tabGuidelines.usingDefault')}
                         </Typography>
                       </Box>
                       
@@ -750,8 +752,8 @@ const NetworkSettingsTab = ({ network, onNetworkUpdate, darkMode }) => {
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 0.5 }}>
                           <Typography variant="caption" color="text.secondary">
                             {tabDescriptions[tab.id] 
-                              ? `${tabDescriptions[tab.id].length}/200 characters` 
-                              : 'Using default description'}
+? `${tabDescriptions[tab.id].length}/200 ${t('admin.networkSettings.tabGuidelines.characters')}` 
+                              : t('admin.networkSettings.tabGuidelines.usingDefaultDescription')}
                           </Typography>
                           {tabDescriptions[tab.id] && (
                             <Button
@@ -764,7 +766,7 @@ const NetworkSettingsTab = ({ network, onNetworkUpdate, darkMode }) => {
                                 textTransform: 'none'
                               }}
                             >
-                              Reset to default
+{t('admin.networkSettings.tabGuidelines.resetToDefault')}
                             </Button>
                           )}
                         </Box>
@@ -773,7 +775,7 @@ const NetworkSettingsTab = ({ network, onNetworkUpdate, darkMode }) => {
                       {/* Status */}
                       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'start', pt: 1 }}>
                         <Chip
-                          label={tabDescriptions[tab.id] ? 'Custom' : 'Default'}
+label={tabDescriptions[tab.id] ? t('admin.networkSettings.tabGuidelines.custom') : t('admin.networkSettings.tabGuidelines.default')}
                           size="small"
                           color={tabDescriptions[tab.id] ? 'primary' : 'default'}
                           variant={tabDescriptions[tab.id] ? 'filled' : 'outlined'}
@@ -787,7 +789,7 @@ const NetworkSettingsTab = ({ network, onNetworkUpdate, darkMode }) => {
             
             {enabledTabs.length === 0 && (
               <Alert severity="info" sx={{ mt: 2 }}>
-                Enable some tabs in the Navigation Tabs section above to add descriptions for them.
+{t('admin.networkSettings.tabGuidelines.enableTabsToAddDescriptions')}
               </Alert>
             )}
             
@@ -795,13 +797,13 @@ const NetworkSettingsTab = ({ network, onNetworkUpdate, darkMode }) => {
             <Box sx={{ mt: 3, p: 2, bgcolor: alpha(muiTheme.palette.info.main, 0.08), borderRadius: 1 }}>
               <Typography variant="caption" sx={{ display: 'flex', alignItems: 'center', fontWeight: 'medium', mb: 1 }}>
                 <EditIcon sx={{ fontSize: '0.875rem', mr: 0.5 }} />
-                Tips for Writing Good Guidelines
+{t('admin.networkSettings.tabGuidelines.tipsForWriting')}
               </Typography>
               <Box component="ul" sx={{ m: 0, pl: 2.5, '& li': { fontSize: '0.75rem', color: 'text.secondary', mb: 0.5 } }}>
-                <li>Keep descriptions concise and action-oriented</li>
-                <li>Explain what members can do in each section</li>
-                <li>Set clear expectations about content and behavior</li>
-                <li>Use welcoming, inclusive language</li>
+                <li>{t('admin.networkSettings.tabGuidelines.tips.concise')}</li>
+                <li>{t('admin.networkSettings.tabGuidelines.tips.explain')}</li>
+                <li>{t('admin.networkSettings.tabGuidelines.tips.expectations')}</li>
+                <li>{t('admin.networkSettings.tabGuidelines.tips.inclusive')}</li>
               </Box>
             </Box>
           </AccordionDetails>
@@ -826,7 +828,7 @@ const NetworkSettingsTab = ({ network, onNetworkUpdate, darkMode }) => {
               }
             }}
           >
-            {updating ? 'Saving All Settings...' : 'Save All Changes'}
+{updating ? t('admin.networkSettings.buttons.saving') : t('admin.networkSettings.buttons.saveAll')}
           </Button>
         </Box>
       </form>
