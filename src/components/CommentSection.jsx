@@ -165,129 +165,208 @@ const CommentSection = ({ itemType, itemId, darkMode, isAdmin = false, initialCo
     setShowMemberDetailsModal(true);
   };
 
-  const CommentItem = ({ comment, isReply = false, parentId = null }) => (
-    <Box
-      sx={{
-        display: 'flex',
-        gap: 1.5,
-        opacity: comment.is_hidden ? 0.5 : 1,
-        ml: isReply ? 6 : 0,
-        mb: isReply ? 1 : 2
-      }}
-    >
-      <Avatar
-        src={comment.profile?.profile_picture_url}
-        onClick={() => {
-          if (onMemberClick) {
-            onMemberClick(comment.profile_id);
-          } else if (comment.profile) {
-            handleDefaultMemberClick(comment.profile);
-          }
-        }}
-        sx={{
-          width: isReply ? 28 : 32,
-          height: isReply ? 28 : 32,
-          bgcolor: theme.palette.primary.main,
-          cursor: 'pointer',
-          '&:hover': {
-            opacity: 0.8
-          }
-        }}
-      >
-        {comment.profile?.full_name?.[0] || '?'}
-      </Avatar>
-      <Box sx={{ flex: 1 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-          <Typography
-            variant="body2"
-            onClick={(e) => {
+  const CommentItem = ({ comment, isReply = false, parentId = null }) => {
+    return (
+      <>
+        <Box
+          sx={{
+            display: 'flex',
+            gap: 1.5,
+            opacity: comment.is_hidden ? 0.5 : 1,
+            ml: isReply ? 6 : 0,
+            mb: isReply ? 1 : 2
+          }}
+        >
+          <Avatar
+            src={comment.profile?.profile_picture_url}
+            onClick={() => {
               if (onMemberClick) {
-                onMemberClick(comment.profile_id, e);
+                onMemberClick(comment.profile_id);
               } else if (comment.profile) {
                 handleDefaultMemberClick(comment.profile);
               }
             }}
             sx={{
-              fontWeight: 500,
-              color: theme.palette.text.primary,
+              width: isReply ? 28 : 32,
+              height: isReply ? 28 : 32,
+              bgcolor: theme.palette.primary.main,
               cursor: 'pointer',
               '&:hover': {
-                color: theme.palette.primary.main,
-                textDecoration: 'underline'
-              },
-              transition: 'color 0.2s ease'
+                opacity: 0.8
+              }
             }}
           >
-            {comment.profile?.full_name || 'Unknown User'}
-          </Typography>
-          <Typography
-            variant="caption"
-            sx={{
-              color: theme.palette.text.secondary,
-              fontSize: '0.75rem'
-            }}
-          >
-            {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
-          </Typography>
-          {comment.is_hidden && (
-            <Chip
-              label="Hidden"
-              size="small"
-              sx={{ height: 16, fontSize: '0.65rem' }}
-            />
-          )}
+            {comment.profile?.full_name?.[0] || '?'}
+          </Avatar>
+          <Box sx={{ flex: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+              <Typography
+                variant="body2"
+                onClick={(e) => {
+                  if (onMemberClick) {
+                    onMemberClick(comment.profile_id, e);
+                  } else if (comment.profile) {
+                    handleDefaultMemberClick(comment.profile);
+                  }
+                }}
+                sx={{
+                  fontWeight: 500,
+                  color: theme.palette.text.primary,
+                  cursor: 'pointer',
+                  '&:hover': {
+                    color: theme.palette.primary.main,
+                    textDecoration: 'underline'
+                  },
+                  transition: 'color 0.2s ease'
+                }}
+              >
+                {comment.profile?.full_name || 'Unknown User'}
+              </Typography>
+              <Typography
+                variant="caption"
+                sx={{
+                  color: theme.palette.text.secondary,
+                  fontSize: '0.75rem'
+                }}
+              >
+                {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
+              </Typography>
+              {comment.is_hidden && (
+                <Chip
+                  label="Hidden"
+                  size="small"
+                  sx={{ height: 16, fontSize: '0.65rem' }}
+                />
+              )}
+            </Box>
+            <Typography
+              variant="body2"
+              sx={{
+                color: theme.palette.text.primary,
+                mb: 0.5,
+                fontSize: '0.875rem',
+                lineHeight: 1.5
+              }}
+            >
+              {comment.content}
+            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              {!isReply && (
+                <Button
+                  size="small"
+                  startIcon={<ReplyIcon sx={{ fontSize: 14 }} />}
+                  onClick={() => setReplyingTo(comment.id)}
+                  sx={{
+                    textTransform: 'none',
+                    color: theme.palette.text.secondary,
+                    fontSize: '0.75rem',
+                    minWidth: 'auto',
+                    py: 0,
+                    '&:hover': {
+                      bgcolor: 'transparent',
+                      color: theme.palette.primary.main
+                    }
+                  }}
+                >
+                  Reply
+                </Button>
+              )}
+              {/* {(user?.id === comment.profile_id || isAdmin) && ( //commented out because the "hide" functionality is not implemented yet
+                <IconButton
+                  size="small"
+                  onClick={(e) => handleOpenMenu(e, comment)}
+                  sx={{
+                    p: 0.5,
+                    color: theme.palette.text.secondary,
+                    '&:hover': {
+                      color: theme.palette.text.primary
+                    }
+                  }}
+                >
+                  <MoreIcon sx={{ fontSize: 16 }} />
+                </IconButton>
+              )} */}
+            </Box>
+          </Box>
         </Box>
-        <Typography
-          variant="body2"
+      {/* Reply input field - shown directly below the comment being replied to */}
+      {replyingTo === comment.id && user && (
+        <Box
           sx={{
-            color: theme.palette.text.primary,
-            mb: 0.5,
-            fontSize: '0.875rem',
-            lineHeight: 1.5
+            ml: isReply ? 6 : 4,
+            mb: 2,
+            display: 'flex',
+            gap: 1
           }}
         >
-          {comment.content}
-        </Typography>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          {!isReply && (
-            <Button
-              size="small"
-              startIcon={<ReplyIcon sx={{ fontSize: 14 }} />}
-              onClick={() => setReplyingTo(comment.id)}
+          <Avatar
+            src={user.profile_picture_url}
+            sx={{ width: 28, height: 28 }}
+          />
+          <Box sx={{ flex: 1 }}>
+            <Box
               sx={{
-                textTransform: 'none',
-                color: theme.palette.text.secondary,
-                fontSize: '0.75rem',
-                minWidth: 'auto',
-                py: 0,
-                '&:hover': {
-                  bgcolor: 'transparent',
-                  color: theme.palette.primary.main
-                }
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1,
+                mb: 1
               }}
             >
-              Reply
-            </Button>
-          )}
-          {(user?.id === comment.profile_id || isAdmin) && (
-            <IconButton
-              size="small"
-              onClick={(e) => handleOpenMenu(e, comment)}
-              sx={{
-                p: 0.5,
-                color: theme.palette.text.secondary,
-                '&:hover': {
-                  color: theme.palette.text.primary
-                }
-              }}
-            >
-              <MoreIcon sx={{ fontSize: 16 }} />
-            </IconButton>
-          )}
+              <Typography variant="caption" color="primary">
+                Replying to {comment.profile?.full_name || 'Unknown User'}
+              </Typography>
+              <IconButton
+                size="small"
+                onClick={() => setReplyingTo(null)}
+                sx={{ p: 0.25 }}
+              >
+                <CloseIcon sx={{ fontSize: 14 }} />
+              </IconButton>
+            </Box>
+            <Box sx={{ display: 'flex', gap: 1 }}>
+              <TextField
+                fullWidth
+                size="small"
+                placeholder="Write a reply..."
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSubmitComment();
+                  }
+                }}
+                disabled={submitting}
+                autoFocus
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    fontSize: '0.875rem',
+                    bgcolor: theme.palette.background.paper,
+                    '& fieldset': {
+                      borderColor: alpha(theme.palette.divider, 0.2)
+                    }
+                  }
+                }}
+              />
+              <IconButton
+                onClick={handleSubmitComment}
+                disabled={!newComment.trim() || submitting}
+                sx={{
+                  color: theme.palette.primary.main,
+                  '&:disabled': {
+                    color: theme.palette.action.disabled
+                  }
+                }}
+              >
+                {submitting ? <Spinner size={20} /> : <SendIcon sx={{ fontSize: 20 }} />}
+              </IconButton>
+            </Box>
+          </Box>
         </Box>
-      </Box>
-    </Box>
+      )}
+    </>
   );
+  };
 
   return (
     <Box sx={{ mt: 2 }}>
@@ -324,33 +403,9 @@ const CommentSection = ({ itemType, itemId, darkMode, isAdmin = false, initialCo
             border: `1px solid ${alpha(theme.palette.divider, 0.1)}`
           }}
         >
-          {/* Comment input */}
-          {user && (
+          {/* Top-level comment input */}
+          {user && !replyingTo && (
             <Box sx={{ mb: 2 }}>
-              {replyingTo && (
-                <Box
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 1,
-                    mb: 1,
-                    p: 1,
-                    bgcolor: alpha(theme.palette.primary.main, 0.08),
-                    borderRadius: 1
-                  }}
-                >
-                  <Typography variant="caption" color="primary">
-                    Replying to comment
-                  </Typography>
-                  <IconButton
-                    size="small"
-                    onClick={() => setReplyingTo(null)}
-                    sx={{ p: 0.25 }}
-                  >
-                    <CloseIcon sx={{ fontSize: 14 }} />
-                  </IconButton>
-                </Box>
-              )}
               <Box sx={{ display: 'flex', gap: 1 }}>
                 <Avatar
                   src={user.profile_picture_url}
@@ -359,7 +414,7 @@ const CommentSection = ({ itemType, itemId, darkMode, isAdmin = false, initialCo
                 <TextField
                   fullWidth
                   size="small"
-                  placeholder={replyingTo ? "Write a reply..." : "Write a comment..."}
+                  placeholder="Write a comment..."
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
                   onKeyDown={(e) => {
