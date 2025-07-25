@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from '../hooks/useTranslation';
 import { Link } from 'react-router-dom';
 import PostCard from './PostCard';
 import WidgetHeader from './shared/WidgetHeader';
@@ -20,6 +21,7 @@ import {
 import { supabase } from '../supabaseclient';
 
 const LatestPostsWidget = ({ networkId, onMemberClick, darkMode = false, onPostUpdated, onPostDeleted }) => {
+  const { t } = useTranslation();
   const [createPostModalOpen, setCreatePostModalOpen] = useState(false);
 
   // First fetch network members
@@ -72,7 +74,7 @@ const LatestPostsWidget = ({ networkId, onMemberClick, darkMode = false, onPostU
     return (
       <WidgetErrorState
         icon={<WorkIcon color="primary" />}
-        title="Latest Posts"
+        title={t('dashboard.widgets.latestPosts')}
         error={error}
       />
     );
@@ -90,7 +92,7 @@ const LatestPostsWidget = ({ networkId, onMemberClick, darkMode = false, onPostU
       }}>
         <WidgetHeader
           icon={<WorkIcon color="primary" />}
-          title="Latest Posts"
+          title={t('dashboard.widgets.latestPosts')}
           action={
             <Button
               variant="contained"
@@ -131,7 +133,7 @@ const LatestPostsWidget = ({ networkId, onMemberClick, darkMode = false, onPostU
     }}>
       <WidgetHeader
         icon={<WorkIcon color="primary" />}
-        title="Latest Posts"
+        title={t('dashboard.widgets.latestPosts')}
         viewAllLink={`/network/${networkId}?tab=social`}
         action={
           <Button

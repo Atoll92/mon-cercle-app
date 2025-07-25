@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useTranslation } from '../hooks/useTranslation';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -21,6 +22,7 @@ import { useProfile } from '../context/profileContext';
 import MoodboardItemSimple from './Moodboard/MoodboardItemSimple';
 
 const MicroConclavWidget = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { activeProfile, userProfiles, isLoadingProfiles } = useProfile();
   const [moodboard, setMoodboard] = useState(null);
@@ -54,7 +56,7 @@ const MicroConclavWidget = () => {
       const data = await getUserMoodboard(profileId);
       setMoodboard(data);
       setEditForm({
-        title: data.title || 'My Micro Conclav',
+        title: data.title || t('dashboard.widgets.myMicroConclav'),
         description: data.description || 'Welcome to my personal space',
         background_color: data.background_color || '#f5f5f5'
       });
@@ -88,7 +90,7 @@ const MicroConclavWidget = () => {
 
   const handleCancel = () => {
     setEditForm({
-      title: moodboard.title || 'My Micro Conclav',
+      title: moodboard.title || t('dashboard.widgets.myMicroConclav'),
       description: moodboard.description || 'Welcome to my personal space',
       background_color: moodboard.background_color || '#f5f5f5'
     });
@@ -128,7 +130,7 @@ const MicroConclavWidget = () => {
     }}>
       <WidgetHeader
         icon={<DashboardIcon color="primary" />}
-        title="My Micro Conclav"
+        title={t('dashboard.widgets.myMicroConclav')}
         viewAllLink={microConclavUrl}
         viewAllText="View Page"
         action={

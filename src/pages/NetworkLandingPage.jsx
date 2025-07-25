@@ -4,6 +4,7 @@ import { useAuth } from '../context/authcontext';
 import { useProfile } from '../context/profileContext';
 import { useTheme } from '../components/ThemeProvider';
 import { useNetwork, NetworkProvider, NetworkProviderWithParams } from '../context/networkContext';
+import { useTranslation } from '../hooks/useTranslation';
 import { useApp } from '../context/appContext';
 import { supabase } from '../supabaseclient';
 import { useFadeIn } from '../hooks/useAnimation';
@@ -79,7 +80,7 @@ const NetworkLandingPageWrapper = () => {
     return (
       <Container maxWidth="md" sx={{ mt: 4 }}>
         <Alert severity="error">
-          No network found. Please make sure you are a member of a network.
+          {t('dashboard.network.noNetworkFound')}
         </Alert>
       </Container>
     );
@@ -104,6 +105,7 @@ const NetworkLandingPageWrapper = () => {
 };
 
 function NetworkLandingPage() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { activeProfile } = useProfile();
   const { darkMode } = useTheme();
@@ -177,15 +179,15 @@ function NetworkLandingPage() {
 
   // Define all available tabs with their properties (matching admin panel IDs)
   const allTabs = [
-    { id: 'news', icon: <ArticleIcon />, label: 'News' },
-    { id: 'members', icon: <GroupsIcon />, label: 'Members' },
-    { id: 'events', icon: <EventIcon />, label: 'Events' },
-    { id: 'chat', icon: <ChatIcon />, label: 'Chat' },
-    { id: 'files', icon: <AttachmentIcon />, label: 'Files' },
-    { id: 'wiki', icon: <MenuBookIcon />, label: 'Wiki' },
-    { id: 'social', icon: <TimelineIcon />, label: 'Social Wall' },
+    { id: 'news', icon: <ArticleIcon />, label: t('dashboard.tabs.news') },
+    { id: 'members', icon: <GroupsIcon />, label: t('dashboard.tabs.members') },
+    { id: 'events', icon: <EventIcon />, label: t('dashboard.tabs.events') },
+    { id: 'chat', icon: <ChatIcon />, label: t('dashboard.tabs.chat') },
+    { id: 'files', icon: <AttachmentIcon />, label: t('dashboard.tabs.files') },
+    { id: 'wiki', icon: <MenuBookIcon />, label: t('dashboard.tabs.wiki') },
+    { id: 'social', icon: <TimelineIcon />, label: t('dashboard.tabs.social') },
     // Always show About tab regardless of config
-    { id: 'about', icon: <InfoIcon />, label: 'About' }
+    { id: 'about', icon: <InfoIcon />, label: t('dashboard.tabs.about') }
   ];
 
   // Filter tabs based on network configuration, preserving order from enabledTabs
@@ -695,7 +697,7 @@ function NetworkLandingPage() {
             startIcon={<ArrowBackIcon />}
             onClick={() => navigate('/dashboard')}
           >
-            Back to Dashboard
+            {t('dashboard.network.backToDashboard')}
           </Button>
         </Box>
       </Container>
@@ -714,17 +716,17 @@ function NetworkLandingPage() {
           }}
         >
           <Typography variant="h5" component="h1" gutterBottom>
-            Network Not Found
+            {t('dashboard.network.networkNotFound')}
           </Typography>
           <Typography variant="body1" gutterBottom>
-            The network you're looking for doesn't exist or you don't have permission to view it.
+            {t('dashboard.network.noPermission')}
           </Typography>
           <Button 
             variant="contained" 
             startIcon={<ArrowBackIcon />}
             onClick={() => navigate('/dashboard')}
           >
-            Back to Dashboard
+            {t('dashboard.network.backToDashboard')}
           </Button>
         </Paper>
       </Container>
@@ -865,7 +867,7 @@ function NetworkLandingPage() {
                       e.stopPropagation();
                       setNetworkDescriptionModalOpen(true);
                     }}
-                    aria-label="View full network description"
+                    aria-label={t('dashboard.network.viewFullDescription')}
                   >
                     <OpenInFullIcon sx={{ fontSize: '1rem' }} />
                   </IconButton>
@@ -1423,7 +1425,7 @@ function NetworkLandingPage() {
               {/* Description section */}
               <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
                 <Tooltip 
-                  title={`Information about the ${visibleTabs[activeTab]?.label} tab`}
+                  title={t('dashboard.network.informationAboutTab', { tabName: visibleTabs[activeTab]?.label })}
                   placement="top"
                   arrow
                 >
@@ -1567,10 +1569,10 @@ function NetworkLandingPage() {
           }}
         >
           <Typography variant="h6" gutterBottom>
-            You're not a member of this network
+            {t('dashboard.network.notMember')}
           </Typography>
           <Typography variant="body1" gutterBottom>
-            Contact a network administrator to request joining this network.
+            {t('dashboard.network.contactAdmin')}
           </Typography>
         </Paper>
       )}
@@ -1613,7 +1615,7 @@ function NetworkLandingPage() {
             }}
             sx={{ mb: 1, display: 'block' }}
           >
-            Reset Welcome
+            {t('dashboard.debug.resetWelcome')}
           </Button>
           <Button
             variant="contained"
@@ -1625,7 +1627,7 @@ function NetworkLandingPage() {
             }}
             sx={{ mb: 1, display: 'block' }}
           >
-            Show Welcome
+            {t('dashboard.debug.showWelcome')}
           </Button>
           <Button
             variant="contained"
@@ -1639,7 +1641,7 @@ function NetworkLandingPage() {
             }}
             sx={{ mb: 1, display: 'block' }}
           >
-            Test New Member
+            {t('dashboard.debug.testNewMember')}
           </Button>
           <Button
             variant="contained"
@@ -1650,7 +1652,7 @@ function NetworkLandingPage() {
               window.location.href = window.location.pathname + '?from_invite=true';
             }}
           >
-            Test from_invite
+            {t('dashboard.debug.testFromInvite')}
           </Button>
         </Box>
       )}
@@ -1746,7 +1748,7 @@ function NetworkLandingPage() {
                   fontWeight: 500,
                 }}
               >
-                Network Description
+                {t('dashboard.network.networkDescription')}
               </Typography>
             </Box>
           </Box>
@@ -1811,7 +1813,7 @@ function NetworkLandingPage() {
                 mb: 1,
               }}
             >
-              Network Information
+              {t('dashboard.network.networkInformation')}
             </Typography>
             <Typography 
               variant="body2" 
@@ -1822,7 +1824,7 @@ function NetworkLandingPage() {
                 lineHeight: 1.6,
               }}
             >
-              This is the main description for {network?.name}. Network members can access various features including news, events, chat, files, and more depending on the network's configuration.
+              {t('dashboard.network.networkInfoText', { networkName: network?.name })}
             </Typography>
           </Paper>
         </DialogContent>
@@ -1853,7 +1855,7 @@ function NetworkLandingPage() {
               }
             }}
           >
-            Got it
+            {t('dashboard.network.gotIt')}
           </Button>
         </DialogActions>
       </Dialog>

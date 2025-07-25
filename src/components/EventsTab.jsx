@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from '../hooks/useTranslation';
 import { Link } from 'react-router-dom';
 import { AnimatedCard, StaggeredListItem, PageTransition } from './AnimatedComponents';
 import EventDetailsDialog from './EventDetailsDialog';
@@ -64,6 +65,7 @@ const EventsTab = ({
   onParticipationChange,
   network
 }) => {
+  const { t } = useTranslation();
   const [showEventDialog, setShowEventDialog] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [calendarDate, setCalendarDate] = useState(new Date());
@@ -138,14 +140,14 @@ const EventsTab = ({
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>            
             {categories.length > 0 && (
               <FormControl size="small" sx={{ minWidth: 200 }}>
-                <InputLabel>Filter by Category</InputLabel>
+                <InputLabel>{t('eventsTab.filterByCategory')}</InputLabel>
                 <Select
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
-                  label="Filter by Category"
+                  label={t('eventsTab.filterByCategory')}
                 >
                   <MenuItem value="">
-                    <em>All Categories</em>
+                    <em>{t('eventsTab.allCategories')}</em>
                   </MenuItem>
                   {categories.map((category) => (
                     <MenuItem key={category.id} value={category.id}>
@@ -175,7 +177,7 @@ const EventsTab = ({
             color="primary"
             variant="contained"
           >
-            Manage Events
+            {t('eventsTab.manageEvents')}
           </Button>
         )}
       </Box>
@@ -210,10 +212,10 @@ const EventsTab = ({
             <Box sx={{ p: 2, bgcolor: 'background.paper', borderBottom: '1px solid', borderColor: 'divider' }}>
               <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center' }}>
                 <LocationOnIcon sx={{ mr: 1 }} color="primary" />
-                Events Map
+                {t('eventsTab.eventsMap')}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Geographic view of upcoming events
+                {t('eventsTab.geographicView')}
               </Typography>
             </Box>
             <EventsMap 
@@ -252,14 +254,14 @@ const EventsTab = ({
               <Box>
                 <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center' }}>
                   <EventIcon sx={{ mr: 1 }} color="primary" />
-                  Upcoming Events
+                  {t('eventsTab.upcomingEvents')}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Events happening soon
+                  {t('eventsTab.eventsHappeningSoon')}
                 </Typography>
               </Box>
               
-              <Chip label={`${filteredEvents.filter(event => new Date(event.date) > new Date()).length} events`} 
+              <Chip label={t('eventsTab.eventsCount', { count: filteredEvents.filter(event => new Date(event.date) > new Date()).length })} 
                 size="small" color="primary" variant="outlined" />
             </Box>
             
@@ -267,7 +269,7 @@ const EventsTab = ({
               {filteredEvents.filter(event => new Date(event.date) > new Date()).length === 0 ? (
                 <Box sx={{ textAlign: 'center', py: 4, px: 2 }}>
                   <Typography variant="body1" color="text.secondary" gutterBottom>
-                    No upcoming events scheduled
+                    {t('eventsTab.noUpcomingEvents')}
                   </Typography>
                   {isUserAdmin && (
                     <Button
@@ -278,7 +280,7 @@ const EventsTab = ({
                       startIcon={<EventIcon />}
                       sx={{ mt: 2 }}
                     >
-                      Create Event
+                      {t('eventsTab.createEvent')}
                     </Button>
                   )}
                 </Box>
@@ -296,8 +298,8 @@ const EventsTab = ({
                       
                       
                       let dateLabel = eventDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-                      if (isToday) dateLabel = 'Today';
-                      if (isTomorrow) dateLabel = 'Tomorrow';
+                      if (isToday) dateLabel = t('eventsTab.today');
+                      if (isTomorrow) dateLabel = t('eventsTab.tomorrow');
                       
                       // Color to use for the date badge
                       const dateBadgeColor = participation ? 
@@ -439,7 +441,7 @@ const EventsTab = ({
                                     borderRadius: 1
                                   }}
                                 >
-                                  {isToday ? 'Today' : isTomorrow ? 'Tomorrow' : eventDate.toLocaleString('default', { weekday: 'short' })}
+                                  {isToday ? t('eventsTab.today') : isTomorrow ? t('eventsTab.tomorrow') : eventDate.toLocaleString('default', { weekday: 'short' })}
                                 </Typography>
                               </Box>
                             </Box>
@@ -560,7 +562,7 @@ const EventsTab = ({
                                       setShowEventDialog(true);
                                     }}
                                   >
-                                    Details
+                                    {t('eventsTab.details')}
                                   </Button>
                                 </Box>
                               </Box>
@@ -606,10 +608,10 @@ const EventsTab = ({
               <Box>
                 <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center' }}>
                   <TimelineIcon sx={{ mr: 1 }} color="primary" />
-                  Calendar View
+                  {t('eventsTab.calendarView')}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Monthly overview of all events
+                  {t('eventsTab.monthlyOverview')}
                 </Typography>
               </Box>
               
@@ -1119,7 +1121,7 @@ const EventsTab = ({
       {/* Mobile card grid - only shows on xs/sm breakpoints */}
       <Box sx={{ mt: 4, display: { md: 'none' } }}>
         <Typography variant="h6" gutterBottom>
-          Upcoming Events
+          {t('eventsTab.upcomingEvents')}
         </Typography>
         <Grid container spacing={2}>
           {filteredEvents
@@ -1215,7 +1217,7 @@ const EventsTab = ({
                               {eventDate.getDate()}
                             </Typography>
                             <Typography variant="caption" sx={{ fontWeight: 'medium' }}>
-                              {isToday ? 'Today' : isTomorrow ? 'Tomorrow' : eventDate.toLocaleString('default', { weekday: 'short' })}
+                              {isToday ? t('eventsTab.today') : isTomorrow ? t('eventsTab.tomorrow') : eventDate.toLocaleString('default', { weekday: 'short' })}
                             </Typography>
                           </Box>
                         </Box>
@@ -1269,7 +1271,7 @@ const EventsTab = ({
                         {event.coordinates && event.coordinates.latitude && (
                           <Chip 
                             icon={<LocationOnIcon fontSize="small" />}
-                            label="Has location"
+                            label={t('eventsTab.hasLocation')}
                             size="small"
                             color="primary"
                             variant="outlined"
@@ -1278,7 +1280,7 @@ const EventsTab = ({
                         {event.event_link && (
                           <Chip 
                             icon={<LinkIcon fontSize="small" />}
-                            label="Event Link"
+                            label={t('eventsTab.eventLink')}
                             size="small"
                             color="primary"
                             variant="outlined"
@@ -1312,7 +1314,7 @@ const EventsTab = ({
                               setShowEventDialog(true);
                             }}
                           >
-                            Details
+                            {t('eventsTab.details')}
                           </Button>
                         </Grid>
                         
@@ -1328,7 +1330,7 @@ const EventsTab = ({
                               target="_blank"
                               rel="noopener noreferrer"
                             >
-                              Join
+                              {t('eventsTab.join')}
                             </Button>
                           </Grid>
                         )}

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from '../hooks/useTranslation';
 import NewsCard from './NewsCard';
 import WidgetHeader from './shared/WidgetHeader';
 import WidgetSkeleton from './shared/WidgetSkeleton';
@@ -19,6 +20,7 @@ import {
 import { supabase } from '../supabaseclient';
 
 const LatestNewsWidget = ({ networkId, onMemberClick, darkMode = false }) => {
+  const { t } = useTranslation();
   const [isAdmin, setIsAdmin] = useState(false);
   const [createNewsModalOpen, setCreateNewsModalOpen] = useState(false);
   const { activeProfile } = useProfile();
@@ -75,7 +77,7 @@ const LatestNewsWidget = ({ networkId, onMemberClick, darkMode = false }) => {
     return (
       <WidgetErrorState 
         icon={<NewsIcon color="primary" />}
-        title="Latest News"
+        title={t('dashboard.widgets.latestNews')}
         error={error}
       />
     );
@@ -93,7 +95,7 @@ const LatestNewsWidget = ({ networkId, onMemberClick, darkMode = false }) => {
       }}>
         <WidgetHeader
           icon={<NewsIcon color="primary" />}
-          title="Latest News"
+          title={t('dashboard.widgets.latestNews')}
           action={
             isAdmin && (
               <Button
@@ -137,7 +139,7 @@ const LatestNewsWidget = ({ networkId, onMemberClick, darkMode = false }) => {
     }}>
       <WidgetHeader
         icon={<NewsIcon color="primary" />}
-        title="Latest News"
+        title={t('dashboard.widgets.latestNews')}
         viewAllLink={`/network/${networkId}?tab=news`}
         action={
           isAdmin && (

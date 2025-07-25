@@ -6,6 +6,7 @@ import { useAuth } from '../context/authcontext';
 import { useProfile } from '../context/profileContext';
 // Import the useTheme hook from your ThemeProvider
 import { useTheme } from '../components/ThemeProvider';
+import { useTranslation } from '../hooks/useTranslation';
 
 import {
   Container,
@@ -49,6 +50,7 @@ import {
 } from '@mui/icons-material';
 
 const WikiPage = () => {
+  const { t } = useTranslation();
   const { networkId, pageSlug } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -658,7 +660,7 @@ const WikiPage = () => {
                 startIcon={<CommentIcon />}
                 onClick={() => setShowCommentBox(!showCommentBox)}
               >
-                Add Comment
+                {t('dashboard.comment')}
               </Button>
             )}
           </Box>
@@ -685,7 +687,7 @@ const WikiPage = () => {
                   onClick={handleAddComment}
                   disabled={!commentText.trim() || submittingComment}
                 >
-                  {submittingComment ? 'Submitting...' : 'Post Comment'}
+                  {submittingComment ? 'Submitting...' : t('dashboard.comment')}
                 </Button>
               </Box>
             </Box>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useTranslation } from '../hooks/useTranslation';
 import { Link } from 'react-router-dom';
 import MemberCard from './MemberCard';
 import Spinner from './Spinner';
@@ -46,6 +47,7 @@ const MembersTab = ({
   onMemberSelect,
   onMemberCountChange
 }) => {
+  const { t } = useTranslation();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const isTablet = useMediaQuery(theme.breakpoints.down('md'));
@@ -282,7 +284,7 @@ const MembersTab = ({
                 boxShadow: darkMode ? '0 4px 12px rgba(25, 118, 210, 0.3)' : 'none'
               }}
             >
-              Invite Members
+              {t('membersTab.inviteMembers')}
             </Button>
           )}
           
@@ -303,7 +305,7 @@ const MembersTab = ({
               boxShadow: darkMode ? '0 4px 12px rgba(156, 39, 176, 0.3)' : 'none'
             }}
           >
-            {showFilters ? "Hide Filters" : "Show Filters"}
+            {showFilters ? t('membersTab.hideFilters') : t('membersTab.showFilters')}
           </Button>
         </Box>
       </Box>
@@ -325,7 +327,7 @@ const MembersTab = ({
             <Grid item xs={12} md={4}>
               <TextField
                 fullWidth
-                placeholder="Search members..."
+                placeholder={t('membersTab.searchPlaceholder')}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 size="small"
@@ -377,16 +379,16 @@ const MembersTab = ({
                   }
                 }}
               >
-                <InputLabel id="role-filter-label">Role</InputLabel>
+                <InputLabel id="role-filter-label">{t('membersTab.role')}</InputLabel>
                 <Select
                   labelId="role-filter-label"
                   value={roleFilter}
                   onChange={(e) => setRoleFilter(e.target.value)}
                   label="Role"
                 >
-                  <MenuItem value="all">All Roles</MenuItem>
-                  <MenuItem value="admin">Admins Only</MenuItem>
-                  <MenuItem value="member">Regular Members</MenuItem>
+                  <MenuItem value="all">{t('membersTab.allRoles')}</MenuItem>
+                  <MenuItem value="admin">{t('membersTab.adminsOnly')}</MenuItem>
+                  <MenuItem value="member">{t('membersTab.regularMembers')}</MenuItem>
                 </Select>
               </FormControl>
             </Grid>
@@ -410,14 +412,14 @@ const MembersTab = ({
                   }
                 }}
               >
-                <InputLabel id="skill-filter-label">Skill</InputLabel>
+                <InputLabel id="skill-filter-label">{t('membersTab.skill')}</InputLabel>
                 <Select
                   labelId="skill-filter-label"
                   value={skillFilter}
                   onChange={(e) => setSkillFilter(e.target.value)}
                   label="Skill"
                 >
-                  <MenuItem value="">All Skills</MenuItem>
+                  <MenuItem value="">{t('membersTab.allSkills')}</MenuItem>
                   {uniqueSkills.map(skill => (
                     <MenuItem key={skill} value={skill}>
                       {skill}
@@ -440,7 +442,7 @@ const MembersTab = ({
                   borderColor: darkMode ? alpha('#f44336', 0.5) : undefined
                 }}
               >
-                Clear
+                {t('membersTab.clear')}
               </Button>
             </Grid>
             
@@ -473,7 +475,7 @@ const MembersTab = ({
                       bgcolor: sortBy === 'name' ? (darkMode ? alpha('#1976d2', 0.1) : alpha('#1976d2', 0.05)) : 'transparent'
                     }}
                   >
-                    Name
+                    {t('membersTab.name')}
                   </Button>
                   
                   <Button
@@ -488,7 +490,7 @@ const MembersTab = ({
                       bgcolor: sortBy === 'joinDate' ? (darkMode ? alpha('#1976d2', 0.1) : alpha('#1976d2', 0.05)) : 'transparent'
                     }}
                   >
-                    Join Date
+                    {t('membersTab.joinDate')}
                   </Button>
                   
                   <Button
@@ -503,7 +505,7 @@ const MembersTab = ({
                       bgcolor: sortBy === 'skillCount' ? (darkMode ? alpha('#1976d2', 0.1) : alpha('#1976d2', 0.05)) : 'transparent'
                     }}
                   >
-                    Skills Count
+                    {t('membersTab.skillsCount')}
                   </Button>
                 </Box>
                 
@@ -512,7 +514,7 @@ const MembersTab = ({
                   color={customFadedText}
                   sx={{ mt: { xs: 2, sm: 0 } }}
                 >
-                  Showing {displayMembers.length} of {filteredMembers.length} members
+                  {t('membersTab.showingMembers', { showing: displayMembers.length, total: filteredMembers.length })}
                 </Typography>
               </Box>
             </Grid>
@@ -536,10 +538,10 @@ const MembersTab = ({
         >
           <EventBusyIcon sx={{ fontSize: 70, color: darkMode ? alpha('#ffffff', 0.2) : 'text.disabled', mb: 2 }} />
           <Typography variant="h6" gutterBottom color={customLightText}>
-            No members found
+            {t('membersTab.noMembersFound')}
           </Typography>
           <Typography variant="body2" color={customFadedText}>
-            Try adjusting your filters or search criteria
+            {t('membersTab.adjustFilters')}
           </Typography>
           {(searchTerm || roleFilter !== 'all' || skillFilter) && (
             <Button
@@ -548,7 +550,7 @@ const MembersTab = ({
               onClick={handleClearFilters}
               sx={{ mt: 3, borderRadius: 2 }}
             >
-              Clear Filters
+              {t('membersTab.clearFilters')}
             </Button>
           )}
         </Paper>
@@ -603,7 +605,7 @@ const MembersTab = ({
           }}
         >
           <Typography variant="body2">
-            You've reached the end of the member list
+            {t('membersTab.endOfList')}
           </Typography>
         </Box>
       )}

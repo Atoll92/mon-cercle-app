@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useTranslation } from '../hooks/useTranslation';
 import { Link } from 'react-router-dom';
 import MembersDetailModal from './MembersDetailModal';
 import CreatePostModal from './CreatePostModal';
@@ -65,6 +66,7 @@ import { getUserProfile } from '../api/networks';
 const ITEMS_PER_FETCH = 6;
 
 const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = false, isAdmin = false, networkId, onPostDeleted }) => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { activeProfile } = useProfile();
   const muiTheme = useTheme();
@@ -447,11 +449,11 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
       const diffHours = Math.floor(diffTime / (1000 * 60 * 60));
       if (diffHours === 0) {
         const diffMinutes = Math.floor(diffTime / (1000 * 60));
-        return diffMinutes === 0 ? 'Just now' : `${diffMinutes}m ago`;
+        return diffMinutes === 0 ? t('socialWall.justNow') : t('socialWall.minutesAgo', { minutes: diffMinutes });
       }
-      return `${diffHours}h ago`;
+      return t('socialWall.hoursAgo', { hours: diffHours });
     } else if (diffDays < 7) {
-      return `${diffDays}d ago`;
+      return t('socialWall.daysAgo', { days: diffDays });
     } else {
       return date.toLocaleDateString(undefined, { 
         year: 'numeric', 
@@ -509,28 +511,28 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
   const getContentTypeIcon = (item) => {
     // Check for PDF
     if (item.file_type === 'pdf') {
-      return { icon: <PdfIcon fontSize="small" />, label: 'PDF', color: 'error' };
+      return { icon: <PdfIcon fontSize="small" />, label: t('socialWall.pdf'), color: 'error' };
     }
     
     // Check for media
     if (item.media_url && item.media_type) {
       switch (item.media_type) {
         case 'image':
-          return { icon: <ImageIcon fontSize="small" />, label: 'Image', color: 'success' };
+          return { icon: <ImageIcon fontSize="small" />, label: t('socialWall.image'), color: 'success' };
         case 'video':
-          return { icon: <VideoIcon fontSize="small" />, label: 'Video', color: 'info' };
+          return { icon: <VideoIcon fontSize="small" />, label: t('socialWall.video'), color: 'info' };
         case 'audio':
-          return { icon: <AudioIcon fontSize="small" />, label: 'Audio', color: 'warning' };
+          return { icon: <AudioIcon fontSize="small" />, label: t('socialWall.audio'), color: 'warning' };
       }
     }
     
     // Check for legacy image
     if (item.image_url) {
-      return { icon: <ImageIcon fontSize="small" />, label: 'Image', color: 'success' };
+      return { icon: <ImageIcon fontSize="small" />, label: t('socialWall.image'), color: 'success' };
     }
     
     // Default to article/text
-    return { icon: <ArticleIcon fontSize="small" />, label: 'Text', color: 'default' };
+    return { icon: <ArticleIcon fontSize="small" />, label: t('socialWall.text'), color: 'default' };
   };
   
   // Get height for masonry layout
@@ -586,7 +588,7 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
     e.preventDefault();
     e.stopPropagation();
     
-    if (!window.confirm('Are you sure you want to delete this post? This action cannot be undone.')) {
+    if (!window.confirm(t('socialWall.confirmDeletePost'))) {
       return;
     }
     
@@ -616,7 +618,7 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
       
     } catch (err) {
       console.error('Error deleting post:', err);
-      alert('Failed to delete post. Please try again.');
+      alert(t('socialWall.deletePostFailed'));
     } finally {
       setDeletingPostId(null);
     }
@@ -670,21 +672,21 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
               transition: 'all 0.2s ease'
             }}
           >
-            Create Post
+            {t('socialWall.createPost')}
           </Button>
           
           {/* Category Filter */}
           {categories.length > 0 && (
             <FormControl size="small" sx={{ minWidth: 180 }}>
-              <InputLabel shrink>Filter by Category</InputLabel>
+              <InputLabel shrink>{t('socialWall.filterByCategory')}</InputLabel>
               <Select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                label="Filter by Category"
+                label={t('socialWall.filterByCategory')}
                 displayEmpty
               >
                 <MenuItem value="">
-                  <em>All Categories</em>
+                  <em>{t('socialWall.allCategories')}</em>
                 </MenuItem>
                 {categories.map((category) => (
                   <MenuItem key={category.id} value={category.id}>
@@ -738,7 +740,7 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
             variant="body1" 
             color={customFadedText}
           >
-            No activity to display yet.
+            {t('socialWall.noActivity')}
           </Typography>
         </Box>
       ) : (
@@ -929,7 +931,7 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                         })()}
                         <Chip 
                           size="small" 
-                          label={item.itemType === 'post' ? 'Post' : 'News'} 
+                          label={item.itemType === 'post' ? t('socialWall.post') : t('socialWall.news')} 
                           color={item.itemType === 'post' ? 'secondary' : 'primary'}
                           sx={{ 
                             height: 24,
@@ -1307,7 +1309,7 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                               transition: 'all 0.2s ease-in-out',
                             }}
                           >
-                            {expandedCardId === `${item.itemType}-${item.id}` ? 'Show less' : 'Read more'}
+                            {expandedCardId === `${item.itemType}-${item.id}` ? t('socialWall.showLess') : t('socialWall.readMore')}
                           </Button>
                         )}
                         
@@ -1391,7 +1393,7 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                               transition: 'all 0.2s ease-in-out',
                             }}
                           >
-                            {expandedCardId === `${item.itemType}-${item.id}` ? 'Show less' : 'Read more'}
+                            {expandedCardId === `${item.itemType}-${item.id}` ? t('socialWall.showLess') : t('socialWall.readMore')}
                           </Button>
                         )}
                       </>
@@ -1417,7 +1419,7 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                             }}
                             onClick={(e) => e.stopPropagation()} // Prevent card expansion
                           >
-                            View PDF
+                            {t('socialWall.viewPdf')}
                           </a>
                         ) : (
                           <Link 
@@ -1438,7 +1440,7 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                             }}
                             onClick={(e) => e.stopPropagation()} // Prevent card expansion
                           >
-                            {item.itemType === 'post' ? 'View Full Post' : 'Read Full Post'}
+                            {item.itemType === 'post' ? t('socialWall.viewFullPost') : t('socialWall.readFullPost')}
                           </Link>
                         )}
                       </Box>
@@ -1478,7 +1480,7 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
               }}
             >
               <Typography variant="body2">
-                You've reached the end of the social wall
+                {t('socialWall.endOfWall')}
               </Typography>
             </Box>
           )}

@@ -5,6 +5,7 @@ import { useAuth } from '../context/authcontext';
 import { useProfile } from '../context/profileContext';
 import { useApp } from '../context/appContext';
 import { NetworkProvider } from '../context/networkContext';
+import { useTranslation } from '../hooks/useTranslation';
 import { supabase } from '../supabaseclient';
 import Spinner from '../components/Spinner';
 import {
@@ -30,7 +31,11 @@ import {
   DialogTitle,
   DialogContent,
   DialogContentText,
-  DialogActions
+  DialogActions,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem
 } from '@mui/material';
 import {
   Save as SaveIcon,
@@ -56,6 +61,7 @@ import MemberOnboardingWizard from '../components/MemberOnboardingWizard';
 function EditProfilePage() {
   const { user } = useAuth();
   const { activeProfile, refreshActiveProfile } = useProfile();
+  const { t, language, changeLanguage } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   
@@ -595,7 +601,7 @@ function EditProfilePage() {
       >
         <Spinner size={80} />
         <Typography variant="body1" sx={{ mt: 2 }}>
-          Loading your profile...
+          {t('editProfile.loading.profile')}
         </Typography>
       </Box>
     );
@@ -676,7 +682,7 @@ function EditProfilePage() {
             <ArrowBackIcon />
           </IconButton>
           <Typography variant="h4" component="h1" fontWeight="500">
-            {isNewProfile ? 'Complete Your Profile' : 'Edit Profile'}
+            {isNewProfile ? t('editProfile.completeProfile') : t('editProfile.title')}
           </Typography>
         </Box>
         
@@ -692,17 +698,17 @@ function EditProfilePage() {
           }}
         >
           <Tab 
-            label="Basic Information" 
+            label={t('editProfile.tabs.basicInfo')} 
             icon={<PersonIcon />} 
             iconPosition="start"
           />
           <Tab 
-            label="Posts" 
+            label={t('editProfile.tabs.posts')} 
             icon={<LanguageIcon />} 
             iconPosition="start"
           />
           <Tab 
-            label="Settings" 
+            label={t('editProfile.tabs.settings')} 
             icon={<SettingsIcon />} 
             iconPosition="start"
           />
@@ -1059,11 +1065,54 @@ function EditProfilePage() {
             {activeTab === 2 && (
               <Box>
                 <Stack spacing={3}>
+                  {/* Language Preference Section */}
+                  <Paper 
+                    variant="outlined" 
+                    sx={{ 
+                      p: 3, 
+                      borderRadius: 2,
+                      bgcolor: (theme) => theme.palette.mode === 'dark' ? 'grey.900' : 'grey.50'
+                    }}
+                  >
+                    <Typography variant="h6" gutterBottom>
+                      {t('editProfile.language.title')}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                      {t('editProfile.language.description')}
+                    </Typography>
+                    
+                    <FormControl sx={{ minWidth: 300 }}>
+                      <InputLabel id="language-select-label">
+                        {t('editProfile.language.title')}
+                      </InputLabel>
+                      <Select
+                        labelId="language-select-label"
+                        value={language}
+                        label={t('editProfile.language.title')}
+                        onChange={(e) => changeLanguage(e.target.value)}
+                        startAdornment={<LanguageIcon sx={{ mr: 1, color: 'action.active' }} />}
+                      >
+                        <MenuItem value="en">
+                          🇬🇧 {t('editProfile.language.english')}
+                        </MenuItem>
+                        <MenuItem value="fr">
+                          🇫🇷 {t('editProfile.language.french')}
+                        </MenuItem>
+                      </Select>
+                    </FormControl>
+                    
+                    <Typography variant="caption" color="text.secondary" sx={{ mt: 2, display: 'block' }}>
+                      {t('editProfile.language.current', { 
+                        language: language === 'fr' ? 'Français' : 'English' 
+                      })}
+                    </Typography>
+                  </Paper>
+                  
                   <NotificationSettings />
                   <NotificationSystemManager />
                   <Box sx={{ mt: 4 }}>
                     <Typography variant="h6" gutterBottom>
-                      Notification System Diagnostics
+                      {t('editProfile.settings.notifications')}
                     </Typography>
                     <NotificationDebugger />
                   </Box>
@@ -1072,7 +1121,7 @@ function EditProfilePage() {
                   
                   <Box sx={{ mt: 4 }}>
                     <Typography variant="h6" gutterBottom color="error">
-                      Danger Zone
+                      {t('editProfile.settings.dangerZone')}
                     </Typography>
                     <Paper 
                       variant="outlined" 
@@ -1084,7 +1133,7 @@ function EditProfilePage() {
                       }}
                     >
                       <Typography variant="body1" gutterBottom>
-                        Once you delete your account, there is no going back. Please be certain.
+                        {t('editProfile.settings.deleteAccount.warning')}
                       </Typography>
                       <Button
                         variant="outlined"
@@ -1093,7 +1142,7 @@ function EditProfilePage() {
                         startIcon={<DeleteIcon />}
                         sx={{ mt: 2 }}
                       >
-                        Delete Account
+                        {t('editProfile.settings.deleteAccount.button')}
                       </Button>
                     </Paper>
                   </Box>
@@ -1111,7 +1160,7 @@ function EditProfilePage() {
                 disabled={saving}
                 startIcon={<CancelIcon />}
               >
-                Cancel
+                {t('editProfile.buttons.cancel')}
               </Button>
               
               <Button
@@ -1122,7 +1171,7 @@ function EditProfilePage() {
                 startIcon={saving ? <Spinner size={40} color="inherit" /> : <SaveIcon />}
                 sx={{ px: 4 }}
               >
-                {saving ? 'Saving...' : (isNewProfile ? 'Create Profile' : 'Save Changes')}
+                {saving ? t('editProfile.buttons.saving') : (isNewProfile ? t('editProfile.buttons.create') : t('editProfile.buttons.save'))}
               </Button>
             </Box>
           </form>
@@ -1144,12 +1193,11 @@ function EditProfilePage() {
         aria-describedby="delete-account-dialog-description"
       >
         <DialogTitle id="delete-account-dialog-title">
-          Delete Account
+          {t('editProfile.settings.deleteAccount.title')}
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="delete-account-dialog-description">
-            Are you sure you want to delete your account? This action cannot be undone.
-            All your data, including your profile, posts, and network memberships will be permanently deleted.
+            {t('editProfile.settings.deleteAccount.description')}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
@@ -1157,7 +1205,7 @@ function EditProfilePage() {
             onClick={() => setDeleteAccountDialogOpen(false)}
             disabled={deleteAccountLoading}
           >
-            Cancel
+            {t('editProfile.buttons.cancel')}
           </Button>
           <Button 
             onClick={handleDeleteAccount} 
@@ -1166,7 +1214,7 @@ function EditProfilePage() {
             disabled={deleteAccountLoading}
             startIcon={deleteAccountLoading ? <Spinner size={20} color="inherit" /> : <DeleteIcon />}
           >
-            {deleteAccountLoading ? 'Deleting...' : 'Delete Account'}
+            {deleteAccountLoading ? t('editProfile.settings.deleteAccount.deleting') : t('editProfile.settings.deleteAccount.button')}
           </Button>
         </DialogActions>
       </Dialog>
@@ -1177,6 +1225,7 @@ function EditProfilePage() {
 // Wrapper component that provides NetworkProvider
 const EditProfilePageWrapper = () => {
   const { userNetworkId, fetchingNetwork } = useApp();
+  const { t } = useTranslation();
 
   if (fetchingNetwork) {
     return (
@@ -1191,7 +1240,7 @@ const EditProfilePageWrapper = () => {
       >
         <Spinner size={80} color="primary" />
         <Typography variant="body1" sx={{ mt: 2 }}>
-          Loading profile...
+          {t('editProfile.loading.profileText')}
         </Typography>
       </Box>
     );

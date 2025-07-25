@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from '../hooks/useTranslation';
 import { useAuth } from '../context/authcontext';
 import { useProfile } from '../context/profileContext';
 import { useNetwork } from '../context/networkContext';
@@ -54,6 +55,7 @@ import ImageViewerModal from './ImageViewerModal';
 
 // Enhanced News Tab component with image upload support and admin editing
 const NewsTab = ({ darkMode }) => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { activeProfile } = useProfile();
   const { network, news: networkNews, members: networkMembers, refreshNews, isAdmin } = useNetwork();
@@ -210,7 +212,7 @@ const NewsTab = ({ darkMode }) => {
   // Handle news post submission
   const handleNewsSubmit = async () => {
     if (!newsTitle.trim() || !editor) {
-      setError('Please fill in at least the title and content');
+      setError(t('newsTab.fillRequiredFields'));
       return;
     }
   
@@ -242,7 +244,7 @@ const NewsTab = ({ darkMode }) => {
       );
       
       if (!result.success) {
-        throw new Error(result.error || 'Failed to create news post');
+        throw new Error(result.error || t('newsTab.createNewsFailed'));
       }
       
       console.log('📰 News post created successfully:', result);
@@ -250,13 +252,13 @@ const NewsTab = ({ darkMode }) => {
       // Update UI and clean up
       resetForm();
       setIsCreating(false);
-      setMessage('News post published successfully!');
+      setMessage(t('newsTab.newsPublished'));
       
       // Refresh news from context
       refreshNews();
     } catch (error) {
       console.error('Error creating news post:', error);
-      setError('Failed to publish news post: ' + error.message);
+      setError(t('newsTab.publishFailed') + ': ' + error.message);
     } finally {
       setUpdating(false);
     }
@@ -264,7 +266,7 @@ const NewsTab = ({ darkMode }) => {
   
   // Handle post deletion
   const handleDeleteNews = async (postId) => {
-    if (!confirm('Are you sure you want to delete this post?')) return;
+    if (!confirm(t('newsTab.confirmDelete'))) return;
     
     setError(null);
     setMessage('');
@@ -277,13 +279,13 @@ const NewsTab = ({ darkMode }) => {
       
       if (error) throw error;
       
-      setMessage('News post deleted successfully!');
+      setMessage(t('newsTab.newsDeleted'));
       
       // Refresh news from context
       refreshNews();
     } catch (error) {
       console.error('Error deleting news post:', error);
-      setError('Failed to delete the post: ' + error.message);
+      setError(t('newsTab.deleteFailed') + ': ' + error.message);
     }
   };
 
@@ -328,11 +330,11 @@ const NewsTab = ({ darkMode }) => {
   const renderNewsForm = () => (
     <Card sx={{ p: 3, mb: 3, bgcolor: darkMode ? 'background.paper' : undefined }}>
       <Typography variant="h5" gutterBottom>
-        Create a news
+        {t('newsTab.createNews')}
       </Typography>
       <TextField
         fullWidth
-        label="Post Title"
+        label={t('newsTab.postTitle')}
         value={newsTitle}
         onChange={(e) => setNewsTitle(e.target.value)}
         sx={{ mb: 2 }}
@@ -341,14 +343,14 @@ const NewsTab = ({ darkMode }) => {
       {/* Category selection */}
       {categories.length > 0 && (
         <FormControl fullWidth sx={{ mb: 2 }}>
-          <InputLabel>Category</InputLabel>
+          <InputLabel>{t('newsTab.category')}</InputLabel>
           <Select
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
-            label="Category"
+            label={t('newsTab.category')}
           >
             <MenuItem value="">
-              <em>None</em>
+              <em>{t('newsTab.none')}</em>
             </MenuItem>
             {categories.map((category) => (
               <MenuItem key={category.id} value={category.id}>
@@ -373,7 +375,7 @@ const NewsTab = ({ darkMode }) => {
       {/* Media upload section */}
       <Box sx={{ mb: 2, p: 2, border: '1px dashed grey', borderRadius: 1 }}>
         <Typography variant="subtitle1" gutterBottom>
-          Featured Media (optional)
+          {t('newsTab.featuredMedia')}
         </Typography>
         
         {mediaUrl && (
@@ -437,7 +439,7 @@ const NewsTab = ({ darkMode }) => {
         {mediaType === 'image' && (
           <TextField
             fullWidth
-            label="Image Caption (optional)"
+            label={t('newsTab.imageCaption')}
             value={imageCaption}
             onChange={(e) => setImageCaption(e.target.value)}
             margin="normal"
@@ -470,20 +472,20 @@ const NewsTab = ({ darkMode }) => {
           startIcon={updating ? <Spinner size={40} /> : <SaveIcon />}
           disabled={updating}
         >
-          Publish News
+          {t('newsTab.publishNews')}
         </Button>
         <Button
           variant="outlined"
           onClick={resetForm}
         >
-          Clear
+          {t('newsTab.clear')}
         </Button>
         <Button
           variant="text"
           onClick={() => setIsCreating(false)}
           startIcon={<CancelIcon />}
         >
-          Cancel
+          {t('newsTab.cancel')}
         </Button>
       </Box>
     </Card>
@@ -501,7 +503,7 @@ const NewsTab = ({ darkMode }) => {
             startIcon={<AddPhotoIcon />}
             onClick={() => setIsCreating(true)}
           >
-            Create a news
+            {t('newsTab.createNews')}
           </Button>
         )}
       </Box>
@@ -527,7 +529,7 @@ const NewsTab = ({ darkMode }) => {
         <Box sx={{ mb: 4 }}>
           <Typography variant="h5" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <PollIcon color="primary" />
-            Active Polls
+            {t('newsTab.activePolls')}
           </Typography>
           <Divider sx={{ mb: 2 }} />
           {activePolls.map(poll => (
@@ -543,21 +545,21 @@ const NewsTab = ({ darkMode }) => {
       {/* News Posts Section */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, flexWrap: 'wrap', gap: 2 }}>
         <Typography variant="h5">
-          News & Updates
+          {t('newsTab.newsUpdates')}
         </Typography>
         
         {/* Category Filter */}
         {categories.length > 0 && (
           <FormControl size="small" sx={{ minWidth: 180 }}>
-            <InputLabel shrink>Filter by Category</InputLabel>
+            <InputLabel shrink>{t('newsTab.filterByCategory')}</InputLabel>
             <Select
               value={filterCategory}
               onChange={(e) => setFilterCategory(e.target.value)}
-              label="Filter by Category"
+              label={t('newsTab.filterByCategory')}
               displayEmpty
             >
               <MenuItem value="">
-                <em>All Categories</em>
+                <em>{t('newsTab.allCategories')}</em>
               </MenuItem>
               {categories.map((category) => (
                 <MenuItem key={category.id} value={category.id}>
@@ -592,7 +594,7 @@ const NewsTab = ({ darkMode }) => {
       ) : networkNews.length === 0 ? (
         <Box sx={{ textAlign: 'center', py: 4 }}>
           <Typography variant="body1" color="text.secondary">
-            No news posts available
+            {t('newsTab.noNewsPosts')}
           </Typography>
           {isAdmin && !isCreating && (
             <Button 
@@ -602,7 +604,7 @@ const NewsTab = ({ darkMode }) => {
               onClick={() => setIsCreating(true)}
               sx={{ mt: 2 }}
             >
-              Create First News Post
+              {t('newsTab.createFirstPost')}
             </Button>
           )}
         </Box>
@@ -730,7 +732,7 @@ const NewsTab = ({ darkMode }) => {
               </Box>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
                 <Typography variant="caption" color="text.secondary">
-                  Posted by{' '}
+                  {t('newsTab.postedBy')}{' '}
                   <Box 
                     component="span" 
                     onClick={(e) => handleMemberClick(post.created_by, e)}
@@ -781,7 +783,7 @@ const NewsTab = ({ darkMode }) => {
                   onClick={() => handleDeleteNews(post.id)}
                   startIcon={<DeleteIcon />}
                 >
-                  Delete
+                  {t('newsTab.delete')}
                 </Button>
               </CardActions>
             )}

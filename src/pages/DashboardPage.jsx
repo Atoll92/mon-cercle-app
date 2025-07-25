@@ -700,7 +700,7 @@ function DashboardPage() {
               letterSpacing: '-0.5px'
             }}
           >
-            Dashboard
+            {t('dashboard.title')}
           </Typography>
           <Typography 
             variant="body1" 
@@ -709,7 +709,7 @@ function DashboardPage() {
               mt: 0.5
             }}
           >
-            Welcome back, {profile?.full_name || user?.email?.split('@')[0] || 'there'}
+            {t('dashboard.welcome', { name: profile?.full_name || user?.email?.split('@')[0] || 'there' })}
           </Typography>
         </Box>
         
@@ -777,12 +777,12 @@ function DashboardPage() {
                       <CardContent sx={{ pt: 4, pb: 1 }}>
                         <Box sx={{ textAlign: 'center', mb: 1 }}>
                           <Typography variant="h5" component="h2" gutterBottom>
-                            {profile.full_name || user?.email?.split('@')[0] || 'Not set'}
+                            {profile.full_name || user?.email?.split('@')[0] || t('dashboard.profile.notSet')}
                           </Typography>
                           
                           <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1 }}>
                             <Chip 
-                              label={profile.role === 'admin' ? 'Admin' : 'Member'} 
+                              label={profile.role === 'admin' ? t('dashboard.profile.role.admin') : t('dashboard.profile.role.member')} 
                               color={profile.role === 'admin' ? 'primary' : 'default'} 
                               size="small" 
                             />
@@ -802,19 +802,19 @@ function DashboardPage() {
                         <Divider sx={{ mb: 1.5 }} />
                         
                         <Typography variant="body2" color="text.secondary" gutterBottom>
-                          <strong>Email:</strong> {user?.email}
+                          <strong>{t('dashboard.profile.email')}:</strong> {user?.email}
                         </Typography>
                         
                         {profile.contact_email && (
                           <Typography variant="body2" color="text.secondary" gutterBottom>
-                            <strong>Contact:</strong> {profile.contact_email}
+                            <strong>{t('dashboard.profile.contact')}:</strong> {profile.contact_email}
                           </Typography>
                         )}
                         
                         {profile.bio && (
                           <Box sx={{ mt: 1 }}>
                             <Typography variant="subtitle2" gutterBottom>
-                              Bio:
+                              {t('dashboard.profile.bio')}:
                             </Typography>
                             <Typography variant="body2" color="text.secondary">
                               {profile.bio.length > 80 ? profile.bio.substring(0, 80) + '...' : profile.bio}
@@ -825,7 +825,7 @@ function DashboardPage() {
                         {profile.skills && profile.skills.length > 0 && (
                           <Box sx={{ mt: 1 }}>
                             <Typography variant="subtitle2" gutterBottom>
-                              Skills:
+                              {t('dashboard.profile.skills')}:
                             </Typography>
                             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                               {profile.skills.slice(0, 3).map((skill, index) => (
@@ -870,7 +870,7 @@ function DashboardPage() {
                           variant="outlined"
                           style={{margin: '0 auto'}}
                         >
-                          Edit Profile
+                          {t('dashboard.buttons.editProfile')}
                         </Button>
                         
                         <Button 
@@ -882,7 +882,7 @@ function DashboardPage() {
                           color="secondary"
                           style={{margin: '0 auto'}}
                         >
-                          View Profile
+                          {t('dashboard.buttons.viewProfile')}
                         </Button>
                         
                         <Button 
@@ -895,7 +895,7 @@ function DashboardPage() {
                           color="primary"
                           style={{margin: '0 auto'}}
                         >
-                          My Micro Conclav
+                          {t('dashboard.buttons.myMicroConclav')}
                         </Button>
                       </CardActions>
                     </Card>
@@ -918,7 +918,7 @@ function DashboardPage() {
                        
                       >
                         <CardHeader
-                          title={<Typography variant="subtitle1">Network Management</Typography>}
+                          title={<Typography variant="subtitle1">{t('dashboard.network.management')}</Typography>}
                           avatar={<NetworkIcon color="primary" />}
                           sx={{ 
                             py: 1,
@@ -960,7 +960,7 @@ function DashboardPage() {
                                   size="small"
                                   sx={{ flexGrow: 1 }}
                                 >
-                                  Admin Panel
+                                  {t('dashboard.buttons.adminPanel')}
                                 </Button>
                                 
                                 <Button 
@@ -972,12 +972,12 @@ function DashboardPage() {
                                   size="small"
                                   sx={{ flexGrow: 1 }}
                                 >
-                                  Invite Members
+                                  {t('dashboard.buttons.inviteMembers')}
                                 </Button>
                               </Box>
                               
                               <Typography variant="caption" color="text.secondary">
-                                You have admin privileges for this network
+                                {t('dashboard.network.adminPrivileges')}
                               </Typography>
                             </Box>
                           )}
@@ -987,7 +987,7 @@ function DashboardPage() {
                             {loadingNetworkDetails ? (
                               <Box sx={{ display: 'flex', alignItems: 'center' }}>
                                 <Spinner size={40} sx={{ mr: 1 }} />
-                                <Typography variant="body2">Loading subscription info...</Typography>
+                                <Typography variant="body2">{t('dashboard.network.loadingSubscription')}</Typography>
                               </Box>
                             ) : networkDetails?.subscription_status === 'trial' ? (
                               <Card variant="outlined" sx={{ 
@@ -1086,7 +1086,7 @@ function DashboardPage() {
                                     sx={{ mt: 1 }}
                                     startIcon={<AttachMoneyIcon />}
                                   >
-                                    Manage Subscription
+                                    {t('dashboard.buttons.manageSubscription')}
                                   </Button>
                                 )}
                               </Card>
@@ -1133,7 +1133,7 @@ function DashboardPage() {
                                       size="small"
                                       fullWidth
                                     >
-                                      Renew Plan
+                                      {t('dashboard.buttons.renewPlan')}
                                     </Button>
                                     
                                     <Button 
@@ -1189,7 +1189,7 @@ function DashboardPage() {
                                     sx={{ mt: 1 }}
                                     startIcon={<StarIcon />}
                                   >
-                                    Upgrade Plan
+                                    {t('dashboard.buttons.upgradePlan')}
                                   </Button>
                                 )}
                               </Card>
@@ -1216,7 +1216,7 @@ function DashboardPage() {
                                   {networkMembers.length}
                                 </Typography>
                                 <Typography variant="body2" color="text.secondary">
-                                  Members
+                                  {t('dashboard.network.members')}
                                 </Typography>
                               </Paper>
                             </Grid>
@@ -1239,7 +1239,7 @@ function DashboardPage() {
                                   {recentEvents.length}
                                 </Typography>
                                 <Typography variant="body2" color="text.secondary">
-                                  Events
+                                  {t('dashboard.network.events')}
                                 </Typography>
                               </Paper>
                             </Grid>
@@ -1261,7 +1261,7 @@ function DashboardPage() {
                         }}
                       >
                         <CardHeader
-                          title={<Typography variant="subtitle1">My Network</Typography>}
+                          title={<Typography variant="subtitle1">{t('dashboard.network.myNetwork')}</Typography>}
                           avatar={<NetworkIcon color="primary" />}
                           sx={{ 
                             py: 1,
@@ -1288,7 +1288,7 @@ function DashboardPage() {
                                   {networkMembers.length}
                                 </Typography>
                                 <Typography variant="body2" color="text.secondary">
-                                  Members
+                                  {t('dashboard.network.members')}
                                 </Typography>
                               </Paper>
                             </Grid>
@@ -1304,7 +1304,7 @@ function DashboardPage() {
                                   {recentEvents.length}
                                 </Typography>
                                 <Typography variant="body2" color="text.secondary">
-                                  Upcoming Events
+                                  {t('dashboard.network.upcomingEvents')}
                                 </Typography>
                               </Paper>
                             </Grid>
@@ -1318,7 +1318,7 @@ function DashboardPage() {
                             to="/network"
                             startIcon={<ArrowForwardIcon />}
                           >
-                            Go to Network
+                            {t('dashboard.buttons.goToNetwork')}
                           </Button>
                         </CardContent>
                       </Card>
@@ -1329,7 +1329,7 @@ function DashboardPage() {
                         boxShadow: '0 4px 12px rgba(0,0,0,0.08)'
                       }}>
                         <CardHeader
-                          title={<Typography variant="subtitle1">Create Network</Typography>}
+                          title={<Typography variant="subtitle1">{t('dashboard.network.createNetwork')}</Typography>}
                           avatar={<CreateNewFolderIcon color="primary" />}
                           sx={{ 
                             py: 1,
@@ -1340,7 +1340,7 @@ function DashboardPage() {
                         <CardContent sx={{ py: 1 }}>
                           <Box sx={{ textAlign: 'center', py: 1 }}>
                             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                              Create your own network to connect with friends, colleagues, or community members.
+                              {t('dashboard.network.createDescription')}
                             </Typography>
                             
                             <Button 
@@ -1368,7 +1368,7 @@ function DashboardPage() {
                     )}
                   </Grid>
 
-                  {/* Upcoming Events - Full width */}
+                  {/* {t('dashboard.network.upcomingEvents')} - Full width */}
                   <Grid item xs={12} sx={{ display: 'flex', flexGrow: '1' }}>
                     {profile.network_id && recentEvents.length > 0 ? (
                       <Card sx={{ 
@@ -1380,7 +1380,7 @@ function DashboardPage() {
                         flexDirection: 'column'
                       }}>
                         <CardHeader
-                          title={<Typography variant="subtitle1">Upcoming Events</Typography>}
+                          title={<Typography variant="subtitle1">{t('dashboard.network.upcomingEvents')}</Typography>}
                           avatar={<EventIcon color="primary" />}
                           action={
                             <Box sx={{ display: 'flex', gap: 1 }}>
@@ -1391,7 +1391,7 @@ function DashboardPage() {
                                   startIcon={<AddIcon />}
                                   onClick={() => setCreateEventOpen(true)}
                                 >
-                                  Create Event
+                                  {t('dashboard.buttons.createEvent')}
                                 </Button>
                               )}
                               <Button 
@@ -1400,7 +1400,7 @@ function DashboardPage() {
                                 endIcon={<ArrowForwardIcon />}
                                 size="small"
                               >
-                                View All
+                                {t('dashboard.buttons.viewAll')}
                               </Button>
                             </Box>
                           }
@@ -1499,14 +1499,14 @@ function DashboardPage() {
                                           <>
                                             {getParticipationIcon(participationStatus)}
                                             <Typography variant="caption" color="text.secondary">
-                                              {participationStatus === 'attending' ? 'Attending' :
-                                               participationStatus === 'not_attending' ? 'Not attending' :
-                                               participationStatus === 'maybe' ? 'Maybe' : ''}
+                                              {participationStatus === 'attending' ? t('dashboard.events.participation.attending') :
+                                               participationStatus === 'not_attending' ? t('dashboard.events.participation.notAttending') :
+                                               participationStatus === 'maybe' ? t('dashboard.events.participation.maybe') : ''}
                                             </Typography>
                                           </>
                                         ) : (
                                           <Typography variant="caption" color="text.secondary" sx={{ fontStyle: 'italic' }}>
-                                            No response yet
+                                            {t('dashboard.events.participation.noResponse')}
                                           </Typography>
                                         )}
                                       </Box>
@@ -1521,7 +1521,7 @@ function DashboardPage() {
                                       }}
                                       sx={{ flexShrink: 0, minWidth: 'auto', px: 1 }}
                                     >
-                                      View
+                                      {t('dashboard.buttons.view')}
                                     </Button>
                                   </Paper>
                                 );
@@ -1541,7 +1541,7 @@ function DashboardPage() {
                         flexDirection: 'column'
                       }}>
                         <CardHeader
-                          title={<Typography variant="subtitle1">Upcoming Events</Typography>}
+                          title={<Typography variant="subtitle1">{t('dashboard.network.upcomingEvents')}</Typography>}
                           avatar={<EventIcon color="primary" />}
                           sx={{ 
                             bgcolor: 'rgba(25, 118, 210, 0.05)',
@@ -1551,7 +1551,7 @@ function DashboardPage() {
                         <CardContent sx={{ py: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexGrow: 1 }}>
                           <Box sx={{ textAlign: 'center', py: 2 }}>
                             <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                              No upcoming events scheduled
+                              {t('dashboard.events.noUpcoming')}
                             </Typography>
                             
                             {profile.network_id && profile.role === 'admin' && (
@@ -1562,7 +1562,7 @@ function DashboardPage() {
                                 startIcon={<AddIcon />}
                                 size="small"
                               >
-                                Create Event
+                                {t('dashboard.buttons.createEvent')}
                               </Button>
                             )}
                           </Box>
@@ -1609,14 +1609,14 @@ function DashboardPage() {
           }}
         >
           <Typography sx={{ mb: 2 }}>
-            You're not logged in or your session has expired.
+            {t('dashboard.notLoggedIn')}
           </Typography>
           <Button 
             variant="contained" 
             onClick={() => navigate('/login')}
             startIcon={<ArrowForwardIcon />}
           >
-            Go to Login
+            {t('dashboard.buttons.goToLogin')}
           </Button>
         </Paper>
       )}

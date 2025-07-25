@@ -40,6 +40,7 @@ import { deletePost } from '../api/posts';
 import { useProfile } from '../context/profileContext';
 import { useNetwork } from '../context/networkContext';
 import { useAuth } from '../context/authcontext';
+import { useTranslation } from '../hooks/useTranslation';
 
 /**
  * PostCard component for displaying portfolio posts
@@ -57,6 +58,7 @@ const PostCard = ({
   onPostDeleted,
   sx = {}
 }) => {
+  const { t } = useTranslation();
   const theme = useTheme();
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -538,7 +540,7 @@ const PostCard = ({
               }
             }}
           >
-            {commentCount > 0 ? `${commentCount} comment${commentCount !== 1 ? 's' : ''}` : 'Comment'}
+            {commentCount > 0 ? `${commentCount} comment${commentCount !== 1 ? 's' : ''}` : t('dashboard.comment')}
           </Button>
           
           <Button
@@ -548,7 +550,7 @@ const PostCard = ({
             endIcon={<ArrowForwardIcon />}
             sx={{ alignSelf: 'flex-start' }}
           >
-            View Post
+            {t('dashboard.viewPost')}
           </Button>
         </Box>
       </CardContent>

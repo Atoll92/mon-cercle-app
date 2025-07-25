@@ -328,7 +328,19 @@
       "members": "Membres",
       "events": "Événements",
       "upcomingEvents": "Événements à venir",
-      "loadingSubscription": "Chargement des informations d'abonnement..."
+      "loadingSubscription": "Chargement des informations d'abonnement...",
+      "noNetworkFound": "Aucun réseau trouvé. Assurez-vous d'être membre d'un réseau.",
+      "networkNotFound": "Réseau introuvable",
+      "noPermission": "Le réseau que vous recherchez n'existe pas ou vous n'avez pas la permission de le voir.",
+      "backToDashboard": "Retour au tableau de bord",
+      "notMember": "Vous n'êtes pas membre de ce réseau",
+      "contactAdmin": "Contactez un administrateur du réseau pour demander à rejoindre ce réseau.",
+      "networkDescription": "Description du réseau",
+      "networkInformation": "Informations sur le réseau",
+      "networkInfoText": "Ceci est la description principale de {{networkName}}. Les membres du réseau peuvent accéder à diverses fonctionnalités incluant les actualités, événements, chat, fichiers, et plus selon la configuration du réseau.",
+      "gotIt": "Compris",
+      "viewFullDescription": "Voir la description complète du réseau",
+      "informationAboutTab": "Informations sur l'onglet {{tabName}}"
     },
     "subscription": {
       "badge": {
@@ -382,6 +394,11 @@
         "limits": "Limité à 20 membres et 2 Go de stockage"
       }
     },
+    "widgets": {
+      "latestPosts": "Dernières publications",
+      "latestNews": "Dernières actualités",
+      "myMicroConclav": "Mon Micro Conclav"
+    },
     "events": {
       "noUpcoming": "Aucun événement à venir programmé",
       "participation": {
@@ -391,6 +408,257 @@
         "noResponse": "Pas encore de réponse"
       }
     },
-    "notLoggedIn": "Vous n'êtes pas connecté ou votre session a expiré."
+    "comment": "Commenter",
+    "viewPost": "Voir la publication",
+    "tabs": {
+      "news": "Actualités",
+      "members": "Membres",
+      "events": "Événements",
+      "chat": "Chat",
+      "files": "Fichiers",
+      "wiki": "Wiki",
+      "social": "Social Wall",
+      "about": "À propos"
+    },
+    "notLoggedIn": "Vous n'êtes pas connecté ou votre session a expiré.",
+    "debug": {
+      "resetWelcome": "Réinitialiser l'accueil",
+      "showWelcome": "Afficher l'accueil",
+      "testNewMember": "Tester nouveau membre",
+      "testFromInvite": "Tester from_invite"
+    }
+  },
+  "editProfile": {
+    "title": "Modifier le profil",
+    "completeProfile": "Complétez votre profil",
+    "tabs": {
+      "basicInfo": "Informations de base",
+      "posts": "Publications",
+      "settings": "Paramètres"
+    },
+    "welcome": {
+      "title": "Bienvenue ! Complétez votre profil",
+      "message": "Bienvenue ! Veuillez prendre un moment pour configurer les informations de votre profil."
+    },
+    "language": {
+      "title": "Préférence de langue",
+      "description": "Choisissez votre langue préférée pour l'interface",
+      "english": "English (Anglais)",
+      "french": "Français",
+      "current": "Langue actuelle : {{language}}"
+    },
+    "avatar": {
+      "dragDrop": "Glissez-déposez une image ou cliquez sur l'icône d'édition",
+      "recommended": "Recommandé : Image carrée, au moins 200x200px",
+      "changeTitle": "Changer la photo de profil"
+    },
+    "preview": {
+      "title": "Aperçu du profil",
+      "yourName": "Votre nom",
+      "yourBio": "Votre biographie apparaîtra ici"
+    },
+    "form": {
+      "fullName": "Nom complet",
+      "fullNamePlaceholder": "Votre nom complet",
+      "fullNameHelper": "Veuillez entrer votre nom",
+      "contactEmail": "Email de contact",
+      "contactEmailPlaceholder": "Adresse email visible aux membres du réseau",
+      "contactEmailHelper": "Cet email sera visible aux autres membres du réseau",
+      "bio": "Biographie",
+      "bioPlaceholder": "Parlez aux autres de vous",
+      "tagline": "Phrase d'accroche",
+      "taglinePlaceholder": "Votre devise ou phrase d'accroche (max 60 caractères)",
+      "taglineHelper": "{{count}}/60 caractères - Une courte phrase mémorable qui vous représente",
+      "portfolioUrl": "URL du portfolio",
+      "portfolioUrlPlaceholder": "https://votre-portfolio.com",
+      "linkedinUrl": "URL LinkedIn",
+      "linkedinUrlPlaceholder": "https://linkedin.com/in/votre-profil",
+      "skills": "Compétences",
+      "skillsPlaceholder": "Ajouter une compétence",
+      "skillsHelper": "Entrez vos compétences et appuyez sur Entrée"
+    },
+    "posts": {
+      "title": "Publications précédemment publiées",
+      "createPost": "Créer une publication",
+      "noPosts": "Vous n'avez encore créé aucune publication."
+    },
+    "settings": {
+      "notifications": "Diagnostics du système de notifications",
+      "dangerZone": "Zone de danger",
+      "deleteAccount": {
+        "warning": "Une fois que vous supprimez votre compte, il n'y a pas de retour en arrière possible. Veuillez être certain.",
+        "button": "Supprimer le compte",
+        "title": "Supprimer le compte",
+        "description": "Êtes-vous sûr de vouloir supprimer votre compte ? Cette action ne peut pas être annulée. Toutes vos données, y compris votre profil, vos publications et vos adhésions au réseau seront définitivement supprimées.",
+        "deleting": "Suppression..."
+      }
+    },
+    "buttons": {
+      "cancel": "Annuler",
+      "save": "Enregistrer les modifications",
+      "create": "Créer le profil",
+      "saving": "Enregistrement..."
+    },
+    "loading": {
+      "profile": "Chargement de votre profil...",
+      "profileText": "Chargement du profil..."
+    },
+    "messages": {
+      "profileCreated": "Profil créé avec succès !",
+      "profileUpdated": "Profil mis à jour avec succès !",
+      "loadError": "Échec du chargement des données du profil. Veuillez réessayer.",
+      "saveError": "Échec de la mise à jour du profil. Veuillez réessayer.",
+      "deleteError": "Échec de la suppression du compte. Veuillez réessayer ou contacter le support."
+    }
+  },
+  "membersTab": {
+    "inviteMembers": "Inviter des membres",
+    "showFilters": "Afficher les filtres",
+    "hideFilters": "Masquer les filtres",
+    "searchPlaceholder": "Rechercher des membres...",
+    "role": "Rôle",
+    "allRoles": "Tous les rôles",
+    "adminsOnly": "Administrateurs uniquement",
+    "regularMembers": "Membres réguliers",
+    "skill": "Compétence",
+    "allSkills": "Toutes les compétences",
+    "clear": "Effacer",
+    "name": "Nom",
+    "joinDate": "Date d'adhésion",
+    "skillsCount": "Nombre de compétences",
+    "showingMembers": "Affichage de {{showing}} sur {{total}} membres",
+    "noMembersFound": "Aucun membre trouvé",
+    "adjustFilters": "Essayez d'ajuster vos filtres ou critères de recherche",
+    "clearFilters": "Effacer les filtres",
+    "endOfList": "Vous avez atteint la fin de la liste des membres"
+  },
+  "eventsTab": {
+    "filterByCategory": "Filtrer par catégorie",
+    "allCategories": "Toutes les catégories",
+    "manageEvents": "Gérer les événements",
+    "eventsMap": "Carte des événements",
+    "geographicView": "Vue géographique des événements à venir",
+    "upcomingEvents": "Événements à venir",
+    "eventsHappeningSoon": "Événements à venir bientôt",
+    "eventsCount": "{{count}} événements",
+    "noUpcomingEvents": "Aucun événement à venir programmé",
+    "createEvent": "Créer un événement",
+    "today": "Aujourd'hui",
+    "tomorrow": "Demain",
+    "details": "Détails",
+    "calendarView": "Vue calendrier",
+    "monthlyOverview": "Aperçu mensuel de tous les événements",
+    "hasLocation": "A un lieu",
+    "eventLink": "Lien de l'événement",
+    "join": "Rejoindre"
+  },
+  "newsTab": {
+    "fillRequiredFields": "Veuillez remplir au moins le titre et le contenu",
+    "createNewsFailed": "Échec de la création de l'article d'actualité",
+    "newsPublished": "Article d'actualité publié avec succès !",
+    "publishFailed": "Échec de la publication de l'article d'actualité",
+    "confirmDelete": "Êtes-vous sûr de vouloir supprimer cet article ?",
+    "newsDeleted": "Article d'actualité supprimé avec succès !",
+    "deleteFailed": "Échec de la suppression de l'article",
+    "createNews": "Créer une actualité",
+    "postTitle": "Titre de l'article",
+    "category": "Catégorie",
+    "none": "Aucune",
+    "featuredMedia": "Média en vedette (optionnel)",
+    "imageCaption": "Légende de l'image (optionnel)",
+    "publishNews": "Publier l'actualité",
+    "clear": "Effacer",
+    "cancel": "Annuler",
+    "activePolls": "Sondages actifs",
+    "newsUpdates": "Actualités et mises à jour",
+    "filterByCategory": "Filtrer par catégorie",
+    "allCategories": "Toutes les catégories",
+    "noNewsPosts": "Aucun article d'actualité disponible",
+    "createFirstPost": "Créer le premier article d'actualité",
+    "postedBy": "Publié par",
+    "delete": "Supprimer"
+  },
+  "chatTab": {
+    "expandToFullscreen": "Étendre le chat en plein écran",
+    "fullscreenChat": "Chat en plein écran",
+    "membershipRequired": "Vous devez être membre de ce réseau pour participer au chat",
+    "closeFullscreen": "fermer le plein écran",
+    "networkChat": "Chat du réseau",
+    "exitFullscreen": "Quitter le plein écran"
+  },
+  "filesTab": {
+    "processFilesFailed": "Échec du traitement des fichiers du réseau.",
+    "loadMoodboardsFailed": "Échec du chargement de vos tableaux d'humeur",
+    "addedToMoodboard": "Ajouté au tableau d'humeur avec succès !",
+    "addToMoodboardFailed": "Échec de l'ajout au tableau d'humeur",
+    "loadMemberFailed": "Échec du chargement des détails du membre",
+    "downloadFailed": "Échec du téléchargement du fichier.",
+    "goToFilesPage": "Aller à la page des fichiers",
+    "membershipRequired": "Vous devez être membre de ce réseau pour accéder aux fichiers partagés.",
+    "noFilesShared": "Aucun fichier partagé encore",
+    "beFirstToShare": "Soyez le premier à partager des fichiers avec ce réseau !",
+    "uploadFiles": "Télécharger des fichiers",
+    "recentlyShared": "Fichiers récemment partagés",
+    "uploadedTimeAgo": "Téléchargé il y a {{time}}",
+    "uploadedBy": "Par : {{name}}",
+    "download": "Télécharger",
+    "addToMoodboard": "Ajouter au tableau d'humeur",
+    "noMoodboards": "Vous n'avez pas encore de tableaux d'humeur. Souhaitez-vous en créer un ?",
+    "cancel": "Annuler",
+    "createNewMoodboard": "Créer un nouveau tableau d'humeur",
+    "viewAllFiles": "Voir tous les fichiers"
+  },
+  "wikiTab": {
+    "loadPagesFailed": "Échec du chargement des pages wiki. Veuillez réessayer plus tard.",
+    "deletePageFailed": "Échec de la suppression de la page. Veuillez réessayer.",
+    "createdBy": "Créé par {{name}}",
+    "unknown": "Inconnu",
+    "viewsCount": "{{count}} vues",
+    "draft": "Brouillon",
+    "createPage": "Créer une page",
+    "searchPlaceholder": "Rechercher des pages...",
+    "allPages": "Toutes les pages",
+    "categories": "Catégories",
+    "featuredPages": "Pages en vedette",
+    "noPagesFound": "Aucune page wiki trouvée.",
+    "createFirstPage": "Créer la première page",
+    "noCategoriesFound": "Aucune catégorie trouvée.",
+    "categoriesInfo": "Les catégories peuvent être créées lors de l'ajout ou de la modification d'une page wiki.",
+    "noFeaturedPages": "Aucune page en vedette encore.",
+    "recentlyUpdated": "Récemment mis à jour",
+    "updatedOn": "Mis à jour le {{date}}",
+    "mostPopular": "Le plus populaire",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "confirmDeletion": "Confirmer la suppression",
+    "deleteConfirmMessage": "Êtes-vous sûr de vouloir supprimer la page \"{{title}}\" ? Cette action ne peut pas être annulée.",
+    "cancel": "Annuler",
+    "deleting": "Suppression...",
+    "deletePage": "Supprimer la page"
+  },
+  "socialWall": {
+    "justNow": "À l'instant",
+    "minutesAgo": "il y a {{minutes}}m",
+    "hoursAgo": "il y a {{hours}}h",
+    "daysAgo": "il y a {{days}}j",
+    "pdf": "PDF",
+    "image": "Image",
+    "video": "Vidéo",
+    "audio": "Audio",
+    "text": "Texte",
+    "confirmDeletePost": "Êtes-vous sûr de vouloir supprimer ce post ? Cette action ne peut pas être annulée.",
+    "deletePostFailed": "Échec de la suppression du post. Veuillez réessayer.",
+    "createPost": "Créer un post",
+    "filterByCategory": "Filtrer par catégorie",
+    "allCategories": "Toutes les catégories",
+    "noActivity": "Aucune activité à afficher encore.",
+    "post": "Post",
+    "news": "Actualités",
+    "showLess": "Afficher moins",
+    "readMore": "Lire plus",
+    "viewPdf": "Voir le PDF",
+    "viewFullPost": "Voir le post complet",
+    "readFullPost": "Lire l'article complet",
+    "endOfWall": "Vous avez atteint la fin du mur social"
   }
 }

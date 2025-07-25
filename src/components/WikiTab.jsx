@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from '../hooks/useTranslation';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseclient';
 import { useAuth } from '../context/authcontext';
@@ -50,6 +51,7 @@ import {
 } from '@mui/icons-material';
 
 const WikiTab = ({ networkId }) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { user } = useAuth();
   const { activeProfile } = useProfile();
@@ -130,7 +132,7 @@ const WikiTab = ({ networkId }) => {
         setPopularPages(sortedByViews.slice(0, 5));
       } catch (error) {
         console.error('Error fetching wiki data:', error);
-        setError('Failed to load wiki pages. Please try again later.');
+        setError(t('wikiTab.loadPagesFailed'));
       } finally {
         setLoading(false);
       }
@@ -197,7 +199,7 @@ const WikiTab = ({ networkId }) => {
       setSelectedPage(null);
     } catch (error) {
       console.error('Error deleting page:', error);
-      setError('Failed to delete the page. Please try again.');
+      setError(t('wikiTab.deletePageFailed'));
     } finally {
       setDeleting(false);
     }
@@ -215,18 +217,18 @@ const WikiTab = ({ networkId }) => {
             {page.title}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Created by {page.creator?.full_name || 'Unknown'}
+            {t('wikiTab.createdBy', { name: page.creator?.full_name || t('wikiTab.unknown') })}
           </Typography>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
             <Chip 
               icon={<ViewIcon fontSize="small" />}
-              label={`${page.views_count} views`}
+              label={t('wikiTab.viewsCount', { count: page.views_count })}
               size="small"
               variant="outlined"
             />
             {!page.is_published && (
               <Chip 
-                label="Draft"
+                label={t('wikiTab.draft')}
                 size="small"
                 color="warning"
               />
@@ -274,7 +276,7 @@ const WikiTab = ({ networkId }) => {
           component={Link}
           to={`/network/${networkId}/wiki/new`}
         >
-          Create Page
+          {t('wikiTab.createPage')}
         </Button>
       </Box>
 
@@ -284,7 +286,7 @@ const WikiTab = ({ networkId }) => {
       <Box sx={{ mb: 3 }}>
         <TextField
           fullWidth
-          placeholder="Search pages..."
+          placeholder={t('wikiTab.searchPlaceholder')}
           value={searchQuery}
           onChange={handleSearchChange}
           slotProps={{
@@ -309,9 +311,9 @@ const WikiTab = ({ networkId }) => {
       {/* Main content area */}
       <Box>
         <Tabs value={currentTab} onChange={handleTabChange} sx={{ mb: 3 }}>
-          <Tab label="All Pages" />
-          <Tab label="Categories" />
-          <Tab label="Featured Pages" />
+          <Tab label={t('wikiTab.allPages')} />
+          <Tab label={t('wikiTab.categories')} />
+          <Tab label={t('wikiTab.featuredPages')} />
         </Tabs>
 
         {/* All Pages tab */}
@@ -328,7 +330,7 @@ const WikiTab = ({ networkId }) => {
             ) : (
               <Box sx={{ textAlign: 'center', py: 4 }}>
                 <Typography variant="body1">
-                  No wiki pages found.
+                  {t('wikiTab.noPagesFound')}
                 </Typography>
                 <Button 
                   variant="contained" 
@@ -337,7 +339,7 @@ const WikiTab = ({ networkId }) => {
                   to={`/network/${networkId}/wiki/new`}
                   sx={{ mt: 2 }}
                 >
-                  Create First Page
+                  {t('wikiTab.createFirstPage')}
                 </Button>
               </Box>
             )}
@@ -377,10 +379,10 @@ const WikiTab = ({ networkId }) => {
             ) : (
               <Box sx={{ textAlign: 'center', py: 4 }}>
                 <Typography variant="body1">
-                  No categories found.
+                  {t('wikiTab.noCategoriesFound')}
                 </Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                  Categories can be created when adding or editing a wiki page.
+                  {t('wikiTab.categoriesInfo')}
                 </Typography>
               </Box>
             )}
@@ -394,7 +396,7 @@ const WikiTab = ({ networkId }) => {
             <Grid item xs={12}>
               <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
                 <FeaturedIcon sx={{ mr: 1 }} />
-                Featured Pages
+                {t('wikiTab.featuredPages')}
               </Typography>
               <Grid container spacing={2}>
                 {featuredPages.length > 0 ? featuredPages.map(page => (
@@ -404,7 +406,7 @@ const WikiTab = ({ networkId }) => {
                 )) : (
                   <Grid item xs={12}>
                     <Typography variant="body2" color="text.secondary">
-                      No featured pages yet.
+                      {t('wikiTab.noFeaturedPages')}
                     </Typography>
                   </Grid>
                 )}
@@ -414,7 +416,7 @@ const WikiTab = ({ networkId }) => {
             {/* Recent and Popular columns */}
             <Grid item xs={12} md={6}>
               <Typography variant="h6" gutterBottom>
-                Recently Updated
+                {t('wikiTab.recentlyUpdated')}
               </Typography>
               <List>
                 {recentPages.map(page => (
@@ -428,7 +430,7 @@ const WikiTab = ({ networkId }) => {
                     </ListItemIcon>
                     <ListItemText 
                       primary={page.title}
-                      secondary={`Updated ${new Date(page.updated_at).toLocaleDateString()}`}
+                      secondary={t('wikiTab.updatedOn', { date: new Date(page.updated_at).toLocaleDateString() })}
                     />
                   </ListItemButton>
                 ))}
@@ -437,7 +439,7 @@ const WikiTab = ({ networkId }) => {
 
             <Grid item xs={12} md={6}>
               <Typography variant="h6" gutterBottom>
-                Most Popular
+                {t('wikiTab.mostPopular')}
               </Typography>
               <List>
                 {popularPages.map(page => (
@@ -451,7 +453,7 @@ const WikiTab = ({ networkId }) => {
                     </ListItemIcon>
                     <ListItemText 
                       primary={page.title}
-                      secondary={`${page.views_count} views`}
+                      secondary={t('wikiTab.viewsCount', { count: page.views_count })}
                     />
                   </ListItemButton>
                 ))}
@@ -469,11 +471,11 @@ const WikiTab = ({ networkId }) => {
       >
         <MenuItem onClick={handleEdit}>
           <EditIcon fontSize="small" sx={{ mr: 1 }} />
-          Edit
+          {t('wikiTab.edit')}
         </MenuItem>
         <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
           <DeleteIcon fontSize="small" sx={{ mr: 1 }} />
-          Delete
+          {t('wikiTab.delete')}
         </MenuItem>
       </Menu>
 
@@ -482,20 +484,20 @@ const WikiTab = ({ networkId }) => {
         open={showDeleteDialog}
         onClose={() => setShowDeleteDialog(false)}
       >
-        <DialogTitle>Confirm Deletion</DialogTitle>
+        <DialogTitle>{t('wikiTab.confirmDeletion')}</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Are you sure you want to delete the page "{selectedPage?.title}"? This action cannot be undone.
+            {t('wikiTab.deleteConfirmMessage', { title: selectedPage?.title })}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setShowDeleteDialog(false)}>Cancel</Button>
+          <Button onClick={() => setShowDeleteDialog(false)}>{t('wikiTab.cancel')}</Button>
           <Button 
             onClick={confirmDelete} 
             color="error"
             disabled={deleting}
           >
-            {deleting ? 'Deleting...' : 'Delete Page'}
+            {deleting ? t('wikiTab.deleting') : t('wikiTab.deletePage')}
           </Button>
         </DialogActions>
       </Dialog>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/authcontext';
 import { useProfile } from '../context/profileContext';
+import { useTranslation } from '../hooks/useTranslation';
 import {
   Box,
   Typography,
@@ -32,6 +33,7 @@ import { getItemComments, addComment, deleteComment, toggleCommentVisibility } f
 import { formatDistanceToNow } from 'date-fns';
 
 const CommentSection = ({ itemType, itemId, darkMode, isAdmin = false, initialCount = 0, onMemberClick }) => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { activeProfile } = useProfile();
   const theme = useTheme();
@@ -306,7 +308,7 @@ const CommentSection = ({ itemType, itemId, darkMode, isAdmin = false, initialCo
           }
         }}
       >
-        {commentCount > 0 ? `${commentCount} comment${commentCount !== 1 ? 's' : ''}` : 'Comment'}
+        {commentCount > 0 ? `${commentCount} comment${commentCount !== 1 ? 's' : ''}` : t('dashboard.comment')}
       </Button>
 
       {/* Comments section */}

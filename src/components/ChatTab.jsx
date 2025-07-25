@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from '../hooks/useTranslation';
 import { PageTransition } from './AnimatedComponents';
 import { useNetwork } from '../context/networkContext';
 import {
@@ -25,6 +26,7 @@ const Transition = React.forwardRef(function Transition(props, ref) {
 });
 
 const ChatTab = ({ networkId, isUserMember, darkMode = false }) => {
+  const { t } = useTranslation();
   const [fullscreen, setFullscreen] = useState(false);
   const { network } = useNetwork();
 
@@ -68,8 +70,8 @@ const ChatTab = ({ networkId, isUserMember, darkMode = false }) => {
                 boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
                 p: 1
               }}
-              title="Expand chat to fullscreen"
-              aria-label="Fullscreen chat"
+              title={t('chatTab.expandToFullscreen')}
+              aria-label={t('chatTab.fullscreenChat')}
             >
               <FullscreenIcon fontSize="small" />
             </IconButton>
@@ -88,7 +90,7 @@ const ChatTab = ({ networkId, isUserMember, darkMode = false }) => {
             }
           }}
         >
-          You must be a member of this network to participate in the chat
+          {t('chatTab.membershipRequired')}
         </Alert>
       )}
 
@@ -123,7 +125,7 @@ const ChatTab = ({ networkId, isUserMember, darkMode = false }) => {
               edge="start"
               color="inherit"
               onClick={handleFullscreenClose}
-              aria-label="close fullscreen"
+              aria-label={t('chatTab.closeFullscreen')}
               size="small"
               sx={{ 
                 mr: 2,
@@ -144,12 +146,12 @@ const ChatTab = ({ networkId, isUserMember, darkMode = false }) => {
                 fontSize: { xs: '1.1rem', sm: '1.25rem' }
               }}
             >
-              Network Chat
+              {t('chatTab.networkChat')}
             </Typography>
             <IconButton 
               color="inherit" 
               onClick={handleFullscreenClose}
-              aria-label="exit fullscreen"
+              aria-label={t('chatTab.exitFullscreen')}
               size="small"
               sx={{ 
                 transition: 'all 0.2s ease',
@@ -158,7 +160,7 @@ const ChatTab = ({ networkId, isUserMember, darkMode = false }) => {
                   transform: 'scale(1.05)' 
                 }
               }}
-              title="Exit fullscreen"
+              title={t('chatTab.exitFullscreen')}
             >
               <FullscreenExitIcon />
             </IconButton>

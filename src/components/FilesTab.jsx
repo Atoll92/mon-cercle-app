@@ -1,5 +1,6 @@
 // src/components/FilesTab.jsx
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from '../hooks/useTranslation';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseclient';
 import { useAuth } from '../context/authcontext';
@@ -77,6 +78,7 @@ const formatFileSize = (bytes) => {
 
 // Files Tab Component - now with simplified props and using context
 const FilesTab = ({ darkMode }) => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { activeProfile } = useProfile();
   const navigate = useNavigate();
@@ -133,7 +135,7 @@ const FilesTab = ({ darkMode }) => {
         setFiles(filesWithUploaders);
       } catch (err) {
         console.error('Error processing files:', err);
-        setError('Failed to process network files.');
+        setError(t('filesTab.processFilesFailed'));
       }
     };
     
@@ -157,7 +159,7 @@ const FilesTab = ({ darkMode }) => {
       setUserMoodboards(data || []);
     } catch (err) {
       console.error('Error fetching moodboards:', err);
-      setError('Failed to load your moodboards');
+      setError(t('filesTab.loadMoodboardsFailed'));
     } finally {
       setLoadingMoodboards(false);
     }
@@ -188,11 +190,11 @@ const FilesTab = ({ darkMode }) => {
       
       await addMoodboardItem(newItem);
       
-      setSuccess('Added to moodboard successfully!');
+      setSuccess(t('filesTab.addedToMoodboard'));
       setMoodboardDialogOpen(false);
     } catch (err) {
       console.error('Error adding to moodboard:', err);
-      setError('Failed to add to moodboard');
+      setError(t('filesTab.addToMoodboardFailed'));
     } finally {
       setProcessing(false);
     }
@@ -215,7 +217,7 @@ const FilesTab = ({ darkMode }) => {
       }
     } catch (err) {
       console.error('Error fetching member details:', err);
-      setError('Failed to load member details');
+      setError(t('filesTab.loadMemberFailed'));
     }
   };
   
@@ -244,7 +246,7 @@ const FilesTab = ({ darkMode }) => {
       refreshFiles();
     } catch (error) {
       console.error('Error downloading file:', error);
-      setError('Failed to download file.');
+      setError(t('filesTab.downloadFailed'));
     }
   };
 
@@ -276,7 +278,7 @@ const FilesTab = ({ darkMode }) => {
           color="primary"
           endIcon={<ArrowForwardIcon />}
         >
-          Go to Files Page
+          {t('filesTab.goToFilesPage')}
         </Button>
       </Box>
       
@@ -294,7 +296,7 @@ const FilesTab = ({ darkMode }) => {
       
       {!isUserMember ? (
         <Alert severity="info">
-          You need to be a member of this network to access shared files.
+          {t('filesTab.membershipRequired')}
         </Alert>
       ) : files.length === 0 ? (
         <Paper 
@@ -305,14 +307,14 @@ const FilesTab = ({ darkMode }) => {
           }}
         >
           <Typography variant="h6" gutterBottom>
-            No files shared yet
+            {t('filesTab.noFilesShared')}
           </Typography>
           <Typography 
             variant="body2" 
             color={darkMode ? 'text.secondary' : 'text.secondary'} 
             paragraph
           >
-            Be the first to share files with this network!
+            {t('filesTab.beFirstToShare')}
           </Typography>
           <Button
             component={Link}
@@ -320,13 +322,13 @@ const FilesTab = ({ darkMode }) => {
             variant="contained"
             startIcon={<CloudUploadIcon />}
           >
-            Upload Files
+            {t('filesTab.uploadFiles')}
           </Button>
         </Paper>
       ) : (
         <>
           <Typography variant="subtitle1" gutterBottom>
-            Recently Shared Files
+            {t('filesTab.recentlyShared')}
           </Typography>
           
           <List 
@@ -370,7 +372,7 @@ const FilesTab = ({ darkMode }) => {
                             }}
                           />
                           <Chip 
-                            label={`Uploaded ${formatDistanceToNow(new Date(file.created_at))} ago`} 
+                            label={t('filesTab.uploadedTimeAgo', { time: formatDistanceToNow(new Date(file.created_at)) })} 
                             size="small" 
                             variant="outlined"
                             sx={{
@@ -378,7 +380,7 @@ const FilesTab = ({ darkMode }) => {
                             }}
                           />
                           <Chip 
-                            label={`By: ${file.uploader.full_name}`} 
+                            label={t('filesTab.uploadedBy', { name: file.uploader.full_name })} 
                             size="small" 
                             variant="outlined"
                             clickable
@@ -406,10 +408,10 @@ const FilesTab = ({ darkMode }) => {
                       Use in Moodboard
                     </Button> */}
                     
-                    <Tooltip title="Download">
+                    <Tooltip title={t('filesTab.download')}>
                       <IconButton 
                         edge="end" 
-                        aria-label="download"
+                        aria-label={t('filesTab.download')}
                         onClick={() => handleDownloadFile(file)}
                       >
                         <DownloadIcon />
@@ -434,7 +436,7 @@ const FilesTab = ({ darkMode }) => {
               }
             }}
           >
-            <DialogTitle>Add to Moodboard</DialogTitle>
+            <DialogTitle>{t('filesTab.addToMoodboard')}</DialogTitle>
             <DialogContent>
               {loadingMoodboards ? (
                 <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
@@ -442,7 +444,7 @@ const FilesTab = ({ darkMode }) => {
                 </Box>
               ) : userMoodboards.length === 0 ? (
                 <Typography>
-                  You don't have any moodboards yet. Would you like to create one?
+                  {t('filesTab.noMoodboards')}
                 </Typography>
               ) : (
                 <List>
@@ -465,7 +467,7 @@ const FilesTab = ({ darkMode }) => {
               )}
             </DialogContent>
             <DialogActions>
-              <Button onClick={() => setMoodboardDialogOpen(false)}>Cancel</Button>
+              <Button onClick={() => setMoodboardDialogOpen(false)}>{t('filesTab.cancel')}</Button>
               <Button 
                 variant="contained" 
                 color="primary"
@@ -476,7 +478,7 @@ const FilesTab = ({ darkMode }) => {
                   });
                 }}
               >
-                Create New Moodboard
+                {t('filesTab.createNewMoodboard')}
               </Button>
             </DialogActions>
           </Dialog>
@@ -488,7 +490,7 @@ const FilesTab = ({ darkMode }) => {
               variant="outlined"
               endIcon={<ArrowForwardIcon />}
             >
-              View All Files
+              {t('filesTab.viewAllFiles')}
             </Button>
           </Box>
         </>
