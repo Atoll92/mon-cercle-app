@@ -136,7 +136,7 @@
       "description": "Let's start by creating your network. What would you like to call it?",
       "networkName": "Network Name",
       "networkNameHelper": "Choose a name for your network",
-      "description": "Description",
+      "networkDescription": "Description",
       "descriptionHelper": "Briefly describe your network's purpose",
       "networkType": "Network Type",
       "types": {
@@ -270,5 +270,127 @@
       "loginRequired": "Please log in to create a network.",
       "questionsHelp": "Still have questions? Refer to our documentation for more detailed information about setting up your network."
     }
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Welcome back, {{name}}",
+    "profileSetup": {
+      "required": "Profile Setup Required",
+      "inProgress": "Profile Setup in Progress",
+      "message": "Please complete your profile setup to continue.",
+      "settingUp": "We're setting up your profile. This should only take a moment.",
+      "goToSetup": "Go to Profile Setup"
+    },
+    "errors": {
+      "somethingWrong": "Something Went Wrong",
+      "profileLoadFailed": "Failed to load your profile. Please try again later.",
+      "memberDetailsFailed": "Error fetching member details:",
+      "noActiveProfile": "No active profile found"
+    },
+    "buttons": {
+      "refreshPage": "Refresh Page",
+      "editProfile": "Edit Profile",
+      "viewProfile": "View Profile",
+      "myMicroConclav": "My Micro Conclav",
+      "goToLogin": "Go to Login",
+      "adminPanel": "Admin Panel",
+      "inviteMembers": "Invite Members",
+      "goToNetwork": "Go to Network",
+      "createNetwork": "Create Network",
+      "createEvent": "Create Event",
+      "viewAll": "View All",
+      "view": "View",
+      "upgradeNow": "Upgrade Now",
+      "manageSubscription": "Manage Subscription",
+      "renewPlan": "Renew Plan",
+      "billing": "Billing",
+      "upgradePlan": "Upgrade Plan"
+    },
+    "profile": {
+      "notSet": "Not set",
+      "email": "Email",
+      "contact": "Contact",
+      "bio": "Bio",
+      "skills": "Skills",
+      "role": {
+        "admin": "Admin",
+        "member": "Member"
+      },
+      "connected": "Connected"
+    },
+    "network": {
+      "management": "Network Management",
+      "myNetwork": "My Network",
+      "createNetwork": "Create Network",
+      "createDescription": "Create your own network to connect with friends, colleagues, or community members.",
+      "waitingForInvitations": "Waiting for Invitations",
+      "adminPrivileges": "You have admin privileges for this network",
+      "members": "Members",
+      "events": "Events",
+      "upcomingEvents": "Upcoming Events",
+      "loadingSubscription": "Loading subscription info..."
+    },
+    "subscription": {
+      "badge": {
+        "community": {
+          "label": "Community Plan",
+          "tooltip": "Community Plan: Up to 100 members & 10GB storage"
+        },
+        "organization": {
+          "label": "Organization Plan",
+          "tooltip": "Organization Plan: Up to 500 members & 100GB storage"
+        },
+        "network": {
+          "label": "Network Plan",
+          "tooltip": "Network Plan: Up to 2,500 members & 1TB storage"
+        },
+        "nonprofit": {
+          "label": "Non-Profit Plan",
+          "tooltip": "Non-Profit Plan: Up to 500 members & 50GB storage"
+        },
+        "business": {
+          "label": "Business Plan",
+          "tooltip": "Business Plan: Up to 10,000 members & 5TB storage"
+        },
+        "premium": {
+          "label": "Premium Plan",
+          "tooltip": "Premium subscription"
+        }
+      },
+      "trial": {
+        "active": "Free Trial Active",
+        "daysRemaining": "{{days}} days remaining",
+        "expired": "Trial expired",
+        "endsOn": "Trial ends: {{date}}"
+      },
+      "active": {
+        "planName": "{{plan}} Plan",
+        "description": "Active premium subscription",
+        "premium": "Premium",
+        "nextBilling": "Next billing: {{date}}"
+      },
+      "canceled": {
+        "title": "Subscription Ending",
+        "description": "Benefits continue until end of billing period",
+        "endingSoon": "Ending Soon",
+        "accessUntil": "Access until: {{date}}"
+      },
+      "free": {
+        "title": "Community Plan",
+        "description": "Free tier with basic features",
+        "label": "Free Plan",
+        "limits": "Limited to 20 members & 2GB storage"
+      }
+    },
+    "events": {
+      "noUpcoming": "No upcoming events scheduled",
+      "participation": {
+        "attending": "Attending",
+        "notAttending": "Not attending",
+        "maybe": "Maybe",
+        "noResponse": "No response yet"
+      }
+    },
+    "notLoggedIn": "You're not logged in or your session has expired."
   }
 }

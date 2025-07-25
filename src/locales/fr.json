@@ -136,7 +136,7 @@
       "description": "Commençons par créer votre réseau. Comment souhaitez-vous l'appeler ?",
       "networkName": "Nom du réseau",
       "networkNameHelper": "Choisissez un nom pour votre réseau",
-      "description": "Description",
+      "networkDescription": "Description",
       "descriptionHelper": "Décrivez brièvement l'objectif de votre réseau",
       "networkType": "Type de réseau",
       "types": {
@@ -270,5 +270,127 @@
       "loginRequired": "Veuillez vous connecter pour créer un réseau.",
       "questionsHelp": "Vous avez encore des questions ? Consultez notre documentation pour des informations plus détaillées sur la configuration de votre réseau."
     }
+  },
+  "dashboard": {
+    "title": "Tableau de bord",
+    "welcome": "Bienvenue, {{name}}",
+    "profileSetup": {
+      "required": "Configuration du profil requise",
+      "inProgress": "Configuration du profil en cours",
+      "message": "Veuillez compléter la configuration de votre profil pour continuer.",
+      "settingUp": "Nous configurons votre profil. Cela ne devrait prendre qu'un moment.",
+      "goToSetup": "Aller à la configuration du profil"
+    },
+    "errors": {
+      "somethingWrong": "Quelque chose s'est mal passé",
+      "profileLoadFailed": "Échec du chargement de votre profil. Veuillez réessayer plus tard.",
+      "memberDetailsFailed": "Erreur lors de la récupération des détails du membre :",
+      "noActiveProfile": "Aucun profil actif trouvé"
+    },
+    "buttons": {
+      "refreshPage": "Actualiser la page",
+      "editProfile": "Modifier le profil",
+      "viewProfile": "Voir le profil",
+      "myMicroConclav": "Mon Micro Conclav",
+      "goToLogin": "Aller à la connexion",
+      "adminPanel": "Panneau d'administration",
+      "inviteMembers": "Inviter des membres",
+      "goToNetwork": "Aller au réseau",
+      "createNetwork": "Créer un réseau",
+      "createEvent": "Créer un événement",
+      "viewAll": "Voir tout",
+      "view": "Voir",
+      "upgradeNow": "Mettre à niveau maintenant",
+      "manageSubscription": "Gérer l'abonnement",
+      "renewPlan": "Renouveler le plan",
+      "billing": "Facturation",
+      "upgradePlan": "Mettre à niveau le plan"
+    },
+    "profile": {
+      "notSet": "Non défini",
+      "email": "Email",
+      "contact": "Contact",
+      "bio": "Biographie",
+      "skills": "Compétences",
+      "role": {
+        "admin": "Administrateur",
+        "member": "Membre"
+      },
+      "connected": "Connecté"
+    },
+    "network": {
+      "management": "Gestion du réseau",
+      "myNetwork": "Mon réseau",
+      "createNetwork": "Créer un réseau",
+      "createDescription": "Créez votre propre réseau pour vous connecter avec des amis, des collègues ou des membres de la communauté.",
+      "waitingForInvitations": "En attente d'invitations",
+      "adminPrivileges": "Vous avez des privilèges d'administrateur pour ce réseau",
+      "members": "Membres",
+      "events": "Événements",
+      "upcomingEvents": "Événements à venir",
+      "loadingSubscription": "Chargement des informations d'abonnement..."
+    },
+    "subscription": {
+      "badge": {
+        "community": {
+          "label": "Plan Communauté",
+          "tooltip": "Plan Communauté : Jusqu'à 100 membres et 10 Go de stockage"
+        },
+        "organization": {
+          "label": "Plan Organisation",
+          "tooltip": "Plan Organisation : Jusqu'à 500 membres et 100 Go de stockage"
+        },
+        "network": {
+          "label": "Plan Réseau",
+          "tooltip": "Plan Réseau : Jusqu'à 2 500 membres et 1 To de stockage"
+        },
+        "nonprofit": {
+          "label": "Plan Association",
+          "tooltip": "Plan Association : Jusqu'à 500 membres et 50 Go de stockage"
+        },
+        "business": {
+          "label": "Plan Entreprise",
+          "tooltip": "Plan Entreprise : Jusqu'à 10 000 membres et 5 To de stockage"
+        },
+        "premium": {
+          "label": "Plan Premium",
+          "tooltip": "Abonnement premium"
+        }
+      },
+      "trial": {
+        "active": "Essai gratuit actif",
+        "daysRemaining": "{{days}} jours restants",
+        "expired": "Essai expiré",
+        "endsOn": "L'essai se termine le : {{date}}"
+      },
+      "active": {
+        "planName": "Plan {{plan}}",
+        "description": "Abonnement premium actif",
+        "premium": "Premium",
+        "nextBilling": "Prochaine facturation : {{date}}"
+      },
+      "canceled": {
+        "title": "Abonnement se terminant",
+        "description": "Les avantages continuent jusqu'à la fin de la période de facturation",
+        "endingSoon": "Se termine bientôt",
+        "accessUntil": "Accès jusqu'au : {{date}}"
+      },
+      "free": {
+        "title": "Plan Communauté",
+        "description": "Niveau gratuit avec fonctionnalités de base",
+        "label": "Plan gratuit",
+        "limits": "Limité à 20 membres et 2 Go de stockage"
+      }
+    },
+    "events": {
+      "noUpcoming": "Aucun événement à venir programmé",
+      "participation": {
+        "attending": "Participe",
+        "notAttending": "Ne participe pas",
+        "maybe": "Peut-être",
+        "noResponse": "Pas encore de réponse"
+      }
+    },
+    "notLoggedIn": "Vous n'êtes pas connecté ou votre session a expiré."
   }
 }

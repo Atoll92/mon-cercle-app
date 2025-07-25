@@ -518,7 +518,7 @@ const BasicInfoStep = ({ networkData, setNetworkData }) => {
       />
       
       <TextField
-        label={t('networkOnboarding.basics.description')}
+        label={t('networkOnboarding.basics.networkDescription')}
         name="description"
         value={networkData.description}
         onChange={handleChange}

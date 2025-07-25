@@ -6,6 +6,7 @@ import { useApp } from '../context/appContext';
 import { NetworkProvider } from '../context/networkContext';
 import { supabase } from '../supabaseclient';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
+import { useTranslation } from '../hooks/useTranslation';
 import MembersDetailModal from '../components/MembersDetailModal';
 import MicroConclavWidget from '../components/MicroConclavWidget';
 import LatestNewsWidget from '../components/LatestNewsWidget';
@@ -73,6 +74,7 @@ import FlexFlowBox from '../components/FlexFlowBox';
 
 // Subscription Badge Component
 const SubscriptionBadge = ({ plan, status }) => {
+  const { t } = useTranslation();
   // Only show badge for active subscriptions
   if (status !== 'active' || !plan) {
     return null;
@@ -83,45 +85,45 @@ const SubscriptionBadge = ({ plan, status }) => {
     switch (plan) {
       case 'community':
         return {
-          label: 'Community Plan',
+          label: t('dashboard.subscription.badge.community.label'),
           icon: <GroupsIcon fontSize="small" />,
           color: 'primary',
-          tooltip: 'Community Plan: Up to 100 members & 10GB storage'
+          tooltip: t('dashboard.subscription.badge.community.tooltip')
         };
       case 'organization':
         return {
-          label: 'Organization Plan',
+          label: t('dashboard.subscription.badge.organization.label'),
           icon: <BusinessIcon fontSize="small" />,
           color: 'primary',
-          tooltip: 'Organization Plan: Up to 500 members & 100GB storage'
+          tooltip: t('dashboard.subscription.badge.organization.tooltip')
         };
       case 'network':
         return {
-          label: 'Network Plan',
+          label: t('dashboard.subscription.badge.network.label'),
           icon: <PremiumIcon fontSize="small" />,
           color: 'secondary',
-          tooltip: 'Network Plan: Up to 2,500 members & 1TB storage'
+          tooltip: t('dashboard.subscription.badge.network.tooltip')
         };
       case 'nonprofit':
         return {
-          label: 'Non-Profit Plan',
+          label: t('dashboard.subscription.badge.nonprofit.label'),
           icon: <SchoolIcon fontSize="small" />,
           color: 'success',
-          tooltip: 'Non-Profit Plan: Up to 500 members & 50GB storage'
+          tooltip: t('dashboard.subscription.badge.nonprofit.tooltip')
         };
       case 'business':
         return {
-          label: 'Business Plan',
+          label: t('dashboard.subscription.badge.business.label'),
           icon: <VerifiedIcon fontSize="small" />,
           color: 'info',
-          tooltip: 'Business Plan: Up to 10,000 members & 5TB storage'
+          tooltip: t('dashboard.subscription.badge.business.tooltip')
         };
       default:
         return {
-          label: 'Premium Plan',
+          label: t('dashboard.subscription.badge.premium.label'),
           icon: <VerifiedIcon fontSize="small" />,
           color: 'primary',
-          tooltip: 'Premium subscription'
+          tooltip: t('dashboard.subscription.badge.premium.tooltip')
         };
     }
   };
@@ -152,6 +154,7 @@ function DashboardPage() {
   const { activeProfile, userProfiles, isLoadingProfiles } = useProfile();
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useTranslation();
   const [profile, setProfile] = useState(null);
   const [networkMembers, setNetworkMembers] = useState([]);
   const [networkDetails, setNetworkDetails] = useState(null);
@@ -191,7 +194,7 @@ function DashboardPage() {
       
       if (fromInvite) {
         console.log('Coming from invitation signup but no profiles found - showing error');
-        setError('Failed to load your profile. Please try again later.');
+        setError(t('dashboard.errors.profileLoadFailed'));
         return;
       }
       
@@ -335,7 +338,7 @@ function DashboardPage() {
             setTimeout(() => fetchProfile(), 1000); // Retry after 1 second
             return;
           }
-          throw { message: 'No active profile found' };
+          throw { message: t('dashboard.errors.noActiveProfile') };
         }
 
         // Profile found, update state
@@ -480,7 +483,7 @@ function DashboardPage() {
         }
       } catch (error) {
         console.error("Error fetching profile:", error);
-        setError("Failed to load your profile. Please try again later.");
+        setError(t('dashboard.errors.profileLoadFailed'));
         setLoadingProfile(false);
         setLoadingNetworkDetails(false);
       }
@@ -602,13 +605,13 @@ function DashboardPage() {
           }}
         >
           <Typography variant="h5" component="h1" gutterBottom>
-            Profile Setup Required
+            {t('dashboard.profileSetup.required')}
           </Typography>
           <Alert 
             severity="info" 
             sx={{ mb: 3 }}
           >
-            Please complete your profile setup to continue.
+            {t('dashboard.profileSetup.message')}
           </Alert>
           <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
             <Spinner size={120} />
@@ -631,7 +634,7 @@ function DashboardPage() {
           }}
         >
           <Typography variant="h5" component="h1" gutterBottom>
-            Something Went Wrong
+            {t('dashboard.errors.somethingWrong')}
           </Typography>
           <Alert 
             severity="error" 
@@ -644,7 +647,7 @@ function DashboardPage() {
             onClick={handleRefresh}
             startIcon={<RefreshIcon />}
           >
-            Refresh Page
+            {t('dashboard.buttons.refreshPage')}
           </Button>
         </Paper>
       </Container>
@@ -664,11 +667,11 @@ function DashboardPage() {
           }}
         >
           <Typography variant="h5" component="h1" gutterBottom>
-            Profile Setup in Progress
+            {t('dashboard.profileSetup.inProgress')}
           </Typography>
           <Spinner size={120} sx={{ my: 2 }} />
           <Typography variant="body1" sx={{ mb: 2 }}>
-            We're setting up your profile. This should only take a moment.
+            {t('dashboard.profileSetup.settingUp')}
           </Typography>
           <Button 
             variant="contained" 
@@ -676,7 +679,7 @@ function DashboardPage() {
             startIcon={<EditIcon />}
             sx={{ mt: 2 }}
           >
-            Go to Profile Setup
+            {t('dashboard.profileSetup.goToSetup')}
           </Button>
         </Paper>
       </Container>
@@ -787,7 +790,7 @@ function DashboardPage() {
                             {profile.network_id && (
                               <Chip 
                                 icon={<NetworkIcon fontSize="small" />}
-                                label="Connected" 
+                                label={t('dashboard.profile.connected')} 
                                 color="success" 
                                 size="small" 
                                 variant="outlined"
@@ -996,7 +999,7 @@ function DashboardPage() {
                                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                   <Box>
                                     <Typography variant="body2" color="warning.main" fontWeight="medium">
-                                      Free Trial Active
+                                      {t('dashboard.subscription.trial.active')}
                                     </Typography>
                                     
                                     <Typography variant="caption" color="text.secondary">
@@ -1004,14 +1007,14 @@ function DashboardPage() {
                                         const now = new Date();
                                         const trialEnd = new Date(networkDetails.trial_end_date);
                                         const daysLeft = Math.max(0, Math.ceil((trialEnd.getTime() - now.getTime()) / (1000 * 3600 * 24)));
-                                        return daysLeft > 0 ? `${daysLeft} days remaining` : 'Trial expired';
+                                        return daysLeft > 0 ? t('dashboard.subscription.trial.daysRemaining', { days: daysLeft }) : t('dashboard.subscription.trial.expired');
                                       })()}
                                     </Typography>
                                   </Box>
                                   
                                   <Chip 
                                     icon={<AccessTimeIcon fontSize="small" />}
-                                    label="Trial" 
+                                    label={t('dashboard.subscription.trial.active')} 
                                     color="warning" 
                                     size="small"
                                     variant="outlined"
@@ -1020,7 +1023,7 @@ function DashboardPage() {
                                 
                                 {networkDetails?.trial_end_date && (
                                   <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.5 }}>
-                                    Trial ends: {new Date(networkDetails.trial_end_date).toLocaleDateString()}
+                                    {t('dashboard.subscription.trial.endsOn', { date: new Date(networkDetails.trial_end_date).toLocaleDateString() })}
                                   </Typography>
                                 )}
 
@@ -1035,7 +1038,7 @@ function DashboardPage() {
                                     sx={{ mt: 1 }}
                                     startIcon={<StarIcon />}
                                   >
-                                    Upgrade Now
+                                    {t('dashboard.buttons.upgradeNow')}
                                   </Button>
                                 )}
                               </Card>
@@ -1049,18 +1052,17 @@ function DashboardPage() {
                                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                   <Box>
                                     <Typography variant="body2" color="primary.main" fontWeight="medium">
-                                      {(networkDetails.subscription_plan || 'Organization').charAt(0).toUpperCase() + 
-                                        (networkDetails.subscription_plan || 'Organization').slice(1)} Plan
+                                      {t('dashboard.subscription.active.planName', { plan: (networkDetails.subscription_plan || 'Organization').charAt(0).toUpperCase() + (networkDetails.subscription_plan || 'Organization').slice(1) })}
                                     </Typography>
                                     
                                     <Typography variant="caption" color="text.secondary">
-                                      Active premium subscription
+                                      {t('dashboard.subscription.active.description')}
                                     </Typography>
                                   </Box>
                                   
                                   <Chip 
                                     icon={<StarIcon fontSize="small" />}
-                                    label="Premium" 
+                                    label={t('dashboard.subscription.active.premium')} 
                                     color="success" 
                                     size="small"
                                     variant="outlined"
@@ -1069,7 +1071,7 @@ function DashboardPage() {
                                 
                                 {networkDetails?.subscription_end_date && (
                                   <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.5 }}>
-                                    Next billing: {new Date(networkDetails.subscription_end_date).toLocaleDateString()}
+                                    {t('dashboard.subscription.active.nextBilling', { date: new Date(networkDetails.subscription_end_date).toLocaleDateString() })}
                                   </Typography>
                                 )}
 
@@ -1098,17 +1100,17 @@ function DashboardPage() {
                                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                   <Box>
                                     <Typography variant="body2" color="warning.main" fontWeight="medium">
-                                      Subscription Ending
+                                      {t('dashboard.subscription.canceled.title')}
                                     </Typography>
                                     
                                     <Typography variant="caption" color="text.secondary">
-                                      Benefits continue until end of billing period
+                                      {t('dashboard.subscription.canceled.description')}
                                     </Typography>
                                   </Box>
                                   
                                   <Chip 
                                     icon={<HourglassEmptyIcon fontSize="small" />}
-                                    label="Ending Soon" 
+                                    label={t('dashboard.subscription.canceled.endingSoon')} 
                                     color="warning" 
                                     size="small"
                                     variant="outlined"
@@ -1117,7 +1119,7 @@ function DashboardPage() {
                                 
                                 {networkDetails?.subscription_end_date && (
                                   <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.5 }}>
-                                    Access until: {new Date(networkDetails.subscription_end_date).toLocaleDateString()}
+                                    {t('dashboard.subscription.canceled.accessUntil', { date: new Date(networkDetails.subscription_end_date).toLocaleDateString() })}
                                   </Typography>
                                 )}
 
@@ -1142,7 +1144,7 @@ function DashboardPage() {
                                       size="small"
                                       fullWidth
                                     >
-                                      Billing
+                                      {t('dashboard.buttons.billing')}
                                     </Button>
                                   </Box>
                                 )}
@@ -1156,16 +1158,16 @@ function DashboardPage() {
                                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                   <Box>
                                     <Typography variant="body2" fontWeight="medium">
-                                      Community Plan
+                                      {t('dashboard.subscription.free.title')}
                                     </Typography>
                                     
                                     <Typography variant="caption" color="text.secondary">
-                                      Free tier with basic features
+                                      {t('dashboard.subscription.free.description')}
                                     </Typography>
                                   </Box>
                                   
                                   <Chip 
-                                    label="Free Plan" 
+                                    label={t('dashboard.subscription.free.label')} 
                                     variant="outlined"
                                     size="small"
                                   />
@@ -1173,7 +1175,7 @@ function DashboardPage() {
                                 
                                 <Box sx={{ mt: 1, display: 'flex', alignItems: 'center' }}>
                                   <Typography variant="caption" color="text.secondary" sx={{ flexGrow: 1 }}>
-                                    Limited to 20 members & 2GB storage
+                                    {t('dashboard.subscription.free.limits')}
                                   </Typography>
                                 </Box>
                                 
@@ -1350,12 +1352,12 @@ function DashboardPage() {
                               fullWidth
                               sx={{ mb: 1 }}
                             >
-                              Create Network
+                              {t('dashboard.buttons.createNetwork')}
                             </Button>
                             
                             <Chip
                               icon={<InvitationIcon fontSize="small" />}
-                              label="Waiting for Invitations" 
+                              label={t('dashboard.network.waitingForInvitations')} 
                               variant="outlined"
                               color="primary"
                               size="small"
