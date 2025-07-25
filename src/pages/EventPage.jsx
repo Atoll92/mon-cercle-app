@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/authcontext';
 import { useProfile } from '../context/profileContext';
@@ -65,11 +65,33 @@ function EventPage() {
   const [selectedMember, setSelectedMember] = useState(null);
   const [showMemberDetailsModal, setShowMemberDetailsModal] = useState(false);
 
+  // Use refs to track last fetched IDs to prevent unnecessary re-fetches
+  const lastFetchedEventId = useRef(null);
+  const lastFetchedProfileId = useRef(null);
+  const lastFetchedUserId = useRef(null);
+
+  // Get stable IDs
+  const profileId = activeProfile?.id || user?.id;
+  const userId = user?.id;
+
   useEffect(() => {
-    fetchEventData();
-    checkAdminStatus();
-    fetchNetworkData();
-  }, [eventId, user, activeProfile]);
+    // Only fetch if eventId changed or we don't have data yet
+    if (eventId && eventId !== lastFetchedEventId.current) {
+      fetchEventData();
+      fetchNetworkData();
+      lastFetchedEventId.current = eventId;
+    }
+  }, [eventId]);
+
+  useEffect(() => {
+    // Only check admin status if profile or user actually changed
+    if (profileId && userId && 
+        (profileId !== lastFetchedProfileId.current || userId !== lastFetchedUserId.current)) {
+      checkAdminStatus();
+      lastFetchedProfileId.current = profileId;
+      lastFetchedUserId.current = userId;
+    }
+  }, [profileId, userId, networkId]);
 
   const fetchEventData = async () => {
     try {
@@ -129,8 +151,8 @@ function EventPage() {
         setParticipants(participantsData);
         
         // Check current user's participation
-        if (user && activeProfile) {
-          const userParticipation = participantsData.find(p => p.profile_id === activeProfile.id);
+        if (profileId) {
+          const userParticipation = participantsData.find(p => p.profile_id === profileId);
           setParticipation(userParticipation?.status || null);
         }
       }
@@ -143,13 +165,13 @@ function EventPage() {
   };
 
   const checkAdminStatus = async () => {
-    if (!user || !activeProfile) return;
+    if (!userId || !profileId) return;
 
     try {
       const { data: profile } = await supabase
         .from('profiles')
         .select('role, network_id')
-        .eq('id', activeProfile?.id || user.id)
+        .eq('id', profileId)
         .single();
 
       setIsAdmin(profile?.role === 'admin' && profile?.network_id === networkId);
@@ -214,7 +236,7 @@ function EventPage() {
   };
 
   const handleParticipationChange = async (_, newStatus) => {
-    if (!user || !activeProfile || updatingStatus) return;
+    if (!user || !profileId || updatingStatus) return;
 
     setUpdatingStatus(true);
     try {
@@ -224,7 +246,7 @@ function EventPage() {
           .from('event_participations')
           .delete()
           .eq('event_id', eventId)
-          .eq('profile_id', activeProfile?.id || user.id);
+          .eq('profile_id', profileId);
 
         if (error) throw error;
         setParticipation(null);
@@ -234,7 +256,7 @@ function EventPage() {
           .from('event_participations')
           .select('id')
           .eq('event_id', eventId)
-          .eq('profile_id', activeProfile?.id || user.id)
+          .eq('profile_id', profileId)
           .single();
 
         if (existing) {
@@ -246,7 +268,7 @@ function EventPage() {
               updated_at: new Date().toISOString()
             })
             .eq('event_id', eventId)
-            .eq('profile_id', activeProfile?.id || user.id);
+            .eq('profile_id', profileId);
 
           if (error) throw error;
         } else {
@@ -255,7 +277,7 @@ function EventPage() {
             .from('event_participations')
             .insert({
               event_id: eventId,
-              profile_id: activeProfile?.id || user.id,
+              profile_id: profileId,
               status: newStatus
             });
 
@@ -265,7 +287,23 @@ function EventPage() {
         setParticipation(newStatus);
       }
 
-      fetchEventData(); // Refresh participants
+      // Only refresh participants, not the entire event data
+      const { data: participantsData } = await supabase
+        .from('event_participations')
+        .select(`
+          *,
+          profiles:profile_id (
+            id,
+            full_name,
+            profile_picture_url
+          )
+        `)
+        .eq('event_id', eventId)
+        .order('created_at', { ascending: false });
+
+      if (participantsData) {
+        setParticipants(participantsData);
+      }
     } catch (err) {
       console.error('Error updating participation:', err);
       alert('Failed to update participation: ' + (err.message || 'Unknown error'));
@@ -273,6 +311,15 @@ function EventPage() {
       setUpdatingStatus(false);
     }
   };
+
+  // Memoize computed values to prevent unnecessary recalculations
+  // Must be called before any returns to avoid hooks order issues
+  const isOrganizer = useMemo(() => userId === event?.created_by, [userId, event?.created_by]);
+  const canModerate = useMemo(() => isAdmin || isOrganizer, [isAdmin, isOrganizer]);
+  const eventDate = useMemo(() => event?.date ? new Date(event.date) : null, [event?.date]);
+  const isPastEvent = useMemo(() => eventDate ? eventDate < new Date() : false, [eventDate]);
+  const attendingCount = useMemo(() => participants.filter(p => p.status === 'attending').length, [participants]);
+  const maybeCount = useMemo(() => participants.filter(p => p.status === 'maybe').length, [participants]);
 
   if (loading) {
     return (
@@ -328,13 +375,6 @@ function EventPage() {
       </Container>
     );
   }
-
-  const isOrganizer = user?.id === event.created_by;
-  const canModerate = isAdmin || isOrganizer;
-  const eventDate = new Date(event.date);
-  const isPastEvent = eventDate < new Date();
-  const attendingCount = participants.filter(p => p.status === 'attending').length;
-  const maybeCount = participants.filter(p => p.status === 'maybe').length;
 
   return (
     <Container maxWidth="md" sx={{ 
