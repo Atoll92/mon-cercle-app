@@ -982,6 +982,27 @@ function DashboardPage() {
                             </Box>
                           )}
                           
+                          {/* Super Admin Button - Only for super admin accounts */}
+                          {(user?.email === 'admin@conclav.com' || user?.app_metadata?.role === 'super_admin') && (
+                            <Box sx={{ mb: 2 }}>
+                              <Button 
+                                variant="contained" 
+                                color="warning" 
+                                component={Link} 
+                                to="/super-admin"
+                                startIcon={<AdminIcon />}
+                                size="small"
+                                fullWidth
+                              >
+                                Super Admin Panel
+                              </Button>
+                              
+                              <Typography variant="caption" color="text.secondary">
+                                System-wide administration
+                              </Typography>
+                            </Box>
+                          )}
+                          
                           {/* Subscription Status Card */}
                           <Box sx={{ mb: 2 }}>
                             {loadingNetworkDetails ? (
