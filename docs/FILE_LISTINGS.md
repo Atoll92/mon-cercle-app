@@ -33,7 +33,6 @@ This document contains detailed file listings for the Conclav codebase, organize
 - `DemoPage.jsx` - Feature demo page
 - `MediaTest.jsx` - Media feature testing
 - `MicroConclavPage.jsx` - Micro-conclav feature page
-- `ShimmeringTextPage.jsx` - Text animation demo
 - `SimpleLandingPage.jsx` - Alternative landing page
 - `DocumentationPage.jsx` - Help center with FAQ and user guides
 - `EnhancedLandingPage.jsx` - Modern privacy-focused landing page with advanced animations

@@ -34,7 +34,6 @@
   - `/src/components/TestNotificationSystem.jsx`
   - `/src/pages/MediaTest.jsx`
   - `/src/pages/DemoPage.jsx`
-  - `/src/pages/ShimmeringTextPage.jsx`
 - **Action**: Remove from routing or gate behind development environment
 
 ### 6. **TODO Comments** ⚠️
