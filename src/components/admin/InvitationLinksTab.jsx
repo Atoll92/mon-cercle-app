@@ -1,6 +1,7 @@
 // src/components/admin/InvitationLinksTab.jsx
 import React, { useState, useEffect } from 'react';
 import QRCode from 'qrcode';
+import { formatDate } from '../../utils/dateFormatting';
 import {
   Box,
   Typography,
@@ -192,9 +193,9 @@ const InvitationLinksTab = ({ networkId, darkMode, refreshTrigger }) => {
     });
   };
 
-  const formatDate = (dateString) => {
+  const formatDateValue = (dateString) => {
     if (!dateString) return 'Never';
-    return new Date(dateString).toLocaleDateString();
+    return formatDate(dateString);
   };
 
   const getStatusChip = (invitation) => {
@@ -297,8 +298,8 @@ const InvitationLinksTab = ({ networkId, darkMode, refreshTrigger }) => {
                       </Typography>
                     </Box>
                   </TableCell>
-                  <TableCell>{formatDate(invitation.expires_at)}</TableCell>
-                  <TableCell>{formatDate(invitation.created_at)}</TableCell>
+                  <TableCell>{formatDateValue(invitation.expires_at)}</TableCell>
+                  <TableCell>{formatDateValue(invitation.created_at)}</TableCell>
                   <TableCell align="right">
                     <Box display="flex" gap={0.5} justifyContent="flex-end">
                       <Tooltip title="Copy Link">

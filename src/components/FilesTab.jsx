@@ -7,7 +7,7 @@ import { useAuth } from '../context/authcontext';
 import { useProfile } from '../context/profileContext';
 import { useNetwork } from '../context/networkContext';
 import MembersDetailModal from './MembersDetailModal';
-import { formatDate } from '../utils/dateFormatting';
+import { formatDate, formatTimeAgo } from '../utils/dateFormatting';
 import {
   Box,
   Button,
@@ -44,7 +44,6 @@ import {
   ArrowForward as ArrowForwardIcon,
   Dashboard as DashboardIcon
 } from '@mui/icons-material';
-import { formatDistanceToNow } from 'date-fns';
 import { addMoodboardItem } from '../api/moodboards';
 
 // Component to display file icon based on file type
@@ -373,7 +372,7 @@ const FilesTab = ({ darkMode }) => {
                             }}
                           />
                           <Chip 
-                            label={t('filesTab.uploadedTimeAgo', { time: formatDistanceToNow(new Date(file.created_at)) })} 
+                            label={t('filesTab.uploadedTimeAgo', { time: formatTimeAgo(file.created_at) })} 
                             size="small" 
                             variant="outlined"
                             sx={{

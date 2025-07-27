@@ -44,7 +44,6 @@ import {
   Help as HelpIcon
 } from '@mui/icons-material';
 import { supabase } from '../supabaseclient';
-import { format } from 'date-fns';
 import EventsMap from '../components/EventsMap';
 import { formatEventDate } from '../utils/dateFormatting';
 

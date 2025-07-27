@@ -50,7 +50,7 @@ import {
   Sort as SortIcon,
   Search as SearchIcon
 } from '@mui/icons-material';
-import { formatDistanceToNow } from 'date-fns';
+import { formatTimeAgo } from '../utils/dateFormatting';
 
 // Component to display file icon based on file type
 const FileTypeIcon = ({ fileType }) => {
@@ -691,7 +691,7 @@ function SharedFilesPage() {
                             sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
                           />
                           <Chip 
-                            label={`Uploaded ${formatDistanceToNow(new Date(file.created_at))} ago`} 
+                            label={`Uploaded ${formatTimeAgo(file.created_at)}`} 
                             size="small" 
                             variant="outlined"
                             sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}

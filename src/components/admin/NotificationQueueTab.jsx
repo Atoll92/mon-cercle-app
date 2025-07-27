@@ -30,6 +30,7 @@ import {
   Email as EmailIcon
 } from '@mui/icons-material';
 import { supabase } from '../../supabaseclient';
+import { formatDateTime } from '../../utils/dateFormatting';
 import { processPendingNotifications } from '../../services/emailNotificationService';
 
 const NotificationQueueTab = () => {
@@ -128,9 +129,6 @@ const NotificationQueueTab = () => {
     loadNotifications();
   }, []);
 
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleString();
-  };
 
   const getStatusChip = (notification) => {
     if (notification.is_sent) {
@@ -275,7 +273,7 @@ const NotificationQueueTab = () => {
                 </TableCell>
                 <TableCell>
                   <Typography variant="caption">
-                    {formatDate(notification.created_at)}
+                    {formatDateTime(notification.created_at)}
                   </Typography>
                 </TableCell>
                 <TableCell>

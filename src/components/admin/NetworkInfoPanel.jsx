@@ -26,6 +26,7 @@ import {
 } from '@mui/icons-material';
 import { getNetworkStorageInfo } from '../../api/networks';
 import { useNavigate } from 'react-router-dom';
+import { formatDate } from '../../utils/dateFormatting';
 
 const NetworkInfoPanel = ({ network, members, darkMode }) => {
   const { t } = useTranslation();
@@ -34,15 +35,6 @@ const NetworkInfoPanel = ({ network, members, darkMode }) => {
   const [storageInfo, setStorageInfo] = useState(null);
   const [storageLoading, setStorageLoading] = useState(true);
   
-  // Calculate creation date in a more user-friendly format
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString(undefined, { 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
-    });
-  };
   
   // Format storage size
   const formatStorageSize = (mb) => {

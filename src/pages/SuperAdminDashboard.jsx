@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/authcontext';
 import { useNavigate } from 'react-router-dom';
+import { formatDate } from '../utils/dateFormatting';
 import {
   Container,
   Typography,
@@ -588,7 +589,7 @@ const SuperAdminDashboard = () => {
                           />
                           {network.trial_end_date && (
                             <Typography variant="caption" display="block" color="text.secondary">
-                              Ends: {new Date(network.trial_end_date).toLocaleDateString()}
+                              Ends: {formatDate(network.trial_end_date)}
                             </Typography>
                           )}
                         </Box>
@@ -602,7 +603,7 @@ const SuperAdminDashboard = () => {
                     </TableCell>
                     <TableCell>
                       <Typography variant="body2">
-                        {new Date(network.created_at).toLocaleDateString()}
+                        {formatDate(network.created_at)}
                       </Typography>
                     </TableCell>
                     <TableCell>

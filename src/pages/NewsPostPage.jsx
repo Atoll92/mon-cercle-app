@@ -27,7 +27,7 @@ import {
   Flag as FlagIcon
 } from '@mui/icons-material';
 import { supabase } from '../supabaseclient';
-import { format } from 'date-fns';
+import { formatDate, formatDateTime } from '../utils/dateFormatting';
 import MediaPlayer from '../components/MediaPlayer';
 import { sanitizeRichText } from '../utils/sanitizeHtml';
 
@@ -261,7 +261,7 @@ function NewsPostPage() {
           
           <Chip
             icon={<CalendarIcon />}
-            label={format(new Date(newsPost.created_at), 'MMMM d, yyyy')}
+            label={formatDate(newsPost.created_at, { month: 'long', day: 'numeric', year: 'numeric' })}
             size="small"
           />
           
@@ -359,12 +359,12 @@ function NewsPostPage() {
         
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <Typography variant="caption" color="text.secondary">
-            Published on {format(new Date(newsPost.created_at), 'MMMM d, yyyy at h:mm a')}
+            Published on {formatDateTime(newsPost.created_at, { month: 'long', day: 'numeric', year: 'numeric' })}
           </Typography>
           
           {newsPost.updated_at && newsPost.updated_at !== newsPost.created_at && (
             <Typography variant="caption" color="text.secondary">
-              Last updated: {format(new Date(newsPost.updated_at), 'MMMM d, yyyy')}
+              Last updated: {formatDate(newsPost.updated_at, { month: 'long', day: 'numeric', year: 'numeric' })}
             </Typography>
           )}
         </Box>

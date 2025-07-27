@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { formatDate, formatDateTime } from '../../utils/dateFormatting';
 import {
   Box,
   Card,
@@ -335,7 +336,7 @@ const PollsTab = ({ networkId }) => {
                     {poll.ends_at && (
                       <Chip
                         icon={<ScheduleIcon />}
-                        label={`Ends ${new Date(poll.ends_at).toLocaleDateString()}`}
+                        label={`Ends ${formatDate(poll.ends_at)}`}
                         size="small"
                         variant="outlined"
                       />
@@ -481,7 +482,7 @@ const PollsTab = ({ networkId }) => {
                 <List dense>
                   {dateOptions.map((date, index) => (
                     <ListItem key={index}>
-                      <ListItemText primary={new Date(date).toLocaleString()} />
+                      <ListItemText primary={formatDateTime(date)} />
                       <ListItemSecondaryAction>
                         <IconButton edge="end" onClick={() => removeDateOption(index)}>
                           <DeleteIcon />
@@ -611,7 +612,7 @@ const PollsTab = ({ networkId }) => {
                         .sort(([a], [b]) => new Date(a) - new Date(b))
                         .map(([date, data]) => (
                           <TableRow key={date}>
-                            <TableCell>{new Date(date).toLocaleString()}</TableCell>
+                            <TableCell>{formatDateTime(date)}</TableCell>
                             <TableCell>{data.count}</TableCell>
                             {!selectedPoll.is_anonymous && (
                               <TableCell>
@@ -684,7 +685,7 @@ const PollsTab = ({ networkId }) => {
                             selectedPoll.poll_type === 'yes_no'
                               ? vote.selected_options[0]
                               : selectedPoll.poll_type === 'date_picker'
-                              ? vote.selected_options.map(d => new Date(d).toLocaleDateString()).join(', ')
+                              ? vote.selected_options.map(d => formatDate(d)).join(', ')
                               : vote.selected_options.join(', ')
                           }`}
                         />

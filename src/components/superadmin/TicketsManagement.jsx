@@ -56,7 +56,7 @@ import {
   sendTicketMessage,
   getTicketStatistics 
 } from '../../api/tickets';
-import { formatDistanceToNow, format } from 'date-fns';
+import { formatTimeAgo, formatDateTime } from '../../utils/dateFormatting';
 
 const TicketsManagement = () => {
   const { user } = useAuth();
@@ -473,7 +473,7 @@ const TicketsManagement = () => {
                     )}
                   </TableCell>
                   <TableCell>
-                    {formatDistanceToNow(new Date(ticket.created_at), { addSuffix: true })}
+                    {formatTimeAgo(ticket.created_at)}
                   </TableCell>
                   <TableCell>
                     <IconButton
@@ -550,11 +550,11 @@ const TicketsManagement = () => {
                       <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>{ticketDetails.description}</Typography>
                       <Box sx={{ mt: 2, display: 'flex', gap: 2 }}>
                         <Typography variant="caption" color="text.secondary">
-                          Created {format(new Date(ticketDetails.created_at), 'PPpp')}
+                          Created {formatDateTime(ticketDetails.created_at)}
                         </Typography>
                         {ticketDetails.resolved_at && (
                           <Typography variant="caption" color="text.secondary">
-                            • Resolved {format(new Date(ticketDetails.resolved_at), 'PPpp')}
+                            • Resolved {formatDateTime(ticketDetails.resolved_at)}
                           </Typography>
                         )}
                       </Box>
@@ -587,7 +587,7 @@ const TicketsManagement = () => {
                                     )}
                                   </Typography>
                                   <Typography variant="caption" color="text.secondary">
-                                    {format(new Date(message.created_at), 'PPp')}
+                                    {formatDateTime(message.created_at)}
                                   </Typography>
                                 </Box>
                               }

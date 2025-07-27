@@ -31,7 +31,7 @@ import {
   AudioFile as AudioIcon
 } from '@mui/icons-material';
 import { supabase } from '../supabaseclient';
-import { format } from 'date-fns';
+import { formatDate } from '../utils/dateFormatting';
 import MediaPlayer from '../components/MediaPlayer';
 import LinkPreview from '../components/LinkPreview';
 import LazyImage from '../components/LazyImage';
@@ -255,7 +255,7 @@ function PostPage() {
                 {author.full_name}
               </Typography>
               <Typography variant="caption" color="text.secondary">
-                Posted on {format(new Date(post.created_at), 'MMMM d, yyyy')}
+                Posted on {formatDate(post.created_at, { year: 'numeric', month: 'long', day: 'numeric' })}
               </Typography>
             </Box>
           </Box>

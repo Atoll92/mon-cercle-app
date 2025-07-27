@@ -54,7 +54,7 @@ import {
   Settings as SettingsIcon,
   Euro as EuroIcon
 } from '@mui/icons-material';
-import { format } from 'date-fns';
+import { formatDate } from '../../utils/dateFormatting';
 import { useTheme as useMuiTheme } from '@mui/material/styles';
 
 function MonetizationTab({ networkId, network }) {
@@ -329,7 +329,7 @@ function MonetizationTab({ networkId, network }) {
                       {events.map((event) => (
                         <TableRow key={event.id}>
                           <TableCell>{event.title}</TableCell>
-                          <TableCell>{format(new Date(event.date), 'MMM d, yyyy')}</TableCell>
+                          <TableCell>{formatDate(event.date, { month: 'short', day: 'numeric', year: 'numeric' })}</TableCell>
                           <TableCell>
                             {editingEvent === event.id ? (
                               <TextField

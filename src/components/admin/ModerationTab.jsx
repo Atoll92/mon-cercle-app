@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import MembersDetailModal from '../MembersDetailModal';
+import { formatDate, formatDateTime } from '../../utils/dateFormatting';
 import {
   Box,
   Typography,
@@ -849,7 +850,7 @@ const ModerationTab = ({ network, user, members = [], darkMode = false }) => {
                         </Box>
                       </TableCell>
                       <TableCell>
-                        {new Date(item.created_at).toLocaleDateString()}
+                        {formatDate(item.created_at)}
                       </TableCell>
                       <TableCell>
                         {item.is_hidden && (
@@ -1153,7 +1154,7 @@ const ModerationTab = ({ network, user, members = [], darkMode = false }) => {
                       sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                     >
                       <TableCell>
-                        {new Date(log.created_at).toLocaleDateString()} {new Date(log.created_at).toLocaleTimeString()}
+                        {formatDateTime(log.created_at)}
                       </TableCell>
                       <TableCell>
                         {log.moderators?.full_name || 'Unknown Moderator'}

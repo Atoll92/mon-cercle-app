@@ -3,6 +3,7 @@ import { useDirectMessages } from '../context/directMessagesContext';
 import { useAuth } from '../context/authcontext';
 import { useProfile } from '../context/profileContext';
 import { deleteConversation } from '../api/directMessages';
+import { formatTime as formatTimeUtil, formatDate } from '../utils/dateFormatting';
 import {
   List,
   ListItem,
@@ -142,13 +143,13 @@ function DirectMessagesList({ onSelectConversation, onConversationDeleted }) {
     const isYesterday = date.toDateString() === yesterday.toDateString();
     
     if (isToday) {
-      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      return formatTimeUtil(timestamp);
     } else if (isYesterday) {
       return 'Yesterday';
     } else if (now.getFullYear() === date.getFullYear()) {
-      return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+      return formatDate(timestamp, { month: 'short', day: 'numeric' });
     } else {
-      return date.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
+      return formatDate(timestamp, { month: 'short', day: 'numeric', year: 'numeric' });
     }
   };
 

@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { AnimatedCard, StaggeredListItem, PageTransition } from './AnimatedComponents';
 import EventDetailsDialog from './EventDetailsDialog';
 import { fetchNetworkCategories } from '../api/categories';
-import { formatEventDate } from '../utils/dateFormatting';
+import { formatEventDate, formatDate } from '../utils/dateFormatting';
 import {
   Box,
   Typography,
@@ -622,7 +622,7 @@ const EventsTab = ({
                   <ChevronLeftIcon />
                 </IconButton>
                 <Typography variant="h6" sx={{ fontWeight: 'medium', minWidth: '140px', textAlign: 'center' }}>
-                  {format(calendarDate, 'MMMM yyyy')}
+                  {formatDate(calendarDate, { month: 'long', year: 'numeric' })}
                 </Typography>
                 <IconButton onClick={navigateToNextMonth} size="small">
                   <ChevronRightIcon />

@@ -5,6 +5,7 @@ import MembersDetailModal from './MembersDetailModal';
 import CreatePostModal from './CreatePostModal';
 import PostCard from './PostCard';
 import Spinner from './Spinner';
+import { formatTimeAgo } from '../utils/dateFormatting';
 import {
   Typography,
   Paper,
@@ -438,30 +439,6 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
     };
   }, []);
 
-  // Format date in a user-friendly way
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffTime = Math.abs(now - date);
-    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-    
-    if (diffDays === 0) {
-      const diffHours = Math.floor(diffTime / (1000 * 60 * 60));
-      if (diffHours === 0) {
-        const diffMinutes = Math.floor(diffTime / (1000 * 60));
-        return diffMinutes === 0 ? t('socialWall.justNow') : t('socialWall.minutesAgo', { minutes: diffMinutes });
-      }
-      return t('socialWall.hoursAgo', { hours: diffHours });
-    } else if (diffDays < 7) {
-      return t('socialWall.daysAgo', { days: diffDays });
-    } else {
-      return date.toLocaleDateString(undefined, { 
-        year: 'numeric', 
-        month: 'short', 
-        day: 'numeric' 
-      });
-    }
-  };
 
   // Cleanup audio on unmount
   useEffect(() => {
@@ -968,7 +945,7 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                         variant="caption" 
                         color={customFadedText}
                       >
-                        {formatDate(item.createdAt)}
+                        {formatTimeAgo(item.createdAt)}
                       </Typography>
                     }
                   />
