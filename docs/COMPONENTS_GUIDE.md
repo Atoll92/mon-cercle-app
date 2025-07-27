@@ -237,16 +237,6 @@ This document describes the React components in the Conclav application, organiz
 - Fade, slide, scale effects
 - Stagger animations
 
-**ShimmerProvider.jsx**
-- Dynamic shimmer effects
-- Scroll and time-based
-- Performance optimized
-
-**ShimmeryText.jsx**
-- Animated text effects
-- Customizable timing
-- Multiple animation modes
-
 **TextCycler.jsx**
 - Cycling text display
 - Smooth transitions

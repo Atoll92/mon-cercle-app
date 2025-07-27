@@ -25,16 +25,6 @@ This guide documents all the animations implemented across the Mon Cercle App.
    - `StaggeredListItem` - List items with stagger animation
    - `PageTransition` - Page-level transitions
 
-4. **`src/components/ShimmerProvider.jsx`** - Dynamic shimmer effects
-   - Provides context for shimmer animations
-   - Tracks scroll position and elapsed time
-   - Controls shimmer effect timing across components
-
-5. **`src/components/ShimmeryText.jsx`** - Animated text with shimmer
-   - Text with dynamic shimmer effect
-   - Responds to scroll and time from ShimmerProvider
-   - Customizable colors and animation speed
-
 6. **`src/components/TextCycler.jsx`** - Text cycling animations
    - Cycles through array of text strings
    - Smooth fade transitions between texts

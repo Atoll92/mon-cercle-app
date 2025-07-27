@@ -70,8 +70,6 @@ This document contains detailed component listings for the Conclav codebase, org
 
 ### Animation & Visual Effects
 - `AnimatedComponents.jsx` - Animation wrappers and effects
-- `ShimmerProvider.jsx` - Shimmer effects provider
-- `ShimmeryText.jsx` - Text animations and shimmer effects
 - `TextCycler.jsx` - Cycling text display component
 - `ThreeJSBackground.jsx` - 3D background graphics
 - `LoadingSkeleton.jsx` - Loading state skeletons
