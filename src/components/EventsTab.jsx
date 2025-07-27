@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { AnimatedCard, StaggeredListItem, PageTransition } from './AnimatedComponents';
 import EventDetailsDialog from './EventDetailsDialog';
 import { fetchNetworkCategories } from '../api/categories';
+import { formatEventDate } from '../utils/dateFormatting';
 import {
   Box,
   Typography,
@@ -86,7 +87,7 @@ const EventsTab = ({
       return {
         event_id: event.id,
         event_title: event.title,
-        event_date: new Date(event.date).toLocaleDateString(),
+        event_date: formatEventDate(event.date),
         participation_status: participation ? participation.status : 'none',
       };
     });

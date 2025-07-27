@@ -46,6 +46,7 @@ import {
 import { supabase } from '../supabaseclient';
 import { format } from 'date-fns';
 import EventsMap from '../components/EventsMap';
+import { formatEventDate } from '../utils/dateFormatting';
 
 function EventPage() {
   const { networkId, eventId } = useParams();
@@ -445,12 +446,8 @@ function EventPage() {
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, flexWrap: 'wrap', gap: 2 }}>
               <Chip
                 icon={<CalendarIcon />}
-                label={format(eventDate, 'EEEE, MMMM d, yyyy')}
+                label={formatEventDate(event.date, true)}
                 color={isPastEvent ? 'default' : 'primary'}
-              />
-              <Chip
-                icon={<ScheduleIcon />}
-                label={format(eventDate, 'h:mm a')}
               />
               {isPastEvent && (
                 <Chip

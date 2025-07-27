@@ -20,6 +20,7 @@ import OnboardingGuide from '../components/OnboardingGuide';
 import WelcomeMessage from '../components/WelcomeMessage';
 import { fetchNetworkDetails } from '../api/networks';
 import Spinner from '../components/Spinner';
+import { formatEventDate } from '../utils/dateFormatting';
 import { 
   AttachMoney as AttachMoneyIcon,
   Star as StarIcon,
@@ -1505,7 +1506,7 @@ function DashboardPage() {
                                       <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1, mb: 0.5 }}>
                                         <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center' }}>
                                           <EventIcon fontSize="inherit" sx={{ mr: 0.5 }} />
-                                          {new Date(event.date).toLocaleDateString()}
+                                          {formatEventDate(event.date)}
                                         </Typography>
                                         
                                         <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center' }}>

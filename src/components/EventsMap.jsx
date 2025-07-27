@@ -4,6 +4,7 @@ import { Box, Typography, Paper } from '@mui/material';
 import Spinner from './Spinner';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
+import { formatEventDate } from '../utils/dateFormatting';
 
 // Use the provided token and custom style
 const MAPBOX_TOKEN = 'pk.eyJ1IjoiZGdjb2Jvc3MiLCJhIjoiY2xzY2JkNTdqMGJzbDJrbzF2Zm84aWxwZCJ9.b9GP9FrGHsVquJf7ubWfKQ';
@@ -152,7 +153,7 @@ export default function EventsMap({ events = [], onEventSelect, initialCoordinat
               <div style="padding: 8px; max-width: 200px;">
                 <h4 style="margin: 0 0 8px 0;">${event.title}</h4>
                 <p style="margin: 4px 0; font-size: 12px; color: #555;">
-                  ${new Date(event.date).toLocaleDateString()}
+                  ${formatEventDate(event.date)}
                 </p>
                 <p style="margin: 4px 0; font-size: 12px; color: #555;">
                   ${event.location}

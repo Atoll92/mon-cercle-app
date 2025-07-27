@@ -52,6 +52,7 @@ import {
   Dashboard as DashboardIcon,
   Badge as Badge
 } from '@mui/icons-material';
+import { formatEventDate } from '../utils/dateFormatting';
 
 function ProfilePage() {
   const { userId } = useParams();
@@ -652,7 +653,7 @@ function ProfilePage() {
                                   sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
                                 >
                                   <CalendarMonthIcon fontSize="inherit" />
-                                  {new Date(event.date).toLocaleDateString()}
+                                  {formatEventDate(event.date)}
                                 </Typography>
                               </Box>
                             </Box>
@@ -953,7 +954,7 @@ function ProfilePage() {
                         <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                           <CalendarMonthIcon fontSize="small" color="action" sx={{ mr: 1 }} />
                           <Typography variant="body2" color="text.secondary">
-                            {new Date(event.date).toLocaleDateString()}
+                            {formatEventDate(event.date)}
                           </Typography>
                         </Box>
                         
