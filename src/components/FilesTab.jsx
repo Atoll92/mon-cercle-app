@@ -7,6 +7,7 @@ import { useAuth } from '../context/authcontext';
 import { useProfile } from '../context/profileContext';
 import { useNetwork } from '../context/networkContext';
 import MembersDetailModal from './MembersDetailModal';
+import { formatDate } from '../utils/dateFormatting';
 import {
   Box,
   Button,
@@ -459,7 +460,7 @@ const FilesTab = ({ darkMode }) => {
                       </ListItemIcon>
                       <ListItemText
                         primary={moodboard.title}
-                        secondary={`${moodboard.permissions} • Created ${new Date(moodboard.created_at).toLocaleDateString()}`}
+                        secondary={`${moodboard.permissions} • Created ${formatDate(moodboard.created_at)}`}
                       />
                     </ListItem>
                   ))}

@@ -7,6 +7,7 @@ import { useProfile } from '../context/profileContext';
 // Import the useTheme hook from your ThemeProvider
 import { useTheme } from '../components/ThemeProvider';
 import { useTranslation } from '../hooks/useTranslation';
+import { formatDateTime } from '../utils/dateFormatting';
 
 import {
   Container,
@@ -395,9 +396,6 @@ const WikiPage = () => {
     }
   };
 
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleString();
-  };
 
   if (loading) {
     return (
@@ -528,7 +526,7 @@ const WikiPage = () => {
               </Button>
             }
           >
-            You are viewing revision #{viewingRevision.revision_number} created by {viewingRevision.creator?.full_name || 'Unknown'} on {formatDate(viewingRevision.created_at)}
+            You are viewing revision #{viewingRevision.revision_number} created by {viewingRevision.creator?.full_name || 'Unknown'} on {formatDateTime(viewingRevision.created_at)}
             {isAdmin && !viewingRevision.is_approved && (
               <Box sx={{ mt: 1 }}>
                 <Button 
@@ -614,12 +612,12 @@ const WikiPage = () => {
         {/* Page metadata */}
         <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', color: 'text.secondary', flexWrap: 'wrap' }}>
           <Typography variant="body2" sx={{ mr: 3 }}>
-            Created by {page.creator?.full_name || 'Unknown'} on {formatDate(page.created_at)}
+            Created by {page.creator?.full_name || 'Unknown'} on {formatDateTime(page.created_at)}
           </Typography>
           
           {page.last_edited_by && (
             <Typography variant="body2" sx={{ mr: 3 }}>
-              Last edited by {page.editor?.full_name || 'Unknown'} on {formatDate(page.updated_at)}
+              Last edited by {page.editor?.full_name || 'Unknown'} on {formatDateTime(page.updated_at)}
             </Typography>
           )}
           
@@ -769,7 +767,7 @@ const WikiPage = () => {
                           {comment.content}
                         </Typography>
                         <Typography variant="caption" color="text.secondary">
-                          Posted on {formatDate(comment.created_at)}
+                          Posted on {formatDateTime(comment.created_at)}
                         </Typography>
                       </>
                     }
@@ -834,7 +832,7 @@ const WikiPage = () => {
                     secondary={
                       <>
                         <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-                          Created by {revision.creator?.full_name || 'Unknown'} on {formatDate(revision.created_at)}
+                          Created by {revision.creator?.full_name || 'Unknown'} on {formatDateTime(revision.created_at)}
                         </Typography>
                         {revision.comment && (
                           <Typography variant="caption" sx={{ display: 'block', mt: 0.5 }}>
@@ -843,7 +841,7 @@ const WikiPage = () => {
                         )}
                         {revision.is_approved && revision.approver && (
                           <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
-                            Approved by {revision.approver.full_name} on {formatDate(revision.approved_at)}
+                            Approved by {revision.approver.full_name} on {formatDateTime(revision.approved_at)}
                           </Typography>
                         )}
                       </>

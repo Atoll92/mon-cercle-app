@@ -12,6 +12,7 @@ import {
   getCustomerPortalUrl, 
   loadRealInvoices 
 } from '../services/subscriptionService';
+import { formatDate } from '../utils/dateFormatting';
 
 // UI Components
 import Spinner from '../components/Spinner';
@@ -569,14 +570,14 @@ const BillingPage = () => {
                   {networkDetails?.subscription_end_date && networkDetails.subscription_status !== 'canceled' && (
                     <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center' }}>
                       <ScheduleIcon fontSize="small" sx={{ mr: 1 }} />
-                      Next billing date: {new Date(networkDetails.subscription_end_date).toLocaleDateString()}
+                      Next billing date: {formatDate(networkDetails.subscription_end_date)}
                     </Typography>
                   )}
                   
                   {networkDetails?.subscription_end_date && networkDetails.subscription_status === 'canceled' && (
                     <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', color: 'warning.main' }}>
                       <HourglassEmptyIcon fontSize="small" sx={{ mr: 1 }} />
-                      Access until: {new Date(networkDetails.subscription_end_date).toLocaleDateString()}
+                      Access until: {formatDate(networkDetails.subscription_end_date)}
                     </Typography>
                   )}
                 </Box>
@@ -794,7 +795,7 @@ const BillingPage = () => {
                       {paymentHistory.map((invoice) => (
                         <TableRow key={invoice.id}>
                           <TableCell>
-                            {new Date(invoice.date).toLocaleDateString()}
+                            {formatDate(invoice.date)}
                           </TableCell>
                           <TableCell>€{invoice.amount}</TableCell>
                           <TableCell>
@@ -1059,7 +1060,7 @@ const BillingPage = () => {
             <AccordionDetails>
               <Typography>
                 Your subscription will automatically renew on {networkDetails?.subscription_end_date ? 
-                  new Date(networkDetails.subscription_end_date).toLocaleDateString() : 
+                  formatDate(networkDetails.subscription_end_date) : 
                   'the end of your billing cycle'}. You can cancel anytime before this date to prevent auto-renewal.
               </Typography>
             </AccordionDetails>
@@ -1129,7 +1130,7 @@ const BillingPage = () => {
         </DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Are you sure you want to cancel your subscription? You'll still have access to premium features until the end of your current billing period on <strong>{networkDetails?.subscription_end_date && new Date(networkDetails.subscription_end_date).toLocaleDateString()}</strong>. After that, your plan will be downgraded to the Family plan.
+            Are you sure you want to cancel your subscription? You'll still have access to premium features until the end of your current billing period on <strong>{networkDetails?.subscription_end_date && formatDate(networkDetails.subscription_end_date)}</strong>. After that, your plan will be downgraded to the Family plan.
           </DialogContentText>
         </DialogContent>
         <DialogActions>

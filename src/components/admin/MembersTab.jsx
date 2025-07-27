@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from '../../hooks/useTranslation.jsx';
 import Spinner from '../Spinner';
+import { formatDate } from '../../utils/dateFormatting';
 import {
   Box,
   Typography,
@@ -450,7 +451,7 @@ const MembersTab = ({ members, activeProfile, network, onMembersChange, darkMode
                         </TableCell>
                         <TableCell>
                           <Typography variant="body2" color="text.secondary">
-                            {new Date(invitation.created_at).toLocaleDateString()}
+                            {formatDate(invitation.created_at)}
                           </Typography>
                         </TableCell>
                         <TableCell>
@@ -462,7 +463,7 @@ const MembersTab = ({ members, activeProfile, network, onMembersChange, darkMode
                         </TableCell>
                         <TableCell>
                           {invitation.status === 'accepted' ? (
-                            <Tooltip title={t('admin.members.acceptedOn', { date: new Date(invitation.updated_at || invitation.created_at).toLocaleDateString() })}>
+                            <Tooltip title={t('admin.members.acceptedOn', { date: formatDate(invitation.updated_at || invitation.created_at) })}>
                               <Chip 
                                 label={t('admin.members.status.accepted')} 
                                 color="success"

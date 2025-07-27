@@ -4,6 +4,7 @@ import { useProfile } from '../context/profileContext';
 import { useDirectMessages } from '../context/directMessagesContext';
 import { getConversationMessages, sendDirectMessage, markMessagesAsRead } from '../api/directMessages';
 import { supabase } from '../supabaseclient';
+import { formatTime, formatDate } from '../utils/dateFormatting';
 import Spinner from './Spinner';
 import {
   Box,
@@ -322,10 +323,7 @@ if (refreshConversations) {
   
   // Format timestamp
   const formatMessageTime = (timestamp) => {
-    if (!timestamp) return '';
-    
-    const date = new Date(timestamp);
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return formatTime(timestamp);
   };
   
   // Format date for date headers
@@ -342,7 +340,7 @@ if (refreshConversations) {
     } else if (date.toDateString() === yesterday.toDateString()) {
       return 'Yesterday';
     } else {
-      return date.toLocaleDateString(undefined, { 
+      return formatDate(timestamp, { 
         weekday: 'long', 
         month: 'long', 
         day: 'numeric'

@@ -4,6 +4,7 @@ import { useAuth } from '../context/authcontext';
 import { useProfile } from '../context/profileContext';
 import { useNetwork } from '../context/networkContext';
 import { supabase } from '../supabaseclient';
+import { formatDate } from '../utils/dateFormatting';
 import MembersDetailModal from './MembersDetailModal';
 import { AnimatedCard, StaggeredListItem, PageTransition } from './AnimatedComponents';
 import { NewsItemSkeleton } from './LoadingSkeleton';
@@ -747,7 +748,7 @@ const NewsTab = ({ darkMode }) => {
                   >
                     {formatMemberName(post.created_by)}
                   </Box>
-                  {' • '}{new Date(post.created_at).toLocaleDateString()}
+                  {' • '}{formatDate(post.created_at)}
                 </Typography>
               </Box>
               

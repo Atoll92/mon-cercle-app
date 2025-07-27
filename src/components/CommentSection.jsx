@@ -30,7 +30,7 @@ import {
   Close as CloseIcon
 } from '@mui/icons-material';
 import { getItemComments, addComment, deleteComment, toggleCommentVisibility } from '../api/comments';
-import { formatDistanceToNow } from 'date-fns';
+import { formatTimeAgo } from '../utils/dateFormatting';
 
 const CommentSection = ({ itemType, itemId, darkMode, isAdmin = false, initialCount = 0, onMemberClick, defaultExpanded = false }) => {
   const { t } = useTranslation();
@@ -229,7 +229,7 @@ const CommentSection = ({ itemType, itemId, darkMode, isAdmin = false, initialCo
                   fontSize: '0.75rem'
                 }}
               >
-                {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
+                {formatTimeAgo(comment.created_at)}
               </Typography>
               {comment.is_hidden && (
                 <Chip

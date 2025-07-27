@@ -33,7 +33,7 @@ import LinkPreview from './LinkPreview';
 import ImageViewerModal from './ImageViewerModal';
 import CreatePostModal from './CreatePostModal';
 import MembersDetailModal from './MembersDetailModal';
-import { formatDistanceToNow } from 'date-fns';
+import { formatTimeAgo } from '../utils/dateFormatting';
 import { Link, useNavigate } from 'react-router-dom';
 import { getCommentCount } from '../api/comments';
 import { deletePost } from '../api/posts';
@@ -137,7 +137,7 @@ const PostCard = ({
   const mediaType = getMediaType(mediaUrl, post.media_type);
 
   // Format post creation time
-  const timeAgo = post.created_at ? formatDistanceToNow(new Date(post.created_at), { addSuffix: true }) : '';
+  const timeAgo = post.created_at ? formatTimeAgo(post.created_at) : '';
 
   // Handle menu actions
   const handleMenuClick = (event) => {

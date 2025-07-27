@@ -46,7 +46,7 @@ import {
   sendTicketMessage,
   closeTicket 
 } from '../../api/tickets';
-import { formatDistanceToNow } from 'date-fns';
+import { formatTimeAgo } from '../../utils/dateFormatting';
 
 const SupportTicketsTab = ({ network, user, activeProfile, darkMode }) => {
   const [tickets, setTickets] = useState([]);
@@ -262,7 +262,7 @@ const SupportTicketsTab = ({ network, user, activeProfile, darkMode }) => {
                     />
                   </TableCell>
                   <TableCell>
-                    {formatDistanceToNow(new Date(ticket.created_at), { addSuffix: true })}
+                    {formatTimeAgo(ticket.created_at)}
                   </TableCell>
                   <TableCell>
                     <IconButton
@@ -395,11 +395,11 @@ const SupportTicketsTab = ({ network, user, activeProfile, darkMode }) => {
                     <Typography variant="body2">{ticketDetails.description}</Typography>
                     <Box sx={{ mt: 2, display: 'flex', gap: 2 }}>
                       <Typography variant="caption" color="text.secondary">
-                        Created {formatDistanceToNow(new Date(ticketDetails.created_at), { addSuffix: true })}
+                        Created {formatTimeAgo(ticketDetails.created_at)}
                       </Typography>
                       {ticketDetails.resolved_at && (
                         <Typography variant="caption" color="text.secondary">
-                          • Resolved {formatDistanceToNow(new Date(ticketDetails.resolved_at), { addSuffix: true })}
+                          • Resolved {formatTimeAgo(ticketDetails.resolved_at)}
                         </Typography>
                       )}
                     </Box>
@@ -452,7 +452,7 @@ const SupportTicketsTab = ({ network, user, activeProfile, darkMode }) => {
                                   {message.sender?.full_name || 'System'}
                                 </Typography>
                                 <Typography variant="caption" color="text.secondary">
-                                  {formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}
+                                  {formatTimeAgo(message.created_at)}
                                 </Typography>
                               </Box>
                             }

@@ -4,6 +4,7 @@ import { supabase } from '../supabaseclient';
 import { useAuth } from '../context/authcontext';
 import { useProfile } from '../context/profileContext';
 import { fetchNetworkMembers, sendChatMessage, getUserProfile } from '../api/networks';
+import { formatTime } from '../utils/dateFormatting';
 import {
   Box,
   List,
@@ -1490,7 +1491,7 @@ const renderMessageContent = (message) => {
                           ml: 1
                         }}
                       >
-                        {new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        {formatTime(message.created_at)}
                         {message.pending && ' (sending...)'}
                       </Typography>
                     </Box>

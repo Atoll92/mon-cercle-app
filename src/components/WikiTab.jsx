@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from '../hooks/useTranslation';
+import { formatDate } from '../utils/dateFormatting';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseclient';
 import { useAuth } from '../context/authcontext';
@@ -430,7 +431,7 @@ const WikiTab = ({ networkId }) => {
                     </ListItemIcon>
                     <ListItemText 
                       primary={page.title}
-                      secondary={t('wikiTab.updatedOn', { date: new Date(page.updated_at).toLocaleDateString() })}
+                      secondary={t('wikiTab.updatedOn', { date: formatDate(page.updated_at) })}
                     />
                   </ListItemButton>
                 ))}
