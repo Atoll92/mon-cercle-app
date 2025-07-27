@@ -24,6 +24,7 @@ import {
   ArrowForward,
 } from '@mui/icons-material';
 import EventParticipation from './EventParticipation';
+import { formatEventDate } from '../utils/dateFormatting';
 
 const EventDetailsDialog = ({ 
   open, 
@@ -34,11 +35,6 @@ const EventDetailsDialog = ({
   showParticipants = true 
 }) => {
   if (!event) return null;
-
-  const formatEventDate = (dateString) => {
-    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-    return new Date(dateString).toLocaleDateString(undefined, options);
-  };
 
   return (
     <Dialog
@@ -124,7 +120,7 @@ const EventDetailsDialog = ({
                         Date & Time
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
-                        {formatEventDate(event.date)}
+                        {formatEventDate(event.date, true)}
                       </Typography>
                     </Box>
                   </Box>

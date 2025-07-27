@@ -22,10 +22,10 @@ import {
   Image as ImageIcon
 } from '@mui/icons-material';
 import AddressSuggestions from './AddressSuggestions';
-import { createEvent } from '../api/networks';
+import { createEvent, updateEvent } from '../api/networks';
 import { fetchNetworkCategories } from '../api/categories';
 
-const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated }) => {
+const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated, editingEvent = null, onEventUpdated }) => {
   const [eventForm, setEventForm] = useState({
     title: '',
     date: '',
@@ -59,7 +59,7 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
     }
   }, [networkId]);
 
-  // Reset form when dialog opens/closes
+  // Reset form when dialog opens/closes or populate with editing data
   useEffect(() => {
     if (!open) {
       setEventForm({
@@ -79,8 +79,45 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
       setEventImageFile(null);
       setEventImagePreview(null);
       setError(null);
+    } else if (editingEvent) {
+      // Format date for datetime-local input
+      let formattedDate = '';
+      if (editingEvent.date) {
+        const date = new Date(editingEvent.date);
+        // Format as YYYY-MM-DDTHH:mm for datetime-local input
+        formattedDate = date.toISOString().slice(0, 16);
+      }
+      
+      // Populate form with event data for editing
+      setEventForm({
+        title: editingEvent.title || '',
+        date: formattedDate,
+        location: editingEvent.location || '',
+        description: editingEvent.description || '',
+        capacity: editingEvent.capacity || '',
+        coordinates: editingEvent.coordinates || null,
+        event_link: editingEvent.event_link || '',
+        price: editingEvent.price || 0,
+        currency: editingEvent.currency || 'EUR',
+        max_tickets: editingEvent.max_tickets || '',
+        category_id: editingEvent.category_id || ''
+      });
+      // Set location suggestion if we have coordinates
+      if (editingEvent.location) {
+        setLocationSuggestion({
+          place_name: editingEvent.location,
+          center: editingEvent.coordinates ? [
+            editingEvent.coordinates.longitude,
+            editingEvent.coordinates.latitude
+          ] : null
+        });
+      }
+      // Set existing image as preview
+      if (editingEvent.cover_image_url) {
+        setEventImagePreview(editingEvent.cover_image_url);
+      }
     }
-  }, [open]);
+  }, [open, editingEvent]);
 
   const handleLocationChange = (suggestion) => {
     setLocationSuggestion(suggestion);
@@ -140,20 +177,32 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
         category_id: eventForm.category_id || null
       };
 
-      const result = await createEvent(networkId, profileId, eventData, eventImageFile);
-      
-      if (!result.success) {
-        throw new Error(result.message || 'Failed to create event');
-      }
-
-      // Success
-      if (onEventCreated) {
-        onEventCreated(result.event);
+      let result;
+      if (editingEvent) {
+        // Update existing event
+        result = await updateEvent(editingEvent.id, eventData, eventImageFile);
+        if (!result.success) {
+          throw new Error(result.message || 'Failed to update event');
+        }
+        // Success
+        if (onEventUpdated) {
+          onEventUpdated(result.event);
+        }
+      } else {
+        // Create new event
+        result = await createEvent(networkId, profileId, eventData, eventImageFile);
+        if (!result.success) {
+          throw new Error(result.message || 'Failed to create event');
+        }
+        // Success
+        if (onEventCreated) {
+          onEventCreated(result.event);
+        }
       }
       onClose();
     } catch (err) {
       console.error('Error creating event:', err);
-      setError(err.message || 'Failed to create event');
+      setError(err.message || (editingEvent ? 'Failed to update event' : 'Failed to create event'));
     } finally {
       setUpdating(false);
     }
@@ -161,7 +210,7 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-      <DialogTitle>Create New Event</DialogTitle>
+      <DialogTitle>{editingEvent ? 'Edit Event' : 'Create New Event'}</DialogTitle>
       <DialogContent>
         {error && (
           <Alert severity="error" sx={{ mb: 2 }}>
@@ -358,7 +407,7 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
           variant="contained"
           disabled={updating}
         >
-          {updating ? 'Creating...' : 'Create Event'}
+          {updating ? (editingEvent ? 'Updating...' : 'Creating...') : (editingEvent ? 'Update Event' : 'Create Event')}
         </Button>
       </DialogActions>
     </Dialog>
