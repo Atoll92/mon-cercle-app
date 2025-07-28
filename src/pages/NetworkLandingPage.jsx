@@ -124,7 +124,8 @@ function NetworkLandingPage() {
     loading,
     error,
     userRole,
-    isAdmin: isUserAdmin
+    isAdmin: isUserAdmin,
+    setEvents
   } = useNetwork();
   
   // Initialize activeTab state (will be updated based on URL params after visibleTabs is computed)
