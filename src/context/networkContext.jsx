@@ -53,9 +53,11 @@ export const NetworkProvider = ({ networkId, children }) => {
         setMembers(membersData);
         
         // Determine user's role in the network using active profile
+        let currentUserRole = 'member';
         if (activeProfile) {
           const currentMember = membersData.find(m => m.id === activeProfile.id);
           if (currentMember) {
+            currentUserRole = currentMember.role;
             setUserRole(currentMember.role);
           } else {
             // Fallback to member role if profile not found in members
@@ -63,8 +65,10 @@ export const NetworkProvider = ({ networkId, children }) => {
           }
         }
         
-        // Fetch network events
-        const eventsData = await fetchNetworkEvents(networkId);
+        // Fetch network events - include non-approved events for admins
+        const eventsData = await fetchNetworkEvents(networkId, {
+          includeNonApproved: currentUserRole === 'admin'
+        });
         setEvents(eventsData);
         
         // Fetch network news
@@ -119,7 +123,9 @@ export const NetworkProvider = ({ networkId, children }) => {
     },
     refreshEvents: async () => {
       try {
-        const eventsData = await fetchNetworkEvents(networkId);
+        const eventsData = await fetchNetworkEvents(networkId, {
+          includeNonApproved: userRole === 'admin'
+        });
         setEvents(eventsData);
         return { success: true };
       } catch (error) {

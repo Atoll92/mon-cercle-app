@@ -76,12 +76,12 @@ function EventPage() {
 
   useEffect(() => {
     // Only fetch if eventId changed or we don't have data yet
-    if (eventId && eventId !== lastFetchedEventId.current) {
+    if (eventId && profileId && eventId !== lastFetchedEventId.current) {
       fetchEventData();
       fetchNetworkData();
       lastFetchedEventId.current = eventId;
     }
-  }, [eventId]);
+  }, [eventId, profileId, networkId]);
 
   useEffect(() => {
     // Only check admin status if profile or user actually changed
@@ -97,6 +97,18 @@ function EventPage() {
     try {
       setLoading(true);
       setError(null);
+
+      // First check if user is admin
+      let userIsAdmin = false;
+      if (profileId) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role, network_id')
+          .eq('id', profileId)
+          .single();
+        
+        userIsAdmin = profile?.role === 'admin' && profile?.network_id === networkId;
+      }
 
       // Fetch event
       const { data: eventData, error: eventError } = await supabase
@@ -120,7 +132,18 @@ function EventPage() {
         return;
       }
 
+      // Check if user has permission to view non-approved events
+      // Non-admins can only see approved events
+      if (eventData.status !== 'approved' && !userIsAdmin) {
+        // Check if the user is the creator
+        if (eventData.created_by !== profileId) {
+          setError('Event not found');
+          return;
+        }
+      }
+
       setEvent(eventData);
+      setIsAdmin(userIsAdmin);
 
       // Fetch organizer details
       const { data: organizerData, error: organizerError } = await supabase

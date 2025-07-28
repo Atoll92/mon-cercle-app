@@ -157,8 +157,8 @@ function NetworkAdminPage() {
         const membersData = Array.isArray(membersResponse) ? membersResponse : membersResponse.members || [];
         setMembers(membersData);
         
-        // Get events using our API function
-        const eventsData = await fetchNetworkEvents(profileData.network_id);
+        // Get events using our API function - include non-approved events for admin
+        const eventsData = await fetchNetworkEvents(profileData.network_id, { includeNonApproved: true });
         setEvents(eventsData || []);
         
         // Get news posts using our API function

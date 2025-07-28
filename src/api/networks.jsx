@@ -535,7 +535,7 @@ export const updateNetworkDetails = async (networkId, updates) => {
 
 export const fetchNetworkEvents = async (networkId, options = {}) => {
   try {
-    const { categoryId = null } = options;
+    const { categoryId = null, includeNonApproved = false } = options;
     
     let query = supabase
       .from('network_events')
@@ -549,6 +549,11 @@ export const fetchNetworkEvents = async (networkId, options = {}) => {
       `)
       .eq('network_id', networkId)
       .order('date', { ascending: true });
+    
+    // Only show approved events unless explicitly requested otherwise (for admins)
+    if (!includeNonApproved) {
+      query = query.eq('status', 'approved');
+    }
     
     // Apply category filter if provided
     if (categoryId) {
