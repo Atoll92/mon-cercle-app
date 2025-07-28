@@ -759,7 +759,9 @@
     "monthlyOverview": "Aperçu mensuel de tous les événements",
     "hasLocation": "A un lieu",
     "eventLink": "Lien de l'événement",
-    "join": "Rejoindre"
+    "join": "Rejoindre",
+    "proposeEvent": "Proposer un événement",
+    "eventProposalSubmitted": "Votre proposition d'événement a été soumise et sera examinée par un administrateur."
   },
   "newsTab": {
     "fillRequiredFields": "Veuillez remplir au moins le titre et le contenu",

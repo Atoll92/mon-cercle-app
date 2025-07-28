@@ -25,7 +25,7 @@ import AddressSuggestions from './AddressSuggestions';
 import { createEvent, updateEvent } from '../api/networks';
 import { fetchNetworkCategories } from '../api/categories';
 
-const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated, editingEvent = null, onEventUpdated }) => {
+const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated, editingEvent = null, onEventUpdated, isAdmin = false }) => {
   const [eventForm, setEventForm] = useState({
     title: '',
     date: '',
@@ -190,7 +190,7 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
         }
       } else {
         // Create new event
-        result = await createEvent(networkId, profileId, eventData, eventImageFile);
+        result = await createEvent(networkId, profileId, eventData, eventImageFile, isAdmin);
         if (!result.success) {
           throw new Error(result.message || 'Failed to create event');
         }

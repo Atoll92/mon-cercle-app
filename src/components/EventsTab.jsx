@@ -45,6 +45,8 @@ import 'react-big-calendar/lib/css/react-big-calendar.css';
 
 import EventParticipation from './EventParticipation';
 import EventsMap from './EventsMap';
+import CreateEventDialog from './CreateEventDialog';
+import { Add as AddIcon } from '@mui/icons-material';
 
 const locales = {
   'en-US': enUS,
@@ -64,7 +66,9 @@ const EventsTab = ({
   isUserAdmin,
   userParticipations = [],
   onParticipationChange,
-  network
+  network,
+  activeProfile,
+  setEvents
 }) => {
   const { t } = useTranslation();
   const [showEventDialog, setShowEventDialog] = useState(false);
@@ -72,6 +76,9 @@ const EventsTab = ({
   const [calendarDate, setCalendarDate] = useState(new Date());
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('');
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [message, setMessage] = useState('');
+  const [error, setError] = useState(null);
 
   // Debug: Log props on mount and when they change
   React.useEffect(() => {
@@ -137,7 +144,17 @@ const EventsTab = ({
   return (
     <PageTransition>
       <Paper sx={{ p: 3, mt: 1.5 }} >
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+        {message && (
+          <Alert severity="success" sx={{ mb: 2 }} onClose={() => setMessage('')}>
+            {message}
+          </Alert>
+        )}
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
+            {error}
+          </Alert>
+        )}
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>            
             {categories.length > 0 && (
               <FormControl size="small" sx={{ minWidth: 200 }}>
@@ -170,17 +187,31 @@ const EventsTab = ({
             )}
           </Box>
         
-        {isUserAdmin && (
-          <Button
-            component={Link}
-            to="/admin?tab=events"
-            startIcon={<EventIcon />}
-            color="primary"
-            variant="contained"
-          >
-            {t('eventsTab.manageEvents')}
-          </Button>
-        )}
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          {/* Button for members to propose events */}
+          {!isUserAdmin && (
+            <Button
+              onClick={() => setShowCreateDialog(true)}
+              startIcon={<AddIcon />}
+              color="primary"
+              variant="contained"
+            >
+              {t('eventsTab.proposeEvent')}
+            </Button>
+          )}
+          
+          {isUserAdmin && (
+            <Button
+              component={Link}
+              to="/admin?tab=events"
+              startIcon={<EventIcon />}
+              color="primary"
+              variant="contained"
+            >
+              {t('eventsTab.manageEvents')}
+            </Button>
+          )}
+        </Box>
       </Box>
       
       <Divider sx={{ mb: 3 }} />
@@ -1352,6 +1383,26 @@ const EventsTab = ({
         user={user}
         onParticipationChange={onParticipationChange}
         showParticipants={true}
+      />
+      
+      {/* Create Event Dialog for members */}
+      <CreateEventDialog
+        open={showCreateDialog}
+        onClose={() => {
+          setShowCreateDialog(false);
+          setError(null);
+        }}
+        networkId={network?.id}
+        profileId={activeProfile?.id || user?.id}
+        isAdmin={false}
+        onEventCreated={(newEvent) => {
+          // Add the new event to the list if setEvents is provided
+          if (setEvents) {
+            setEvents(prevEvents => [...prevEvents, newEvent]);
+          }
+          setMessage(t('eventsTab.eventProposalSubmitted'));
+          setShowCreateDialog(false);
+        }}
       />
       </Paper>
     </PageTransition>

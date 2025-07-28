@@ -37,13 +37,16 @@ import {
   People as PeopleIcon,
   Image as ImageIcon,
   Link as LinkIcon,
-  Visibility as VisibilityIcon
+  Visibility as VisibilityIcon,
+  Check as CheckIcon,
+  Close as CloseIcon,
+  FilterList as FilterListIcon
 } from '@mui/icons-material';
 import AddressSuggestions from '../AddressSuggestions';
 import EventParticipationStatsCompact from '../EventParticipationStatsCompact';
 import EventDetailsDialog from '../EventDetailsDialog';
 import CreateEventDialog from '../CreateEventDialog';
-import { deleteEvent, exportEventParticipantsList } from '../../api/networks';
+import { deleteEvent, exportEventParticipantsList, approveEvent, rejectEvent } from '../../api/networks';
 import { fetchNetworkCategories } from '../../api/categories';
 import { formatEventDate } from '../../utils/dateFormatting';
 
@@ -60,6 +63,10 @@ const EventsTab = ({ events, setEvents, user, activeProfile, networkId, network,
   const [viewingEvent, setViewingEvent] = useState(null);
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
+  const [rejectingEventId, setRejectingEventId] = useState(null);
+  const [rejectionReason, setRejectionReason] = useState('');
 
   // Load categories on mount
   useEffect(() => {
@@ -97,8 +104,15 @@ const EventsTab = ({ events, setEvents, user, activeProfile, networkId, network,
     setViewDialogOpen(true);
   };
 
-  const sortedEvents = useMemo(() => {
-    return [...events].sort((a, b) => {
+  const filteredAndSortedEvents = useMemo(() => {
+    let filtered = [...events];
+    
+    // Apply status filter
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter(event => event.status === statusFilter);
+    }
+    
+    return filtered.sort((a, b) => {
       let aValue, bValue;
       
       switch (orderBy) {
@@ -125,7 +139,7 @@ const EventsTab = ({ events, setEvents, user, activeProfile, networkId, network,
         return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
       }
     });
-  }, [events, order, orderBy, participationStats]);
+  }, [events, order, orderBy, participationStats, statusFilter]);
 
   const handleOpenDialog = (mode, event = null) => {
     setDialogMode(mode);
@@ -176,6 +190,54 @@ const EventsTab = ({ events, setEvents, user, activeProfile, networkId, network,
     }
   };
 
+  const handleApproveEvent = async (eventId) => {
+    try {
+      const result = await approveEvent(eventId, activeProfile.id, networkId);
+      
+      if (result.success) {
+        // Update the event in the local state
+        setEvents(events.map(e => 
+          e.id === eventId 
+            ? { ...e, status: 'approved', approved_by: activeProfile.id, approved_at: new Date().toISOString() }
+            : e
+        ));
+        setMessage(result.message);
+      } else {
+        setError(result.message);
+      }
+    } catch (err) {
+      setError(`Failed to approve event: ${err.message}`);
+    }
+  };
+
+  const handleRejectEvent = async () => {
+    try {
+      const result = await rejectEvent(rejectingEventId, activeProfile.id, rejectionReason);
+      
+      if (result.success) {
+        // Update the event in the local state
+        setEvents(events.map(e => 
+          e.id === rejectingEventId 
+            ? { ...e, status: 'rejected', approved_by: activeProfile.id, approved_at: new Date().toISOString(), rejection_reason: rejectionReason }
+            : e
+        ));
+        setMessage('Event rejected');
+        setRejectDialogOpen(false);
+        setRejectingEventId(null);
+        setRejectionReason('');
+      } else {
+        setError(result.message);
+      }
+    } catch (err) {
+      setError(`Failed to reject event: ${err.message}`);
+    }
+  };
+
+  const openRejectDialog = (eventId) => {
+    setRejectingEventId(eventId);
+    setRejectDialogOpen(true);
+  };
+
   return (
     <>
       {message && (
@@ -190,15 +252,31 @@ const EventsTab = ({ events, setEvents, user, activeProfile, networkId, network,
         </Alert>
       )}
       
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}>
         <Typography variant="h5">Network Events</Typography>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={() => handleOpenDialog('create')}
-        >
-          New Event
-        </Button>
+        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+          <FormControl size="small" sx={{ minWidth: 150 }}>
+            <InputLabel>Status Filter</InputLabel>
+            <Select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              label="Status Filter"
+              startAdornment={<FilterListIcon sx={{ mr: 1, fontSize: 20 }} />}
+            >
+              <MenuItem value="all">All Events</MenuItem>
+              <MenuItem value="approved">Approved</MenuItem>
+              <MenuItem value="pending">Pending Review</MenuItem>
+              <MenuItem value="rejected">Rejected</MenuItem>
+            </Select>
+          </FormControl>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => handleOpenDialog('create')}
+          >
+            New Event
+          </Button>
+        </Box>
       </Box>
 
       <TableContainer component={Paper} sx={{ mt: 2, overflowX: 'auto' }}>
@@ -226,6 +304,7 @@ const EventsTab = ({ events, setEvents, user, activeProfile, networkId, network,
               </TableCell>
               <TableCell sx={{ width: '20%', minWidth: 120 }}>Location</TableCell>
               <TableCell sx={{ width: 120 }}>Category</TableCell>
+              <TableCell sx={{ width: 100 }}>Status</TableCell>
               <TableCell align="center" sx={{ width: 140 }}>
                 <TableSortLabel
                   active={orderBy === 'participation'}
@@ -235,11 +314,11 @@ const EventsTab = ({ events, setEvents, user, activeProfile, networkId, network,
                   Participation
                 </TableSortLabel>
               </TableCell>
-              <TableCell align="right" sx={{ width: 100 }}>Actions</TableCell>
+              <TableCell align="right" sx={{ width: 150 }}>Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {sortedEvents.map((event) => (
+            {filteredAndSortedEvents.map((event) => (
               <TableRow
                 key={event.id}
                 sx={{ 
@@ -322,6 +401,18 @@ const EventsTab = ({ events, setEvents, user, activeProfile, networkId, network,
                     />
                   )}
                 </TableCell>
+                <TableCell>
+                  <Chip 
+                    label={event.status || 'approved'}
+                    size="small"
+                    color={
+                      event.status === 'pending' ? 'warning' : 
+                      event.status === 'rejected' ? 'error' : 
+                      'success'
+                    }
+                    variant={event.status === 'pending' ? 'filled' : 'outlined'}
+                  />
+                </TableCell>
                 <TableCell align="center">
                   <EventParticipationStatsCompact 
                     eventId={event.id} 
@@ -330,6 +421,30 @@ const EventsTab = ({ events, setEvents, user, activeProfile, networkId, network,
                 </TableCell>
                 <TableCell align="right">
                   <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'flex-end' }}>
+                    {event.status === 'pending' && (
+                      <>
+                        <Tooltip title="Approve event">
+                          <IconButton 
+                            size="small" 
+                            onClick={() => handleApproveEvent(event.id)}
+                            sx={{ padding: 0.5 }}
+                            color="success"
+                          >
+                            <CheckIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Reject event">
+                          <IconButton 
+                            size="small" 
+                            onClick={() => openRejectDialog(event.id)}
+                            sx={{ padding: 0.5 }}
+                            color="error"
+                          >
+                            <CloseIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      </>
+                    )}
                     <Tooltip title="View event">
                       <IconButton 
                         size="small" 
@@ -375,6 +490,7 @@ const EventsTab = ({ events, setEvents, user, activeProfile, networkId, network,
         networkId={networkId}
         profileId={activeProfile?.id || user.id}
         editingEvent={dialogMode === 'edit' ? selectedEvent : null}
+        isAdmin={true}
         onEventCreated={(newEvent) => {
           setEvents([...events, newEvent]);
           setMessage('Event created successfully!');
@@ -394,6 +510,36 @@ const EventsTab = ({ events, setEvents, user, activeProfile, networkId, network,
         user={user}
         showParticipants={true}
       />
+
+      {/* Rejection Dialog */}
+      <Dialog open={rejectDialogOpen} onClose={() => setRejectDialogOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Reject Event Proposal</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Rejection Reason (optional)"
+            fullWidth
+            multiline
+            rows={4}
+            value={rejectionReason}
+            onChange={(e) => setRejectionReason(e.target.value)}
+            placeholder="Please provide a reason for rejecting this event proposal..."
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => {
+            setRejectDialogOpen(false);
+            setRejectingEventId(null);
+            setRejectionReason('');
+          }}>
+            Cancel
+          </Button>
+          <Button onClick={handleRejectEvent} color="error" variant="contained">
+            Reject Event
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 };

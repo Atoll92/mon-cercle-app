@@ -759,7 +759,9 @@
     "monthlyOverview": "Monthly overview of all events",
     "hasLocation": "Has location",
     "eventLink": "Event Link",
-    "join": "Join"
+    "join": "Join",
+    "proposeEvent": "Propose Event",
+    "eventProposalSubmitted": "Your event proposal has been submitted and will be reviewed by an admin."
   },
   "newsTab": {
     "fillRequiredFields": "Please fill in at least the title and content",

@@ -787,15 +787,16 @@ export const removeNetworkImage = async (networkId, type = 'logo') => {
 };
 
 // Event management functions
-export const createEvent = async (networkId, profileId, eventData, imageFile) => {
+export const createEvent = async (networkId, profileId, eventData, imageFile, isAdmin = false) => {
   try {
-    // Create event
+    // Create event with status based on user role
     const { data, error } = await supabase
       .from('network_events')
       .insert([{
         ...eventData,
         network_id: networkId,
-        created_by: profileId
+        created_by: profileId,
+        status: isAdmin ? 'approved' : 'pending'
       }])
       .select();
       
@@ -819,39 +820,41 @@ export const createEvent = async (networkId, profileId, eventData, imageFile) =>
       data[0].cover_image_url = imageUrl;
     }
     
-    // Queue email notifications for network members
-    try {
-      console.log('📅 [EVENT DEBUG] Starting to queue email notifications for event...');
-      console.log('📅 [EVENT DEBUG] Event created:', data[0]);
-      
-      const notificationResult = await queueEventNotifications(
-        networkId,
-        data[0].id,
-        profileId,
-        eventData.title,
-        eventData.description,
-        eventData.date,
-        eventData.location,
-        data[0].cover_image_url
-      );
-      
-      console.log('📅 [EVENT DEBUG] Notification queueing result:', notificationResult);
-      
-      if (notificationResult.success) {
-        console.log(`📅 [EVENT DEBUG] Email notifications queued successfully: ${notificationResult.message}`);
-      } else {
-        console.error('📅 [EVENT DEBUG] Failed to queue email notifications:', notificationResult.error);
+    // Queue email notifications for network members only if event is approved (admin created)
+    if (isAdmin) {
+      try {
+        console.log('📅 [EVENT DEBUG] Starting to queue email notifications for event...');
+        console.log('📅 [EVENT DEBUG] Event created:', data[0]);
+        
+        const notificationResult = await queueEventNotifications(
+          networkId,
+          data[0].id,
+          profileId,
+          eventData.title,
+          eventData.description,
+          eventData.date,
+          eventData.location,
+          data[0].cover_image_url
+        );
+        
+        console.log('📅 [EVENT DEBUG] Notification queueing result:', notificationResult);
+        
+        if (notificationResult.success) {
+          console.log(`📅 [EVENT DEBUG] Email notifications queued successfully: ${notificationResult.message}`);
+        } else {
+          console.error('📅 [EVENT DEBUG] Failed to queue email notifications:', notificationResult.error);
+          // Don't fail the event creation if notification queueing fails
+        }
+      } catch (notificationError) {
+        console.error('📅 [EVENT DEBUG] Error queueing email notifications:', notificationError);
         // Don't fail the event creation if notification queueing fails
       }
-    } catch (notificationError) {
-      console.error('📅 [EVENT DEBUG] Error queueing email notifications:', notificationError);
-      // Don't fail the event creation if notification queueing fails
     }
     
     return {
       success: true,
       event: data[0],
-      message: 'Event created successfully!'
+      message: isAdmin ? 'Event created successfully!' : 'Event proposal submitted successfully! It will be reviewed by an admin.'
     };
   } catch (error) {
     console.error('Error creating event:', error);
@@ -911,6 +914,91 @@ export const deleteEvent = async (eventId) => {
     return {
       success: false,
       message: 'Failed to delete event'
+    };
+  }
+};
+
+// Event approval/rejection functions
+export const approveEvent = async (eventId, approverId, networkId) => {
+  try {
+    // First get the event details
+    const { data: event, error: fetchError } = await supabase
+      .from('network_events')
+      .select('*')
+      .eq('id', eventId)
+      .single();
+      
+    if (fetchError) throw fetchError;
+    
+    // Update event status to approved
+    const { error: updateError } = await supabase
+      .from('network_events')
+      .update({
+        status: 'approved',
+        approved_by: approverId,
+        approved_at: new Date().toISOString()
+      })
+      .eq('id', eventId);
+      
+    if (updateError) throw updateError;
+    
+    // Queue email notifications for the approved event
+    try {
+      console.log('📅 [EVENT APPROVAL] Queueing notifications for approved event');
+      const notificationResult = await queueEventNotifications(
+        networkId,
+        eventId,
+        event.created_by,
+        event.title,
+        event.description,
+        event.date,
+        event.location,
+        event.cover_image_url
+      );
+      
+      if (notificationResult.success) {
+        console.log('📅 [EVENT APPROVAL] Notifications queued successfully');
+      }
+    } catch (notificationError) {
+      console.error('📅 [EVENT APPROVAL] Error queueing notifications:', notificationError);
+    }
+    
+    return {
+      success: true,
+      message: 'Event approved successfully and notifications sent!'
+    };
+  } catch (error) {
+    console.error('Error approving event:', error);
+    return {
+      success: false,
+      message: 'Failed to approve event'
+    };
+  }
+};
+
+export const rejectEvent = async (eventId, approverId, rejectionReason = '') => {
+  try {
+    const { error } = await supabase
+      .from('network_events')
+      .update({
+        status: 'rejected',
+        approved_by: approverId,
+        approved_at: new Date().toISOString(),
+        rejection_reason: rejectionReason
+      })
+      .eq('id', eventId);
+      
+    if (error) throw error;
+    
+    return {
+      success: true,
+      message: 'Event rejected'
+    };
+  } catch (error) {
+    console.error('Error rejecting event:', error);
+    return {
+      success: false,
+      message: 'Failed to reject event'
     };
   }
 };

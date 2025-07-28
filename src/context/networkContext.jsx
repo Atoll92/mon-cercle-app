@@ -165,7 +165,9 @@ export const NetworkProvider = ({ networkId, children }) => {
         console.error('Failed to refresh network:', error);
         return { success: false, error };
       }
-    }
+    },
+    // Expose setEvents for adding new events
+    setEvents
   };
 
   return (
