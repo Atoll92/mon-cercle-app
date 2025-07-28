@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from '../hooks/useTranslation';
 import { Link } from 'react-router-dom';
 import { AnimatedCard, StaggeredListItem, PageTransition } from './AnimatedComponents';
@@ -136,10 +136,22 @@ const EventsTab = ({
     setCalendarDate(prev => addMonths(prev, 1));
   };
 
-  // Filter events by selected category
-  const filteredEvents = selectedCategory 
-    ? events.filter(event => event.category_id === selectedCategory)
-    : events;
+  // Filter events by selected category and status (only approved events for non-admins)
+  const filteredEvents = useMemo(() => {
+    let filtered = events;
+    
+    // Filter by status - only show approved events to non-admin users
+    if (!isUserAdmin) {
+      filtered = filtered.filter(event => event.status === 'approved' || !event.status);
+    }
+    
+    // Filter by category if selected
+    if (selectedCategory) {
+      filtered = filtered.filter(event => event.category_id === selectedCategory);
+    }
+    
+    return filtered;
+  }, [events, selectedCategory, isUserAdmin]);
 
   return (
     <PageTransition>
