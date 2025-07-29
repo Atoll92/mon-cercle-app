@@ -14,12 +14,31 @@ import {
   FormControl,
   InputLabel,
   Select,
-  MenuItem
+  MenuItem,
+  Paper,
+  IconButton,
+  Chip,
+  Stepper,
+  Step,
+  StepLabel,
+  Divider,
+  Card,
+  CardContent,
+  Fade,
+  LinearProgress
 } from '@mui/material';
 import {
   LocationOn as LocationOnIcon,
   Link as LinkIcon,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Close as CloseIcon,
+  CloudUpload as CloudUploadIcon,
+  Event as EventIcon,
+  People as PeopleIcon,
+  Euro as EuroIcon,
+  Category as CategoryIcon,
+  AccessTime as AccessTimeIcon,
+  Description as DescriptionIcon
 } from '@mui/icons-material';
 import AddressSuggestions from './AddressSuggestions';
 import { createEvent, updateEvent } from '../api/networks';
@@ -45,6 +64,17 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
   const [updating, setUpdating] = useState(false);
   const [error, setError] = useState(null);
   const [categories, setCategories] = useState([]);
+  const [dragOver, setDragOver] = useState(false);
+  const [currentStep, setCurrentStep] = useState(0);
+
+  const steps = ['Basic Info', 'Details & Media', 'Settings'];
+
+  const currencies = [
+    { code: 'EUR', symbol: '€' },
+    { code: 'USD', symbol: '$' },
+    { code: 'GBP', symbol: '£' },
+    { code: 'CHF', symbol: 'Fr' }
+  ];
 
   // Load categories on mount
   useEffect(() => {
@@ -137,17 +167,66 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        setError('Image size must be less than 5MB');
-        return;
-      }
-      setEventImageFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setEventImagePreview(reader.result);
-      };
-      reader.readAsDataURL(file);
+      processImageFile(file);
     }
+  };
+
+  const processImageFile = (file) => {
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Image size must be less than 5MB');
+      return;
+    }
+    
+    if (!file.type.startsWith('image/')) {
+      setError('Please select a valid image file');
+      return;
+    }
+
+    setError(null);
+    setEventImageFile(file);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setEventImagePreview(reader.result);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    setDragOver(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    setDragOver(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setDragOver(false);
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+      processImageFile(files[0]);
+    }
+  };
+
+  const nextStep = () => {
+    if (currentStep < steps.length - 1) {
+      setCurrentStep(currentStep + 1);
+    }
+  };
+
+  const prevStep = () => {
+    if (currentStep > 0) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
+  const canProceedToNext = () => {
+    if (currentStep === 0) {
+      return eventForm.title && eventForm.date && eventForm.location;
+    }
+    return true;
   };
 
   const handleSubmit = async () => {
@@ -208,207 +287,427 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
     }
   };
 
+  const renderStepContent = (step) => {
+    switch (step) {
+      case 0:
+        return (
+          <Grid container spacing={3}>
+            <Grid item xs={12}>
+              <Card elevation={0} sx={{ mb: 3, border: '1px solid', borderColor: 'divider' }}>
+                <CardContent>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                    <EventIcon sx={{ mr: 1, color: 'primary.main' }} />
+                    <Typography variant="h6">Basic Event Information</Typography>
+                  </Box>
+                  
+                  <TextField
+                    autoFocus
+                    label="Event Title"
+                    fullWidth
+                    required
+                    value={eventForm.title}
+                    onChange={(e) => setEventForm({ ...eventForm, title: e.target.value })}
+                    sx={{ mb: 3 }}
+                    variant="outlined"
+                    placeholder="Enter a descriptive title for your event"
+                  />
+                  
+                  <TextField
+                    label="Date and Time"
+                    type="datetime-local"
+                    fullWidth
+                    required
+                    slotProps={{ inputLabel: { shrink: true } }}
+                    value={eventForm.date}
+                    onChange={(e) => setEventForm({ ...eventForm, date: e.target.value })}
+                    sx={{ mb: 3 }}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <AccessTimeIcon />
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                  
+                  <AddressSuggestions
+                    value={locationSuggestion}
+                    onChange={handleLocationChange}
+                    label="Location"
+                    placeholder="Start typing an address..."
+                    required
+                    fullWidth
+                  />
+                  
+                  {eventForm.coordinates && (
+                    <Fade in={true}>
+                      <Paper sx={{ 
+                        mt: 2,
+                        p: 2, 
+                        backgroundColor: 'success.50',
+                        border: '1px solid',
+                        borderColor: 'success.200'
+                      }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                          <LocationOnIcon sx={{ mr: 1, color: 'success.main' }} />
+                          <Typography variant="body2" color="success.dark">
+                            Location coordinates saved: {typeof eventForm.coordinates === 'object' ? 
+                              `${eventForm.coordinates.latitude?.toFixed(6) || '?'}, ${eventForm.coordinates.longitude?.toFixed(6) || '?'}` : 
+                              'Available'}
+                          </Typography>
+                        </Box>
+                      </Paper>
+                    </Fade>
+                  )}
+                </CardContent>
+              </Card>
+            </Grid>
+          </Grid>
+        );
+
+      case 1:
+        return (
+          <Grid container spacing={3}>
+            <Grid item xs={12} md={6}>
+              <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider', height: 'fit-content' }}>
+                <CardContent>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                    <DescriptionIcon sx={{ mr: 1, color: 'primary.main' }} />
+                    <Typography variant="h6">Event Details</Typography>
+                  </Box>
+                  
+                  <TextField
+                    label="Description"
+                    multiline
+                    rows={8}
+                    fullWidth
+                    value={eventForm.description}
+                    onChange={(e) => setEventForm({ ...eventForm, description: e.target.value })}
+                    placeholder="Describe your event in detail. What can attendees expect?"
+                    sx={{ mb: 3 }}
+                  />
+                  
+                  <TextField
+                    label="Event Link (optional)"
+                    fullWidth
+                    placeholder="https://example.com/your-event"
+                    value={eventForm.event_link}
+                    onChange={(e) => setEventForm({ ...eventForm, event_link: e.target.value })}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <LinkIcon />
+                        </InputAdornment>
+                      ),
+                    }}
+                    helperText="Registration page, Zoom meeting, or external resource"
+                  />
+                </CardContent>
+              </Card>
+            </Grid>
+            
+            <Grid item xs={12} md={6}>
+              <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider' }}>
+                <CardContent>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                    <ImageIcon sx={{ mr: 1, color: 'primary.main' }} />
+                    <Typography variant="h6">Event Cover Image</Typography>
+                  </Box>
+                  
+                  <Paper
+                    sx={{ 
+                      width: '100%', 
+                      height: 240, 
+                      border: dragOver ? '2px solid' : '2px dashed',
+                      borderColor: dragOver ? 'primary.main' : 'grey.300',
+                      borderRadius: 2,
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      position: 'relative',
+                      overflow: 'hidden',
+                      backgroundColor: dragOver ? 'primary.50' : 'grey.50',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s ease',
+                      '&:hover': {
+                        borderColor: 'primary.main',
+                        backgroundColor: 'primary.50'
+                      }
+                    }}
+                    onClick={() => document.getElementById('event-image-input').click()}
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop}
+                  >
+                    {eventImagePreview ? (
+                      <Box sx={{ position: 'relative', width: '100%', height: '100%' }}>
+                        <img 
+                          src={eventImagePreview} 
+                          alt="Event cover preview" 
+                          style={{ 
+                            width: '100%', 
+                            height: '100%', 
+                            objectFit: 'cover' 
+                          }} 
+                        />
+                        <IconButton
+                          sx={{
+                            position: 'absolute',
+                            top: 8,
+                            right: 8,
+                            backgroundColor: 'rgba(0,0,0,0.6)',
+                            color: 'white',
+                            '&:hover': { backgroundColor: 'rgba(0,0,0,0.8)' }
+                          }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEventImageFile(null);
+                            setEventImagePreview(null);
+                          }}
+                        >
+                          <CloseIcon />
+                        </IconButton>
+                      </Box>
+                    ) : (
+                      <Box sx={{ textAlign: 'center', p: 3 }}>
+                        <CloudUploadIcon sx={{ fontSize: 48, color: 'primary.main', mb: 1 }} />
+                        <Typography variant="h6" color="primary.main" gutterBottom>
+                          Drop image here or click to upload
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          Supports JPG, PNG, GIF up to 5MB
+                        </Typography>
+                      </Box>
+                    )}
+                  </Paper>
+                  
+                  <input
+                    accept="image/*"
+                    id="event-image-input"
+                    type="file"
+                    style={{ display: 'none' }}
+                    onChange={handleImageChange}
+                  />
+                </CardContent>
+              </Card>
+            </Grid>
+          </Grid>
+        );
+
+      case 2:
+        return (
+          <Grid container spacing={3}>
+            <Grid item xs={12} md={6}>
+              <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider' }}>
+                <CardContent>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                    <PeopleIcon sx={{ mr: 1, color: 'primary.main' }} />
+                    <Typography variant="h6">Capacity & Tickets</Typography>
+                  </Box>
+                  
+                  <TextField
+                    label="Event Capacity (optional)"
+                    type="number"
+                    fullWidth
+                    value={eventForm.capacity}
+                    onChange={(e) => setEventForm({ ...eventForm, capacity: e.target.value })}
+                    sx={{ mb: 3 }}
+                    placeholder="Maximum number of attendees"
+                    helperText="Leave empty for unlimited capacity"
+                  />
+                  
+                  <TextField
+                    label="Max Tickets per Person (optional)"
+                    type="number"
+                    fullWidth
+                    value={eventForm.max_tickets}
+                    onChange={(e) => setEventForm({ ...eventForm, max_tickets: e.target.value })}
+                    placeholder="e.g., 2"
+                    helperText="Limit tickets per attendee"
+                  />
+                </CardContent>
+              </Card>
+            </Grid>
+            
+            <Grid item xs={12} md={6}>
+              <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider' }}>
+                <CardContent>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                    <EuroIcon sx={{ mr: 1, color: 'primary.main' }} />
+                    <Typography variant="h6">Pricing</Typography>
+                  </Box>
+                  
+                  <Grid container spacing={2}>
+                    <Grid item xs={8}>
+                      <TextField
+                        label="Price"
+                        type="number"
+                        fullWidth
+                        value={eventForm.price}
+                        onChange={(e) => setEventForm({ ...eventForm, price: parseFloat(e.target.value) || 0 })}
+                        placeholder="0.00"
+                        inputProps={{ step: '0.01', min: '0' }}
+                      />
+                    </Grid>
+                    <Grid item xs={4}>
+                      <FormControl fullWidth>
+                        <InputLabel>Currency</InputLabel>
+                        <Select
+                          value={eventForm.currency}
+                          onChange={(e) => setEventForm({ ...eventForm, currency: e.target.value })}
+                          label="Currency"
+                        >
+                          {currencies.map((currency) => (
+                            <MenuItem key={currency.code} value={currency.code}>
+                              {currency.symbol} {currency.code}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </Grid>
+                  </Grid>
+                  
+                  {eventForm.price === 0 && (
+                    <Chip 
+                      label="Free Event" 
+                      color="success" 
+                      size="small" 
+                      sx={{ mt: 1 }} 
+                    />
+                  )}
+                </CardContent>
+              </Card>
+              
+              {categories.length > 0 && (
+                <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider', mt: 3 }}>
+                  <CardContent>
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                      <CategoryIcon sx={{ mr: 1, color: 'primary.main' }} />
+                      <Typography variant="h6">Category</Typography>
+                    </Box>
+                    
+                    <FormControl fullWidth>
+                      <InputLabel>Event Category (optional)</InputLabel>
+                      <Select
+                        value={eventForm.category_id}
+                        onChange={(e) => setEventForm({ ...eventForm, category_id: e.target.value })}
+                        label="Event Category (optional)"
+                      >
+                        <MenuItem value="">
+                          <em>No Category</em>
+                        </MenuItem>
+                        {categories.map((category) => (
+                          <MenuItem key={category.id} value={category.id}>
+                            {category.name}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </CardContent>
+                </Card>
+              )}
+            </Grid>
+          </Grid>
+        );
+
+      default:
+        return null;
+    }
+  };
+
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-      <DialogTitle>{editingEvent ? 'Edit Event' : 'Create New Event'}</DialogTitle>
-      <DialogContent>
+    <Dialog 
+      open={open} 
+      onClose={onClose} 
+      maxWidth="lg" 
+      fullWidth
+      PaperProps={{
+        sx: { 
+          borderRadius: 2,
+          maxHeight: '90vh'
+        }
+      }}
+    >
+      <DialogTitle sx={{ pb: 1 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Typography variant="h5" component="div">
+            {editingEvent ? 'Edit Event' : 'Create New Event'}
+          </Typography>
+          <IconButton onClick={onClose} disabled={updating}>
+            <CloseIcon />
+          </IconButton>
+        </Box>
+        <Stepper activeStep={currentStep} sx={{ mt: 2 }}>
+          {steps.map((label) => (
+            <Step key={label}>
+              <StepLabel>{label}</StepLabel>
+            </Step>
+          ))}
+        </Stepper>
+      </DialogTitle>
+      
+      {updating && <LinearProgress />}
+      
+      <DialogContent sx={{ pt: 2 }}>
         {error && (
-          <Alert severity="error" sx={{ mb: 2 }}>
+          <Alert 
+            severity="error" 
+            sx={{ mb: 3 }}
+            onClose={() => setError(null)}
+          >
             {error}
           </Alert>
         )}
         
-        <Grid container spacing={3} sx={{ mt: 1 }}>
-          <Grid item xs={12} md={6}>
-            <TextField
-              autoFocus
-              margin="dense"
-              label="Event Title"
-              fullWidth
-              required
-              value={eventForm.title}
-              onChange={(e) => setEventForm({ ...eventForm, title: e.target.value })}
-              sx={{ mb: 2 }}
-            />
-            
-            <TextField
-              margin="dense"
-              label="Date and Time"
-              type="datetime-local"
-              fullWidth
-              required
-              slotProps={{ inputLabel: { shrink: true } }}
-              value={eventForm.date}
-              onChange={(e) => setEventForm({ ...eventForm, date: e.target.value })}
-              sx={{ mb: 2 }}
-            />
-            
-            <AddressSuggestions
-              value={locationSuggestion}
-              onChange={handleLocationChange}
-              label="Location"
-              placeholder="Start typing an address..."
-              required
-              fullWidth
-            />
-            
-            {eventForm.coordinates && (
-              <Box sx={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                mb: 2, 
-                mt: 1,
-                p: 1, 
-                borderRadius: 1, 
-                backgroundColor: 'rgba(0, 0, 0, 0.04)'
-              }}>
-                <LocationOnIcon fontSize="small" sx={{ mr: 1, color: 'text.secondary' }} />
-                <Typography variant="caption" color="text.secondary">
-                  Coordinates: {typeof eventForm.coordinates === 'object' ? 
-                    `${eventForm.coordinates.latitude?.toFixed(6) || '?'}, ${eventForm.coordinates.longitude?.toFixed(6) || '?'}` : 
-                    'Available'}
-                </Typography>
-              </Box>
-            )}
-            
-            <TextField
-              margin="dense"
-              label="Event Link (optional)"
-              fullWidth
-              placeholder="https://example.com/your-event"
-              value={eventForm.event_link}
-              onChange={(e) => setEventForm({ ...eventForm, event_link: e.target.value })}
-              sx={{ mb: 2 }}
-              slotProps={{
-                input: {
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <LinkIcon />
-                    </InputAdornment>
-                  ),
-                }
-              }}
-              helperText="Add a link to the event registration page, Zoom meeting, or any external event resource."
-            />
-            
-            <TextField
-              margin="dense"
-              label="Capacity (optional)"
-              type="number"
-              fullWidth
-              value={eventForm.capacity}
-              onChange={(e) => setEventForm({ ...eventForm, capacity: e.target.value })}
-              sx={{ mb: 2 }}
-            />
-
-            {categories.length > 0 && (
-              <FormControl fullWidth sx={{ mb: 2 }}>
-                <InputLabel>Category (optional)</InputLabel>
-                <Select
-                  value={eventForm.category_id}
-                  onChange={(e) => setEventForm({ ...eventForm, category_id: e.target.value })}
-                  label="Category (optional)"
-                >
-                  <MenuItem value="">
-                    <em>None</em>
-                  </MenuItem>
-                  {categories.map((category) => (
-                    <MenuItem key={category.id} value={category.id}>
-                      {category.name}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            )}
-          </Grid>
-          
-          <Grid item xs={12} md={6}>
-            <TextField
-              margin="dense"
-              label="Description"
-              multiline
-              rows={6}
-              fullWidth
-              value={eventForm.description}
-              onChange={(e) => setEventForm({ ...eventForm, description: e.target.value })}
-              sx={{ mb: 2 }}
-            />
-            
-            <Typography variant="subtitle1" gutterBottom>
-              Event Cover Image
-            </Typography>
-            
-            <Box sx={{ 
-              width: '100%', 
-              height: 200, 
-              border: '1px dashed #ccc',
-              borderRadius: 1,
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              mb: 2,
-              position: 'relative',
-              overflow: 'hidden',
-              backgroundColor: '#f8f8f8',
-              cursor: 'pointer'
-            }}
-            onClick={() => document.getElementById('event-image-input').click()}
-            >
-              {eventImagePreview ? (
-                <img 
-                  src={eventImagePreview} 
-                  alt="Event cover preview" 
-                  style={{ 
-                    width: '100%', 
-                    height: '100%', 
-                    objectFit: 'cover' 
-                  }} 
-                />
-              ) : (
-                <Box sx={{ textAlign: 'center' }}>
-                  <ImageIcon sx={{ fontSize: 48, color: '#ccc' }} />
-                  <Typography variant="body2" color="text.secondary">
-                    Click to upload image
-                  </Typography>
-                </Box>
-              )}
-            </Box>
-            
-            <input
-              accept="image/*"
-              id="event-image-input"
-              type="file"
-              style={{ display: 'none' }}
-              onChange={handleImageChange}
-            />
-            
-            {eventImageFile && (
-              <Button
-                onClick={() => {
-                  setEventImageFile(null);
-                  setEventImagePreview(null);
-                }}
-                size="small"
-                color="error"
-              >
-                Remove Image
-              </Button>
-            )}
-          </Grid>
-        </Grid>
+        <Fade in={true} key={currentStep}>
+          <Box>
+            {renderStepContent(currentStep)}
+          </Box>
+        </Fade>
       </DialogContent>
       
-      <DialogActions>
-        <Button onClick={onClose} disabled={updating}>
+      <Divider />
+      
+      <DialogActions sx={{ p: 3 }}>
+        <Button 
+          onClick={onClose} 
+          disabled={updating}
+          variant="outlined"
+        >
           Cancel
         </Button>
-        <Button 
-          onClick={handleSubmit} 
-          variant="contained"
-          disabled={updating}
-        >
-          {updating ? (editingEvent ? 'Updating...' : 'Creating...') : (editingEvent ? 'Update Event' : 'Create Event')}
-        </Button>
+        
+        <Box sx={{ flex: 1 }} />
+        
+        {currentStep > 0 && (
+          <Button 
+            onClick={prevStep}
+            disabled={updating}
+            variant="outlined"
+            sx={{ mr: 1 }}
+          >
+            Back
+          </Button>
+        )}
+        
+        {currentStep < steps.length - 1 ? (
+          <Button 
+            onClick={nextStep}
+            disabled={!canProceedToNext() || updating}
+            variant="contained"
+          >
+            Next
+          </Button>
+        ) : (
+          <Button 
+            onClick={handleSubmit} 
+            variant="contained"
+            disabled={updating || !canProceedToNext()}
+            sx={{ minWidth: 140 }}
+          >
+            {updating ? (editingEvent ? 'Updating...' : 'Creating...') : (editingEvent ? 'Update Event' : 'Create Event')}
+          </Button>
+        )}
       </DialogActions>
     </Dialog>
   );
