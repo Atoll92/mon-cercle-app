@@ -772,6 +772,7 @@
     "newsDeleted": "Article d'actualité supprimé avec succès !",
     "deleteFailed": "Échec de la suppression de l'article",
     "createNews": "Créer une actualité",
+    "manageNews": "Gérer les actualités",
     "postTitle": "Titre de l'article",
     "category": "Catégorie",
     "none": "Aucune",

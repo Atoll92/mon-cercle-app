@@ -772,6 +772,7 @@
     "newsDeleted": "News post deleted successfully!",
     "deleteFailed": "Failed to delete the post",
     "createNews": "Create a news",
+    "manageNews": "Manage News",
     "postTitle": "Post Title",
     "category": "Category",
     "none": "None",

@@ -585,7 +585,14 @@ export const fetchNetworkNews = async (networkId, options = {}) => {
     // Build query
     let query = supabase
       .from('network_news')
-      .select('*', { count: 'exact' })
+      .select(`
+        *,
+        category:network_categories(
+          id,
+          name,
+          color
+        )
+      `, { count: 'exact' })
       .eq('network_id', networkId)
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1);
@@ -1126,6 +1133,31 @@ export const createNewsPost = async (networkId, profileId, title, content, image
       success: false,
       error: error.message,
       message: 'Failed to publish news post'
+    };
+  }
+};
+
+export const updateNewsPost = async (postId, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from('network_news')
+      .update(updates)
+      .eq('id', postId)
+      .select()
+      .single();
+      
+    if (error) throw error;
+    
+    return {
+      success: true,
+      post: data,
+      message: 'News post updated successfully'
+    };
+  } catch (error) {
+    console.error('Update error:', error);
+    return {
+      success: false,
+      message: 'Failed to update news post'
     };
   }
 };

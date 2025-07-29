@@ -13,7 +13,8 @@ import {
   Divider,
   IconButton,
   Menu,
-  MenuItem
+  MenuItem,
+  alpha
 } from '@mui/material';
 import Spinner from '../components/Spinner';
 import {
@@ -27,9 +28,10 @@ import {
   Flag as FlagIcon
 } from '@mui/icons-material';
 import { supabase } from '../supabaseclient';
-import { formatDate, formatDateTime } from '../utils/dateFormatting';
+import { formatDate } from '../utils/dateFormatting';
 import MediaPlayer from '../components/MediaPlayer';
 import { sanitizeRichText } from '../utils/sanitizeHtml';
+import { fetchNetworkCategories } from '../api/categories';
 
 function NewsPostPage() {
   const { networkId, newsId } = useParams();
@@ -41,11 +43,22 @@ function NewsPostPage() {
   const [error, setError] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
+  const [categories, setCategories] = useState([]);
+  const [newsCategory, setNewsCategory] = useState(null);
 
   useEffect(() => {
     fetchNewsPost();
     checkAdminStatus();
-  }, [newsId, user]);
+    loadCategories();
+  }, [newsId, user, networkId]);
+  
+  // Update category when categories or newsPost changes
+  useEffect(() => {
+    if (newsPost?.category_id && categories.length > 0) {
+      const category = categories.find(c => c.id === newsPost.category_id);
+      setNewsCategory(category);
+    }
+  }, [newsPost?.category_id, categories]);
 
   const fetchNewsPost = async () => {
     try {
@@ -101,6 +114,21 @@ function NewsPostPage() {
       setIsAdmin(profile?.role === 'admin');
     } catch (err) {
       console.error('Error checking admin status:', err);
+    }
+  };
+
+  const loadCategories = async () => {
+    if (!networkId) return;
+    
+    const { data, error } = await fetchNetworkCategories(networkId, true);
+    if (data && !error) {
+      setCategories(data);
+      
+      // If we already have a news post, find its category
+      if (newsPost?.category_id) {
+        const category = data.find(c => c.id === newsPost.category_id);
+        setNewsCategory(category);
+      }
     }
   };
 
@@ -232,10 +260,52 @@ function NewsPostPage() {
 
       {/* Main Content */}
       <Paper sx={{ p: 4 }}>
-        {/* Title */}
-        <Typography variant="h3" component="h1" gutterBottom>
-          {newsPost.title}
-        </Typography>
+        {/* Title and Category */}
+        <Box sx={{ mb: 2 }}>
+          <Typography variant="h3" component="h1" gutterBottom>
+            {newsPost.title}
+          </Typography>
+          {newsCategory && (
+            <Box
+              sx={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 0.5,
+                px: 1.5,
+                py: 0.5,
+                borderRadius: '16px',
+                bgcolor: alpha(newsCategory.color, 0.12),
+                border: `1px solid ${alpha(newsCategory.color, 0.3)}`,
+                transition: 'all 0.2s ease',
+                '&:hover': {
+                  bgcolor: alpha(newsCategory.color, 0.18),
+                  borderColor: alpha(newsCategory.color, 0.4),
+                }
+              }}
+            >
+              <Box
+                sx={{
+                  width: 6,
+                  height: 6,
+                  borderRadius: '50%',
+                  bgcolor: newsCategory.color,
+                  flexShrink: 0
+                }}
+              />
+              <Typography
+                variant="caption"
+                sx={{
+                  fontSize: '0.75rem',
+                  fontWeight: 500,
+                  color: newsCategory.color,
+                  letterSpacing: '0.02em'
+                }}
+              >
+                {newsCategory.name}
+              </Typography>
+            </Box>
+          )}
+        </Box>
 
         {/* Meta Information */}
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}>
@@ -359,7 +429,7 @@ function NewsPostPage() {
         
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <Typography variant="caption" color="text.secondary">
-            Published on {formatDateTime(newsPost.created_at, { month: 'long', day: 'numeric', year: 'numeric' })}
+            Published on {formatDate(newsPost.created_at, { month: 'long', day: 'numeric', year: 'numeric' })}
           </Typography>
           
           {newsPost.updated_at && newsPost.updated_at !== newsPost.created_at && (

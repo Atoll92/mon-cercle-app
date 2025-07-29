@@ -1,60 +1,52 @@
-import { useState, useEffect } from 'react';
-import { useEditor, EditorContent } from '@tiptap/react';
-import StarterKit from '@tiptap/starter-kit';
+import React, { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Typography,
-  TextField,
   Button,
-  Card,
-  CardContent,
-  CardActions,
-  Divider,
-  Paper,
   Alert,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Avatar,
+  TableSortLabel,
+  Tooltip,
   IconButton,
   Chip,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
   alpha
 } from '@mui/material';
-import Spinner from '../Spinner';
 import {
-  Save as SaveIcon,
+  Edit as EditIcon,
   Delete as DeleteIcon,
-  Cancel as CancelIcon
+  Add as AddIcon,
+  Image as ImageIcon,
+  Visibility as VisibilityIcon,
+  Article as ArticleIcon
 } from '@mui/icons-material';
-import { createNewsPost, deleteNewsPost } from '../../api/networks';
+import CreateNewsDialog from '../CreateNewsDialog';
+import { deleteNewsPost } from '../../api/networks';
 import { fetchNetworkCategories } from '../../api/categories';
-import MediaUpload from '../MediaUpload';
+import { formatDate } from '../../utils/dateFormatting';
 
 const NewsTab = ({ networkId, userId, newsPosts, setNewsPosts, members, darkMode = false }) => {
-  const [newsTitle, setNewsTitle] = useState('');
-  const [imageCaption, setImageCaption] = useState('');
-  const [imagePreview, setImagePreview] = useState(null);
-  const [mediaUrl, setMediaUrl] = useState(null);
-  const [mediaType, setMediaType] = useState(null);
-  const [mediaMetadata, setMediaMetadata] = useState({});
-  const [updating, setUpdating] = useState(false);
+  const navigate = useNavigate();
+  const [openDialog, setOpenDialog] = useState(false);
+  const [dialogMode, setDialogMode] = useState('create');
+  const [selectedNews, setSelectedNews] = useState(null);
   const [error, setError] = useState(null);
   const [message, setMessage] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('');
+  const [orderBy, setOrderBy] = useState('date');
+  const [order, setOrder] = useState('desc');
   const [categories, setCategories] = useState([]);
-
-  const editor = useEditor({
-    extensions: [StarterKit],
-    content: '<p>Start writing your news post...</p>',
-    onUpdate: ({ editor }) => {
-      // You can access the content with editor.getHTML()
-    },
-  });
 
   // Load categories on mount
   useEffect(() => {
     const loadCategories = async () => {
-      const { data, error } = await fetchNetworkCategories(networkId, true); // Only active categories
+      const { data, error } = await fetchNetworkCategories(networkId, true);
       if (data && !error) {
         setCategories(data);
       }
@@ -62,102 +54,80 @@ const NewsTab = ({ networkId, userId, newsPosts, setNewsPosts, members, darkMode
     loadCategories();
   }, [networkId]);
 
-  // Handle media upload
-  const handleMediaUpload = (uploadResult) => {
-    console.log("[Admin NewsTab] Media upload result:", uploadResult);
-    setMediaUrl(uploadResult.url);
-    setMediaType(uploadResult.type);
-    // Include all metadata from the upload result, including thumbnail for audio
-    setMediaMetadata(uploadResult.metadata || {
-      fileName: uploadResult.fileName,
-      fileSize: uploadResult.fileSize,
-      mimeType: uploadResult.mimeType
-    });
-    
-    // For backward compatibility with existing image preview
-    if (uploadResult.type === 'image') {
-      setImagePreview(uploadResult.url);
-    } else {
-      setImagePreview(null);
-    }
-    
-    // Show success message
-    setMessage(`${uploadResult.type.toUpperCase()} uploaded successfully: ${uploadResult.fileName}`);
-    setTimeout(() => setMessage(''), 3000);
+  const handleRequestSort = (property) => {
+    const isAsc = orderBy === property && order === 'asc';
+    setOrder(isAsc ? 'desc' : 'asc');
+    setOrderBy(property);
   };
 
-  const handleNewsSubmit = async () => {
-    if (!newsTitle.trim() || !editor) {
-      setError('Please fill in both title and content');
-      return;
-    }
-  
-    setUpdating(true);
-    setError(null);
-    setMessage('');
+  const handleViewNews = (newsId) => {
+    navigate(`/network/${networkId}/news/${newsId}`);
+  };
+
+  const sortedNews = useMemo(() => {
+    return [...newsPosts].sort((a, b) => {
+      let aValue, bValue;
+      
+      switch (orderBy) {
+        case 'date':
+          aValue = new Date(a.created_at).getTime();
+          bValue = new Date(b.created_at).getTime();
+          break;
+        case 'title':
+          aValue = a.title.toLowerCase();
+          bValue = b.title.toLowerCase();
+          break;
+        case 'author':
+          const authorA = members.find(m => m.id === a.created_by)?.full_name || 'Unknown';
+          const authorB = members.find(m => m.id === b.created_by)?.full_name || 'Unknown';
+          aValue = authorA.toLowerCase();
+          bValue = authorB.toLowerCase();
+          break;
+        default:
+          return 0;
+      }
+      
+      if (order === 'asc') {
+        return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
+      } else {
+        return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
+      }
+    });
+  }, [newsPosts, order, orderBy, members]);
+
+  const handleOpenDialog = (mode, news = null) => {
+    setDialogMode(mode);
+    setSelectedNews(news);
+    setOpenDialog(true);
+  };
+
+  const handleDelete = async (newsId) => {
+    if (!confirm('Are you sure you want to delete this news?')) return;
     
     try {
-      const content = editor.getHTML();
+      const result = await deleteNewsPost(newsId);
       
-      // Use mediaUrl as imageUrl if it's an image type
-      const imageUrl = mediaType === 'image' ? mediaUrl : null;
-      
-      // Debug log the media parameters
-      console.log('Creating news post with media:', {
-        mediaUrl,
-        mediaType,
-        mediaMetadata,
-        imageUrl,
-        imageCaption
-      });
-      
-      // Create news post with optional media
-      const result = await createNewsPost(
-        networkId, 
-        userId, 
-        newsTitle, 
-        content, 
-        imageUrl, 
-        imageCaption,
-        mediaUrl,
-        mediaType,
-        mediaMetadata,
-        selectedCategory || null
-      );
-    
       if (result.success) {
-        setNewsPosts([result.post, ...newsPosts]);
-        setNewsTitle('');
-        setImageCaption('');
-        setImagePreview(null);
-        setMediaUrl(null);
-        setMediaType(null);
-        setMediaMetadata({});
-        setSelectedCategory('');
-        editor.commands.clearContent();
-        setMessage(result.message);
+        setNewsPosts(newsPosts.filter(p => p.id !== newsId));
+        setMessage('News deleted successfully');
       } else {
         setError(result.message);
       }
-    } catch (error) {
-      setError('Failed to publish news post: ' + error.message);
-    } finally {
-      setUpdating(false);
+    } catch (err) {
+      setError(`Failed to delete news: ${err.message}`);
     }
   };
-  
-  const handleDeleteNews = async (postId) => {
-    setError(null);
-    setMessage('');
-    
-    const result = await deleteNewsPost(postId);
-  
-    if (result.success) {
-      setNewsPosts(newsPosts.filter(post => post.id !== postId));
-      setMessage(result.message);
-    } else {
-      setError(result.message);
-    }
+
+  const getAuthorName = (createdBy) => {
+    const member = members.find(m => m.id === createdBy);
+    return member?.full_name || 'Unknown Author';
+  };
+
+  const truncateContent = (html, maxLength = 100) => {
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = html;
+    const text = tempDiv.textContent || tempDiv.innerText || '';
+    return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
   };
 
   return (
@@ -168,250 +138,205 @@ const NewsTab = ({ networkId, userId, newsPosts, setNewsPosts, members, darkMode
         </Alert>
       )}
 
-      {error && (
+      {error && !openDialog && (
         <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError(null)}>
           {error}
         </Alert>
       )}
       
-      <Card sx={{ p: 3, mb: 3, bgcolor: darkMode ? 'background.paper' : undefined }}>
-        <Typography variant="h5" gutterBottom>
-          Create a news
-        </Typography>
-        <TextField
-          fullWidth
-          label="Post Title"
-          value={newsTitle}
-          onChange={(e) => setNewsTitle(e.target.value)}
-          sx={{ mb: 2 }}
-          InputProps={{
-            sx: {
-              color: darkMode ? 'text.primary' : undefined
-            }
-          }}
-        />
-        
-        {/* Category selection */}
-        {categories.length > 0 && (
-          <FormControl fullWidth sx={{ mb: 2 }}>
-            <InputLabel>Category</InputLabel>
-            <Select
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              label="Category"
-            >
-              <MenuItem value="">
-                <em>None</em>
-              </MenuItem>
-              {categories.map((category) => (
-                <MenuItem key={category.id} value={category.id}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Box
-                      sx={{
-                        width: 16,
-                        height: 16,
-                        borderRadius: 0.5,
-                        bgcolor: category.color,
-                        flexShrink: 0
-                      }}
-                    />
-                    {category.name}
-                  </Box>
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        )}
-        
-        {/* Image upload section */}
-        <Box sx={{ mb: 2, p: 2, border: '1px dashed grey', borderRadius: 1 }}>
-          <Typography variant="subtitle1" gutterBottom>
-            Featured Image (optional)
-          </Typography>
-          
-          {imagePreview && (
-            <Box sx={{ position: 'relative', mb: 2 }}>
-              <img 
-                src={imagePreview} 
-                alt="Preview" 
-                style={{ maxWidth: '100%', maxHeight: '200px', display: 'block', margin: '0 auto' }} 
-              />
-              <IconButton 
-                sx={{ position: 'absolute', top: 0, right: 0, bgcolor: 'rgba(0,0,0,0.5)', color: 'white' }}
-                onClick={() => {
-                  setImagePreview(null);
-                  setImageCaption('');
-                  setMediaUrl(null);
-                  setMediaType(null);
-                  setMediaMetadata({});
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+        <Typography variant="h5">Network News</Typography>
+        <Button
+          variant="contained"
+          startIcon={<AddIcon />}
+          onClick={() => handleOpenDialog('create')}
+        >
+          New News
+        </Button>
+      </Box>
+
+      <TableContainer component={Paper} sx={{ mt: 2, overflowX: 'auto' }}>
+        <Table size="small" aria-label="news table" sx={{ minWidth: 650 }}>
+          <TableHead>
+            <TableRow>
+              <TableCell padding="checkbox" sx={{ width: 60 }}>Image</TableCell>
+              <TableCell sx={{ width: '30%', minWidth: 200 }}>
+                <TableSortLabel
+                  active={orderBy === 'title'}
+                  direction={orderBy === 'title' ? order : 'asc'}
+                  onClick={() => handleRequestSort('title')}
+                >
+                  Title
+                </TableSortLabel>
+              </TableCell>
+              <TableCell sx={{ width: '20%', minWidth: 150 }}>
+                <TableSortLabel
+                  active={orderBy === 'author'}
+                  direction={orderBy === 'author' ? order : 'asc'}
+                  onClick={() => handleRequestSort('author')}
+                >
+                  Author
+                </TableSortLabel>
+              </TableCell>
+              <TableCell sx={{ width: 120 }}>Category</TableCell>
+              <TableCell sx={{ width: 140 }}>
+                <TableSortLabel
+                  active={orderBy === 'date'}
+                  direction={orderBy === 'date' ? order : 'asc'}
+                  onClick={() => handleRequestSort('date')}
+                >
+                  Date
+                </TableSortLabel>
+              </TableCell>
+              <TableCell align="right" sx={{ width: 120 }}>Actions</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {sortedNews.map((post) => (
+              <TableRow
+                key={post.id}
+                sx={{ 
+                  '&:hover': { 
+                    backgroundColor: darkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.04)' 
+                  },
+                  height: 60 
                 }}
               >
-                <CancelIcon />
-              </IconButton>
-            </Box>
-          )}
-          
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
-            <MediaUpload
-              onUpload={handleMediaUpload}
-              allowedTypes={['IMAGE', 'VIDEO', 'AUDIO', 'PDF']}
-              bucket="networks"
-              path={`news/${networkId}`}
-              maxFiles={1}
-              showPreview={false}
-              autoUpload={true}
-            />
-            
-            {/* Media upload feedback */}
-            {mediaUrl && (
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Chip 
-                  label={`${mediaType?.toUpperCase()} uploaded: ${mediaMetadata?.fileName}`}
-                  color="success"
-                  size="small"
-                  onDelete={() => {
-                    setMediaUrl(null);
-                    setMediaType(null);
-                    setMediaMetadata({});
-                  }}
-                />
-              </Box>
-            )}
-            
-            {(imageCaption || mediaUrl) && (
-              <TextField
-                label="Image Caption"
-                value={imageCaption}
-                onChange={(e) => setImageCaption(e.target.value)}
-                size="small"
-                sx={{ flex: 1, minWidth: 200 }}
-                InputProps={{
-                  sx: {
-                    color: darkMode ? 'text.primary' : undefined
-                  }
-                }}
-              />
-            )}
-          </Box>
-        </Box>
-        <Paper sx={{ 
-          p: 2, 
-          border: '1px solid #ddd',
-          minHeight: '300px',
-          '& .tiptap': {
-            minHeight: '250px',
-            padding: '8px',
-            '&:focus-visible': {
-              outline: 'none'
-            }
-          }
-        }}>
-          <EditorContent editor={editor} />
-        </Paper>
-        <Box sx={{ mt: 2, display: 'flex', gap: 2 }}>
-          <Button
-            variant="contained"
-            onClick={handleNewsSubmit}
-            startIcon={<SaveIcon />}
-            disabled={updating}
-          >
-            {updating ? <Spinner size={48} /> : 'Publish News'}
-          </Button>
-          <Button
-            variant="outlined"
-            onClick={() => editor?.commands.clearContent()}
-          >
-            Clear
-          </Button>
-        </Box>
-      </Card>
+                <TableCell padding="checkbox">
+                  {(post.media_url && post.media_type === 'image') || post.image_url ? (
+                    <Avatar
+                      variant="rounded"
+                      src={post.media_type === 'image' ? post.media_url : post.image_url}
+                      sx={{ width: 40, height: 40 }}
+                    >
+                      <ImageIcon />
+                    </Avatar>
+                  ) : post.media_url ? (
+                    <Avatar
+                      variant="rounded"
+                      sx={{ 
+                        width: 40, 
+                        height: 40, 
+                        bgcolor: darkMode ? 'grey.800' : 'grey.200' 
+                      }}
+                    >
+                      <ArticleIcon color="action" />
+                    </Avatar>
+                  ) : (
+                    <Avatar
+                      variant="rounded"
+                      sx={{ 
+                        width: 40, 
+                        height: 40, 
+                        bgcolor: darkMode ? 'grey.800' : 'grey.200' 
+                      }}
+                    >
+                      <ImageIcon color="action" />
+                    </Avatar>
+                  )}
+                </TableCell>
+                <TableCell sx={{ maxWidth: 0, overflow: 'hidden' }}>
+                  <Box>
+                    <Typography variant="body2" noWrap sx={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {post.title}
+                    </Typography>
+                    <Typography 
+                      variant="caption" 
+                      color="text.secondary" 
+                      noWrap 
+                      sx={{ 
+                        overflow: 'hidden', 
+                        textOverflow: 'ellipsis',
+                        display: 'block'
+                      }}
+                    >
+                      {truncateContent(post.content)}
+                    </Typography>
+                  </Box>
+                </TableCell>
+                <TableCell>
+                  <Typography variant="body2" noWrap>
+                    {getAuthorName(post.created_by)}
+                  </Typography>
+                </TableCell>
+                <TableCell>
+                  {post.category && (
+                    <Chip 
+                      label={post.category.name}
+                      size="small"
+                      sx={{ 
+                        bgcolor: post.category.color || '#666',
+                        color: 'white',
+                        fontSize: '0.75rem'
+                      }}
+                    />
+                  )}
+                </TableCell>
+                <TableCell>
+                  <Typography variant="body2" noWrap>
+                    {formatDate(post.created_at)}
+                  </Typography>
+                </TableCell>
+                <TableCell align="right">
+                  <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'flex-end' }}>
+                    <Tooltip title="View news">
+                      <IconButton 
+                        size="small" 
+                        onClick={() => handleViewNews(post.id)}
+                        sx={{ padding: 0.5 }}
+                      >
+                        <VisibilityIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Edit news">
+                      <IconButton 
+                        size="small" 
+                        onClick={() => handleOpenDialog('edit', post)}
+                        sx={{ padding: 0.5 }}
+                      >
+                        <EditIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Delete news">
+                      <IconButton 
+                        size="small" 
+                        onClick={() => handleDelete(post.id)}
+                        sx={{ padding: 0.5 }}
+                        color="error"
+                      >
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  </Box>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
 
-      <Typography variant="h5" gutterBottom>
-        Previous Posts
-      </Typography>
-      {newsPosts.map(post => (
-        <Card key={post.id} sx={{ mb: 2 }}>
-          <CardContent>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
-              <Typography variant="h6">{post.title}</Typography>
-              {post.category_id && categories.find(c => c.id === post.category_id) && (
-                <Box
-                  sx={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: 0.5,
-                    px: 1.5,
-                    py: 0.5,
-                    borderRadius: '16px',
-                    bgcolor: alpha(categories.find(c => c.id === post.category_id).color, 0.12),
-                    border: `1px solid ${alpha(categories.find(c => c.id === post.category_id).color, 0.3)}`,
-                    transition: 'all 0.2s ease',
-                    '&:hover': {
-                      bgcolor: alpha(categories.find(c => c.id === post.category_id).color, 0.18),
-                      borderColor: alpha(categories.find(c => c.id === post.category_id).color, 0.4),
-                    }
-                  }}
-                >
-                  <Box
-                    sx={{
-                      width: 6,
-                      height: 6,
-                      borderRadius: '50%',
-                      bgcolor: categories.find(c => c.id === post.category_id).color,
-                      flexShrink: 0
-                    }}
-                  />
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      fontSize: '0.75rem',
-                      fontWeight: 500,
-                      color: categories.find(c => c.id === post.category_id).color,
-                      letterSpacing: '0.02em'
-                    }}
-                  >
-                    {categories.find(c => c.id === post.category_id).name}
-                  </Typography>
-                </Box>
-              )}
-            </Box>
-            <Typography variant="caption" color="text.secondary">
-              Posted by {members.find(m => m.id === post.created_by)?.full_name || 'Admin'} • 
-              {new Date(post.created_at).toLocaleDateString()}
-            </Typography>
-            
-            {post.image_url && (
-              <Box sx={{ mt: 2, mb: 2 }}>
-                <img 
-                  src={post.image_url} 
-                  alt={post.title}
-                  style={{ maxWidth: '100%', maxHeight: '300px', display: 'block' }} 
-                />
-                {post.image_caption && (
-                  <Typography variant="body2" color="text.secondary" sx={{ mt: 1, fontStyle: 'italic' }}>
-                    {post.image_caption}
-                  </Typography>
-                )}
-              </Box>
-            )}
-            <Divider sx={{ my: 2 }} />
-            <div 
-              className="tiptap-output"
-              dangerouslySetInnerHTML={{ __html: post.content }}
-            />
-          </CardContent>
-          <CardActions>
-            <Button 
-              size="small" 
-              color="error"
-              onClick={() => handleDeleteNews(post.id)}
-              startIcon={<DeleteIcon />}
-            >
-              Delete
-            </Button>
-          </CardActions>
-        </Card>
-      ))}
+      <CreateNewsDialog
+        open={openDialog}
+        onClose={() => {
+          setOpenDialog(false);
+          setError(null);
+        }}
+        networkId={networkId}
+        profileId={userId}
+        editingNews={dialogMode === 'edit' ? selectedNews : null}
+        onNewsCreated={(newNews) => {
+          setNewsPosts([newNews, ...newsPosts]);
+          setMessage('News created successfully!');
+          setOpenDialog(false);
+        }}
+        onNewsUpdated={(updatedNews) => {
+          setNewsPosts(newsPosts.map(n => n.id === updatedNews.id ? updatedNews : n));
+          setMessage('News updated successfully!');
+          setOpenDialog(false);
+        }}
+        darkMode={darkMode}
+      />
+
     </>
   );
 };

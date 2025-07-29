@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { useTranslation } from '../hooks/useTranslation';
 import { useAuth } from '../context/authcontext';
 import { useProfile } from '../context/profileContext';
@@ -42,7 +43,8 @@ import {
   Delete as DeleteIcon,
   Cancel as CancelIcon,
   Visibility as VisibilityIcon,
-  Poll as PollIcon
+  Poll as PollIcon,
+  Article as ArticleIcon
 } from '@mui/icons-material';
 import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
@@ -496,20 +498,6 @@ const NewsTab = ({ darkMode }) => {
   return (
     <PageTransition>
       <Paper sx={{ p: 3, mt: 1.5, bgcolor: darkMode ? 'background.paper' : undefined }} >
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>        
-        {isAdmin && !isCreating && (
-          <Button 
-            variant="contained" 
-            color="primary"
-            startIcon={<AddPhotoIcon />}
-            onClick={() => setIsCreating(true)}
-          >
-            {t('newsTab.createNews')}
-          </Button>
-        )}
-      </Box>
-      
-      <Divider sx={{ mb: 3 }} />
       
       {message && (
         <Alert severity="success" sx={{ mb: 3 }} onClose={() => setMessage('')}>
@@ -543,45 +531,56 @@ const NewsTab = ({ darkMode }) => {
         </Box>
       )}
       
-      {/* News Posts Section */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, flexWrap: 'wrap', gap: 2 }}>
-        <Typography variant="h5">
-          {t('newsTab.newsUpdates')}
-        </Typography>
-        
-        {/* Category Filter */}
-        {categories.length > 0 && (
-          <FormControl size="small" sx={{ minWidth: 180 }}>
-            <InputLabel shrink>{t('newsTab.filterByCategory')}</InputLabel>
-            <Select
-              value={filterCategory}
-              onChange={(e) => setFilterCategory(e.target.value)}
-              label={t('newsTab.filterByCategory')}
-              displayEmpty
-            >
-              <MenuItem value="">
-                <em>{t('newsTab.allCategories')}</em>
-              </MenuItem>
-              {categories.map((category) => (
-                <MenuItem key={category.id} value={category.id}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Box
-                      sx={{
-                        width: 12,
-                        height: 12,
-                        borderRadius: 0.5,
-                        bgcolor: category.color,
-                        flexShrink: 0
-                      }}
-                    />
-                    {category.name}
-                  </Box>
+      {/* Header Section - matching EventsTab structure */}
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          {/* Category Filter */}
+          {categories.length > 0 && (
+            <FormControl size="small" sx={{ minWidth: 200 }}>
+              <InputLabel>{t('newsTab.filterByCategory')}</InputLabel>
+              <Select
+                value={filterCategory}
+                onChange={(e) => setFilterCategory(e.target.value)}
+                label={t('newsTab.filterByCategory')}
+              >
+                <MenuItem value="">
+                  <em>{t('newsTab.allCategories')}</em>
                 </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        )}
+                {categories.map((category) => (
+                  <MenuItem key={category.id} value={category.id}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Box
+                        sx={{
+                          width: 12,
+                          height: 12,
+                          borderRadius: '50%',
+                          bgcolor: category.color || '#666'
+                        }}
+                      />
+                      {category.name}
+                    </Box>
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          )}
+        </Box>
+        
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          {isAdmin && (
+            <Button
+              component={Link}
+              to="/admin?tab=news"
+              startIcon={<ArticleIcon />}
+              color="primary"
+              variant="contained"
+            >
+              {t('newsTab.manageNews')}
+            </Button>
+          )}
+        </Box>
       </Box>
+      
       <Divider sx={{ mb: 3 }} />
       
       {!network ? (
@@ -597,15 +596,16 @@ const NewsTab = ({ darkMode }) => {
           <Typography variant="body1" color="text.secondary">
             {t('newsTab.noNewsPosts')}
           </Typography>
-          {isAdmin && !isCreating && (
+          {isAdmin && (
             <Button 
+              component={Link}
+              to="/admin?tab=news"
               variant="outlined" 
               color="primary"
-              startIcon={<AddPhotoIcon />}
-              onClick={() => setIsCreating(true)}
+              startIcon={<ArticleIcon />}
               sx={{ mt: 2 }}
             >
-              {t('newsTab.createFirstPost')}
+              {t('newsTab.manageNews')}
             </Button>
           )}
         </Box>
