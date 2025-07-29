@@ -615,63 +615,93 @@ function NetworkLandingPage() {
     
     let transitionTimeout;
     let animationFrame;
+    let lastScrollY = 0;
+    let ticking = false;
     
-    const handleScroll = () => {
-      const tabsContainer = document.getElementById('tabs-original-position');
-      if (tabsContainer) {
-        const rect = tabsContainer.getBoundingClientRect();
-        const headerHeight = 80; // NetworkHeader height
-        const scrollY = window.scrollY;
+    // Calculate the fixed trigger point based on background height
+    const backgroundHeight = 220; // From minHeight in background Box
+    const headerHeight = 80; // NetworkHeader height
+    const triggerPoint = backgroundHeight + headerHeight - 40; // 40px before tabs would go above header
+    
+    const updateScrollState = () => {
+      try {
+        const scrollY = window.scrollY || window.pageYOffset || 0;
+        const scrollDirection = scrollY > lastScrollY ? 'down' : 'up';
+        lastScrollY = scrollY;
         
         // Calculate scroll progress for smooth transitions with extended range
-        const maxScroll = 400; // Extended for more gradual transition
+        const maxScroll = 400;
         const progress = Math.min(Math.max(scrollY / maxScroll, 0), 1);
         setScrollProgress(progress);
         
-        // Calculate smooth transition progress based on distance to trigger point
-        const distanceToTrigger = Math.max(rect.top - headerHeight, 0);
-        const transitionRange = 60; // Pixels over which to smooth the transition
+        // Calculate smooth transition progress based on scroll position relative to trigger
+        const distanceToTrigger = Math.max(triggerPoint - scrollY, 0);
+        const transitionRange = 100;
         const smoothProgress = Math.min(Math.max(1 - (distanceToTrigger / transitionRange), 0), 1);
         setSmoothTransitionProgress(smoothProgress);
         
-        // Use requestAnimationFrame for smoother state updates
-        if (animationFrame) cancelAnimationFrame(animationFrame);
-        animationFrame = requestAnimationFrame(() => {
-          // If the tabs would go above the header, make them fixed
-          if (rect.top <= headerHeight && !isTabsFixed) {
-            clearTimeout(transitionTimeout);
-            setTabsTransition('fixing');
-            setIsTabsFixed(true);
-            
-            // Reset transition state after animation completes
-            transitionTimeout = setTimeout(() => {
-              setTabsTransition('none');
-            }, 400); // Increased duration for smoother animation
-          } else if (rect.top > headerHeight + 20 && isTabsFixed) { // Add hysteresis
-            clearTimeout(transitionTimeout);
-            setTabsTransition('unfixing');
-            setIsTabsFixed(false);
-            
-            // Reset transition state after animation completes
-            transitionTimeout = setTimeout(() => {
-              setTabsTransition('none');
-            }, 400);
-          }
-        });
+        // More robust trigger logic using scroll position instead of element position
+        // Add small hysteresis to prevent jitter
+        const hysteresis = isTabsFixed ? -10 : 10;
+        const shouldBeFixed = scrollY >= (triggerPoint + hysteresis);
+        
+        if (shouldBeFixed && !isTabsFixed) {
+          // Switching to fixed
+          clearTimeout(transitionTimeout);
+          setTabsTransition('fixing');
+          setIsTabsFixed(true);
+          
+          // Reset transition state after animation completes
+          transitionTimeout = setTimeout(() => {
+            setTabsTransition('none');
+          }, 500);
+        } else if (!shouldBeFixed && isTabsFixed) {
+          // Switching back to original position
+          clearTimeout(transitionTimeout);
+          setTabsTransition('unfixing');
+          setIsTabsFixed(false);
+          
+          // Reset transition state after animation completes
+          transitionTimeout = setTimeout(() => {
+            setTabsTransition('none');
+          }, 500);
+        }
+        
+        // Reset throttling flag
+        ticking = false;
+      } catch (error) {
+        console.warn('Error in scroll update:', error);
+        ticking = false;
       }
     };
 
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    window.addEventListener('resize', () => {
+    const handleScroll = () => {
+      if (!ticking) {
+        requestAnimationFrame(updateScrollState);
+        ticking = true;
+      }
+    };
+
+    // Initial call to set correct state
+    handleScroll();
+
+    const handleResize = () => {
       const newIsMobile = window.innerWidth < 600;
       if (newIsMobile) {
         setIsTabsFixed(true);
         setSmoothTransitionProgress(1);
+      } else {
+        // Recalculate on desktop resize
+        handleScroll();
       }
-    });
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('resize', handleResize, { passive: true });
     
     return () => {
       window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', handleResize);
       clearTimeout(transitionTimeout);
       if (animationFrame) cancelAnimationFrame(animationFrame);
     };
@@ -793,12 +823,12 @@ function NetworkLandingPage() {
                 top: '50%', // Position tabs in the middle of the background
                 left: 0,
                 right: 0,
-                transform: `translateY(-50%) translateY(${smoothTransitionProgress * -30}px) scale(${1 - (smoothTransitionProgress * 0.02)})`, // Center vertically with scroll effects
+                transform: `translateY(-50%) translateY(${smoothTransitionProgress * -20}px) scale(${1 - (smoothTransitionProgress * 0.01)})`, // Center vertically with smoother scroll effects
                 display: { xs: 'none', sm: 'block' }, // Hide on mobile
                 opacity: 1 - (smoothTransitionProgress * 0.8), // Gradual fade based on proximity
                 transition: tabsTransition !== 'none' 
-                  ? 'opacity 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1)' 
-                  : 'opacity 0.1s ease-out, transform 0.1s ease-out',
+                  ? 'opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)' 
+                  : 'opacity 0.2s ease-out, transform 0.2s ease-out',
                 pointerEvents: isTabsFixed ? 'none' : 'auto',
                 willChange: 'opacity, transform',
               }}
@@ -998,26 +1028,34 @@ function NetworkLandingPage() {
           boxShadow: darkMode 
             ? `0 4px 12px ${alpha('#000000', 0.4)}` 
             : `0 4px 12px ${alpha('#000000', 0.15)}`,
-          // Mobile-specific styles
+          // Improved transition handling
           transform: { 
             xs: 'none', // No transform on mobile
             sm: tabsTransition === 'unfixing' 
-              ? 'translateY(-120%) scale(0.98)' 
-              : `translateY(${smoothTransitionProgress * -5}px) scale(${0.98 + (smoothTransitionProgress * 0.02)})`
+              ? `translateY(-100%) scale(0.95)` 
+              : tabsTransition === 'fixing'
+              ? `translateY(${-10 + (smoothTransitionProgress * 10)}px) scale(${0.95 + (smoothTransitionProgress * 0.05)})`
+              : isTabsFixed 
+              ? 'translateY(0) scale(1)'
+              : `translateY(${smoothTransitionProgress * -10}px) scale(${0.95 + (smoothTransitionProgress * 0.05)})`
           },
           opacity: {
             xs: 1, // Always visible on mobile
             sm: tabsTransition === 'unfixing' 
-              ? 0 
-              : Math.max(smoothTransitionProgress, isTabsFixed ? 1 : 0)
+              ? Math.max(1 - smoothTransitionProgress, 0)
+              : tabsTransition === 'fixing'
+              ? Math.min(smoothTransitionProgress + 0.3, 1)
+              : isTabsFixed 
+              ? 1 
+              : Math.max(smoothTransitionProgress, 0)
           },
           visibility: {
             xs: 'visible', // Always visible on mobile
-            sm: isTabsFixed || tabsTransition === 'unfixing' || smoothTransitionProgress > 0.1 ? 'visible' : 'hidden'
+            sm: (isTabsFixed || tabsTransition !== 'none' || smoothTransitionProgress > 0.05) ? 'visible' : 'hidden'
           },
           transition: tabsTransition !== 'none' 
-            ? 'all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1)' 
-            : 'opacity 0.1s ease-out, transform 0.1s ease-out',
+            ? 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)' 
+            : 'opacity 0.2s ease-out, transform 0.2s ease-out',
           pointerEvents: {
             xs: 'auto', // Always interactive on mobile
             sm: isTabsFixed && tabsTransition !== 'unfixing' ? 'auto' : 'none'
