@@ -195,9 +195,9 @@ const EditItemDialog = ({
           Common Properties
         </Typography>
         
-        <Paper sx={{ p: 2, mb: 2, bgcolor: 'rgba(0,0,0,0.02)' }}>
+        {/* Title section - Commented out for future work */}
+        {/* <Paper sx={{ p: 2, mb: 2, bgcolor: 'rgba(0,0,0,0.02)' }}>
           <Grid container spacing={2}>
-            {/* Title (for all items) */}
             <Grid item xs={12}>
               <TextField
                 label="Title (Optional)"
@@ -220,7 +220,7 @@ const EditItemDialog = ({
               />
             </Grid>
           </Grid>
-        </Paper>
+        </Paper> */}
             
         <Typography variant="subtitle2" gutterBottom sx={{ mt: 2, display: 'flex', alignItems: 'center' }}>
           <span role="img" aria-label="appearance" style={{ marginRight: '8px' }}>🎨</span> Appearance
