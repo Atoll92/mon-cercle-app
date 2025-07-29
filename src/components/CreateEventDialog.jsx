@@ -25,7 +25,9 @@ import {
   Card,
   CardContent,
   Fade,
-  LinearProgress
+  LinearProgress,
+  FormControlLabel,
+  Checkbox
 } from '@mui/material';
 import {
   LocationOn as LocationOnIcon,
@@ -38,7 +40,8 @@ import {
   Euro as EuroIcon,
   Category as CategoryIcon,
   AccessTime as AccessTimeIcon,
-  Description as DescriptionIcon
+  Description as DescriptionIcon,
+  Computer as ComputerIcon
 } from '@mui/icons-material';
 import AddressSuggestions from './AddressSuggestions';
 import { createEvent, updateEvent } from '../api/networks';
@@ -56,7 +59,8 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
     price: 0,
     currency: 'EUR',
     max_tickets: '',
-    category_id: ''
+    category_id: '',
+    online: false
   });
   const [locationSuggestion, setLocationSuggestion] = useState(null);
   const [eventImageFile, setEventImageFile] = useState(null);
@@ -103,7 +107,8 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
         price: 0,
         currency: 'EUR',
         max_tickets: '',
-        category_id: ''
+        category_id: '',
+        online: false
       });
       setLocationSuggestion(null);
       setEventImageFile(null);
@@ -130,7 +135,8 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
         price: editingEvent.price || 0,
         currency: editingEvent.currency || 'EUR',
         max_tickets: editingEvent.max_tickets || '',
-        category_id: editingEvent.category_id || ''
+        category_id: editingEvent.category_id || '',
+        online: editingEvent.online || false
       });
       // Set location suggestion if we have coordinates
       if (editingEvent.location) {
@@ -224,6 +230,10 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
 
   const canProceedToNext = () => {
     if (currentStep === 0) {
+      // If online event, location is not required
+      if (eventForm.online) {
+        return eventForm.title && eventForm.date;
+      }
       return eventForm.title && eventForm.date && eventForm.location;
     }
     return true;
@@ -231,8 +241,14 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
 
   const handleSubmit = async () => {
     // Validate required fields FIRST, before setting updating
-    if (!eventForm.title || !eventForm.date || !eventForm.location) {
-      setError('Please fill in all required fields (Title, Date, Location)');
+    if (!eventForm.title || !eventForm.date) {
+      setError('Please fill in all required fields (Title, Date)');
+      return;
+    }
+    
+    // If not online event, location is required
+    if (!eventForm.online && !eventForm.location) {
+      setError('Please provide a location for in-person events');
       return;
     }
 
@@ -245,15 +261,16 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
       const eventData = {
         title: eventForm.title,
         date: eventForm.date,
-        location: eventForm.location,
+        location: eventForm.online ? 'Online' : eventForm.location,
         description: eventForm.description,
         capacity: eventForm.capacity ? parseInt(eventForm.capacity) : null,
-        coordinates: eventForm.coordinates,
+        coordinates: eventForm.online ? null : eventForm.coordinates,
         event_link: eventForm.event_link || null,
         price: eventForm.price || 0,
         currency: eventForm.currency,
         max_tickets: eventForm.max_tickets ? parseInt(eventForm.max_tickets) : null,
-        category_id: eventForm.category_id || null
+        category_id: eventForm.category_id || null,
+        online: eventForm.online
       };
 
       let result;
@@ -330,16 +347,70 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
                     }}
                   />
                   
-                  <AddressSuggestions
-                    value={locationSuggestion}
-                    onChange={handleLocationChange}
-                    label="Location"
-                    placeholder="Start typing an address..."
-                    required
-                    fullWidth
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={eventForm.online}
+                        onChange={(e) => {
+                          setEventForm({ ...eventForm, online: e.target.checked });
+                          if (e.target.checked) {
+                            // Clear location data when switching to online
+                            setLocationSuggestion(null);
+                            setEventForm(prev => ({
+                              ...prev,
+                              location: '',
+                              coordinates: null
+                            }));
+                          }
+                        }}
+                        icon={<LocationOnIcon />}
+                        checkedIcon={<ComputerIcon />}
+                      />
+                    }
+                    label={
+                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <Typography variant="body1">
+                          {eventForm.online ? 'Online Event' : 'In-Person Event'}
+                        </Typography>
+                        <Typography variant="caption" sx={{ ml: 1, color: 'text.secondary' }}>
+                          {eventForm.online ? '(no location required)' : '(location required)'}
+                        </Typography>
+                      </Box>
+                    }
+                    sx={{ mb: 3 }}
                   />
                   
-                  {eventForm.coordinates && (
+                  {!eventForm.online && (
+                    <AddressSuggestions
+                      value={locationSuggestion}
+                      onChange={handleLocationChange}
+                      label="Location"
+                      placeholder="Start typing an address..."
+                      required
+                      fullWidth
+                    />
+                  )}
+                  
+                  {eventForm.online && (
+                    <Fade in={true}>
+                      <Paper sx={{ 
+                        mt: 2,
+                        p: 2, 
+                        backgroundColor: 'info.50',
+                        border: '1px solid',
+                        borderColor: 'info.200'
+                      }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                          <ComputerIcon sx={{ mr: 1, color: 'info.main' }} />
+                          <Typography variant="body2" color="info.dark">
+                            This is an online event. Consider adding a meeting link in the Event Link field.
+                          </Typography>
+                        </Box>
+                      </Paper>
+                    </Fade>
+                  )}
+                  
+                  {eventForm.coordinates && !eventForm.online && (
                     <Fade in={true}>
                       <Paper sx={{ 
                         mt: 2,
@@ -388,9 +459,9 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
                   />
                   
                   <TextField
-                    label="Event Link (optional)"
+                    label={eventForm.online ? "Event Link (recommended)" : "Event Link (optional)"}
                     fullWidth
-                    placeholder="https://example.com/your-event"
+                    placeholder={eventForm.online ? "https://zoom.us/j/123456789" : "https://example.com/your-event"}
                     value={eventForm.event_link}
                     onChange={(e) => setEventForm({ ...eventForm, event_link: e.target.value })}
                     InputProps={{
@@ -400,7 +471,10 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
                         </InputAdornment>
                       ),
                     }}
-                    helperText="Registration page, Zoom meeting, or external resource"
+                    helperText={eventForm.online 
+                      ? "Add the meeting link (Zoom, Teams, etc.) for attendees to join"
+                      : "Registration page, Zoom meeting, or external resource"
+                    }
                   />
                 </CardContent>
               </Card>
@@ -630,9 +704,20 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
     >
       <DialogTitle sx={{ pb: 1 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Typography variant="h5" component="div">
-            {editingEvent ? 'Edit Event' : 'Create New Event'}
-          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Typography variant="h5" component="div">
+              {editingEvent ? 'Edit Event' : 'Create New Event'}
+            </Typography>
+            {eventForm.online && (
+              <Chip 
+                icon={<ComputerIcon />} 
+                label="Online" 
+                size="small" 
+                color="info" 
+                variant="outlined"
+              />
+            )}
+          </Box>
           <IconButton onClick={onClose} disabled={updating}>
             <CloseIcon />
           </IconButton>
