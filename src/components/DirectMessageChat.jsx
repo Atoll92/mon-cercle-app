@@ -228,10 +228,22 @@ if (refreshConversations) {
   
   // Scroll to bottom when messages change
   useEffect(() => {
-    if (messagesEndRef.current) {
+    if (messagesEndRef.current && messageContainerRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages]);
+  
+  // Scroll to bottom when conversation changes or loading completes
+  useEffect(() => {
+    if (!loading && messagesEndRef.current && messageContainerRef.current && messages.length > 0) {
+      // Small delay to ensure DOM is fully rendered
+      setTimeout(() => {
+        if (messageContainerRef.current) {
+          messageContainerRef.current.scrollTop = messageContainerRef.current.scrollHeight;
+        }
+      }, 50);
+    }
+  }, [conversationId, loading, messages.length]);
   
   // Focus the input field when sending is complete
   useEffect(() => {
