@@ -9,8 +9,10 @@ import LinkPreview from '../components/LinkPreview';
 import MediaUpload from '../components/MediaUpload';
 import MediaPlayer from '../components/MediaPlayer';
 import MoodboardItem from '../components/Moodboard/MoodboardItem';
+import MoodboardCanvas from '../components/Moodboard/MoodboardCanvas';
 import MoodboardSettingsDialog from '../components/Moodboard/MoodboardSettingsDialog';
 import { updateMoodboard } from '../api/moodboards';
+import { useMoodboardCanvas } from '../hooks/useMoodboardCanvas';
 import Spinner from '../components/Spinner';
 import {
   Box,
@@ -857,7 +859,6 @@ function MoodboardPage() {
   const { activeProfile } = useProfile();
   const navigate = useNavigate();
   const theme = useTheme();
-  const canvasRef = useRef(null);
   
   // State for moodboard data
   const [moodboard, setMoodboard] = useState(null);
@@ -871,25 +872,24 @@ function MoodboardPage() {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const autoSaveTimeoutRef = useRef(null);
   const originalItemsRef = useRef([]);
-
   
-  // State for viewport control
-  const [scale, setScale] = useState(1);
-  const [position, setPosition] = useState({ x: 0, y: 0 });
-  const [isDraggingCanvas, setIsDraggingCanvas] = useState(false);
-  const [startDragPos, setStartDragPos] = useState({ x: 0, y: 0 });
-  
-  // Refs for stable access in event handlers
-  const scaleRef = useRef(scale);
-  const positionRef = useRef(position);
-  
-  useEffect(() => {
-    scaleRef.current = scale;
-  }, [scale]);
-  
-  useEffect(() => {
-    positionRef.current = position;
-  }, [position]);
+  // Use moodboard canvas hook for viewport control
+  const {
+    scale,
+    position,
+    isDraggingCanvas,
+    canvasRef,
+    handleCanvasMouseDown: hookHandleCanvasMouseDown,
+    handleCanvasMouseMove,
+    handleCanvasMouseUp,
+    handleWheel,
+    handleZoomIn,
+    handleZoomOut,
+    handleZoomReset
+  } = useMoodboardCanvas({
+    items, // Pass items for boundary calculations
+    boundaryPaddingRatio: 1 // 100% of viewport for more generous boundaries
+  });
   
   // State for UI controls
   const [addMenuAnchor, setAddMenuAnchor] = useState(null);
@@ -970,123 +970,22 @@ function MoodboardPage() {
     fetchMoodboard();
   }, [moodboardId, user, activeProfile]);
   
-  // Add wheel event listener with passive: false for Chrome
+  // Add wheel event listener
   useEffect(() => {
-    console.log('Setting up wheel listener, canvas ref:', canvasRef.current);
-    
-    // Use a timeout to ensure DOM is ready
-    const timer = setTimeout(() => {
-      const canvas = canvasRef.current;
-      console.log('Canvas after timeout:', canvas);
-      
-      if (!canvas) {
-        console.log('Canvas is still null after timeout');
-        return;
-      }
+    const canvas = canvasRef.current;
+    if (!canvas) return;
 
-      const wheelHandler = (e) => {
-        // Always prevent default to stop page scroll
-        e.preventDefault();
-        e.stopPropagation();
-        
-        // Debug logging
-        console.log('Wheel event (native):', {
-          deltaX: e.deltaX,
-          deltaY: e.deltaY,
-          deltaMode: e.deltaMode,
-          ctrlKey: e.ctrlKey,
-          metaKey: e.metaKey
-        });
-        
-        // Check if it's a pinch zoom gesture
-        if (e.ctrlKey || e.metaKey) {
-          // Pinch zoom (Ctrl/Cmd + scroll) - use refs for current values
-          const currentScale = scaleRef.current;
-          const currentPosition = positionRef.current;
-          const zoomDelta = -e.deltaY * 0.01;
-          const newScale = Math.min(Math.max(currentScale + zoomDelta, 0.3), 3);
-          
-          // Get mouse position relative to canvas
-          const rect = canvas.getBoundingClientRect();
-          const mouseX = e.clientX - rect.left;
-          const mouseY = e.clientY - rect.top;
-          
-          // Calculate zoom towards cursor position
-          const scaleRatio = newScale / currentScale;
-          const newX = mouseX - (mouseX - currentPosition.x) * scaleRatio;
-          const newY = mouseY - (mouseY - currentPosition.y) * scaleRatio;
-          
-          setScale(newScale);
-          setPosition({ x: newX, y: newY });
-        } else {
-          // Two-finger scroll (trackpad pan)
-          const deltaX = e.deltaX;
-          const deltaY = e.deltaY;
-          
-          // Invert the scroll direction for more natural panning
-          setPosition(prev => ({
-            x: prev.x - deltaX,
-            y: prev.y - deltaY
-          }));
-        }
-      };
-
-      console.log('Adding wheel event listener');
-      // Add wheel event listener with passive: false to allow preventDefault
-      canvas.addEventListener('wheel', wheelHandler, { passive: false });
-
-      // Store cleanup function
-      return () => {
-        console.log('Cleanup: removing wheel event listener');
-        canvas.removeEventListener('wheel', wheelHandler);
-      };
-    }, 200); // Longer delay
+    // Add wheel event listener with passive: false to allow preventDefault
+    canvas.addEventListener('wheel', handleWheel, { passive: false });
 
     return () => {
-      clearTimeout(timer);
+      canvas.removeEventListener('wheel', handleWheel);
     };
-  }, [moodboard]); // Depend on moodboard to ensure it runs after loading
+  }, [handleWheel]);
   
-  // Canvas dragging handlers
+  // Wrapper for canvas mouse down to pass selectedItemId
   const handleCanvasMouseDown = (e) => {
-    // Only drag canvas with middle mouse button or when no item is selected
-    if (e.button === 1 || !selectedItemId) {
-      setIsDraggingCanvas(true);
-      setStartDragPos({ x: e.clientX, y: e.clientY });
-      e.preventDefault(); // Prevent default behavior for middle mouse button
-    }
-  };
-  
-  const handleCanvasMouseMove = (e) => {
-    if (isDraggingCanvas) {
-      const dx = e.clientX - startDragPos.x;
-      const dy = e.clientY - startDragPos.y;
-      
-      setPosition(prev => ({
-        x: prev.x + dx,
-        y: prev.y + dy
-      }));
-      
-      setStartDragPos({ x: e.clientX, y: e.clientY });
-    }
-  };
-  
-  const handleCanvasMouseUp = () => {
-    setIsDraggingCanvas(false);
-  };
-  
-  // Handle zoom controls
-  const handleZoomIn = () => {
-    setScale(prev => Math.min(prev + 0.1, 3));
-  };
-  
-  const handleZoomOut = () => {
-    setScale(prev => Math.max(prev - 0.1, 0.3));
-  };
-  
-  const handleZoomReset = () => {
-    setScale(1);
-    setPosition({ x: 0, y: 0 });
+    hookHandleCanvasMouseDown(e, selectedItemId);
   };
   
   // Handle item selection and deselection
@@ -1675,9 +1574,11 @@ const handleUpdateItem = async (updatedItem) => {
           zIndex: 1000,
           display: 'flex', 
           justifyContent: 'space-between',
-          bgcolor: alpha(theme.palette.primary.main, 0.05),
-          borderBottom: '1px solid',
-          borderColor: 'divider',
+          background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)}, ${alpha(theme.palette.background.paper, 0.6)})`,
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          borderBottom: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+          boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.1)}`,
           flexWrap: 'wrap',
           gap: 1
         }}
@@ -1884,67 +1785,36 @@ const handleUpdateItem = async (updatedItem) => {
         )}
       </Box>
       
-      <Box
-  ref={canvasRef}
-  sx={{ 
-    flexGrow: 1, 
-    position: 'relative', 
-    overflow: 'hidden',
-    bgcolor: moodboard.background_color || '#f5f5f5', // Use background_color from database
-    cursor: isDraggingCanvas ? 'grabbing' : 'default',
-    paddingTop: 'calc(80px + 56px)', // Account for fixed NetworkHeader + toolbar
-    minHeight: '100vh'
-  }}
-  onClick={handleCanvasClick}
-  onMouseDown={handleCanvasMouseDown}
-  onMouseMove={handleCanvasMouseMove}
-  onMouseUp={handleCanvasMouseUp}
-  onMouseLeave={handleCanvasMouseUp}
->
-  {/* The infinite canvas */}
-  <Box
-    sx={{
-      position: 'absolute',
-      width: '100%',
-      height: '100%',
-      transformOrigin: '0 0',
-      transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
-      transition: isDraggingCanvas ? 'none' : 'transform 0.1s ease'
-    }}
-  >
-    {/* Background grid - Only show if no background_color is set */}
-    {!moodboard.background_color && (
-      <Box 
-        sx={{ 
-          position: 'absolute',
-          inset: '-5000px',
-          width: '10000px',
-          height: '10000px',
-          backgroundImage: `linear-gradient(#ddd 1px, transparent 1px), 
-                          linear-gradient(90deg, #ddd 1px, transparent 1px)`,
-          backgroundSize: '20px 20px',
-          zIndex: 0
-        }} 
-      />
-    )}
-    
-    {/* Render all items */}
-    {items.map(item => (
-      <MoodboardItem
-        key={item.id}
-        item={item}
-        selected={selectedItemId === item.id}
-        onSelect={handleSelectItem}
-        onMove={handleMoveItem}
-        onResize={handleResizeItem}
-        onEdit={handleEditItem}
-        onDelete={handleDeleteItem}
+      <MoodboardCanvas
+        backgroundColor={moodboard.background_color || '#f5f5f5'}
         scale={scale}
-        isEditable={isEditable}
-      />
-    ))}
-  </Box>
-</Box>
+        position={position}
+        isDraggingCanvas={isDraggingCanvas}
+        canvasRef={canvasRef}
+        onCanvasClick={handleCanvasClick}
+        onCanvasMouseDown={handleCanvasMouseDown}
+        onCanvasMouseMove={handleCanvasMouseMove}
+        onCanvasMouseUp={handleCanvasMouseUp}
+        onCanvasMouseLeave={handleCanvasMouseUp}
+        showGrid={!moodboard.background_color}
+        height="calc(100vh - 136px)" // Account for NetworkHeader (80px) + toolbar (56px)
+      >
+        {/* Render all items */}
+        {items.map(item => (
+          <MoodboardItem
+            key={item.id}
+            item={item}
+            selected={selectedItemId === item.id}
+            onSelect={handleSelectItem}
+            onMove={handleMoveItem}
+            onResize={handleResizeItem}
+            onEdit={handleEditItem}
+            onDelete={handleDeleteItem}
+            scale={scale}
+            isEditable={isEditable}
+          />
+        ))}
+      </MoodboardCanvas>
 
       {/* Add Item Menu */}
       <Menu

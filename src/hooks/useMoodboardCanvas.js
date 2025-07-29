@@ -12,7 +12,7 @@ export const useMoodboardCanvas = (options = {}) => {
     maxScale = 3,
     scaleStep = 0.1,
     items = [], // Array of items to calculate boundaries
-    boundaryPadding = 200 // Extra padding around content boundaries
+    boundaryPaddingRatio = 0.5 // Ratio of viewport dimensions for padding (0.5 = 50% by default)
   } = options;
 
   // Canvas navigation state
@@ -38,13 +38,31 @@ export const useMoodboardCanvas = (options = {}) => {
 
   // Calculate content boundaries based on items
   const getContentBounds = useCallback(() => {
+    // Calculate dynamic padding based on viewport dimensions
+    // Use canvas element dimensions if available, otherwise fallback to window
+    const canvas = canvasRef.current;
+    let viewportWidth, viewportHeight;
+    
+    if (canvas) {
+      const rect = canvas.getBoundingClientRect();
+      viewportWidth = rect.width;
+      viewportHeight = rect.height;
+    } else {
+      viewportWidth = window.innerWidth;
+      viewportHeight = window.innerHeight;
+    }
+    
+    // Calculate padding for each axis independently
+    const paddingX = viewportWidth * boundaryPaddingRatio / 2; // Divide by 2 since we add on both sides
+    const paddingY = viewportHeight * boundaryPaddingRatio / 2;
+
     if (!items || items.length === 0) {
       // If no items, allow some movement around center
       return {
-        minX: -boundaryPadding,
-        maxX: boundaryPadding,
-        minY: -boundaryPadding,
-        maxY: boundaryPadding
+        minX: -paddingX,
+        maxX: paddingX,
+        minY: -paddingY,
+        maxY: paddingY
       };
     }
 
@@ -65,12 +83,12 @@ export const useMoodboardCanvas = (options = {}) => {
 
     // Add padding around content
     return {
-      minX: minX - boundaryPadding,
-      maxX: maxX + boundaryPadding,
-      minY: minY - boundaryPadding,
-      maxY: maxY + boundaryPadding
+      minX: minX - paddingX,
+      maxX: maxX + paddingX,
+      minY: minY - paddingY,
+      maxY: maxY + paddingY
     };
-  }, [items, boundaryPadding]);
+  }, [items, boundaryPaddingRatio]);
 
   // Constrain position to boundaries
   const constrainPosition = useCallback((newPosition, currentScale = scale) => {
@@ -83,32 +101,46 @@ export const useMoodboardCanvas = (options = {}) => {
     const viewportWidth = rect.width;
     const viewportHeight = rect.height;
 
-    // Calculate how far we can pan based on content size and scale
-    const scaledBoundsWidth = (bounds.maxX - bounds.minX) * currentScale;
-    const scaledBoundsHeight = (bounds.maxY - bounds.minY) * currentScale;
+    // Calculate the actual canvas bounds in canvas coordinates
+    const minCanvasX = bounds.minX * currentScale;
+    const maxCanvasX = bounds.maxX * currentScale;
+    const minCanvasY = bounds.minY * currentScale;
+    const maxCanvasY = bounds.maxY * currentScale;
 
-    // Calculate maximum allowed offset to keep content visible
-    const maxOffsetX = Math.max(0, (scaledBoundsWidth - viewportWidth) / 2);
-    const maxOffsetY = Math.max(0, (scaledBoundsHeight - viewportHeight) / 2);
+    // Calculate canvas dimensions
+    const canvasWidth = maxCanvasX - minCanvasX;
+    const canvasHeight = maxCanvasY - minCanvasY;
 
-    // Calculate the center of content bounds
-    const contentCenterX = (bounds.minX + bounds.maxX) / 2;
-    const contentCenterY = (bounds.minY + bounds.maxY) / 2;
+    // Calculate constraints
+    // When canvas is smaller than viewport, center it
+    // When canvas is larger than viewport, allow scrolling but keep content visible
+    let minX, maxX, minY, maxY;
 
-    // Calculate where content center should be positioned in viewport
-    const targetCenterX = viewportWidth / 2 - contentCenterX * currentScale;
-    const targetCenterY = viewportHeight / 2 - contentCenterY * currentScale;
+    if (canvasWidth <= viewportWidth) {
+      // Center horizontally
+      const centerX = (viewportWidth - canvasWidth) / 2;
+      minX = centerX - minCanvasX;
+      maxX = minX;
+    } else {
+      // Allow scrolling, but keep content visible
+      minX = viewportWidth - maxCanvasX;
+      maxX = -minCanvasX;
+    }
 
-    // Constrain position
-    const constrainedX = Math.max(
-      targetCenterX - maxOffsetX,
-      Math.min(targetCenterX + maxOffsetX, newPosition.x)
-    );
-    
-    const constrainedY = Math.max(
-      targetCenterY - maxOffsetY,
-      Math.min(targetCenterY + maxOffsetY, newPosition.y)
-    );
+    if (canvasHeight <= viewportHeight) {
+      // Center vertically
+      const centerY = (viewportHeight - canvasHeight) / 2;
+      minY = centerY - minCanvasY;
+      maxY = minY;
+    } else {
+      // Allow scrolling, but keep content visible
+      minY = viewportHeight - maxCanvasY;
+      maxY = -minCanvasY;
+    }
+
+    // Apply constraints
+    const constrainedX = Math.max(minX, Math.min(maxX, newPosition.x));
+    const constrainedY = Math.max(minY, Math.min(maxY, newPosition.y));
 
     return {
       x: constrainedX,
