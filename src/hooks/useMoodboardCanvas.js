@@ -155,12 +155,14 @@ export const useMoodboardCanvas = (options = {}) => {
   }, [constrainPosition]);
 
   // Constrain position when scale changes or items change
+  // Remove position from dependencies to avoid feedback loop during scrolling
   useEffect(() => {
     const constrained = constrainPosition(position, scale);
     if (constrained.x !== position.x || constrained.y !== position.y) {
       setPosition(constrained);
     }
-  }, [scale, items, constrainPosition, position]); // Re-constrain when scale or items change
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scale, items]); // Only re-constrain when scale or items change, not position
 
   const handleZoomIn = useCallback(() => {
     setScale(prev => Math.min(prev + scaleStep, maxScale));
