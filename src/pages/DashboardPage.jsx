@@ -56,8 +56,6 @@ import {
   Refresh as RefreshIcon,
   NetworkWifi as NetworkIcon,
   LocationOn as LocationOnIcon,
-  CreateNewFolder as CreateNewFolderIcon,
-  InsertInvitation as InvitationIcon,
   PersonAdd as PersonAddIcon,
   WorkspacePremium as PremiumIcon,
   Verified as VerifiedIcon,
@@ -71,7 +69,6 @@ import {
 } from '@mui/icons-material';
 import { fetchNetworkMembers } from '../api/networks';
 import { fetchNetworkCategories } from '../api/categories';
-import FlexFlowBox from '../components/FlexFlowBox';
 
 // Subscription Badge Component
 const SubscriptionBadge = ({ plan, status }) => {
@@ -730,12 +727,10 @@ function DashboardPage() {
 
       {session && profile ? (
         <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', width: '100%' }}>
-          {/* <Grid container spacing={2} sx={{ width: '100%' }}> */}
               {/* Row 1: Profile and Network Management */}
-              <FlexFlowBox>
-                {/* <Grid container spacing={2} sx={{ height: '100%', width: '100%' }}> */}
+              <Grid container spacing={2} sx={{ width: '100%', maxWidth: '100%' }}>
                   {/* Profile Card - Left Column */}
-                  <Grid item xs={12} md={4}>
+                  <Grid item xs={12} md={3}>
                     <Card 
                       ref={getItemRef(0)}
                       sx={{ 
@@ -903,8 +898,8 @@ function DashboardPage() {
                   </Grid>
                   
                   {/* Network Management Widget - Only for Admins */}
-                  <Grid item xs={12} md={8}>
-                    {profile.network_id && profile.role === 'admin' ? (
+                  {profile.network_id && profile.role === 'admin' ? (
+                    <Grid item xs={12} md={9}>
                       <Card 
                         ref={getItemRef(1)}
                         sx={{ 
@@ -1268,136 +1263,18 @@ function DashboardPage() {
                           </Grid>
                         </CardContent>
                       </Card>
-                    ) : profile.network_id && profile.role !== 'admin' ? (
-                      // Network Info Widget for Non-Admin Members
-                      <Card 
-                        ref={getItemRef(1)}
-                        sx={{ 
-                          borderRadius: 2, 
-                          boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-                          height: '100%',
-                          width: '100%',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
-                        }}
-                      >
-                        <CardHeader
-                          title={<Typography variant="subtitle1">{t('dashboard.network.myNetwork')}</Typography>}
-                          avatar={<NetworkIcon color="primary" />}
-                          sx={{ 
-                            py: 1,
-                            bgcolor: 'rgba(25, 118, 210, 0.05)'
-                          }}
-                        />
-                        
-                        <CardContent sx={{ py: 1, flexGrow: 1 }}>
-                          {/* Network Name */}
-                          <Typography variant="h6" color="primary.main" fontWeight="medium" gutterBottom>
-                            {networkDetails?.name || 'Loading...'}
-                          </Typography>
-                          
-                          {/* Network Stats */}
-                          <Grid container spacing={2} sx={{ mb: 2 }}>
-                            <Grid item xs={6}>
-                              <Paper sx={{ 
-                                p: 2, 
-                                textAlign: 'center',
-                                bgcolor: 'rgba(33, 150, 243, 0.1)',
-                                borderRadius: 2
-                              }}>
-                                <Typography variant="h4" fontWeight="500" color="primary.main">
-                                  {networkMembers.length}
-                                </Typography>
-                                <Typography variant="body2" color="text.secondary">
-                                  {t('dashboard.network.members')}
-                                </Typography>
-                              </Paper>
-                            </Grid>
-                            
-                            <Grid item xs={6}>
-                              <Paper sx={{ 
-                                p: 2, 
-                                textAlign: 'center',
-                                bgcolor: 'rgba(76, 175, 80, 0.1)',
-                                borderRadius: 2
-                              }}>
-                                <Typography variant="h4" fontWeight="500" color="success.main">
-                                  {recentEvents.length}
-                                </Typography>
-                                <Typography variant="body2" color="text.secondary">
-                                  {t('dashboard.network.upcomingEvents')}
-                                </Typography>
-                              </Paper>
-                            </Grid>
-                          </Grid>
-                          
-                          {/* View Network Button */}
-                          <Button 
-                            variant="contained" 
-                            fullWidth
-                            component={Link}
-                            to="/network"
-                            startIcon={<ArrowForwardIcon />}
-                          >
-                            {t('dashboard.buttons.goToNetwork')}
-                          </Button>
-                        </CardContent>
-                      </Card>
-                    ) : (
-                      // Create Network Widget for Users without Network
-                      <Card sx={{ 
-                        borderRadius: 2, 
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.08)'
-                      }}>
-                        <CardHeader
-                          title={<Typography variant="subtitle1">{t('dashboard.network.createNetwork')}</Typography>}
-                          avatar={<CreateNewFolderIcon color="primary" />}
-                          sx={{ 
-                            py: 1,
-                            bgcolor: 'rgba(25, 118, 210, 0.05)'
-                          }}
-                        />
-                        
-                        <CardContent sx={{ py: 1 }}>
-                          <Box sx={{ textAlign: 'center', py: 1 }}>
-                            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                              {t('dashboard.network.createDescription')}
-                            </Typography>
-                            
-                            <Button 
-                              variant="contained" 
-                              color="primary" 
-                              component={Link}
-                              startIcon={<CreateNewFolderIcon />}
-                              to="/create-network"
-                              fullWidth
-                              sx={{ mb: 1 }}
-                            >
-                              {t('dashboard.buttons.createNetwork')}
-                            </Button>
-                            
-                            <Chip
-                              icon={<InvitationIcon fontSize="small" />}
-                              label={t('dashboard.network.waitingForInvitations')} 
-                              variant="outlined"
-                              color="primary"
-                              size="small"
-                            />
-                          </Box>
-                        </CardContent>
-                      </Card>
-                    )}
-                  </Grid>
-
-                  {/* {t('dashboard.network.upcomingEvents')} - Full width */}
-                  <Grid item xs={12} sx={{ display: 'flex', flexGrow: '1' }}>
-                    {profile.network_id && recentEvents.length > 0 ? (
+                    </Grid>
+                  ) : (
+                    /* Upcoming Events - For non-admin members, show next to profile */
+                    profile?.role !== 'admin' && profile.network_id && (
+                      <Grid item xs={12} md={9}>
+                      {recentEvents.length > 0 ? (
                       <Card sx={{ 
                         borderRadius: 2, 
                         boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
                         height: '100%',
                         width: '100%',
+                        maxWidth: '100%',
                         display: 'flex',
                         flexDirection: 'column'
                       }}>
@@ -1559,6 +1436,7 @@ function DashboardPage() {
                         boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
                         height: '100%',
                         width: '100%',
+                        maxWidth: '100%',
                         display: 'flex',
                         flexDirection: 'column'
                       }}>
@@ -1591,21 +1469,227 @@ function DashboardPage() {
                         </CardContent>
                       </Card>
                     )}
-                  </Grid>
-                  
-                  {/* Latest News and Latest Posts - Side by side */}
-                  {profile.network_id && (
-                    <>
-                      <Grid item xs={12} sm={6} md={6}>
-                        <LatestNewsWidget networkId={profile.network_id} onMemberClick={handleMemberClick} />
                       </Grid>
-                      <Grid item xs={12} sm={6} md={6}>
-                        <LatestPostsWidget networkId={profile.network_id} onMemberClick={handleMemberClick} />
-                      </Grid>
-                    </>
+                    )
                   )}
-                  
-              </FlexFlowBox>
+              </Grid>
+              
+              {/* Second Row: Upcoming Events (admin only) */}
+              {profile?.role === 'admin' && profile.network_id && (
+                <Grid container spacing={2} sx={{ width: '100%', maxWidth: '100%', mt: 2 }}>
+                  <Grid item xs={12} sx={{ width: '100%' }}>
+                    {recentEvents.length > 0 ? (
+                      <Card sx={{ 
+                        borderRadius: 2, 
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                        height: '100%',
+                        width: '100%',
+                        maxWidth: '100%',
+                        display: 'flex',
+                        flexDirection: 'column'
+                      }}>
+                          <CardHeader
+                            title={<Typography variant="subtitle1">{t('dashboard.network.upcomingEvents')}</Typography>}
+                            avatar={<EventIcon color="primary" />}
+                            action={
+                              <Box sx={{ display: 'flex', gap: 1 }}>
+                                <Button
+                                  variant="contained"
+                                  size="small"
+                                  startIcon={<AddIcon />}
+                                  onClick={() => setCreateEventOpen(true)}
+                                >
+                                  {t('dashboard.buttons.createEvent')}
+                                </Button>
+                                <Button 
+                                  component={Link}
+                                  to="/network?tab=events"
+                                  endIcon={<ArrowForwardIcon />}
+                                  size="small"
+                                >
+                                  {t('dashboard.buttons.viewAll')}
+                                </Button>
+                              </Box>
+                            }
+                            sx={{ 
+                              bgcolor: 'rgba(25, 118, 210, 0.05)',
+                              py: 1
+                            }}
+                          />
+                      
+                      {loadingEvents ? (
+                        <Box sx={{ p: 2, textAlign: 'center' }}>
+                          <Spinner size={120} />
+                        </Box>
+                      ) : (
+                        <CardContent sx={{ py: 0.5, flexGrow: 1, overflow: 'auto' }}>
+                          <Stack spacing={1}>
+                            {recentEvents.map(event => {
+                              const participationStatus = eventParticipation[event.id];
+                              const getParticipationIcon = (status) => {
+                                switch (status) {
+                                  case 'attending':
+                                    return <CheckCircleIcon fontSize="small" sx={{ color: 'success.main' }} />;
+                                  case 'not_attending':
+                                    return <CancelIcon fontSize="small" sx={{ color: 'error.main' }} />;
+                                  case 'maybe':
+                                    return <HelpIcon fontSize="small" sx={{ color: 'warning.main' }} />;
+                                  default:
+                                    return null;
+                                }
+                              };
+                              
+                              return (
+                                <Paper
+                                  key={event.id}
+                                  variant="outlined"
+                                  sx={{ 
+                                    p: 1, 
+                                    borderRadius: 2,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 1.5,
+                                    minHeight: 80
+                                  }}
+                                >
+                                  <Box sx={{ 
+                                    width: 120,
+                                    height: 80,
+                                    bgcolor: event.cover_image_url ? 'transparent' : 'primary.light',
+                                    borderRadius: 1,
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    color: 'white',
+                                    overflow: 'hidden',
+                                    flexShrink: 0
+                                  }}>
+                                    {event.cover_image_url ? (
+                                      <img 
+                                        src={event.cover_image_url} 
+                                        alt={event.title}
+                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                      />
+                                    ) : (
+                                      <>
+                                        <Typography variant="body2" fontWeight="bold" sx={{ lineHeight: 1 }}>
+                                          {new Date(event.date).toLocaleDateString('en-US', { month: 'short' })}
+                                        </Typography>
+                                        <Typography variant="h5" fontWeight="bold" sx={{ lineHeight: 1 }}>
+                                          {new Date(event.date).getDate()}
+                                        </Typography>
+                                      </>
+                                    )}
+                                  </Box>
+                                  
+                                  <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+                                    <Typography variant="subtitle2" noWrap sx={{ mb: 0.5 }}>
+                                      {event.title}
+                                    </Typography>
+                                    
+                                    <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1, mb: 0.5 }}>
+                                      <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center' }}>
+                                        <EventIcon fontSize="inherit" sx={{ mr: 0.5 }} />
+                                        {formatEventDate(event.date)}
+                                      </Typography>
+                                      
+                                      <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center' }}>
+                                        <LocationOnIcon fontSize="inherit" sx={{ mr: 0.5 }} />
+                                        {event.location}
+                                      </Typography>
+                                    </Box>
+                                    
+                                    {/* Participation Status */}
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                      {participationStatus ? (
+                                        <>
+                                          {getParticipationIcon(participationStatus)}
+                                          <Typography variant="caption" color="text.secondary">
+                                            {participationStatus === 'attending' ? t('dashboard.events.participation.attending') :
+                                             participationStatus === 'not_attending' ? t('dashboard.events.participation.notAttending') :
+                                             participationStatus === 'maybe' ? t('dashboard.events.participation.maybe') : ''}
+                                          </Typography>
+                                        </>
+                                      ) : (
+                                        <Typography variant="caption" color="text.secondary" sx={{ fontStyle: 'italic' }}>
+                                          {t('dashboard.events.participation.noResponse')}
+                                        </Typography>
+                                      )}
+                                    </Box>
+                                  </Box>
+                                  
+                                  <Button
+                                    variant="outlined"
+                                    size="small"
+                                    onClick={() => {
+                                      setSelectedEvent(event);
+                                      setShowEventDialog(true);
+                                    }}
+                                    sx={{ flexShrink: 0, minWidth: 'auto', px: 1 }}
+                                  >
+                                    {t('dashboard.buttons.view')}
+                                  </Button>
+                                </Paper>
+                              );
+                            })}
+                          </Stack>
+                          </CardContent>
+                        )}
+                      </Card>
+                    ) : (
+                      // No events, show empty state
+                      <Card sx={{ 
+                        borderRadius: 2, 
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                        height: '100%',
+                        width: '100%',
+                        maxWidth: '100%',
+                        display: 'flex',
+                        flexDirection: 'column'
+                      }}>
+                        <CardHeader
+                          title={<Typography variant="subtitle1">{t('dashboard.network.upcomingEvents')}</Typography>}
+                          avatar={<EventIcon color="primary" />}
+                          sx={{ 
+                            bgcolor: 'rgba(25, 118, 210, 0.05)',
+                            py: 1
+                          }}
+                        />
+                        <CardContent sx={{ py: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexGrow: 1 }}>
+                          <Box sx={{ textAlign: 'center', py: 2 }}>
+                            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                              {t('dashboard.events.noUpcoming')}
+                            </Typography>
+                            
+                            <Button 
+                              variant="outlined" 
+                              component={Link} 
+                              to="/admin?tab=events"
+                              startIcon={<AddIcon />}
+                              size="small"
+                            >
+                              {t('dashboard.buttons.createEvent')}
+                            </Button>
+                          </Box>
+                        </CardContent>
+                      </Card>
+                    )}
+                  </Grid>
+                </Grid>
+              )}
+              
+              {/* Third Row: Latest News and Latest Posts - Full width for all users */}
+              {profile.network_id && (
+                <Grid container spacing={2} sx={{ width: '100%', maxWidth: '100%', mt: 2 }}>
+                  <Grid item xs={12} md={6} sx={{ width: '100%' }}>
+                    <LatestNewsWidget networkId={profile.network_id} onMemberClick={handleMemberClick} />
+                  </Grid>
+                  <Grid item xs={12} md={6} sx={{ width: '100%' }}>
+                    <LatestPostsWidget networkId={profile.network_id} onMemberClick={handleMemberClick} />
+                  </Grid>
+                </Grid>
+              )}
               
               {/* Micro Conclav Widget - Always visible, full width row */}
               <Box sx={{ 
