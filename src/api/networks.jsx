@@ -1,5 +1,5 @@
 import { supabase } from '../supabaseclient';
-import { queueNewsNotifications, queueEventNotifications, queueMentionNotification } from '../services/emailNotificationService';
+import { queueNewsNotifications, queueEventNotifications, queueMentionNotification, queueEventProposalNotificationForAdmins, queueEventStatusNotification } from '../services/emailNotificationService';
 
 // Storage limits by subscription plan (in MB)
 const STORAGE_LIMITS = {
@@ -832,8 +832,9 @@ export const createEvent = async (networkId, profileId, eventData, imageFile, is
       data[0].cover_image_url = imageUrl;
     }
     
-    // Queue email notifications for network members only if event is approved (admin created)
+    // Queue email notifications based on event status
     if (isAdmin) {
+      // If admin created, event is approved - notify all members
       try {
         console.log('📅 [EVENT DEBUG] Starting to queue email notifications for event...');
         console.log('📅 [EVENT DEBUG] Event created:', data[0]);
@@ -859,6 +860,32 @@ export const createEvent = async (networkId, profileId, eventData, imageFile, is
         }
       } catch (notificationError) {
         console.error('📅 [EVENT DEBUG] Error queueing email notifications:', notificationError);
+        // Don't fail the event creation if notification queueing fails
+      }
+    } else {
+      // If non-admin created, event is pending - notify admins
+      try {
+        console.log('📅 [EVENT PROPOSAL] Queueing admin notifications for event proposal...');
+        
+        const notificationResult = await queueEventProposalNotificationForAdmins(
+          networkId,
+          data[0].id,
+          profileId,
+          eventData.title,
+          eventData.description,
+          eventData.date
+        );
+        
+        console.log('📅 [EVENT PROPOSAL] Admin notification result:', notificationResult);
+        
+        if (notificationResult.success) {
+          console.log(`📅 [EVENT PROPOSAL] Admin notifications queued successfully: ${notificationResult.message}`);
+        } else {
+          console.error('📅 [EVENT PROPOSAL] Failed to queue admin notifications:', notificationResult.error);
+          // Don't fail the event creation if notification queueing fails
+        }
+      } catch (notificationError) {
+        console.error('📅 [EVENT PROPOSAL] Error queueing admin notifications:', notificationError);
         // Don't fail the event creation if notification queueing fails
       }
     }
@@ -954,7 +981,7 @@ export const approveEvent = async (eventId, approverId, networkId) => {
       
     if (updateError) throw updateError;
     
-    // Queue email notifications for the approved event
+    // Queue email notifications for the approved event to all members
     try {
       console.log('📅 [EVENT APPROVAL] Queueing notifications for approved event');
       const notificationResult = await queueEventNotifications(
@@ -969,10 +996,29 @@ export const approveEvent = async (eventId, approverId, networkId) => {
       );
       
       if (notificationResult.success) {
-        console.log('📅 [EVENT APPROVAL] Notifications queued successfully');
+        console.log('📅 [EVENT APPROVAL] Member notifications queued successfully');
       }
     } catch (notificationError) {
-      console.error('📅 [EVENT APPROVAL] Error queueing notifications:', notificationError);
+      console.error('📅 [EVENT APPROVAL] Error queueing member notifications:', notificationError);
+    }
+    
+    // Send approval notification to event creator
+    try {
+      console.log('📅 [EVENT APPROVAL] Queueing approval notification for event creator');
+      const statusNotificationResult = await queueEventStatusNotification(
+        eventId,
+        event.created_by,
+        event.title,
+        'approved',
+        '',
+        networkId
+      );
+      
+      if (statusNotificationResult.success) {
+        console.log('📅 [EVENT APPROVAL] Creator notification queued successfully');
+      }
+    } catch (statusNotificationError) {
+      console.error('📅 [EVENT APPROVAL] Error queueing creator notification:', statusNotificationError);
     }
     
     return {
@@ -990,6 +1036,16 @@ export const approveEvent = async (eventId, approverId, networkId) => {
 
 export const rejectEvent = async (eventId, approverId, rejectionReason = '') => {
   try {
+    // First get the event details for notification
+    const { data: event, error: fetchError } = await supabase
+      .from('network_events')
+      .select('*')
+      .eq('id', eventId)
+      .single();
+      
+    if (fetchError) throw fetchError;
+    
+    // Update event status to rejected
     const { error } = await supabase
       .from('network_events')
       .update({
@@ -1001,6 +1057,25 @@ export const rejectEvent = async (eventId, approverId, rejectionReason = '') => 
       .eq('id', eventId);
       
     if (error) throw error;
+    
+    // Send rejection notification to event creator
+    try {
+      console.log('📅 [EVENT REJECTION] Queueing rejection notification for event creator');
+      const statusNotificationResult = await queueEventStatusNotification(
+        eventId,
+        event.created_by,
+        event.title,
+        'rejected',
+        rejectionReason,
+        event.network_id
+      );
+      
+      if (statusNotificationResult.success) {
+        console.log('📅 [EVENT REJECTION] Creator notification queued successfully');
+      }
+    } catch (notificationError) {
+      console.error('📅 [EVENT REJECTION] Error queueing creator notification:', notificationError);
+    }
     
     return {
       success: true,

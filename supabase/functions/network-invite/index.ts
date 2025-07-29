@@ -8,7 +8,7 @@ interface InviteData {
   toEmail: string;
   networkName: string;
   inviterName: string;
-  type: 'existing_user' | 'new_user' | 'news' | 'event' | 'mention' | 'direct_message' | 'post';
+  type: 'existing_user' | 'new_user' | 'news' | 'event' | 'mention' | 'direct_message' | 'post' | 'event_proposal' | 'event_status';
   inviteLink?: string;
   subject?: string;
   content?: string;
@@ -52,9 +52,9 @@ const handler = async (request: Request): Promise<Response> => {
     }
 
     // Parse the request body
-    const requestBody = await request.json() as InviteData;
+    const requestBody = await request.json();
     const { toEmail, networkName, inviterName, type, inviteLink, subject, content, relatedItemId, eventDate, eventLocation, messageContext, icsAttachment } = requestBody;
-    
+
     console.log('🚀 [EDGE FUNCTION DEBUG] Parsed request body:', {
       toEmail,
       networkName,
@@ -86,7 +86,7 @@ const handler = async (request: Request): Promise<Response> => {
     }
 
     // For content notifications, subject and content are required
-    if ((type === 'news' || type === 'event' || type === 'mention' || type === 'direct_message' || type === 'post') && (!subject || !content)) {
+    if ((type === 'news' || type === 'event' || type === 'mention' || type === 'direct_message' || type === 'post' || type === 'event_proposal' || type === 'event_status') && (!subject || !content)) {
       return new Response(
         JSON.stringify({ error: 'Subject and content are required for content notifications' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -334,9 +334,7 @@ const handler = async (request: Request): Promise<Response> => {
         // eventMatch[1] contains "Title on Date"
         // eventMatch[2] contains the description
         // eventMatch[4] and eventMatch[5] contain media type and URL
-        const titleAndDate = eventMatch[1]?.trim() || '';
         eventDescription = eventMatch[2]?.trim() || 'Event description not available';
-        
         if (eventMatch[4] && eventMatch[5]) {
           hasMedia = true;
           mediaType = eventMatch[4];
@@ -529,6 +527,115 @@ const handler = async (request: Request): Promise<Response> => {
           
           <div style="margin-top: 20px; padding: 16px; background-color: #f8f9fa; border-radius: 6px; font-size: 12px; color: #666;">
             <p style="margin: 0 0 8px 0;">You're receiving this because you're subscribed to direct message notifications.</p>
+            <p style="margin: 0;">
+              <a href="${Deno.env.get('APP_URL') || 'https://your-app-url.com'}/profile/edit" 
+                 style="color: #2196f3; text-decoration: none;">
+                Manage your notification preferences
+              </a>
+            </p>
+          </div>
+        </div>
+      `;
+    } else if (type === 'event_proposal') {
+      console.log('🚀 [EDGE FUNCTION DEBUG] Creating event proposal notification email for admin');
+      emailSubject = subject || `Event proposal requires your review in ${networkName}`;
+      html = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; line-height: 1.6;">
+          <div style="background-color: #ff5722; padding: 20px; border-radius: 8px 8px 0 0;">
+            <h2 style="color: white; margin: 0 0 10px 0; font-size: 24px;">📋 Event Proposal Needs Review</h2>
+            <p style="margin: 0; color: #ffccbc; font-size: 14px;">A member has proposed a new event in ${networkName}</p>
+          </div>
+          
+          <div style="background-color: white; padding: 24px; border: 1px solid #e0e0e0; border-radius: 0 0 8px 8px; border-top: none;">
+            <div style="margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #f0f0f0;">
+              <p style="margin: 0; color: #666; font-size: 14px;">Proposed by <strong>${inviterName || 'A member'}</strong></p>
+            </div>
+            
+            <div style="background-color: #fff3e0; padding: 16px; border-left: 4px solid #ff5722; border-radius: 4px; margin-bottom: 20px;">
+              <p style="margin: 0; color: #333; font-size: 16px; line-height: 1.5;">${content || 'Event proposal details not available'}</p>
+            </div>
+            
+            <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid #f0f0f0;">
+              <a href="${Deno.env.get('APP_URL') || 'https://your-app-url.com'}/admin/events" 
+                 style="display: inline-block; background-color: #4caf50; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 500; margin-right: 12px;">
+                Review Event
+              </a>
+              <a href="${Deno.env.get('APP_URL') || 'https://your-app-url.com'}/dashboard" 
+                 style="display: inline-block; background-color: #2196f3; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 500;">
+                View Dashboard
+              </a>
+            </div>
+          </div>
+          
+          <div style="margin-top: 20px; padding: 16px; background-color: #f8f9fa; border-radius: 6px; font-size: 12px; color: #666;">
+            <p style="margin: 0 0 8px 0;">You're receiving this because you're an admin of ${networkName}.</p>
+            <p style="margin: 0;">Please review and approve/reject the event proposal promptly.</p>
+          </div>
+        </div>
+      `;
+    } else if (type === 'event_status') {
+      console.log('🚀 [EDGE FUNCTION DEBUG] Creating event status notification email');
+      emailSubject = subject || `Event status update in ${networkName}`;
+      
+      // Parse content to determine if approved or rejected
+      let isApproved = true;
+      let rejectionReason = '';
+      
+      try {
+        // content_preview already contains the formatted message from the notification service
+        if (content && content.includes('rejected')) {
+          isApproved = false;
+          const reasonMatch = content.match(/Reason: (.+)$/);
+          if (reasonMatch) {
+            rejectionReason = reasonMatch[1];
+          }
+        }
+      } catch (e) {
+        console.log('Could not parse event status metadata, defaulting to approved');
+      }
+      
+      html = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; line-height: 1.6;">
+          <div style="background-color: ${isApproved ? '#4caf50' : '#f44336'}; padding: 20px; border-radius: 8px 8px 0 0;">
+            <h2 style="color: white; margin: 0 0 10px 0; font-size: 24px;">
+              ${isApproved ? '✅ Event Approved!' : '❌ Event Not Approved'}
+            </h2>
+            <p style="margin: 0; color: ${isApproved ? '#c8e6c9' : '#ffcdd2'}; font-size: 14px;">
+              ${isApproved ? 'Your event is now live!' : 'Your event proposal was not approved'}
+            </p>
+          </div>
+          
+          <div style="background-color: white; padding: 24px; border: 1px solid #e0e0e0; border-radius: 0 0 8px 8px; border-top: none;">
+            <div style="margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #f0f0f0;">
+              <p style="margin: 0; color: #666; font-size: 14px;">Network: <strong>${networkName}</strong></p>
+            </div>
+            
+            <div style="background-color: ${isApproved ? '#e8f5e8' : '#ffebee'}; padding: 16px; border-left: 4px solid ${isApproved ? '#4caf50' : '#f44336'}; border-radius: 4px; margin-bottom: 20px;">
+              <p style="margin: 0; color: #333; font-size: 16px; line-height: 1.5;">${content || 'Event status update'}</p>
+            </div>
+            
+            ${isApproved ? `
+            <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid #f0f0f0;">
+              <a href="${Deno.env.get('APP_URL') || 'https://your-app-url.com'}/dashboard" 
+                 style="display: inline-block; background-color: #4caf50; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 500;">
+                View Your Event
+              </a>
+            </div>
+            ` : `
+            <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid #f0f0f0;">
+              <p style="margin: 0 0 16px 0; color: #666; font-size: 14px;">
+                You can modify your event and resubmit it for review, or contact an admin for more information.
+              </p>
+              <a href="${Deno.env.get('APP_URL') || 'https://your-app-url.com'}/dashboard" 
+                 style="display: inline-block; background-color: #2196f3; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 500;">
+                View Dashboard
+              </a>
+            </div>
+            `}
+          </div>
+          
+          <div style="margin-top: 20px; padding: 16px; background-color: #f8f9fa; border-radius: 6px; font-size: 12px; color: #666;">
+            <p style="margin: 0 0 8px 0;">You're receiving this because you created an event in ${networkName}.</p>
             <p style="margin: 0;">
               <a href="${Deno.env.get('APP_URL') || 'https://your-app-url.com'}/profile/edit" 
                  style="color: #2196f3; text-decoration: none;">

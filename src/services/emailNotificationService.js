@@ -843,6 +843,199 @@ export const queueDirectMessageNotification = async (recipientId, senderId, mess
 };
 
 /**
+ * Queue event proposal notification for network admins
+ * @param {string} networkId - The network ID where event was proposed
+ * @param {string} eventId - The ID of the proposed event
+ * @param {string} proposerId - The ID of the user who proposed the event
+ * @param {string} eventTitle - Title of the event
+ * @param {string} eventDescription - Description of the event
+ * @param {string} eventDate - Date of the event
+ */
+export const queueEventProposalNotificationForAdmins = async (networkId, eventId, proposerId, eventTitle, eventDescription, eventDate) => {
+  try {
+    console.log('🔔 [EVENT PROPOSAL] Starting to queue admin notifications for event proposal');
+    console.log('🔔 [EVENT PROPOSAL] Network ID:', networkId);
+    console.log('🔔 [EVENT PROPOSAL] Event ID:', eventId);
+    console.log('🔔 [EVENT PROPOSAL] Proposer ID:', proposerId);
+    console.log('🔔 [EVENT PROPOSAL] Event Title:', eventTitle);
+
+    // Get all network admins
+    console.log('🔔 [EVENT PROPOSAL] Fetching network admins...');
+    const { data: admins, error: adminsError } = await supabase
+      .from('profiles')
+      .select('id, full_name, contact_email, email_notifications_enabled')
+      .eq('network_id', networkId)
+      .eq('role', 'admin')
+      .eq('email_notifications_enabled', true);
+
+    console.log('🔔 [EVENT PROPOSAL] Admins query result:', { admins, adminsError });
+
+    if (adminsError) {
+      console.error('🔔 [EVENT PROPOSAL] Error fetching network admins:', adminsError);
+      return { success: false, error: adminsError.message };
+    }
+
+    if (!admins || admins.length === 0) {
+      console.log('🔔 [EVENT PROPOSAL] No admins found for event proposal notifications');
+      return { success: true, message: 'No admins found' };
+    }
+
+    console.log(`🔔 [EVENT PROPOSAL] Found ${admins.length} admins:`, admins);
+
+    // Get network name
+    const { data: network, error: networkError } = await supabase
+      .from('networks')
+      .select('name')
+      .eq('id', networkId)
+      .single();
+
+    if (networkError) {
+      console.error('🔔 [EVENT PROPOSAL] Error fetching network name:', networkError);
+      return { success: false, error: networkError.message };
+    }
+
+    // Get proposer name
+    const { data: proposer, error: proposerError } = await supabase
+      .from('profiles')
+      .select('full_name')
+      .eq('id', proposerId)
+      .single();
+
+    if (proposerError) {
+      console.error('🔔 [EVENT PROPOSAL] Error fetching proposer name:', proposerError);
+      return { success: false, error: proposerError.message };
+    }
+
+    // Format event date for display
+    const formattedDate = new Date(eventDate).toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+
+    // Create notification queue entries for admins
+    const notifications = admins.map(admin => ({
+      recipient_id: admin.id,
+      network_id: networkId,
+      notification_type: 'event_proposal',
+      subject_line: `Event proposal in ${network.name}: ${eventTitle}`,
+      content_preview: `${proposer.full_name || 'A member'} has proposed a new event: "${eventTitle}" scheduled for ${formattedDate}. Please review and approve/reject.`,
+      related_item_id: eventId
+    }));
+
+    console.log('🔔 [EVENT PROPOSAL] Creating notifications for admins:', notifications);
+
+    // Insert all notifications at once
+    const { error: insertError } = await supabase
+      .from('notification_queue')
+      .insert(notifications);
+
+    if (insertError) {
+      console.error('🔔 [EVENT PROPOSAL] Error queueing notifications:', insertError);
+      return { success: false, error: insertError.message };
+    }
+
+    console.log(`🔔 [EVENT PROPOSAL] Successfully queued ${notifications.length} admin notifications`);
+    return { 
+      success: true, 
+      message: `Queued notifications for ${notifications.length} admins`,
+      count: notifications.length 
+    };
+
+  } catch (error) {
+    console.error('🔔 [EVENT PROPOSAL] Error in queueEventProposalNotificationForAdmins:', error);
+    return { success: false, error: error.message };
+  }
+};
+
+/**
+ * Queue event approval/rejection notification for event creator
+ * @param {string} eventId - The ID of the event
+ * @param {string} eventCreatorId - The ID of the user who created the event
+ * @param {string} eventTitle - Title of the event
+ * @param {string} status - 'approved' or 'rejected'
+ * @param {string} rejectionReason - Reason for rejection (if rejected)
+ * @param {string} networkId - The network ID
+ */
+export const queueEventStatusNotification = async (eventId, eventCreatorId, eventTitle, status, rejectionReason = '', networkId) => {
+  try {
+    console.log('🔔 [EVENT STATUS] Queueing event status notification');
+    console.log('🔔 [EVENT STATUS] Event ID:', eventId);
+    console.log('🔔 [EVENT STATUS] Creator ID:', eventCreatorId);
+    console.log('🔔 [EVENT STATUS] Status:', status);
+
+    // Get event creator profile
+    const { data: creator, error: creatorError } = await supabase
+      .from('profiles')
+      .select('full_name, contact_email, email_notifications_enabled')
+      .eq('id', eventCreatorId)
+      .single();
+
+    if (creatorError) {
+      console.error('🔔 [EVENT STATUS] Error fetching creator profile:', creatorError);
+      return { success: false, error: creatorError.message };
+    }
+
+    if (!creator.email_notifications_enabled) {
+      console.log('🔔 [EVENT STATUS] Creator has email notifications disabled');
+      return { success: true, message: 'Creator has notifications disabled' };
+    }
+
+    if (!creator.contact_email) {
+      console.error('🔔 [EVENT STATUS] No contact_email found for event creator');
+      return { success: false, error: 'Event creator has no email address configured' };
+    }
+
+    // Get network name
+    const { data: network, error: networkError } = await supabase
+      .from('networks')
+      .select('name')
+      .eq('id', networkId)
+      .single();
+
+    if (networkError) {
+      console.error('🔔 [EVENT STATUS] Error fetching network:', networkError);
+      return { success: false, error: networkError.message };
+    }
+
+    // Create notification based on status
+    const isApproved = status === 'approved';
+    const notification = {
+      recipient_id: eventCreatorId,
+      network_id: networkId,
+      notification_type: 'event_status',
+      subject_line: `Your event "${eventTitle}" has been ${isApproved ? 'approved' : 'rejected'}`,
+      content_preview: isApproved 
+        ? `Great news! Your event "${eventTitle}" in ${network.name} has been approved and is now visible to all members.`
+        : `Your event "${eventTitle}" in ${network.name} has been rejected.${rejectionReason ? ` Reason: ${rejectionReason}` : ''}`,
+      related_item_id: eventId,
+      metadata: JSON.stringify({ status, rejectionReason })
+    };
+
+    console.log('🔔 [EVENT STATUS] Creating notification:', notification);
+
+    const { error: insertError } = await supabase
+      .from('notification_queue')
+      .insert([notification]);
+
+    if (insertError) {
+      console.error('🔔 [EVENT STATUS] Error inserting notification:', insertError);
+      return { success: false, error: insertError.message };
+    }
+
+    console.log('🔔 [EVENT STATUS] Successfully queued event status notification');
+    return { success: true, message: 'Event status notification queued' };
+
+  } catch (error) {
+    console.error('🔔 [EVENT STATUS] Error in queueEventStatusNotification:', error);
+    return { success: false, error: error.message };
+  }
+};
+
+/**
  * Clear all notifications for a user (sent and pending)
  * @param {string} profileId - The profile ID
  */
