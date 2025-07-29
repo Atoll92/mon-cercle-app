@@ -42,7 +42,6 @@ import {
   Info as InfoIcon,
   Event as EventIcon,
   Close as CloseIcon,
-  OpenInFull as OpenInFullIcon,
 } from '@mui/icons-material';
 
 // Import the tab components
@@ -739,12 +738,12 @@ function NetworkLandingPage() {
       {/* Network Header */}
       <NetworkHeader />
       
-      {/* Full-width Background Header with content */}
+      {/* Compact Background Header */}
       {network && (
         <Box sx={{
           position: 'relative',
           width: '100%',
-          minHeight: { xs: '260px', sm: '400px' }, // Consistent height for proper overlay positioning
+          minHeight: { xs: '180px', sm: '220px' }, // Significantly reduced height
           mt: '80px', // Account for fixed header
           pb: '60px', // Add padding at bottom to allow tabs to extend below
           backgroundImage: network.background_image_url 
@@ -769,7 +768,7 @@ function NetworkLandingPage() {
             zIndex: 1
           }
         }}>
-          {/* Container for title, description and tabs */}
+          {/* Container for tabs */}
           <Box
             sx={{
               position: 'relative',
@@ -777,116 +776,26 @@ function NetworkLandingPage() {
               maxWidth: 'lg',
               width: '100%',
               mx: 'auto',
-              px: { xs: 2, sm: 6 }, // Less padding on mobile
-              pt: { xs: 3, sm: 6 }, // Less top padding on mobile
+              px: { xs: 2, sm: 6 },
+              pt: { xs: 2, sm: 3 }, // Reduced top padding
               pb: 4,
+              display: 'flex',
+              alignItems: 'flex-end', // Align to bottom for cleaner tab positioning
+              minHeight: { xs: '120px', sm: '160px' }, // Ensure proper spacing for tabs
             }}
           >
-            {/* Network Name and Description */}
-            <Box
-              sx={{
-                mb: 4,
-                color: '#ffffff',
-                textShadow: '0 2px 8px rgba(0, 0, 0, 0.3)',
-                display: { xs: 'none', sm: 'block' }, // Hide on mobile
-              }}
-            >
-              <Typography
-                variant="h2"
-                sx={{
-                  fontWeight: 700,
-                  fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' },
-                  mb: 3,
-                  lineHeight: 1.2,
-                  textAlign: 'left',
-                }}
-              >
-                {network.name}
-              </Typography>
-              {network.description && (
-                <Box
-                  sx={{
-                    backgroundColor: darkMode 
-                      ? alpha('#000000', 0.6)
-                      : alpha('#000000', 0.4),
-                    backdropFilter: 'blur(12px)',
-                    WebkitBackdropFilter: 'blur(12px)',
-                    borderRadius: '12px',
-                    border: `1px solid ${darkMode 
-                      ? alpha('#ffffff', 0.15) 
-                      : alpha('#ffffff', 0.2)}`,
-                    p: 2, // Reduced from 3 to match tab description size
-                    maxWidth: '100%',
-                    position: 'relative',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                    '&:hover': {
-                      backgroundColor: darkMode 
-                        ? alpha('#000000', 0.7)
-                        : alpha('#000000', 0.5),
-                      transform: 'translateY(-2px)',
-                    }
-                  }}
-                  onClick={() => setNetworkDescriptionModalOpen(true)}
-                >
-                  <Typography
-                    variant="body2" // Changed from body1 to body2 to match tab descriptions
-                    sx={{
-                      fontWeight: { xs: 400, lg: 500 }, // Match tab description font weight
-                      fontSize: { xs: '0.875rem', lg: '1rem' }, // Match tab description font size
-                      opacity: 0.95,
-                      lineHeight: 1.6, // Match tab description line height
-                      textAlign: 'left',
-                      display: '-webkit-box',
-                      WebkitLineClamp: 1,
-                      WebkitBoxOrient: 'vertical',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                    }}
-                  >
-                    {network.description}
-                  </Typography>
-                  {/* Show expand icon */}
-                  <IconButton
-                    size="small"
-                    sx={{
-                      position: 'absolute',
-                      right: 6, // Reduced from 8 to match smaller padding
-                      top: 6, // Reduced from 8 to match smaller padding
-                      p: 0.5,
-                      color: darkMode 
-                        ? 'rgba(255, 255, 255, 0.7)'
-                        : 'rgba(255, 255, 255, 0.8)',
-                      '&:hover': {
-                        color: '#ffffff',
-                        backgroundColor: darkMode 
-                          ? 'rgba(255, 255, 255, 0.1)'
-                          : 'rgba(255, 255, 255, 0.15)',
-                      }
-                    }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setNetworkDescriptionModalOpen(true);
-                    }}
-                    aria-label={t('dashboard.network.viewFullDescription')}
-                  >
-                    <OpenInFullIcon sx={{ fontSize: '1rem' }} />
-                  </IconButton>
-                </Box>
-              )}
-            </Box>
             
-            {/* Tabs section - positioned to straddle the border */}
+            {/* Tabs section - positioned in the middle of background */}
             <Box
               id="tabs-original-position"
               sx={{
                 position: 'absolute',
-                bottom: '-30px', // Position tabs to straddle the border
+                top: '50%', // Position tabs in the middle of the background
                 left: 0,
                 right: 0,
+                transform: `translateY(-50%) translateY(${smoothTransitionProgress * -30}px) scale(${1 - (smoothTransitionProgress * 0.02)})`, // Center vertically with scroll effects
                 display: { xs: 'none', sm: 'block' }, // Hide on mobile
                 opacity: 1 - (smoothTransitionProgress * 0.8), // Gradual fade based on proximity
-                transform: `translateY(${smoothTransitionProgress * -30}px) scale(${1 - (smoothTransitionProgress * 0.02)})`,
                 transition: tabsTransition !== 'none' 
                   ? 'opacity 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1)' 
                   : 'opacity 0.1s ease-out, transform 0.1s ease-out',
@@ -1335,15 +1244,15 @@ function NetworkLandingPage() {
         mb: 4, 
         position: 'relative', 
         zIndex: 1050,
-        mt: { xs: '-80px', sm: '-120px' }, // Pull container up to straddle the border
+        mt: { xs: '-60px', sm: '-80px' }, // Pull container up to straddle the border for headers
       }}>        
         {/* Content area with integrated tab header */}
         <Box
           sx={{
             p: { xs: 2, sm: 3 },
             pt: { 
-              xs: '120px', // Mobile: account for higher header and tabs (182px + 56px tabs - 118px overlap)
-              sm: isTabsFixed ? '90px' : '40px' // Desktop: dynamic based on sticky state
+              xs: '100px', // Mobile: account for fixed header
+              sm: isTabsFixed ? '80px' : '30px' // Desktop: account for straddling header, dynamic for sticky
             },
             minHeight: '600px', // Ensure enough content to scroll and test sticky behavior
             animation: 'fadeInContent 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.1s both',
@@ -1359,25 +1268,39 @@ function NetworkLandingPage() {
             },
           }}
         >
-          {/* Integrated Tab Header - positioned to straddle the border */}
+          {/* Modern Tab Header - more compact and streamlined */}
           {currentTabId && (
             <Paper
               elevation={0}
               sx={{
-                p: { xs: 3, sm: 4 },
+                p: { xs: 2.5, sm: 3 }, // Reduced padding
                 mb: 0, // No spacing between header and content
                 backgroundColor: darkMode 
-                  ? alpha('#000000', 0.92)
+                  ? alpha('#000000', 0.95)
                   : alpha('#ffffff', 0.98),
-                backdropFilter: 'blur(24px) saturate(180%)',
-                WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+                backdropFilter: 'blur(20px) saturate(160%)',
+                WebkitBackdropFilter: 'blur(20px) saturate(160%)',
                 border: `1px solid ${darkMode 
-                  ? alpha('#ffffff', 0.2)
-                  : alpha('#000000', 0.12)}`,
-                borderRadius: { xs: 2, sm: 3 },
+                  ? alpha('#ffffff', 0.15)
+                  : alpha('#000000', 0.08)}`,
+                borderRadius: { xs: 2, sm: 2.5 }, // Slightly smaller radius for modern look
                 boxShadow: darkMode
-                  ? '0 12px 40px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.15)'
-                  : '0 12px 40px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.08)',
+                  ? '0 8px 32px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.1)'
+                  : '0 8px 32px rgba(0,0,0,0.12), 0 0 0 1px rgba(0,0,0,0.05)',
+                // Add subtle gradient overlay for depth
+                '&::before': {
+                  content: '""',
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  background: darkMode
+                    ? `linear-gradient(135deg, ${alpha('#ffffff', 0.02)} 0%, ${alpha('#ffffff', 0.01)} 100%)`
+                    : `linear-gradient(135deg, ${alpha('#ffffff', 0.8)} 0%, ${alpha('#ffffff', 0.4)} 100%)`,
+                  borderRadius: { xs: 2, sm: 2.5 },
+                  pointerEvents: 'none',
+                },
                 // Add animation for smooth entrance
                 animation: 'fadeInUp 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
                 '@keyframes fadeInUp': {
@@ -1390,10 +1313,11 @@ function NetworkLandingPage() {
                     transform: 'translateY(0)',
                   },
                 },
+                position: 'relative', // For the ::before pseudo-element
               }}
             >
-              {/* Title section */}
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
+              {/* Title section with network info */}
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5 }}>
                 {visibleTabs[activeTab]?.icon && (
                   <Box 
                     sx={{ 
@@ -1421,6 +1345,49 @@ function NetworkLandingPage() {
                 >
                   {visibleTabs[activeTab]?.label}
                 </Typography>
+                
+                {/* Network Description Button - compact and modern */}
+                {network.description && (
+                  <Tooltip 
+                    title={network.description.length > 50 ? network.description.substring(0, 50) + '...' : network.description}
+                    placement="bottom-end"
+                    arrow
+                  >
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      onClick={() => setNetworkDescriptionModalOpen(true)}
+                      sx={{
+                        minWidth: 'auto',
+                        px: 2,
+                        py: 0.5,
+                        borderRadius: 2,
+                        fontSize: '0.75rem',
+                        fontWeight: 500,
+                        textTransform: 'none',
+                        borderColor: darkMode 
+                          ? alpha('#90caf9', 0.5)
+                          : alpha('#1976d2', 0.5),
+                        color: darkMode 
+                          ? alpha('#90caf9', 0.9)
+                          : alpha('#1976d2', 0.8),
+                        backgroundColor: 'transparent',
+                        backdropFilter: 'blur(8px)',
+                        transition: 'all 0.2s ease',
+                        '&:hover': {
+                          borderColor: darkMode ? '#90caf9' : '#1976d2',
+                          backgroundColor: darkMode 
+                            ? alpha('#90caf9', 0.08)
+                            : alpha('#1976d2', 0.08),
+                          transform: 'translateY(-1px)',
+                        }
+                      }}
+                      startIcon={<InfoIcon sx={{ fontSize: '0.9rem' }} />}
+                    >
+                      About Network
+                    </Button>
+                  </Tooltip>
+                )}
               </Box>
 
               {/* Description section */}
@@ -1665,32 +1632,35 @@ function NetworkLandingPage() {
       <Dialog
         open={networkDescriptionModalOpen}
         onClose={() => setNetworkDescriptionModalOpen(false)}
-        TransitionComponent={Fade}
-        BackdropComponent={Backdrop}
-        BackdropProps={{
-          sx: {
-            backgroundColor: darkMode 
-              ? 'rgba(0, 0, 0, 0.8)' 
-              : 'rgba(0, 0, 0, 0.5)',
-            backdropFilter: 'blur(8px)',
-          }
+        slots={{
+          backdrop: Backdrop,
         }}
-        PaperProps={{
-          sx: {
-            maxWidth: '700px',
-            borderRadius: 3,
-            backgroundColor: darkMode 
-              ? alpha('#000000', 0.95)
-              : '#ffffff',
-            backgroundImage: darkMode
-              ? 'none'
-              : 'linear-gradient(to bottom right, #ffffff, #f8f9fa)',
-            border: darkMode 
-              ? `1px solid ${alpha('#ffffff', 0.2)}`
-              : 'none',
-            boxShadow: darkMode
-              ? '0 24px 48px rgba(0, 0, 0, 0.8)'
-              : '0 24px 48px rgba(0, 0, 0, 0.2)',
+        slotProps={{
+          backdrop: {
+            sx: {
+              backgroundColor: darkMode 
+                ? 'rgba(0, 0, 0, 0.8)' 
+                : 'rgba(0, 0, 0, 0.5)',
+              backdropFilter: 'blur(12px)',
+            }
+          },
+          paper: {
+            sx: {
+              maxWidth: '700px',
+              borderRadius: 3,
+              backgroundColor: darkMode 
+                ? alpha('#000000', 0.95)
+                : '#ffffff',
+              backgroundImage: darkMode
+                ? 'none'
+                : 'linear-gradient(to bottom right, #ffffff, #f8f9fa)',
+              border: darkMode 
+                ? `1px solid ${alpha('#ffffff', 0.2)}`
+                : 'none',
+              boxShadow: darkMode
+                ? '0 24px 48px rgba(0, 0, 0, 0.8)'
+                : '0 24px 48px rgba(0, 0, 0, 0.2)',
+            }
           }
         }}
       >
