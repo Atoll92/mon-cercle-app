@@ -459,7 +459,7 @@ const FilesTab = ({ darkMode }) => {
                       </ListItemIcon>
                       <ListItemText
                         primary={moodboard.title}
-                        secondary={`${moodboard.permissions} • Created ${formatDate(moodboard.created_at)}`}
+                        secondary={`Created ${formatDate(moodboard.created_at)}`}
                       />
                     </ListItem>
                   ))}

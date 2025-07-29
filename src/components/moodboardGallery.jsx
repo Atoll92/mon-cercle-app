@@ -23,10 +23,7 @@ import {
 } from '@mui/material';
 import {
   Dashboard as DashboardIcon,
-  Public as PublicIcon,
-  Lock as LockIcon,
   ArrowForward as ArrowForwardIcon,
-  PeopleAlt as PeopleAltIcon,
   OpenInNew as OpenInNewIcon,
   ZoomIn as ZoomInIcon,
   ZoomOut as ZoomOutIcon,
@@ -140,8 +137,8 @@ const MoodboardGallery = ({ userId, isOwnProfile, limit, showFeatured = false })
         setLoading(true);
         setError(null);
 
-        // Query to get moodboards
-        let query = supabase
+        // Query to get moodboards - all moodboards are now public per the migration
+        const query = supabase
           .from('moodboards')
           .select(`
             *,
@@ -149,11 +146,6 @@ const MoodboardGallery = ({ userId, isOwnProfile, limit, showFeatured = false })
           `)
           .eq('created_by', userId)
           .order('updated_at', { ascending: false });
-
-        // If not own profile, only show public moodboards
-        if (!isOwnProfile) {
-          query = query.eq('permissions', 'public');
-        }
 
         const { data, error: fetchError } = await query;
         if (fetchError) throw fetchError;
@@ -216,6 +208,8 @@ const MoodboardGallery = ({ userId, isOwnProfile, limit, showFeatured = false })
           }
         } else {
           setMoodboards([]);
+          setFeaturedBoard(null);
+          setFeaturedItems([]);
         }
       } catch (err) {
         console.error('Error fetching moodboards:', err);
@@ -292,57 +286,10 @@ const MoodboardGallery = ({ userId, isOwnProfile, limit, showFeatured = false })
     };
   };
 
-  // Render permission indicator chip
-  const renderPermissionChip = (permission) => {
-    switch (permission) {
-      case 'public':
-        return (
-          <Chip 
-            icon={<PublicIcon fontSize="small" />} 
-            label="Public" 
-            size="small"
-            sx={{ 
-              bgcolor: alpha(theme.palette.success.main, 0.1),
-              color: theme.palette.success.dark,
-              fontWeight: 500
-            }}
-          />
-        );
-      case 'private':
-        return (
-          <Chip 
-            icon={<LockIcon fontSize="small" />} 
-            label="Private" 
-            size="small"
-            sx={{ 
-              bgcolor: alpha(theme.palette.grey[500], 0.1),
-              color: theme.palette.grey[700],
-              fontWeight: 500
-            }}
-          />
-        );
-      case 'collaborative':
-        return (
-          <Chip 
-            icon={<PeopleAltIcon fontSize="small" />} 
-            label="Collaborative" 
-            size="small"
-            sx={{ 
-              bgcolor: alpha(theme.palette.info.main, 0.1),
-              color: theme.palette.info.dark,
-              fontWeight: 500
-            }}
-          />
-        );
-      default:
-        return null;
-    }
-  };
 
   // Render MoodboardItem component - just like in MoodboardPage
   const MoodboardItem = ({ item }) => {
     const [imageLoaded, setImageLoaded] = useState(false);
-    const [pdfModalOpen, setPdfModalOpen] = useState(false);
     
     // Check for any null or undefined properties and provide defaults
     const safeItem = {
@@ -369,7 +316,6 @@ const MoodboardGallery = ({ userId, isOwnProfile, limit, showFeatured = false })
               }}
               onClick={(e) => {
                 e.stopPropagation();
-                setPdfModalOpen(true);
               }}
             >
               <PDFPreviewEnhanced
@@ -553,9 +499,6 @@ const MoodboardGallery = ({ userId, isOwnProfile, limit, showFeatured = false })
         >
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <Typography variant="h6">{featuredBoard.title}</Typography>
-            <Box sx={{ ml: 2 }}>
-              {renderPermissionChip(featuredBoard.permissions)}
-            </Box>
           </Box>
           
           <Box sx={{ display: 'flex', gap: 1 }}>
@@ -715,20 +658,30 @@ const MoodboardGallery = ({ userId, isOwnProfile, limit, showFeatured = false })
     );
   };
 
-  if (error) {
-    return (
-      <Alert severity="error">
-        {error}
-      </Alert>
-    );
-  }
-
   if (!loading && moodboards.length === 0 && !featuredBoard) {
+    // Only show error if there's an actual error, not just no moodboards
+    if (error) {
+      return (
+        <Alert severity="error">
+          {error}
+        </Alert>
+      );
+    }
+    
     return (
       <Alert severity="info" sx={{ mt: 2 }}>
         {isOwnProfile 
           ? "You haven't created any moodboards yet." 
           : "This user hasn't shared any public moodboards yet."}
+      </Alert>
+    );
+  }
+
+  // Show error only if there's an error AND we have some moodboards
+  if (error && (moodboards.length > 0 || featuredBoard)) {
+    return (
+      <Alert severity="error">
+        {error}
       </Alert>
     );
   }
@@ -831,8 +784,6 @@ const MoodboardGallery = ({ userId, isOwnProfile, limit, showFeatured = false })
                           </Typography>
                           
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 'auto', flexWrap: 'wrap' }}>
-                            {renderPermissionChip(moodboard.permissions)}
-                            
                             <Typography variant="caption" color="text.secondary" sx={{ ml: 'auto' }}>
                               {new Date(moodboard.created_at).toLocaleDateString()}
                             </Typography>

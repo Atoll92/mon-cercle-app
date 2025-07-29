@@ -14,7 +14,6 @@ import {
   Grid,
   Paper,
   Divider,
-  Chip,
   Alert,
   IconButton,
   alpha
@@ -24,8 +23,6 @@ import {
   Dashboard as DashboardIcon,
   Add as AddIcon,
   Delete as DeleteIcon,
-  Public as PublicIcon,
-  Lock as LockIcon,
   CreateNewFolder as CreateNewFolderIcon
 } from '@mui/icons-material';
 import FlexFlowBox from './FlexFlowBox';
@@ -92,10 +89,8 @@ const PersonalMoodboardWidget = ({ user }) => {
           network_id: activeProfile.network_id,
           title: formData.title,
           description: formData.description,
-          permissions: formData.permissions,
           background_color: formData.background_color,
-          created_by: activeProfile.id,
-          is_personal: true
+          created_by: activeProfile.id
         }])
         .select();
       
@@ -274,22 +269,6 @@ const PersonalMoodboardWidget = ({ user }) => {
                       }}
                     >
                       {/* Permission chip */}
-                      <Chip
-                        icon={
-                          moodboard.permissions === 'private' ? <LockIcon fontSize="small" /> :
-                          <PublicIcon fontSize="small" />
-                        }
-                        label={
-                          moodboard.permissions === 'private' ? 'Private' :
-                          moodboard.permissions === 'public' ? 'Public' : 'Private'
-                        }
-                        size="small"
-                        sx={{ 
-                          position: 'absolute',
-                          top: 8,
-                          right: 8
-                        }}
-                      />
                       
                       <DashboardIcon sx={{ fontSize: 32, color: 'white' }} />
                     </Box>

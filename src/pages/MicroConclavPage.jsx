@@ -420,7 +420,7 @@ const MicroConclavPage = () => {
               maxWidth: 1200,
               margin: '0 auto',
               padding: '20px',
-              paddingTop: '80px', // Space for user info card
+              paddingTop: 'calc(80px + 56px + 50px)', // NetworkHeader (80px) + Toolbar (56px) + extra space (50px)
             }}
           >
             <Box
@@ -429,6 +429,7 @@ const MicroConclavPage = () => {
                 gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
                 gap: 3,
                 pb: 4,
+                pt: '50px', // Additional padding to prevent content overlap
               }}
             >
             {moodboardItems.map((item, index) => (

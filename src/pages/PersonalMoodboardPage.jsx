@@ -28,7 +28,6 @@ import {
   Select,
   MenuItem,
   Alert,
-  Chip,
   Stack,
   Tabs,
   Tab,
@@ -70,7 +69,6 @@ function PersonalMoodboardsPage() {
   // Form state
   const [newTitle, setNewTitle] = useState('');
   const [newDescription, setNewDescription] = useState('');
-  const [newPermissions, setNewPermissions] = useState('personal');
   const [newBackgroundColor, setNewBackgroundColor] = useState('#f0f7ff');
   
   // Filter state
@@ -163,10 +161,8 @@ function PersonalMoodboardsPage() {
           network_id: profileData.network_id,
           title: newTitle,
           description: newDescription,
-          permissions: newPermissions,
           background_color: newBackgroundColor,
-          created_by: activeProfile.id,
-          is_personal: true
+          created_by: activeProfile.id
         }])
         .select();
       
@@ -179,7 +175,6 @@ function PersonalMoodboardsPage() {
       // Reset form and close dialog
       setNewTitle('');
       setNewDescription('');
-      setNewPermissions('personal');
       setNewBackgroundColor('#f0f7ff');
       setCreateDialogOpen(false);
       
@@ -201,7 +196,6 @@ function PersonalMoodboardsPage() {
     setCurrentMoodboard(moodboard);
     setNewTitle(moodboard.title);
     setNewDescription(moodboard.description || '');
-    setNewPermissions(moodboard.permissions);
     setNewBackgroundColor(moodboard.background_color || '#f0f7ff');
     setEditDialogOpen(true);
   };
@@ -217,7 +211,6 @@ function PersonalMoodboardsPage() {
         .update({
           title: newTitle,
           description: newDescription,
-          permissions: newPermissions,
           background_color: newBackgroundColor,
           updated_at: new Date()
         })
@@ -343,51 +336,6 @@ function PersonalMoodboardsPage() {
   
   const filteredMoodboards = getFilteredMoodboards();
   
-  // Get permission icon
-  const getPermissionIcon = (permission) => {
-    switch (permission) {
-      case 'personal':
-        return <PersonIcon fontSize="small" />;
-      case 'private':
-        return <LockIcon fontSize="small" />;
-      case 'public':
-        return <PublicIcon fontSize="small" />;
-      default:
-        return <PublicIcon fontSize="small" />;
-    }
-  };
-  
-  // Get permission text
-  const getPermissionText = (permission) => {
-    switch (permission) {
-      case 'personal':
-        return 'Personal';
-      case 'private':
-        return 'Private';
-      case 'public':
-        return 'Public';
-      case 'collaborative':
-        return 'Collaborative';
-      default:
-        return 'Unknown';
-    }
-  };
-  
-  // Get permission color
-  const getPermissionColor = (permission) => {
-    switch (permission) {
-      case 'personal':
-        return 'default';
-      case 'private':
-        return 'error';
-      case 'public':
-        return 'primary';
-      case 'collaborative':
-        return 'success';
-      default:
-        return 'default';
-    }
-  };
   
   if (loading) {
     return (
@@ -590,18 +538,6 @@ function PersonalMoodboardsPage() {
                     position: 'relative'
                   }}
                 >
-                  {/* Permission badge */}
-                  <Chip
-                    icon={getPermissionIcon(moodboard.permissions)}
-                    label={getPermissionText(moodboard.permissions)}
-                    color={getPermissionColor(moodboard.permissions)}
-                    size="small"
-                    sx={{ 
-                      position: 'absolute',
-                      top: 8,
-                      right: 8,
-                    }}
-                  />
                   
                   <DashboardIcon 
                     sx={{ 
@@ -719,50 +655,6 @@ function PersonalMoodboardsPage() {
             rows={3}
           />
           
-          <FormControl fullWidth margin="normal">
-            <InputLabel id="permissions-label">Visibility</InputLabel>
-            <Select
-              labelId="permissions-label"
-              value={newPermissions}
-              label="Visibility"
-              onChange={(e) => setNewPermissions(e.target.value)}
-            >
-              <MenuItem value="personal">
-                <Stack direction="row" alignItems="center" spacing={1}>
-                  <PersonIcon fontSize="small" />
-                  <Box>
-                    <Typography variant="body2">Personal</Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      Only you can view and edit
-                    </Typography>
-                  </Box>
-                </Stack>
-              </MenuItem>
-              <MenuItem value="private">
-                <Stack direction="row" alignItems="center" spacing={1}>
-                  <LockIcon fontSize="small" />
-                  <Box>
-                    <Typography variant="body2">Private</Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      Only you and admins can view
-                    </Typography>
-                  </Box>
-                </Stack>
-              </MenuItem>
-              <MenuItem value="public">
-                <Stack direction="row" alignItems="center" spacing={1}>
-                  <PublicIcon fontSize="small" />
-                  <Box>
-                    <Typography variant="body2">Public</Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      Anyone can view, only you can edit
-                    </Typography>
-                  </Box>
-                </Stack>
-              </MenuItem>
-            </Select>
-          </FormControl>
-          
           <Box sx={{ mt: 2 }}>
             <Typography variant="subtitle2" gutterBottom>
               Background Color
@@ -843,50 +735,6 @@ function PersonalMoodboardsPage() {
             multiline
             rows={3}
           />
-          
-          <FormControl fullWidth margin="normal">
-            <InputLabel id="edit-permissions-label">Visibility</InputLabel>
-            <Select
-              labelId="edit-permissions-label"
-              value={newPermissions}
-              label="Visibility"
-              onChange={(e) => setNewPermissions(e.target.value)}
-            >
-              <MenuItem value="personal">
-                <Stack direction="row" alignItems="center" spacing={1}>
-                  <PersonIcon fontSize="small" />
-                  <Box>
-                    <Typography variant="body2">Personal</Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      Only you can view and edit
-                    </Typography>
-                  </Box>
-                </Stack>
-              </MenuItem>
-              <MenuItem value="private">
-                <Stack direction="row" alignItems="center" spacing={1}>
-                  <LockIcon fontSize="small" />
-                  <Box>
-                    <Typography variant="body2">Private</Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      Only you and admins can view
-                    </Typography>
-                  </Box>
-                </Stack>
-              </MenuItem>
-              <MenuItem value="public">
-                <Stack direction="row" alignItems="center" spacing={1}>
-                  <PublicIcon fontSize="small" />
-                  <Box>
-                    <Typography variant="body2">Public</Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      Anyone can view, only you can edit
-                    </Typography>
-                  </Box>
-                </Stack>
-              </MenuItem>
-            </Select>
-          </FormControl>
           
           <Box sx={{ mt: 2 }}>
             <Typography variant="subtitle2" gutterBottom>
