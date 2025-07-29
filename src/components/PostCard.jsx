@@ -311,6 +311,9 @@ const PostCard = ({
       borderRadius: 2,
       boxShadow: darkMode ? '0 4px 12px rgba(0,0,0,0.3)' : '0 4px 12px rgba(0,0,0,0.08)',
       bgcolor: darkMode ? 'grey.900' : 'background.paper',
+      height: '100%',
+      display: 'flex',
+      flexDirection: 'column',
       transition: 'all 0.3s ease',
       '&:hover': {
         boxShadow: darkMode ? '0 8px 24px rgba(0,0,0,0.4)' : '0 8px 24px rgba(0,0,0,0.12)',
@@ -430,7 +433,7 @@ const PostCard = ({
       {renderMedia()}
 
       {/* Post content */}
-      <CardContent>
+      <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
         {/* Title and category */}
         <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 2, gap: 2 }}>
           <Typography 
