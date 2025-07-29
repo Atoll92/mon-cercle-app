@@ -1,10 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import MediaPlayer from './MediaPlayer';
 import ImageViewerModal from './ImageViewerModal';
 import { formatTimeAgo } from '../utils/dateFormatting';
 import { truncateContent, stripHtml } from '../utils/textFormatting';
 import { detectMediaType, MEDIA_TYPES, getMediaConfig } from '../utils/mediaDetection';
+import { getCommentCount } from '../api/comments';
+import { useTranslation } from '../hooks/useTranslation';
 import {
   Card,
   CardContent,
@@ -13,16 +15,31 @@ import {
   Box,
   Avatar,
   Button,
-  Divider
+  Divider,
+  alpha,
+  useTheme
 } from '@mui/material';
 import {
   Schedule as ScheduleIcon,
-  Person as PersonIcon
+  Person as PersonIcon,
+  ChatBubbleOutline as CommentIcon,
+  ArrowForward as ArrowForwardIcon
 } from '@mui/icons-material';
 
 const NewsCard = ({ news, networkId, onMemberClick }) => {
+  const { t } = useTranslation();
+  const theme = useTheme();
   const [imageViewerOpen, setImageViewerOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState({ url: '', title: '' });
+  const [commentCount, setCommentCount] = useState(0);
+
+  useEffect(() => {
+    const fetchCommentCount = async () => {
+      const { count } = await getCommentCount('news', news.id);
+      setCommentCount(count || 0);
+    };
+    fetchCommentCount();
+  }, [news.id]);
 
   const handleImageClick = (imageUrl, title) => {
     setSelectedImage({ url: imageUrl, title });
@@ -190,23 +207,36 @@ const NewsCard = ({ news, networkId, onMemberClick }) => {
             </Typography>
           </Box>
 
-          {/* Read more */}
-          <Box sx={{ pt: 1, mt: 'auto' }}>
+          {/* Comment count and actions - matching PostCard */}
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 2 }}>
             <Button
               component={Link}
               to={`/network/${networkId}/news/${news.id}`}
-              variant="text"
-              size="small"
-              fullWidth
-              sx={{ 
-                justifyContent: 'flex-start',
+              startIcon={<CommentIcon sx={{ fontSize: 18 }} />}
+              sx={{
                 textTransform: 'none',
-                fontWeight: 500,
-                fontSize: '0.8rem',
-                p: 0.5
+                color: theme.palette.text.secondary,
+                fontSize: '0.875rem',
+                py: 0.5,
+                px: 1,
+                minHeight: 'auto',
+                '&:hover': {
+                  bgcolor: alpha(theme.palette.primary.main, 0.08),
+                  color: theme.palette.primary.main
+                }
               }}
             >
-              Read full post →
+              {commentCount > 0 ? `${commentCount} comment${commentCount !== 1 ? 's' : ''}` : t('dashboard.comment')}
+            </Button>
+            
+            <Button
+              component={Link}
+              to={`/network/${networkId}/news/${news.id}`}
+              size="small"
+              endIcon={<ArrowForwardIcon />}
+              sx={{ alignSelf: 'flex-start' }}
+            >
+              {t('dashboard.viewPost')}
             </Button>
           </Box>
         </CardContent>

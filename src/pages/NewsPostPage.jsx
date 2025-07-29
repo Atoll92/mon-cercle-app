@@ -32,6 +32,7 @@ import { formatDate } from '../utils/dateFormatting';
 import MediaPlayer from '../components/MediaPlayer';
 import { sanitizeRichText } from '../utils/sanitizeHtml';
 import { fetchNetworkCategories } from '../api/categories';
+import CommentSection from '../components/CommentSection';
 
 function NewsPostPage() {
   const { networkId, newsId } = useParams();
@@ -438,6 +439,16 @@ function NewsPostPage() {
             </Typography>
           )}
         </Box>
+
+        <Divider sx={{ my: 3 }} />
+
+        {/* Comments Section */}
+        <CommentSection
+          itemType="news"
+          itemId={newsPost.id}
+          initialCount={0}
+          defaultExpanded={true}
+        />
       </Paper>
     </Container>
   );
