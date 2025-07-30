@@ -801,35 +801,66 @@ export const removeNetworkImage = async (networkId, type = 'logo') => {
 // Event management functions
 export const createEvent = async (networkId, profileId, eventData, imageFile, isAdmin = false) => {
   try {
+    console.log('📅 [CREATE EVENT] Starting event creation');
+    console.log('📅 [CREATE EVENT] Parameters:', {
+      networkId,
+      profileId,
+      eventData,
+      hasImageFile: !!imageFile,
+      isAdmin
+    });
+
     // Create event with status based on user role
+    const eventRecord = {
+      ...eventData,
+      network_id: networkId,
+      created_by: profileId,
+      status: isAdmin ? 'approved' : 'pending'
+    };
+
+    console.log('📅 [CREATE EVENT] Event record to insert:', eventRecord);
+
     const { data, error } = await supabase
       .from('network_events')
-      .insert([{
-        ...eventData,
-        network_id: networkId,
-        created_by: profileId,
-        status: isAdmin ? 'approved' : 'pending'
-      }])
+      .insert([eventRecord])
       .select();
       
-    if (error) throw error;
+    console.log('📅 [CREATE EVENT] Database insert result:', { data, error });
+    
+    if (error) {
+      console.error('📅 [CREATE EVENT] Database error:', error);
+      throw error;
+    }
     
     const eventId = data[0].id;
+    console.log('📅 [CREATE EVENT] Event created successfully with ID:', eventId);
     
     // If we have an image, upload it
     if (imageFile) {
-      const imageUrl = await uploadEventImage(eventId, imageFile);
-      
-      // Update the event with the image URL
-      const { error: updateError } = await supabase
-        .from('network_events')
-        .update({ cover_image_url: imageUrl })
-        .eq('id', eventId);
+      console.log('📅 [CREATE EVENT] Starting image upload...');
+      try {
+        const imageUrl = await uploadEventImage(eventId, imageFile);
+        console.log('📅 [CREATE EVENT] Image uploaded successfully:', imageUrl);
         
-      if (updateError) throw updateError;
-      
-      // Update the data object
-      data[0].cover_image_url = imageUrl;
+        // Update the event with the image URL
+        const { error: updateError } = await supabase
+          .from('network_events')
+          .update({ cover_image_url: imageUrl })
+          .eq('id', eventId);
+          
+        if (updateError) {
+          console.error('📅 [CREATE EVENT] Error updating event with image URL:', updateError);
+          throw updateError;
+        }
+        
+        // Update the data object
+        data[0].cover_image_url = imageUrl;
+        console.log('📅 [CREATE EVENT] Event updated with image URL');
+      } catch (imageError) {
+        console.error('📅 [CREATE EVENT] Image upload failed:', imageError);
+        // Don't fail the event creation if image upload fails
+        console.log('📅 [CREATE EVENT] Continuing without image...');
+      }
     }
     
     // Queue email notifications based on event status
@@ -890,16 +921,20 @@ export const createEvent = async (networkId, profileId, eventData, imageFile, is
       }
     }
     
-    return {
+    const result = {
       success: true,
       event: data[0],
       message: isAdmin ? 'Event created successfully!' : 'Event proposal submitted successfully! It will be reviewed by an admin.'
     };
+    
+    console.log('📅 [CREATE EVENT] Final result:', result);
+    return result;
   } catch (error) {
-    console.error('Error creating event:', error);
+    console.error('📅 [CREATE EVENT] Critical error:', error);
+    console.error('📅 [CREATE EVENT] Error stack:', error.stack);
     return {
       success: false,
-      message: 'Failed to create event. Please try again.'
+      message: error.message || 'Failed to create event. Please try again.'
     };
   }
 };

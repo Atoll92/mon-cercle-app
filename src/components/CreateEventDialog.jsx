@@ -240,23 +240,31 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
   };
 
   const handleSubmit = async () => {
+    console.log('🎯 [EVENT DIALOG] Starting event creation/update process');
+    console.log('🎯 [EVENT DIALOG] networkId:', networkId);
+    console.log('🎯 [EVENT DIALOG] profileId:', profileId);
+    console.log('🎯 [EVENT DIALOG] isAdmin:', isAdmin);
+    console.log('🎯 [EVENT DIALOG] editingEvent:', editingEvent ? 'Yes' : 'No');
+    
     // Validate required fields FIRST, before setting updating
     if (!eventForm.title || !eventForm.date) {
+      console.error('🎯 [EVENT DIALOG] Validation failed: Missing title or date');
       setError('Please fill in all required fields (Title, Date)');
       return;
     }
     
     // If not online event, location is required
     if (!eventForm.online && !eventForm.location) {
+      console.error('🎯 [EVENT DIALOG] Validation failed: Missing location for in-person event');
       setError('Please provide a location for in-person events');
       return;
     }
 
+    console.log('🎯 [EVENT DIALOG] Validation passed, proceeding with submission');
     setError(null);
     setUpdating(true);
 
     try {
-
       // Prepare event data
       const eventData = {
         title: eventForm.title,
@@ -273,10 +281,15 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
         online: eventForm.online
       };
 
+      console.log('🎯 [EVENT DIALOG] Prepared event data:', eventData);
+      console.log('🎯 [EVENT DIALOG] Has image file:', eventImageFile ? 'Yes' : 'No');
+
       let result;
       if (editingEvent) {
+        console.log('🎯 [EVENT DIALOG] Calling updateEvent...');
         // Update existing event
         result = await updateEvent(editingEvent.id, eventData, eventImageFile);
+        console.log('🎯 [EVENT DIALOG] updateEvent result:', result);
         if (!result.success) {
           throw new Error(result.message || 'Failed to update event');
         }
@@ -285,8 +298,10 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
           onEventUpdated(result.event);
         }
       } else {
+        console.log('🎯 [EVENT DIALOG] Calling createEvent...');
         // Create new event
         result = await createEvent(networkId, profileId, eventData, eventImageFile, isAdmin);
+        console.log('🎯 [EVENT DIALOG] createEvent result:', result);
         if (!result.success) {
           throw new Error(result.message || 'Failed to create event');
         }
@@ -295,12 +310,15 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
           onEventCreated(result.event);
         }
       }
+      console.log('🎯 [EVENT DIALOG] Event operation successful, closing dialog');
       onClose();
     } catch (err) {
-      console.error('Error creating event:', err);
+      console.error('🎯 [EVENT DIALOG] Error during event operation:', err);
+      console.error('🎯 [EVENT DIALOG] Error stack:', err.stack);
       setError(err.message || (editingEvent ? 'Failed to update event' : 'Failed to create event'));
     } finally {
       setUpdating(false);
+      console.log('🎯 [EVENT DIALOG] Event operation completed');
     }
   };
 
