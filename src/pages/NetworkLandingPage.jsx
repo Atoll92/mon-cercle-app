@@ -1325,20 +1325,6 @@ function NetworkLandingPage() {
                 boxShadow: darkMode
                   ? '0 8px 32px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.1)'
                   : '0 8px 32px rgba(0,0,0,0.12), 0 0 0 1px rgba(0,0,0,0.05)',
-                // Add subtle gradient overlay for depth
-                '&::before': {
-                  content: '""',
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  background: darkMode
-                    ? `linear-gradient(135deg, ${alpha('#ffffff', 0.02)} 0%, ${alpha('#ffffff', 0.01)} 100%)`
-                    : `linear-gradient(135deg, ${alpha('#ffffff', 0.8)} 0%, ${alpha('#ffffff', 0.4)} 100%)`,
-                  borderRadius: { xs: 2, sm: 2.5 },
-                  pointerEvents: 'none',
-                },
                 // Add animation for smooth entrance
                 animation: 'fadeInUp 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
                 '@keyframes fadeInUp': {
