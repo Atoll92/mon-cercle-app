@@ -6,13 +6,13 @@ import App from './App.jsx'
 import { AuthProvider } from './context/authcontext.jsx'
 import { BrowserRouter } from 'react-router-dom'; // <= THE MISSING PIECE!
 import { initializeLogger } from './utils/logger'
-import { startAutomaticNotificationProcessing } from './services/emailNotificationService'
+// Removed: import { startAutomaticNotificationProcessing } from './services/emailNotificationService'
+// Notification processing now handled server-side via Supabase cron job
 
 // Initialize logger to disable console logs in production
 initializeLogger();
 
-// Start automatic notification processing
-startAutomaticNotificationProcessing();
+// Removed: startAutomaticNotificationProcessing() - now handled server-side
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
