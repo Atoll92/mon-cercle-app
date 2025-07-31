@@ -1,60 +1,39 @@
 // supabase/functions/network-invite/index.ts
-
 /// <reference types="https://esm.sh/@types/node@18/index.d.ts" />
-
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
-
-interface InviteData {
-  toEmail: string;
-  networkName: string;
-  inviterName: string;
-  type: 'existing_user' | 'new_user' | 'news' | 'event' | 'mention' | 'direct_message' | 'post' | 'event_proposal' | 'event_status';
-  inviteLink?: string;
-  subject?: string;
-  content?: string;
-  relatedItemId?: string;
-  eventDate?: string;
-  eventLocation?: string;
-  messageContext?: string;
-  icsAttachment?: {
-    filename: string;
-    content: string;
-    type: string;
-    disposition: string;
-  };
-}
-
-const handler = async (request: Request): Promise<Response> => {
+const handler = async (request)=>{
   // Set CORS headers for browser clients
   const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS'
   };
-
   // Handle OPTIONS request
   if (request.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+    return new Response('ok', {
+      headers: corsHeaders
+    });
   }
-
   console.log('🚀 [EDGE FUNCTION DEBUG] Request received:', {
     method: request.method,
     headers: Object.fromEntries(request.headers.entries())
   });
-
   try {
     // Validate request
     if (!request.body) {
-      return new Response(
-        JSON.stringify({ error: 'Request body is required' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return new Response(JSON.stringify({
+        error: 'Request body is required'
+      }), {
+        status: 400,
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/json'
+        }
+      });
     }
-
     // Parse the request body
     const requestBody = await request.json();
     const { toEmail, networkName, inviterName, type, inviteLink, subject, content, relatedItemId, eventDate, eventLocation, messageContext, icsAttachment } = requestBody;
-
     console.log('🚀 [EDGE FUNCTION DEBUG] Parsed request body:', {
       toEmail,
       networkName,
@@ -68,36 +47,46 @@ const handler = async (request: Request): Promise<Response> => {
       eventLocation,
       hasMessageContext: !!messageContext
     });
-
     // Validate required fields
     if (!toEmail || !networkName || !inviterName || !type) {
-      return new Response(
-        JSON.stringify({ error: 'Missing required fields' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return new Response(JSON.stringify({
+        error: 'Missing required fields'
+      }), {
+        status: 400,
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/json'
+        }
+      });
     }
-
     // For new users, inviteLink is required
     if (type === 'new_user' && !inviteLink) {
-      return new Response(
-        JSON.stringify({ error: 'Invite link is required for new users' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return new Response(JSON.stringify({
+        error: 'Invite link is required for new users'
+      }), {
+        status: 400,
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/json'
+        }
+      });
     }
-
     // For content notifications, subject and content are required
     if ((type === 'news' || type === 'event' || type === 'mention' || type === 'direct_message' || type === 'post' || type === 'event_proposal' || type === 'event_status') && (!subject || !content)) {
-      return new Response(
-        JSON.stringify({ error: 'Subject and content are required for content notifications' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return new Response(JSON.stringify({
+        error: 'Subject and content are required for content notifications'
+      }), {
+        status: 400,
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/json'
+        }
+      });
     }
-
     // Prepare email content based on invitation type
     console.log('🚀 [EDGE FUNCTION DEBUG] Preparing email content for type:', type);
     let emailSubject = '';
     let html = '';
-
     if (type === 'existing_user') {
       emailSubject = `You've been added to the ${networkName} network`;
       html = `
@@ -141,14 +130,12 @@ const handler = async (request: Request): Promise<Response> => {
         networkName
       });
       emailSubject = subject || `New post in ${networkName}`;
-      
       // Parse content to extract title, description, and media for news posts
       let postTitle = '';
       let postContent = content || 'Content not available';
       let hasMedia = false;
       let mediaType = '';
       let mediaUrl = '';
-      
       // Check for news post with media by looking for the pattern "shared: content [MediaType:URL]"
       const newsMatch = content?.match(/shared: ([^\[]*?)([\[])([^:]+):([^\]]+)\]\s*$/);
       if (newsMatch) {
@@ -159,7 +146,6 @@ const handler = async (request: Request): Promise<Response> => {
           mediaUrl = newsMatch[4];
         }
       }
-      
       html = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; line-height: 1.6;">
           <div style="background-color: #2196f3; padding: 20px; border-radius: 8px 8px 0 0;">
@@ -192,9 +178,7 @@ const handler = async (request: Request): Promise<Response> => {
                   <div style="display: flex; align-items: center; gap: 8px;">
                     <span style="font-size: 18px;">${mediaType === 'video' ? '🎥' : mediaType === 'audio' ? '🎵' : '📎'}</span>
                     <span style="color: #2196f3; font-weight: 500; font-size: 14px;">
-                      ${mediaType === 'video' ? 'Video attached' : 
-                        mediaType === 'audio' ? 'Audio attached' : 
-                        'Media attached'}
+                      ${mediaType === 'video' ? 'Video attached' : mediaType === 'audio' ? 'Audio attached' : 'Media attached'}
                     </span>
                   </div>
                 </div>
@@ -229,14 +213,12 @@ const handler = async (request: Request): Promise<Response> => {
         networkName
       });
       emailSubject = subject || `New post in ${networkName}`;
-      
       // Parse content to extract title, description, and media for portfolio posts
       let postTitle = '';
       let postContent = content || 'Content not available';
       let hasMedia = false;
       let mediaType = '';
       let mediaUrl = '';
-      
       // Check if this is a portfolio post by looking for the pattern "shared a new post: Title. Description [MediaType:URL]"
       const portfolioMatch = content?.match(/shared a new post: ([^.]+)\.\s*([^\[]*?)(\[([^:]+):([^\]]+)\])?\s*$/);
       if (portfolioMatch) {
@@ -248,7 +230,6 @@ const handler = async (request: Request): Promise<Response> => {
           mediaUrl = portfolioMatch[5];
         }
       }
-      
       html = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; line-height: 1.6;">
           <div style="background-color: #673ab7; padding: 20px; border-radius: 8px 8px 0 0;">
@@ -281,9 +262,7 @@ const handler = async (request: Request): Promise<Response> => {
                   <div style="display: flex; align-items: center; gap: 8px;">
                     <span style="font-size: 18px;">${mediaType === 'video' ? '🎥' : mediaType === 'audio' ? '🎵' : '📎'}</span>
                     <span style="color: #673ab7; font-weight: 500; font-size: 14px;">
-                      ${mediaType === 'video' ? 'Video attached' : 
-                        mediaType === 'audio' ? 'Audio attached' : 
-                        'Media attached'}
+                      ${mediaType === 'video' ? 'Video attached' : mediaType === 'audio' ? 'Audio attached' : 'Media attached'}
                     </span>
                   </div>
                 </div>
@@ -321,13 +300,11 @@ const handler = async (request: Request): Promise<Response> => {
         fullRequestBody: requestBody
       });
       emailSubject = subject || `New post in ${networkName}`;
-      
       // Parse content for media in events
       let eventDescription = content || 'Event description not available';
       let hasMedia = false;
       let mediaType = '';
       let mediaUrl = '';
-      
       // Check for event with media by looking for the pattern "Someone created an event: Title on Date. Description [image:URL]"
       const eventMatch = content?.match(/created an event: ([^.]+)\.\s*([^\[]*?)(\[([^:]+):([^\]]+)\])?\s*$/);
       if (eventMatch) {
@@ -344,7 +321,6 @@ const handler = async (request: Request): Promise<Response> => {
         // If no media pattern found, just clean up the description by removing the prefix
         eventDescription = content?.replace(/^[^:]*created an event: /, '') || 'Event description not available';
       }
-      
       // Debug logging for event media parsing
       console.log('🚀 [EDGE FUNCTION DEBUG] Event content parsing result:', {
         originalContent: content,
@@ -354,7 +330,6 @@ const handler = async (request: Request): Promise<Response> => {
         mediaUrl,
         eventMatchFound: !!eventMatch
       });
-      
       // Format event date if provided
       let formattedDate = 'Date TBD';
       const eventDateValue = requestBody.eventDate || eventDate;
@@ -373,7 +348,6 @@ const handler = async (request: Request): Promise<Response> => {
           formattedDate = eventDateValue;
         }
       }
-      
       html = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; line-height: 1.6;">
           <div style="background-color: #ff9800; padding: 20px; border-radius: 8px 8px 0 0;">
@@ -401,9 +375,7 @@ const handler = async (request: Request): Promise<Response> => {
                   <div style="display: flex; align-items: center; gap: 8px;">
                     <span style="font-size: 18px;">${mediaType === 'video' ? '🎥' : mediaType === 'audio' ? '🎵' : '📎'}</span>
                     <span style="color: #ff9800; font-weight: 500; font-size: 14px;">
-                      ${mediaType === 'video' ? 'Video attached' : 
-                        mediaType === 'audio' ? 'Audio attached' : 
-                        'Media attached'}
+                      ${mediaType === 'video' ? 'Video attached' : mediaType === 'audio' ? 'Audio attached' : 'Media attached'}
                     </span>
                   </div>
                 </div>
@@ -417,7 +389,7 @@ const handler = async (request: Request): Promise<Response> => {
                 <span style="font-weight: 600; color: #e65100;">📅 When:</span>
                 <span style="color: #333; margin-left: 8px;">${formattedDate}</span>
               </div>
-              ${(requestBody.eventLocation || eventLocation) ? `
+              ${requestBody.eventLocation || eventLocation ? `
               <div style="margin-bottom: 8px;">
                 <span style="font-weight: 600; color: #e65100;">📍 Where:</span>
                 <span style="color: #333; margin-left: 8px;">${requestBody.eventLocation || eventLocation}</span>
@@ -576,11 +548,9 @@ const handler = async (request: Request): Promise<Response> => {
     } else if (type === 'event_status') {
       console.log('🚀 [EDGE FUNCTION DEBUG] Creating event status notification email');
       emailSubject = subject || `Event status update in ${networkName}`;
-      
       // Parse content to determine if approved or rejected
       let isApproved = true;
       let rejectionReason = '';
-      
       try {
         // content_preview already contains the formatted message from the notification service
         if (content && content.includes('rejected')) {
@@ -593,7 +563,6 @@ const handler = async (request: Request): Promise<Response> => {
       } catch (e) {
         console.log('Could not parse event status metadata, defaulting to approved');
       }
-      
       html = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; line-height: 1.6;">
           <div style="background-color: ${isApproved ? '#4caf50' : '#f44336'}; padding: 20px; border-radius: 8px 8px 0 0;">
@@ -685,65 +654,75 @@ const handler = async (request: Request): Promise<Response> => {
         </div>
       `;
     }
-
     // Send email using Resend API
-    const emailPayload: any = {
+    const emailPayload = {
       from: Deno.env.get('FROM_EMAIL') || 'noreply@your-domain.com',
       to: toEmail,
       subject: emailSubject,
-      html: html,
+      html: html
     };
-
     // Add ICS attachment for event notifications
     if (type === 'event' && icsAttachment) {
-      emailPayload.attachments = [icsAttachment];
+      emailPayload.attachments = [
+        icsAttachment
+      ];
       console.log('🚀 [EDGE FUNCTION DEBUG] Adding ICS attachment:', {
         filename: icsAttachment.filename,
         type: icsAttachment.type,
         contentLength: icsAttachment.content.length
       });
     }
-    
     console.log('🚀 [EDGE FUNCTION DEBUG] Sending email to Resend:', {
       to: emailPayload.to,
       from: emailPayload.from,
       subject: emailPayload.subject,
       htmlPreview: emailPayload.html.substring(0, 200) + '...'
     });
-    
     const resendResponse = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${RESEND_API_KEY}`,
+        'Authorization': `Bearer ${RESEND_API_KEY}`
       },
-      body: JSON.stringify(emailPayload),
+      body: JSON.stringify(emailPayload)
     });
-
     const resendData = await resendResponse.json();
-
     // Check if Resend returned an error
     if (resendResponse.status >= 400) {
       console.error('Resend API error:', resendData);
-      return new Response(
-        JSON.stringify({ error: 'Failed to send email', details: resendData }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return new Response(JSON.stringify({
+        error: 'Failed to send email',
+        details: resendData
+      }), {
+        status: 500,
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/json'
+        }
+      });
     }
-
     // Return success response
-    return new Response(
-      JSON.stringify({ success: true, data: resendData }),
-      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return new Response(JSON.stringify({
+      success: true,
+      data: resendData
+    }), {
+      status: 200,
+      headers: {
+        ...corsHeaders,
+        'Content-Type': 'application/json'
+      }
+    });
   } catch (error) {
     console.error('Error processing invitation:', error);
-    
-    return new Response(
-      JSON.stringify({ error: error.message || 'Internal server error' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return new Response(JSON.stringify({
+      error: error.message || 'Internal server error'
+    }), {
+      status: 500,
+      headers: {
+        ...corsHeaders,
+        'Content-Type': 'application/json'
+      }
+    });
   }
 };
-
 Deno.serve(handler);
