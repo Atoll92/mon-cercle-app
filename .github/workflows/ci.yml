@@ -142,5 +142,6 @@ jobs:
           supabase functions deploy create-checkout-session --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
           supabase functions deploy manage-subscription --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
           supabase functions deploy network-invite --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
+          supabase functions deploy process-notifications --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
