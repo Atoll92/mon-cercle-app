@@ -6,6 +6,8 @@ import CreatePostModal from './CreatePostModal';
 import PostCard from './PostCard';
 import Spinner from './Spinner';
 import { formatTimeAgo } from '../utils/dateFormatting';
+import MediaUpload from './MediaUpload';
+import { createPost } from '../api/posts';
 import {
   Typography,
   Paper,
@@ -27,7 +29,9 @@ import {
   Select,
   MenuItem,
   FormControl,
-  InputLabel
+  InputLabel,
+  TextField,
+  Alert
 } from '@mui/material';
 import {
   Favorite as FavoriteIcon,
@@ -217,14 +221,15 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
   // Load categories on mount
   useEffect(() => {
     const loadCategories = async () => {
-      if (!networkId) return;
-      const { data, error } = await fetchNetworkCategories(networkId, true); // Only active categories
+      if (!networkId && !activeProfile?.network_id) return;
+      const netId = networkId || activeProfile?.network_id;
+      const { data, error } = await fetchNetworkCategories(netId, true); // Only active categories
       if (data && !error) {
         setCategories(data);
       }
     };
     loadCategories();
-  }, [networkId]);
+  }, [networkId, activeProfile]);
 
   // Filter items based on selected category and sort by date (latest first)
   const filteredItems = React.useMemo(() => {
@@ -628,29 +633,69 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
         flexWrap: 'wrap',
         gap: 2
       }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
-          {/* Create Post Button */}
-          <Button
-            variant="contained"
-            startIcon={<CreateIcon />}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap', width: '100%' }}>
+          {/* Post Creation Trigger */}
+          <Card
             onClick={() => setCreatePostOpen(true)}
             sx={{
+              width: '100%',
+              p: 2,
+              cursor: 'pointer',
+              bgcolor: darkMode ? alpha('#ffffff', 0.03) : alpha('#000000', 0.02),
+              border: `1px solid ${darkMode ? alpha('#ffffff', 0.1) : alpha('#000000', 0.08)}`,
               borderRadius: 2,
-              px: 2.5,
-              py: 1,
-              fontWeight: 600,
-              boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              transition: 'all 0.2s ease',
               '&:hover': {
-                background: 'linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.18)',
-                transform: 'translateY(-1px)'
-              },
-              transition: 'all 0.2s ease'
+                bgcolor: darkMode ? alpha('#ffffff', 0.05) : alpha('#000000', 0.04),
+                borderColor: muiTheme.palette.primary.main,
+                transform: 'translateY(-1px)',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+              }
             }}
           >
-            {t('socialWall.createPost')}
-          </Button>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Avatar
+                src={activeProfile?.profile_picture_url || user?.profile_picture_url}
+                sx={{ 
+                  width: 40, 
+                  height: 40,
+                  bgcolor: muiTheme.palette.primary.main
+                }}
+              >
+                {(activeProfile?.full_name || user?.full_name || 'U').charAt(0).toUpperCase()}
+              </Avatar>
+              <TextField
+                fullWidth
+                placeholder={t('socialWall.whatsOnYourMind')}
+                variant="outlined"
+                disabled
+                sx={{
+                  pointerEvents: 'none',
+                  '& .MuiOutlinedInput-root': {
+                    bgcolor: darkMode ? alpha('#ffffff', 0.05) : 'background.paper',
+                    '& fieldset': {
+                      borderColor: 'transparent'
+                    }
+                  }
+                }}
+              />
+              <IconButton
+                sx={{
+                  bgcolor: muiTheme.palette.primary.main,
+                  color: 'white',
+                  '&:hover': {
+                    bgcolor: muiTheme.palette.primary.dark,
+                  },
+                  width: 40,
+                  height: 40,
+                  pointerEvents: 'none'
+                }}
+              >
+                <AddIcon />
+              </IconButton>
+            </Box>
+          </Card>
+          
           
           {/* Category Filter */}
           {categories.length > 0 && (
