@@ -37,8 +37,7 @@ import { useProfile } from '../context/profileContext';
 import { 
   queueNewsNotifications, 
   queueEventNotifications,
-  getNotificationStats,
-  clearNotificationQueue
+  getNotificationStats
 } from '../services/emailNotificationService';
 // Removed deprecated client-side processing functions - now handled server-side
 
@@ -412,34 +411,35 @@ const NotificationSystemManager = () => {
     }
   };
 
-  const handleClearQueue = async () => {
-    try {
-      setProcessing(true);
-      setResult(null);
+  // Deprecated - clearNotificationQueue is no longer available
+  // const handleClearQueue = async () => {
+  //   try {
+  //     setProcessing(true);
+  //     setResult(null);
 
-      const clearResult = await clearNotificationQueue(activeProfile.id);
+  //     const clearResult = await clearNotificationQueue(activeProfile.id);
 
-      setResult({
-        success: clearResult.success,
-        message: clearResult.success 
-          ? 'Notification queue cleared successfully!'
-          : clearResult.error
-      });
+  //     setResult({
+  //       success: clearResult.success,
+  //       message: clearResult.success 
+  //         ? 'Notification queue cleared successfully!'
+  //         : clearResult.error
+  //     });
       
-      // Refresh data
-      await loadNotifications();
-      await loadTriggeredNotifications();
-      await loadStats();
-    } catch (error) {
-      console.error('Error clearing notification queue:', error);
-      setResult({
-        success: false,
-        message: `Failed to clear queue: ${error.message}`
-      });
-    } finally {
-      setProcessing(false);
-    }
-  };
+  //     // Refresh data
+  //     await loadNotifications();
+  //     await loadTriggeredNotifications();
+  //     await loadStats();
+  //   } catch (error) {
+  //     console.error('Error clearing notification queue:', error);
+  //     setResult({
+  //       success: false,
+  //       message: `Failed to clear queue: ${error.message}`
+  //     });
+  //   } finally {
+  //     setProcessing(false);
+  //   }
+  // };
 
   // Removed handleToggleAutomaticProcessor - automatic processing now handled server-side via cron job
 
@@ -522,6 +522,7 @@ const NotificationSystemManager = () => {
               Process Queue
             </Button>
 
+            {/* Deprecated - Clear Queue functionality removed
             <Button
               variant="outlined"
               color="error"
@@ -532,6 +533,7 @@ const NotificationSystemManager = () => {
             >
               Clear Queue
             </Button>
+            */}
 
             <Button
               variant="outlined"
