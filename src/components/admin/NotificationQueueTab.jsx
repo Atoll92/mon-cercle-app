@@ -31,7 +31,8 @@ import {
 } from '@mui/icons-material';
 import { supabase } from '../../supabaseclient';
 import { formatDateTime } from '../../utils/dateFormatting';
-import { processPendingNotifications } from '../../services/emailNotificationService';
+// Removed: import { processPendingNotifications } from '../../services/emailNotificationService';
+// Notification processing now handled server-side via cron job
 
 const NotificationQueueTab = () => {
   const [notifications, setNotifications] = useState([]);
@@ -85,13 +86,18 @@ const NotificationQueueTab = () => {
       setMessage('');
       setError('');
 
-      const result = await processPendingNotifications();
+      // Call the edge function directly
+      const { data, error } = await supabase.functions.invoke('process-notifications', {
+        body: { trigger: 'manual' }
+      });
       
-      if (result.success) {
-        setMessage(result.message);
+      if (error) throw error;
+      
+      if (data?.success) {
+        setMessage(`Processed ${data.processed} notifications: ${data.sent} sent, ${data.failed} failed`);
         await loadNotifications(); // Reload to see updated status
       } else {
-        setError(result.error || 'Failed to process notifications');
+        setError(data?.error || 'Failed to process notifications');
       }
     } catch (err) {
       console.error('Error processing notifications:', err);

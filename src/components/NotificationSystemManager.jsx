@@ -37,14 +37,10 @@ import { useProfile } from '../context/profileContext';
 import { 
   queueNewsNotifications, 
   queueEventNotifications,
-  processPendingNotifications, 
   getNotificationStats,
-  clearNotificationQueue,
-  getAutomaticProcessorStatus,
-  startAutomaticNotificationProcessing,
-  stopAutomaticNotificationProcessing,
-  forceNotificationProcessing
+  clearNotificationQueue
 } from '../services/emailNotificationService';
+// Removed deprecated client-side processing functions - now handled server-side
 
 const NotificationSystemManager = () => {
   const { activeProfile } = useProfile();
@@ -54,7 +50,7 @@ const NotificationSystemManager = () => {
   const [stats, setStats] = useState(null);
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState(null);
-  const [processorStatus, setProcessorStatus] = useState(null);
+  // Removed processorStatus - automatic processing now handled server-side via cron job
   const [viewMode, setViewMode] = useState('received'); // 'received' or 'triggered'
   const [showTester, setShowTester] = useState(false);
 
@@ -62,13 +58,10 @@ const NotificationSystemManager = () => {
     loadNotifications();
     loadTriggeredNotifications();
     loadStats();
-    loadProcessorStatus();
+    // Removed loadProcessorStatus - automatic processing now handled server-side
   }, [activeProfile]);
 
-  const loadProcessorStatus = () => {
-    const status = getAutomaticProcessorStatus();
-    setProcessorStatus(status);
-  };
+  // Removed loadProcessorStatus - automatic processing now handled server-side
 
   const loadNotifications = async () => {
     if (!activeProfile?.id) {
@@ -212,11 +205,16 @@ const NotificationSystemManager = () => {
       setProcessing(true);
       setResult(null);
       
-      const processResult = await processPendingNotifications();
+      // Call the edge function directly
+      const { data, error } = await supabase.functions.invoke('process-notifications', {
+        body: { trigger: 'manual' }
+      });
+      
+      if (error) throw error;
       
       setResult({
-        success: processResult.success,
-        message: processResult.message || (processResult.success ? 'Notifications processed successfully!' : 'Failed to process notifications')
+        success: data?.success || false,
+        message: data?.success ? `Processed ${data?.processed || 0} notifications: ${data?.sent || 0} sent, ${data?.failed || 0} failed` : (data?.error || 'Failed to process notifications')
       });
       
       // Refresh data
@@ -443,65 +441,9 @@ const NotificationSystemManager = () => {
     }
   };
 
-  const handleToggleAutomaticProcessor = async () => {
-    try {
-      setProcessing(true);
-      setResult(null);
+  // Removed handleToggleAutomaticProcessor - automatic processing now handled server-side via cron job
 
-      let newStatus;
-      if (processorStatus?.isRunning) {
-        newStatus = stopAutomaticNotificationProcessing();
-        setResult({
-          success: true,
-          message: 'Automatic notification processing stopped'
-        });
-      } else {
-        newStatus = startAutomaticNotificationProcessing();
-        setResult({
-          success: true,
-          message: 'Automatic notification processing started'
-        });
-      }
-      
-      setProcessorStatus(newStatus);
-    } catch (error) {
-      console.error('Error toggling automatic processor:', error);
-      setResult({
-        success: false,
-        message: `Failed to toggle processor: ${error.message}`
-      });
-    } finally {
-      setProcessing(false);
-    }
-  };
-
-  const handleForceProcessing = async () => {
-    try {
-      setProcessing(true);
-      setResult(null);
-
-      const forceResult = await forceNotificationProcessing();
-      
-      setResult({
-        success: forceResult.success,
-        message: forceResult.message || 'Forced processing completed'
-      });
-      
-      // Refresh data
-      await loadNotifications();
-      await loadTriggeredNotifications();
-      await loadStats();
-      loadProcessorStatus();
-    } catch (error) {
-      console.error('Error forcing notification processing:', error);
-      setResult({
-        success: false,
-        message: `Failed to force processing: ${error.message}`
-      });
-    } finally {
-      setProcessing(false);
-    }
-  };
+  // Removed handleForceProcessing - use handleProcessNotifications instead
 
   const getStatusChip = (notification) => {
     if (notification.error_message) {
@@ -604,50 +546,25 @@ const NotificationSystemManager = () => {
         </Box>
 
         {/* Automatic Processor Status */}
-        {processorStatus && (
-          <Box mb={3}>
-            <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-              Automatic Processor Status
-            </Typography>
-            <Stack direction="row" spacing={2} alignItems="center" mb={2}>
-              <Chip 
-                label={processorStatus.isRunning ? 'Running' : 'Stopped'} 
-                color={processorStatus.isRunning ? 'success' : 'error'}
-                icon={processorStatus.isRunning ? <CheckCircleIcon /> : <ErrorIcon />}
-              />
-              <Chip 
-                label={`Interval: ${processorStatus.processingInterval}`} 
-                variant="outlined" 
-              />
-              {processorStatus.nextProcessing && (
-                <Chip 
-                  label={`Next: ${new Date(processorStatus.nextProcessing).toLocaleTimeString()}`} 
-                  variant="outlined" 
-                />
-              )}
-            </Stack>
-            <Stack direction="row" spacing={1}>
-              <Button
-                variant={processorStatus.isRunning ? "outlined" : "contained"}
-                color={processorStatus.isRunning ? "error" : "success"}
-                size="small"
-                onClick={handleToggleAutomaticProcessor}
-                disabled={processing}
-              >
-                {processorStatus.isRunning ? 'Stop Auto Processing' : 'Start Auto Processing'}
-              </Button>
-              <Button
-                variant="outlined"
-                size="small"
-                onClick={handleForceProcessing}
-                disabled={processing}
-                startIcon={<SendIcon />}
-              >
-                Force Process Now
-              </Button>
-            </Stack>
-          </Box>
-        )}
+        <Box mb={3}>
+          <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+            Notification Processing Status
+          </Typography>
+          <Stack direction="row" spacing={2} alignItems="center" mb={2}>
+            <Chip 
+              label="Server-side Processing" 
+              color="info"
+              icon={<CheckCircleIcon />}
+            />
+            <Chip 
+              label="Cron Job: Every 60 seconds" 
+              variant="outlined" 
+            />
+          </Stack>
+          <Typography variant="caption" color="text.secondary">
+            Notifications are now processed automatically server-side via a cron job.
+          </Typography>
+        </Box>
 
         {/* Stats Overview */}
         {stats && (
@@ -798,7 +715,7 @@ const NotificationSystemManager = () => {
 
         <Typography variant="caption" color="text.secondary" sx={{ mt: 2, display: 'block' }}>
           💡 Tip: "Received" shows notifications sent to you. "You Triggered" shows notifications your posts/events generated for other network members. 
-          Automatic processing runs every minute. Use test buttons to verify functionality.
+          Server-side processing runs automatically every minute via cron job. Use test buttons to verify functionality.
         </Typography>
 
         {/* End-to-End Tester */}

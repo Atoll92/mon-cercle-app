@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, Typography, Button, Box, Alert, Chip, LinearProgress, TextField } from '@mui/material';
 import { supabase } from '../supabaseclient';
-import { processPendingNotifications, getAutomaticProcessorStatus } from '../services/emailNotificationService';
+// Removed: import { processPendingNotifications, getAutomaticProcessorStatus } from '../services/emailNotificationService';
+// Notification processing now handled server-side via cron job
 
 const NotificationDebugger = () => {
   const [queue, setQueue] = useState([]);
@@ -79,9 +80,15 @@ const NotificationDebugger = () => {
   const processQueue = async () => {
     setLoading(true);
     try {
-      const result = await processPendingNotifications();
-      console.log('Process result:', result);
-      alert(`Processed: ${result.sent || 0} sent, ${result.failed || 0} failed`);
+      // Call the edge function directly
+      const { data, error } = await supabase.functions.invoke('process-notifications', {
+        body: { trigger: 'debug' }
+      });
+      
+      if (error) throw error;
+      
+      console.log('Process result:', data);
+      alert(`Processed: ${data?.sent || 0} sent, ${data?.failed || 0} failed`);
       fetchQueue();
     } catch (error) {
       console.error('Error processing:', error);
@@ -93,7 +100,12 @@ const NotificationDebugger = () => {
 
   useEffect(() => {
     fetchQueue();
-    setProcessorStatus(getAutomaticProcessorStatus());
+    // Processor status no longer relevant - handled by server-side cron
+    setProcessorStatus({ 
+      isRunning: true, 
+      processingInterval: '60 seconds',
+      info: 'Notifications processed server-side via cron job'
+    });
   }, []);
 
   return (

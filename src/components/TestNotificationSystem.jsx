@@ -13,7 +13,8 @@ import Spinner from './Spinner';
 import { supabase } from '../supabaseclient';
 import { useAuth } from '../context/authcontext';
 import { useProfile } from '../context/profileContext';
-import { queueNewsNotifications, processPendingNotifications } from '../services/emailNotificationService';
+import { queueNewsNotifications } from '../services/emailNotificationService';
+// Removed: processPendingNotifications - now handled server-side
 
 const TestNotificationSystem = () => {
   const { activeProfile } = useProfile();
@@ -238,12 +239,17 @@ const TestNotificationSystem = () => {
       setTesting(true);
       setResult(null);
 
-      const processResult = await processPendingNotifications();
+      // Call the edge function directly
+      const { data, error } = await supabase.functions.invoke('process-notifications', {
+        body: { trigger: 'test' }
+      });
+      
+      if (error) throw error;
 
       setResult({
-        success: processResult.success,
-        message: processResult.success ? 'Notifications processed!' : processResult.error,
-        data: processResult
+        success: data?.success || false,
+        message: data?.success ? `Processed ${data.processed} notifications: ${data.sent} sent, ${data.failed} failed` : (data?.error || 'Failed'),
+        data: data
       });
 
     } catch (error) {

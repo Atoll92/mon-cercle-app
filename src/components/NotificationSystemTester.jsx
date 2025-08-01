@@ -22,9 +22,9 @@ import {
   queueNewsNotifications, 
   queueEventNotifications,
   queueMentionNotification,
-  queueDirectMessageNotification,
-  processPendingNotifications
+  queueDirectMessageNotification
 } from '../services/emailNotificationService';
+// Removed processPendingNotifications - now handled server-side
 import { supabase } from '../supabaseclient';
 
 const NotificationSystemTester = () => {
@@ -185,13 +185,19 @@ const NotificationSystemTester = () => {
     setProcessing(true);
     
     try {
-      const result = await processPendingNotifications();
+      // Call the edge function directly
+      const { data, error } = await supabase.functions.invoke('process-notifications', {
+        body: { trigger: 'test' }
+      });
+      
+      if (error) throw error;
+      
       setResults(prev => ({ 
         ...prev, 
         processing: { 
-          status: result.success ? 'success' : 'error', 
-          message: result.message || 'Processing completed',
-          details: result
+          status: data?.success ? 'success' : 'error', 
+          message: data?.success ? `Processed ${data?.processed || 0} notifications: ${data?.sent || 0} sent, ${data?.failed || 0} failed` : (data?.error || 'Processing failed'),
+          details: data
         } 
       }));
     } catch (error) {

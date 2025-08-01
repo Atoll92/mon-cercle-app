@@ -116,11 +116,11 @@ export const queueNewsNotifications = async (networkId, newsId, authorId, newsTi
 };
 
 /**
- * Process pending notifications and send emails
- * This function should be called periodically (e.g., every few minutes)
- * In a production app, this would typically be triggered by a cron job or scheduled function
+ * @deprecated Process pending notifications and send emails
+ * This function is deprecated and replaced by server-side processing via edge function
+ * DO NOT USE - kept for reference only
  */
-export const processPendingNotifications = async () => {
+const processPendingNotifications_DEPRECATED = async () => {
   try {
     console.log('📨 [EMAIL PROCESS DEBUG] Starting to process pending notifications...');
 
@@ -356,6 +356,8 @@ export const processPendingNotifications = async () => {
  */
 export const getNotificationStats = async (profileId) => {
   try {
+    // For now, keeping direct access to notification_queue
+    // This can be restricted later with proper RLS policies
     const { data, error } = await supabase
       .from('notification_queue')
       .select('is_sent, created_at, error_message')
@@ -366,10 +368,10 @@ export const getNotificationStats = async (profileId) => {
       return { success: false, error: error.message };
     }
 
-    const total = data.length;
-    const sent = data.filter(n => n.is_sent).length;
-    const pending = data.filter(n => !n.is_sent && !n.error_message).length;
-    const failed = data.filter(n => n.error_message).length;
+    const total = data?.length || 0;
+    const sent = data?.filter(n => n.is_sent).length || 0;
+    const pending = data?.filter(n => !n.is_sent && !n.error_message).length || 0;
+    const failed = data?.filter(n => n.error_message).length || 0;
 
     return {
       success: true,
@@ -1036,30 +1038,14 @@ export const queueEventStatusNotification = async (eventId, eventCreatorId, even
 };
 
 /**
- * Clear all notifications for a user (sent and pending)
+ * @deprecated Clear all notifications for a user (sent and pending)
+ * This function is deprecated - clients no longer have delete access to notification_queue
+ * Clearing should only be done through admin functions or direct database access
  * @param {string} profileId - The profile ID
  */
-export const clearNotificationQueue = async (profileId) => {
-  try {
-    console.log('🧹 [CLEAR DEBUG] Clearing notification queue for profile:', profileId);
-    
-    const { error } = await supabase
-      .from('notification_queue')
-      .delete()
-      .eq('recipient_id', profileId);
-      
-    if (error) {
-      console.error('🧹 [CLEAR DEBUG] Error clearing notification queue:', error);
-      return { success: false, error: error.message };
-    }
-    
-    console.log('🧹 [CLEAR DEBUG] Successfully cleared notification queue');
-    return { success: true, message: 'Notification queue cleared successfully' };
-    
-  } catch (error) {
-    console.error('🧹 [CLEAR DEBUG] Error in clearNotificationQueue:', error);
-    return { success: false, error: error.message };
-  }
+const clearNotificationQueue_DEPRECATED = async (profileId) => {
+  console.error('🚫 clearNotificationQueue is deprecated and no longer functional');
+  return { success: false, error: 'This function is deprecated. Notification queue management is now server-side only.' };
 };
 
 /**
@@ -1091,10 +1077,11 @@ export const getUserNotificationPreferences = async (profileId) => {
 };
 
 /**
- * Automatic notification processor - runs continuously in the background
- * Processes queued notifications every 1 minute and clears successful sends
+ * @deprecated Automatic notification processor - runs continuously in the background
+ * This class is deprecated and replaced by server-side processing via edge function
+ * DO NOT USE - kept for reference only
  */
-class NotificationProcessor {
+class NotificationProcessor_DEPRECATED {
   constructor() {
     this.isRunning = false;
     this.intervalId = null;
@@ -1222,38 +1209,6 @@ class NotificationProcessor {
   }
 }
 
-// Create singleton instance
-const notificationProcessor = new NotificationProcessor();
-
-/**
- * Start automatic notification processing
- * Call this when the application starts up
- */
-export const startAutomaticNotificationProcessing = () => {
-  notificationProcessor.start();
-  return notificationProcessor.getStatus();
-};
-
-/**
- * Stop automatic notification processing
- */
-export const stopAutomaticNotificationProcessing = () => {
-  notificationProcessor.stop();
-  return notificationProcessor.getStatus();
-};
-
-/**
- * Get automatic processor status
- */
-export const getAutomaticProcessorStatus = () => {
-  return notificationProcessor.getStatus();
-};
-
-/**
- * Force immediate notification processing (manual trigger)
- */
-export const forceNotificationProcessing = async () => {
-  console.log('🔄 [FORCE PROCESSOR] Manual notification processing triggered');
-  await notificationProcessor.processNotifications();
-  return { success: true, message: 'Forced processing completed' };
-};
+// Removed: Singleton instance and automatic processing functions
+// Notification processing is now handled server-side via Supabase edge function and cron job
+// See /supabase/functions/process-notifications for the server-side implementation
