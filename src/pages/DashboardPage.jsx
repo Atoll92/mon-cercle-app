@@ -1215,7 +1215,7 @@ function DashboardPage() {
                           
                           {/* Network Stats */}
                           <Grid container spacing={1.5}>
-                            <Grid item size={6} style={{maxWidth: '100px'}}>
+                            <Grid item xs={6} style={{maxWidth: '100px'}}>
                               <Paper sx={{ 
                                 p: 1, 
                                 textAlign: 'center',
@@ -1238,7 +1238,7 @@ function DashboardPage() {
                               </Paper>
                             </Grid>
                             
-                            <Grid item size={6} style={{maxWidth: '100px'}}>
+                            <Grid item xs={6} style={{maxWidth: '100px'}}>
                               <Paper sx={{ 
                                 p: 1, 
                                 textAlign: 'center',
@@ -1681,14 +1681,28 @@ function DashboardPage() {
               
               {/* Third Row: Latest News and Latest Posts - Full width for all users */}
               {profile.network_id && (
-                <Grid container spacing={2} sx={{ width: '100%', maxWidth: '100%', mt: 2 }}>
-                  <Grid item xs={12} md={6} sx={{ width: '100%' }}>
+                <Box sx={{ 
+                  display: 'flex',
+                  flexDirection: { xs: 'column', md: 'row' },
+                  gap: 2,
+                  width: '100%',
+                  mt: 2
+                }}>
+                  <Box sx={{ 
+                    flex: 1,
+                    minWidth: 0,
+                    display: 'flex'
+                  }}>
                     <LatestNewsWidget networkId={profile.network_id} onMemberClick={handleMemberClick} />
-                  </Grid>
-                  <Grid item xs={12} md={6} sx={{ width: '100%' }}>
+                  </Box>
+                  <Box sx={{ 
+                    flex: 1,
+                    minWidth: 0,
+                    display: 'flex'
+                  }}>
                     <LatestPostsWidget networkId={profile.network_id} onMemberClick={handleMemberClick} />
-                  </Grid>
-                </Grid>
+                  </Box>
+                </Box>
               )}
               
               {/* Micro Conclav Widget - Always visible, full width row */}

@@ -86,12 +86,16 @@ const LatestNewsWidget = ({ networkId, onMemberClick, darkMode = false }) => {
   if (!latestNews || latestNews.length === 0) {
     return (
       <Box sx={{ 
-        height: '100%', 
+        width: '100%',
+        height: '100%',
+        minHeight: 400,
+        maxHeight: 600,
         display: 'flex', 
         flexDirection: 'column',
         bgcolor: darkMode ? 'grey.900' : 'background.paper',
         borderRadius: 2,
-        boxShadow: darkMode ? '0 4px 12px rgba(0,0,0,0.3)' : '0 4px 12px rgba(0,0,0,0.08)'
+        boxShadow: darkMode ? '0 4px 12px rgba(0,0,0,0.3)' : '0 4px 12px rgba(0,0,0,0.08)',
+        overflow: 'hidden'
       }}>
         <WidgetHeader
           icon={<NewsIcon color="primary" />}
@@ -130,12 +134,16 @@ const LatestNewsWidget = ({ networkId, onMemberClick, darkMode = false }) => {
 
   return (
     <Box sx={{ 
-      height: '100%', 
+      width: '100%',
+      height: '100%',
+      minHeight: 400,
+      maxHeight: 600,
       display: 'flex', 
       flexDirection: 'column',
       bgcolor: darkMode ? 'grey.900' : 'background.paper',
       borderRadius: 2,
-      boxShadow: darkMode ? '0 4px 12px rgba(0,0,0,0.3)' : '0 4px 12px rgba(0,0,0,0.08)'
+      boxShadow: darkMode ? '0 4px 12px rgba(0,0,0,0.3)' : '0 4px 12px rgba(0,0,0,0.08)',
+      overflow: 'hidden'
     }}>
       <WidgetHeader
         icon={<NewsIcon color="primary" />}
@@ -159,17 +167,14 @@ const LatestNewsWidget = ({ networkId, onMemberClick, darkMode = false }) => {
         p: 2,
         overflow: 'auto',
         display: 'flex',
-        flexWrap: 'wrap',
-        gap: 2,
-        alignContent: 'flex-start'
+        flexDirection: 'column',
+        gap: 2
       }}>
         {latestNews.map((news) => (
           <Box
             key={news.id}
             sx={{
-              width: { xs: '100%', sm: 'calc(50% - 8px)' },
-              maxWidth: { xs: '100%', sm: 'calc(50% - 8px)' },
-              flexShrink: 0
+              width: '100%'
             }}
           >
             <NewsCard
