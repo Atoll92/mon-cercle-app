@@ -11,14 +11,13 @@ import MembersDetailModal from '../components/MembersDetailModal';
 import MicroConclavWidget from '../components/MicroConclavWidget';
 import LatestNewsWidget from '../components/LatestNewsWidget';
 import LatestPostsWidget from '../components/LatestPostsWidget';
-import TestNotificationSystem from '../components/TestNotificationSystem';
 import EventDetailsDialog from '../components/EventDetailsDialog';
 import CreateEventDialog from '../components/CreateEventDialog';
 import { useFadeIn, useStaggeredAnimation, ANIMATION_DURATION } from '../hooks/useAnimation';
 import { ProfileSkeleton, GridSkeleton } from '../components/LoadingSkeleton';
 import OnboardingGuide from '../components/OnboardingGuide';
 import WelcomeMessage from '../components/WelcomeMessage';
-import { fetchNetworkDetails } from '../api/networks';
+import { fetchNetworkDetails, fetchNetworkMembers } from '../api/networks';
 import Spinner from '../components/Spinner';
 import { formatEventDate } from '../utils/dateFormatting';
 import { 
@@ -26,7 +25,25 @@ import {
   Star as StarIcon,
   HourglassEmpty as HourglassEmptyIcon,
   Add as AddIcon,
-  Preview as PreviewIcon
+  Preview as PreviewIcon,
+  Person as PersonIcon, 
+  Edit as EditIcon,
+  AdminPanelSettings as AdminIcon,
+  ArrowForward as ArrowForwardIcon,
+  Event as EventIcon,
+  Refresh as RefreshIcon,
+  NetworkWifi as NetworkIcon,
+  LocationOn as LocationOnIcon,
+  PersonAdd as PersonAddIcon,
+  WorkspacePremium as PremiumIcon,
+  Verified as VerifiedIcon,
+  Groups as GroupsIcon,
+  Business as BusinessIcon,
+  School as SchoolIcon,
+  AccessTime as AccessTimeIcon,
+  CheckCircle as CheckCircleIcon,
+  Cancel as CancelIcon,
+  Help as HelpIcon
 } from '@mui/icons-material';
 import { 
   Box, 
@@ -47,103 +64,257 @@ import {
   CardMedia,
   CardHeader
 } from '@mui/material';
-import { 
-  Person as PersonIcon, 
-  Edit as EditIcon,
-  AdminPanelSettings as AdminIcon,
-  ArrowForward as ArrowForwardIcon,
-  Event as EventIcon,
-  Refresh as RefreshIcon,
-  NetworkWifi as NetworkIcon,
-  LocationOn as LocationOnIcon,
-  PersonAdd as PersonAddIcon,
-  WorkspacePremium as PremiumIcon,
-  Verified as VerifiedIcon,
-  Groups as GroupsIcon,
-  Business as BusinessIcon,
-  School as SchoolIcon,
-  AccessTime as AccessTimeIcon,
-  CheckCircle as CheckCircleIcon,
-  Cancel as CancelIcon,
-  Help as HelpIcon
-} from '@mui/icons-material';
-import { fetchNetworkMembers } from '../api/networks';
-import { fetchNetworkCategories } from '../api/categories';
 
 // Subscription Badge Component
 const SubscriptionBadge = ({ plan, status }) => {
   const { t } = useTranslation();
-  // Only show badge for active subscriptions
-  if (status !== 'active' || !plan) {
-    return null;
-  }
+  if (status !== 'active' || !plan) return null;
   
-  // Helper function to determine icon and color based on plan
-  const getPlanDetails = (plan) => {
-    switch (plan) {
-      case 'community':
-        return {
-          label: t('dashboard.subscription.badge.community.label'),
-          icon: <GroupsIcon fontSize="small" />,
-          color: 'primary',
-          tooltip: t('dashboard.subscription.badge.community.tooltip')
-        };
-      case 'organization':
-        return {
-          label: t('dashboard.subscription.badge.organization.label'),
-          icon: <BusinessIcon fontSize="small" />,
-          color: 'primary',
-          tooltip: t('dashboard.subscription.badge.organization.tooltip')
-        };
-      case 'network':
-        return {
-          label: t('dashboard.subscription.badge.network.label'),
-          icon: <PremiumIcon fontSize="small" />,
-          color: 'secondary',
-          tooltip: t('dashboard.subscription.badge.network.tooltip')
-        };
-      case 'nonprofit':
-        return {
-          label: t('dashboard.subscription.badge.nonprofit.label'),
-          icon: <SchoolIcon fontSize="small" />,
-          color: 'success',
-          tooltip: t('dashboard.subscription.badge.nonprofit.tooltip')
-        };
-      case 'business':
-        return {
-          label: t('dashboard.subscription.badge.business.label'),
-          icon: <VerifiedIcon fontSize="small" />,
-          color: 'info',
-          tooltip: t('dashboard.subscription.badge.business.tooltip')
-        };
-      default:
-        return {
-          label: t('dashboard.subscription.badge.premium.label'),
-          icon: <VerifiedIcon fontSize="small" />,
-          color: 'primary',
-          tooltip: t('dashboard.subscription.badge.premium.tooltip')
-        };
-    }
-  };
-
-  const planDetails = getPlanDetails(plan);
+  const planDetails = {
+    community: { icon: <GroupsIcon fontSize="small" />, color: 'primary' },
+    organization: { icon: <BusinessIcon fontSize="small" />, color: 'primary' },
+    network: { icon: <PremiumIcon fontSize="small" />, color: 'secondary' },
+    nonprofit: { icon: <SchoolIcon fontSize="small" />, color: 'success' },
+    business: { icon: <VerifiedIcon fontSize="small" />, color: 'info' }
+  }[plan] || { icon: <VerifiedIcon fontSize="small" />, color: 'primary' };
 
   return (
-    <Tooltip title={planDetails.tooltip}>
+    <Tooltip title={t(`dashboard.subscription.badge.${plan}.tooltip`, t('dashboard.subscription.badge.premium.tooltip'))}>
       <Chip
         icon={planDetails.icon}
-        label={planDetails.label}
+        label={t(`dashboard.subscription.badge.${plan}.label`, t('dashboard.subscription.badge.premium.label'))}
         color={planDetails.color}
         size="small"
         variant="outlined"
-        sx={{
-          fontWeight: 500,
-          '& .MuiChip-icon': {
-            color: `${planDetails.color}.main`
-          }
-        }}
+        sx={{ fontWeight: 500, '& .MuiChip-icon': { color: `${planDetails.color}.main` } }}
       />
     </Tooltip>
+  );
+};
+
+// Subscription Status Card Component
+const SubscriptionStatusCard = ({ networkDetails, loadingNetworkDetails, profile, t }) => {
+  if (loadingNetworkDetails) {
+    return (
+      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+        <Spinner size={40} sx={{ mr: 1 }} />
+        <Typography variant="body2">{t('dashboard.network.loadingSubscription')}</Typography>
+      </Box>
+    );
+  }
+
+  const status = networkDetails?.subscription_status;
+  const isAdmin = profile?.role === 'admin';
+  
+  const statusConfig = {
+    trial: {
+      bgcolor: 'rgba(255, 193, 7, 0.05)',
+      color: 'warning.main',
+      chipIcon: <AccessTimeIcon fontSize="small" />,
+      chipColor: 'warning'
+    },
+    active: {
+      bgcolor: 'rgba(33, 150, 243, 0.05)',
+      color: 'primary.main',
+      chipIcon: <StarIcon fontSize="small" />,
+      chipColor: 'success'
+    },
+    canceled: {
+      bgcolor: 'rgba(255, 152, 0, 0.05)',
+      color: 'warning.main',
+      chipIcon: <HourglassEmptyIcon fontSize="small" />,
+      chipColor: 'warning'
+    },
+    free: {
+      bgcolor: 'transparent',
+      color: 'text.primary'
+    }
+  }[status] || statusConfig.free;
+
+  // Calculate trial days remaining
+  const getTrialDaysRemaining = () => {
+    if (!networkDetails?.trial_end_date) return null;
+    const now = new Date();
+    const trialEnd = new Date(networkDetails.trial_end_date);
+    const daysLeft = Math.max(0, Math.ceil((trialEnd.getTime() - now.getTime()) / (1000 * 3600 * 24)));
+    return daysLeft > 0 ? t('dashboard.subscription.trial.daysRemaining', { days: daysLeft }) : t('dashboard.subscription.trial.expired');
+  };
+
+  return (
+    <Card variant="outlined" sx={{ p: 1, borderRadius: 1, bgcolor: statusConfig.bgcolor, mb: 1 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Box>
+          <Typography variant="body2" color={statusConfig.color} fontWeight="medium">
+            {status === 'active' 
+              ? t('dashboard.subscription.active.planName', { plan: (networkDetails.subscription_plan || 'Organization').charAt(0).toUpperCase() + (networkDetails.subscription_plan || 'Organization').slice(1) })
+              : t(`dashboard.subscription.${status || 'free'}.title`)}
+          </Typography>
+          
+          <Typography variant="caption" color="text.secondary">
+            {status === 'trial' && networkDetails?.trial_end_date ? getTrialDaysRemaining() : t(`dashboard.subscription.${status || 'free'}.description`)}
+          </Typography>
+        </Box>
+        
+        {status !== 'free' && statusConfig.chipIcon && (
+          <Chip 
+            icon={statusConfig.chipIcon}
+            label={t(`dashboard.subscription.${status}.${status === 'active' ? 'premium' : status === 'canceled' ? 'endingSoon' : 'active'}`)} 
+            color={statusConfig.chipColor} 
+            size="small"
+            variant="outlined"
+          />
+        )}
+        {status === 'free' && (
+          <Chip label={t('dashboard.subscription.free.label')} variant="outlined" size="small" />
+        )}
+      </Box>
+      
+      {/* End date info */}
+      {(status === 'trial' && networkDetails?.trial_end_date) && (
+        <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.5 }}>
+          {t('dashboard.subscription.trial.endsOn', { date: new Date(networkDetails.trial_end_date).toLocaleDateString() })}
+        </Typography>
+      )}
+      {(status === 'active' && networkDetails?.subscription_end_date) && (
+        <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.5 }}>
+          {t('dashboard.subscription.active.nextBilling', { date: new Date(networkDetails.subscription_end_date).toLocaleDateString() })}
+        </Typography>
+      )}
+      {(status === 'canceled' && networkDetails?.subscription_end_date) && (
+        <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.5 }}>
+          {t('dashboard.subscription.canceled.accessUntil', { date: new Date(networkDetails.subscription_end_date).toLocaleDateString() })}
+        </Typography>
+      )}
+      
+      {/* Admin buttons */}
+      {isAdmin && (
+        <Box sx={{ mt: 1 }}>
+          {(status === 'trial' || status === 'free') && (
+            <Button 
+              variant="contained" 
+              color="primary" 
+              fullWidth
+              component={Link}
+              to="/pricing"
+              size="small"
+              startIcon={<StarIcon />}
+            >
+              {t(status === 'trial' ? 'dashboard.buttons.upgradeNow' : 'dashboard.buttons.upgradePlan')}
+            </Button>
+          )}
+          {status === 'active' && (
+            <Button 
+              variant="outlined" 
+              color="primary" 
+              fullWidth
+              component={Link}
+              to="/billing"
+              size="small"
+              startIcon={<AttachMoneyIcon />}
+            >
+              {t('dashboard.buttons.manageSubscription')}
+            </Button>
+          )}
+          {status === 'canceled' && (
+            <Box sx={{ display: 'flex', gap: 1 }}>
+              <Button 
+                variant="contained" 
+                color="primary" 
+                component={Link}
+                to="/pricing"
+                size="small"
+                fullWidth
+              >
+                {t('dashboard.buttons.renewPlan')}
+              </Button>
+              <Button 
+                variant="outlined" 
+                color="primary" 
+                component={Link}
+                to="/billing"
+                size="small"
+                fullWidth
+              >
+                {t('dashboard.buttons.billing')}
+              </Button>
+            </Box>
+          )}
+        </Box>
+      )}
+    </Card>
+  );
+};
+
+// Event Card Component - Reusable for both admin and non-admin
+const EventCard = ({ event, participationStatus, onViewDetails, t }) => {
+  const getParticipationIcon = (status) => {
+    switch (status) {
+      case 'attending': return <CheckCircleIcon fontSize="small" sx={{ color: 'success.main' }} />;
+      case 'not_attending': return <CancelIcon fontSize="small" sx={{ color: 'error.main' }} />;
+      case 'maybe': return <HelpIcon fontSize="small" sx={{ color: 'warning.main' }} />;
+      default: return null;
+    }
+  };
+  
+  return (
+    <Paper
+      variant="outlined"
+      sx={{ p: 1, borderRadius: 2, display: 'flex', alignItems: 'center', gap: 1.5, minHeight: 80 }}
+    >
+      <Box sx={{ 
+        width: 120, height: 80,
+        bgcolor: event.cover_image_url ? 'transparent' : 'primary.light',
+        borderRadius: 1, display: 'flex', flexDirection: 'column',
+        alignItems: 'center', justifyContent: 'center',
+        color: 'white', overflow: 'hidden', flexShrink: 0
+      }}>
+        {event.cover_image_url ? (
+          <img src={event.cover_image_url} alt={event.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        ) : (
+          <>
+            <Typography variant="body2" fontWeight="bold" sx={{ lineHeight: 1 }}>
+              {new Date(event.date).toLocaleDateString('en-US', { month: 'short' })}
+            </Typography>
+            <Typography variant="h5" fontWeight="bold" sx={{ lineHeight: 1 }}>
+              {new Date(event.date).getDate()}
+            </Typography>
+          </>
+        )}
+      </Box>
+      
+      <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+        <Typography variant="subtitle2" noWrap sx={{ mb: 0.5 }}>{event.title}</Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1, mb: 0.5 }}>
+          <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center' }}>
+            <EventIcon fontSize="inherit" sx={{ mr: 0.5 }} />
+            {formatEventDate(event.date)}
+          </Typography>
+          <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center' }}>
+            <LocationOnIcon fontSize="inherit" sx={{ mr: 0.5 }} />
+            {event.location}
+          </Typography>
+        </Box>
+        
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+          {participationStatus ? (
+            <>
+              {getParticipationIcon(participationStatus)}
+              <Typography variant="caption" color="text.secondary">
+                {t(`dashboard.events.participation.${participationStatus}`)}
+              </Typography>
+            </>
+          ) : (
+            <Typography variant="caption" color="text.secondary" sx={{ fontStyle: 'italic' }}>
+              {t('dashboard.events.participation.noResponse')}
+            </Typography>
+          )}
+        </Box>
+      </Box>
+      
+      <Button variant="outlined" size="small" onClick={onViewDetails} sx={{ flexShrink: 0, minWidth: 'auto', px: 1 }}>
+        {t('dashboard.buttons.view')}
+      </Button>
+    </Paper>
   );
 };
 
@@ -157,25 +328,19 @@ function DashboardPage() {
   const [networkMembers, setNetworkMembers] = useState([]);
   const [networkDetails, setNetworkDetails] = useState(null);
   const [loadingProfile, setLoadingProfile] = useState(true);
-  const [loadingMembers, setLoadingMembers] = useState(true);
   const [loadingNetworkDetails, setLoadingNetworkDetails] = useState(true);
+  const [loadingEvents, setLoadingEvents] = useState(true);
   const [error, setError] = useState(null);
   const [retryCount, setRetryCount] = useState(0);
   const [recentEvents, setRecentEvents] = useState([]);
-  const [loadingEvents, setLoadingEvents] = useState(true);
   const [eventParticipation, setEventParticipation] = useState({});
   
-  
-  // Member detail modal state
+  // Modal states
   const [selectedMember, setSelectedMember] = useState(null);
-  
-  // Event details dialog state
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [showEventDialog, setShowEventDialog] = useState(false);
   const [memberModalOpen, setMemberModalOpen] = useState(false);
   const [createEventOpen, setCreateEventOpen] = useState(false);
-  
-  // Onboarding guide state
   const [showOnboardingGuide, setShowOnboardingGuide] = useState(false);
   const [showWelcomeMessage, setShowWelcomeMessage] = useState(false);
 
@@ -191,12 +356,9 @@ function DashboardPage() {
       const fromInvite = searchParams.get('from_invite');
       
       if (fromInvite) {
-        console.log('Coming from invitation signup but no profiles found - showing error');
         setError(t('dashboard.errors.profileLoadFailed'));
         return;
       }
-      
-      console.log('User has no profiles, redirecting to create-network');
       navigate('/create-network', { replace: true });
     }
   }, [user, userProfiles, isLoadingProfiles, navigate, location.search]);
@@ -218,12 +380,6 @@ function DashboardPage() {
     );
     
     if (fromInvite === 'true') {
-      console.log('[Dashboard] User came from invitation', {
-        role: profile.role,
-        hasCompletedOnboarding,
-        profileComplete: !!(profile.full_name && profile.full_name.trim())
-      });
-      
       // Clean up the URL parameter after a delay
       setTimeout(() => {
         searchParams.delete('from_invite');
@@ -238,7 +394,6 @@ function DashboardPage() {
         const hasShownWelcome = localStorage.getItem(welcomeShownKey);
         
         if (!hasShownWelcome) {
-          console.log('[Dashboard] Regular member completed onboarding, showing welcome message');
           setTimeout(() => {
             setShowWelcomeMessage(true);
             localStorage.setItem(welcomeShownKey, 'true');
@@ -263,8 +418,6 @@ function DashboardPage() {
       const hasSeenGuide = localStorage.getItem(hasSeenGuideKey);
       
       if (!isOnboardingDismissed && !hasSeenGuide && !showOnboardingGuide) {
-        console.log('[Dashboard] Admin member detected, showing onboarding guide');
-        // Wait a bit for the page to fully load
         const timer = setTimeout(() => {
           setShowOnboardingGuide(true);
         }, 1500);
@@ -274,35 +427,8 @@ function DashboardPage() {
     }
   }, [profile, user, loadingProfile, showOnboardingGuide]);
 
-  console.log("Component render cycle. States:", { 
-    loadingProfile, 
-    loadingMembers,
-    loadingNetworkDetails,
-    hasProfile: !!profile, 
-    memberCount: networkMembers?.length,
-    hasNetworkDetails: !!networkDetails,
-    networkDetails: networkDetails,
-    userProfilesCount: userProfiles.length,
-    isLoadingProfiles
-  });
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (loadingProfile || loadingMembers || loadingNetworkDetails) {
-        console.log("Force-resetting loading states after timeout");
-        setLoadingProfile(false);
-        setLoadingMembers(false);
-        setLoadingNetworkDetails(false);
-      }
-    }, 5000);
-    
-    return () => clearTimeout(timer);
-  }, []);
 
-  // Force re-render when networkDetails changes
-  useEffect(() => {
-    console.log('Network details updated:', networkDetails);
-  }, [networkDetails]);
 
   useEffect(() => {
     // Fetch the user's profile data when the component mounts or user changes
@@ -313,13 +439,9 @@ function DashboardPage() {
       setError(null);
       
       try {
-        console.log('Using active profile from context:', activeProfile?.id);
         
         // If ProfileContext is still loading, wait
-        if (isLoadingProfiles) {
-          console.log('ProfileContext still loading, waiting...');
-          return;
-        }
+        if (isLoadingProfiles) return;
         
         // Use activeProfile from context
         const data = activeProfile;
@@ -331,9 +453,8 @@ function DashboardPage() {
           const fromInvite = params.get('from_invite');
           
           if (fromInvite && retryCount < 3) {
-            console.log(`Profile not found, retrying in 1 second (attempt ${retryCount + 1}/3)`);
             setRetryCount(prev => prev + 1);
-            setTimeout(() => fetchProfile(), 1000); // Retry after 1 second
+            setTimeout(() => fetchProfile(), 1000);
             return;
           }
           throw { message: t('dashboard.errors.noActiveProfile') };
@@ -369,74 +490,41 @@ function DashboardPage() {
           localStorage.getItem(flag) === 'true'
         );
         
-        console.log('Dashboard profile check:', {
-          fromProfileSetup,
-          fromInvite,
-          hasRecentJoinFlag,
-          hasCompletedOnboarding,
-          hasNetwork: !!data.network_id,
-          fullName: data.full_name,
-          profileId: data.id,
-          userId: user.id
-        });
         
         // If user just joined via invitation and hasn't completed onboarding, redirect them to complete profile
         if ((fromInvite || hasRecentJoinFlag) && data.network_id && !hasCompletedOnboarding) {
-          console.log('Redirecting invited member to profile edit page for onboarding');
           setProfile(data);
           setLoadingProfile(false);
-          
-          // Redirect to profile edit page with member onboarding wizard
-          setTimeout(() => {
-            navigate('/profile/edit?from_invite=true');
-          }, 1000);
+          setTimeout(() => navigate('/profile/edit?from_invite=true'), 1000);
           return;
         }
         
         // Check if profile is incomplete (for non-invited users)
         if (!data.full_name || data.full_name.trim() === '') {
-          console.log('Profile found but incomplete (non-invited user)');
-          
           // Check if user just joined (within last 5 minutes)
           const joinedAt = new Date(data.updated_at);
           const now = new Date();
           const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000);
           const justJoined = joinedAt > fiveMinutesAgo;
           
-          console.log('Non-invited profile completion check:', {
-            justJoined,
-            fromProfileSetup,
-            joinedAt: joinedAt.toISOString(),
-            now: now.toISOString(),
-            hasNetwork: !!data.network_id
-          });
-          
           // If user just joined or is coming back from profile setup, don't redirect
           if (justJoined || fromProfileSetup) {
-            console.log('User just joined or coming from profile setup, showing dashboard');
             setProfile(data);
             setLoadingProfile(false);
             
-            // Clear the flags after a delay to ensure everything is loaded properly
+            // Clear the flags after a delay
             setTimeout(() => {
               if (fromProfileSetup) {
                 urlParams.delete('from_profile_setup');
-              }
-              if (fromProfileSetup) {
                 const newUrl = `${window.location.pathname}${urlParams.toString() ? '?' + urlParams.toString() : ''}`;
                 window.history.replaceState({}, '', newUrl);
-                console.log('Cleaned up URL parameters after successful profile load');
               }
-            }, 2000); // Wait 2 seconds before cleaning up parameters
+            }, 2000);
           } else {
             // Otherwise redirect to regular profile edit
-            console.log('Redirecting to profile edit page');
             setProfile(data);
             setLoadingProfile(false);
-            
-            setTimeout(() => {
-              navigate('/profile/edit');
-            }, 1500);
+            setTimeout(() => navigate('/profile/edit'), 1500);
             return;
           }
         } else {
@@ -444,7 +532,6 @@ function DashboardPage() {
           setLoadingProfile(false);
         }
 
-        console.log('Profile loaded successfully:', data);
         setRetryCount(0); // Reset retry count on success
 
         // Once profile is fetched, fetch members of the same network
@@ -454,28 +541,18 @@ function DashboardPage() {
             // Handle both old array format and new paginated format
             const members = Array.isArray(response) ? response : response.members || [];
             setNetworkMembers(members);
-            setLoadingMembers(false);
           });
           
           // Fetch network details (for subscription info)
           setLoadingNetworkDetails(true);
           fetchNetworkDetails(data.network_id).then(details => {
-            console.log('Network details fetched:', details);
             setNetworkDetails(details);
             setLoadingNetworkDetails(false);
-          });
-          
-          // Fetch categories for the network
-          fetchNetworkCategories(data.network_id, true).then(response => {
-            if (response.data && !response.error) {
-              setCategories(response.data);
-            }
           });
           
           // Fetch upcoming events for the network
           fetchUpcomingEvents(data.network_id);
         } else {
-          setLoadingMembers(false);
           setLoadingEvents(false);
           setLoadingNetworkDetails(false);
         }
@@ -491,7 +568,6 @@ function DashboardPage() {
       fetchProfile();
     } else {
       setLoadingProfile(false);
-      setLoadingMembers(false);
       setLoadingEvents(false);
       setLoadingNetworkDetails(false);
     }
@@ -1001,216 +1077,12 @@ function DashboardPage() {
                           
                           {/* Subscription Status Card */}
                           <Box sx={{ mb: 2 }}>
-                            {loadingNetworkDetails ? (
-                              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                <Spinner size={40} sx={{ mr: 1 }} />
-                                <Typography variant="body2">{t('dashboard.network.loadingSubscription')}</Typography>
-                              </Box>
-                            ) : networkDetails?.subscription_status === 'trial' ? (
-                              <Card variant="outlined" sx={{ 
-                                p: 1, 
-                                borderRadius: 1, 
-                                bgcolor: 'rgba(255, 193, 7, 0.05)',
-                                mb: 1
-                              }}>
-                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                  <Box>
-                                    <Typography variant="body2" color="warning.main" fontWeight="medium">
-                                      {t('dashboard.subscription.trial.active')}
-                                    </Typography>
-                                    
-                                    <Typography variant="caption" color="text.secondary">
-                                      {networkDetails.trial_end_date && (() => {
-                                        const now = new Date();
-                                        const trialEnd = new Date(networkDetails.trial_end_date);
-                                        const daysLeft = Math.max(0, Math.ceil((trialEnd.getTime() - now.getTime()) / (1000 * 3600 * 24)));
-                                        return daysLeft > 0 ? t('dashboard.subscription.trial.daysRemaining', { days: daysLeft }) : t('dashboard.subscription.trial.expired');
-                                      })()}
-                                    </Typography>
-                                  </Box>
-                                  
-                                  <Chip 
-                                    icon={<AccessTimeIcon fontSize="small" />}
-                                    label={t('dashboard.subscription.trial.active')} 
-                                    color="warning" 
-                                    size="small"
-                                    variant="outlined"
-                                  />
-                                </Box>
-                                
-                                {networkDetails?.trial_end_date && (
-                                  <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.5 }}>
-                                    {t('dashboard.subscription.trial.endsOn', { date: new Date(networkDetails.trial_end_date).toLocaleDateString() })}
-                                  </Typography>
-                                )}
-
-                                {profile.role === 'admin' && (
-                                  <Button 
-                                    variant="contained" 
-                                    color="primary" 
-                                    fullWidth
-                                    component={Link}
-                                    to="/pricing"
-                                    size="small"
-                                    sx={{ mt: 1 }}
-                                    startIcon={<StarIcon />}
-                                  >
-                                    {t('dashboard.buttons.upgradeNow')}
-                                  </Button>
-                                )}
-                              </Card>
-                            ) : networkDetails?.subscription_status === 'active' ? (
-                              <Card variant="outlined" sx={{ 
-                                p: 1, 
-                                borderRadius: 1, 
-                                bgcolor: 'rgba(33, 150, 243, 0.05)',
-                                mb: 1
-                              }}>
-                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                  <Box>
-                                    <Typography variant="body2" color="primary.main" fontWeight="medium">
-                                      {t('dashboard.subscription.active.planName', { plan: (networkDetails.subscription_plan || 'Organization').charAt(0).toUpperCase() + (networkDetails.subscription_plan || 'Organization').slice(1) })}
-                                    </Typography>
-                                    
-                                    <Typography variant="caption" color="text.secondary">
-                                      {t('dashboard.subscription.active.description')}
-                                    </Typography>
-                                  </Box>
-                                  
-                                  <Chip 
-                                    icon={<StarIcon fontSize="small" />}
-                                    label={t('dashboard.subscription.active.premium')} 
-                                    color="success" 
-                                    size="small"
-                                    variant="outlined"
-                                  />
-                                </Box>
-                                
-                                {networkDetails?.subscription_end_date && (
-                                  <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.5 }}>
-                                    {t('dashboard.subscription.active.nextBilling', { date: new Date(networkDetails.subscription_end_date).toLocaleDateString() })}
-                                  </Typography>
-                                )}
-
-                                {profile.role === 'admin' && (
-                                  <Button 
-                                    variant="outlined" 
-                                    color="primary" 
-                                    fullWidth
-                                    component={Link}
-                                    to="/billing"
-                                    size="small"
-                                    sx={{ mt: 1 }}
-                                    startIcon={<AttachMoneyIcon />}
-                                  >
-                                    {t('dashboard.buttons.manageSubscription')}
-                                  </Button>
-                                )}
-                              </Card>
-                            ) : networkDetails?.subscription_status === 'canceled' ? (
-                              <Card variant="outlined" sx={{ 
-                                p: 1, 
-                                borderRadius: 1, 
-                                bgcolor: 'rgba(255, 152, 0, 0.05)',
-                                mb: 1
-                              }}>
-                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                  <Box>
-                                    <Typography variant="body2" color="warning.main" fontWeight="medium">
-                                      {t('dashboard.subscription.canceled.title')}
-                                    </Typography>
-                                    
-                                    <Typography variant="caption" color="text.secondary">
-                                      {t('dashboard.subscription.canceled.description')}
-                                    </Typography>
-                                  </Box>
-                                  
-                                  <Chip 
-                                    icon={<HourglassEmptyIcon fontSize="small" />}
-                                    label={t('dashboard.subscription.canceled.endingSoon')} 
-                                    color="warning" 
-                                    size="small"
-                                    variant="outlined"
-                                  />
-                                </Box>
-                                
-                                {networkDetails?.subscription_end_date && (
-                                  <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.5 }}>
-                                    {t('dashboard.subscription.canceled.accessUntil', { date: new Date(networkDetails.subscription_end_date).toLocaleDateString() })}
-                                  </Typography>
-                                )}
-
-                                {profile.role === 'admin' && (
-                                  <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
-                                    <Button 
-                                      variant="contained" 
-                                      color="primary" 
-                                      component={Link}
-                                      to="/pricing"
-                                      size="small"
-                                      fullWidth
-                                    >
-                                      {t('dashboard.buttons.renewPlan')}
-                                    </Button>
-                                    
-                                    <Button 
-                                      variant="outlined" 
-                                      color="primary" 
-                                      component={Link}
-                                      to="/billing"
-                                      size="small"
-                                      fullWidth
-                                    >
-                                      {t('dashboard.buttons.billing')}
-                                    </Button>
-                                  </Box>
-                                )}
-                              </Card>
-                            ) : (
-                              <Card variant="outlined" sx={{ 
-                                p: 1, 
-                                borderRadius: 1, 
-                                mb: 1
-                              }}>
-                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                  <Box>
-                                    <Typography variant="body2" fontWeight="medium">
-                                      {t('dashboard.subscription.free.title')}
-                                    </Typography>
-                                    
-                                    <Typography variant="caption" color="text.secondary">
-                                      {t('dashboard.subscription.free.description')}
-                                    </Typography>
-                                  </Box>
-                                  
-                                  <Chip 
-                                    label={t('dashboard.subscription.free.label')} 
-                                    variant="outlined"
-                                    size="small"
-                                  />
-                                </Box>
-                                
-                                <Box sx={{ mt: 1, display: 'flex', alignItems: 'center' }}>
-                                  <Typography variant="caption" color="text.secondary" sx={{ flexGrow: 1 }}>
-                                    {t('dashboard.subscription.free.limits')}
-                                  </Typography>
-                                </Box>
-                                
-                                {profile.role === 'admin' && (
-                                  <Button 
-                                    variant="contained" 
-                                    color="primary" 
-                                    fullWidth
-                                    component={Link}
-                                    to="/pricing"
-                                    sx={{ mt: 1 }}
-                                    startIcon={<StarIcon />}
-                                  >
-                                    {t('dashboard.buttons.upgradePlan')}
-                                  </Button>
-                                )}
-                              </Card>
-                            )}
+                            <SubscriptionStatusCard 
+                              networkDetails={networkDetails}
+                              loadingNetworkDetails={loadingNetworkDetails}
+                              profile={profile}
+                              t={t}
+                            />
                           </Box>
                           
                           {/* Network Stats */}
@@ -1316,115 +1188,18 @@ function DashboardPage() {
                         ) : (
                           <CardContent sx={{ py: 0.5, flexGrow: 1, overflow: 'auto' }}>
                             <Stack spacing={1}>
-                              {recentEvents.map(event => {
-                                const participationStatus = eventParticipation[event.id];
-                                const getParticipationIcon = (status) => {
-                                  switch (status) {
-                                    case 'attending':
-                                      return <CheckCircleIcon fontSize="small" sx={{ color: 'success.main' }} />;
-                                    case 'not_attending':
-                                      return <CancelIcon fontSize="small" sx={{ color: 'error.main' }} />;
-                                    case 'maybe':
-                                      return <HelpIcon fontSize="small" sx={{ color: 'warning.main' }} />;
-                                    default:
-                                      return null;
-                                  }
-                                };
-                                
-                                return (
-                                  <Paper
-                                    key={event.id}
-                                    variant="outlined"
-                                    sx={{ 
-                                      p: 1, 
-                                      borderRadius: 2,
-                                      display: 'flex',
-                                      alignItems: 'center',
-                                      gap: 1.5,
-                                      minHeight: 80
-                                    }}
-                                  >
-                                    <Box sx={{ 
-                                      width: 120, // 3x larger than original 40px
-                                      height: 80,  // Landscape aspect ratio
-                                      bgcolor: event.cover_image_url ? 'transparent' : 'primary.light',
-                                      borderRadius: 1,
-                                      display: 'flex',
-                                      flexDirection: 'column',
-                                      alignItems: 'center',
-                                      justifyContent: 'center',
-                                      color: 'white',
-                                      overflow: 'hidden',
-                                      flexShrink: 0
-                                    }}>
-                                      {event.cover_image_url ? (
-                                        <img 
-                                          src={event.cover_image_url} 
-                                          alt={event.title}
-                                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                        />
-                                      ) : (
-                                        <>
-                                          <Typography variant="body2" fontWeight="bold" sx={{ lineHeight: 1 }}>
-                                            {new Date(event.date).toLocaleDateString('en-US', { month: 'short' })}
-                                          </Typography>
-                                          <Typography variant="h5" fontWeight="bold" sx={{ lineHeight: 1 }}>
-                                            {new Date(event.date).getDate()}
-                                          </Typography>
-                                        </>
-                                      )}
-                                    </Box>
-                                    
-                                    <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-                                      <Typography variant="subtitle2" noWrap sx={{ mb: 0.5 }}>
-                                        {event.title}
-                                      </Typography>
-                                      
-                                      <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1, mb: 0.5 }}>
-                                        <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center' }}>
-                                          <EventIcon fontSize="inherit" sx={{ mr: 0.5 }} />
-                                          {formatEventDate(event.date)}
-                                        </Typography>
-                                        
-                                        <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center' }}>
-                                          <LocationOnIcon fontSize="inherit" sx={{ mr: 0.5 }} />
-                                          {event.location}
-                                        </Typography>
-                                      </Box>
-                                      
-                                      {/* Participation Status */}
-                                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                        {participationStatus ? (
-                                          <>
-                                            {getParticipationIcon(participationStatus)}
-                                            <Typography variant="caption" color="text.secondary">
-                                              {participationStatus === 'attending' ? t('dashboard.events.participation.attending') :
-                                               participationStatus === 'not_attending' ? t('dashboard.events.participation.notAttending') :
-                                               participationStatus === 'maybe' ? t('dashboard.events.participation.maybe') : ''}
-                                            </Typography>
-                                          </>
-                                        ) : (
-                                          <Typography variant="caption" color="text.secondary" sx={{ fontStyle: 'italic' }}>
-                                            {t('dashboard.events.participation.noResponse')}
-                                          </Typography>
-                                        )}
-                                      </Box>
-                                    </Box>
-                                    
-                                    <Button
-                                      variant="outlined"
-                                      size="small"
-                                      onClick={() => {
-                                        setSelectedEvent(event);
-                                        setShowEventDialog(true);
-                                      }}
-                                      sx={{ flexShrink: 0, minWidth: 'auto', px: 1 }}
-                                    >
-                                      {t('dashboard.buttons.view')}
-                                    </Button>
-                                  </Paper>
-                                );
-                              })}
+                              {recentEvents.map(event => (
+                                <EventCard 
+                                  key={event.id}
+                                  event={event}
+                                  participationStatus={eventParticipation[event.id]}
+                                  onViewDetails={() => {
+                                    setSelectedEvent(event);
+                                    setShowEventDialog(true);
+                                  }}
+                                  t={t}
+                                />
+                              ))}
                             </Stack>
                           </CardContent>
                         )}
@@ -1524,115 +1299,18 @@ function DashboardPage() {
                       ) : (
                         <CardContent sx={{ py: 0.5, flexGrow: 1, overflow: 'auto' }}>
                           <Stack spacing={1}>
-                            {recentEvents.map(event => {
-                              const participationStatus = eventParticipation[event.id];
-                              const getParticipationIcon = (status) => {
-                                switch (status) {
-                                  case 'attending':
-                                    return <CheckCircleIcon fontSize="small" sx={{ color: 'success.main' }} />;
-                                  case 'not_attending':
-                                    return <CancelIcon fontSize="small" sx={{ color: 'error.main' }} />;
-                                  case 'maybe':
-                                    return <HelpIcon fontSize="small" sx={{ color: 'warning.main' }} />;
-                                  default:
-                                    return null;
-                                }
-                              };
-                              
-                              return (
-                                <Paper
-                                  key={event.id}
-                                  variant="outlined"
-                                  sx={{ 
-                                    p: 1, 
-                                    borderRadius: 2,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: 1.5,
-                                    minHeight: 80
-                                  }}
-                                >
-                                  <Box sx={{ 
-                                    width: 120,
-                                    height: 80,
-                                    bgcolor: event.cover_image_url ? 'transparent' : 'primary.light',
-                                    borderRadius: 1,
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    color: 'white',
-                                    overflow: 'hidden',
-                                    flexShrink: 0
-                                  }}>
-                                    {event.cover_image_url ? (
-                                      <img 
-                                        src={event.cover_image_url} 
-                                        alt={event.title}
-                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                      />
-                                    ) : (
-                                      <>
-                                        <Typography variant="body2" fontWeight="bold" sx={{ lineHeight: 1 }}>
-                                          {new Date(event.date).toLocaleDateString('en-US', { month: 'short' })}
-                                        </Typography>
-                                        <Typography variant="h5" fontWeight="bold" sx={{ lineHeight: 1 }}>
-                                          {new Date(event.date).getDate()}
-                                        </Typography>
-                                      </>
-                                    )}
-                                  </Box>
-                                  
-                                  <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-                                    <Typography variant="subtitle2" noWrap sx={{ mb: 0.5 }}>
-                                      {event.title}
-                                    </Typography>
-                                    
-                                    <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1, mb: 0.5 }}>
-                                      <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center' }}>
-                                        <EventIcon fontSize="inherit" sx={{ mr: 0.5 }} />
-                                        {formatEventDate(event.date)}
-                                      </Typography>
-                                      
-                                      <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center' }}>
-                                        <LocationOnIcon fontSize="inherit" sx={{ mr: 0.5 }} />
-                                        {event.location}
-                                      </Typography>
-                                    </Box>
-                                    
-                                    {/* Participation Status */}
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                      {participationStatus ? (
-                                        <>
-                                          {getParticipationIcon(participationStatus)}
-                                          <Typography variant="caption" color="text.secondary">
-                                            {participationStatus === 'attending' ? t('dashboard.events.participation.attending') :
-                                             participationStatus === 'not_attending' ? t('dashboard.events.participation.notAttending') :
-                                             participationStatus === 'maybe' ? t('dashboard.events.participation.maybe') : ''}
-                                          </Typography>
-                                        </>
-                                      ) : (
-                                        <Typography variant="caption" color="text.secondary" sx={{ fontStyle: 'italic' }}>
-                                          {t('dashboard.events.participation.noResponse')}
-                                        </Typography>
-                                      )}
-                                    </Box>
-                                  </Box>
-                                  
-                                  <Button
-                                    variant="outlined"
-                                    size="small"
-                                    onClick={() => {
-                                      setSelectedEvent(event);
-                                      setShowEventDialog(true);
-                                    }}
-                                    sx={{ flexShrink: 0, minWidth: 'auto', px: 1 }}
-                                  >
-                                    {t('dashboard.buttons.view')}
-                                  </Button>
-                                </Paper>
-                              );
-                            })}
+                            {recentEvents.map(event => (
+                              <EventCard 
+                                key={event.id}
+                                event={event}
+                                participationStatus={eventParticipation[event.id]}
+                                onViewDetails={() => {
+                                  setSelectedEvent(event);
+                                  setShowEventDialog(true);
+                                }}
+                                t={t}
+                              />
+                            ))}
                           </Stack>
                           </CardContent>
                         )}
@@ -1714,10 +1392,6 @@ function DashboardPage() {
                 <MicroConclavWidget />
               </Box>
 
-          {/* Test Notification System (temporary) */}
-          {process.env.NODE_ENV === 'development' && (
-            <TestNotificationSystem />
-          )}
         </Box>
       ) : (
         <Paper 
