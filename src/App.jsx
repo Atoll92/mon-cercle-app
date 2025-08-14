@@ -166,8 +166,10 @@ function App() {
              window.location.pathname !== "/profiles/select" && 
              window.location.pathname !== "/login" && 
              !window.location.pathname.startsWith("/micro-conclav/") &&
+             window.location.pathname !== "/network" &&
              window.location.pathname !== "/network-floating" &&
              window.location.pathname !== "/network-alt" &&
+             !window.location.pathname.match(/^\/network\/[^\/]+$/) &&
              !window.location.pathname.match(/^\/network-alt\/[^\/]+$/) && (
               <NetworkHeader/>
             )}
