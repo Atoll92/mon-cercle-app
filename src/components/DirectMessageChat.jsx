@@ -28,13 +28,15 @@ import {
   AudioFile as AudioFileIcon,
   Videocam as VideocamIcon,
   Audiotrack as AudiotrackIcon,
-  PictureAsPdf as PictureAsPdfIcon
+  PictureAsPdf as PictureAsPdfIcon,
+  EmojiEmotions as EmojiEmotionsIcon
 } from '@mui/icons-material';
 import MediaPlayer from './MediaPlayer';
 import ImageViewerModal from './ImageViewerModal';
 import LinkPreview from './LinkPreview';
 import MediaUpload from './MediaUpload';
 import MemberDetailsModal from './MembersDetailModal';
+import EmojiPicker from 'emoji-picker-react';
 
 function DirectMessageChat({ conversationId, partner, onBack }) {
   const { user } = useAuth();
@@ -53,6 +55,7 @@ function DirectMessageChat({ conversationId, partner, onBack }) {
   const [showMemberDetailsModal, setShowMemberDetailsModal] = useState(false);
   const [expandedMedia, setExpandedMedia] = useState({});
   const [pendingMedia, setPendingMedia] = useState(null);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const messagesEndRef = useRef(null);
   const messageContainerRef = useRef(null);
   const channelRef = useRef(null);
@@ -277,8 +280,42 @@ if (refreshConversations) {
       }, 50);
     }
   }, [conversationId, loading, messages.length]);
+
+  // Close emoji picker and media upload when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showEmojiPicker && !event.target.closest('[data-emoji-picker]')) {
+        setShowEmojiPicker(false);
+      }
+      if (showMediaUpload && !event.target.closest('[data-media-upload]')) {
+        setShowMediaUpload(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showEmojiPicker, showMediaUpload]);
   
   
+  // Handle emoji selection
+  const handleEmojiClick = (emojiData) => {
+    const emoji = emojiData.emoji;
+    const cursorPos = textFieldRef.current?.selectionStart || newMessage.length;
+    const textBefore = newMessage.substring(0, cursorPos);
+    const textAfter = newMessage.substring(cursorPos);
+    const newText = textBefore + emoji + textAfter;
+    
+    setNewMessage(newText);
+    setShowEmojiPicker(false);
+    
+    // Focus back to text field and set cursor position after emoji
+    setTimeout(() => {
+      textFieldRef.current?.focus();
+      const newCursorPos = cursorPos + emoji.length;
+      textFieldRef.current?.setSelectionRange(newCursorPos, newCursorPos);
+    }, 0);
+  };
+
   const handleSendMessage = async (e, mediaData = null) => {
     if (e) e.preventDefault();
     
@@ -1351,6 +1388,15 @@ if (refreshConversations) {
             <AttachFileIcon />
           </IconButton>
           
+          {/* Emoji picker button */}
+          <IconButton
+            color="primary"
+            onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+            sx={{ mr: 1 }}
+          >
+            <EmojiEmotionsIcon />
+          </IconButton>
+          
           <TextField
             inputRef={textFieldRef}
             fullWidth
@@ -1390,6 +1436,7 @@ if (refreshConversations) {
       {/* Media upload dialog */}
       {showMediaUpload && (
         <Paper 
+          data-media-upload
           sx={{ 
             position: 'absolute', 
             bottom: 80, 
@@ -1426,6 +1473,41 @@ if (refreshConversations) {
         imageUrl={selectedImage.url}
         title={selectedImage.title}
       />
+
+      {/* Emoji picker dialog */}
+      {showEmojiPicker && (
+        <Paper 
+          data-emoji-picker
+          sx={{ 
+            position: 'absolute', 
+            bottom: 80, 
+            right: 16, 
+            p: 1,
+            bgcolor: 'background.paper',
+            boxShadow: 3,
+            borderRadius: 2,
+            zIndex: 10
+          }}
+        >
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1, px: 1 }}>
+            <Typography variant="subtitle2">Choose Emoji</Typography>
+            <IconButton size="small" onClick={() => setShowEmojiPicker(false)}>
+              <CancelIcon />
+            </IconButton>
+          </Box>
+          <EmojiPicker
+            onEmojiClick={handleEmojiClick}
+            theme="auto"
+            width={300}
+            height={400}
+            searchDisabled={false}
+            skinTonesDisabled={false}
+            previewConfig={{
+              showPreview: false
+            }}
+          />
+        </Paper>
+      )}
 
       {/* Member Details Modal */}
       {partner && (
