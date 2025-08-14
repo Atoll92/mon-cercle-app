@@ -4,7 +4,7 @@
       "settings": "Paramètres du réseau",
       "members": "Gestion des membres",
       "categories": "Catégories de contenu",
-      "news": "Gestion des actualités",
+      "news": "Gestion des annonces",
       "events": "Gestion des événements",
       "polls": "Gestion des sondages",
       "theme": "Thème et image de marque",
@@ -140,8 +140,8 @@
           "description": "Créer et gérer des événements"
         },
         "news": {
-          "label": "Actualités et annonces",
-          "description": "Partager actualités et mises à jour"
+          "label": "Annonces",
+          "description": "Partager annonces et mises à jour"
         },
         "files": {
           "label": "Partage de fichiers",
@@ -169,7 +169,7 @@
         }
       },
       "tabs": {
-        "news": "Actualités",
+        "news": "Annonces",
         "members": "Membres",
         "events": "Événements",
         "chat": "Chat",
@@ -371,8 +371,8 @@
       "description": "Sélectionnez les fonctionnalités que vous souhaitez activer pour votre réseau :",
       "events": "Événements",
       "eventsDesc": "Créer et gérer des événements pour votre réseau",
-      "news": "Actualités et annonces",
-      "newsDesc": "Partager des actualités, mises à jour et annonces",
+      "news": "Annonces",
+      "newsDesc": "Partager des annonces et mises à jour",
       "files": "Partage de fichiers",
       "filesDesc": "Partager des fichiers et documents avec vos membres",
       "chat": "Chat de groupe",
@@ -403,7 +403,7 @@
         "enabledTabs": "Onglets activés (Glisser pour réorganiser)",
         "availableTabs": "Onglets disponibles (Cliquer pour activer)",
         "tabs": {
-          "news": "Actualités",
+          "news": "Annonces",
           "members": "Membres",
           "events": "Événements",
           "chat": "Chat",
@@ -605,7 +605,7 @@
     },
     "widgets": {
       "latestPosts": "Dernières publications",
-      "latestNews": "Dernières actualités",
+      "latestAnnouncements": "Dernières annonces",
       "myMicroConclav": "Mon Micro Conclav"
     },
     "events": {
@@ -620,7 +620,7 @@
     "comment": "Commenter",
     "viewPost": "Voir la publication",
     "tabs": {
-      "news": "Actualités",
+      "news": "Annonces",
       "members": "Membres",
       "events": "Événements",
       "chat": "Chat",
@@ -765,28 +765,28 @@
   },
   "newsTab": {
     "fillRequiredFields": "Veuillez remplir au moins le titre et le contenu",
-    "createNewsFailed": "Échec de la création de l'article d'actualité",
-    "newsPublished": "Article d'actualité publié avec succès !",
-    "publishFailed": "Échec de la publication de l'article d'actualité",
-    "confirmDelete": "Êtes-vous sûr de vouloir supprimer cet article ?",
-    "newsDeleted": "Article d'actualité supprimé avec succès !",
-    "deleteFailed": "Échec de la suppression de l'article",
-    "createNews": "Créer une actualité",
-    "manageNews": "Gérer les actualités",
-    "postTitle": "Titre de l'article",
+    "createAnnouncementFailed": "Échec de la création de l'annonce",
+    "announcementPublished": "Annonce publiée avec succès !",
+    "publishFailed": "Échec de la publication de l'annonce",
+    "confirmDelete": "Êtes-vous sûr de vouloir supprimer cette annonce ?",
+    "announcementDeleted": "Annonce supprimée avec succès !",
+    "deleteFailed": "Échec de la suppression de l'annonce",
+    "createAnnouncement": "Créer une annonce",
+    "manageAnnouncements": "Gérer les annonces",
+    "announcementTitle": "Titre de l'annonce",
     "category": "Catégorie",
     "none": "Aucune",
     "featuredMedia": "Média en vedette (optionnel)",
     "imageCaption": "Légende de l'image (optionnel)",
-    "publishNews": "Publier l'actualité",
+    "publishAnnouncement": "Publier l'annonce",
     "clear": "Effacer",
     "cancel": "Annuler",
     "activePolls": "Sondages actifs",
-    "newsUpdates": "Actualités et mises à jour",
+    "newsUpdates": "Annonces et mises à jour",
     "filterByCategory": "Filtrer par catégorie",
     "allCategories": "Toutes les catégories",
-    "noNewsPosts": "Aucun article d'actualité disponible",
-    "createFirstPost": "Créer le premier article d'actualité",
+    "noAnnouncements": "Aucune annonce disponible",
+    "createFirstPost": "Créer la première annonce",
     "postedBy": "Publié par",
     "delete": "Supprimer"
   },
@@ -879,7 +879,7 @@
     "allCategories": "Toutes les catégories",
     "noActivity": "Aucune activité à afficher encore.",
     "post": "Post",
-    "news": "Actualités",
+    "news": "Annonces",
     "showLess": "Afficher moins",
     "readMore": "Lire plus",
     "viewPdf": "Voir le PDF",

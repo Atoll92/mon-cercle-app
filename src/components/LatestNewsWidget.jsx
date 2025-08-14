@@ -14,15 +14,15 @@ import {
   Button
 } from '@mui/material';
 import {
-  Article as NewsIcon,
+  Campaign as AnnouncementIcon,
   Add as AddIcon
 } from '@mui/icons-material';
 import { supabase } from '../supabaseclient';
 
-const LatestNewsWidget = ({ networkId, onMemberClick, darkMode = false }) => {
+const LatestAnnouncementsWidget = ({ networkId, onMemberClick, darkMode = false }) => {
   const { t } = useTranslation();
   const [isAdmin, setIsAdmin] = useState(false);
-  const [createNewsModalOpen, setCreateNewsModalOpen] = useState(false);
+  const [createAnnouncementModalOpen, setCreateAnnouncementModalOpen] = useState(false);
   const { activeProfile } = useProfile();
 
   // Check if user is network admin
@@ -36,7 +36,7 @@ const LatestNewsWidget = ({ networkId, onMemberClick, darkMode = false }) => {
     checkAdminStatus();
   }, [activeProfile?.id, networkId]);
 
-  const { data: latestNews, loading, error, refetch } = useSupabaseQuery(
+  const { data: latestAnnouncements, loading, error, refetch } = useSupabaseQuery(
     () => supabase
       .from('network_news')
       .select(`
@@ -62,9 +62,9 @@ const LatestNewsWidget = ({ networkId, onMemberClick, darkMode = false }) => {
     { enabled: !!networkId }
   );
 
-  const handleNewsCreated = (newPost) => {
-    setCreateNewsModalOpen(false);
-    // Refresh the news list
+  const handleAnnouncementCreated = (newPost) => {
+    setCreateAnnouncementModalOpen(false);
+    // Refresh the announcements list
     refetch();
   };
 
@@ -76,14 +76,14 @@ const LatestNewsWidget = ({ networkId, onMemberClick, darkMode = false }) => {
   if (error) {
     return (
       <WidgetErrorState 
-        icon={<NewsIcon color="primary" />}
-        title={t('dashboard.widgets.latestNews')}
+        icon={<AnnouncementIcon color="primary" />}
+        title={t('dashboard.widgets.latestAnnouncements')}
         error={error}
       />
     );
   }
 
-  if (!latestNews || latestNews.length === 0) {
+  if (!latestAnnouncements || latestAnnouncements.length === 0) {
     return (
       <Box sx={{ 
         width: '100%',
@@ -98,17 +98,17 @@ const LatestNewsWidget = ({ networkId, onMemberClick, darkMode = false }) => {
         overflow: 'hidden'
       }}>
         <WidgetHeader
-          icon={<NewsIcon color="primary" />}
-          title={t('dashboard.widgets.latestNews')}
+          icon={<AnnouncementIcon color="primary" />}
+          title={t('dashboard.widgets.latestAnnouncements')}
           action={
             isAdmin && (
               <Button
                 variant="contained"
                 size="small"
-                onClick={() => setCreateNewsModalOpen(true)}
+                onClick={() => setCreateAnnouncementModalOpen(true)}
                 startIcon={<AddIcon />}
               >
-                Create News
+                Create Announcement
               </Button>
             )
           }
@@ -116,17 +116,17 @@ const LatestNewsWidget = ({ networkId, onMemberClick, darkMode = false }) => {
         
         <Box sx={{ flex: 1, p: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <WidgetEmptyState
-            emptyIcon={<NewsIcon />}
-            emptyMessage="No news posts yet"
-            emptySubMessage={isAdmin ? "Create the first news post for your network!" : "Check back later for updates from your network."}
+            emptyIcon={<AnnouncementIcon />}
+            emptyMessage="No announcements yet"
+            emptySubMessage={isAdmin ? "Create the first announcement for your network!" : "Check back later for updates from your network."}
           />
         </Box>
         
         <CreateNewsModal
-          open={createNewsModalOpen}
-          onClose={() => setCreateNewsModalOpen(false)}
+          open={createAnnouncementModalOpen}
+          onClose={() => setCreateAnnouncementModalOpen(false)}
           networkId={networkId}
-          onNewsCreated={handleNewsCreated}
+          onNewsCreated={handleAnnouncementCreated}
         />
       </Box>
     );
@@ -146,18 +146,18 @@ const LatestNewsWidget = ({ networkId, onMemberClick, darkMode = false }) => {
       overflow: 'hidden'
     }}>
       <WidgetHeader
-        icon={<NewsIcon color="primary" />}
-        title={t('dashboard.widgets.latestNews')}
+        icon={<AnnouncementIcon color="primary" />}
+        title={t('dashboard.widgets.latestAnnouncements')}
         viewAllLink={`/network/${networkId}?tab=news`}
         action={
           isAdmin && (
             <Button
               variant="contained"
               size="small"
-              onClick={() => setCreateNewsModalOpen(true)}
+              onClick={() => setCreateAnnouncementModalOpen(true)}
               startIcon={<AddIcon />}
             >
-              Create News
+              Create Announcement
             </Button>
           )
         }
@@ -170,7 +170,7 @@ const LatestNewsWidget = ({ networkId, onMemberClick, darkMode = false }) => {
         flexDirection: 'column',
         gap: 2
       }}>
-        {latestNews.map((news) => (
+        {latestAnnouncements.map((news) => (
           <Box
             key={news.id}
             sx={{
@@ -187,13 +187,13 @@ const LatestNewsWidget = ({ networkId, onMemberClick, darkMode = false }) => {
       </Box>
       
       <CreateNewsModal
-        open={createNewsModalOpen}
-        onClose={() => setCreateNewsModalOpen(false)}
+        open={createAnnouncementModalOpen}
+        onClose={() => setCreateAnnouncementModalOpen(false)}
         networkId={networkId}
-        onNewsCreated={handleNewsCreated}
+        onNewsCreated={handleAnnouncementCreated}
       />
     </Box>
   );
 };
 
-export default LatestNewsWidget;
+export default LatestAnnouncementsWidget;

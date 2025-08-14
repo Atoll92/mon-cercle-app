@@ -31,10 +31,10 @@ import MediaUpload from './MediaUpload';
 import { useProfile } from '../context/profileContext';
 import { useTheme } from './ThemeProvider';
 
-const CreateNewsModal = ({ open, onClose, networkId, onNewsCreated }) => {
+const CreateAnnouncementModal = ({ open, onClose, networkId, onNewsCreated }) => {
   const { activeProfile } = useProfile();
   const { darkMode } = useTheme();
-  const [newsTitle, setNewsTitle] = useState('');
+  const [announcementTitle, setAnnouncementTitle] = useState('');
   const [imageCaption, setImageCaption] = useState('');
   const [imagePreview, setImagePreview] = useState(null);
   const [mediaUrl, setMediaUrl] = useState(null);
@@ -47,7 +47,7 @@ const CreateNewsModal = ({ open, onClose, networkId, onNewsCreated }) => {
 
   const editor = useEditor({
     extensions: [StarterKit],
-    content: '<p>Start writing your news post...</p>',
+    content: '<p>Start writing your announcement...</p>',
   });
 
   // Load categories when modal opens
@@ -66,7 +66,7 @@ const CreateNewsModal = ({ open, onClose, networkId, onNewsCreated }) => {
   // Reset form when modal closes
   useEffect(() => {
     if (!open) {
-      setNewsTitle('');
+      setAnnouncementTitle('');
       setImageCaption('');
       setImagePreview(null);
       setMediaUrl(null);
@@ -97,7 +97,7 @@ const CreateNewsModal = ({ open, onClose, networkId, onNewsCreated }) => {
   };
 
   const handleSubmit = async () => {
-    if (!newsTitle.trim() || !editor) {
+    if (!announcementTitle.trim() || !editor) {
       setError('Please fill in both title and content');
       return;
     }
@@ -112,7 +112,7 @@ const CreateNewsModal = ({ open, onClose, networkId, onNewsCreated }) => {
       const result = await createNewsPost(
         networkId,
         activeProfile.id,
-        newsTitle,
+        announcementTitle,
         content,
         imageUrl,
         imageCaption,
@@ -129,7 +129,7 @@ const CreateNewsModal = ({ open, onClose, networkId, onNewsCreated }) => {
         setError(result.message);
       }
     } catch (error) {
-      setError('Failed to publish news post: ' + error.message);
+      setError('Failed to publish announcement: ' + error.message);
     } finally {
       setSubmitting(false);
     }
@@ -148,7 +148,7 @@ const CreateNewsModal = ({ open, onClose, networkId, onNewsCreated }) => {
       }}
     >
       <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Typography variant="h6">Create News Post</Typography>
+        <Typography variant="h6">Create Announcement</Typography>
         <IconButton onClick={onClose} size="small">
           <CloseIcon />
         </IconButton>
@@ -163,9 +163,9 @@ const CreateNewsModal = ({ open, onClose, networkId, onNewsCreated }) => {
 
         <TextField
           fullWidth
-          label="Post Title"
-          value={newsTitle}
-          onChange={(e) => setNewsTitle(e.target.value)}
+          label="Announcement Title"
+          value={announcementTitle}
+          onChange={(e) => setAnnouncementTitle(e.target.value)}
           sx={{ mb: 2 }}
           autoFocus
         />
@@ -234,7 +234,7 @@ const CreateNewsModal = ({ open, onClose, networkId, onNewsCreated }) => {
               onUpload={handleMediaUpload}
               allowedTypes={['IMAGE', 'VIDEO', 'AUDIO', 'PDF']}
               bucket="networks"
-              path={`news/${networkId}`}
+              path={`announcements/${networkId}`}
               maxFiles={1}
               showPreview={false}
               autoUpload={true}
@@ -292,13 +292,13 @@ const CreateNewsModal = ({ open, onClose, networkId, onNewsCreated }) => {
           variant="contained"
           onClick={handleSubmit}
           startIcon={<SaveIcon />}
-          disabled={submitting || !newsTitle.trim()}
+          disabled={submitting || !announcementTitle.trim()}
         >
-          {submitting ? 'Publishing...' : 'Publish News'}
+          {submitting ? 'Publishing...' : 'Publish Announcement'}
         </Button>
       </DialogActions>
     </Dialog>
   );
 };
 
-export default CreateNewsModal;
+export default CreateAnnouncementModal;

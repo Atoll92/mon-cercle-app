@@ -26,7 +26,7 @@ import {
   ArrowForward as ArrowForwardIcon
 } from '@mui/icons-material';
 
-const NewsCard = ({ news, networkId, onMemberClick }) => {
+const AnnouncementCard = ({ news, networkId, onMemberClick }) => {
   const { t } = useTranslation();
   const theme = useTheme();
   const [imageViewerOpen, setImageViewerOpen] = useState(false);
@@ -252,4 +252,4 @@ const NewsCard = ({ news, networkId, onMemberClick }) => {
   );
 };
 
-export default NewsCard;
+export default AnnouncementCard;

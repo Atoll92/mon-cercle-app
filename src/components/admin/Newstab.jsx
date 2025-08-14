@@ -25,7 +25,7 @@ import {
   Add as AddIcon,
   Image as ImageIcon,
   Visibility as VisibilityIcon,
-  Article as ArticleIcon
+  Campaign as AnnouncementIcon
 } from '@mui/icons-material';
 import CreateNewsDialog from '../CreateNewsDialog';
 import { deleteNewsPost } from '../../api/networks';
@@ -36,7 +36,7 @@ const NewsTab = ({ networkId, userId, newsPosts, setNewsPosts, members, darkMode
   const navigate = useNavigate();
   const [openDialog, setOpenDialog] = useState(false);
   const [dialogMode, setDialogMode] = useState('create');
-  const [selectedNews, setSelectedNews] = useState(null);
+  const [selectedAnnouncement, setSelectedAnnouncement] = useState(null);
   const [error, setError] = useState(null);
   const [message, setMessage] = useState('');
   const [orderBy, setOrderBy] = useState('date');
@@ -60,11 +60,11 @@ const NewsTab = ({ networkId, userId, newsPosts, setNewsPosts, members, darkMode
     setOrderBy(property);
   };
 
-  const handleViewNews = (newsId) => {
-    navigate(`/network/${networkId}/news/${newsId}`);
+  const handleViewAnnouncement = (announcementId) => {
+    navigate(`/network/${networkId}/news/${announcementId}`);
   };
 
-  const sortedNews = useMemo(() => {
+  const sortedAnnouncements = useMemo(() => {
     return [...newsPosts].sort((a, b) => {
       let aValue, bValue;
       
@@ -95,26 +95,26 @@ const NewsTab = ({ networkId, userId, newsPosts, setNewsPosts, members, darkMode
     });
   }, [newsPosts, order, orderBy, members]);
 
-  const handleOpenDialog = (mode, news = null) => {
+  const handleOpenDialog = (mode, announcement = null) => {
     setDialogMode(mode);
-    setSelectedNews(news);
+    setSelectedAnnouncement(announcement);
     setOpenDialog(true);
   };
 
   const handleDelete = async (newsId) => {
-    if (!confirm('Are you sure you want to delete this news?')) return;
+    if (!confirm('Are you sure you want to delete this announcement?')) return;
     
     try {
       const result = await deleteNewsPost(newsId);
       
       if (result.success) {
         setNewsPosts(newsPosts.filter(p => p.id !== newsId));
-        setMessage('News deleted successfully');
+        setMessage('Announcement deleted successfully');
       } else {
         setError(result.message);
       }
     } catch (err) {
-      setError(`Failed to delete news: ${err.message}`);
+      setError(`Failed to delete announcement: ${err.message}`);
     }
   };
 
@@ -145,18 +145,18 @@ const NewsTab = ({ networkId, userId, newsPosts, setNewsPosts, members, darkMode
       )}
       
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h5">Network News</Typography>
+        <Typography variant="h5">Network Announcements</Typography>
         <Button
           variant="contained"
           startIcon={<AddIcon />}
           onClick={() => handleOpenDialog('create')}
         >
-          New News
+          New Announcement
         </Button>
       </Box>
 
       <TableContainer component={Paper} sx={{ mt: 2, overflowX: 'auto' }}>
-        <Table size="small" aria-label="news table" sx={{ minWidth: 650 }}>
+        <Table size="small" aria-label="announcements table" sx={{ minWidth: 650 }}>
           <TableHead>
             <TableRow>
               <TableCell padding="checkbox" sx={{ width: 60 }}>Image</TableCell>
@@ -192,7 +192,7 @@ const NewsTab = ({ networkId, userId, newsPosts, setNewsPosts, members, darkMode
             </TableRow>
           </TableHead>
           <TableBody>
-            {sortedNews.map((post) => (
+            {sortedAnnouncements.map((post) => (
               <TableRow
                 key={post.id}
                 sx={{ 
@@ -220,7 +220,7 @@ const NewsTab = ({ networkId, userId, newsPosts, setNewsPosts, members, darkMode
                         bgcolor: darkMode ? 'grey.800' : 'grey.200' 
                       }}
                     >
-                      <ArticleIcon color="action" />
+                      <AnnouncementIcon color="action" />
                     </Avatar>
                   ) : (
                     <Avatar
@@ -279,16 +279,16 @@ const NewsTab = ({ networkId, userId, newsPosts, setNewsPosts, members, darkMode
                 </TableCell>
                 <TableCell align="right">
                   <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'flex-end' }}>
-                    <Tooltip title="View news">
+                    <Tooltip title="View announcement">
                       <IconButton 
                         size="small" 
-                        onClick={() => handleViewNews(post.id)}
+                        onClick={() => handleViewAnnouncement(post.id)}
                         sx={{ padding: 0.5 }}
                       >
                         <VisibilityIcon fontSize="small" />
                       </IconButton>
                     </Tooltip>
-                    <Tooltip title="Edit news">
+                    <Tooltip title="Edit announcement">
                       <IconButton 
                         size="small" 
                         onClick={() => handleOpenDialog('edit', post)}
@@ -297,7 +297,7 @@ const NewsTab = ({ networkId, userId, newsPosts, setNewsPosts, members, darkMode
                         <EditIcon fontSize="small" />
                       </IconButton>
                     </Tooltip>
-                    <Tooltip title="Delete news">
+                    <Tooltip title="Delete announcement">
                       <IconButton 
                         size="small" 
                         onClick={() => handleDelete(post.id)}
@@ -323,15 +323,15 @@ const NewsTab = ({ networkId, userId, newsPosts, setNewsPosts, members, darkMode
         }}
         networkId={networkId}
         profileId={userId}
-        editingNews={dialogMode === 'edit' ? selectedNews : null}
+        editingNews={dialogMode === 'edit' ? selectedAnnouncement : null}
         onNewsCreated={(newNews) => {
           setNewsPosts([newNews, ...newsPosts]);
-          setMessage('News created successfully!');
+          setMessage('Announcement created successfully!');
           setOpenDialog(false);
         }}
         onNewsUpdated={(updatedNews) => {
           setNewsPosts(newsPosts.map(n => n.id === updatedNews.id ? updatedNews : n));
-          setMessage('News updated successfully!');
+          setMessage('Announcement updated successfully!');
           setOpenDialog(false);
         }}
         darkMode={darkMode}

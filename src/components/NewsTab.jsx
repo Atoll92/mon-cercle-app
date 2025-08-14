@@ -44,7 +44,7 @@ import {
   Cancel as CancelIcon,
   Visibility as VisibilityIcon,
   Poll as PollIcon,
-  Article as ArticleIcon
+  Campaign as AnnouncementIcon
 } from '@mui/icons-material';
 import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
@@ -56,18 +56,18 @@ import MediaUpload from './MediaUpload';
 import MediaPlayer from './MediaPlayer';
 import ImageViewerModal from './ImageViewerModal';
 
-// Enhanced News Tab component with image upload support and admin editing
+// Enhanced Announcements Tab component with image upload support and admin editing
 const NewsTab = ({ darkMode }) => {
   const { t } = useTranslation();
   const { user } = useAuth();
   const { activeProfile } = useProfile();
   const { network, news: networkNews, members: networkMembers, refreshNews, isAdmin } = useNetwork();
   
-  // Debug: Log the news data to see what we're getting
+  // Debug: Log the announcements data to see what we're getting
   useEffect(() => {
-    console.log('NetworkNews data:', networkNews);
+    console.log('Network announcements data:', networkNews);
     if (networkNews && networkNews.length > 0) {
-      console.log('First news item:', networkNews[0]);
+      console.log('First announcement:', networkNews[0]);
       console.log('Media fields:', {
         media_url: networkNews[0].media_url,
         media_type: networkNews[0].media_type,
@@ -76,10 +76,10 @@ const NewsTab = ({ darkMode }) => {
     }
   }, [networkNews]);
   
-  // State for editing/creating news
+  // State for editing/creating announcements
   const [isCreating, setIsCreating] = useState(false);
   const [editingPost, setEditingPost] = useState(null);
-  const [newsTitle, setNewsTitle] = useState('');
+  const [announcementTitle, setAnnouncementTitle] = useState('');
   const [imageFile, setImageFile] = useState(null);
   const [imageCaption, setImageCaption] = useState('');
   const [mediaUrl, setMediaUrl] = useState(null);
@@ -146,12 +146,12 @@ const NewsTab = ({ darkMode }) => {
   // TipTap editor instance
   const editor = useEditor({
     extensions: [StarterKit],
-    content: '<p>Start writing your news post...</p>',
+    content: '<p>Start writing your announcement...</p>',
   });
 
   // Reset all form fields
   const resetForm = () => {
-    setNewsTitle('');
+    setAnnouncementTitle('');
     setImageFile(null);
     setImageCaption('');
     setMediaUrl(null);
@@ -177,7 +177,7 @@ const NewsTab = ({ darkMode }) => {
   };
 
   // Upload image to Supabase Storage
-  const uploadNewsImage = async (networkId, file) => {
+  const uploadAnnouncementImage = async (networkId, file) => {
     try {
       if (!file) return null;
       
@@ -188,7 +188,7 @@ const NewsTab = ({ darkMode }) => {
         .replace(/[^a-zA-Z0-9.-]/g, "_"); // Replace special chars
       
       // Create a unique path for the image
-      const filePath = `news/${networkId}/${Date.now()}_${filename}`;
+      const filePath = `announcements/${networkId}/${Date.now()}_${filename}`;
       
       // Upload the file
       const { error: uploadError } = await supabase.storage
@@ -207,14 +207,14 @@ const NewsTab = ({ darkMode }) => {
       
       return publicUrl;
     } catch (error) {
-      console.error('Error uploading news image:', error);
+      console.error('Error uploading announcement image:', error);
       throw error;
     }
   };
 
-  // Handle news post submission
-  const handleNewsSubmit = async () => {
-    if (!newsTitle.trim() || !editor) {
+  // Handle announcement submission
+  const handleAnnouncementSubmit = async () => {
+    if (!announcementTitle.trim() || !editor) {
       setError(t('newsTab.fillRequiredFields'));
       return;
     }
@@ -229,14 +229,14 @@ const NewsTab = ({ darkMode }) => {
       
       // Upload image if one is selected
       if (imageFile) {
-        imageUrl = await uploadNewsImage(network.id, imageFile);
+        imageUrl = await uploadAnnouncementImage(network.id, imageFile);
       }
       
-      // Create news post using API function (includes notification queueing)
+      // Create announcement using API function (includes notification queueing)
       const result = await createNewsPost(
         network.id,
         activeProfile?.id || user.id,
-        newsTitle,
+        announcementTitle,
         content,
         imageUrl,
         imageCaption,
@@ -247,28 +247,28 @@ const NewsTab = ({ darkMode }) => {
       );
       
       if (!result.success) {
-        throw new Error(result.error || t('newsTab.createNewsFailed'));
+        throw new Error(result.error || t('newsTab.createAnnouncementFailed'));
       }
       
-      console.log('📰 News post created successfully:', result);
+      console.log('📢 Announcement created successfully:', result);
       
       // Update UI and clean up
       resetForm();
       setIsCreating(false);
-      setMessage(t('newsTab.newsPublished'));
+      setMessage(t('newsTab.announcementPublished'));
       
-      // Refresh news from context
+      // Refresh announcements from context
       refreshNews();
     } catch (error) {
-      console.error('Error creating news post:', error);
+      console.error('Error creating announcement:', error);
       setError(t('newsTab.publishFailed') + ': ' + error.message);
     } finally {
       setUpdating(false);
     }
   };
   
-  // Handle post deletion
-  const handleDeleteNews = async (postId) => {
+  // Handle announcement deletion
+  const handleDeleteAnnouncement = async (postId) => {
     if (!confirm(t('newsTab.confirmDelete'))) return;
     
     setError(null);
@@ -282,12 +282,12 @@ const NewsTab = ({ darkMode }) => {
       
       if (error) throw error;
       
-      setMessage(t('newsTab.newsDeleted'));
+      setMessage(t('newsTab.announcementDeleted'));
       
-      // Refresh news from context
+      // Refresh announcements from context
       refreshNews();
     } catch (error) {
-      console.error('Error deleting news post:', error);
+      console.error('Error deleting announcement:', error);
       setError(t('newsTab.deleteFailed') + ': ' + error.message);
     }
   };
@@ -329,17 +329,17 @@ const NewsTab = ({ darkMode }) => {
     }
   };
 
-  // News post creation form
-  const renderNewsForm = () => (
+  // Announcement creation form
+  const renderAnnouncementForm = () => (
     <Card sx={{ p: 3, mb: 3, bgcolor: darkMode ? 'background.paper' : undefined }}>
       <Typography variant="h5" gutterBottom>
-        {t('newsTab.createNews')}
+        {t('newsTab.createAnnouncement')}
       </Typography>
       <TextField
         fullWidth
-        label={t('newsTab.postTitle')}
-        value={newsTitle}
-        onChange={(e) => setNewsTitle(e.target.value)}
+        label={t('newsTab.announcementTitle')}
+        value={announcementTitle}
+        onChange={(e) => setAnnouncementTitle(e.target.value)}
         sx={{ mb: 2 }}
       />
       
@@ -395,7 +395,7 @@ const NewsTab = ({ darkMode }) => {
                   cursor: 'pointer',
                   transition: 'opacity 0.2s'
                 }}
-                onClick={() => handleImageClick(mediaUrl, newsTitle || 'Preview')}
+                onClick={() => handleImageClick(mediaUrl, announcementTitle || 'Preview')}
                 onMouseEnter={(e) => e.target.style.opacity = '0.9'}
                 onMouseLeave={(e) => e.target.style.opacity = '1'}
               />
@@ -403,7 +403,7 @@ const NewsTab = ({ darkMode }) => {
               <MediaPlayer
                 src={mediaUrl}
                 type={mediaType === 'video' ? 'video' : mediaType === 'pdf' ? 'pdf' : 'audio'}
-                title={newsTitle || 'Media preview'}
+                title={announcementTitle || 'Media preview'}
                 thumbnail={mediaMetadata?.thumbnail}
                 fileName={mediaMetadata?.fileName}
                 fileSize={mediaMetadata?.fileSize}
@@ -432,7 +432,7 @@ const NewsTab = ({ darkMode }) => {
           onUpload={handleMediaUpload}
           allowedTypes={['IMAGE', 'VIDEO', 'AUDIO', 'PDF']}
           bucket="networks"
-          path={`news/${network?.id}`}
+          path={`announcements/${network?.id}`}
           maxFiles={1}
           showPreview={false}
           autoUpload={true}
@@ -471,11 +471,11 @@ const NewsTab = ({ darkMode }) => {
       <Box sx={{ display: 'flex', gap: 2 }}>
         <Button
           variant="contained"
-          onClick={handleNewsSubmit}
+          onClick={handleAnnouncementSubmit}
           startIcon={updating ? <Spinner size={40} /> : <SaveIcon />}
           disabled={updating}
         >
-          {t('newsTab.publishNews')}
+          {t('newsTab.publishAnnouncement')}
         </Button>
         <Button
           variant="outlined"
@@ -511,7 +511,7 @@ const NewsTab = ({ darkMode }) => {
         </Alert>
       )}
       
-      {isCreating && renderNewsForm()}
+      {isCreating && renderAnnouncementForm()}
       
       {/* Active Polls Section */}
       {!loadingPolls && activePolls.length > 0 && (
@@ -571,11 +571,11 @@ const NewsTab = ({ darkMode }) => {
             <Button
               component={Link}
               to="/admin?tab=news"
-              startIcon={<ArticleIcon />}
+              startIcon={<AnnouncementIcon />}
               color="primary"
               variant="contained"
             >
-              {t('newsTab.manageNews')}
+              {t('newsTab.manageAnnouncements')}
             </Button>
           )}
         </Box>
@@ -594,7 +594,7 @@ const NewsTab = ({ darkMode }) => {
       ) : networkNews.length === 0 ? (
         <Box sx={{ textAlign: 'center', py: 4 }}>
           <Typography variant="body1" color="text.secondary">
-            {t('newsTab.noNewsPosts')}
+            {t('newsTab.noAnnouncements')}
           </Typography>
           {isAdmin && (
             <Button 
@@ -602,10 +602,10 @@ const NewsTab = ({ darkMode }) => {
               to="/admin?tab=news"
               variant="outlined" 
               color="primary"
-              startIcon={<ArticleIcon />}
+              startIcon={<AnnouncementIcon />}
               sx={{ mt: 2 }}
             >
-              {t('newsTab.manageNews')}
+              {t('newsTab.manageAnnouncements')}
             </Button>
           )}
         </Box>
@@ -781,7 +781,7 @@ const NewsTab = ({ darkMode }) => {
                 <Button 
                   size="small" 
                   color="error"
-                  onClick={() => handleDeleteNews(post.id)}
+                  onClick={() => handleDeleteAnnouncement(post.id)}
                   startIcon={<DeleteIcon />}
                 >
                   {t('newsTab.delete')}
