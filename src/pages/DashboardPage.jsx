@@ -250,7 +250,7 @@ const EventCard = ({ event, participationStatus, onViewDetails, t }) => {
   const getParticipationIcon = (status) => {
     switch (status) {
       case 'attending': return <CheckCircleIcon fontSize="small" sx={{ color: 'success.main' }} />;
-      case 'not_attending': return <CancelIcon fontSize="small" sx={{ color: 'error.main' }} />;
+      case 'declined': return <CancelIcon fontSize="small" sx={{ color: 'error.main' }} />;
       case 'maybe': return <HelpIcon fontSize="small" sx={{ color: 'warning.main' }} />;
       default: return null;
     }
@@ -300,7 +300,7 @@ const EventCard = ({ event, participationStatus, onViewDetails, t }) => {
             <>
               {getParticipationIcon(participationStatus)}
               <Typography variant="caption" color="text.secondary">
-                {t(`dashboard.events.participation.${participationStatus}`)}
+                {t(`dashboard.events.participation.${participationStatus === 'declined' ? 'notAttending' : participationStatus}`)}
               </Typography>
             </>
           ) : (
@@ -614,6 +614,14 @@ function DashboardPage() {
     } finally {
       setLoadingEvents(false);
     }
+  };
+
+  // Handle participation status change
+  const handleParticipationChange = (eventId, newStatus) => {
+    setEventParticipation(prev => ({
+      ...prev,
+      [eventId]: newStatus
+    }));
   };
 
   const handleRefresh = () => {
@@ -1435,6 +1443,7 @@ function DashboardPage() {
         }}
         event={selectedEvent}
         user={user}
+        onParticipationChange={handleParticipationChange}
       />
       
       {/* Onboarding Guide */}
