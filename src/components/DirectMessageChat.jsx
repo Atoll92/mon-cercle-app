@@ -46,7 +46,7 @@ function DirectMessageChat({ conversationId, partner, onBack }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [partnerStatus, setPartnerStatus] = useState('offline');
-  const [sending, setSending] = useState(false);
+  const [sendingMessages, setSendingMessages] = useState(new Set()); // Track multiple sending messages
   const [imageViewerOpen, setImageViewerOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState({ url: '', title: '' });
   const [showMediaUpload, setShowMediaUpload] = useState(false);
@@ -59,7 +59,7 @@ function DirectMessageChat({ conversationId, partner, onBack }) {
   const fetchingRef = useRef(false);
   const lastFetchedConversationId = useRef(null);
   const textFieldRef = useRef(null);
-  const shouldRefocusRef = useRef(false);
+  const pendingMessagesRef = useRef(new Map()); // Track pending messages for better matching
   
   // URL regex pattern to detect links in messages
   const URL_REGEX = /(https?:\/\/)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/gi;
@@ -113,12 +113,36 @@ function DirectMessageChat({ conversationId, partner, onBack }) {
               return prevMessages;
             }
             
-            // Filter out any pending versions of this message
-            const filteredMessages = prevMessages.filter(msg => 
-              !(msg.pending && msg.sender_id === payload.new.sender_id && msg.content === payload.new.content)
-            );
+            // If this is from the current user, try to find and remove the corresponding pending message
+            if (payload.new.sender_id === activeProfile?.id) {
+              // Find the oldest pending message with matching content from this sender
+              const pendingIndex = prevMessages.findIndex(msg => 
+                msg.pending && 
+                msg.sender_id === payload.new.sender_id && 
+                msg.content === payload.new.content
+              );
+              
+              if (pendingIndex !== -1) {
+                // Remove the pending message and add the real one
+                const filteredMessages = [...prevMessages];
+                const removedPending = filteredMessages.splice(pendingIndex, 1)[0];
+                
+                // Clean up the pending message tracking
+                if (removedPending && removedPending.id) {
+                  pendingMessagesRef.current.delete(removedPending.id);
+                  setSendingMessages(prev => {
+                    const newSet = new Set(prev);
+                    newSet.delete(removedPending.id);
+                    return newSet;
+                  });
+                }
+                
+                return [...filteredMessages, messageWithSender];
+              }
+            }
             
-            return [...filteredMessages, messageWithSender];
+            // Just add the new message if no pending message was found
+            return [...prevMessages, messageWithSender];
           });
           
           // Only update unread count if the message is from the other user
@@ -142,7 +166,16 @@ function DirectMessageChat({ conversationId, partner, onBack }) {
       supabase.removeChannel(channel);
       channelRef.current = null;
     };
-  }, [conversationId, user?.id, markConversationAsRead, updateConversationWithMessage, ]);
+  }, [conversationId, user?.id, markConversationAsRead, updateConversationWithMessage, activeProfile?.id]);
+  
+  // Clean up pending messages when conversation changes
+  useEffect(() => {
+    return () => {
+      // Clear pending messages when switching conversations
+      pendingMessagesRef.current.clear();
+      setSendingMessages(new Set());
+    };
+  }, [conversationId]);
   
   // Fetch messages when conversation changes
   useEffect(() => {
@@ -245,18 +278,6 @@ if (refreshConversations) {
     }
   }, [conversationId, loading, messages.length]);
   
-  // Focus the input field when sending is complete
-  useEffect(() => {
-    if (!sending && shouldRefocusRef.current && textFieldRef.current) {
-      // Small delay to ensure the TextField is enabled
-      setTimeout(() => {
-        if (textFieldRef.current) {
-          textFieldRef.current.focus();
-        }
-        shouldRefocusRef.current = false;
-      }, 50);
-    }
-  }, [sending]);
   
   const handleSendMessage = async (e, mediaData = null) => {
     if (e) e.preventDefault();
@@ -266,17 +287,24 @@ if (refreshConversations) {
     
     // Allow sending if there's text or media
     if (!newMessage.trim() && !media) return;
-    if (!conversationId || !user?.id || sending) return;
+    if (!conversationId || !user?.id) return;
     
     const messageContent = newMessage.trim();
+    const messageId = `pending-${Date.now()}-${Math.random()}`;
+    
+    // Clear input immediately and maintain focus
     setNewMessage('');
     setPendingMedia(null);
-    setSending(true);
-    shouldRefocusRef.current = true;
+    if (textFieldRef.current) {
+      textFieldRef.current.focus();
+    }
+    
+    // Track this specific message as sending
+    setSendingMessages(prev => new Set(prev).add(messageId));
 
     // Create a pending message for immediate display
     const pendingMsg = {
-      id: `pending-${Date.now()}`,
+      id: messageId,
       conversation_id: conversationId,
       sender_id: activeProfile?.id || user.id,
       content: messageContent,
@@ -303,13 +331,19 @@ if (refreshConversations) {
     // Add to UI immediately
     setMessages(prev => [...prev, pendingMsg]);
     
+    // Track this pending message
+    pendingMessagesRef.current.set(messageId, {
+      content: messageContent,
+      timestamp: Date.now()
+    });
+    
     try {
       // Use active profile ID for sender
       if (!activeProfile) {
         throw new Error('No active profile selected');
       }
       
-      const { data: messageData, error } = await sendDirectMessage(
+      const { error } = await sendDirectMessage(
         conversationId,
         activeProfile.id,
         messageContent,
@@ -318,18 +352,43 @@ if (refreshConversations) {
       
       if (error) throw error;
       
-      // Notification is now handled automatically at the API level in sendDirectMessage
       // The real message will be added via the subscription
-      // We just leave the pending message for now - it will be replaced
+      // Set a timeout to clean up the pending message if it doesn't arrive
+      setTimeout(() => {
+        // If the pending message is still there after 5 seconds, remove it
+        setMessages(prev => {
+          const stillPending = prev.find(m => m.id === messageId);
+          if (stillPending && stillPending.pending) {
+            console.log('Cleaning up stuck pending message:', messageId);
+            pendingMessagesRef.current.delete(messageId);
+            setSendingMessages(prevSending => {
+              const newSet = new Set(prevSending);
+              newSet.delete(messageId);
+              return newSet;
+            });
+            // Remove the pending flag but keep the message visible
+            return prev.map(m => 
+              m.id === messageId ? { ...m, pending: false } : m
+            );
+          }
+          return prev;
+        });
+      }, 5000);
+      
     } catch (err) {
       console.error('Error sending message:', err);
       // Remove the pending message if there was an error
       setMessages(prev => prev.filter(m => m.id !== pendingMsg.id));
+      pendingMessagesRef.current.delete(messageId);
       // Re-populate the input field so the user doesn't lose their message
       setNewMessage(messageContent);
       if (media) setPendingMedia(media);
-    } finally {
-      setSending(false);
+      // Remove from sending set
+      setSendingMessages(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(messageId);
+        return newSet;
+      });
     }
   };
   
@@ -390,12 +449,6 @@ if (refreshConversations) {
     setPendingMedia(mediaData);
   };
   
-  // Check if content contains URL
-  const containsUrl = (content) => {
-    if (!content) return false;
-    URL_REGEX.lastIndex = 0;
-    return URL_REGEX.test(content);
-  };
   
   // Render enhanced media with all features from Chat component
   const renderMedia = (mediaUrl, mediaType, metadata, messageId) => {
@@ -1308,7 +1361,6 @@ if (refreshConversations) {
             onChange={(e) => setNewMessage(e.target.value)}
             autoComplete="off"
             autoFocus
-            disabled={sending}
             onKeyDown={(e) => {
               if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
