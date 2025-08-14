@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, Fragment } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../supabaseclient';
 import { useAuth } from '../context/authcontext';
 import { useProfile } from '../context/profileContext';
 import { fetchNetworkMembers, sendChatMessage, getUserProfile } from '../api/networks';
-import { formatTime } from '../utils/dateFormatting';
+import { formatTime, formatDate } from '../utils/dateFormatting';
 import {
   Box,
   List,
@@ -432,6 +432,38 @@ const Chat = ({ networkId, isFullscreen = false, backgroundImageUrl }) => {
       const newCursorPos = cursorPos + emoji.length;
       textFieldRef.current?.setSelectionRange(newCursorPos, newCursorPos);
     }, 0);
+  };
+  
+  // Format date for date headers
+  const formatMessageDate = (timestamp) => {
+    if (!timestamp) return '';
+    
+    const date = new Date(timestamp);
+    const today = new Date();
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    
+    if (date.toDateString() === today.toDateString()) {
+      return 'Today';
+    } else if (date.toDateString() === yesterday.toDateString()) {
+      return 'Yesterday';
+    } else {
+      return formatDate(timestamp, { 
+        weekday: 'long', 
+        month: 'long', 
+        day: 'numeric'
+      });
+    }
+  };
+  
+  // Check if we need to show a date header
+  const shouldShowDateHeader = (messageDate, index) => {
+    if (index === 0) return true;
+    
+    const prevMessageDate = new Date(messages[index - 1].created_at).toDateString();
+    const currentMessageDate = new Date(messageDate).toDateString();
+    
+    return prevMessageDate !== currentMessageDate;
   };
 
   // Close emoji picker when clicking outside
@@ -1358,12 +1390,37 @@ const renderMessageContent = (message) => {
             </Typography>
           </Box>
         ) : (
-          messages.map(message => {
+          messages.map((message, index) => {
             const containsLink = containsUrl(message.content);
+            const showDateHeader = shouldShowDateHeader(message.created_at, index);
             
             return (
-              <ListItem 
-                key={message.id}
+              <Fragment key={message.id}>
+                {showDateHeader && (
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'center',
+                      my: 2,
+                    }}
+                  >
+                    <Chip
+                      label={formatMessageDate(message.created_at)}
+                      size="small"
+                      sx={{ 
+                        bgcolor: darkMode 
+                          ? 'rgba(255, 255, 255, 0.08)' 
+                          : 'rgba(0, 0, 0, 0.08)', 
+                        color: darkMode 
+                          ? 'rgba(255, 255, 255, 0.7)' 
+                          : 'text.secondary',
+                        fontWeight: 500,
+                        fontSize: '0.7rem'
+                      }}
+                    />
+                  </Box>
+                )}
+                <ListItem
                 sx={{
                   opacity: message.pending ? 0.7 : 1,
                   backgroundColor: darkMode
@@ -1587,6 +1644,7 @@ const renderMessageContent = (message) => {
                   </IconButton>
                 )}
               </ListItem>
+              </Fragment>
             );
           })
         )}
