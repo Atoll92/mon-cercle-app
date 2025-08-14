@@ -333,14 +333,45 @@ export const sendDirectMessage = async (conversationId, senderId, content, media
  */
 export const markMessagesAsRead = async (conversationId, userId) => {
   try {
-    const { error } = await supabase
+    // First, get the message IDs that will be marked as read
+    const { data: messagesToMarkRead, error: fetchError } = await supabase
       .from('direct_messages')
-      .update({ read_at: new Date().toISOString() })
+      .select('id')
       .eq('conversation_id', conversationId)
       .neq('sender_id', userId)
       .is('read_at', null);
+    
+    if (fetchError) throw fetchError;
+    
+    // If there are messages to mark as read
+    if (messagesToMarkRead && messagesToMarkRead.length > 0) {
+      const messageIds = messagesToMarkRead.map(msg => msg.id);
       
-    if (error) throw error;
+      // Mark messages as read
+      const { error: updateError } = await supabase
+        .from('direct_messages')
+        .update({ read_at: new Date().toISOString() })
+        .in('id', messageIds);
+        
+      if (updateError) throw updateError;
+      
+      // Remove any pending notifications for these messages from the queue
+      // Notifications reference the message ID in the related_item_id field
+      const { error: deleteNotificationError } = await supabase
+        .from('notification_queue')
+        .delete()
+        .eq('notification_type', 'direct_message')
+        .eq('recipient_id', userId)
+        .in('related_item_id', messageIds)
+        .eq('is_sent', false); // Only delete unsent notifications
+      
+      if (deleteNotificationError) {
+        console.warn('Warning: Failed to remove notifications from queue:', deleteNotificationError);
+        // Don't throw - this is not critical to the main operation
+      } else {
+        console.log(`Removed pending notifications for ${messageIds.length} read messages`);
+      }
+    }
     
     return { success: true, error: null };
   } catch (error) {

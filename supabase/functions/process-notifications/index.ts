@@ -38,6 +38,7 @@ Deno.serve(async (req) => {
         content_preview,
         related_item_id,
         metadata,
+        created_at,
         profiles!notification_queue_recipient_id_fkey (
           contact_email,
           full_name
@@ -98,42 +99,60 @@ Deno.serve(async (req) => {
       try {
         const { recipient, network, type, notifications: groupNotifications } = group
         
-        // For direct messages, group multiple messages together
-        if (type === 'direct_message' && groupNotifications.length > 1) {
-          // Group messages by sender
-          const messagesBySender = new Map()
+        // For direct messages, check if we should wait for more messages
+        if (type === 'direct_message') {
+          // Check if all messages are recent (less than 5 minutes old)
+          const now = new Date()
+          const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000)
           
-          for (const notif of groupNotifications) {
-            let senderName = 'Someone'
-            let senderId = null
+          const hasOldMessage = groupNotifications.some(notif => {
+            const createdAt = new Date(notif.created_at)
+            return createdAt < fiveMinutesAgo
+          })
+          
+          // If no message is older than 5 minutes, skip this group for now
+          // They will be processed in the next run when they're old enough
+          if (!hasOldMessage) {
+            console.log(`Skipping direct message group ${groupKey} - all messages are less than 5 minutes old`)
+            continue
+          }
+          
+          // Process messages that are ready to be sent
+          if (groupNotifications.length > 1) {
+            // Group messages by sender
+            const messagesBySender = new Map()
             
-            if (notif.metadata) {
-              try {
-                const metadata = JSON.parse(notif.metadata)
-                senderName = metadata.senderName || 'Someone'
-                senderId = metadata.senderId || null
-              } catch (e) {
-                console.warn('Failed to parse metadata:', e)
+            for (const notif of groupNotifications) {
+              let senderName = 'Someone'
+              let senderId = null
+              
+              if (notif.metadata) {
+                try {
+                  const metadata = JSON.parse(notif.metadata)
+                  senderName = metadata.senderName || 'Someone'
+                  senderId = metadata.senderId || null
+                } catch (e) {
+                  console.warn('Failed to parse metadata:', e)
+                }
               }
-            }
-            
-            const senderKey = senderId || senderName
-            if (!messagesBySender.has(senderKey)) {
-              messagesBySender.set(senderKey, {
-                senderName,
-                messages: []
+              
+              const senderKey = senderId || senderName
+              if (!messagesBySender.has(senderKey)) {
+                messagesBySender.set(senderKey, {
+                  senderName,
+                  messages: []
+                })
+              }
+              
+              messagesBySender.get(senderKey).messages.push({
+                id: notif.id,
+                content: notif.content_preview,
+                relatedItemId: notif.related_item_id
               })
             }
             
-            messagesBySender.get(senderKey).messages.push({
-              id: notif.id,
-              content: notif.content_preview,
-              relatedItemId: notif.related_item_id
-            })
-          }
-          
-          // Send one email per sender with all their messages
-          for (const [, senderData] of messagesBySender) {
+            // Send one email per sender with all their messages
+            for (const [, senderData] of messagesBySender) {
             const messageCount = senderData.messages.length
             const subject = messageCount > 1 
               ? `${senderData.senderName} sent you ${messageCount} messages on ${network?.name || 'Network'}`
@@ -228,7 +247,97 @@ Deno.serve(async (req) => {
             await new Promise(resolve => setTimeout(resolve, 600))
           }
         } else {
-          // For other notification types or single messages, process individually
+          // Single direct message - process it individually
+          const notification = groupNotifications[0]
+          
+          // Extract sender name from metadata
+          let inviterName = 'Someone'
+          if (notification.metadata) {
+            try {
+              const metadata = JSON.parse(notification.metadata)
+              inviterName = metadata.senderName || 'Someone'
+            } catch (e) {
+              console.warn('Failed to parse metadata:', e)
+            }
+          }
+          
+          const emailHtml = `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; line-height: 1.6;">
+              <div style="background-color: #4caf50; padding: 20px; border-radius: 8px 8px 0 0;">
+                <h2 style="color: white; margin: 0 0 10px 0; font-size: 24px;">💌 New Direct Message</h2>
+                <p style="margin: 0; color: #e8f5e9; font-size: 14px;">You have a private message waiting</p>
+              </div>
+              
+              <div style="background-color: white; padding: 24px; border: 1px solid #e0e0e0; border-radius: 0 0 8px 8px; border-top: none;">
+                <div style="margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #f0f0f0;">
+                  <p style="margin: 0; color: #666; font-size: 14px;">From: <strong>${inviterName}</strong></p>
+                  ${network?.name ? `<p style="margin: 4px 0 0 0; color: #666; font-size: 12px;">Network: ${network.name}</p>` : ''}
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                  <div style="background-color: #e8f5e8; padding: 16px; border-left: 4px solid #4caf50; border-radius: 4px; margin-bottom: 12px;">
+                    <p style="margin: 0; color: #333; font-size: 16px; line-height: 1.5;">${notification.content_preview || 'Message content not available'}</p>
+                  </div>
+                </div>
+                
+                <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid #f0f0f0;">
+                  <a href="${Deno.env.get('APP_URL') || 'https://your-app-url.com'}/messages" 
+                     style="display: inline-block; background-color: #4caf50; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 500;">
+                    Read & Reply to Message
+                  </a>
+                </div>
+              </div>
+              
+              <div style="margin-top: 20px; padding: 16px; background-color: #f8f9fa; border-radius: 6px; font-size: 12px; color: #666;">
+                <p style="margin: 0 0 8px 0;">You're receiving this because you're subscribed to direct message notifications.</p>
+                <p style="margin: 0;">
+                  <a href="${Deno.env.get('APP_URL') || 'https://your-app-url.com'}/profile/edit" 
+                     style="color: #2196f3; text-decoration: none;">
+                    Manage your notification preferences
+                  </a>
+                </p>
+              </div>
+            </div>
+          `
+          
+          // Send email directly via Resend API
+          const emailPayload = {
+            from: Deno.env.get('FROM_EMAIL') || 'noreply@your-domain.com',
+            to: recipient.contact_email,
+            subject: notification.subject_line || `New message from ${inviterName} on ${network?.name || 'Network'}`,
+            html: emailHtml
+          }
+          
+          const resendResponse = await fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${RESEND_API_KEY}`
+            },
+            body: JSON.stringify(emailPayload)
+          })
+          
+          if (!resendResponse.ok) {
+            const errorData = await resendResponse.json()
+            throw new Error(`Failed to send email: ${JSON.stringify(errorData)}`)
+          }
+          
+          // Mark as sent
+          await supabase
+            .from('notification_queue')
+            .update({ 
+              is_sent: true, 
+              sent_at: new Date().toISOString() 
+            })
+            .eq('id', notification.id)
+          
+          sent++
+          
+          // Rate limit delay
+          await new Promise(resolve => setTimeout(resolve, 600))
+        }
+      } else {
+        // For other notification types, process individually
           for (const notification of groupNotifications) {
             // Prepare email data
             let inviterName = 'Network Update'
