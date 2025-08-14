@@ -398,7 +398,7 @@ const handler = async (request)=>{
             </div>
             
             <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid #f0f0f0;">
-              <a href="${Deno.env.get('APP_URL') || 'https://your-app-url.com'}/dashboard" 
+              <a href="${Deno.env.get('APP_URL') || 'https://your-app-url.com'}${requestBody.networkId && requestBody.eventId ? `/network/${requestBody.networkId}/event/${requestBody.eventId}` : '/dashboard'}" 
                  style="display: inline-block; background-color: #ff9800; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 500; margin-right: 12px;">
                 View Event Details & RSVP
               </a>
@@ -490,7 +490,7 @@ const handler = async (request)=>{
             </div>
             
             <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid #f0f0f0;">
-              <a href="${Deno.env.get('APP_URL') || 'https://your-app-url.com'}/direct-messages" 
+              <a href="${Deno.env.get('APP_URL') || 'https://your-app-url.com'}/messages" 
                  style="display: inline-block; background-color: #4caf50; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 500;">
                 Read & Reply to Message
               </a>

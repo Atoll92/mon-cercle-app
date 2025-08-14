@@ -73,10 +73,46 @@ Deno.serve(async (req) => {
         }
 
         // Prepare email data
+        let inviterName = 'Network Update'
+        
+        // Extract appropriate name from metadata based on notification type
+        if (notification.metadata) {
+          try {
+            const metadata = JSON.parse(notification.metadata)
+            
+            // For direct messages
+            if (notification.notification_type === 'direct_message' && metadata.senderName) {
+              inviterName = metadata.senderName
+            }
+            // For events
+            else if (notification.notification_type === 'event' && metadata.organizerName) {
+              inviterName = metadata.organizerName
+            }
+            // For news posts
+            else if (notification.notification_type === 'news' && metadata.authorName) {
+              inviterName = metadata.authorName
+            }
+            // For portfolio posts
+            else if (notification.notification_type === 'post' && metadata.authorName) {
+              inviterName = metadata.authorName
+            }
+            // For mentions
+            else if (notification.notification_type === 'mention' && metadata.mentionerName) {
+              inviterName = metadata.mentionerName
+            }
+            // For event proposals
+            else if (notification.notification_type === 'event_proposal' && metadata.proposerName) {
+              inviterName = metadata.proposerName
+            }
+          } catch (e) {
+            console.warn('Failed to parse metadata for name extraction:', e)
+          }
+        }
+        
         const emailData = {
           toEmail: notification.profiles.contact_email,
           networkName: notification.networks?.name || 'Network',
-          inviterName: 'Network Update',
+          inviterName: inviterName,
           type: notification.notification_type,
           subject: notification.subject_line,
           content: notification.content_preview,

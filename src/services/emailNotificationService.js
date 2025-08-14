@@ -84,7 +84,10 @@ export const queueNewsNotifications = async (networkId, newsId, authorId, newsTi
       notification_type: 'news',
       subject_line: `New post in ${network.name}: ${newsTitle}`,
       content_preview: `${author.full_name || 'Someone'} shared: ${newsContent?.substring(0, 200) || newsTitle}${newsContent?.length > 200 ? '...' : ''}${mediaUrl ? ` [${mediaType || 'Media'}:${mediaUrl}]` : ''}`,
-      related_item_id: newsId
+      related_item_id: newsId,
+      metadata: JSON.stringify({
+        authorName: author.full_name || 'Someone'
+      })
     }));
 
     console.log('🔔 [EMAIL DEBUG] Notification entries to insert:', notifications);
@@ -115,240 +118,9 @@ export const queueNewsNotifications = async (networkId, newsId, authorId, newsTi
   }
 };
 
-/**
- * @deprecated Process pending notifications and send emails
- * This function is deprecated and replaced by server-side processing via edge function
- * DO NOT USE - kept for reference only
- */
-const processPendingNotifications_DEPRECATED = async () => {
-  try {
-    console.log('📨 [EMAIL PROCESS DEBUG] Starting to process pending notifications...');
-
-    // Get all unsent notifications
-    console.log('📨 [EMAIL PROCESS DEBUG] Fetching unsent notifications...');
-    const { data: pendingNotifications, error: fetchError } = await supabase
-      .from('notification_queue')
-      .select(`
-        id,
-        recipient_id,
-        network_id,
-        notification_type,
-        subject_line,
-        content_preview,
-        related_item_id,
-        metadata,
-        profiles!notification_queue_recipient_id_fkey (
-          contact_email,
-          full_name
-        ),
-        networks!notification_queue_network_id_fkey (
-          name
-        )
-      `)
-      .eq('is_sent', false)
-      .order('created_at', { ascending: true })
-      .limit(50); // Process in batches
-
-    console.log('📨 [EMAIL PROCESS DEBUG] Fetch result:', { 
-      count: pendingNotifications?.length || 0, 
-      fetchError,
-      notifications: pendingNotifications 
-    });
-
-    if (fetchError) {
-      console.error('📨 [EMAIL PROCESS DEBUG] Error fetching pending notifications:', fetchError);
-      return { success: false, error: fetchError.message };
-    }
-
-    if (!pendingNotifications || pendingNotifications.length === 0) {
-      console.log('📨 [EMAIL PROCESS DEBUG] No pending notifications to process');
-      return { success: true, message: 'No pending notifications' };
-    }
-
-    console.log(`📨 [EMAIL PROCESS DEBUG] Processing ${pendingNotifications.length} pending notifications`);
-
-    // Send emails via the network-invite edge function with rate limiting
-    console.log('📨 [EMAIL PROCESS DEBUG] Starting to send emails with rate limiting...');
-    console.log('📨 [EMAIL PROCESS DEBUG] Processing with 500ms delay between requests to avoid rate limits');
-    
-    const results = [];
-    
-    // Process notifications sequentially with delay to respect rate limits
-    for (let index = 0; index < pendingNotifications.length; index++) {
-      const notification = pendingNotifications[index];
-      
-      try {
-        console.log(`📨 [EMAIL PROCESS DEBUG] Processing notification ${index + 1}/${pendingNotifications.length}:`, {
-          id: notification.id,
-          recipient: notification.profiles?.contact_email,
-          subject: notification.subject_line
-        });
-
-        // Add delay between requests (except for the first one)
-        if (index > 0) {
-          console.log('📨 [EMAIL PROCESS DEBUG] Waiting 600ms to respect rate limits...');
-          await new Promise(resolve => setTimeout(resolve, 600)); // 600ms delay = ~1.7 requests per second
-        }
-
-        // Retry logic for rate limit errors
-        let retryCount = 0;
-        const maxRetries = 3;
-        // emailResult will be set if successful
-
-        while (retryCount < maxRetries) {
-          try {
-            console.log(`📨 [EMAIL PROCESS DEBUG] Attempt ${retryCount + 1}/${maxRetries} for notification ${notification.id}`);
-
-            // Prepare additional context based on notification type
-            let additionalData = {};
-            
-            // For event notifications, get event details and ICS attachment
-            if (notification.notification_type === 'event' && notification.related_item_id) {
-              try {
-                const { data: eventData } = await supabase
-                  .from('network_events')
-                  .select('date, location')
-                  .eq('id', notification.related_item_id)
-                  .single();
-                
-                if (eventData) {
-                  additionalData.eventDate = eventData.date;
-                  additionalData.eventLocation = eventData.location;
-                }
-
-                // Include ICS attachment from metadata if available
-                console.log('📨 [EMAIL PROCESS DEBUG] Checking metadata for ICS attachment:', notification.metadata);
-                if (notification.metadata) {
-                  try {
-                    const metadata = JSON.parse(notification.metadata);
-                    console.log('📨 [EMAIL PROCESS DEBUG] Parsed metadata:', metadata);
-                    if (metadata.icsAttachment) {
-                      additionalData.icsAttachment = metadata.icsAttachment;
-                      console.log('📨 [EMAIL PROCESS DEBUG] Including ICS attachment for event notification:', {
-                        filename: metadata.icsAttachment.filename,
-                        contentLength: metadata.icsAttachment.content?.length || 0
-                      });
-                    } else {
-                      console.log('📨 [EMAIL PROCESS DEBUG] No ICS attachment found in metadata');
-                    }
-                  } catch (metadataError) {
-                    console.warn('📨 [EMAIL PROCESS DEBUG] Failed to parse notification metadata:', metadataError);
-                  }
-                } else {
-                  console.log('📨 [EMAIL PROCESS DEBUG] No metadata found for this notification');
-                }
-              } catch (eventError) {
-                console.warn('📨 [EMAIL PROCESS DEBUG] Failed to fetch event details:', eventError);
-              }
-            }
-            
-            // For mention notifications, add context about chat location
-            if (notification.notification_type === 'mention') {
-              additionalData.messageContext = `Network Chat in ${notification.networks.name}`;
-            }
-
-            // Call the edge function to send the email
-            console.log('📨 [EMAIL PROCESS DEBUG] Additional data being sent to edge function:', additionalData);
-            const requestBody = {
-              toEmail: notification.profiles.contact_email,
-              networkName: notification.networks.name,
-              inviterName: 'Network Update',
-              type: notification.notification_type, // Use the actual notification type from database
-              subject: notification.subject_line,
-              content: notification.content_preview,
-              relatedItemId: notification.related_item_id,
-              ...additionalData
-            };
-            console.log('📨 [EMAIL PROCESS DEBUG] Complete request body:', requestBody);
-            
-            const { data, error } = await supabase.functions.invoke('network-invite', {
-              body: requestBody
-            });
-
-            console.log(`📨 [EMAIL PROCESS DEBUG] Edge function result for notification ${notification.id}:`, { data, error });
-
-            if (error) {
-              // Check if it's a rate limit error
-              if (error.message && error.message.includes('rate_limit_exceeded')) {
-                console.log(`📨 [EMAIL PROCESS DEBUG] Rate limit hit, waiting before retry...`);
-                await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2 seconds
-                retryCount++;
-                continue;
-              } else {
-                throw new Error(error.message);
-              }
-            }
-
-            // Email sent successfully
-            break; // Success, exit retry loop
-
-          } catch (retryError) {
-            retryCount++;
-            if (retryCount >= maxRetries) {
-              throw retryError;
-            }
-            console.log(`📨 [EMAIL PROCESS DEBUG] Retry ${retryCount} failed, trying again...`);
-            await new Promise(resolve => setTimeout(resolve, 1000 * retryCount)); // Exponential backoff
-          }
-        }
-
-        // Mark notification as sent
-        console.log(`📨 [EMAIL PROCESS DEBUG] Marking notification ${notification.id} as sent...`);
-        const { error: updateError } = await supabase
-          .from('notification_queue')
-          .update({ 
-            is_sent: true, 
-            sent_at: new Date().toISOString() 
-          })
-          .eq('id', notification.id);
-
-        if (updateError) {
-          console.error(`📨 [EMAIL PROCESS DEBUG] Error updating notification ${notification.id}:`, updateError);
-        } else {
-          console.log(`📨 [EMAIL PROCESS DEBUG] Successfully marked notification ${notification.id} as sent`);
-        }
-
-        results.push({ status: 'fulfilled', value: { success: true, id: notification.id } });
-
-      } catch (error) {
-        console.error(`📨 [EMAIL PROCESS DEBUG] Error sending notification ${notification.id}:`, error);
-        
-        // Mark notification with error
-        console.log(`📨 [EMAIL PROCESS DEBUG] Marking notification ${notification.id} with error...`);
-        const { error: errorUpdateError } = await supabase
-          .from('notification_queue')
-          .update({ 
-            error_message: error.message 
-          })
-          .eq('id', notification.id);
-
-        if (errorUpdateError) {
-          console.error(`📨 [EMAIL PROCESS DEBUG] Error updating notification ${notification.id} with error:`, errorUpdateError);
-        }
-
-        results.push({ status: 'fulfilled', value: { success: false, id: notification.id, error: error.message } });
-      }
-    }
-
-    // Count successes and failures
-    const successful = results.filter(result => result.status === 'fulfilled' && result.value.success).length;
-    const failed = results.length - successful;
-
-    console.log(`📨 [EMAIL PROCESS DEBUG] Notification processing complete: ${successful} sent, ${failed} failed`);
-    console.log('📨 [EMAIL PROCESS DEBUG] Detailed results:', results);
-
-    return {
-      success: true,
-      message: `Processed ${results.length} notifications: ${successful} sent, ${failed} failed`,
-      sent: successful,
-      failed: failed
-    };
-
-  } catch (error) {
-    console.error('📨 [EMAIL PROCESS DEBUG] Error in processPendingNotifications:', error);
-    return { success: false, error: error.message };
-  }
-};
+// Note: Client-side notification processing has been deprecated and replaced by server-side processing
+// Notification processing is now handled by the process-notifications edge function
+// See /supabase/functions/process-notifications for the server-side implementation
 
 /**
  * Get notification statistics for a user
@@ -446,7 +218,10 @@ export const queueMentionNotification = async (mentionedUserId, networkId, menti
       notification_type: 'mention',
       subject_line: `${mentionerName} mentioned you in ${network.name}`,
       content_preview: messageContent.substring(0, 200) + (messageContent.length > 200 ? '...' : ''),
-      related_item_id: messageId
+      related_item_id: messageId,
+      metadata: JSON.stringify({
+        mentionerName: mentionerName
+      })
     };
     
     console.log('🔔 [MENTION DEBUG] Creating notification:', notification);
@@ -591,10 +366,16 @@ export const queueEventNotifications = async (networkId, eventId, authorId, even
       metadata: icsAttachmentData ? JSON.stringify({
         eventDate: eventDate,
         eventLocation: eventLocation,
-        icsAttachment: JSON.parse(icsAttachmentData)
+        icsAttachment: JSON.parse(icsAttachmentData),
+        organizerName: author.full_name || 'Event Organizer',
+        networkId: networkId,
+        eventId: eventId
       }) : JSON.stringify({
         eventDate: eventDate,
-        eventLocation: eventLocation
+        eventLocation: eventLocation,
+        organizerName: author.full_name || 'Event Organizer',
+        networkId: networkId,
+        eventId: eventId
       })
     }));
 
@@ -697,7 +478,10 @@ export const queuePortfolioNotifications = async (networkId, postId, authorId, p
       notification_type: 'post', // Portfolio posts have their own type
       subject_line: `New post shared in ${network.name}: ${postTitle}`,
       content_preview: `${author.full_name || 'Someone'} shared a new post: ${postTitle}. ${postDescription?.substring(0, 150) || ''}${postDescription?.length > 150 ? '...' : ''}${mediaUrl ? ` [${mediaType || 'Media'}:${mediaUrl}]` : ''}`,
-      related_item_id: postId
+      related_item_id: postId,
+      metadata: JSON.stringify({
+        authorName: author.full_name || 'Someone'
+      })
     }));
 
     console.log('🔔 [PORTFOLIO] Notification entries to insert:', notifications);
@@ -821,7 +605,10 @@ export const queueDirectMessageNotification = async (recipientId, senderId, mess
       notification_type: 'direct_message',
       subject_line: `New message from ${senderProfile.full_name || 'Someone'}`,
       content_preview: messageContent.substring(0, 200) + (messageContent.length > 200 ? '...' : ''),
-      related_item_id: messageId
+      related_item_id: messageId,
+      metadata: JSON.stringify({
+        senderName: senderProfile.full_name || 'Someone'
+      })
     };
     
     console.log('💬 [DM DEBUG] Creating notification:', notification);
@@ -925,7 +712,10 @@ export const queueEventProposalNotificationForAdmins = async (networkId, eventId
       notification_type: 'event_proposal',
       subject_line: `Event proposal in ${network.name}: ${eventTitle}`,
       content_preview: `${proposer.full_name || 'A member'} has proposed a new event: "${eventTitle}" scheduled for ${formattedDate}. Please review and approve/reject.`,
-      related_item_id: eventId
+      related_item_id: eventId,
+      metadata: JSON.stringify({
+        proposerName: proposer.full_name || 'A member'
+      })
     }));
 
     console.log('🔔 [EVENT PROPOSAL] Creating notifications for admins:', notifications);
@@ -1037,16 +827,6 @@ export const queueEventStatusNotification = async (eventId, eventCreatorId, even
   }
 };
 
-/**
- * @deprecated Clear all notifications for a user (sent and pending)
- * This function is deprecated - clients no longer have delete access to notification_queue
- * Clearing should only be done through admin functions or direct database access
- * @param {string} profileId - The profile ID
- */
-const clearNotificationQueue_DEPRECATED = async (profileId) => {
-  console.error('🚫 clearNotificationQueue is deprecated and no longer functional');
-  return { success: false, error: 'This function is deprecated. Notification queue management is now server-side only.' };
-};
 
 /**
  * Get user's notification preferences
@@ -1076,139 +856,6 @@ export const getUserNotificationPreferences = async (profileId) => {
   }
 };
 
-/**
- * @deprecated Automatic notification processor - runs continuously in the background
- * This class is deprecated and replaced by server-side processing via edge function
- * DO NOT USE - kept for reference only
- */
-class NotificationProcessor_DEPRECATED {
-  constructor() {
-    this.isRunning = false;
-    this.intervalId = null;
-    this.processingInterval = 1 * 60 * 1000; // 1 minute
-  }
-
-  /**
-   * Start automatic notification processing
-   */
-  start() {
-    if (this.isRunning) {
-      console.log('🤖 [AUTO PROCESSOR] Already running');
-      return;
-    }
-
-    // console.log('🤖 [AUTO PROCESSOR] Starting automatic notification processing...');
-    // console.log(`🤖 [AUTO PROCESSOR] Will process notifications every ${this.processingInterval / 1000} seconds`);
-    
-    this.isRunning = true;
-    
-    // Process immediately on start
-    this.processNotifications();
-    
-    // Set up interval for continuous processing
-    this.intervalId = setInterval(() => {
-      this.processNotifications();
-    }, this.processingInterval);
-  }
-
-  /**
-   * Stop automatic notification processing
-   */
-  stop() {
-    if (!this.isRunning) {
-      console.log('🤖 [AUTO PROCESSOR] Not running');
-      return;
-    }
-
-    console.log('🤖 [AUTO PROCESSOR] Stopping automatic notification processing...');
-    
-    this.isRunning = false;
-    
-    if (this.intervalId) {
-      clearInterval(this.intervalId);
-      this.intervalId = null;
-    }
-  }
-
-  /**
-   * Process notifications and clear successful sends automatically
-   */
-  async processNotifications() {
-    if (!this.isRunning) {
-      return;
-    }
-
-    try {
-      console.log('🤖 [AUTO PROCESSOR] Starting notification processing cycle...');
-      
-      // Get pending count before processing
-      const { data: beforeCount } = await supabase
-        .from('notification_queue')
-        .select('id', { count: 'exact' })
-        .eq('is_sent', false);
-
-      const pendingBefore = beforeCount || 0;
-      
-      if (pendingBefore === 0) {
-        console.log('🤖 [AUTO PROCESSOR] No pending notifications to process');
-        return;
-      }
-
-      console.log(`🤖 [AUTO PROCESSOR] Found ${pendingBefore} pending notifications`);
-
-      // Process pending notifications
-      const result = await processPendingNotifications();
-      
-      if (result.success) {
-        console.log(`🤖 [AUTO PROCESSOR] Processing completed: ${result.sent} sent, ${result.failed} failed`);
-        
-        // Auto-cleanup: Remove old sent notifications (older than 7 days) to prevent database bloat
-        await this.cleanupSentNotifications();
-      } else {
-        console.error('🤖 [AUTO PROCESSOR] Processing failed:', result.error);
-      }
-
-    } catch (error) {
-      console.error('🤖 [AUTO PROCESSOR] Error in automatic processing:', error);
-    }
-  }
-
-  /**
-   * Clean up sent notifications older than 7 days to prevent database bloat
-   */
-  async cleanupSentNotifications() {
-    try {
-      const sevenDaysAgo = new Date();
-      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-      
-      const { error } = await supabase
-        .from('notification_queue')
-        .delete()
-        .lt('sent_at', sevenDaysAgo.toISOString())
-        .eq('is_sent', true);
-
-      if (error) {
-        console.error('🤖 [AUTO PROCESSOR] Error cleaning up sent notifications:', error);
-      } else {
-        console.log('🤖 [AUTO PROCESSOR] Cleaned up old sent notifications');
-      }
-    } catch (error) {
-      console.error('🤖 [AUTO PROCESSOR] Error in cleanup:', error);
-    }
-  }
-
-  /**
-   * Get processor status
-   */
-  getStatus() {
-    return {
-      isRunning: this.isRunning,
-      processingInterval: `${this.processingInterval / 1000} seconds`,
-      nextProcessing: this.isRunning ? new Date(Date.now() + this.processingInterval).toISOString() : null
-    };
-  }
-}
-
-// Removed: Singleton instance and automatic processing functions
-// Notification processing is now handled server-side via Supabase edge function and cron job
+// Note: Automatic notification processing has been moved to server-side
+// Notification processing is now handled via Supabase edge function and cron job
 // See /supabase/functions/process-notifications for the server-side implementation
