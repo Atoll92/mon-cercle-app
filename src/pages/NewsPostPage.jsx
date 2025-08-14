@@ -34,39 +34,39 @@ import { sanitizeRichText } from '../utils/sanitizeHtml';
 import { fetchNetworkCategories } from '../api/categories';
 import CommentSection from '../components/CommentSection';
 
-function NewsPostPage() {
+function AnnouncementPostPage() {
   const { networkId, newsId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [newsPost, setNewsPost] = useState(null);
+  const [announcementPost, setAnnouncementPost] = useState(null);
   const [author, setAuthor] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
   const [categories, setCategories] = useState([]);
-  const [newsCategory, setNewsCategory] = useState(null);
+  const [announcementCategory, setAnnouncementCategory] = useState(null);
 
   useEffect(() => {
-    fetchNewsPost();
+    fetchAnnouncementPost();
     checkAdminStatus();
     loadCategories();
   }, [newsId, user, networkId]);
   
-  // Update category when categories or newsPost changes
+  // Update category when categories or announcementPost changes
   useEffect(() => {
-    if (newsPost?.category_id && categories.length > 0) {
-      const category = categories.find(c => c.id === newsPost.category_id);
-      setNewsCategory(category);
+    if (announcementPost?.category_id && categories.length > 0) {
+      const category = categories.find(c => c.id === announcementPost.category_id);
+      setAnnouncementCategory(category);
     }
-  }, [newsPost?.category_id, categories]);
+  }, [announcementPost?.category_id, categories]);
 
-  const fetchNewsPost = async () => {
+  const fetchAnnouncementPost = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      // Fetch news post
+      // Fetch announcement
       const { data: post, error: postError } = await supabase
         .from('network_news')
         .select('*')
@@ -77,11 +77,11 @@ function NewsPostPage() {
       if (postError) throw postError;
       
       if (!post) {
-        setError('News post not found');
+        setError('Announcement not found');
         return;
       }
 
-      setNewsPost(post);
+      setAnnouncementPost(post);
 
       // Fetch author details
       const { data: authorData, error: authorError } = await supabase
@@ -94,8 +94,8 @@ function NewsPostPage() {
         setAuthor(authorData);
       }
     } catch (err) {
-      console.error('Error fetching news post:', err);
-      setError('Failed to load news post');
+      console.error('Error fetching announcement:', err);
+      setError('Failed to load announcement');
     } finally {
       setLoading(false);
     }
@@ -125,10 +125,10 @@ function NewsPostPage() {
     if (data && !error) {
       setCategories(data);
       
-      // If we already have a news post, find its category
-      if (newsPost?.category_id) {
-        const category = data.find(c => c.id === newsPost.category_id);
-        setNewsCategory(category);
+      // If we already have an announcement, find its category
+      if (announcementPost?.category_id) {
+        const category = data.find(c => c.id === announcementPost.category_id);
+        setAnnouncementCategory(category);
       }
     }
   };
@@ -147,7 +147,7 @@ function NewsPostPage() {
   };
 
   const handleDelete = async () => {
-    if (!window.confirm('Are you sure you want to delete this news post?')) {
+    if (!window.confirm('Are you sure you want to delete this announcement?')) {
       return;
     }
 
@@ -162,7 +162,7 @@ function NewsPostPage() {
       navigate(`/network/${networkId}`, { replace: true });
     } catch (err) {
       console.error('Error deleting news post:', err);
-      alert('Failed to delete news post');
+      alert('Failed to delete announcement');
     }
     handleMenuClose();
   };
@@ -180,7 +180,7 @@ function NewsPostPage() {
       if (error) throw error;
       
       alert('Post has been flagged for review');
-      fetchNewsPost(); // Refresh the post
+      fetchAnnouncementPost(); // Refresh the post
     } catch (err) {
       console.error('Error flagging post:', err);
       alert('Failed to flag post');
@@ -196,11 +196,11 @@ function NewsPostPage() {
     );
   }
 
-  if (error || !newsPost) {
+  if (error || !announcementPost) {
     return (
       <Container maxWidth="md" sx={{ mt: 4 }}>
         <Alert severity="error" sx={{ mb: 2 }}>
-          {error || 'News post not found'}
+          {error || 'Announcement not found'}
         </Alert>
         <Button
           startIcon={<ArrowBackIcon />}
@@ -212,7 +212,7 @@ function NewsPostPage() {
     );
   }
 
-  const isAuthor = user?.id === newsPost.created_by;
+  const isAuthor = user?.id === announcementPost.created_by;
   const canModerate = isAdmin || isAuthor;
 
   return (
@@ -264,9 +264,9 @@ function NewsPostPage() {
         {/* Title and Category */}
         <Box sx={{ mb: 2 }}>
           <Typography variant="h3" component="h1" gutterBottom>
-            {newsPost.title}
+            {announcementPost.title}
           </Typography>
-          {newsCategory && (
+          {announcementCategory && (
             <Box
               sx={{
                 display: 'inline-flex',
@@ -275,12 +275,12 @@ function NewsPostPage() {
                 px: 1.5,
                 py: 0.5,
                 borderRadius: '16px',
-                bgcolor: alpha(newsCategory.color, 0.12),
-                border: `1px solid ${alpha(newsCategory.color, 0.3)}`,
+                bgcolor: alpha(announcementCategory.color, 0.12),
+                border: `1px solid ${alpha(announcementCategory.color, 0.3)}`,
                 transition: 'all 0.2s ease',
                 '&:hover': {
-                  bgcolor: alpha(newsCategory.color, 0.18),
-                  borderColor: alpha(newsCategory.color, 0.4),
+                  bgcolor: alpha(announcementCategory.color, 0.18),
+                  borderColor: alpha(announcementCategory.color, 0.4),
                 }
               }}
             >
@@ -289,7 +289,7 @@ function NewsPostPage() {
                   width: 6,
                   height: 6,
                   borderRadius: '50%',
-                  bgcolor: newsCategory.color,
+                  bgcolor: announcementCategory.color,
                   flexShrink: 0
                 }}
               />
@@ -298,11 +298,11 @@ function NewsPostPage() {
                 sx={{
                   fontSize: '0.75rem',
                   fontWeight: 500,
-                  color: newsCategory.color,
+                  color: announcementCategory.color,
                   letterSpacing: '0.02em'
                 }}
               >
-                {newsCategory.name}
+                {announcementCategory.name}
               </Typography>
             </Box>
           )}
@@ -332,11 +332,11 @@ function NewsPostPage() {
           
           <Chip
             icon={<CalendarIcon />}
-            label={formatDate(newsPost.created_at, { month: 'long', day: 'numeric', year: 'numeric' })}
+            label={formatDate(announcementPost.created_at, { month: 'long', day: 'numeric', year: 'numeric' })}
             size="small"
           />
           
-          {newsPost.is_flagged && (
+          {announcementPost.is_flagged && (
             <Chip
               icon={<FlagIcon />}
               label="Flagged"
@@ -351,8 +351,8 @@ function NewsPostPage() {
         {/* Featured Media */}
         {(() => {
           // Determine media type and URL
-          let mediaUrl = newsPost.media_url || newsPost.image_url;
-          let mediaType = newsPost.media_type;
+          let mediaUrl = announcementPost.media_url || announcementPost.image_url;
+          let mediaType = announcementPost.media_type;
           
           // Fallback detection for legacy posts or case mismatch
           if (!mediaType && mediaUrl) {
@@ -378,7 +378,7 @@ function NewsPostPage() {
                   <>
                     <img
                       src={mediaUrl}
-                      alt={newsPost.title}
+                      alt={announcementPost.title}
                       style={{
                         width: '100%',
                         maxHeight: '500px',
@@ -386,9 +386,9 @@ function NewsPostPage() {
                         borderRadius: '8px'
                       }}
                     />
-                    {newsPost.image_caption && (
+                    {announcementPost.image_caption && (
                       <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
-                        {newsPost.image_caption}
+                        {announcementPost.image_caption}
                       </Typography>
                     )}
                   </>
@@ -396,8 +396,8 @@ function NewsPostPage() {
                   <MediaPlayer
                     src={mediaUrl}
                     type={mediaType}
-                    title={newsPost.media_metadata?.fileName || newsPost.title}
-                    thumbnail={newsPost.media_metadata?.thumbnail}
+                    title={announcementPost.media_metadata?.fileName || announcementPost.title}
+                    thumbnail={announcementPost.media_metadata?.thumbnail}
                     compact={false}
                   />
                 )}
@@ -422,7 +422,7 @@ function NewsPostPage() {
               my: 2
             }
           }}
-          dangerouslySetInnerHTML={{ __html: sanitizeRichText(newsPost.content) }}
+          dangerouslySetInnerHTML={{ __html: sanitizeRichText(announcementPost.content) }}
         />
 
         {/* Footer */}
@@ -430,12 +430,12 @@ function NewsPostPage() {
         
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <Typography variant="caption" color="text.secondary">
-            Published on {formatDate(newsPost.created_at, { month: 'long', day: 'numeric', year: 'numeric' })}
+            Published on {formatDate(announcementPost.created_at, { month: 'long', day: 'numeric', year: 'numeric' })}
           </Typography>
           
-          {newsPost.updated_at && newsPost.updated_at !== newsPost.created_at && (
+          {announcementPost.updated_at && announcementPost.updated_at !== announcementPost.created_at && (
             <Typography variant="caption" color="text.secondary">
-              Last updated: {formatDate(newsPost.updated_at, { month: 'long', day: 'numeric', year: 'numeric' })}
+              Last updated: {formatDate(announcementPost.updated_at, { month: 'long', day: 'numeric', year: 'numeric' })}
             </Typography>
           )}
         </Box>
@@ -445,7 +445,7 @@ function NewsPostPage() {
         {/* Comments Section */}
         <CommentSection
           itemType="news"
-          itemId={newsPost.id}
+          itemId={announcementPost.id}
           initialCount={0}
           defaultExpanded={true}
         />
@@ -454,4 +454,4 @@ function NewsPostPage() {
   );
 }
 
-export default NewsPostPage;
+export default AnnouncementPostPage;

@@ -27,7 +27,7 @@ const ThemeProvider = ({ children }) => {
     }
     // Check localStorage for user preference only if logged in
     const savedMode = localStorage.getItem('darkMode');
-    return savedMode === 'true';
+    return savedMode === null ? true : savedMode === 'true';
   });
   
   // Toggle dark mode function

@@ -10,7 +10,7 @@ import { supabase } from '../supabaseclient';
 import { useFadeIn } from '../hooks/useAnimation';
 import { GridSkeleton } from '../components/LoadingSkeleton';
 import NetworkHeader from '../components/NetworkHeader';
-import ArticleIcon from '@mui/icons-material/Article';
+import { Campaign as AnnouncementIcon } from '@mui/icons-material';
 import ChatIcon from '@mui/icons-material/Chat';
 import TimelineIcon from '@mui/icons-material/Timeline';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
@@ -180,7 +180,7 @@ function NetworkLandingPage() {
 
   // Define all available tabs with their properties (matching admin panel IDs)
   const allTabs = [
-    { id: 'news', icon: <ArticleIcon />, label: t('dashboard.tabs.news') },
+    { id: 'news', icon: <AnnouncementIcon />, label: t('dashboard.tabs.news') },
     { id: 'members', icon: <GroupsIcon />, label: t('dashboard.tabs.members') },
     { id: 'events', icon: <EventIcon />, label: t('dashboard.tabs.events') },
     { id: 'chat', icon: <ChatIcon />, label: t('dashboard.tabs.chat') },
