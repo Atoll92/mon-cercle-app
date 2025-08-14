@@ -172,7 +172,7 @@ export const getUserMoodboardItems = async (profileId, offset = 0, limit = 20) =
     if (moodboardError) throw moodboardError;
     
     if (!moodboard) {
-      return { items: [], backgroundColor: null };
+      return { items: [], backgroundColor: null, moodboardId: null };
     }
     
     // Get all items from user's moodboard
@@ -185,13 +185,14 @@ export const getUserMoodboardItems = async (profileId, offset = 0, limit = 20) =
     
     if (itemsError) throw itemsError;
     
-    // Return items and the background color
+    // Return items, background color, and moodboard ID
     return {
       items: items || [],
-      backgroundColor: moodboard.background_color || null
+      backgroundColor: moodboard.background_color || null,
+      moodboardId: moodboard.id
     };
   } catch (error) {
     console.error('Error fetching user moodboard items:', error);
-    return { items: [], backgroundColor: null };
+    return { items: [], backgroundColor: null, moodboardId: null };
   }
 };

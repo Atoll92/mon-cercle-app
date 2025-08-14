@@ -128,12 +128,13 @@ const MemberDetailsModal = ({
         setMoodboardError(null);
         
         // Get the member's moodboard and items
-        const { items, backgroundColor } = await getUserMoodboardItems(member.id, 0, 10);
+        const { items, backgroundColor, moodboardId } = await getUserMoodboardItems(member.id, 0, 10);
         
         if (items && items.length > 0) {
           setMoodboardItems(items);
           // Create a mock moodboard object for compatibility
           setFeaturedMoodboard({
+            id: moodboardId,
             background_color: backgroundColor,
             title: 'Micro Conclav'
           });
