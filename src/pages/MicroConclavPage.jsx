@@ -26,15 +26,12 @@ import EditIcon from '@mui/icons-material/Edit';
 import LinkPreview from '../components/LinkPreview';
 import MoodboardItemDisplay from '../components/Moodboard/MoodboardItemDisplay';
 import MoodboardItemGrid from '../components/Moodboard/MoodboardItemGrid';
-import { useAuth } from '../context/authcontext';
 import { useProfile } from '../context/profileContext';
-import NetworkHeader from '../components/NetworkHeader';
 
 const MicroConclavPage = () => {
   const { profileId, username } = useParams();
   const navigate = useNavigate();
   const theme = useTheme();
-  const { user } = useAuth();
   const { activeProfile } = useProfile();
   const [profile, setProfile] = useState(null);
   const [moodboardItems, setMoodboardItems] = useState([]);
@@ -247,8 +244,7 @@ const MicroConclavPage = () => {
         display: "flex", 
         justifyContent: "center", 
         alignItems: "center", 
-        height: "100vh",
-        paddingTop: '80px' // Account for fixed header
+        height: "100vh"
       }}>
         <Spinner size={120} />
       </Box>
@@ -270,18 +266,14 @@ const MicroConclavPage = () => {
 
 
   return (
-    <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden', position: 'relative' }}>
-      {/* NetworkHeader */}
-      <NetworkHeader />
-      {/* Toolbar - positioned directly below NetworkHeader */}
+    <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      {/* Toolbar */}
       <Box 
         sx={{ 
           p: 1, 
-          position: 'fixed',
-          top: '80px', // Position directly below NetworkHeader
-          left: 0,
-          right: 0,
-          zIndex: 1000,
+          position: 'sticky',
+          top: 0,
+          zIndex: 1200,
           display: 'flex', 
           justifyContent: 'space-between',
           background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)}, ${alpha(theme.palette.background.paper, 0.6)})`,
@@ -362,8 +354,8 @@ const MicroConclavPage = () => {
       <Paper
         elevation={4}
         sx={{
-          position: 'fixed',
-          top: 'calc(80px + 56px + 1rem)', // Account for NetworkHeader + fixed toolbar + margin
+          position: 'absolute',
+          top: '1rem',
           right: '1rem',
           p: 2,
           borderRadius: 2,
@@ -410,7 +402,6 @@ const MicroConclavPage = () => {
           position: 'relative',
           overflow: viewMode === 'grid' ? 'auto' : 'hidden',
           bgcolor: viewMode === 'grid' ? (moodboardBackgroundColor || '#f5f5f5') : 'transparent',
-          minHeight: '100vh',
         }}
       >
         {viewMode === 'grid' ? (
@@ -420,7 +411,7 @@ const MicroConclavPage = () => {
               maxWidth: 1200,
               margin: '0 auto',
               padding: '20px',
-              paddingTop: 'calc(80px + 56px + 50px)', // NetworkHeader (80px) + Toolbar (56px) + extra space (50px)
+              paddingTop: '20px'
             }}
           >
             <Box
@@ -454,7 +445,7 @@ const MicroConclavPage = () => {
             onCanvasMouseUp={handleCanvasMouseUp}
             onCanvasMouseLeave={handleCanvasMouseUp}
             showGrid={!moodboardBackgroundColor}
-            height="calc(100vh - 136px)" // Account for NetworkHeader (80px) + toolbar (56px)
+            height="100%" // Fill available space
           >
             {/* Render items from primary moodboard only */}
             {primaryMoodboardItems.map((item, index) => {

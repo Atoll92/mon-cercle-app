@@ -8,7 +8,6 @@ import { useApp } from '../context/appContext';
 import { supabase } from '../supabaseclient';
 import { useFadeIn } from '../hooks/useAnimation';
 import { GridSkeleton } from '../components/LoadingSkeleton';
-import NetworkHeader from '../components/NetworkHeader';
 import ArticleIcon from '@mui/icons-material/Article';
 import ChatIcon from '@mui/icons-material/Chat';
 import TimelineIcon from '@mui/icons-material/Timeline';
@@ -755,7 +754,6 @@ function NetworkLandingPageAlt() {
             : 'linear-gradient(180deg, rgba(255, 255, 255, 0.7) 0%, rgba(255, 255, 255, 0.4) 100%)',
         }
       }}>
-        <NetworkHeader />
       </Box>
       
       {/* Original tabs section - normal position overlaying background */}
@@ -896,7 +894,7 @@ function NetworkLandingPageAlt() {
       <Box
         sx={{
           position: 'fixed',
-          top: '80px',
+          top: '80px', // Position below the app-level NetworkHeader
           left: 0,
           right: 0,
           zIndex: 1250,

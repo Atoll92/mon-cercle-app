@@ -285,33 +285,21 @@ function DirectMessagesPage() {
       {/* Mobile layout with sliding views */}
       {showChat ? (
         // Chat view for mobile
-        <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-          <Box sx={{ p: 1, borderBottom: 1, borderColor: 'divider', display: 'flex', alignItems: 'center', bgcolor: 'background.paper' }}>
-            <IconButton edge="start" onClick={handleBackToList} sx={{ mr: 1 }}>
-              <ArrowBackIcon />
-            </IconButton>
-            <Typography variant="h6" component="div" sx={{ flexGrow: 1, color: 'text.primary' }}>
-              {partner ? partner.full_name : 'Messages'}
-            </Typography>
-            <IconButton edge="end" onClick={toggleDrawer}>
-              <ForumIcon />
-            </IconButton>
-          </Box>
-          <Box sx={{ flexGrow: 1, overflow: 'hidden' }}>
-            {selectedConversationId && partner ? (
-              <DirectMessageChat 
-                conversationId={selectedConversationId}
-                partner={partner}
-                onBack={handleBackToList}
-              />
-            ) : (
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', bgcolor: 'background.default' }}>
-                <Typography variant="body1" color="text.secondary">
-                  Select a conversation to start messaging
-                </Typography>
-              </Box>
-            )}
-          </Box>
+        <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+          {selectedConversationId && partner ? (
+            <DirectMessageChat 
+              conversationId={selectedConversationId}
+              partner={partner}
+              onBack={handleBackToList}
+            />
+          ) : (
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '50vh', bgcolor: 'background.default' }}>
+              <Typography variant="body1" color="text.secondary">
+                Select a conversation to start messaging
+              </Typography>
+            </Box>
+          )}
+          
           
           {/* Drawer for conversation list on mobile */}
           <Drawer
@@ -342,7 +330,7 @@ function DirectMessagesPage() {
         </Box>
       ) : (
         // Conversation list view for mobile
-        <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', bgcolor: 'background.default' }}>
+        <Box sx={{ minHeight: 'calc(100dvh - var(--network-header-height, 80px) - var(--footer-height, 100px))', display: 'flex', flexDirection: 'column', bgcolor: 'background.default' }}>
           <Box sx={{ p: 1, borderBottom: 1, borderColor: 'divider', display: 'flex', alignItems: 'center', bgcolor: 'background.paper' }}>
             <IconButton edge="start" component={Link} to="/dashboard" sx={{ mr: 1 }}>
               <ArrowBackIcon />
@@ -453,7 +441,7 @@ function DirectMessagesPage() {
   
   return (
     <Box sx={{ 
-      height: isMobile ? 'calc(100vh - 56px)' : undefined,  
+      height: isMobile ? 'auto' : undefined,  
       display: 'flex', 
       flexDirection: 'column',
       bgcolor: 'background.default'

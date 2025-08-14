@@ -3,7 +3,6 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/authcontext';
 import { useProfile } from '../context/profileContext';
-import NetworkHeader from '../components/NetworkHeader';
 import { supabase } from '../supabaseclient';
 import LinkPreview from '../components/LinkPreview';
 import MediaUpload from '../components/MediaUpload';
@@ -1501,7 +1500,7 @@ const handleUpdateItem = async (updatedItem) => {
           alignItems: 'center', 
           justifyContent: 'center', 
           height: '100vh',
-          paddingTop: '80px' // Account for fixed header
+          paddingTop: 0
         }}
       >
         <Spinner size={120} color="primary" />
@@ -1515,7 +1514,7 @@ const handleUpdateItem = async (updatedItem) => {
   if (error && !moodboard) {
     return (
       <Container maxWidth="md" sx={{ 
-        paddingTop: '80px', // Account for fixed header
+        paddingTop: 0,
         mt: 0 
       }}>
         <Alert severity="error" sx={{ mb: 3 }}>
@@ -1537,7 +1536,7 @@ const handleUpdateItem = async (updatedItem) => {
   if (!moodboard) {
     return (
       <Container maxWidth="md" sx={{ 
-        paddingTop: '80px', // Account for fixed header
+        paddingTop: 0,
         mt: 0 
       }}>
         <Paper sx={{ p: 3, textAlign: 'center' }}>
@@ -1560,18 +1559,14 @@ const handleUpdateItem = async (updatedItem) => {
   }
   
   return (
-    <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden', position: 'relative' }}>
-      {/* NetworkHeader */}
-      <NetworkHeader />
-      {/* Toolbar - positioned directly below NetworkHeader */}
+    <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      {/* Toolbar */}
       <Box 
         sx={{ 
           p: 1, 
-          position: 'fixed',
-          top: '80px', // Position directly below NetworkHeader
-          left: 0,
-          right: 0,
-          zIndex: 1000,
+          position: 'sticky',
+          top: 0,
+          zIndex: 1200,
           display: 'flex', 
           justifyContent: 'space-between',
           background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)}, ${alpha(theme.palette.background.paper, 0.6)})`,
@@ -1716,7 +1711,7 @@ const handleUpdateItem = async (updatedItem) => {
             severity="error" 
             sx={{ 
               position: 'fixed', 
-              top: 'calc(80px + 56px + 1rem)', // Account for NetworkHeader + fixed toolbar
+              top: '70px', // Below sticky toolbar
               right: '1rem', 
               zIndex: 1100,
               maxWidth: '80%',
@@ -1797,7 +1792,7 @@ const handleUpdateItem = async (updatedItem) => {
         onCanvasMouseUp={handleCanvasMouseUp}
         onCanvasMouseLeave={handleCanvasMouseUp}
         showGrid={!moodboard.background_color}
-        height="calc(100vh - 136px)" // Account for NetworkHeader (80px) + toolbar (56px)
+        height="100%" // Fill available space
       >
         {/* Render all items */}
         {items.map(item => (

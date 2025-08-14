@@ -995,8 +995,12 @@ if (refreshConversations) {
       sx={{ 
         display: 'flex', 
         flexDirection: 'column', 
-        height: '100%',
-        bgcolor: 'background.default'
+        height: { 
+          xs: 'calc(100dvh - var(--network-header-height, 80px) - var(--footer-height, 100px))',
+          sm: '100%'
+        },
+        bgcolor: 'background.default',
+        overflow: 'hidden'
       }}
     >
       {/* Chat Header */}
@@ -1009,7 +1013,8 @@ if (refreshConversations) {
           borderBottom: 1,
           borderColor: 'divider',
           bgcolor: 'background.paper',
-          color: 'text.primary'
+          color: 'text.primary',
+          flexShrink: 0
         }}
       >
         <IconButton 
@@ -1375,7 +1380,8 @@ if (refreshConversations) {
           p: 2, 
           bgcolor: 'background.paper',
           borderTop: pendingMedia ? 'none' : '1px solid',
-          borderColor: 'divider'
+          borderColor: 'divider',
+          flexShrink: 0
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center' }}>

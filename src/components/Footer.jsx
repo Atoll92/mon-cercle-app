@@ -1,5 +1,5 @@
 // src/components/Footer.jsx
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   Box, 
@@ -11,9 +11,61 @@ import {
 const Footer = () => {
   const theme = useTheme();
   const currentYear = new Date().getFullYear();
+  const footerRef = useRef(null);
+
+  // Set CSS variable for footer height
+  useEffect(() => {
+    const updateFooterHeight = () => {
+      if (footerRef.current) {
+        const height = footerRef.current.getBoundingClientRect().height;
+        document.documentElement.style.setProperty('--footer-height', `${height}px`);
+      }
+    };
+
+    // Use ResizeObserver to track all size changes (including content changes)
+    let resizeObserver;
+    if (typeof ResizeObserver !== 'undefined') {
+      resizeObserver = new ResizeObserver(() => {
+        // ResizeObserver callback fires for all size changes
+        updateFooterHeight();
+      });
+      
+      if (footerRef.current) {
+        resizeObserver.observe(footerRef.current);
+      }
+    }
+
+    // Also use MutationObserver to catch DOM changes that might affect height
+    let mutationObserver;
+    if (typeof MutationObserver !== 'undefined' && footerRef.current) {
+      mutationObserver = new MutationObserver(() => {
+        updateFooterHeight();
+      });
+      
+      mutationObserver.observe(footerRef.current, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ['style', 'class']
+      });
+    }
+
+    // Initial measurement after a small delay to ensure content is loaded
+    setTimeout(updateFooterHeight, 0);
+
+    return () => {
+      if (resizeObserver) {
+        resizeObserver.disconnect();
+      }
+      if (mutationObserver) {
+        mutationObserver.disconnect();
+      }
+    };
+  }, []);
 
   return (
     <Box
+      ref={footerRef}
       component="footer"
       sx={{
         width: '100%',

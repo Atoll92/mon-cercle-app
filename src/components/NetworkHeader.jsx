@@ -60,6 +60,7 @@ const NetworkHeader = () => {
   const [networkInfo, setNetworkInfo] = useState(null);
   const [loading, setLoading] = useState(false);
   const { hasMultipleProfiles, activeProfile } = useProfile();
+  const headerRef = React.useRef(null);
   
 
   function getNetworkIdFromUrl(pathname) {
@@ -103,6 +104,71 @@ const NetworkHeader = () => {
   useEffect(() => {
     getNetworkInfo();
   }, [getNetworkInfo]);
+
+  // Set CSS variable for header height
+  useEffect(() => {
+    const updateHeaderHeight = () => {
+      if (headerRef.current) {
+        const height = headerRef.current.getBoundingClientRect().height;
+        document.documentElement.style.setProperty('--network-header-height', `${height}px`);
+      }
+    };
+
+    // Use ResizeObserver to track all size changes (including content changes)
+    let resizeObserver;
+    if (typeof ResizeObserver !== 'undefined') {
+      resizeObserver = new ResizeObserver(() => {
+        // ResizeObserver callback fires for all size changes
+        updateHeaderHeight();
+      });
+      
+      if (headerRef.current) {
+        resizeObserver.observe(headerRef.current);
+      }
+    }
+
+    // Also use MutationObserver to catch DOM changes that might affect height
+    let mutationObserver;
+    if (typeof MutationObserver !== 'undefined' && headerRef.current) {
+      mutationObserver = new MutationObserver(() => {
+        updateHeaderHeight();
+      });
+      
+      mutationObserver.observe(headerRef.current, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ['style', 'class']
+      });
+    }
+
+    // Initial measurement after a small delay to ensure content is loaded
+    setTimeout(updateHeaderHeight, 0);
+    
+    // Also update when images load
+    const images = headerRef.current?.querySelectorAll('img');
+    images?.forEach(img => {
+      if (img.complete) {
+        updateHeaderHeight();
+      } else {
+        img.addEventListener('load', updateHeaderHeight);
+        img.addEventListener('error', updateHeaderHeight);
+      }
+    });
+
+    return () => {
+      if (resizeObserver) {
+        resizeObserver.disconnect();
+      }
+      if (mutationObserver) {
+        mutationObserver.disconnect();
+      }
+      images?.forEach(img => {
+        img.removeEventListener('load', updateHeaderHeight);
+        img.removeEventListener('error', updateHeaderHeight);
+      });
+    };
+  }, [networkInfo]); // Re-run when network info changes (which might change the logo)
 
   // Subscribe to network refresh events
   useNetworkRefresh(networkInfo?.id, getNetworkInfo);
@@ -159,6 +225,7 @@ const NetworkHeader = () => {
   return (
     <>
       <Box
+        ref={headerRef}
         sx={{
           display: 'flex',
           flexWrap: 'wrap',
