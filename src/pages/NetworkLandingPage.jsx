@@ -775,7 +775,7 @@ function NetworkLandingPage() {
           position: 'relative',
           width: '100%',
           minHeight: { xs: '180px', sm: '220px' }, // Significantly reduced height
-          mt: '80px', // Account for fixed header
+          mt: 0, // No need for margin with sticky header
           pb: '60px', // Add padding at bottom to allow tabs to extend below
           backgroundImage: network.background_image_url 
             ? `url(${network.background_image_url})` 
@@ -1290,8 +1290,8 @@ function NetworkLandingPage() {
           sx={{
             p: { xs: 2, sm: 3 },
             pt: { 
-              xs: '100px', // Mobile: account for fixed header
-              sm: isTabsFixed ? '80px' : '30px' // Desktop: account for straddling header, dynamic for sticky
+              xs: '30px', // Mobile: normal padding with sticky header
+              sm: isTabsFixed ? '30px' : '30px' // Desktop: consistent padding
             },
             minHeight: '600px', // Ensure enough content to scroll and test sticky behavior
             animation: 'fadeInContent 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.1s both',

@@ -166,30 +166,15 @@ function App() {
              window.location.pathname !== "/profiles/select" && 
              window.location.pathname !== "/login" && 
              !window.location.pathname.startsWith("/micro-conclav/") &&
-             window.location.pathname !== "/network" &&
              window.location.pathname !== "/network-floating" &&
              window.location.pathname !== "/network-alt" &&
-             !window.location.pathname.match(/^\/network\/[^\/]+$/) &&
              !window.location.pathname.match(/^\/network-alt\/[^\/]+$/) && (
               <NetworkHeader/>
             )}
             <Box component="main" sx={{ 
               flex: 1, 
               display: 'flex',
-              flexDirection: 'column',
-              overflow: 'auto',
-              pt: ((window.location.pathname !== "/" || !session) && 
-                 window.location.pathname !== "/pricing" && 
-                 window.location.pathname !== "/terms" && 
-                 window.location.pathname !== "/old" && 
-                 window.location.pathname !== "/profiles/select" && 
-                 window.location.pathname !== "/login" && 
-                 !window.location.pathname.startsWith("/micro-conclav/") &&
-                 window.location.pathname !== "/network" &&
-                 window.location.pathname !== "/network-floating" &&
-                 window.location.pathname !== "/network-alt" &&
-                 !window.location.pathname.match(/^\/network\/[^\/]+$/) &&
-                 !window.location.pathname.match(/^\/network-alt\/[^\/]+$/)) ? '80px' : 0
+              flexDirection: 'column'
             }}>
               <Suspense fallback={<PageLoader />}>
                 <Routes>
