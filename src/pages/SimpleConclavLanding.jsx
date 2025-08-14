@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Box, 
   Container, 
@@ -137,6 +137,10 @@ const SimpleConclavLanding = () => {
   const { profiles } = useProfile();
   const [language, setLanguage] = useState(detectBrowserLanguage());
   
+  // Check if user agent is Safari on iOS
+  const isSafariMobile = /^((?!chrome|android).)*safari/i.test(navigator.userAgent) && 
+    /iPhone|iPad|iPod/i.test(navigator.userAgent);
+  
   // Redirect logged-in users to their network
   useEffect(() => {
     if (user) {
@@ -157,7 +161,17 @@ const SimpleConclavLanding = () => {
   const t = translations[language];
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: '#fafafa' }}>
+    <Box sx={{ 
+      minHeight: '100vh', 
+      bgcolor: '#fafafa',
+      // Safari-specific fixes to prevent animation retriggers
+      ...(isSafariMobile && {
+        WebkitBackfaceVisibility: 'hidden',
+        WebkitTransform: 'translate3d(0, 0, 0)',
+        WebkitPerspective: 1000,
+        transform: 'translateZ(0)' // Force GPU acceleration
+      })
+    }}>
       {/* Hero Section with gradient background */}
       <Box sx={{ 
         background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
@@ -177,10 +191,14 @@ const SimpleConclavLanding = () => {
         <Box 
           textAlign="center" 
           sx={{
-            animation: `${fadeInUp} 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards`,
+            animation: isSafariMobile ? 'none' : `${fadeInUp} 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards`,
             color: 'white',
             position: 'relative',
             zIndex: 1,
+            ...(isSafariMobile && {
+              opacity: 1,
+              transform: 'translateY(0)'
+            })
           }}
         >
           {/* European Badge */}
@@ -350,11 +368,13 @@ const SimpleConclavLanding = () => {
                 color: '#667eea',
                 fontWeight: 'bold',
                 boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
-                '&:hover': {
-                  bgcolor: '#f8f9fa',
-                  transform: 'translateY(-2px)',
-                  boxShadow: '0 12px 35px rgba(0,0,0,0.2)'
-                },
+                ...(!isSafariMobile && {
+                  '&:hover': {
+                    bgcolor: '#f8f9fa',
+                    transform: 'translateY(-2px)',
+                    boxShadow: '0 12px 35px rgba(0,0,0,0.2)'
+                  }
+                }),
                 transition: 'all 0.3s ease'
               }}
             >
@@ -374,11 +394,13 @@ const SimpleConclavLanding = () => {
                 borderWidth: 2,
                 borderColor: 'white',
                 color: 'white',
-                '&:hover': {
-                  borderColor: 'white',
-                  bgcolor: 'rgba(255, 255, 255, 0.1)',
-                  transform: 'translateY(-2px)'
-                },
+                ...(!isSafariMobile && {
+                  '&:hover': {
+                    borderColor: 'white',
+                    bgcolor: 'rgba(255, 255, 255, 0.1)',
+                    transform: 'translateY(-2px)'
+                  }
+                }),
                 transition: 'all 0.3s ease'
               }}
             >
@@ -399,8 +421,12 @@ const SimpleConclavLanding = () => {
         <Container maxWidth="lg">
           <Box
             sx={{
-              animation: `${fadeInUp} 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.2s both`,
+              animation: isSafariMobile ? 'none' : `${fadeInUp} 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.2s both`,
               textAlign: 'center',
+              ...(isSafariMobile && {
+                opacity: 1,
+                transform: 'translateY(0)'
+              })
             }}
           >
             <Typography variant="h3" gutterBottom fontWeight="bold" color="#2c3e50" sx={{ mb: 2 }}>
@@ -416,7 +442,11 @@ const SimpleConclavLanding = () => {
                 sx={{
                   flex: 1,
                   maxWidth: { xs: '100%', lg: '350px' },
-                  animation: `${fadeInUp} 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.3s both`,
+                  animation: isSafariMobile ? 'none' : `${fadeInUp} 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.3s both`,
+                  ...(isSafariMobile && {
+                    opacity: 1,
+                    transform: 'translateY(0)'
+                  })
                 }}
               >
                 <Box sx={{ position: 'relative', mb: 3 }}>
@@ -430,10 +460,12 @@ const SimpleConclavLanding = () => {
                       border: '1px solid #ffc107',
                       transform: 'rotate(-1deg)',
                       transition: 'all 0.3s ease',
-                      '&:hover': {
-                        transform: 'rotate(0deg) translateY(-4px)',
-                        boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
-                      },
+                      ...(!isSafariMobile && {
+                        '&:hover': {
+                          transform: 'rotate(0deg) translateY(-4px)',
+                          boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
+                        }
+                      }),
                       '&::before': {
                         content: '""',
                         position: 'absolute',
@@ -502,7 +534,11 @@ const SimpleConclavLanding = () => {
                 sx={{
                   flex: 1,
                   maxWidth: { xs: '100%', lg: '350px' },
-                  animation: `${fadeInUp} 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.4s both`,
+                  animation: isSafariMobile ? 'none' : `${fadeInUp} 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.4s both`,
+                  ...(isSafariMobile && {
+                    opacity: 1,
+                    transform: 'translateY(0)'
+                  })
                 }}
               >
                 <Box sx={{ position: 'relative', mb: 3 }}>
@@ -516,10 +552,12 @@ const SimpleConclavLanding = () => {
                       border: '1px solid #4caf50',
                       transform: 'rotate(1deg)',
                       transition: 'all 0.3s ease',
-                      '&:hover': {
-                        transform: 'rotate(0deg) translateY(-4px)',
-                        boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
-                      },
+                      ...(!isSafariMobile && {
+                        '&:hover': {
+                          transform: 'rotate(0deg) translateY(-4px)',
+                          boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
+                        }
+                      }),
                       '&::before': {
                         content: '""',
                         position: 'absolute',
@@ -588,7 +626,11 @@ const SimpleConclavLanding = () => {
                 sx={{
                   flex: 1,
                   maxWidth: { xs: '100%', lg: '350px' },
-                  animation: `${fadeInUp} 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.5s both`,
+                  animation: isSafariMobile ? 'none' : `${fadeInUp} 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.5s both`,
+                  ...(isSafariMobile && {
+                    opacity: 1,
+                    transform: 'translateY(0)'
+                  })
                 }}
               >
                 <Box sx={{ position: 'relative', mb: 3 }}>
@@ -602,10 +644,12 @@ const SimpleConclavLanding = () => {
                       border: '1px solid #e91e63',
                       transform: 'rotate(1.5deg)',
                       transition: 'all 0.3s ease',
-                      '&:hover': {
-                        transform: 'rotate(0deg) translateY(-4px)',
-                        boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
-                      },
+                      ...(!isSafariMobile && {
+                        '&:hover': {
+                          transform: 'rotate(0deg) translateY(-4px)',
+                          boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
+                        }
+                      }),
                       '&::before': {
                         content: '""',
                         position: 'absolute',
@@ -678,8 +722,12 @@ const SimpleConclavLanding = () => {
         <Container maxWidth="lg">
           <Box 
             sx={{
-              animation: `${fadeInUp} 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.2s both`,
+              animation: isSafariMobile ? 'none' : `${fadeInUp} 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.2s both`,
               textAlign: 'center',
+              ...(isSafariMobile && {
+                opacity: 1,
+                transform: 'translateY(0)'
+              })
             }}
           >
           <Box mb={8}>
@@ -699,7 +747,11 @@ const SimpleConclavLanding = () => {
               md={4} 
               textAlign="center"
               sx={{
-                animation: `${fadeInUp} 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.3s both`,
+                animation: isSafariMobile ? 'none' : `${fadeInUp} 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.3s both`,
+                ...(isSafariMobile && {
+                  opacity: 1,
+                  transform: 'translateY(0)'
+                })
               }}
             >
               <Box sx={{
@@ -710,11 +762,13 @@ const SimpleConclavLanding = () => {
                 height: '100%',
                 textAlign: 'center',
                 transition: 'all 0.3s ease',
-                '&:hover': {
-                  transform: 'translateY(-8px)',
-                  boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
-                  borderColor: '#667eea',
-                }
+                ...(!isSafariMobile && {
+                  '&:hover': {
+                    transform: 'translateY(-8px)',
+                    boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
+                    borderColor: '#667eea',
+                  }
+                })
               }}>
                 <Shield sx={{ fontSize: 60, color: '#667eea', mb: 2 }} />
                 <Typography variant="h6" gutterBottom fontWeight="bold" color="#2c3e50">
@@ -732,7 +786,11 @@ const SimpleConclavLanding = () => {
               md={4} 
               textAlign="center"
               sx={{
-                animation: `${fadeInUp} 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.4s both`,
+                animation: isSafariMobile ? 'none' : `${fadeInUp} 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.4s both`,
+                ...(isSafariMobile && {
+                  opacity: 1,
+                  transform: 'translateY(0)'
+                })
               }}
             >
               <Box sx={{
@@ -743,11 +801,13 @@ const SimpleConclavLanding = () => {
                 height: '100%',
                 textAlign: 'center',
                 transition: 'all 0.3s ease',
-                '&:hover': {
-                  transform: 'translateY(-8px)',
-                  boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
-                  borderColor: '#667eea',
-                }
+                ...(!isSafariMobile && {
+                  '&:hover': {
+                    transform: 'translateY(-8px)',
+                    boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
+                    borderColor: '#667eea',
+                  }
+                })
               }}>
                 <Speed sx={{ fontSize: 60, color: '#667eea', mb: 2 }} />
                 <Typography variant="h6" gutterBottom fontWeight="bold" color="#2c3e50">
@@ -765,7 +825,11 @@ const SimpleConclavLanding = () => {
               md={4} 
               textAlign="center"
               sx={{
-                animation: `${fadeInUp} 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.5s both`,
+                animation: isSafariMobile ? 'none' : `${fadeInUp} 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.5s both`,
+                ...(isSafariMobile && {
+                  opacity: 1,
+                  transform: 'translateY(0)'
+                })
               }}
             >
               <Box sx={{
@@ -776,11 +840,13 @@ const SimpleConclavLanding = () => {
                 height: '100%',
                 textAlign: 'center',
                 transition: 'all 0.3s ease',
-                '&:hover': {
-                  transform: 'translateY(-8px)',
-                  boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
-                  borderColor: '#667eea',
-                }
+                ...(!isSafariMobile && {
+                  '&:hover': {
+                    transform: 'translateY(-8px)',
+                    boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
+                    borderColor: '#667eea',
+                  }
+                })
               }}>
                 <Group sx={{ fontSize: 60, color: '#667eea', mb: 2 }} />
                 <Typography variant="h6" gutterBottom fontWeight="bold" color="#2c3e50">
@@ -801,8 +867,12 @@ const SimpleConclavLanding = () => {
         <Container maxWidth="lg">
           <Box
             sx={{
-              animation: `${fadeInUp} 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.4s both`,
+              animation: isSafariMobile ? 'none' : `${fadeInUp} 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.4s both`,
               textAlign: 'center',
+              ...(isSafariMobile && {
+                opacity: 1,
+                transform: 'translateY(0)'
+              })
             }}
           >
           <Typography variant="h3" textAlign="center" gutterBottom fontWeight="bold" mb={8} color="#2c3e50">
@@ -815,7 +885,11 @@ const SimpleConclavLanding = () => {
             xs={12} 
             md={6}
             sx={{
-              animation: `${fadeInUp} 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.5s both`,
+              animation: isSafariMobile ? 'none' : `${fadeInUp} 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.5s both`,
+              ...(isSafariMobile && {
+                opacity: 1,
+                transform: 'translateY(0)'
+              })
             }}
           >
             <Paper 
@@ -827,11 +901,13 @@ const SimpleConclavLanding = () => {
                 borderRadius: 4,
                 border: '1px solid #e9ecef',
                 transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                '&:hover': {
-                  transform: 'translateY(-8px)',
-                  boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
-                  borderColor: '#667eea',
-                },
+                ...(!isSafariMobile && {
+                  '&:hover': {
+                    transform: 'translateY(-8px)',
+                    boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
+                    borderColor: '#667eea',
+                  }
+                }),
               }}
             >
               <Security sx={{ fontSize: 48, color: '#667eea', mb: 3 }} />
@@ -849,7 +925,11 @@ const SimpleConclavLanding = () => {
             xs={12} 
             md={6}
             sx={{
-              animation: `${fadeInUp} 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.6s both`,
+              animation: isSafariMobile ? 'none' : `${fadeInUp} 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.6s both`,
+              ...(isSafariMobile && {
+                opacity: 1,
+                transform: 'translateY(0)'
+              })
             }}
           >
             <Paper 
@@ -861,11 +941,13 @@ const SimpleConclavLanding = () => {
                 borderRadius: 4,
                 border: '1px solid #e9ecef',
                 transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                '&:hover': {
-                  transform: 'translateY(-8px)',
-                  boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
-                  borderColor: '#667eea',
-                },
+                ...(!isSafariMobile && {
+                  '&:hover': {
+                    transform: 'translateY(-8px)',
+                    boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
+                    borderColor: '#667eea',
+                  }
+                }),
               }}
             >
               <Public sx={{ fontSize: 48, color: '#667eea', mb: 3 }} />
@@ -887,8 +969,12 @@ const SimpleConclavLanding = () => {
         <Container maxWidth="md" textAlign="center">
           <Box
             sx={{
-              animation: `${fadeInUp} 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.6s both`,
+              animation: isSafariMobile ? 'none' : `${fadeInUp} 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.6s both`,
               color: 'white',
+              ...(isSafariMobile && {
+                opacity: 1,
+                transform: 'translateY(0)'
+              })
             }}
           >
           <Typography variant="h3" gutterBottom fontWeight="bold" color="white" sx={{ mb: 3 }}>
@@ -912,11 +998,13 @@ const SimpleConclavLanding = () => {
               color: '#667eea',
               fontWeight: 'bold',
               boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
-              '&:hover': {
-                bgcolor: '#f8f9fa',
-                transform: 'translateY(-2px)',
-                boxShadow: '0 12px 35px rgba(0,0,0,0.2)'
-              },
+              ...(!isSafariMobile && {
+                '&:hover': {
+                  bgcolor: '#f8f9fa',
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 12px 35px rgba(0,0,0,0.2)'
+                }
+              }),
               transition: 'all 0.3s ease'
             }}
           >

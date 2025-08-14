@@ -62,6 +62,7 @@ import { getTabDescription } from '../utils/tabDescriptions';
 const NetworkLandingPageWrapper = () => {
   const { networkId } = useParams();
   const { userNetworkId, fetchingNetwork } = useApp();
+  const { t } = useTranslation();
 
   // Show loading while fetching user's network
   if (!networkId && fetchingNetwork) {
