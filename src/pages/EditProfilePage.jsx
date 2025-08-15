@@ -52,8 +52,6 @@ import {
   Delete as DeleteIcon
 } from '@mui/icons-material';
 import NotificationSettings from '../components/NotificationSettings';
-import NotificationSystemManager from '../components/NotificationSystemManager';
-import NotificationDebugger from '../components/NotificationDebugger';
 import CreatePostModal from '../components/CreatePostModal';
 import PostCard from '../components/PostCard';
 import MemberOnboardingWizard from '../components/MemberOnboardingWizard';
@@ -1011,51 +1009,113 @@ function EditProfilePage() {
             {activeTab === 1 && (
               <Box>
                 {/* Previously Published Posts Section */}
-                <Box sx={{ mb: 3 }}>
-                  <Typography variant="h6" sx={{ mb: 2, borderBottom: '1px solid #e0e0e0', pb: 1 }}>
-                    Previously Published Posts
-                  </Typography>
-                  
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={() => setCreatePostModalOpen(true)}
-                    startIcon={<AddIcon />}
-                    size="large"
+                <Box sx={{ mb: 4 }}>
+                  {/* Section Header with Create Button */}
+                  <Box 
+                    sx={{ 
+                      display: 'flex', 
+                      justifyContent: 'space-between', 
+                      alignItems: 'center',
+                      mb: 3,
+                      pb: 2,
+                      borderBottom: '2px solid',
+                      borderColor: 'primary.main'
+                    }}
                   >
-                    Create Post
-                  </Button>
-                  
-                  {postItems.length === 0 ? (
-                    <Paper 
-                      variant="outlined"
-                      sx={{ 
-                        p: 4, 
-                        textAlign: 'center',
+                    <Typography variant="h5" fontWeight="600" color="primary.main">
+                      Previously Published Posts
+                    </Typography>
+                    
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={() => setCreatePostModalOpen(true)}
+                      startIcon={<AddIcon />}
+                      size="medium"
+                      sx={{
                         borderRadius: 2,
-                        borderStyle: 'dashed',
-                        bgcolor: 'grey.50'
+                        px: 3,
+                        py: 1,
+                        textTransform: 'none',
+                        fontSize: '0.95rem',
+                        fontWeight: 500,
+                        boxShadow: '0 2px 8px rgba(33, 150, 243, 0.3)',
+                        '&:hover': {
+                          boxShadow: '0 4px 12px rgba(33, 150, 243, 0.4)'
+                        }
                       }}
                     >
-                      <Typography variant="body1" color="text.secondary">
-                        You haven't created any posts yet.
+                      Create Post
+                    </Button>
+                  </Box>
+                  
+                  {/* Posts Content */}
+                  {postItems.length === 0 ? (
+                    <Paper 
+                      elevation={0}
+                      variant="outlined"
+                      sx={{ 
+                        p: 6, 
+                        textAlign: 'center',
+                        borderRadius: 3,
+                        borderStyle: 'dashed',
+                        borderWidth: 2,
+                        borderColor: 'grey.300',
+                        bgcolor: 'grey.50',
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
+                      <Box sx={{ mb: 2 }}>
+                        <LanguageIcon sx={{ fontSize: 48, color: 'text.secondary', opacity: 0.5 }} />
+                      </Box>
+                      <Typography variant="h6" color="text.secondary" gutterBottom>
+                        No posts yet
                       </Typography>
+                      <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                        Share your work, thoughts, or achievements with your network
+                      </Typography>
+                      <Button
+                        variant="outlined"
+                        color="primary"
+                        onClick={() => setCreatePostModalOpen(true)}
+                        startIcon={<AddIcon />}
+                        sx={{
+                          borderRadius: 2,
+                          textTransform: 'none',
+                          fontWeight: 500
+                        }}
+                      >
+                        Create Your First Post
+                      </Button>
                     </Paper>
                   ) : (
-                    <Grid container spacing={3}>
-                      {postItems.map((post) => (
-                        <Grid item xs={12} md={6} key={post.id}>
-                          <PostCard
-                            post={post}
-                            author={profile}
-                            isOwner={true}
-                            onPostUpdated={handlePostUpdated}
-                            onPostDeleted={handlePostDeleted}
-                            sx={{ height: '100%' }}
-                          />
-                        </Grid>
-                      ))}
-                    </Grid>
+                    <Box>
+                      <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                        {postItems.length} {postItems.length === 1 ? 'post' : 'posts'} published
+                      </Typography>
+                      
+                      <Grid container spacing={3}>
+                        {postItems.map((post) => (
+                          <Grid item xs={12} lg={6} key={post.id}>
+                            <PostCard
+                              post={post}
+                              author={profile}
+                              isOwner={true}
+                              onPostUpdated={handlePostUpdated}
+                              onPostDeleted={handlePostDeleted}
+                              sx={{ 
+                                height: '100%',
+                                transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                                '&:hover': {
+                                  transform: 'translateY(-2px)',
+                                  boxShadow: '0 8px 25px rgba(0,0,0,0.12)'
+                                }
+                              }}
+                            />
+                          </Grid>
+                        ))}
+                      </Grid>
+                    </Box>
                   )}
                 </Box>
               </Box>
@@ -1109,13 +1169,6 @@ function EditProfilePage() {
                   </Paper>
                   
                   <NotificationSettings />
-                  <NotificationSystemManager />
-                  <Box sx={{ mt: 4 }}>
-                    <Typography variant="h6" gutterBottom>
-                      {t('editProfile.settings.notifications')}
-                    </Typography>
-                    <NotificationDebugger />
-                  </Box>
                   
                   <Divider sx={{ my: 4 }} />
                   

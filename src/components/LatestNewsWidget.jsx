@@ -77,7 +77,7 @@ const LatestAnnouncementsWidget = ({ networkId, onMemberClick, darkMode = false 
     return (
       <WidgetErrorState 
         icon={<AnnouncementIcon color="primary" />}
-        title={t('dashboard.widgets.latestAnnouncements')}
+        title={t('dashboard.widgets.latestNews')}
         error={error}
       />
     );
@@ -99,7 +99,7 @@ const LatestAnnouncementsWidget = ({ networkId, onMemberClick, darkMode = false 
       }}>
         <WidgetHeader
           icon={<AnnouncementIcon color="primary" />}
-          title={t('dashboard.widgets.latestAnnouncements')}
+          title={t('dashboard.widgets.latestNews')}
           action={
             isAdmin && (
               <Button
@@ -147,7 +147,7 @@ const LatestAnnouncementsWidget = ({ networkId, onMemberClick, darkMode = false 
     }}>
       <WidgetHeader
         icon={<AnnouncementIcon color="primary" />}
-        title={t('dashboard.widgets.latestAnnouncements')}
+        title={t('dashboard.widgets.latestNews')}
         viewAllLink={`/network/${networkId}?tab=news`}
         action={
           isAdmin && (

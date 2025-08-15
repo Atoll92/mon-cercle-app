@@ -811,10 +811,21 @@ function DashboardPage() {
 
       {session && profile ? (
         <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', width: '100%' }}>
-              {/* Row 1: Profile and Network Management */}
-              <Grid container spacing={2} sx={{ width: '100%', maxWidth: '100%' }}>
+              {/* Row 1: Profile and Network Management/Upcoming Events */}
+              <Box sx={{ 
+                display: 'flex', 
+                gap: 2, 
+                width: '100%', 
+                flexDirection: { xs: 'column', md: 'row' },
+                alignItems: 'flex-start'
+              }}>
                   {/* Profile Card - Left Column */}
-                  <Grid item xs={12} md={3}>
+                  <Box sx={{ 
+                    flex: { xs: '1 1 100%', md: '0 0 350px' },
+                    width: { xs: '100%', md: '350px' },
+                    maxWidth: { xs: '100%', md: '350px' },
+                    minWidth: { xs: '100%', md: '350px' }
+                  }}>
                     <Card 
                       ref={getItemRef(0)}
                       sx={{ 
@@ -822,108 +833,141 @@ function DashboardPage() {
                         boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
                         display: 'flex',
                         flexDirection: 'column',
-                        height: '100%',
+                        height: 400,
+                        minHeight: 400,
                         width: '100%',
+                        flex: 1,
                         transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
                       }}
                      
                     >
-                      <CardMedia
-                        sx={{ 
-                          height: 100, 
-                          bgcolor: 'primary.main',
-                          display: 'flex',
-                          alignItems: 'flex-end',
-                          justifyContent: 'center',
-                          position: 'relative'
-                        }}
-                      >
-                        <Avatar 
-                          sx={{ 
-                            width: 80, 
-                            height: 80, 
-                            border: '4px solid white',
-                            boxShadow: '0 4px 10px rgba(0,0,0,0.2)',
-                            position: 'absolute',
-                            bottom: '-30px',
-                            bgcolor: 'grey.200'
-                          }}
-                          src={profile.profile_picture_url} 
-                        >
-                          {profile.full_name ? profile.full_name.charAt(0).toUpperCase() : <PersonIcon fontSize="large" />}
-                        </Avatar>
-                      </CardMedia>
+                      {/* Thin Colored Header */}
+                      <Box sx={{ 
+                        height: 6,
+                        background: 'linear-gradient(90deg, #1976d2 0%, #42a5f5 100%)',
+                        borderRadius: '4px 4px 0 0'
+                      }} />
                       
-                      <CardContent sx={{ pt: 4, pb: 1 }}>
-                        <Box sx={{ textAlign: 'center', mb: 1 }}>
-                          <Typography variant="h5" component="h2" gutterBottom>
-                            {profile.full_name || user?.email?.split('@')[0] || t('dashboard.profile.notSet')}
-                          </Typography>
-                          
-                          <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1 }}>
-                            <Chip 
-                              label={profile.role === 'admin' ? t('dashboard.profile.role.admin') : t('dashboard.profile.role.member')} 
-                              color={profile.role === 'admin' ? 'primary' : 'default'} 
-                              size="small" 
-                            />
+                      <CardContent sx={{ pt: 2, pb: 1 }}>
+                        {/* Modern Header with Profile Picture on Right */}
+                        <Box sx={{ 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          gap: 2, 
+                          mb: 2,
+                          p: 1,
+                          borderRadius: 2,
+                          bgcolor: 'rgba(0, 0, 0, 0.02)'
+                        }}>
+                          {/* Name and Role Section */}
+                          <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+                            <Typography 
+                              variant="h6" 
+                              component="h2" 
+                              sx={{ 
+                                fontWeight: 600, 
+                                mb: 0.5,
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap'
+                              }}
+                            >
+                              {profile.full_name || user?.email?.split('@')[0] || t('dashboard.profile.notSet')}
+                            </Typography>
                             
-                            {profile.network_id && (
+                            {/* Role and Status Chips */}
+                            <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
                               <Chip 
-                                icon={<NetworkIcon fontSize="small" />}
-                                label={t('dashboard.profile.connected')} 
-                                color="success" 
-                                size="small" 
-                                variant="outlined"
+                                label={profile.role === 'admin' ? t('dashboard.profile.role.admin') : t('dashboard.profile.role.member')} 
+                                color={profile.role === 'admin' ? 'primary' : 'default'} 
+                                size="small"
+                                sx={{ fontSize: '0.7rem', height: 20 }}
                               />
-                            )}
+                              
+                              {profile.network_id && (
+                                <Chip 
+                                  icon={<NetworkIcon sx={{ fontSize: 12 }} />}
+                                  label={t('dashboard.profile.connected')} 
+                                  color="success" 
+                                  size="small" 
+                                  variant="outlined"
+                                  sx={{ fontSize: '0.7rem', height: 20 }}
+                                />
+                              )}
+                            </Box>
                           </Box>
+                          
+                          {/* Profile Picture on Right */}
+                          <Avatar 
+                            sx={{ 
+                              width: 64, 
+                              height: 64, 
+                              boxShadow: '0 4px 12px rgba(0,0,0,0.12)',
+                              border: '2px solid',
+                              borderColor: 'background.paper',
+                              bgcolor: 'grey.200',
+                              flexShrink: 0,
+                              outline: '2px solid #1976d2',
+                              outlineOffset: '1px'
+                            }}
+                            src={profile.profile_picture_url} 
+                          >
+                            {profile.full_name ? profile.full_name.charAt(0).toUpperCase() : <PersonIcon fontSize="large" />}
+                          </Avatar>
                         </Box>
                         
                         <Divider sx={{ mb: 1.5 }} />
                         
-                        <Typography variant="body2" color="text.secondary" gutterBottom>
-                          <strong>{t('dashboard.profile.email')}:</strong> {user?.email}
-                        </Typography>
-                        
-                        {profile.contact_email && (
-                          <Typography variant="body2" color="text.secondary" gutterBottom>
-                            <strong>{t('dashboard.profile.contact')}:</strong> {profile.contact_email}
+                        {/* Compact Information Section */}
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                          <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.8rem' }}>
+                            <strong>{t('dashboard.profile.email')}:</strong> {user?.email}
                           </Typography>
-                        )}
+                          
+                          {profile.contact_email && (
+                            <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.8rem' }}>
+                              <strong>{t('dashboard.profile.contact')}:</strong> {profile.contact_email}
+                            </Typography>
+                          )}
+                        </Box>
                         
                         {profile.bio && (
-                          <Box sx={{ mt: 1 }}>
-                            <Typography variant="subtitle2" gutterBottom>
-                              {t('dashboard.profile.bio')}:
-                            </Typography>
-                            <Typography variant="body2" color="text.secondary">
-                              {profile.bio.length > 80 ? profile.bio.substring(0, 80) + '...' : profile.bio}
+                          <Box sx={{ mt: 1.5 }}>
+                            <Typography variant="body2" color="text.secondary" sx={{ 
+                              fontSize: '0.85rem',
+                              lineHeight: 1.4,
+                              display: '-webkit-box',
+                              WebkitLineClamp: 3,
+                              WebkitBoxOrient: 'vertical',
+                              overflow: 'hidden'
+                            }}>
+                              {profile.bio}
                             </Typography>
                           </Box>
                         )}
                         
                         {profile.skills && profile.skills.length > 0 && (
-                          <Box sx={{ mt: 1 }}>
-                            <Typography variant="subtitle2" gutterBottom>
-                              {t('dashboard.profile.skills')}:
-                            </Typography>
+                          <Box sx={{ mt: 1.5 }}>
                             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                              {profile.skills.slice(0, 3).map((skill, index) => (
+                              {profile.skills.slice(0, 4).map((skill, index) => (
                                 <Chip 
                                   key={index} 
                                   label={skill} 
                                   size="small" 
                                   sx={{ 
-                                    bgcolor: 'rgba(63, 81, 181, 0.1)',
+                                    bgcolor: 'rgba(63, 81, 181, 0.08)',
+                                    fontSize: '0.7rem',
+                                    height: 22,
                                     fontWeight: 400
                                   }}
                                 />
                               ))}
-                              {profile.skills.length > 3 && (
+                              {profile.skills.length > 4 && (
                                 <Chip 
-                                  label={`+${profile.skills.length - 3}`} 
+                                  label={`+${profile.skills.length - 4}`} 
                                   size="small" 
                                   color="primary"
+                                  sx={{ fontSize: '0.7rem', height: 22 }}
                                 />
                               )}
                             </Box>
@@ -936,99 +980,117 @@ function DashboardPage() {
                       <CardActions sx={{ 
                         p: 1, 
                         display: 'flex',
-                        flexDirection: { xs: 'column', sm: 'row' },
-                        gap: 1,
-                        '& .MuiButton-root': {
-                          width: { xs: '100%', sm: 'auto' }
-                        }
+                        justifyContent: 'center',
+                        gap: 1
                       }}>
-                        <Button 
-                          size="small" 
-                          startIcon={<EditIcon />}
-                          component={Link} 
-                          to="/profile/edit"
-                          variant="outlined"
-                          style={{margin: '0 auto'}}
-                        >
-                          {t('dashboard.buttons.editProfile')}
-                        </Button>
+                        <Tooltip title={t('dashboard.buttons.editProfile')} placement="top">
+                          <Button 
+                            size="small" 
+                            component={Link} 
+                            to="/profile/edit"
+                            variant="outlined"
+                            sx={{ 
+                              minWidth: 'auto',
+                              width: 40,
+                              height: 40,
+                              p: 0.5
+                            }}
+                          >
+                            <EditIcon fontSize="small" />
+                          </Button>
+                        </Tooltip>
                         
-                        <Button 
-                          size="small" 
-                          startIcon={<PersonIcon />}
-                          component={Link} 
-                          to={`/profile/${activeProfile.id}`}
-                          variant="outlined"
-                          color="secondary"
-                          style={{margin: '0 auto'}}
-                        >
-                          {t('dashboard.buttons.viewProfile')}
-                        </Button>
+                        <Tooltip title={t('dashboard.buttons.viewProfile')} placement="top">
+                          <Button 
+                            size="small" 
+                            component={Link} 
+                            to={`/profile/${activeProfile.id}`}
+                            variant="outlined"
+                            color="secondary"
+                            sx={{ 
+                              minWidth: 'auto',
+                              width: 40,
+                              height: 40,
+                              p: 0.5
+                            }}
+                          >
+                            <PersonIcon fontSize="small" />
+                          </Button>
+                        </Tooltip>
                         
-                        <Button 
-                          size="small" 
-                          startIcon={<PreviewIcon />}
-                          component={Link} 
-                          to={activeProfile?.username ? `/micro/${activeProfile.username}` : `/micro-conclav/${activeProfile.id}`}
-                          target="_blank"
-                          variant="outlined"
-                          color="primary"
-                          style={{margin: '0 auto'}}
-                        >
-                          {t('dashboard.buttons.myMicroConclav')}
-                        </Button>
+                        <Tooltip title={t('dashboard.buttons.myMicroConclav')} placement="top">
+                          <Button 
+                            size="small" 
+                            component={Link} 
+                            to={activeProfile?.username ? `/micro/${activeProfile.username}` : `/micro-conclav/${activeProfile.id}`}
+                            target="_blank"
+                            variant="outlined"
+                            color="primary"
+                            sx={{ 
+                              minWidth: 'auto',
+                              width: 40,
+                              height: 40,
+                              p: 0.5
+                            }}
+                          >
+                            <PreviewIcon fontSize="small" />
+                          </Button>
+                        </Tooltip>
                       </CardActions>
                     </Card>
-                  </Grid>
+                  </Box>
                   
-                  {/* Network Management Widget - Only for Admins */}
+                  {/* Right Column - Network Management (Admin) or Upcoming Events (Non-Admin) */}
                   {profile.network_id && profile.role === 'admin' ? (
-                    <Grid item xs={12} md={9}>
+                    <Box sx={{ 
+                      flex: { xs: '1 1 100%', md: '1 1 auto' },
+                      width: { xs: '100%', md: 'auto' },
+                      minWidth: 0
+                    }}>
                       <Card 
                         ref={getItemRef(1)}
                         sx={{ 
                           borderRadius: 2, 
                           boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-                          height: '100%',
+                          height: 400,
+                          minHeight: 400,
                           width: '100%',
                           display: 'flex',
                           flexDirection: 'column',
                           transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
                         }}
-                       
                       >
-                        <CardHeader
-                          title={<Typography variant="subtitle1">{t('dashboard.network.management')}</Typography>}
-                          avatar={<NetworkIcon color="primary" />}
-                          sx={{ 
-                            py: 1,
-                            bgcolor: 'rgba(25, 118, 210, 0.05)'
-                          }}
-                        />
-                        
-                        <CardContent sx={{ py: 1, flexGrow: 1 }}>
-                          {/* Network Name and Subscription Badge */}
-                          <Box sx={{ 
-                            display: 'flex', 
-                            justifyContent: 'space-between',
-                            alignItems: 'flex-start', 
-                            mb: 1.5
-                          }}>
-                            <Typography variant="subtitle1" color="primary.main" fontWeight="medium">
-                              {networkDetails?.name || 'My Network'}
-                            </Typography>
-                            
-                            {/* Subscription Badge */}
-                            {!loadingNetworkDetails && networkDetails?.subscription_status === 'active' && (
-                              <SubscriptionBadge 
-                                plan={networkDetails.subscription_plan} 
-                                status={networkDetails.subscription_status} 
-                              />
-                            )}
-                          </Box>
+                          <CardHeader
+                            title={<Typography variant="subtitle1">{t('dashboard.network.management')}</Typography>}
+                            avatar={<NetworkIcon color="primary" />}
+                            sx={{ 
+                              py: 1,
+                              bgcolor: 'rgba(25, 118, 210, 0.05)'
+                            }}
+                          />
                           
-                          {/* Admin Quick Links */}
-                          {profile.role === 'admin' && (
+                          <CardContent sx={{ py: 1, flexGrow: 1 }}>
+                            {/* Network Name and Subscription Badge */}
+                            <Box sx={{ 
+                              display: 'flex', 
+                              justifyContent: 'space-between',
+                              alignItems: 'flex-start', 
+                              mb: 1.5
+                            }}>
+                              <Typography variant="subtitle1" color="primary.main" fontWeight="medium">
+                                {networkDetails?.name || 'My Network'}
+                              </Typography>
+                              
+                              {/* Subscription Badge */}
+                              {!loadingNetworkDetails && networkDetails?.subscription_status === 'active' && (
+                                <SubscriptionBadge 
+                                  plan={networkDetails.subscription_plan} 
+                                  status={networkDetails.subscription_status} 
+                                />
+                              )}
+                            </Box>
+                            
+                            {/* Admin Quick Links */}
                             <Box sx={{ mb: 2 }}>
                               <Box sx={{ display: 'flex', gap: 1, mb: 1 }}>
                                 <Button 
@@ -1060,119 +1122,114 @@ function DashboardPage() {
                                 {t('dashboard.network.adminPrivileges')}
                               </Typography>
                             </Box>
-                          )}
-                          
-                          {/* Super Admin Button - Only for super admin accounts */}
-                          {(user?.email === 'admin@conclav.com' || user?.app_metadata?.role === 'super_admin') && (
-                            <Box sx={{ mb: 2 }}>
-                              <Button 
-                                variant="contained" 
-                                color="warning" 
-                                component={Link} 
-                                to="/super-admin"
-                                startIcon={<AdminIcon />}
-                                size="small"
-                                fullWidth
-                              >
-                                Super Admin Panel
-                              </Button>
-                              
-                              <Typography variant="caption" color="text.secondary">
-                                System-wide administration
-                              </Typography>
-                            </Box>
-                          )}
-                          
-                          {/* Subscription Status Card */}
-                          <Box sx={{ mb: 2 }}>
-                            <SubscriptionStatusCard 
-                              networkDetails={networkDetails}
-                              loadingNetworkDetails={loadingNetworkDetails}
-                              profile={profile}
-                              t={t}
-                            />
-                          </Box>
-                          
-                          {/* Network Stats */}
-                          <Grid container spacing={1.5}>
-                            <Grid item xs={6} style={{maxWidth: '100px'}}>
-                              <Paper sx={{ 
-                                p: 1, 
-                                textAlign: 'center',
-                                bgcolor: 'rgba(33, 150, 243, 0.1)',
-                                borderRadius: 2,
-                                height: '100%',
-                                minHeight: '80px',
-                                width: '100%',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                justifyContent: 'center',
-                                boxSizing: 'border-box'
-                              }}>
-                                <Typography variant="h5" fontWeight="500" color="primary.main">
-                                  {networkMembers.length}
-                                </Typography>
-                                <Typography variant="body2" color="text.secondary">
-                                  {t('dashboard.network.members')}
-                                </Typography>
-                              </Paper>
-                            </Grid>
                             
-                            <Grid item xs={6} style={{maxWidth: '100px'}}>
-                              <Paper sx={{ 
-                                p: 1, 
-                                textAlign: 'center',
-                                bgcolor: 'rgba(76, 175, 80, 0.1)',
-                                borderRadius: 2,
-                                height: '100%',
-                                minHeight: '80px',
-                                width: '100%',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                justifyContent: 'center',
-                                boxSizing: 'border-box'
-                              }}>
-                                <Typography variant="h5" fontWeight="500" color="success.main">
-                                  {recentEvents.length}
+                            {/* Super Admin Button - Only for super admin accounts */}
+                            {(user?.email === 'admin@conclav.com' || user?.app_metadata?.role === 'super_admin') && (
+                              <Box sx={{ mb: 2 }}>
+                                <Button 
+                                  variant="contained" 
+                                  color="warning" 
+                                  component={Link} 
+                                  to="/super-admin"
+                                  startIcon={<AdminIcon />}
+                                  size="small"
+                                  fullWidth
+                                >
+                                  Super Admin Panel
+                                </Button>
+                                
+                                <Typography variant="caption" color="text.secondary">
+                                  System-wide administration
                                 </Typography>
-                                <Typography variant="body2" color="text.secondary">
-                                  {t('dashboard.network.events')}
-                                </Typography>
-                              </Paper>
+                              </Box>
+                            )}
+                            
+                            {/* Subscription Status Card */}
+                            <Box sx={{ mb: 2 }}>
+                              <SubscriptionStatusCard 
+                                networkDetails={networkDetails}
+                                loadingNetworkDetails={loadingNetworkDetails}
+                                profile={profile}
+                                t={t}
+                              />
+                            </Box>
+                            
+                            {/* Network Stats */}
+                            <Grid container spacing={1.5}>
+                              <Grid item xs={6} style={{maxWidth: '100px'}}>
+                                <Paper sx={{ 
+                                  p: 1, 
+                                  textAlign: 'center',
+                                  bgcolor: 'rgba(33, 150, 243, 0.1)',
+                                  borderRadius: 2,
+                                  height: '100%',
+                                  minHeight: '80px',
+                                  width: '100%',
+                                  display: 'flex',
+                                  flexDirection: 'column',
+                                  justifyContent: 'center',
+                                  boxSizing: 'border-box'
+                                }}>
+                                  <Typography variant="h5" fontWeight="500" color="primary.main">
+                                    {networkMembers.length}
+                                  </Typography>
+                                  <Typography variant="body2" color="text.secondary">
+                                    {t('dashboard.network.members')}
+                                  </Typography>
+                                </Paper>
+                              </Grid>
+                              
+                              <Grid item xs={6} style={{maxWidth: '100px'}}>
+                                <Paper sx={{ 
+                                  p: 1, 
+                                  textAlign: 'center',
+                                  bgcolor: 'rgba(76, 175, 80, 0.1)',
+                                  borderRadius: 2,
+                                  height: '100%',
+                                  minHeight: '80px',
+                                  width: '100%',
+                                  display: 'flex',
+                                  flexDirection: 'column',
+                                  justifyContent: 'center',
+                                  boxSizing: 'border-box'
+                                }}>
+                                  <Typography variant="h5" fontWeight="500" color="success.main">
+                                    {recentEvents.length}
+                                  </Typography>
+                                  <Typography variant="body2" color="text.secondary">
+                                    {t('dashboard.network.events')}
+                                  </Typography>
+                                </Paper>
+                              </Grid>
                             </Grid>
-                          </Grid>
-                        </CardContent>
-                      </Card>
-                    </Grid>
-                  ) : (
-                    /* Upcoming Events - For non-admin members, show next to profile */
-                    profile?.role !== 'admin' && profile.network_id && (
-                      <Grid item xs={12} md={9}>
-                      {recentEvents.length > 0 ? (
-                      <Card sx={{ 
-                        borderRadius: 2, 
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-                        height: '100%',
-                        width: '100%',
-                        maxWidth: '100%',
-                        display: 'flex',
-                        flexDirection: 'column'
-                      }}>
+                          </CardContent>
+                        </Card>
+                    </Box>
+                  ) : profile.network_id && profile.role !== 'admin' && (
+                    <Box sx={{ 
+                      flex: { xs: '1 1 100%', md: '1 1 auto' },
+                      width: { xs: '100%', md: 'auto' },
+                      minWidth: 0,
+                      maxWidth: '100%'
+                    }}>
+                      <Card 
+                        ref={getItemRef(1)}
+                        sx={{ 
+                          borderRadius: 2, 
+                          boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                          height: 400,
+                          minHeight: 400,
+                          width: '100%',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+                        }}
+                      >
                         <CardHeader
                           title={<Typography variant="subtitle1">{t('dashboard.network.upcomingEvents')}</Typography>}
                           avatar={<EventIcon color="primary" />}
                           action={
-                            <Box sx={{ display: 'flex', gap: 1 }}>
-                              {profile.role === 'admin' && (
-                                <Button
-                                  variant="contained"
-                                  size="small"
-                                  startIcon={<AddIcon />}
-                                  onClick={() => setCreateEventOpen(true)}
-                                >
-                                  {t('dashboard.buttons.createEvent')}
-                                </Button>
-                              )}
+                            recentEvents.length > 0 && (
                               <Button 
                                 component={Link}
                                 to="/network?tab=events"
@@ -1181,7 +1238,7 @@ function DashboardPage() {
                               >
                                 {t('dashboard.buttons.viewAll')}
                               </Button>
-                            </Box>
+                            )
                           }
                           sx={{ 
                             bgcolor: 'rgba(25, 118, 210, 0.05)',
@@ -1190,10 +1247,18 @@ function DashboardPage() {
                         />
                         
                         {loadingEvents ? (
-                          <Box sx={{ p: 2, textAlign: 'center' }}>
+                          <Box sx={{ 
+                            p: 2, 
+                            textAlign: 'center',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            flexGrow: 1,
+                            minHeight: 200
+                          }}>
                             <Spinner size={120} />
                           </Box>
-                        ) : (
+                        ) : recentEvents.length > 0 ? (
                           <CardContent sx={{ py: 0.5, flexGrow: 1, overflow: 'auto' }}>
                             <Stack spacing={1}>
                               {recentEvents.map(event => (
@@ -1210,52 +1275,26 @@ function DashboardPage() {
                               ))}
                             </Stack>
                           </CardContent>
+                        ) : (
+                          <CardContent sx={{ 
+                            py: 1, 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            justifyContent: 'center', 
+                            flexGrow: 1,
+                            minHeight: 200
+                          }}>
+                            <Box sx={{ textAlign: 'center', py: 2 }}>
+                              <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                                {t('dashboard.events.noUpcoming')}
+                              </Typography>
+                            </Box>
+                          </CardContent>
                         )}
                       </Card>
-                    ) : (
-                      // No events, show empty state
-                      <Card sx={{ 
-                        borderRadius: 2, 
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-                        height: '100%',
-                        width: '100%',
-                        maxWidth: '100%',
-                        display: 'flex',
-                        flexDirection: 'column'
-                      }}>
-                        <CardHeader
-                          title={<Typography variant="subtitle1">{t('dashboard.network.upcomingEvents')}</Typography>}
-                          avatar={<EventIcon color="primary" />}
-                          sx={{ 
-                            bgcolor: 'rgba(25, 118, 210, 0.05)',
-                            py: 1
-                          }}
-                        />
-                        <CardContent sx={{ py: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexGrow: 1 }}>
-                          <Box sx={{ textAlign: 'center', py: 2 }}>
-                            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                              {t('dashboard.events.noUpcoming')}
-                            </Typography>
-                            
-                            {profile.network_id && profile.role === 'admin' && (
-                              <Button 
-                                variant="outlined" 
-                                component={Link} 
-                                to="/admin?tab=events"
-                                startIcon={<AddIcon />}
-                                size="small"
-                              >
-                                {t('dashboard.buttons.createEvent')}
-                              </Button>
-                            )}
-                          </Box>
-                        </CardContent>
-                      </Card>
-                    )}
-                      </Grid>
-                    )
+                    </Box>
                   )}
-              </Grid>
+              </Box>
               
               {/* Second Row: Upcoming Events (admin only) */}
               {profile?.role === 'admin' && profile.network_id && (
