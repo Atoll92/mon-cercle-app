@@ -608,6 +608,7 @@
     "widgets": {
       "latestPosts": "Dernières publications",
       "latestAnnouncements": "Dernières annonces",
+      "latestNews": "Annonces Récentes",
       "myMicroConclav": "Mon Micro Conclav"
     },
     "events": {
