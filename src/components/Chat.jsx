@@ -19,8 +19,6 @@ import {
   Typography,
   Badge,
   alpha,
-  Switch,
-  FormControlLabel,
   Popover,
   MenuItem,
   Chip,
@@ -29,8 +27,6 @@ import {
 import Spinner from './Spinner';
 import SendIcon from '@mui/icons-material/Send';
 import PersonIcon from '@mui/icons-material/Person';
-import Brightness4Icon from '@mui/icons-material/Brightness4';
-import Brightness7Icon from '@mui/icons-material/Brightness7';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
 import PlayCircleIcon from '@mui/icons-material/PlayCircle';
 import AudioFileIcon from '@mui/icons-material/AudioFile';
@@ -65,7 +61,7 @@ const Chat = ({ networkId, isFullscreen = false, backgroundImageUrl }) => {
   const [activeUsers, setActiveUsers] = useState({});
   const messageEndRef = useRef(null);
   const channelRef = useRef(null);
-  const [darkMode, setDarkMode] = useState(true);
+  const darkMode = true; // Always use dark mode
   const [showMediaUpload, setShowMediaUpload] = useState(false);
   const [expandedMedia, setExpandedMedia] = useState({});
   const [pendingMedia, setPendingMedia] = useState(null);
@@ -1102,19 +1098,22 @@ const renderMedia = (mediaUrl, mediaType, metadata, messageId) => {
             to={`/profile/${mentionedUser.id}`}
             sx={{
               cursor: 'pointer',
-              backgroundColor: darkMode 
-                ? alpha('#1976d2', 0.3)
-                : alpha('#1976d2', 0.2),
-              color: darkMode ? '#64b5f6' : '#1976d2',
-              fontWeight: 500,
-              fontSize: '0.85rem',
-              height: 22,
-              mx: 0.3,
+              background: darkMode 
+                ? 'linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.2))' 
+                : 'linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1))',
+              color: darkMode ? '#a5b4fc' : '#6366f1',
+              fontWeight: 600,
+              fontSize: '0.8rem',
+              height: 24,
+              mx: 0.5,
+              border: 'none',
               '&:hover': {
-                backgroundColor: darkMode 
-                  ? alpha('#1976d2', 0.5)
-                  : alpha('#1976d2', 0.3),
-                textDecoration: 'none'
+                background: darkMode 
+                  ? 'linear-gradient(135deg, rgba(99, 102, 241, 0.3), rgba(139, 92, 246, 0.3))'
+                  : 'linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(139, 92, 246, 0.15))',
+                textDecoration: 'none',
+                transform: 'translateY(-1px)',
+                boxShadow: '0 2px 8px rgba(99, 102, 241, 0.2)'
               }
             }}
           />
@@ -1235,10 +1234,7 @@ const renderMessageContent = (message) => {
   // Count unique active users
   const activeUserCount = Object.keys(activeUsers).length;
   
-  // Toggle dark/light mode handler
-  const handleModeToggle = () => {
-    setDarkMode(!darkMode);
-  };
+  // Dark mode is always enabled for chat
 
   if (loading) {
     return (
@@ -1331,34 +1327,22 @@ const renderMessageContent = (message) => {
         </Typography>
         
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          {/* Mode toggle */}
-          <FormControlLabel
-            control={
-              <Switch
-                checked={darkMode}
-                onChange={handleModeToggle}
-                icon={<Brightness7Icon fontSize="small" />}
-                checkedIcon={<Brightness4Icon fontSize="small" />}
-                sx={{
-                  '& .MuiSwitch-switchBase': {
-                    color: darkMode ? '#f1f1f1' : '#333'
-                  },
-                  '& .MuiSwitch-track': {
-                    backgroundColor: darkMode ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'
-                  }
-                }}
-              />
-            }
-            label=""
-          />
-          
           <Badge 
             badgeContent={activeUserCount} 
             color="primary"
             max={99}
-            sx={{ '& .MuiBadge-badge': { fontSize: '0.8rem' } }}
+            sx={{ 
+              '& .MuiBadge-badge': { 
+                fontSize: '0.75rem',
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                fontWeight: 600
+              } 
+            }}
           >
-            <PersonIcon sx={{ color: darkMode ? 'white' : 'text.secondary' }} />
+            <PersonIcon sx={{ 
+              color: darkMode ? 'rgba(255,255,255,0.9)' : 'text.secondary',
+              fontSize: '1.3rem'
+            }} />
           </Badge>
         </Box>
       </Box>
@@ -1367,11 +1351,26 @@ const renderMessageContent = (message) => {
       <List 
         sx={{ 
           flexGrow: 1, 
-          overflow: 'auto', 
-          p: 2,
+          overflowY: 'auto',
+          overflowX: 'hidden',
+          px: isFullscreen ? 4 : 3,
+          py: 3,
           zIndex: 1,
           position: 'relative',
-          backgroundColor: darkMode ? 'transparent' : 'rgba(255,255,255,0.3)'
+          backgroundColor: darkMode ? 'transparent' : 'rgba(255,255,255,0)',
+          '&::-webkit-scrollbar': {
+            width: '8px',
+          },
+          '&::-webkit-scrollbar-track': {
+            background: 'transparent',
+          },
+          '&::-webkit-scrollbar-thumb': {
+            background: darkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)',
+            borderRadius: '4px',
+            '&:hover': {
+              background: darkMode ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)',
+            }
+          }
         }}
       >
         {messages.length === 0 ? (
@@ -1409,13 +1408,20 @@ const renderMessageContent = (message) => {
                       size="small"
                       sx={{ 
                         bgcolor: darkMode 
-                          ? 'rgba(255, 255, 255, 0.08)' 
-                          : 'rgba(0, 0, 0, 0.08)', 
+                          ? 'rgba(255, 255, 255, 0.1)' 
+                          : 'rgba(0, 0, 0, 0.06)', 
                         color: darkMode 
-                          ? 'rgba(255, 255, 255, 0.7)' 
+                          ? 'rgba(255, 255, 255, 0.8)' 
                           : 'text.secondary',
-                        fontWeight: 500,
-                        fontSize: '0.7rem'
+                        fontWeight: 600,
+                        fontSize: '0.75rem',
+                        letterSpacing: '0.5px',
+                        px: 2,
+                        py: 0.5,
+                        backdropFilter: 'blur(8px)',
+                        border: darkMode
+                          ? '1px solid rgba(255,255,255,0.1)'
+                          : '1px solid rgba(0,0,0,0.05)'
                       }}
                     />
                   </Box>
@@ -1425,47 +1431,62 @@ const renderMessageContent = (message) => {
                   opacity: message.pending ? 0.7 : 1,
                   backgroundColor: darkMode
                     ? (message.user_id === activeProfile.id 
-                      ? alpha('#1976d2', 0.6) 
-                      : alpha('#333', 0.5))
+                      ? 'rgba(99, 102, 241, 0.85)' 
+                      : 'rgba(45, 55, 72, 0.85)')
                     : (message.user_id === activeProfile.id 
-                      ? alpha('#e3f2fd', 0.9) 
-                      : alpha('#fff', 0.85)),
-                  borderRadius: 2,
-                  mb: 0.5, // Reduced margin between messages
-                  py: 0.25, // Further reduced vertical padding
-                  px: 1, // Reduced horizontal padding
-                  backdropFilter: 'blur(8px)',
-                  boxShadow: darkMode
-                    ? '0 1px 3px rgba(0,0,0,0.2)'
-                    : '0 1px 3px rgba(0,0,0,0.05)',
-                  transform: message.user_id === activeProfile.id 
-                    ? 'translateX(4%)' 
-                    : 'translateX(-4%)',
-                  maxWidth: containsLink ? '92%' : '80%', // Slightly smaller max width
-                  marginLeft: message.user_id === activeProfile.id ? 'auto' : 2,
-                  marginRight: message.user_id === activeProfile.id ? 2 : 'auto',
-                  transition: 'all 0.2s ease',
+                      ? '#ffffff' 
+                      : '#f7fafc'),
+                  borderRadius: message.user_id === activeProfile.id ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
+                  mb: 1.5,
+                  py: 1.5,
+                  px: 2,
+                  backdropFilter: 'blur(10px)',
+                  boxShadow: message.user_id === activeProfile.id
+                    ? darkMode 
+                      ? '0 4px 12px rgba(99, 102, 241, 0.2)'
+                      : '0 4px 12px rgba(99, 102, 241, 0.1)'
+                    : darkMode
+                      ? '0 2px 8px rgba(0,0,0,0.3)'
+                      : '0 2px 8px rgba(0,0,0,0.08)',
+                  transform: 'none',
+                  maxWidth: containsLink ? '85%' : '70%',
+                  marginLeft: message.user_id === activeProfile.id ? 'auto' : '0',
+                  marginRight: message.user_id === activeProfile.id ? '0' : 'auto',
+                  width: 'fit-content',
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                   border: darkMode 
                     ? 'none' 
-                    : `1px solid ${message.user_id === activeProfile.id ? '#bbdefb' : '#e0e0e0'}`,
-                  animation: 'fadeInUp 0.3s ease-out',
+                    : message.user_id === activeProfile.id 
+                      ? '1px solid rgba(99, 102, 241, 0.2)' 
+                      : '1px solid rgba(0,0,0,0.06)',
+                  animation: 'fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
                   position: 'relative',
+                  '&:hover': {
+                    transform: 'translateY(-2px)',
+                    boxShadow: message.user_id === activeProfile.id
+                      ? darkMode 
+                        ? '0 6px 20px rgba(99, 102, 241, 0.3)'
+                        : '0 6px 20px rgba(99, 102, 241, 0.15)'
+                      : darkMode
+                        ? '0 4px 12px rgba(0,0,0,0.4)'
+                        : '0 4px 12px rgba(0,0,0,0.12)',
+                  },
                   '&:hover .message-menu-button': {
                     opacity: 1
                   },
                   '@keyframes fadeInUp': {
                     from: {
                       opacity: 0,
-                      transform: `translateY(10px) ${message.user_id === activeProfile.id ? 'translateX(4%)' : 'translateX(-4%)'}`
+                      transform: 'translateY(20px)'
                     },
                     to: {
                       opacity: 1,
-                      transform: `translateY(0) ${message.user_id === activeProfile.id ? 'translateX(4%)' : 'translateX(-4%)'}`
+                      transform: 'translateY(0)'
                     }
                   }
                 }}
               >
-                <ListItemAvatar sx={{ minWidth: 36 }}> {/* Further reduced avatar area width */}
+                <ListItemAvatar sx={{ minWidth: 40 }}>
                   <Avatar 
                     src={message.profiles?.profile_picture_url}
                     alt={message.profiles?.full_name}
@@ -1475,16 +1496,19 @@ const renderMessageContent = (message) => {
                     } : undefined}
                     sx={{
                       cursor: message.profiles?.id ? 'pointer' : 'default', 
-                      width: 28,  // Smaller avatar
-                      height: 28, // Smaller avatar
+                      width: 36,
+                      height: 36,
                       border: darkMode
-                        ? '2px solid white'
-                        : '2px solid #e0e0e0',
-                      boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
-                      cursor: message.profiles?.id ? 'pointer' : 'default',
+                        ? '2px solid rgba(255,255,255,0.9)'
+                        : '2px solid rgba(0,0,0,0.08)',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                      background: message.profiles?.profile_picture_url ? 'transparent' : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                      fontSize: '0.9rem',
+                      fontWeight: 600,
                       '&:hover': message.profiles?.id ? {
-                        transform: 'scale(1.1)',
-                        transition: 'transform 0.2s ease'
+                        transform: 'scale(1.05)',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
                       } : {}
                     }}
                   >
@@ -1631,12 +1655,14 @@ const renderMessageContent = (message) => {
                       opacity: 0,
                       transition: 'opacity 0.2s',
                       backgroundColor: darkMode 
-                        ? 'rgba(255, 255, 255, 0.1)' 
-                        : 'rgba(0, 0, 0, 0.05)',
+                        ? 'rgba(255, 255, 255, 0.08)' 
+                        : 'rgba(0, 0, 0, 0.04)',
+                      color: darkMode ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)',
                       '&:hover': {
                         backgroundColor: darkMode 
-                          ? 'rgba(255, 255, 255, 0.2)' 
-                          : 'rgba(0, 0, 0, 0.1)',
+                          ? 'rgba(255, 255, 255, 0.15)' 
+                          : 'rgba(0, 0, 0, 0.08)',
+                        color: darkMode ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.9)',
                       }
                     }}
                   >
@@ -1828,15 +1854,18 @@ const renderMessageContent = (message) => {
               onClick={() => setPendingMedia(null)}
               sx={{
                 position: 'absolute',
-                top: -8,
-                right: -8,
-                bgcolor: 'error.main',
+                top: -10,
+                right: -10,
+                background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
                 color: 'white',
                 '&:hover': {
-                  bgcolor: 'error.dark'
+                  background: 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)',
+                  transform: 'scale(1.1)'
                 },
-                width: 24,
-                height: 24
+                width: 28,
+                height: 28,
+                boxShadow: '0 2px 8px rgba(239, 68, 68, 0.3)',
+                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
               }}
             >
               <CancelIcon sx={{ fontSize: 16 }} />
@@ -1971,31 +2000,51 @@ const renderMessageContent = (message) => {
           data-emoji-picker
           sx={{ 
             position: 'absolute', 
-            bottom: 80, 
-            right: 16, 
-            p: 1,
-            bgcolor: darkMode ? 'background.paper' : 'background.default',
-            boxShadow: 3,
-            borderRadius: 2,
-            zIndex: 10
+            bottom: 90, 
+            right: 24, 
+            bgcolor: 'rgba(30, 30, 40, 0.98)',
+            boxShadow: '0 10px 40px rgba(0,0,0,0.15)',
+            borderRadius: 3,
+            zIndex: 10,
+            border: '1px solid rgba(255,255,255,0.1)',
+            overflow: 'hidden'
           }}
         >
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1, px: 1 }}>
-            <Typography variant="subtitle2">Choose Emoji</Typography>
-            <IconButton size="small" onClick={() => setShowEmojiPicker(false)}>
-              <CancelIcon />
+          <Box sx={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center', 
+            mb: 1.5, 
+            px: 2, 
+            py: 1.5,
+            borderBottom: '1px solid rgba(255,255,255,0.1)'
+          }}>
+            <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>Choose Emoji</Typography>
+            <IconButton 
+              size="small" 
+              onClick={() => setShowEmojiPicker(false)}
+              sx={{ 
+                color: 'rgba(255,255,255,0.6)',
+                '&:hover': {
+                  backgroundColor: 'rgba(255,255,255,0.1)'
+                }
+              }}
+            >
+              <CancelIcon sx={{ fontSize: '1.2rem' }} />
             </IconButton>
           </Box>
           <EmojiPicker
             onEmojiClick={handleEmojiClick}
-            theme={darkMode ? 'dark' : 'light'}
-            width={300}
+            theme='dark'
+            width={320}
             height={400}
             searchDisabled={false}
             skinTonesDisabled={false}
             previewConfig={{
               showPreview: false
             }}
+            emojiStyle='apple'
+            lazyLoadEmojis={true}
           />
         </Paper>
       )}
@@ -2006,20 +2055,35 @@ const renderMessageContent = (message) => {
           data-media-upload
           sx={{ 
             position: 'absolute', 
-            bottom: 80, 
-            left: 16, 
-            right: showEmojiPicker ? 332 : 16, // Adjust right margin when emoji picker is open
-            p: 2,
-            bgcolor: darkMode ? 'background.paper' : 'background.default',
-            boxShadow: 3,
-            borderRadius: 2,
-            zIndex: 10
+            bottom: 90, 
+            left: 24, 
+            right: showEmojiPicker ? 340 : 24,
+            p: 2.5,
+            bgcolor: 'rgba(30, 30, 40, 0.98)',
+            boxShadow: '0 10px 40px rgba(0,0,0,0.15)',
+            borderRadius: 3,
+            zIndex: 10,
+            border: '1px solid rgba(255,255,255,0.1)'
           }}
         >
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-            <Typography variant="subtitle2">Upload Media</Typography>
-            <IconButton size="small" onClick={() => setShowMediaUpload(false)}>
-              <CancelIcon />
+          <Box sx={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center', 
+            mb: 2.5
+          }}>
+            <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>Upload Media</Typography>
+            <IconButton 
+              size="small" 
+              onClick={() => setShowMediaUpload(false)}
+              sx={{ 
+                color: 'rgba(255,255,255,0.6)',
+                '&:hover': {
+                  backgroundColor: 'rgba(255,255,255,0.1)'
+                }
+              }}
+            >
+              <CancelIcon sx={{ fontSize: '1.2rem' }} />
             </IconButton>
           </Box>
           <MediaUpload
