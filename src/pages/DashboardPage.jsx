@@ -923,12 +923,6 @@ function DashboardPage() {
                           <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.8rem' }}>
                             <strong>{t('dashboard.profile.email')}:</strong> {user?.email}
                           </Typography>
-                          
-                          {profile.contact_email && (
-                            <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.8rem' }}>
-                              <strong>{t('dashboard.profile.contact')}:</strong> {profile.contact_email}
-                            </Typography>
-                          )}
                         </Box>
                         
                         {profile.bio && (
