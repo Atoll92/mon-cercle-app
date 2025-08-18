@@ -75,7 +75,13 @@ function EditProfilePage() {
   const [avatarUrl, setAvatarUrl] = useState('');
   const [postItems, setPostItems] = useState([]);
   const [initialPostItems, setInitialPostItems] = useState([]);
-  const [activeTab, setActiveTab] = useState(0);
+  const [activeTab, setActiveTab] = useState(() => {
+    // Check URL params for tab parameter
+    const urlParams = new URLSearchParams(location.search);
+    const tabParam = urlParams.get('tab');
+    if (tabParam === 'settings') return 2;
+    return 0;
+  });
   const [isDraggingAvatar, setIsDraggingAvatar] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [deleteAccountDialogOpen, setDeleteAccountDialogOpen] = useState(false);

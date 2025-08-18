@@ -43,7 +43,8 @@ import {
   AccessTime as AccessTimeIcon,
   CheckCircle as CheckCircleIcon,
   Cancel as CancelIcon,
-  Help as HelpIcon
+  Help as HelpIcon,
+  Settings as SettingsIcon
 } from '@mui/icons-material';
 import { 
   Box, 
@@ -61,7 +62,6 @@ import {
   Chip,
   Stack,
   Tooltip,
-  CardMedia,
   CardHeader
 } from '@mui/material';
 
@@ -1028,6 +1028,23 @@ function DashboardPage() {
                             }}
                           >
                             <PreviewIcon fontSize="small" />
+                          </Button>
+                        </Tooltip>
+                        
+                        <Tooltip title={t('dashboard.buttons.settings')} placement="top">
+                          <Button 
+                            size="small" 
+                            component={Link} 
+                            to="/profile/edit?tab=settings"
+                            variant="outlined"
+                            sx={{ 
+                              minWidth: 'auto',
+                              width: 40,
+                              height: 40,
+                              p: 0.5
+                            }}
+                          >
+                            <SettingsIcon fontSize="small" />
                           </Button>
                         </Tooltip>
                       </CardActions>
