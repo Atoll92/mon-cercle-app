@@ -32,7 +32,14 @@ import {
   ListItemText,
   ListItemAvatar,
   Avatar,
-  Tooltip
+  Tooltip,
+  Fade,
+  Grow,
+  Skeleton,
+  Stack,
+  alpha,
+  useTheme as muiUseTheme,
+  Card
 } from '@mui/material';
 import Spinner from '../components/Spinner';
 import MemberDetailsModal from '../components/MembersDetailModal';
@@ -47,7 +54,12 @@ import {
   Check as ApproveIcon,
   Close as RejectIcon,
   ArrowBack as ArrowBackIcon,
-  Category as CategoryIcon
+  Category as CategoryIcon,
+  Person as PersonIcon,
+  CalendarToday as CalendarIcon,
+  Schedule as ScheduleIcon,
+  LocalOffer as TagIcon,
+  Article as ArticleIcon
 } from '@mui/icons-material';
 
 const WikiPage = () => {
@@ -58,6 +70,7 @@ const WikiPage = () => {
   const { activeProfile } = useProfile();
   // Get theme information including darkMode state
   const { darkMode } = useTheme();
+  const theme = muiUseTheme();
   
   const [page, setPage] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -460,61 +473,258 @@ const WikiPage = () => {
 
   const displayContent = viewingRevision ? viewingRevision.content : page.content;
 
-  // Dark mode styling adjustments for the wiki content
+  // Dark mode styling adjustments for the wiki content - FORCE OVERRIDE ALL STYLES
   const wikiContentStyles = {
-    // Add custom styles for the wiki content area depending on dark mode
-    color: darkMode ? 'inherit' : 'inherit',
+    // Force text color to use theme colors with !important
+    color: `${theme.palette.text.primary} !important`,
+    lineHeight: 1.7,
+    fontSize: '1rem',
+    
+    // FORCE all text elements to use theme colors
+    '& *': {
+      color: `${theme.palette.text.primary} !important`
+    },
+    
+    // Typography hierarchy with forced colors
+    '& h1, & h2, & h3, & h4, & h5, & h6': {
+      color: `${theme.palette.text.primary} !important`,
+      fontWeight: '600 !important',
+      lineHeight: '1.3 !important',
+      margin: '1.5em 0 0.5em 0 !important',
+      '&:first-child': {
+        marginTop: '0 !important'
+      }
+    },
+    
+    '& h1': { fontSize: '2.25rem !important' },
+    '& h2': { fontSize: '1.875rem !important' },
+    '& h3': { fontSize: '1.5rem !important' },
+    '& h4': { fontSize: '1.25rem !important' },
+    '& h5': { fontSize: '1.125rem !important' },
+    '& h6': { fontSize: '1rem !important' },
+    
+    // Force paragraphs and text elements
+    '& p': {
+      margin: '1em 0 !important',
+      color: `${theme.palette.text.primary} !important`
+    },
+    
+    '& div': {
+      color: `${theme.palette.text.primary} !important`
+    },
+    
+    '& span': {
+      color: `${theme.palette.text.primary} !important`
+    },
+    
+    '& text': {
+      color: `${theme.palette.text.primary} !important`
+    },
+    
+    // Links with forced colors
     '& a': {
-      color: darkMode ? '#90caf9' : '#1976d2', // Different link colors for dark/light mode
+      color: `${theme.palette.primary.main} !important`,
+      textDecoration: 'underline !important',
+      textDecorationColor: `${alpha(theme.palette.primary.main, 0.4)} !important`,
+      transition: 'all 0.2s ease !important',
+      '&:hover': {
+        color: `${theme.palette.primary.light} !important`,
+        textDecorationColor: `${theme.palette.primary.main} !important`
+      }
     },
+    
+    // Lists with forced colors
+    '& ul, & ol': {
+      margin: '1em 0 !important',
+      paddingLeft: '2em !important',
+      color: `${theme.palette.text.primary} !important`,
+      '& li': {
+        margin: '0.5em 0 !important',
+        color: `${theme.palette.text.primary} !important`
+      }
+    },
+    
+    // Images
     '& img': {
-      maxWidth: '100%',
-      height: 'auto',
-      // Optional: add a subtle border in dark mode for better visibility of images
-      ...(darkMode && {
-        border: '1px solid rgba(255, 255, 255, 0.1)',
-      }),
+      maxWidth: '100% !important',
+      height: 'auto !important',
+      borderRadius: `${theme.shape.borderRadius}px !important`,
+      border: `1px solid ${alpha(theme.palette.divider, 0.2)} !important`,
+      boxShadow: `${theme.shadows[1]} !important`
     },
-    '& pre, & code': {
-      backgroundColor: darkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)',
-      padding: '0.2em 0.4em',
-      borderRadius: '3px',
-      fontFamily: 'monospace',
+    
+    // Code blocks and inline code with forced colors
+    '& pre': {
+      backgroundColor: `${theme.palette.mode === 'dark' 
+        ? alpha(theme.palette.common.white, 0.05) 
+        : alpha(theme.palette.common.black, 0.05)} !important`,
+      border: `1px solid ${alpha(theme.palette.divider, 0.2)} !important`,
+      borderRadius: `${theme.shape.borderRadius}px !important`,
+      padding: '1em !important',
+      margin: '1em 0 !important',
+      overflow: 'auto !important',
+      fontFamily: 'monospace !important',
+      fontSize: '0.875rem !important',
+      lineHeight: '1.5 !important',
+      color: `${theme.palette.text.primary} !important`
     },
+    
+    '& code': {
+      backgroundColor: `${theme.palette.mode === 'dark' 
+        ? alpha(theme.palette.common.white, 0.08) 
+        : alpha(theme.palette.common.black, 0.08)} !important`,
+      color: `${theme.palette.text.primary} !important`,
+      padding: '0.2em 0.4em !important',
+      borderRadius: `${theme.shape.borderRadius}px !important`,
+      fontFamily: 'monospace !important',
+      fontSize: '0.875em !important',
+      border: `1px solid ${alpha(theme.palette.divider, 0.1)} !important`
+    },
+    
+    // Tables with forced colors
     '& table': {
-      borderCollapse: 'collapse',
-      width: '100%',
-      marginBottom: '1rem',
+      borderCollapse: 'collapse !important',
+      width: '100% !important',
+      margin: '1em 0 !important',
+      border: `1px solid ${theme.palette.divider} !important`,
+      borderRadius: `${theme.shape.borderRadius}px !important`,
+      overflow: 'hidden !important',
+      color: `${theme.palette.text.primary} !important`
     },
+    
     '& th, & td': {
-      border: darkMode ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid rgba(0, 0, 0, 0.1)',
-      padding: '8px',
+      border: `1px solid ${theme.palette.divider} !important`,
+      padding: '12px 16px !important',
+      textAlign: 'left !important',
+      color: `${theme.palette.text.primary} !important`
     },
+    
     '& th': {
-      backgroundColor: darkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)',
+      backgroundColor: `${theme.palette.mode === 'dark' 
+        ? alpha(theme.palette.common.white, 0.05) 
+        : alpha(theme.palette.common.black, 0.05)} !important`,
+      fontWeight: '600 !important',
+      borderBottom: `2px solid ${theme.palette.divider} !important`,
+      color: `${theme.palette.text.primary} !important`
     },
+    
+    '& tbody tr': {
+      color: `${theme.palette.text.primary} !important`,
+      '&:nth-of-type(even)': {
+        backgroundColor: `${theme.palette.mode === 'dark' 
+          ? alpha(theme.palette.common.white, 0.02) 
+          : alpha(theme.palette.common.black, 0.02)} !important`
+      },
+      '&:hover': {
+        backgroundColor: `${theme.palette.mode === 'dark' 
+          ? alpha(theme.palette.common.white, 0.05) 
+          : alpha(theme.palette.common.black, 0.05)} !important`
+      }
+    },
+    
+    // Blockquotes with forced colors
     '& blockquote': {
-      borderLeft: darkMode ? '4px solid rgba(255, 255, 255, 0.2)' : '4px solid rgba(0, 0, 0, 0.1)',
-      margin: '1em 0',
-      padding: '0 1em',
+      borderLeft: `4px solid ${theme.palette.primary.main} !important`,
+      backgroundColor: `${alpha(theme.palette.primary.main, 0.05)} !important`,
+      margin: '1em 0 !important',
+      padding: '1em 1.5em !important',
+      borderRadius: `0 ${theme.shape.borderRadius}px ${theme.shape.borderRadius}px 0 !important`,
+      color: `${theme.palette.text.primary} !important`,
+      fontStyle: 'italic !important',
+      '& p': {
+        margin: '0.5em 0 !important',
+        color: `${theme.palette.text.primary} !important`,
+        '&:first-child': { marginTop: '0 !important' },
+        '&:last-child': { marginBottom: '0 !important' }
+      }
     },
+    
+    // Horizontal rules
+    '& hr': {
+      border: 'none !important',
+      height: '1px !important',
+      backgroundColor: `${theme.palette.divider} !important`,
+      margin: '2em 0 !important'
+    },
+    
+    // Strong and emphasis with forced colors
+    '& strong, & b': {
+      fontWeight: '600 !important',
+      color: `${theme.palette.text.primary} !important`
+    },
+    
+    '& em, & i': {
+      fontStyle: 'italic !important',
+      color: `${theme.palette.text.primary} !important`
+    },
+    
+    // Mark/highlight
+    '& mark': {
+      backgroundColor: `${alpha(theme.palette.warning.main, 0.3)} !important`,
+      color: `${theme.palette.text.primary} !important`,
+      padding: '0 0.2em !important',
+      borderRadius: '2px !important'
+    },
+    
+    // Override any potential editor-specific classes
+    '& .ql-editor': {
+      color: `${theme.palette.text.primary} !important`
+    },
+    
+    '& .ql-editor p': {
+      color: `${theme.palette.text.primary} !important`
+    },
+    
+    // Override Quill editor styles if present
+    '& .ql-container': {
+      color: `${theme.palette.text.primary} !important`
+    },
+    
+    // Override any potential inline styles or other editor classes
+    '& [style*="color"]': {
+      color: `${theme.palette.text.primary} !important`
+    }
   };
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-      <Paper sx={{ p: 3 }}>
-        {/* Breadcrumb navigation */}
-        <Box sx={{ mb: 2 }}>
-          <Breadcrumbs>
-            <Link to={`/network/${networkId}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-              Network
-            </Link>
-            <Link to={`/network/${networkId}/wiki`} style={{ textDecoration: 'none', color: 'inherit' }}>
-              Wiki
-            </Link>
-            <Typography color="textPrimary">{page.title}</Typography>
-          </Breadcrumbs>
-        </Box>
+      <Fade in={true} timeout={300}>
+        <Paper 
+          sx={{ 
+            p: 4, 
+            borderRadius: 2, 
+            boxShadow: theme.shadows[1],
+            background: theme.palette.mode === 'dark' 
+              ? 'linear-gradient(145deg, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0.05) 100%)'
+              : 'linear-gradient(145deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,1) 100%)'
+          }}
+        >
+          {/* Breadcrumb navigation */}
+          <Box sx={{ mb: 3 }}>
+            <Breadcrumbs 
+              sx={{ 
+                '& .MuiBreadcrumbs-separator': { 
+                  mx: 1 
+                },
+                '& a': {
+                  textDecoration: 'none',
+                  color: theme.palette.text.secondary,
+                  '&:hover': {
+                    color: theme.palette.primary.main,
+                    textDecoration: 'underline'
+                  }
+                }
+              }}
+            >
+              <Link to={`/network/${networkId}`}>
+                Network
+              </Link>
+              <Link to={`/network/${networkId}/wiki`}>
+                Wiki
+              </Link>
+              <Typography color="textPrimary" sx={{ fontWeight: 500 }}>{page.title}</Typography>
+            </Breadcrumbs>
+          </Box>
 
         {viewingRevision && (
           <Alert 
@@ -781,22 +991,44 @@ const WikiPage = () => {
             </Typography>
           )}
         </Box>
-      </Paper>
+        </Paper>
+      </Fade>
 
       {/* Revision history sidebar - with dark mode compatible styling */}
       {showRevisionHistory && (
-        <Paper sx={{ p: 3, mt: 3 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-            <Typography variant="h6">
-              Revision History
-            </Typography>
-            <Button 
-              size="small"
-              onClick={() => setShowRevisionHistory(false)}
-            >
-              Close
-            </Button>
-          </Box>
+        <Grow in={true} timeout={300}>
+          <Paper 
+            sx={{ 
+              p: 4, 
+              mt: 3,
+              borderRadius: 2,
+              boxShadow: theme.shadows[1]
+            }}
+          >
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+              <Typography 
+                variant="h5" 
+                sx={{ 
+                  fontWeight: 600,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1
+                }}
+              >
+                <HistoryIcon sx={{ color: theme.palette.primary.main }} />
+                Revision History
+              </Typography>
+              <Button 
+                size="small"
+                onClick={() => setShowRevisionHistory(false)}
+                sx={{
+                  borderRadius: 1,
+                  textTransform: 'none'
+                }}
+              >
+                Close
+              </Button>
+            </Box>
           
           {revisions.length > 0 ? (
             <List>
@@ -855,7 +1087,8 @@ const WikiPage = () => {
               No revisions available for this page.
             </Typography>
           )}
-        </Paper>
+          </Paper>
+        </Grow>
       )}
 
       {/* Delete confirmation dialog */}

@@ -29,6 +29,13 @@ import {
   DialogContentText,
   DialogActions,
   Stack,
+  Fade,
+  Grow,
+  Skeleton,
+  alpha,
+  useTheme,
+  Card,
+  InputAdornment
 } from '@mui/material';
 import Spinner from '../components/Spinner';
 
@@ -39,6 +46,11 @@ import {
   AddCircleOutline as AddCategoryIcon,
   ArrowBack as ArrowBackIcon,
   Edit as EditIcon,
+  Title as TitleIcon,
+  Link as LinkIcon,
+  Category as CategoryIcon,
+  Article as ArticleIcon,
+  Info as InfoIcon
 } from '@mui/icons-material';
 
 const WikiEditPage = () => {
@@ -46,6 +58,7 @@ const WikiEditPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { activeProfile } = useProfile();
+  const theme = useTheme();
   
   const [isNewPage, setIsNewPage] = useState(() => {
     console.log('Initial pageSlug:', pageSlug);
@@ -523,180 +536,373 @@ const WikiEditPage = () => {
   if (loading) {
     return (
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
-          <Spinner size={120} />
-        </Box>
+        <Paper sx={{ p: 4, borderRadius: 2, boxShadow: theme.shadows[1] }}>
+          <Skeleton variant="text" width={300} height={40} sx={{ mb: 3 }} />
+          <Stack spacing={3}>
+            <Skeleton variant="rectangular" height={56} sx={{ borderRadius: 1 }} />
+            <Skeleton variant="rectangular" height={56} sx={{ borderRadius: 1 }} />
+            <Skeleton variant="rectangular" height={300} sx={{ borderRadius: 2 }} />
+          </Stack>
+        </Paper>
       </Container>
     );
   }
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-      <Paper sx={{ p: 3 }}>
-        {/* Breadcrumb navigation */}
-        <Box sx={{ mb: 2 }}>
-          <Breadcrumbs>
-            <Link to={`/network/${networkId}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-              Network
-            </Link>
-            <Link to={`/network/${networkId}/wiki`} style={{ textDecoration: 'none', color: 'inherit' }}>
-              Wiki
-            </Link>
-            <Typography color="textPrimary">
-              {isNewPage ? 'New Page' : `Edit: ${page?.title}`}
+      <Fade in={true} timeout={300}>
+        <Paper 
+          sx={{ 
+            p: 4, 
+            borderRadius: 2, 
+            boxShadow: theme.shadows[1],
+            background: theme.palette.mode === 'dark' 
+              ? 'linear-gradient(145deg, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0.05) 100%)'
+              : 'linear-gradient(145deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,1) 100%)'
+          }}
+        >
+          {/* Breadcrumb navigation */}
+          <Box sx={{ mb: 3 }}>
+            <Breadcrumbs 
+              sx={{ 
+                '& .MuiBreadcrumbs-separator': { 
+                  mx: 1 
+                },
+                '& a': {
+                  textDecoration: 'none',
+                  color: theme.palette.text.secondary,
+                  '&:hover': {
+                    color: theme.palette.primary.main,
+                    textDecoration: 'underline'
+                  }
+                }
+              }}
+            >
+              <Link to={`/network/${networkId}`}>
+                Network
+              </Link>
+              <Link to={`/network/${networkId}/wiki`}>
+                Wiki
+              </Link>
+              <Typography color="textPrimary" sx={{ fontWeight: 500 }}>
+                {isNewPage ? 'New Page' : `Edit: ${page?.title}`}
+              </Typography>
+            </Breadcrumbs>
+          </Box>
+
+          {error && (
+            <Alert 
+              severity="error" 
+              sx={{ 
+                mb: 3,
+                borderRadius: 2,
+                '& .MuiAlert-icon': {
+                  fontSize: 28
+                }
+              }}
+            >
+              {error}
+            </Alert>
+          )}
+
+          {/* Page header */}
+          <Box sx={{ mb: 5 }}>
+            <Typography 
+              variant="h3" 
+              component="h1"
+              sx={{ 
+                fontWeight: 700,
+                mb: 1,
+                background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent'
+              }}
+            >
+              {isNewPage ? 'Create New Wiki Page' : 'Edit Wiki Page'}
             </Typography>
-          </Breadcrumbs>
-        </Box>
-
-        {error && (
-          <Alert severity="error" sx={{ mb: 3 }}>
-            {error}
-          </Alert>
-        )}
-
-        {/* Page header */}
-        <Box sx={{ mb: 4 }}>
-          <Typography variant="h4" component="h1">
-            {isNewPage ? 'Create New Wiki Page' : 'Edit Wiki Page'}
-          </Typography>
-        </Box>
-
-        {/* Form fields */}
-        <Box component="form" noValidate sx={{ mb: 4 }}>
-          <Stack spacing={3}>
-            {/* Title field */}
-            <TextField
-              label="Page Title"
-              fullWidth
-              required
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              error={!!titleError}
-              helperText={titleError}
-              disabled={previewMode}
-            />
-
-            {/* Slug field */}
-            <Box>
-              <TextField
-                label="Page URL Slug"
-                fullWidth
-                value={slug}
-                onChange={(e) => setSlug(e.target.value)}
-                disabled={!customSlug || previewMode}
-                helperText={`This will be the URL of your page: /network/${networkId}/wiki/${slug}`}
-                InputProps={{
-                  sx: { fontFamily: 'monospace' }
-                }}
-              />
-              <Button
-                size="small"
-                onClick={() => setCustomSlug(!customSlug)}
-                sx={{ mt: 1 }}
-                disabled={previewMode}
-              >
-                {customSlug ? 'Auto-generate from title' : 'Customize slug'}
-              </Button>
-            </Box>
-
-            {/* Categories */}
-            <FormControl>
-              <InputLabel id="categories-label">Categories</InputLabel>
-              <Select
-                labelId="categories-label"
-                multiple
-                value={selectedCategories}
-                onChange={handleCategoryChange}
-                input={<OutlinedInput label="Categories" />}
-                renderValue={(selected) => (
-                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                    {selected.map((value) => {
-                      const category = allCategories.find(cat => cat.id === value);
-                      return (
-                        <Chip key={value} label={category ? category.name : value} />
-                      );
-                    })}
-                  </Box>
-                )}
-                disabled={previewMode}
-              >
-                {allCategories.map((category) => (
-                  <MenuItem key={category.id} value={category.id}>
-                    {category.name}
-                  </MenuItem>
-                ))}
-                <Divider key="divider" />
-                <MenuItem key="add-new-category" onClick={() => setShowNewCategoryDialog(true)}>
-                  <AddCategoryIcon sx={{ mr: 1 }} />
-                  Add New Category
-                </MenuItem>
-              </Select>
-            </FormControl>
-
-            {/* Content field */}
-            <Typography variant="subtitle1" gutterBottom>
-              Page Content
+            <Typography variant="body1" color="text.secondary">
+              {isNewPage 
+                ? 'Share your knowledge by creating a new wiki page' 
+                : 'Update and improve the existing content'}
             </Typography>
-            <Box className="mb-16">
-              <QuillEditor
-                value={content}
-                setContent={setContent}
-              />
-            </Box>
+          </Box>
 
-            {/* Revision comment */}
-            <TextField
-              label="Revision Comment"
-              fullWidth
-              value={revisionComment}
-              onChange={(e) => setRevisionComment(e.target.value)}
-              helperText="Briefly describe your changes (optional)"
-            />
+          {/* Form fields */}
+          <Box component="form" noValidate sx={{ mb: 4 }}>
+            <Stack spacing={4}>
+              {/* Title field */}
+              <Card elevation={0} sx={{ p: 3, borderRadius: 2, border: `1px solid ${alpha(theme.palette.divider, 0.2)}` }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                  <TitleIcon sx={{ color: theme.palette.primary.main }} />
+                  <Typography variant="h6" sx={{ fontWeight: 600 }}>Page Title</Typography>
+                </Box>
+                <TextField
+                  fullWidth
+                  required
+                  placeholder="Enter a descriptive title for your page"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  error={!!titleError}
+                  helperText={titleError}
+                  disabled={previewMode}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: 2,
+                      '&.Mui-focused': {
+                        '& .MuiOutlinedInput-notchedOutline': {
+                          borderColor: theme.palette.primary.main,
+                          borderWidth: 2
+                        }
+                      }
+                    }
+                  }}
+                />
+              </Card>
 
-            {/* Submission notice for non-admins */}
-            {!isAdmin && (
-              <Alert severity="info">
-                Your changes will be submitted for approval by a network administrator before they are published.
-              </Alert>
-            )}
+              {/* Slug field */}
+              <Card elevation={0} sx={{ p: 3, borderRadius: 2, border: `1px solid ${alpha(theme.palette.divider, 0.2)}` }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                  <LinkIcon sx={{ color: theme.palette.primary.main }} />
+                  <Typography variant="h6" sx={{ fontWeight: 600 }}>Page URL</Typography>
+                </Box>
+                <TextField
+                  fullWidth
+                  value={slug}
+                  onChange={(e) => setSlug(e.target.value)}
+                  disabled={!customSlug || previewMode}
+                  helperText={
+                    <Typography variant="caption" sx={{ fontFamily: 'monospace', color: theme.palette.text.secondary }}>
+                      {`${window.location.origin}/network/${networkId}/wiki/${slug}`}
+                    </Typography>
+                  }
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Typography variant="body2" sx={{ fontFamily: 'monospace', color: theme.palette.text.secondary }}>
+                          /wiki/
+                        </Typography>
+                      </InputAdornment>
+                    ),
+                    sx: { 
+                      fontFamily: 'monospace',
+                      borderRadius: 2,
+                      '&.Mui-focused': {
+                        '& .MuiOutlinedInput-notchedOutline': {
+                          borderColor: theme.palette.primary.main,
+                          borderWidth: 2
+                        }
+                      }
+                    }
+                  }}
+                />
+                <Button
+                  size="small"
+                  onClick={() => setCustomSlug(!customSlug)}
+                  sx={{ 
+                    mt: 2,
+                    textTransform: 'none',
+                    fontWeight: 500
+                  }}
+                  disabled={previewMode}
+                >
+                  {customSlug ? '↻ Auto-generate from title' : '✏️ Customize slug'}
+                </Button>
+              </Card>
+
+              {/* Categories */}
+              <Card elevation={0} sx={{ p: 3, borderRadius: 2, border: `1px solid ${alpha(theme.palette.divider, 0.2)}` }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                  <CategoryIcon sx={{ color: theme.palette.primary.main }} />
+                  <Typography variant="h6" sx={{ fontWeight: 600 }}>Categories</Typography>
+                </Box>
+                <FormControl fullWidth>
+                  <InputLabel id="categories-label">Select categories</InputLabel>
+                  <Select
+                    labelId="categories-label"
+                    multiple
+                    value={selectedCategories}
+                    onChange={handleCategoryChange}
+                    input={<OutlinedInput label="Select categories" />}
+                    renderValue={(selected) => (
+                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                        {selected.map((value) => {
+                          const category = allCategories.find(cat => cat.id === value);
+                          return (
+                            <Chip 
+                              key={value} 
+                              label={category ? category.name : value} 
+                              size="small"
+                              sx={{
+                                borderRadius: 1,
+                                bgcolor: alpha(theme.palette.primary.main, 0.08),
+                                border: 'none'
+                              }}
+                            />
+                          );
+                        })}
+                      </Box>
+                    )}
+                    disabled={previewMode}
+                    sx={{
+                      borderRadius: 2,
+                      '&.Mui-focused': {
+                        '& .MuiOutlinedInput-notchedOutline': {
+                          borderColor: theme.palette.primary.main,
+                          borderWidth: 2
+                        }
+                      }
+                    }}
+                  >
+                    {allCategories.map((category) => (
+                      <MenuItem key={category.id} value={category.id}>
+                        {category.name}
+                      </MenuItem>
+                    ))}
+                    <Divider key="divider" sx={{ my: 1 }} />
+                    <MenuItem 
+                      key="add-new-category" 
+                      onClick={() => setShowNewCategoryDialog(true)}
+                      sx={{
+                        color: theme.palette.primary.main,
+                        fontWeight: 500,
+                        '&:hover': {
+                          bgcolor: alpha(theme.palette.primary.main, 0.08)
+                        }
+                      }}
+                    >
+                      <AddCategoryIcon sx={{ mr: 1 }} />
+                      Add New Category
+                    </MenuItem>
+                  </Select>
+                </FormControl>
+              </Card>
+
+              {/* Content field */}
+              <Card elevation={0} sx={{ p: 3, borderRadius: 2, border: `1px solid ${alpha(theme.palette.divider, 0.2)}` }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                  <ArticleIcon sx={{ color: theme.palette.primary.main }} />
+                  <Typography variant="h6" sx={{ fontWeight: 600 }}>Page Content</Typography>
+                </Box>
+                <Box className="mb-16">
+                  <QuillEditor
+                    value={content}
+                    setContent={setContent}
+                  />
+                </Box>
+              </Card>
+
+              {/* Revision comment */}
+              <Card elevation={0} sx={{ p: 3, borderRadius: 2, border: `1px solid ${alpha(theme.palette.divider, 0.2)}` }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                  <InfoIcon sx={{ color: theme.palette.primary.main }} />
+                  <Typography variant="h6" sx={{ fontWeight: 600 }}>Revision Note</Typography>
+                </Box>
+                <TextField
+                  fullWidth
+                  placeholder="Briefly describe your changes..."
+                  value={revisionComment}
+                  onChange={(e) => setRevisionComment(e.target.value)}
+                  helperText="This helps others understand what you changed (optional)"
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: 2,
+                      '&.Mui-focused': {
+                        '& .MuiOutlinedInput-notchedOutline': {
+                          borderColor: theme.palette.primary.main,
+                          borderWidth: 2
+                        }
+                      }
+                    }
+                  }}
+                />
+              </Card>
+
+              {/* Submission notice for non-admins */}
+              {!isAdmin && (
+                <Grow in={true} timeout={500}>
+                  <Alert 
+                    severity="info"
+                    sx={{
+                      borderRadius: 2,
+                      bgcolor: alpha(theme.palette.info.main, 0.08),
+                      '& .MuiAlert-icon': {
+                        color: theme.palette.info.main
+                      }
+                    }}
+                  >
+                    Your changes will be submitted for approval by a network administrator before they are published.
+                  </Alert>
+                </Grow>
+              )}
           </Stack>
         </Box>
 
-        {/* Action buttons */}
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', pt: 2 }}>
-          <Button
-            component={Link}
-            to={isNewPage ? `/network/${networkId}/wiki` : `/network/${networkId}/wiki/${pageSlug}`}
-            startIcon={<ArrowBackIcon />}
-          >
-            Cancel
-          </Button>
-          
-          <Box>
-            {!isAdmin && (
-              <Button
-                variant="outlined"
-                startIcon={<SaveIcon />}
-                onClick={() => handleSave(true)}
-                disabled={saving || previewMode}
-                sx={{ mr: 2 }}
-              >
-                {saving ? 'Saving...' : 'Submit for Review'}
-              </Button>
-            )}
-            
+          {/* Action buttons */}
+          <Divider sx={{ my: 4 }} />
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <Button
-              variant="contained"
-              color="primary"
-              startIcon={<SaveIcon />}
-              onClick={() => handleSave(false)}
-              disabled={saving || previewMode}
+              component={Link}
+              to={isNewPage ? `/network/${networkId}/wiki` : `/network/${networkId}/wiki/${pageSlug}`}
+              startIcon={<ArrowBackIcon />}
+              sx={{
+                borderRadius: 2,
+                textTransform: 'none',
+                fontWeight: 500
+              }}
             >
-              {saving ? 'Saving...' : (isAdmin ? 'Save & Publish' : 'Save Draft')}
+              Cancel
             </Button>
+            
+            <Box sx={{ display: 'flex', gap: 2 }}>
+              {!isAdmin && (
+                <Button
+                  variant="outlined"
+                  startIcon={<SaveIcon />}
+                  onClick={() => handleSave(true)}
+                  disabled={saving || previewMode}
+                  sx={{
+                    borderRadius: 2,
+                    textTransform: 'none',
+                    fontWeight: 600,
+                    px: 3,
+                    borderColor: theme.palette.primary.main,
+                    '&:hover': {
+                      borderColor: theme.palette.primary.dark,
+                      bgcolor: alpha(theme.palette.primary.main, 0.04)
+                    }
+                  }}
+                >
+                  {saving ? 'Saving...' : 'Submit for Review'}
+                </Button>
+              )}
+              
+              <Button
+                variant="contained"
+                color="primary"
+                startIcon={<SaveIcon />}
+                onClick={() => handleSave(false)}
+                disabled={saving || previewMode}
+                sx={{
+                  borderRadius: 2,
+                  textTransform: 'none',
+                  fontWeight: 600,
+                  px: 3,
+                  background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
+                  boxShadow: theme.shadows[2],
+                  '&:hover': {
+                    boxShadow: theme.shadows[4],
+                    transform: 'translateY(-2px)'
+                  },
+                  transition: 'all 0.3s ease'
+                }}
+              >
+                {saving ? 'Saving...' : (isAdmin ? 'Save & Publish' : 'Save Draft')}
+              </Button>
+            </Box>
           </Box>
-        </Box>
-      </Paper>
+        </Paper>
+      </Fade>
 
       {/* New Category Dialog */}
       <Dialog
