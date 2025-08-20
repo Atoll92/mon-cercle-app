@@ -23,7 +23,12 @@ import {
   Select,
   MenuItem,
   InputLabel,
-  IconButton
+  IconButton,
+  Dialog,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemButton
 } from '@mui/material';
 import {
   Event as EventIcon,
@@ -79,6 +84,8 @@ const EventsTab = ({
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState(null);
+  const [calendarPopoverAnchor, setCalendarPopoverAnchor] = useState(null);
+  const [popoverEvents, setPopoverEvents] = useState([]);
 
   // Debug: Log props on mount and when they change
   React.useEffect(() => {
@@ -1098,6 +1105,18 @@ const EventsTab = ({
       dayHeaderFormat: 'eeee d MMMM',
       dayRangeHeaderFormat: ({ start, end }) => `${format(start, 'MMMM d')} - ${format(end, 'MMMM d, yyyy')}`
     }}
+    popup
+    selectable
+    views={['month']}
+    onShowMore={(events, date) => {
+      // Handle custom popup for multiple events
+      const target = document.querySelector(`[data-date="${date.toISOString().split('T')[0]}"]`);
+      if (target) {
+        setCalendarPopoverAnchor(target);
+        setPopoverEvents(events);
+      }
+    }}
+    popupOffset={{ x: 0, y: 20 }}
     components={{
       event: ({ event }) => (
         <Box
@@ -1107,7 +1126,8 @@ const EventsTab = ({
             height: '100%',
             width: '100%',
             overflow: 'hidden',
-            padding: '2px 4px'
+            padding: '2px 4px',
+            cursor: 'pointer'
           }}
         >
           {event.coverImage && (
@@ -1152,10 +1172,12 @@ const EventsTab = ({
           </Typography>
         </Box>
       ),
+      dateCellWrapper: ({ children, value }) => (
+        <div data-date={value.toISOString().split('T')[0]}>
+          {children}
+        </div>
+      ),
     }}
-    popup
-    selectable
-    views={['month']}
   />
 </Box>
           </Paper>
@@ -1416,6 +1438,260 @@ const EventsTab = ({
           setShowCreateDialog(false);
         }}
       />
+      
+      {/* Custom Modal for showing multiple events - centered on screen */}
+      <Dialog
+        open={Boolean(calendarPopoverAnchor)}
+        onClose={() => {
+          setCalendarPopoverAnchor(null);
+          setPopoverEvents([]);
+        }}
+        PaperProps={{
+          sx: {
+            maxHeight: '80vh',
+            width: '90%',
+            maxWidth: 500,
+            overflow: 'hidden',
+            boxShadow: '0 12px 48px rgba(0,0,0,0.16)',
+            borderRadius: 2,
+            border: '1px solid',
+            borderColor: 'divider',
+            bgcolor: 'background.paper'
+          }
+        }}
+      >
+        {/* Header with gradient background */}
+        <Box sx={{ 
+          p: 2.5, 
+          pb: 2,
+          background: (theme) => theme.palette.mode === 'dark' 
+            ? 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%)'
+            : 'linear-gradient(135deg, rgba(0,0,0,0.02) 0%, rgba(0,0,0,0.05) 100%)',
+          borderBottom: '1px solid',
+          borderColor: 'divider'
+        }}>
+          <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5 }}>
+            {popoverEvents.length > 0 && formatDate(popoverEvents[0].start, { weekday: 'long', month: 'long', day: 'numeric' })}
+          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <EventIcon fontSize="small" color="primary" />
+            <Typography variant="body2" color="text.secondary">
+              {t('eventsTab.eventsCount', { count: popoverEvents.length })}
+            </Typography>
+          </Box>
+        </Box>
+        
+        {/* Events list with custom scrollbar */}
+        <Box sx={{ 
+          maxHeight: 380,
+          overflowY: 'auto',
+          overflowX: 'hidden',
+          '&::-webkit-scrollbar': {
+            width: '8px',
+          },
+          '&::-webkit-scrollbar-track': {
+            backgroundColor: 'action.hover',
+          },
+          '&::-webkit-scrollbar-thumb': {
+            backgroundColor: 'action.selected',
+            borderRadius: '4px',
+            '&:hover': {
+              backgroundColor: 'action.disabled',
+            }
+          }
+        }}>
+          <List sx={{ pt: 0, pb: 0 }}>
+            {popoverEvents.map((event, index) => {
+              const participation = userParticipations.find(p => p.event_id === event.resource?.id);
+              const eventTime = new Date(event.resource?.date || event.start);
+              const hasImage = event.resource?.cover_image_url || event.coverImage;
+              
+              return (
+                <ListItem
+                  key={event.resource?.id || Math.random()}
+                  disablePadding
+                  sx={{
+                    borderBottom: index < popoverEvents.length - 1 ? '1px solid' : 'none',
+                    borderColor: 'divider',
+                  }}
+                >
+                  <ListItemButton
+                    onClick={() => {
+                      if (event.resource) {
+                        setSelectedEvent(event.resource);
+                        setShowEventDialog(true);
+                        setCalendarPopoverAnchor(null);
+                        setPopoverEvents([]);
+                      }
+                    }}
+                    sx={{
+                      py: 2,
+                      px: 2.5,
+                      display: 'flex',
+                      gap: 2,
+                      alignItems: 'flex-start',
+                      transition: 'all 0.2s ease',
+                      '&:hover': {
+                        backgroundColor: 'action.hover',
+                        transform: 'translateX(4px)',
+                      }
+                    }}
+                  >
+                    {/* Event image */}
+                    {hasImage && (
+                      <Box
+                        sx={{
+                          width: 80,
+                          height: 80,
+                          flexShrink: 0,
+                          borderRadius: 1.5,
+                          overflow: 'hidden',
+                          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                          position: 'relative',
+                          bgcolor: 'action.hover'
+                        }}
+                      >
+                        <img
+                          src={event.resource?.cover_image_url || event.coverImage}
+                          alt={event.title}
+                          style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover'
+                          }}
+                        />
+                        {/* Participation indicator overlay */}
+                        {participation && (
+                          <Box
+                            sx={{
+                              position: 'absolute',
+                              bottom: 4,
+                              right: 4,
+                              width: 24,
+                              height: 24,
+                              borderRadius: '50%',
+                              bgcolor: participation.status === 'attending' ? '#4caf50' : 
+                                       participation.status === 'maybe' ? '#ff9800' : '#f44336',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                            }}
+                          >
+                            <Typography variant="caption" sx={{ color: 'white', fontSize: '0.6rem', fontWeight: 'bold' }}>
+                              {participation.status === 'attending' ? '✓' : 
+                               participation.status === 'maybe' ? '?' : '✗'}
+                            </Typography>
+                          </Box>
+                        )}
+                      </Box>
+                    )}
+                    
+                    {/* Event details */}
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      {/* Title and time */}
+                      <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 0.5 }}>
+                        <Typography variant="subtitle2" sx={{ fontWeight: 600, pr: 1 }}>
+                          {event.title}
+                        </Typography>
+                        <Chip
+                          label={eventTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          size="small"
+                          sx={{
+                            height: 22,
+                            fontSize: '0.75rem',
+                            fontWeight: 500,
+                            bgcolor: 'action.selected',
+                            color: 'text.primary'
+                          }}
+                        />
+                      </Box>
+                      
+                      {/* Location */}
+                      {event.resource?.location && (
+                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.75 }}>
+                          <LocationOnIcon sx={{ fontSize: 16, mr: 0.5, color: 'text.secondary' }} />
+                          <Typography variant="caption" color="text.secondary" noWrap>
+                            {event.resource.location}
+                          </Typography>
+                        </Box>
+                      )}
+                      
+                      {/* Category and features */}
+                      <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', alignItems: 'center' }}>
+                        {event.resource?.category && (
+                          <Chip 
+                            label={event.resource.category.name}
+                            size="small"
+                            sx={{ 
+                              bgcolor: event.resource.category.color || '#666',
+                              color: 'white',
+                              fontSize: '0.65rem',
+                              height: 18,
+                              fontWeight: 500
+                            }}
+                          />
+                        )}
+                        {event.hasLink && (
+                          <Chip
+                            icon={<LinkIcon sx={{ fontSize: 14 }} />}
+                            label={t('eventsTab.online')}
+                            size="small"
+                            variant="outlined"
+                            sx={{
+                              height: 18,
+                              fontSize: '0.65rem',
+                              borderColor: 'primary.main',
+                              color: 'primary.main',
+                              '& .MuiChip-icon': {
+                                color: 'primary.main',
+                                ml: 0.5
+                              }
+                            }}
+                          />
+                        )}
+                        {/* Participation status for non-image events */}
+                        {!hasImage && participation && (
+                          <Chip
+                            label={
+                              participation.status === 'attending' ? t('eventsTab.attending') : 
+                              participation.status === 'maybe' ? t('eventsTab.maybe') : 
+                              t('eventsTab.notAttending')
+                            }
+                            size="small"
+                            sx={{
+                              height: 18,
+                              fontSize: '0.65rem',
+                              fontWeight: 500,
+                              bgcolor: participation.status === 'attending' ? '#4caf50' : 
+                                       participation.status === 'maybe' ? '#ff9800' : '#f44336',
+                              color: 'white'
+                            }}
+                          />
+                        )}
+                      </Box>
+                    </Box>
+                    
+                    {/* Arrow indicator */}
+                    <ArrowForwardIcon 
+                      sx={{ 
+                        fontSize: 20, 
+                        color: 'action.active',
+                        opacity: 0.5,
+                        transition: 'all 0.2s ease',
+                        '.MuiListItemButton-root:hover &': {
+                          opacity: 1,
+                          transform: 'translateX(2px)'
+                        }
+                      }} 
+                    />
+                  </ListItemButton>
+                </ListItem>
+              );
+            })}
+          </List>
+        </Box>
+      </Dialog>
       </Paper>
     </PageTransition>
   );
