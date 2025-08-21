@@ -456,12 +456,21 @@ const ModerationTab = ({ network, user, members = [], darkMode = false }) => {
           updatedHiddenStatus ? 'Hidden by moderator' : 'Unhidden by moderator'
         );
       } else if (action === 'delete') {
+        // For messages, we need to handle deletion differently
+        // The RLS policy allows users to delete their own messages and admins to delete any message
         const { error } = await supabase
           .from(table)
           .delete()
           .eq('id', item.id);
           
-        if (error) throw error;
+        if (error) {
+          console.error(`Error deleting ${item.type}:`, error);
+          // If RLS policy blocks deletion, provide a helpful error message
+          if (error.code === '42501') {
+            throw new Error('You do not have permission to delete this content. Please ensure the RLS policies are properly configured.');
+          }
+          throw error;
+        }
         
         result = `Content deleted successfully`;
         
