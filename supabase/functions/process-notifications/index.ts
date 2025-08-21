@@ -200,7 +200,7 @@ Deno.serve(async (req) => {
                 <div style="margin-top: 20px; padding: 16px; background-color: #f8f9fa; border-radius: 6px; font-size: 12px; color: #666;">
                   <p style="margin: 0 0 8px 0;">You're receiving this because you're subscribed to direct message notifications.</p>
                   <p style="margin: 0;">
-                    <a href="${Deno.env.get('APP_URL') || 'https://your-app-url.com'}/profile/edit" 
+                    <a href="${Deno.env.get('APP_URL') || 'https://your-app-url.com'}/profile/edit?tab=settings" 
                        style="color: #2196f3; text-decoration: none;">
                       Manage your notification preferences
                     </a>
@@ -291,7 +291,7 @@ Deno.serve(async (req) => {
               <div style="margin-top: 20px; padding: 16px; background-color: #f8f9fa; border-radius: 6px; font-size: 12px; color: #666;">
                 <p style="margin: 0 0 8px 0;">You're receiving this because you're subscribed to direct message notifications.</p>
                 <p style="margin: 0;">
-                  <a href="${Deno.env.get('APP_URL') || 'https://your-app-url.com'}/profile/edit" 
+                  <a href="${Deno.env.get('APP_URL') || 'https://your-app-url.com'}/profile/edit?tab=settings" 
                      style="color: #2196f3; text-decoration: none;">
                     Manage your notification preferences
                   </a>
@@ -469,7 +469,7 @@ Deno.serve(async (req) => {
                   <div style="margin-top: 20px; padding: 16px; background-color: #f8f9fa; border-radius: 6px; font-size: 12px; color: #666;">
                     <p style="margin: 0 0 8px 0;">You're receiving this because you're subscribed to news notifications for ${networkName}.</p>
                     <p style="margin: 0;">
-                      <a href="${Deno.env.get('APP_URL') || 'https://your-app-url.com'}/profile/edit" 
+                      <a href="${Deno.env.get('APP_URL') || 'https://your-app-url.com'}/profile/edit?tab=settings" 
                          style="color: #2196f3; text-decoration: none;">
                         Manage your notification preferences
                       </a>
@@ -553,7 +553,7 @@ Deno.serve(async (req) => {
                   <div style="margin-top: 20px; padding: 16px; background-color: #f8f9fa; border-radius: 6px; font-size: 12px; color: #666;">
                     <p style="margin: 0 0 8px 0;">You're receiving this because you're subscribed to portfolio notifications for ${networkName}.</p>
                     <p style="margin: 0;">
-                      <a href="${Deno.env.get('APP_URL') || 'https://your-app-url.com'}/profile/edit" 
+                      <a href="${Deno.env.get('APP_URL') || 'https://your-app-url.com'}/profile/edit?tab=settings" 
                          style="color: #673ab7; text-decoration: none;">
                         Manage your notification preferences
                       </a>
@@ -678,7 +678,7 @@ Deno.serve(async (req) => {
                   <div style="margin-top: 20px; padding: 16px; background-color: #f8f9fa; border-radius: 6px; font-size: 12px; color: #666;">
                     <p style="margin: 0 0 8px 0;">You're receiving this because you're subscribed to event notifications for ${networkName}.</p>
                     <p style="margin: 0;">
-                      <a href="${Deno.env.get('APP_URL') || 'https://your-app-url.com'}/profile/edit" 
+                      <a href="${Deno.env.get('APP_URL') || 'https://your-app-url.com'}/profile/edit?tab=settings" 
                          style="color: #2196f3; text-decoration: none;">
                         Manage your notification preferences
                       </a>
@@ -727,7 +727,7 @@ Deno.serve(async (req) => {
                   <div style="margin-top: 20px; padding: 16px; background-color: #f8f9fa; border-radius: 6px; font-size: 12px; color: #666;">
                     <p style="margin: 0 0 8px 0;">You're receiving this because you're subscribed to mention notifications for ${networkName}.</p>
                     <p style="margin: 0;">
-                      <a href="${Deno.env.get('APP_URL') || 'https://your-app-url.com'}/profile/edit" 
+                      <a href="${Deno.env.get('APP_URL') || 'https://your-app-url.com'}/profile/edit?tab=settings" 
                          style="color: #2196f3; text-decoration: none;">
                         Manage your notification preferences
                       </a>
@@ -755,7 +755,7 @@ Deno.serve(async (req) => {
                     </div>
                     
                     <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid #f0f0f0;">
-                      <a href="${Deno.env.get('APP_URL') || 'https://your-app-url.com'}/admin/events" 
+                      <a href="${Deno.env.get('APP_URL') || 'https://your-app-url.com'}/admin?tab=events" 
                          style="display: inline-block; background-color: #4caf50; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 500; margin-right: 12px;">
                         Review Event
                       </a>
@@ -807,7 +807,7 @@ Deno.serve(async (req) => {
                     
                     ${isApproved ? `
                     <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid #f0f0f0;">
-                      <a href="${Deno.env.get('APP_URL') || 'https://your-app-url.com'}/dashboard" 
+                      <a href="${Deno.env.get('APP_URL') || 'https://your-app-url.com'}${notification.network_id && notification.related_item_id ? `/network/${notification.network_id}/event/${notification.related_item_id}` : '/dashboard'}" 
                          style="display: inline-block; background-color: #4caf50; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 500;">
                         View Your Event
                       </a>
@@ -828,7 +828,7 @@ Deno.serve(async (req) => {
                   <div style="margin-top: 20px; padding: 16px; background-color: #f8f9fa; border-radius: 6px; font-size: 12px; color: #666;">
                     <p style="margin: 0 0 8px 0;">You're receiving this because you created an event in ${networkName}.</p>
                     <p style="margin: 0;">
-                      <a href="${Deno.env.get('APP_URL') || 'https://your-app-url.com'}/profile/edit" 
+                      <a href="${Deno.env.get('APP_URL') || 'https://your-app-url.com'}/profile/edit?tab=settings" 
                          style="color: #2196f3; text-decoration: none;">
                         Manage your notification preferences
                       </a>
@@ -867,7 +867,7 @@ Deno.serve(async (req) => {
                   <div style="margin-top: 20px; padding: 16px; background-color: #f8f9fa; border-radius: 6px; font-size: 12px; color: #666;">
                     <p style="margin: 0 0 8px 0;">You're receiving this notification from ${networkName}.</p>
                     <p style="margin: 0;">
-                      <a href="${Deno.env.get('APP_URL') || 'https://your-app-url.com'}/profile/edit" 
+                      <a href="${Deno.env.get('APP_URL') || 'https://your-app-url.com'}/profile/edit?tab=settings" 
                          style="color: #2196f3; text-decoration: none;">
                         Manage your notification preferences
                       </a>
