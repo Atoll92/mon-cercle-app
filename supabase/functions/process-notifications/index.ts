@@ -772,6 +772,84 @@ Deno.serve(async (req) => {
                   </div>
                 </div>
               `
+            } else if (notification.notification_type === 'event_reminder') {
+              console.log('📨 Creating event reminder notification email')
+              emailSubject = subject || `Reminder: Event tomorrow in ${networkName}`
+              
+              // Format event date for the reminder
+              let formattedDate = 'Tomorrow'
+              if (metadata.eventDate) {
+                try {
+                  const date = new Date(metadata.eventDate)
+                  formattedDate = date.toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })
+                } catch (e) {
+                  formattedDate = 'Tomorrow'
+                }
+              }
+              
+              emailHtml = `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; line-height: 1.6;">
+                  <div style="background-color: #ff5722; padding: 20px; border-radius: 8px 8px 0 0;">
+                    <h2 style="color: white; margin: 0 0 10px 0; font-size: 24px;">⏰ Event Reminder</h2>
+                    <p style="margin: 0; color: #ffccbc; font-size: 14px;">Don't forget about tomorrow's event!</p>
+                  </div>
+                  
+                  <div style="background-color: white; padding: 24px; border: 1px solid #e0e0e0; border-radius: 0 0 8px 8px; border-top: none;">
+                    <div style="margin-bottom: 20px;">
+                      <h3 style="margin: 0 0 16px 0; color: #333; font-size: 20px; font-weight: 600;">
+                        ${metadata.eventTitle || 'Event Tomorrow'}
+                      </h3>
+                      ${metadata.eventDescription ? `
+                      <p style="margin: 0 0 16px 0; color: #666; font-size: 16px; line-height: 1.5;">
+                        ${metadata.eventDescription}
+                      </p>
+                      ` : ''}
+                    </div>
+                    
+                    <div style="background-color: #fff3e0; padding: 16px; border-radius: 6px; margin-bottom: 20px; border-left: 4px solid #ff5722;">
+                      <div style="margin-bottom: 8px;">
+                        <span style="font-weight: 600; color: #e65100;">📅 When:</span>
+                        <span style="color: #333; margin-left: 8px; font-weight: 500;">${formattedDate}</span>
+                      </div>
+                      ${metadata.eventLocation ? `
+                      <div>
+                        <span style="font-weight: 600; color: #e65100;">📍 Where:</span>
+                        <span style="color: #333; margin-left: 8px;">${metadata.eventLocation}</span>
+                      </div>
+                      ` : ''}
+                    </div>
+                    
+                    <div style="padding: 12px; background-color: #e8f5e9; border-radius: 6px; margin-bottom: 20px;">
+                      <p style="margin: 0; color: #2e7d32; font-size: 14px; text-align: center;">
+                        ✅ You're registered for this event
+                      </p>
+                    </div>
+                    
+                    <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid #f0f0f0;">
+                      <a href="${Deno.env.get('APP_URL') || 'https://your-app-url.com'}${metadata.networkId && metadata.eventId ? `/network/${metadata.networkId}/event/${metadata.eventId}` : '/dashboard'}" 
+                         style="display: inline-block; background-color: #ff5722; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 500;">
+                        View Event Details
+                      </a>
+                    </div>
+                  </div>
+                  
+                  <div style="margin-top: 20px; padding: 16px; background-color: #f8f9fa; border-radius: 6px; font-size: 12px; color: #666;">
+                    <p style="margin: 0 0 8px 0;">This is a reminder for an event you're attending in ${networkName}.</p>
+                    <p style="margin: 0;">
+                      <a href="${Deno.env.get('APP_URL') || 'https://your-app-url.com'}/profile/edit?tab=settings" 
+                         style="color: #2196f3; text-decoration: none;">
+                        Manage your notification preferences
+                      </a>
+                    </p>
+                  </div>
+                </div>
+              `
             } else if (notification.notification_type === 'event_status') {
               console.log('📨 Creating event status notification email')
               emailSubject = subject || `Event status update in ${networkName}`
