@@ -1,6 +1,6 @@
 // Email notification service for sending notifications to network members
 import { supabase } from '../supabaseclient';
-import { formatEventForICS, createICSAttachment } from '../utils/icsGenerator';
+import { createICSAttachment } from '../utils/icsGenerator';
 
 /**
  * Queue a news notification for all network members who want to receive them
@@ -403,6 +403,124 @@ export const queueEventNotifications = async (networkId, eventId, authorId, even
 
   } catch (error) {
     console.error('📅 [EVENT DEBUG] Error in queueEventNotifications:', error);
+    return { success: false, error: error.message };
+  }
+};
+
+/**
+ * Queue comment notifications for post author and parent comment author
+ * @param {Object} params - Comment notification parameters
+ */
+export const queueCommentNotification = async (params) => {
+  const {
+    itemType,
+    itemId,
+    commenterId,
+    commenterName,
+    content,
+    originalPosterId,
+    parentCommentAuthorId,
+    postTitle,
+    isReply
+  } = params;
+
+  try {
+    console.log('🔔 [COMMENT] Queueing comment notification', params);
+    
+    const notificationsToQueue = [];
+    
+    // Get the commenter's network ID
+    const { data: commenterProfile } = await supabase
+      .from('profiles')
+      .select('network_id')
+      .eq('id', commenterId)
+      .single();
+    
+    if (!commenterProfile) {
+      console.error('🔔 [COMMENT] Could not find commenter profile');
+      return { success: false, error: 'Commenter profile not found' };
+    }
+    
+    const networkId = commenterProfile.network_id;
+    
+    // 1. Notify the original post author (if not the commenter)
+    if (originalPosterId && originalPosterId !== commenterId) {
+      // Check if they want notifications
+      const { data: postAuthor } = await supabase
+        .from('profiles')
+        .select('contact_email, email_notifications_enabled, notify_on_news')
+        .eq('id', originalPosterId)
+        .single();
+      
+      if (postAuthor?.email_notifications_enabled && postAuthor?.notify_on_news && postAuthor?.contact_email) {
+        const itemTypeDisplay = itemType === 'event' ? 'event' : itemType === 'news' ? 'news post' : 'portfolio post';
+        
+        notificationsToQueue.push({
+          recipient_id: originalPosterId,
+          network_id: networkId,
+          notification_type: 'comment',
+          subject_line: `${commenterName} commented on your ${itemTypeDisplay}`,
+          content_preview: `${commenterName} commented on "${postTitle}": ${content.substring(0, 200)}${content.length > 200 ? '...' : ''}`,
+          related_item_id: itemId,
+          metadata: JSON.stringify({
+            commenterName,
+            itemType,
+            postTitle,
+            isReply: false
+          })
+        });
+      }
+    }
+    
+    // 2. Notify the parent comment author if this is a reply (and not the commenter)
+    if (isReply && parentCommentAuthorId && parentCommentAuthorId !== commenterId) {
+      // Check if they want notifications
+      const { data: parentAuthor } = await supabase
+        .from('profiles')
+        .select('contact_email, email_notifications_enabled, notify_on_news')
+        .eq('id', parentCommentAuthorId)
+        .single();
+      
+      if (parentAuthor?.email_notifications_enabled && parentAuthor?.notify_on_news && parentAuthor?.contact_email) {
+        notificationsToQueue.push({
+          recipient_id: parentCommentAuthorId,
+          network_id: networkId,
+          notification_type: 'comment_reply',
+          subject_line: `${commenterName} replied to your comment`,
+          content_preview: `${commenterName} replied to your comment on "${postTitle}": ${content.substring(0, 200)}${content.length > 200 ? '...' : ''}`,
+          related_item_id: itemId,
+          metadata: JSON.stringify({
+            commenterName,
+            itemType,
+            postTitle,
+            isReply: true
+          })
+        });
+      }
+    }
+    
+    // Insert all notifications
+    if (notificationsToQueue.length > 0) {
+      const { error: insertError } = await supabase
+        .from('notification_queue')
+        .insert(notificationsToQueue);
+      
+      if (insertError) {
+        console.error('🔔 [COMMENT] Error queueing notifications:', insertError);
+        return { success: false, error: insertError.message };
+      }
+      
+      console.log(`🔔 [COMMENT] Successfully queued ${notificationsToQueue.length} comment notifications`);
+    }
+    
+    return { 
+      success: true, 
+      message: `Queued ${notificationsToQueue.length} notifications`,
+      count: notificationsToQueue.length 
+    };
+    
+  } catch (error) {
+    console.error('🔔 [COMMENT] Error in queueCommentNotification:', error);
     return { success: false, error: error.message };
   }
 };

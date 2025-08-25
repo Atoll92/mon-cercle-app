@@ -850,6 +850,84 @@ Deno.serve(async (req) => {
                   </div>
                 </div>
               `
+            } else if (notification.notification_type === 'comment') {
+              console.log('📨 Creating comment notification email')
+              emailSubject = subject || `New comment on your post in ${networkName}`
+              emailHtml = `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; line-height: 1.6;">
+                  <div style="background-color: #3f51b5; padding: 20px; border-radius: 8px 8px 0 0;">
+                    <h2 style="color: white; margin: 0 0 10px 0; font-size: 24px;">💬 New Comment on Your Post</h2>
+                    <p style="margin: 0; color: #c5cae9; font-size: 14px;">Someone commented on your content in ${networkName}</p>
+                  </div>
+                  
+                  <div style="background-color: white; padding: 24px; border: 1px solid #e0e0e0; border-radius: 0 0 8px 8px; border-top: none;">
+                    <div style="margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #f0f0f0;">
+                      <p style="margin: 0; color: #666; font-size: 14px;"><strong>${metadata.commenterName || 'Someone'}</strong> commented on your ${metadata.itemType === 'news' ? 'news post' : metadata.itemType === 'event' ? 'event' : 'portfolio post'}</p>
+                      ${metadata.postTitle ? `<p style="margin: 4px 0 0 0; color: #999; font-size: 13px;">On: "${metadata.postTitle}"</p>` : ''}
+                    </div>
+                    
+                    <div style="background-color: #f5f5f5; padding: 16px; border-left: 4px solid #3f51b5; border-radius: 4px; margin-bottom: 20px;">
+                      <p style="margin: 0; color: #333; font-size: 16px; line-height: 1.5;">"${content || 'Comment content not available'}"</p>
+                    </div>
+                    
+                    <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid #f0f0f0;">
+                      <a href="${Deno.env.get('APP_URL') || 'https://your-app-url.com'}/dashboard" 
+                         style="display: inline-block; background-color: #3f51b5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 500;">
+                        View Comment & Reply
+                      </a>
+                    </div>
+                  </div>
+                  
+                  <div style="margin-top: 20px; padding: 16px; background-color: #f8f9fa; border-radius: 6px; font-size: 12px; color: #666;">
+                    <p style="margin: 0 0 8px 0;">You're receiving this because someone commented on your content in ${networkName}.</p>
+                    <p style="margin: 0;">
+                      <a href="${Deno.env.get('APP_URL') || 'https://your-app-url.com'}/profile/edit?tab=settings" 
+                         style="color: #2196f3; text-decoration: none;">
+                        Manage your notification preferences
+                      </a>
+                    </p>
+                  </div>
+                </div>
+              `
+            } else if (notification.notification_type === 'comment_reply') {
+              console.log('📨 Creating comment reply notification email')
+              emailSubject = subject || `Reply to your comment in ${networkName}`
+              emailHtml = `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; line-height: 1.6;">
+                  <div style="background-color: #009688; padding: 20px; border-radius: 8px 8px 0 0;">
+                    <h2 style="color: white; margin: 0 0 10px 0; font-size: 24px;">↩️ Reply to Your Comment</h2>
+                    <p style="margin: 0; color: #b2dfdb; font-size: 14px;">Someone replied to your comment in ${networkName}</p>
+                  </div>
+                  
+                  <div style="background-color: white; padding: 24px; border: 1px solid #e0e0e0; border-radius: 0 0 8px 8px; border-top: none;">
+                    <div style="margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #f0f0f0;">
+                      <p style="margin: 0; color: #666; font-size: 14px;"><strong>${metadata.commenterName || 'Someone'}</strong> replied to your comment</p>
+                      ${metadata.postTitle ? `<p style="margin: 4px 0 0 0; color: #999; font-size: 13px;">On post: "${metadata.postTitle}"</p>` : ''}
+                    </div>
+                    
+                    <div style="background-color: #e0f2f1; padding: 16px; border-left: 4px solid #009688; border-radius: 4px; margin-bottom: 20px;">
+                      <p style="margin: 0; color: #333; font-size: 16px; line-height: 1.5;">"${content || 'Reply content not available'}"</p>
+                    </div>
+                    
+                    <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid #f0f0f0;">
+                      <a href="${Deno.env.get('APP_URL') || 'https://your-app-url.com'}/dashboard" 
+                         style="display: inline-block; background-color: #009688; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 500;">
+                        View Reply & Continue Conversation
+                      </a>
+                    </div>
+                  </div>
+                  
+                  <div style="margin-top: 20px; padding: 16px; background-color: #f8f9fa; border-radius: 6px; font-size: 12px; color: #666;">
+                    <p style="margin: 0 0 8px 0;">You're receiving this because someone replied to your comment in ${networkName}.</p>
+                    <p style="margin: 0;">
+                      <a href="${Deno.env.get('APP_URL') || 'https://your-app-url.com'}/profile/edit?tab=settings" 
+                         style="color: #2196f3; text-decoration: none;">
+                        Manage your notification preferences
+                      </a>
+                    </p>
+                  </div>
+                </div>
+              `
             } else if (notification.notification_type === 'event_status') {
               console.log('📨 Creating event status notification email')
               emailSubject = subject || `Event status update in ${networkName}`

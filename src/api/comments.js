@@ -1,12 +1,12 @@
 import { supabase } from '../supabaseclient';
+import { queueCommentNotification } from '../services/emailNotificationService';
 
 // Get comments for a social wall item (supports 'news', 'post', 'event')
 export const getItemComments = async (itemType, itemId) => {
   try {
-    // Determine which table and fields to use based on item type
+    // Determine which table to use based on item type
     const isEventComment = itemType === 'event';
     const tableName = isEventComment ? 'event_comments' : 'social_wall_comments';
-    const itemField = isEventComment ? 'event_id' : 'item_id';
     
     // Build base query
     let baseQuery = supabase
@@ -103,6 +103,86 @@ export const addComment = async (itemType, itemId, profileId, content, parentCom
       .single();
 
     if (error) throw error;
+    
+    // Queue notification for comment
+    try {
+      console.log('🔔 Queueing comment notification...');
+      
+      // Get the item details to determine who should be notified
+      let originalPosterId = null;
+      let postTitle = '';
+      
+      if (isEventComment) {
+        // Get event creator
+        const { data: event } = await supabase
+          .from('network_events')
+          .select('created_by, title')
+          .eq('id', itemId)
+          .single();
+        
+        if (event) {
+          originalPosterId = event.created_by;
+          postTitle = event.title;
+        }
+      } else if (itemType === 'news') {
+        // Get news post creator
+        const { data: news } = await supabase
+          .from('network_news')
+          .select('created_by, title')
+          .eq('id', itemId)
+          .single();
+        
+        if (news) {
+          originalPosterId = news.created_by;
+          postTitle = news.title;
+        }
+      } else if (itemType === 'post') {
+        // Get portfolio post creator
+        const { data: post } = await supabase
+          .from('portfolio_items')
+          .select('profile_id, title')
+          .eq('id', itemId)
+          .single();
+        
+        if (post) {
+          originalPosterId = post.profile_id;
+          postTitle = post.title;
+        }
+      }
+      
+      // If this is a reply, also get the parent comment author
+      let parentCommentAuthorId = null;
+      if (parentCommentId) {
+        const { data: parentComment } = await supabase
+          .from(tableName)
+          .select('profile_id')
+          .eq('id', parentCommentId)
+          .single();
+        
+        if (parentComment) {
+          parentCommentAuthorId = parentComment.profile_id;
+        }
+      }
+      
+      // Queue notifications
+      await queueCommentNotification({
+        itemType,
+        itemId,
+        commentId: data.id,
+        commenterId: profileId,
+        commenterName: data.profile?.full_name || 'Someone',
+        content,
+        originalPosterId,
+        parentCommentAuthorId,
+        postTitle,
+        isReply: !!parentCommentId
+      });
+      
+    } catch (notificationError) {
+      console.error('Failed to queue comment notification:', notificationError);
+      // Don't throw - comment creation succeeded, notification failure shouldn't break the flow
+    }
+    
     return { data, error: null };
   } catch (error) {
     console.error('Error adding comment:', error);
