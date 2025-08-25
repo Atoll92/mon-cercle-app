@@ -459,7 +459,7 @@ Deno.serve(async (req) => {
                     </div>
                     
                     <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid #f0f0f0;">
-                      <a href="${Deno.env.get('APP_URL') || 'https://your-app-url.com'}/dashboard" 
+                      <a href="${Deno.env.get('APP_URL') || 'https://your-app-url.com'}/network/${notification.network_id}/news/${notification.related_item_id}" 
                          style="display: inline-block; background-color: #2196f3; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 500;">
                         View Full Post & Comments
                       </a>
@@ -543,7 +543,7 @@ Deno.serve(async (req) => {
                     </div>
                     
                     <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid #f0f0f0;">
-                      <a href="${Deno.env.get('APP_URL') || 'https://your-app-url.com'}/dashboard" 
+                      <a href="${Deno.env.get('APP_URL') || 'https://your-app-url.com'}/post/${notification.related_item_id}" 
                          style="display: inline-block; background-color: #673ab7; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 500;">
                         View Post & Connect
                       </a>
@@ -694,6 +694,10 @@ Deno.serve(async (req) => {
                 networkName
               })
               emailSubject = subject || `New post in ${networkName}`
+              
+              // Link to the network page with chat tab
+              const chatUrl = `/network?tab=chat`
+              
               emailHtml = `
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; line-height: 1.6;">
                   <div style="background-color: #9c27b0; padding: 20px; border-radius: 8px 8px 0 0;">
@@ -717,7 +721,7 @@ Deno.serve(async (req) => {
                     ` : ''}
                     
                     <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid #f0f0f0;">
-                      <a href="${Deno.env.get('APP_URL') || 'https://your-app-url.com'}/dashboard" 
+                      <a href="${Deno.env.get('APP_URL') || 'https://your-app-url.com'}${chatUrl}" 
                          style="display: inline-block; background-color: #9c27b0; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 500;">
                         View Message & Reply
                       </a>
@@ -853,6 +857,22 @@ Deno.serve(async (req) => {
             } else if (notification.notification_type === 'comment') {
               console.log('📨 Creating comment notification email')
               emailSubject = subject || `New comment on your post in ${networkName}`
+              
+              // Build the correct URL based on item type
+              let itemUrl = '/dashboard'
+              if (notification.related_item_id) {
+                if (metadata.itemType === 'event') {
+                  // Events have dedicated pages
+                  itemUrl = `/network/${notification.network_id}/event/${notification.related_item_id}`
+                } else if (metadata.itemType === 'news') {
+                  // News posts have dedicated pages
+                  itemUrl = `/network/${notification.network_id}/news/${notification.related_item_id}`
+                } else if (metadata.itemType === 'post') {
+                  // Portfolio posts have their own route (not network-specific)
+                  itemUrl = `/post/${notification.related_item_id}`
+                }
+              }
+              
               emailHtml = `
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; line-height: 1.6;">
                   <div style="background-color: #3f51b5; padding: 20px; border-radius: 8px 8px 0 0;">
@@ -871,7 +891,7 @@ Deno.serve(async (req) => {
                     </div>
                     
                     <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid #f0f0f0;">
-                      <a href="${Deno.env.get('APP_URL') || 'https://your-app-url.com'}/dashboard" 
+                      <a href="${Deno.env.get('APP_URL') || 'https://your-app-url.com'}${itemUrl}" 
                          style="display: inline-block; background-color: #3f51b5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 500;">
                         View Comment & Reply
                       </a>
@@ -892,6 +912,22 @@ Deno.serve(async (req) => {
             } else if (notification.notification_type === 'comment_reply') {
               console.log('📨 Creating comment reply notification email')
               emailSubject = subject || `Reply to your comment in ${networkName}`
+              
+              // Build the correct URL based on item type
+              let itemUrl = '/dashboard'
+              if (notification.related_item_id) {
+                if (metadata.itemType === 'event') {
+                  // Events have dedicated pages
+                  itemUrl = `/network/${notification.network_id}/event/${notification.related_item_id}`
+                } else if (metadata.itemType === 'news') {
+                  // News posts have dedicated pages
+                  itemUrl = `/network/${notification.network_id}/news/${notification.related_item_id}`
+                } else if (metadata.itemType === 'post') {
+                  // Portfolio posts have their own route (not network-specific)
+                  itemUrl = `/post/${notification.related_item_id}`
+                }
+              }
+              
               emailHtml = `
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; line-height: 1.6;">
                   <div style="background-color: #009688; padding: 20px; border-radius: 8px 8px 0 0;">
@@ -910,7 +946,7 @@ Deno.serve(async (req) => {
                     </div>
                     
                     <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid #f0f0f0;">
-                      <a href="${Deno.env.get('APP_URL') || 'https://your-app-url.com'}/dashboard" 
+                      <a href="${Deno.env.get('APP_URL') || 'https://your-app-url.com'}${itemUrl}" 
                          style="display: inline-block; background-color: #009688; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 500;">
                         View Reply & Continue Conversation
                       </a>
