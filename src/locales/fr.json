@@ -764,7 +764,9 @@
     "eventLink": "Lien de l'événement",
     "join": "Rejoindre",
     "proposeEvent": "Proposer un événement",
-    "eventProposalSubmitted": "Votre proposition d'événement a été soumise et sera examinée par un administrateur."
+    "eventProposalSubmitted": "Votre proposition d'événement a été soumise et sera examinée par un administrateur.",
+    "eventCreatedSuccessfully": "Événement créé avec succès !",
+    "approvalNotice": "Votre proposition d'événement sera examinée par un administrateur avant d'être visible aux autres membres."
   },
   "newsTab": {
     "fillRequiredFields": "Veuillez remplir au moins le titre et le contenu",

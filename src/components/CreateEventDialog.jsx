@@ -41,13 +41,16 @@ import {
   Category as CategoryIcon,
   AccessTime as AccessTimeIcon,
   Description as DescriptionIcon,
-  Computer as ComputerIcon
+  Computer as ComputerIcon,
+  Info as InfoIcon
 } from '@mui/icons-material';
 import AddressSuggestions from './AddressSuggestions';
 import { createEvent, updateEvent } from '../api/networks';
 import { fetchNetworkCategories } from '../api/categories';
+import { useTranslation } from '../hooks/useTranslation';
 
 const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated, editingEvent = null, onEventUpdated, isAdmin = false }) => {
+  const { t } = useTranslation();
   const [eventForm, setEventForm] = useState({
     title: '',
     date: '',
@@ -759,6 +762,16 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
             onClose={() => setError(null)}
           >
             {error}
+          </Alert>
+        )}
+        
+        {!isAdmin && !editingEvent && (
+          <Alert 
+            severity="info" 
+            sx={{ my: 3 }}
+            icon={<InfoIcon />}
+          >
+            {t('eventsTab.approvalNotice')}
           </Alert>
         )}
         

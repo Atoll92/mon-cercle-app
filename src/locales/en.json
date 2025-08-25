@@ -763,7 +763,9 @@
     "eventLink": "Event Link",
     "join": "Join",
     "proposeEvent": "Propose Event",
-    "eventProposalSubmitted": "Your event proposal has been submitted and will be reviewed by an admin."
+    "eventProposalSubmitted": "Your event proposal has been submitted and will be reviewed by an admin.",
+    "eventCreatedSuccessfully": "Event created successfully!",
+    "approvalNotice": "Your event proposal will be reviewed by an admin before it becomes visible to other members."
   },
   "newsTab": {
     "fillRequiredFields": "Please fill in at least the title and content",

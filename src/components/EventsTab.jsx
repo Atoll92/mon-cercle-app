@@ -1428,13 +1428,13 @@ const EventsTab = ({
         }}
         networkId={network?.id}
         profileId={activeProfile?.id || user?.id}
-        isAdmin={false}
+        isAdmin={isUserAdmin}
         onEventCreated={(newEvent) => {
           // Add the new event to the list if setEvents is provided
           if (setEvents) {
             setEvents(prevEvents => [...prevEvents, newEvent]);
           }
-          setMessage(t('eventsTab.eventProposalSubmitted'));
+          setMessage(isUserAdmin ? t('eventsTab.eventCreatedSuccessfully') : t('eventsTab.eventProposalSubmitted'));
           setShowCreateDialog(false);
         }}
       />

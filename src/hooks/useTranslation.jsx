@@ -55,7 +55,9 @@ export const useTranslation = () => {
         
         if (typeof value === 'string') {
           // Replace parameters like {{error}}
-          return value.replace(/\{\{(\w+)\}\}/g, (match, param) => params[param] || match);
+          return value.replace(/\{\{(\w+)\}\}/g, (match, param) => 
+            params.hasOwnProperty(param) ? params[param] : match
+          );
         }
         
         return key;
@@ -78,7 +80,9 @@ export const useTranslation = () => {
     
     if (typeof value === 'string') {
       // Replace parameters like {{error}}
-      return value.replace(/\{\{(\w+)\}\}/g, (match, param) => params[param] || match);
+      return value.replace(/\{\{(\w+)\}\}/g, (match, param) => 
+        params.hasOwnProperty(param) ? params[param] : match
+      );
     }
     
     return key;

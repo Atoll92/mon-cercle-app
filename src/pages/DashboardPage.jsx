@@ -768,6 +768,8 @@ function DashboardPage() {
     );
   }
 
+  const isAdmin = profile?.role === 'admin';
+
   return (
     <Box sx={{ minHeight: '100vh' }}>
       <Container maxWidth="lg" sx={{ py: 3, display: 'flex', flexDirection: 'column' }}>
@@ -1533,6 +1535,7 @@ function DashboardPage() {
         onClose={() => setCreateEventOpen(false)}
         networkId={profile?.network_id}
         profileId={profile?.id}
+        isAdmin={isAdmin}
         onEventCreated={() => {
           // Refresh events by triggering fetchUpcomingEvents
           if (profile?.network_id) {
