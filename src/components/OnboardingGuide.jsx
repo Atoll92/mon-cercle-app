@@ -277,7 +277,7 @@ const OnboardingGuide = ({
             background: `linear-gradient(
               135deg, 
               ${theme.palette.background.paper} 0%, 
-              ${alpha(theme.palette.primary.main, 0.05)} 100%
+              ${alpha(theme.palette.primary.main, 0.8)} 500%
             )`,
             borderRadius: 3,
             boxShadow: `0 12px 40px ${alpha(theme.palette.primary.main, 0.15)}`,
