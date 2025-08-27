@@ -53,7 +53,8 @@ import {
   Add as AddIcon,
   Create as CreateIcon,
   Delete as DeleteIcon,
-  Edit as EditIcon
+  Edit as EditIcon,
+  Campaign as CampaignIcon
 } from '@mui/icons-material';
 import MediaPlayer from './MediaPlayer';
 import LazyImage from './LazyImage';
@@ -821,6 +822,7 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                     <PostCard
                       post={item}
                       author={author}
+                      category={item.category_id ? categories.find(c => c.id === item.category_id) : null}
                       darkMode={darkMode}
                       isOwner={item.profile_id === (activeProfile?.id || user?.id)}
                       onAuthorClick={handleMemberClick}
@@ -932,34 +934,66 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                           </IconButton>
                         )}
                         
-                        {(() => {
-                          const contentType = getContentTypeIcon(item);
-                          return (
-                            <Chip
-                              size="small"
-                              icon={contentType.icon}
-                              label={contentType.label}
-                              color={contentType.color}
-                              variant="outlined"
-                              sx={{ 
-                                height: 24,
-                                fontWeight: 500,
-                                '& .MuiChip-icon': {
-                                  fontSize: 16
-                                }
+                        {/* Category indicator */}
+                        {item.category_id && categories.find(c => c.id === item.category_id) && (
+                          <Box
+                            sx={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: 0.5,
+                              px: 1.5,
+                              py: 0.5,
+                              borderRadius: '16px',
+                              bgcolor: alpha(categories.find(c => c.id === item.category_id).color, 0.12),
+                              border: `1px solid ${alpha(categories.find(c => c.id === item.category_id).color, 0.3)}`,
+                              transition: 'all 0.2s ease',
+                              '&:hover': {
+                                bgcolor: alpha(categories.find(c => c.id === item.category_id).color, 0.18),
+                                borderColor: alpha(categories.find(c => c.id === item.category_id).color, 0.4),
+                              }
+                            }}
+                          >
+                            <Typography
+                              variant="caption"
+                              sx={{
+                                fontSize: '0.75rem',
+                                fontWeight: 600,
+                                color: categories.find(c => c.id === item.category_id).color,
+                                letterSpacing: '0.02em'
+                              }}
+                            >
+                              #{categories.find(c => c.id === item.category_id).name}
+                            </Typography>
+                          </Box>
+                        )}
+                        
+                        {item.itemType === 'news' && (
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              width: 32,
+                              height: 32,
+                              borderRadius: '50%',
+                              bgcolor: alpha(muiTheme.palette.primary.main, 0.12),
+                              border: `2px solid ${alpha(muiTheme.palette.primary.main, 0.3)}`,
+                              transition: 'all 0.2s ease',
+                              '&:hover': {
+                                bgcolor: alpha(muiTheme.palette.primary.main, 0.18),
+                                borderColor: alpha(muiTheme.palette.primary.main, 0.4),
+                                transform: 'scale(1.05)'
+                              }
+                            }}
+                          >
+                            <CampaignIcon
+                              sx={{
+                                fontSize: 16,
+                                color: muiTheme.palette.primary.main
                               }}
                             />
-                          );
-                        })()}
-                        <Chip 
-                          size="small" 
-                          label={item.itemType === 'post' ? t('socialWall.post') : t('socialWall.news')} 
-                          color={item.itemType === 'post' ? 'secondary' : 'primary'}
-                          sx={{ 
-                            height: 24,
-                            fontWeight: 500
-                          }}
-                        />
+                          </Box>
+                        )}
                       </Box>
                     }
                     title={
@@ -1217,60 +1251,18 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                   )}
                   
                   <CardContent sx={{ pt: 1, pb: 2 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                      <Typography 
-                        variant="h6" 
-                        component="h3" 
-                        sx={{ 
-                          fontSize: '1.1rem',
-                          fontWeight: 600,
-                          color: customLightText,
-                          flexGrow: 1
-                        }}
-                      >
-                        {item.title}
-                      </Typography>
-                      {item.category_id && categories.find(c => c.id === item.category_id) && (
-                        <Box
-                          sx={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: 0.5,
-                            px: 1.5,
-                            py: 0.5,
-                            borderRadius: '16px',
-                            bgcolor: alpha(categories.find(c => c.id === item.category_id).color, 0.12),
-                            border: `1px solid ${alpha(categories.find(c => c.id === item.category_id).color, 0.3)}`,
-                            transition: 'all 0.2s ease',
-                            '&:hover': {
-                              bgcolor: alpha(categories.find(c => c.id === item.category_id).color, 0.18),
-                              borderColor: alpha(categories.find(c => c.id === item.category_id).color, 0.4),
-                            }
-                          }}
-                        >
-                          <Box
-                            sx={{
-                              width: 6,
-                              height: 6,
-                              borderRadius: '50%',
-                              bgcolor: categories.find(c => c.id === item.category_id).color,
-                              flexShrink: 0
-                            }}
-                          />
-                          <Typography
-                            variant="caption"
-                            sx={{
-                              fontSize: '0.75rem',
-                              fontWeight: 500,
-                              color: categories.find(c => c.id === item.category_id).color,
-                              letterSpacing: '0.02em'
-                            }}
-                          >
-                            {categories.find(c => c.id === item.category_id).name}
-                          </Typography>
-                        </Box>
-                      )}
-                    </Box>
+                    <Typography 
+                      variant="h6" 
+                      component="h3" 
+                      sx={{ 
+                        fontSize: '1.1rem',
+                        fontWeight: 600,
+                        color: customLightText,
+                        mb: 1
+                      }}
+                    >
+                      {item.title}
+                    </Typography>
                     
                     {item.itemType === 'post' ? (
                       <>

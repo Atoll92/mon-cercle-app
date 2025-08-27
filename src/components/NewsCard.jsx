@@ -26,7 +26,7 @@ import {
   ArrowForward as ArrowForwardIcon
 } from '@mui/icons-material';
 
-const AnnouncementCard = ({ news, networkId, onMemberClick }) => {
+const AnnouncementCard = ({ news, networkId, onMemberClick, category }) => {
   const { t } = useTranslation();
   const theme = useTheme();
   const [imageViewerOpen, setImageViewerOpen] = useState(false);
@@ -101,22 +101,55 @@ const AnnouncementCard = ({ news, networkId, onMemberClick }) => {
 
           {/* News content */}
           <Box sx={{ flex: 1, overflow: 'hidden' }}>
-            <Typography 
-              variant="subtitle1" 
-              fontWeight={600} 
-              gutterBottom
-              sx={{
-                display: '-webkit-box',
-                WebkitLineClamp: 2,
-                WebkitBoxOrient: 'vertical',
-                overflow: 'hidden',
-                lineHeight: 1.3,
-                mb: 1,
-                fontSize: '1rem'
-              }}
-            >
-              {news.title}
-            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, mb: 1 }}>
+              <Typography 
+                variant="subtitle1" 
+                fontWeight={600} 
+                sx={{
+                  display: '-webkit-box',
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: 'vertical',
+                  overflow: 'hidden',
+                  lineHeight: 1.3,
+                  fontSize: '1rem',
+                  flex: 1
+                }}
+              >
+                {news.title}
+              </Typography>
+              {category && (
+                <Box
+                  sx={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 0.5,
+                    px: 1,
+                    py: 0.25,
+                    borderRadius: '12px',
+                    bgcolor: alpha(category.color, 0.12),
+                    border: `1px solid ${alpha(category.color, 0.3)}`,
+                    transition: 'all 0.2s ease',
+                    '&:hover': {
+                      bgcolor: alpha(category.color, 0.18),
+                      borderColor: alpha(category.color, 0.4),
+                    },
+                    flexShrink: 0
+                  }}
+                >
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      fontSize: '0.7rem',
+                      fontWeight: 600,
+                      color: category.color,
+                      letterSpacing: '0.02em'
+                    }}
+                  >
+                    #{category.name}
+                  </Typography>
+                </Box>
+              )}
+            </Box>
 
             {(() => {
               // Determine media type and URL

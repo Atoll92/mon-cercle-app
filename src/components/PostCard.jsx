@@ -380,32 +380,38 @@ const PostCard = ({
               </>
             )}
             
-            {/* Media type indicator */}
-            <Chip
-              size="small"
-              icon={contentTypeIcon.icon}
-              label={contentTypeIcon.label}
-              color={contentTypeIcon.color}
-              variant="outlined"
-              sx={{ 
-                height: 24,
-                fontWeight: 500,
-                '& .MuiChip-icon': {
-                  fontSize: 16
-                }
-              }}
-            />
-            
-            {/* Post type indicator - matches SocialWallTab */}
-            <Chip 
-              size="small" 
-              label="Post" 
-              color="secondary"
-              sx={{ 
-                height: 24,
-                fontWeight: 500
-              }}
-            />
+            {/* Category indicator */}
+            {category && (
+              <Box
+                sx={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 0.5,
+                  px: 1.5,
+                  py: 0.5,
+                  borderRadius: '16px',
+                  bgcolor: alpha(category.color, 0.12),
+                  border: `1px solid ${alpha(category.color, 0.3)}`,
+                  transition: 'all 0.2s ease',
+                  '&:hover': {
+                    bgcolor: alpha(category.color, 0.18),
+                    borderColor: alpha(category.color, 0.4),
+                  }
+                }}
+              >
+                <Typography
+                  variant="caption"
+                  sx={{
+                    fontSize: '0.75rem',
+                    fontWeight: 600,
+                    color: category.color,
+                    letterSpacing: '0.02em'
+                  }}
+                >
+                  #{category.name}
+                </Typography>
+              </Box>
+            )}
           </Box>
         }
         title={
@@ -434,61 +440,18 @@ const PostCard = ({
 
       {/* Post content */}
       <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-        {/* Title and category */}
-        <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 2, gap: 2 }}>
-          <Typography 
-            variant="h6" 
-            color="text.primary" 
-            sx={{ 
-              fontWeight: 600, 
-              lineHeight: 1.3,
-              flex: 1
-            }}
-          >
-            {post.title}
-          </Typography>
-          {category && (
-            <Box
-              sx={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 0.5,
-                px: 1.5,
-                py: 0.5,
-                borderRadius: '16px',
-                bgcolor: alpha(category.color, 0.12),
-                border: `1px solid ${alpha(category.color, 0.3)}`,
-                transition: 'all 0.2s ease',
-                '&:hover': {
-                  bgcolor: alpha(category.color, 0.18),
-                  borderColor: alpha(category.color, 0.4),
-                },
-                flexShrink: 0
-              }}
-            >
-              <Box
-                sx={{
-                  width: 6,
-                  height: 6,
-                  borderRadius: '50%',
-                  bgcolor: category.color,
-                  flexShrink: 0
-                }}
-              />
-              <Typography
-                variant="caption"
-                sx={{
-                  fontSize: '0.75rem',
-                  fontWeight: 500,
-                  color: category.color,
-                  letterSpacing: '0.02em'
-                }}
-              >
-                {category.name}
-              </Typography>
-            </Box>
-          )}
-        </Box>
+        {/* Title */}
+        <Typography 
+          variant="h6" 
+          color="text.primary" 
+          sx={{ 
+            fontWeight: 600, 
+            lineHeight: 1.3,
+            mb: 2
+          }}
+        >
+          {post.title}
+        </Typography>
 
         {/* Description */}
         {post.description && (

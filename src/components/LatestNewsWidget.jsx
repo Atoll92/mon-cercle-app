@@ -18,12 +18,14 @@ import {
   Add as AddIcon
 } from '@mui/icons-material';
 import { supabase } from '../supabaseclient';
+import { fetchNetworkCategories } from '../api/categories';
 
 const LatestAnnouncementsWidget = ({ networkId, onMemberClick, darkMode = false }) => {
   const { t } = useTranslation();
   const [isAdmin, setIsAdmin] = useState(false);
   const [createAnnouncementModalOpen, setCreateAnnouncementModalOpen] = useState(false);
   const { activeProfile } = useProfile();
+  const [categories, setCategories] = useState([]);
 
   // Check if user is network admin
   useEffect(() => {
@@ -35,6 +37,18 @@ const LatestAnnouncementsWidget = ({ networkId, onMemberClick, darkMode = false 
     };
     checkAdminStatus();
   }, [activeProfile?.id, networkId]);
+
+  // Load categories
+  useEffect(() => {
+    const loadCategories = async () => {
+      if (!networkId) return;
+      const { data, error } = await fetchNetworkCategories(networkId, true); // Only active categories
+      if (data && !error) {
+        setCategories(data);
+      }
+    };
+    loadCategories();
+  }, [networkId]);
 
   const { data: latestAnnouncements, loading, error, refetch } = useSupabaseQuery(
     () => supabase
@@ -49,6 +63,7 @@ const LatestAnnouncementsWidget = ({ networkId, onMemberClick, darkMode = false 
         media_type,
         media_metadata,
         created_at,
+        category_id,
         profiles!network_news_created_by_fkey (
           id,
           full_name,
@@ -181,6 +196,7 @@ const LatestAnnouncementsWidget = ({ networkId, onMemberClick, darkMode = false 
               news={news}
               networkId={networkId}
               onMemberClick={onMemberClick}
+              category={news.category_id ? categories.find(c => c.id === news.category_id) : null}
             />
           </Box>
         ))}

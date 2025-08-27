@@ -19,10 +19,25 @@ import {
   Add as AddIcon
 } from '@mui/icons-material';
 import { supabase } from '../supabaseclient';
+import { fetchNetworkCategories } from '../api/categories';
+import { useEffect } from 'react';
 
 const LatestPostsWidget = ({ networkId, onMemberClick, darkMode = false, onPostUpdated, onPostDeleted }) => {
   const { t } = useTranslation();
   const [createPostModalOpen, setCreatePostModalOpen] = useState(false);
+  const [categories, setCategories] = useState([]);
+
+  // Load categories
+  useEffect(() => {
+    const loadCategories = async () => {
+      if (!networkId) return;
+      const { data, error } = await fetchNetworkCategories(networkId, true); // Only active categories
+      if (data && !error) {
+        setCategories(data);
+      }
+    };
+    loadCategories();
+  }, [networkId]);
 
   // First fetch network members
   const { data: members } = useSupabaseQuery(
@@ -172,6 +187,7 @@ const LatestPostsWidget = ({ networkId, onMemberClick, darkMode = false, onPostU
             <PostCard
               post={post}
               author={post.profiles}
+              category={post.category_id ? categories.find(c => c.id === post.category_id) : null}
               onPostUpdated={onPostUpdated}
               onPostDeleted={onPostDeleted}
             />
