@@ -891,5 +891,12 @@
     "viewFullPost": "Voir le post complet",
     "readFullPost": "Lire l'article complet",
     "endOfWall": "Vous avez atteint la fin du mur social"
+  },
+  "footer": {
+    "cta": {
+      "title": "Prêt à fédérer votre propre communauté ?",
+      "description": "Créez un réseau privé pour votre équipe, organisation ou groupe d'intérêt",
+      "button": "Créer votre réseau →"
+    }
   }
 }

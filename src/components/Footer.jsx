@@ -5,13 +5,23 @@ import {
   Box, 
   Typography, 
   Container,
-  useTheme
+  useTheme,
+  Button
 } from '@mui/material';
+import { useAuth } from '../context/authContext';
+import { useProfile } from '../context/profileContext';
+import { useTranslation } from '../hooks/useTranslation';
 
 const Footer = () => {
   const theme = useTheme();
   const currentYear = new Date().getFullYear();
   const footerRef = useRef(null);
+  const { user } = useAuth();
+  const { activeProfile } = useProfile();
+  const { t } = useTranslation();
+  
+  // Check if current user is admin based on activeProfile
+  const isAdmin = activeProfile?.role === 'admin';
 
   // Set CSS variable for footer height
   useEffect(() => {
@@ -79,6 +89,78 @@ const Footer = () => {
       }}
     >
       <Container maxWidth="lg">
+        {/* CTA for non-admin members to create their own network */}
+        {user && activeProfile && !isAdmin && (
+          <Box sx={{ 
+            mb: 3,
+            py: 2.5,
+            px: 3,
+            borderRadius: 2,
+            background: theme.palette.mode === 'dark' 
+              ? 'linear-gradient(135deg, rgba(33, 150, 243, 0.08), rgba(63, 81, 181, 0.08))'
+              : 'linear-gradient(135deg, rgba(33, 150, 243, 0.04), rgba(63, 81, 181, 0.04))',
+            border: '1px solid',
+            borderColor: theme.palette.mode === 'dark'
+              ? 'rgba(33, 150, 243, 0.2)'
+              : 'rgba(33, 150, 243, 0.15)',
+            display: 'flex',
+            flexDirection: { xs: 'column', sm: 'row' },
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 2
+          }}>
+            <Box sx={{ textAlign: { xs: 'center', sm: 'left' } }}>
+              <Typography 
+                variant="body1" 
+                sx={{ 
+                  fontWeight: 600,
+                  color: 'text.primary',
+                  mb: 0.5,
+                  fontSize: '1.1rem'
+                }}
+              >
+                {t('footer.cta.title')}
+              </Typography>
+              <Typography 
+                variant="body2" 
+                sx={{ 
+                  color: 'text.secondary',
+                  fontSize: '0.95rem'
+                }}
+              >
+                {t('footer.cta.description')}
+              </Typography>
+            </Box>
+            <Button
+              component={Link}
+              to="/create-network"
+              variant="contained"
+              size="medium"
+              sx={{
+                background: 'linear-gradient(120deg, #2196f3, #3f51b5)',
+                color: 'white',
+                px: 3,
+                py: 1.2,
+                borderRadius: 2,
+                textTransform: 'none',
+                fontWeight: 600,
+                fontSize: '0.95rem',
+                whiteSpace: 'nowrap',
+                minWidth: { xs: '100%', sm: 'auto' },
+                boxShadow: '0 2px 8px rgba(33, 150, 243, 0.25)',
+                '&:hover': {
+                  background: 'linear-gradient(120deg, #1976d2, #303f9f)',
+                  transform: 'translateY(-1px)',
+                  boxShadow: '0 4px 16px rgba(33, 150, 243, 0.35)'
+                },
+                transition: 'all 0.2s ease-in-out'
+              }}
+            >
+              {t('footer.cta.button')}
+            </Button>
+          </Box>
+        )}
+
         <Box
           sx={{
             display: 'flex',

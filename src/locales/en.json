@@ -898,5 +898,12 @@
     "viewFullPost": "View Full Post",
     "readFullPost": "Read Full Post",
     "endOfWall": "You've reached the end of the social wall"
+  },
+  "footer": {
+    "cta": {
+      "title": "Ready to gather your own community?",
+      "description": "Create a private network for your team, organization, or interest group",
+      "button": "Create Your Network →"
+    }
   }
 }
