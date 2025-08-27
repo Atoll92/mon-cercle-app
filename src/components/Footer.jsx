@@ -8,7 +8,7 @@ import {
   useTheme,
   Button
 } from '@mui/material';
-import { useAuth } from '../context/authContext';
+import { useAuth } from '../context/authcontext';
 import { useProfile } from '../context/profileContext';
 import { useTranslation } from '../hooks/useTranslation';
 
