@@ -9,6 +9,7 @@ import { getCommentCount } from '../api/comments';
 import { useTranslation } from '../hooks/useTranslation';
 import {
   Card,
+  CardHeader,
   CardContent,
   CardMedia,
   Typography,
@@ -58,88 +59,53 @@ const AnnouncementCard = ({ news, networkId, onMemberClick, category }) => {
         },
         transition: 'all 0.3s ease'
       }}>
-        <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column', p: 2 }}>
-          {/* Author info */}
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+        <CardHeader
+          avatar={
             <Avatar
               src={news.profiles?.profile_picture_url}
-              sx={{ width: 24, height: 24, mr: 1 }}
+              onClick={onMemberClick ? (e) => onMemberClick(news.profiles?.id, e) : undefined}
+              sx={{ 
+                width: 36, 
+                height: 36,
+                cursor: onMemberClick ? 'pointer' : 'default',
+                transition: 'all 0.3s ease',
+                '&:hover': onMemberClick ? {
+                  transform: 'scale(1.05)',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
+                } : {}
+              }}
             >
               {news.profiles?.full_name ? 
                 news.profiles.full_name.charAt(0).toUpperCase() : 
-                <PersonIcon sx={{ fontSize: 16 }} />
+                <PersonIcon />
               }
             </Avatar>
-            <Box sx={{ flex: 1, minWidth: 0 }}>
-              <Typography 
-                variant="caption" 
-                fontWeight={500} 
-                noWrap 
-                onClick={onMemberClick ? (e) => onMemberClick(news.profiles?.id, e) : undefined}
-                sx={{ 
-                  lineHeight: 1.2,
-                  cursor: onMemberClick ? 'pointer' : 'default',
-                  '&:hover': onMemberClick ? {
-                    color: 'primary.main',
-                    textDecoration: 'underline'
-                  } : {},
-                  transition: 'color 0.2s ease'
-                }}
-              >
-                {news.profiles?.full_name || 'Unknown Author'}
-              </Typography>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.3 }}>
-                <ScheduleIcon sx={{ fontSize: 10, color: 'text.secondary' }} />
-                <Typography variant="caption" color="text.secondary" sx={{ lineHeight: 1, fontSize: '0.7rem' }}>
-                  {formatTimeAgo(news.created_at)}
-                </Typography>
-              </Box>
-            </Box>
-          </Box>
-
-          <Divider sx={{ mb: 1 }} />
-
-          {/* News content */}
-          <Box sx={{ flex: 1, overflow: 'hidden' }}>
-            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, mb: 1 }}>
-              <Typography 
-                variant="subtitle1" 
-                fontWeight={600} 
-                sx={{
-                  display: '-webkit-box',
-                  WebkitLineClamp: 2,
-                  WebkitBoxOrient: 'vertical',
-                  overflow: 'hidden',
-                  lineHeight: 1.3,
-                  fontSize: '1rem',
-                  flex: 1
-                }}
-              >
-                {news.title}
-              </Typography>
+          }
+          action={
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              {/* Category indicator */}
               {category && (
                 <Box
                   sx={{
                     display: 'inline-flex',
                     alignItems: 'center',
                     gap: 0.5,
-                    px: 1,
-                    py: 0.25,
-                    borderRadius: '12px',
+                    px: 1.5,
+                    py: 0.5,
+                    borderRadius: '16px',
                     bgcolor: alpha(category.color, 0.12),
                     border: `1px solid ${alpha(category.color, 0.3)}`,
                     transition: 'all 0.2s ease',
                     '&:hover': {
                       bgcolor: alpha(category.color, 0.18),
                       borderColor: alpha(category.color, 0.4),
-                    },
-                    flexShrink: 0
+                    }
                   }}
                 >
                   <Typography
                     variant="caption"
                     sx={{
-                      fontSize: '0.7rem',
+                      fontSize: '0.75rem',
                       fontWeight: 600,
                       color: category.color,
                       letterSpacing: '0.02em'
@@ -150,6 +116,51 @@ const AnnouncementCard = ({ news, networkId, onMemberClick, category }) => {
                 </Box>
               )}
             </Box>
+          }
+          title={
+            <Typography 
+              variant="subtitle2" 
+              sx={{ 
+                fontWeight: 600,
+                cursor: onMemberClick ? 'pointer' : 'default',
+                '&:hover': onMemberClick ? {
+                  color: 'primary.main'
+                } : {}
+              }}
+              onClick={onMemberClick ? (e) => onMemberClick(news.profiles?.id, e) : undefined}
+            >
+              {news.profiles?.full_name || 'Unknown Author'}
+            </Typography>
+          }
+          subheader={
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.3 }}>
+              <ScheduleIcon sx={{ fontSize: 12, color: 'text.secondary' }} />
+              <Typography variant="caption" color="text.secondary">
+                {formatTimeAgo(news.created_at)}
+              </Typography>
+            </Box>
+          }
+          sx={{ pb: 1 }}
+        />
+        <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column', pt: 0 }}>
+
+          {/* News content */}
+          <Box sx={{ flex: 1, overflow: 'hidden' }}>
+            <Typography 
+              variant="subtitle1" 
+              fontWeight={600} 
+              sx={{
+                display: '-webkit-box',
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden',
+                lineHeight: 1.3,
+                fontSize: '1rem',
+                mb: 1
+              }}
+            >
+              {news.title}
+            </Typography>
 
             {(() => {
               // Determine media type and URL
