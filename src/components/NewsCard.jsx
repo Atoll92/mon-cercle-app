@@ -168,23 +168,24 @@ const AnnouncementCard = ({ news, networkId, onMemberClick }) => {
                 } else {
                   // Default to image display
                   return (
-                    <CardMedia
-                      component="img"
-                      height="120"
-                      image={mediaUrl}
-                      alt={news.image_caption || news.title}
-                      onClick={() => handleImageClick(mediaUrl, news.title)}
-                      sx={{ 
-                        borderRadius: 0.5, 
-                        mb: 1,
-                        objectFit: 'cover',
-                        cursor: 'pointer',
-                        transition: 'opacity 0.2s ease',
-                        '&:hover': {
-                          opacity: 0.9
-                        }
-                      }}
-                    />
+                    <Box sx={{ mb: 1 }}>
+                      <img
+                        src={mediaUrl}
+                        alt={news.image_caption || news.title}
+                        onClick={() => handleImageClick(mediaUrl, news.title)}
+                        style={{
+                          width: '100%',
+                          height: 'auto',
+                          maxHeight: '300px',
+                          objectFit: 'contain',
+                          borderRadius: 4,
+                          cursor: 'pointer',
+                          transition: 'opacity 0.2s ease',
+                        }}
+                        onMouseOver={(e) => e.target.style.opacity = 0.9}
+                        onMouseOut={(e) => e.target.style.opacity = 1}
+                      />
+                    </Box>
                   );
                 }
               }
