@@ -71,7 +71,7 @@ import { getUserProfile } from '../api/networks';
 // Number of items to display initially
 const ITEMS_PER_FETCH = 6;
 
-const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = false, isAdmin = false, networkId, onPostDeleted }) => {
+const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = false, isAdmin = false, networkId, onPostDeleted, onPostCreated }) => {
   const { t } = useTranslation();
   const { user } = useAuth();
   const { activeProfile } = useProfile();
@@ -558,12 +558,14 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
   
   // Handle post creation
   const handlePostCreated = (newPost) => {
-    // This callback can be used to refresh the social wall or show a success message
-    // For now, we'll just close the modal (handled by the modal itself)
     console.log('New post created:', newPost);
     
-    // Optionally trigger a refresh of the social wall here
-    // The parent component would need to pass a refresh callback
+    // Call the parent's callback to update the social wall items
+    if (onPostCreated) {
+      onPostCreated(newPost);
+    }
+    
+    // The new post will appear through the updated socialWallItems prop
   };
   
   // Handle post deletion

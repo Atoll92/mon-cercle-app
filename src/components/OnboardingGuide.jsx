@@ -193,7 +193,7 @@ const OnboardingGuide = ({
             description: "You've successfully joined the network. Let's explore what you can do here.",
             action: "Go to Network",
             actionIcon: <NextIcon />,
-            pointer: "Click here to visit your network page"
+            pointer: "Click the button below to visit your network page"
           };
         }
         return {
@@ -202,7 +202,7 @@ const OnboardingGuide = ({
           description: "Let's get your community started by inviting some members.",
           action: "Go to Admin Panel",
           actionIcon: <NextIcon />,
-          pointer: "Click the admin button in the top navigation"
+          pointer: "Click the button below to visit the admin panel"
         };
       
       case ONBOARDING_STEPS.ADMIN_PANEL:

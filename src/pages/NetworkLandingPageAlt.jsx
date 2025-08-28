@@ -276,6 +276,32 @@ function NetworkLandingPageAlt() {
       setPostItems(prevItems => prevItems.filter(item => item.id !== postId));
     }
   };
+
+  // Handle post creation from social wall
+  const handlePostCreated = (newPost) => {
+    console.log('New post created:', newPost);
+    
+    // Find the member info for the new post
+    const member = networkMembers.find(m => m.id === newPost.profile_id);
+    
+    // Transform the new post to match the social wall format
+    const postWithMemberInfo = {
+      ...newPost,
+      itemType: 'post',
+      createdAt: newPost.created_at,
+      memberName: member?.full_name || activeProfile?.full_name || 'Network Member',
+      memberAvatar: member?.profile_picture_url || activeProfile?.profile_picture_url || '',
+      memberId: newPost.profile_id,
+      // Preserve all media fields
+      media_url: newPost.media_url,
+      media_type: newPost.media_type,
+      media_metadata: newPost.media_metadata,
+      image_url: newPost.image_url || newPost.file_url || ''
+    };
+    
+    // Add the new post to the beginning of the list
+    setPostItems(prevItems => [postWithMemberInfo, ...prevItems]);
+  };
   
   // Check if user just joined the network or came from invitation
   useEffect(() => {
@@ -1220,6 +1246,7 @@ function NetworkLandingPageAlt() {
               isAdmin={isUserAdmin}
               networkId={network.id}
               onPostDeleted={handlePostDeleted}
+              onPostCreated={handlePostCreated}
             />
           )}
 
