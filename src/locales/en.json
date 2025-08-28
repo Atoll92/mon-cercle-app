@@ -513,7 +513,8 @@
       "manageSubscription": "Manage Subscription",
       "renewPlan": "Renew Plan",
       "billing": "Billing",
-      "upgradePlan": "Upgrade Plan"
+      "upgradePlan": "Upgrade Plan",
+      "settings": "Settings"
     },
     "profile": {
       "notSet": "Not set",
