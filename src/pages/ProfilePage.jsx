@@ -14,6 +14,7 @@ import EventDetailsDialog from '../components/EventDetailsDialog';
 import PostsGrid from '../components/PostsGrid';
 import PostCard from '../components/PostCard';
 import Spinner from '../components/Spinner';
+import LinkifiedText from '../components/LinkifiedText';
 import {
   Button,
   Typography,
@@ -687,9 +688,16 @@ function ProfilePage() {
                     </Typography>
                     
                     {profile.bio ? (
-                      <Typography variant="body1" sx={{ mt: 2 }}>
-                        {profile.bio}
-                      </Typography>
+                      <LinkifiedText
+                        text={profile.bio}
+                        component="div"
+                        sx={{ 
+                          mt: 2,
+                          fontSize: '1rem',
+                          lineHeight: 1.6,
+                          color: 'text.primary'
+                        }}
+                      />
                     ) : (
                       <Alert severity="info" variant="outlined" sx={{ mt: 1 }}>
                         No bio provided.

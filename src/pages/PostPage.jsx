@@ -37,6 +37,7 @@ import LinkPreview from '../components/LinkPreview';
 import LazyImage from '../components/LazyImage';
 import ImageViewerModal from '../components/ImageViewerModal';
 import CommentSection from '../components/CommentSection';
+import LinkifiedText from '../components/LinkifiedText';
 
 function PostPage() {
   const { postId } = useParams();
@@ -388,9 +389,16 @@ function PostPage() {
         {/* Description */}
         {post.description && (
           <Box sx={{ mb: 3 }}>
-            <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
-              {post.description}
-            </Typography>
+            <LinkifiedText
+              text={post.description}
+              component="div"
+              sx={{ 
+                whiteSpace: 'pre-wrap',
+                fontSize: '1rem',
+                lineHeight: 1.6,
+                color: 'text.primary'
+              }}
+            />
           </Box>
         )}
 

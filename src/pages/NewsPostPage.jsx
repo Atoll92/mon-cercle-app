@@ -31,6 +31,7 @@ import { supabase } from '../supabaseclient';
 import { formatDate } from '../utils/dateFormatting';
 import MediaPlayer from '../components/MediaPlayer';
 import { sanitizeRichText } from '../utils/sanitizeHtml';
+import { linkifyHtml } from '../utils/textFormatting';
 import { fetchNetworkCategories } from '../api/categories';
 import CommentSection from '../components/CommentSection';
 
@@ -422,7 +423,7 @@ function AnnouncementPostPage() {
               my: 2
             }
           }}
-          dangerouslySetInnerHTML={{ __html: sanitizeRichText(announcementPost.content) }}
+          dangerouslySetInnerHTML={{ __html: linkifyHtml(sanitizeRichText(announcementPost.content)) }}
         />
 
         {/* Footer */}

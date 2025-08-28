@@ -8,6 +8,7 @@ import { useApp } from '../context/appContext';
 import { supabase } from '../supabaseclient';
 import { useFadeIn } from '../hooks/useAnimation';
 import { GridSkeleton } from '../components/LoadingSkeleton';
+import LinkifiedText from '../components/LinkifiedText';
 import ArticleIcon from '@mui/icons-material/Article';
 import ChatIcon from '@mui/icons-material/Chat';
 import TimelineIcon from '@mui/icons-material/Timeline';
@@ -873,17 +874,17 @@ function NetworkLandingPageOverlap() {
                     {network.name}
                   </Typography>
                   {network.description && (
-                    <Typography 
-                      variant="body1" 
+                    <LinkifiedText
+                      text={network.description}
+                      component="div"
                       sx={{ 
                         color: network.background_image_url ? alpha('#ffffff', 0.9) : (darkMode ? alpha('#ffffff', 0.7) : muiTheme.palette.text.secondary),
                         maxWidth: '600px',
                         lineHeight: 1.6,
                         textShadow: network.background_image_url ? '0 1px 2px rgba(0,0,0,0.3)' : undefined,
+                        fontSize: '1rem'
                       }}
-                    >
-                      {network.description}
-                    </Typography>
+                    />
                   )}
                 </Box>
               

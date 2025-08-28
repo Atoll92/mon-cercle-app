@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import MediaPlayer from './MediaPlayer';
+import LinkifiedText from './LinkifiedText';
 import ImageViewerModal from './ImageViewerModal';
 import { formatTimeAgo } from '../utils/dateFormatting';
 import { truncateContent, stripHtml } from '../utils/textFormatting';
@@ -236,20 +237,19 @@ const AnnouncementCard = ({ news, networkId, onMemberClick, category }) => {
               return null;
             })()}
 
-            <Typography 
-              variant="body2" 
-              color="text.secondary"
+            <LinkifiedText 
+              text={truncateContent(stripHtml(news.content), 150)}
+              component="div"
               sx={{
                 display: '-webkit-box',
                 WebkitLineClamp: (news.image_url || news.media_url) ? 2 : 3,
                 WebkitBoxOrient: 'vertical',
                 overflow: 'hidden',
                 lineHeight: 1.5,
-                fontSize: '0.875rem'
+                fontSize: '0.875rem',
+                color: 'text.secondary'
               }}
-            >
-              {truncateContent(stripHtml(news.content), 150)}
-            </Typography>
+            />
           </Box>
 
           {/* Comment count and actions - matching PostCard */}

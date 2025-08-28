@@ -5,6 +5,7 @@ import { useProfile } from '../context/profileContext';
 import MemberDetailsModal from '../components/MembersDetailModal';
 import Spinner from '../components/Spinner';
 import CommentSection from '../components/CommentSection';
+import { linkifyHtml } from '../utils/textFormatting';
 import {
   Container,
   Paper,
@@ -578,9 +579,16 @@ function EventPage() {
               sx={{ 
                 '& p': { mb: 2 },
                 '& h1, & h2, & h3, & h4, & h5, & h6': { mt: 3, mb: 1 },
-                '& ul, & ol': { mb: 2 }
+                '& ul, & ol': { mb: 2 },
+                '& a': {
+                  color: 'primary.main',
+                  textDecoration: 'underline',
+                  '&:hover': {
+                    opacity: 0.8
+                  }
+                }
               }}
-              dangerouslySetInnerHTML={{ __html: event.description }}
+              dangerouslySetInnerHTML={{ __html: linkifyHtml(event.description) }}
             />
 
             {/* Organizer */}

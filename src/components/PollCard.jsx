@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Spinner from './Spinner';
+import LinkifiedText from './LinkifiedText';
 import {
   Card,
   CardContent,
@@ -155,9 +156,16 @@ const PollCard = ({ poll, onVoteSubmit }) => {
               {poll.title}
             </Typography>
             {poll.description && (
-              <Typography variant="body2" color="text.secondary" paragraph>
-                {poll.description}
-              </Typography>
+              <LinkifiedText
+                text={poll.description}
+                component="p"
+                sx={{
+                  fontSize: '0.875rem',
+                  color: 'text.secondary',
+                  marginBottom: 2,
+                  lineHeight: 1.5
+                }}
+              />
             )}
           </Box>
         </Box>

@@ -7,6 +7,7 @@ import { formatTimeAgo } from '../utils/dateFormatting';
 import PostsGrid from './PostsGrid';
 import Spinner from './Spinner';
 import MoodboardItemSimple from './Moodboard/MoodboardItemSimple';
+import LinkifiedText from './LinkifiedText';
 import { getUserMoodboardItems } from '../api/moodboards';
 import {
   Dialog,
@@ -613,16 +614,17 @@ const MemberDetailsModal = ({
                 </Box>
                 
                 {member.bio && (
-                  <Typography 
-                    variant="body1" 
-                    paragraph
+                  <LinkifiedText
+                    text={member.bio}
+                    component="div"
                     sx={{ 
                       color: customFadedText,
-                      maxWidth: '600px'
+                      maxWidth: '600px',
+                      marginBottom: 2,
+                      fontSize: '1rem',
+                      lineHeight: 1.6
                     }}
-                  >
-                    {member.bio}
-                  </Typography>
+                  />
                 )}
               </Box>
             </Grid>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/authcontext';
 import { useProfile } from '../context/profileContext';
 import { useTranslation } from '../hooks/useTranslation';
+import LinkifiedText from './LinkifiedText';
 import {
   Box,
   Typography,
@@ -239,17 +240,16 @@ const CommentSection = ({ itemType, itemId, darkMode, isAdmin = false, initialCo
                 />
               )}
             </Box>
-            <Typography
-              variant="body2"
+            <LinkifiedText
+              text={comment.content}
+              component="div"
               sx={{
                 color: theme.palette.text.primary,
                 mb: 0.5,
                 fontSize: '0.875rem',
                 lineHeight: 1.5
               }}
-            >
-              {comment.content}
-            </Typography>
+            />
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               {!isReply && (
                 <Button

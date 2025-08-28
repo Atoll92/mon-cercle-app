@@ -55,6 +55,7 @@ import PollCard from './PollCard';
 import MediaUpload from './MediaUpload';
 import MediaPlayer from './MediaPlayer';
 import ImageViewerModal from './ImageViewerModal';
+import { linkifyHtml } from '../utils/textFormatting';
 
 // Enhanced Announcements Tab component with image upload support and admin editing
 const NewsTab = ({ darkMode }) => {
@@ -766,7 +767,7 @@ const NewsTab = ({ darkMode }) => {
               <Divider sx={{ my: 2 }} />
               <Box 
                 className="tiptap-output"
-                dangerouslySetInnerHTML={{ __html: post.content }}
+                dangerouslySetInnerHTML={{ __html: linkifyHtml(post.content) }}
                 sx={{
                   '& ul': { listStyleType: 'disc', pl: 2 },
                   '& ol': { listStyleType: 'decimal', pl: 2 },

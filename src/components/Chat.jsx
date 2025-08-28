@@ -22,7 +22,8 @@ import {
   Popover,
   MenuItem,
   Chip,
-  Menu
+  Menu,
+  Link as MuiLink
 } from '@mui/material';
 import Spinner from './Spinner';
 import SendIcon from '@mui/icons-material/Send';
@@ -1067,64 +1068,125 @@ const renderMedia = (mediaUrl, mediaType, metadata, messageId) => {
   }
 };
 
-  // Function to render text with highlighted mentions
+  // Function to render text with highlighted mentions and clickable URLs
   const renderTextWithMentions = (text) => {
     if (!text) return null;
     
+    // Combined regex for mentions and URLs
     const mentionRegex = /@([^@\s]+(?:\s+[^@\s]+)*)/g;
-    const parts = [];
-    let lastIndex = 0;
+    const urlRegex = /(https?:\/\/[^\s<>"{}|\\^`[\]]+|www\.[^\s<>"{}|\\^`[\]]+\.[^\s<>"{}|\\^`[\]]+)/gi;
+    
+    // Find all matches with their types and positions
+    const matches = [];
     let match;
     
+    // Find mentions
     while ((match = mentionRegex.exec(text)) !== null) {
-      // Add text before mention
-      if (match.index > lastIndex) {
-        parts.push(text.substring(lastIndex, match.index));
+      matches.push({
+        type: 'mention',
+        start: match.index,
+        end: match.index + match[0].length,
+        content: match[0],
+        name: match[1].trim()
+      });
+    }
+    
+    // Find URLs
+    while ((match = urlRegex.exec(text)) !== null) {
+      matches.push({
+        type: 'url',
+        start: match.index,
+        end: match.index + match[0].length,
+        content: match[0]
+      });
+    }
+    
+    // Sort matches by position
+    matches.sort((a, b) => a.start - b.start);
+    
+    // Build parts array
+    const parts = [];
+    let lastIndex = 0;
+    
+    matches.forEach((match) => {
+      // Add text before this match
+      if (match.start > lastIndex) {
+        parts.push(text.substring(lastIndex, match.start));
       }
       
-      // Add mention as a chip
-      const mentionedName = match[1].trim();
-      const mentionedUser = networkMembers.find(member => 
-        member.full_name?.toLowerCase() === mentionedName.toLowerCase()
-      );
-      
-      if (mentionedUser) {
-        parts.push(
-          <Chip
-            key={`mention-${match.index}`}
-            label={`@${mentionedName}`}
-            size="small"
-            component={Link}
-            to={`/profile/${mentionedUser.id}`}
-            sx={{
-              cursor: 'pointer',
-              background: darkMode 
-                ? 'linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.2))' 
-                : 'linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1))',
-              color: darkMode ? '#a5b4fc' : '#6366f1',
-              fontWeight: 600,
-              fontSize: '0.8rem',
-              height: 24,
-              mx: 0.5,
-              border: 'none',
-              '&:hover': {
+      if (match.type === 'mention') {
+        // Handle mention
+        const mentionedUser = networkMembers.find(member => 
+          member.full_name?.toLowerCase() === match.name.toLowerCase()
+        );
+        
+        if (mentionedUser) {
+          parts.push(
+            <Chip
+              key={`mention-${match.start}`}
+              label={`@${match.name}`}
+              size="small"
+              component={Link}
+              to={`/profile/${mentionedUser.id}`}
+              sx={{
+                cursor: 'pointer',
                 background: darkMode 
-                  ? 'linear-gradient(135deg, rgba(99, 102, 241, 0.3), rgba(139, 92, 246, 0.3))'
-                  : 'linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(139, 92, 246, 0.15))',
-                textDecoration: 'none',
-                transform: 'translateY(-1px)',
-                boxShadow: '0 2px 8px rgba(99, 102, 241, 0.2)'
+                  ? 'linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.2))' 
+                  : 'linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1))',
+                color: darkMode ? '#a5b4fc' : '#6366f1',
+                fontWeight: 600,
+                fontSize: '0.8rem',
+                height: 24,
+                mx: 0.5,
+                border: 'none',
+                '&:hover': {
+                  background: darkMode 
+                    ? 'linear-gradient(135deg, rgba(99, 102, 241, 0.3), rgba(139, 92, 246, 0.3))'
+                    : 'linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(139, 92, 246, 0.15))',
+                  textDecoration: 'none',
+                  transform: 'translateY(-1px)',
+                  boxShadow: '0 2px 8px rgba(99, 102, 241, 0.2)'
+                }
+              }}
+            />
+          );
+        } else {
+          parts.push(`@${match.name}`);
+        }
+      } else if (match.type === 'url') {
+        // Handle URL
+        let href = match.content;
+        if (href.startsWith('www.')) {
+          href = 'https://' + href;
+        }
+        
+        let displayUrl = match.content;
+        if (displayUrl.length > 30) {
+          displayUrl = displayUrl.substring(0, 27) + '...';
+        }
+        
+        parts.push(
+          <MuiLink
+            key={`url-${match.start}`}
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            sx={{
+              color: darkMode ? '#60a5fa' : '#2563eb',
+              textDecoration: 'underline',
+              '&:hover': {
+                opacity: 0.8
               }
             }}
-          />
+          >
+            {displayUrl}
+          </MuiLink>
         );
-      } else {
-        // If user not found, just show as regular text
-        parts.push(`@${mentionedName}`);
       }
       
-      lastIndex = match.index + match[0].length;
-    }
+      lastIndex = match.end;
+    });
     
     // Add remaining text
     if (lastIndex < text.length) {

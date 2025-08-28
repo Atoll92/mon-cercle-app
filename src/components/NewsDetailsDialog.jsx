@@ -21,6 +21,7 @@ import {
 import MediaPlayer from './MediaPlayer';
 import ImageViewerModal from './ImageViewerModal';
 import { formatDate } from '../utils/dateFormatting';
+import { linkifyHtml } from '../utils/textFormatting';
 
 const NewsDetailsDialog = ({ 
   open, 
@@ -194,7 +195,7 @@ const NewsDetailsDialog = ({
           {/* News content */}
           <Box 
             className="tiptap-output"
-            dangerouslySetInnerHTML={{ __html: news.content }}
+            dangerouslySetInnerHTML={{ __html: linkifyHtml(news.content) }}
             sx={{
               '& ul': { listStyleType: 'disc', pl: 2 },
               '& ol': { listStyleType: 'decimal', pl: 2 },

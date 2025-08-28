@@ -9,6 +9,7 @@ import { supabase } from '../supabaseclient';
 import { useFadeIn } from '../hooks/useAnimation';
 import { GridSkeleton } from '../components/LoadingSkeleton';
 import NetworkHeaderFloating from '../components/NetworkHeaderFloating';
+import LinkifiedText from '../components/LinkifiedText';
 import ArticleIcon from '@mui/icons-material/Article';
 import ChatIcon from '@mui/icons-material/Chat';
 import TimelineIcon from '@mui/icons-material/Timeline';
@@ -1079,8 +1080,9 @@ function NetworkLandingPageFloatingElements() {
                   : '0 2px 8px rgba(0,0,0,0.06)',
               }}
             >
-              <Typography
-                variant="body2"
+              <LinkifiedText
+                text={network.description}
+                component="div"
                 sx={{
                   color: darkMode 
                     ? alpha('#ffffff', 0.9)
@@ -1089,9 +1091,7 @@ function NetworkLandingPageFloatingElements() {
                   lineHeight: 1.6,
                   fontWeight: 500,
                 }}
-              >
-                {network.description}
-              </Typography>
+              />
             </Paper>
           </Box>
         </Box>
@@ -1120,8 +1120,9 @@ function NetworkLandingPageFloatingElements() {
                 : '0 2px 8px rgba(0,0,0,0.06)',
             }}
           >
-            <Typography
-              variant="body2"
+            <LinkifiedText
+              text={network.description}
+              component="div"
               sx={{
                 color: darkMode 
                   ? alpha('#ffffff', 0.9)
@@ -1130,9 +1131,7 @@ function NetworkLandingPageFloatingElements() {
                 lineHeight: 1.6,
                 fontWeight: 400,
               }}
-            >
-              {network.description}
-            </Typography>
+            />
           </Paper>
         )}
         

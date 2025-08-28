@@ -30,6 +30,7 @@ import {
 import MediaPlayer from './MediaPlayer';
 import LazyImage from './LazyImage';
 import LinkPreview from './LinkPreview';
+import LinkifiedText from './LinkifiedText';
 import ImageViewerModal from './ImageViewerModal';
 import CreatePostModal from './CreatePostModal';
 import MembersDetailModal from './MembersDetailModal';
@@ -455,20 +456,20 @@ const PostCard = ({
 
         {/* Description */}
         {post.description && (
-          <Typography 
-            variant="body2" 
-            color="text.secondary" 
+          <LinkifiedText 
+            text={post.description}
+            component="div"
             sx={{ 
               mb: 2, 
               lineHeight: 1.6,
               display: '-webkit-box',
               WebkitLineClamp: 3,
               WebkitBoxOrient: 'vertical',
-              overflow: 'hidden'
+              overflow: 'hidden',
+              color: 'text.secondary',
+              fontSize: '0.875rem'
             }}
-          >
-            {post.description}
-          </Typography>
+          />
         )}
 
         {/* Link Preview - matches SocialWallTab */}
