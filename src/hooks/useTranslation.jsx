@@ -1,6 +1,7 @@
 import { useState, useEffect, createContext, useContext } from 'react';
 import enTranslations from '../locales/en.json';
 import frTranslations from '../locales/fr.json';
+import { trackMissingTranslation } from '../utils/translationMonitor';
 
 const translations = {
   en: enTranslations,
@@ -60,6 +61,8 @@ export const useTranslation = () => {
           );
         }
         
+        // Track missing translation
+        trackMissingTranslation(key, defaultLang);
         return key;
       },
       language: defaultLang,
@@ -85,6 +88,8 @@ export const useTranslation = () => {
       );
     }
     
+    // Track missing translation
+    trackMissingTranslation(key, language);
     return key;
   };
   
