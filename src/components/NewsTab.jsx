@@ -56,6 +56,7 @@ import MediaUpload from './MediaUpload';
 import MediaPlayer from './MediaPlayer';
 import MediaCarousel from './MediaCarousel';
 import ImageViewerModal from './ImageViewerModal';
+import UserContent from './UserContent';
 import { linkifyHtml } from '../utils/textFormatting';
 
 // Enhanced Announcements Tab component with image upload support and admin editing
@@ -832,15 +833,9 @@ const NewsTab = ({ darkMode }) => {
               )}
               
               <Divider sx={{ my: 2 }} />
-              <Box 
-                className="tiptap-output"
-                dangerouslySetInnerHTML={{ __html: linkifyHtml(post.content) }}
-                sx={{
-                  '& ul': { listStyleType: 'disc', pl: 2 },
-                  '& ol': { listStyleType: 'decimal', pl: 2 },
-                  '& h1': { fontSize: '2em' },
-                  '& h2': { fontSize: '1.5em' }
-                }}
+              <UserContent 
+                content={post.content}
+                html={true}
               />
             </CardContent>
             

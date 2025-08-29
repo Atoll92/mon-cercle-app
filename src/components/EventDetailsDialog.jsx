@@ -25,6 +25,7 @@ import {
 } from '@mui/icons-material';
 import EventParticipation from './EventParticipation';
 import LinkifiedText from './LinkifiedText';
+import UserContent from './UserContent';
 import { formatEventDate } from '../utils/dateFormatting';
 
 const EventDetailsDialog = ({ 
@@ -219,12 +220,11 @@ const EventDetailsDialog = ({
                   <Typography variant="h6" gutterBottom>
                     About this event
                   </Typography>
-                  <LinkifiedText 
-                    text={event.description}
-                    component="p"
+                  <UserContent 
+                    content={event.description}
+                    html={false}
                     sx={{ 
                       fontSize: '1rem',
-                      lineHeight: 1.5,
                       marginBottom: 2
                     }}
                   />

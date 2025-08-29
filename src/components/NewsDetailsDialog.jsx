@@ -20,6 +20,7 @@ import {
 } from '@mui/icons-material';
 import MediaPlayer from './MediaPlayer';
 import ImageViewerModal from './ImageViewerModal';
+import UserContent from './UserContent';
 import { formatDate } from '../utils/dateFormatting';
 import { linkifyHtml } from '../utils/textFormatting';
 
@@ -193,25 +194,9 @@ const NewsDetailsDialog = ({
           <Divider sx={{ my: 2 }} />
           
           {/* News content */}
-          <Box 
-            className="tiptap-output"
-            dangerouslySetInnerHTML={{ __html: linkifyHtml(news.content) }}
-            sx={{
-              '& ul': { listStyleType: 'disc', pl: 2 },
-              '& ol': { listStyleType: 'decimal', pl: 2 },
-              '& h1': { fontSize: '2em', fontWeight: 'bold', my: 2 },
-              '& h2': { fontSize: '1.5em', fontWeight: 'bold', my: 1.5 },
-              '& h3': { fontSize: '1.2em', fontWeight: 'bold', my: 1 },
-              '& p': { my: 1 },
-              '& blockquote': {
-                borderLeft: '3px solid',
-                borderColor: 'primary.main',
-                pl: 2,
-                ml: 0,
-                my: 2,
-                fontStyle: 'italic'
-              }
-            }}
+          <UserContent 
+            content={news.content}
+            html={true}
           />
           
           {/* Additional metadata */}

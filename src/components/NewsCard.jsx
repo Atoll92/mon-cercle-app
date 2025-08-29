@@ -4,6 +4,7 @@ import MediaPlayer from './MediaPlayer';
 import MediaCarousel from './MediaCarousel';
 import LinkifiedText from './LinkifiedText';
 import ImageViewerModal from './ImageViewerModal';
+import UserContent from './UserContent';
 import { formatTimeAgo } from '../utils/dateFormatting';
 import { truncateContent, stripHtml } from '../utils/textFormatting';
 import { detectMediaType, MEDIA_TYPES, getMediaConfig } from '../utils/mediaDetection';
@@ -289,15 +290,11 @@ const AnnouncementCard = ({ news, networkId, onMemberClick, category }) => {
               {news.title}
             </Typography>
 
-            <LinkifiedText 
-              text={truncateContent(stripHtml(news.content), 150)}
-              component="div"
+            <UserContent 
+              content={news.content}
+              html={true}
+              maxLines={(news.image_url || news.media_url) ? 2 : 3}
               sx={{
-                display: '-webkit-box',
-                WebkitLineClamp: (news.image_url || news.media_url) ? 2 : 3,
-                WebkitBoxOrient: 'vertical',
-                overflow: 'hidden',
-                lineHeight: 1.5,
                 fontSize: '0.875rem',
                 color: 'text.secondary'
               }}

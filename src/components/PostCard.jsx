@@ -31,6 +31,7 @@ import MediaCarousel from './MediaCarousel';
 import LazyImage from './LazyImage';
 import LinkPreview from './LinkPreview';
 import LinkifiedText from './LinkifiedText';
+import UserContent from './UserContent';
 import ImageViewerModal from './ImageViewerModal';
 import CreatePostModal from './CreatePostModal';
 import MembersDetailModal from './MembersDetailModal';
@@ -539,16 +540,12 @@ const PostCard = ({
 
         {/* Description */}
         {post.description && (
-          <LinkifiedText 
-            text={post.description}
-            component="div"
+          <UserContent 
+            content={post.description}
+            html={false}
+            maxLines={3}
             sx={{ 
               mb: 2, 
-              lineHeight: 1.6,
-              display: '-webkit-box',
-              WebkitLineClamp: 3,
-              WebkitBoxOrient: 'vertical',
-              overflow: 'hidden',
               color: 'text.secondary',
               fontSize: '0.875rem'
             }}

@@ -5,6 +5,7 @@ import { useProfile } from '../context/profileContext';
 import MemberDetailsModal from '../components/MembersDetailModal';
 import Spinner from '../components/Spinner';
 import CommentSection from '../components/CommentSection';
+import UserContent from '../components/UserContent';
 import { linkifyHtml } from '../utils/textFormatting';
 import {
   Container,
@@ -575,20 +576,9 @@ function EventPage() {
             <Typography variant="h5" gutterBottom>
               About this Event
             </Typography>
-            <Box 
-              sx={{ 
-                '& p': { mb: 2 },
-                '& h1, & h2, & h3, & h4, & h5, & h6': { mt: 3, mb: 1 },
-                '& ul, & ol': { mb: 2 },
-                '& a': {
-                  color: 'primary.main',
-                  textDecoration: 'underline',
-                  '&:hover': {
-                    opacity: 0.8
-                  }
-                }
-              }}
-              dangerouslySetInnerHTML={{ __html: linkifyHtml(event.description) }}
+            <UserContent 
+              content={event.description}
+              html={false}
             />
 
             {/* Organizer */}

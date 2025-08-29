@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import MembersDetailModal from './MembersDetailModal';
 import CreatePostModal from './CreatePostModal';
 import PostCard from './PostCard';
+import UserContent from './UserContent';
 import Spinner from './Spinner';
 import { formatTimeAgo } from '../utils/dateFormatting';
 import MediaUpload from './MediaUpload';
@@ -1440,22 +1441,13 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                             mb: 2
                           }}
                         >
-                          <Box
-                            className="tiptap-output"
+                          <UserContent
+                            content={item.content}
+                            html={true}
+                            maxLines={expandedCardId === `${item.itemType}-${item.id}` ? undefined : 3}
                             sx={{ 
                               color: customFadedText,
-                              fontSize: '0.875rem',
-                              '& p': { margin: 0 },
-                              ...(expandedCardId !== `${item.itemType}-${item.id}` && {
-                                display: '-webkit-box',
-                                WebkitLineClamp: 3,
-                                WebkitBoxOrient: 'vertical',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis'
-                              })
-                            }}
-                            dangerouslySetInnerHTML={{ 
-                              __html: item.content
+                              fontSize: '0.875rem'
                             }}
                           />
                           {expandedCardId !== `${item.itemType}-${item.id}` && item.content && item.content.length > 180 && (
