@@ -62,18 +62,20 @@ const AnnouncementCard = ({ news, networkId, onMemberClick, category }) => {
         },
         transition: 'all 0.3s ease'
       }}>
-        <CardHeader
-          avatar={
+        {/* Custom header layout */}
+        <Box sx={{ p: 2, pb: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+            {/* Left column: Avatar */}
             <Avatar
               src={news.profiles?.profile_picture_url}
               onClick={onMemberClick ? (e) => onMemberClick(news.profiles?.id, e) : undefined}
               sx={{ 
-                width: 36, 
-                height: 36,
+                width: 40, 
+                height: 40,
                 cursor: onMemberClick ? 'pointer' : 'default',
                 transition: 'all 0.3s ease',
                 '&:hover': onMemberClick ? {
-                  transform: 'scale(1.05)',
+                  transform: 'scale(1.1)',
                   boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
                 } : {}
               }}
@@ -83,9 +85,43 @@ const AnnouncementCard = ({ news, networkId, onMemberClick, category }) => {
                 <PersonIcon />
               }
             </Avatar>
-          }
-          action={
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            
+            {/* Middle: Name and Date */}
+            <Box sx={{ flex: 1, minWidth: 0 }}>
+              <Typography 
+                variant="subtitle2" 
+                sx={{ 
+                  fontWeight: 600,
+                  cursor: onMemberClick ? 'pointer' : 'default',
+                  '&:hover': onMemberClick ? {
+                    color: 'primary.main',
+                    textDecoration: 'underline'
+                  } : {},
+                  transition: 'color 0.2s ease',
+                  lineHeight: 1.4,
+                  mb: 0.5
+                }}
+                onClick={onMemberClick ? (e) => onMemberClick(news.profiles?.id, e) : undefined}
+              >
+                {news.profiles?.full_name || 'Unknown Author'}
+              </Typography>
+              <Typography 
+                variant="caption" 
+                color="text.secondary"
+                sx={{ 
+                  whiteSpace: 'nowrap',
+                  fontSize: '0.75rem',
+                  fontWeight: 500,
+                  lineHeight: 1,
+                  display: 'block'
+                }}
+              >
+                {formatTimeAgo(news.created_at)}
+              </Typography>
+            </Box>
+            
+            {/* Right: Actions */}
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 1 }}>
               {/* Category indicator */}
               {category && (
                 <Box
@@ -99,6 +135,7 @@ const AnnouncementCard = ({ news, networkId, onMemberClick, category }) => {
                     bgcolor: alpha(category.color, 0.12),
                     border: `1px solid ${alpha(category.color, 0.3)}`,
                     transition: 'all 0.2s ease',
+                    whiteSpace: 'nowrap',
                     '&:hover': {
                       bgcolor: alpha(category.color, 0.18),
                       borderColor: alpha(category.color, 0.4),
@@ -108,10 +145,11 @@ const AnnouncementCard = ({ news, networkId, onMemberClick, category }) => {
                   <Typography
                     variant="caption"
                     sx={{
-                      fontSize: '0.75rem',
+                      fontSize: '0.7rem',
                       fontWeight: 600,
                       color: category.color,
-                      letterSpacing: '0.02em'
+                      letterSpacing: '0.02em',
+                      whiteSpace: 'nowrap'
                     }}
                   >
                     #{category.name}
@@ -119,32 +157,8 @@ const AnnouncementCard = ({ news, networkId, onMemberClick, category }) => {
                 </Box>
               )}
             </Box>
-          }
-          title={
-            <Typography 
-              variant="subtitle2" 
-              sx={{ 
-                fontWeight: 600,
-                cursor: onMemberClick ? 'pointer' : 'default',
-                '&:hover': onMemberClick ? {
-                  color: 'primary.main'
-                } : {}
-              }}
-              onClick={onMemberClick ? (e) => onMemberClick(news.profiles?.id, e) : undefined}
-            >
-              {news.profiles?.full_name || 'Unknown Author'}
-            </Typography>
-          }
-          subheader={
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.3 }}>
-              <ScheduleIcon sx={{ fontSize: 12, color: 'text.secondary' }} />
-              <Typography variant="caption" color="text.secondary">
-                {formatTimeAgo(news.created_at)}
-              </Typography>
-            </Box>
-          }
-          sx={{ pb: 1 }}
-        />
+          </Box>
+        </Box>
         {/* Media content - moved outside CardContent to match PostCard layout */}
         {(() => {
               // Check for multiple media items - first check direct field, then check media_metadata

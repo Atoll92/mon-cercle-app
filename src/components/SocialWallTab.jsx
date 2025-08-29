@@ -889,8 +889,10 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                     })
                   }}
                 >
-                  <CardHeader
-                    avatar={
+                  <Box sx={{ p: 2, pb: 1 }}>
+                    {/* Custom header layout */}
+                    <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+                      {/* Left column: Avatar */}
                       <Avatar
                         src={item.itemType === 'post' ? item.memberAvatar : 
                             networkMembers.find(m => m.id === item.created_by)?.profile_picture_url}
@@ -899,6 +901,8 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                           e
                         )}
                         sx={{ 
+                          width: 40,
+                          height: 40,
                           border: `2px solid ${customBorder}`,
                           bgcolor: muiTheme.palette.primary.main,
                           cursor: 'pointer',
@@ -913,30 +917,103 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                           (item.memberName ? item.memberName.charAt(0).toUpperCase() : 'U') : 
                           (networkMembers.find(m => m.id === item.created_by)?.full_name?.charAt(0).toUpperCase() || 'U')}
                       </Avatar>
-                    }
-                    action={
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1, mr: 1 }}>
-                        {/* Delete button for user's own posts */}
-                        {isUserPost(item) && (
-                          <IconButton
-                            size="small"
-                            onClick={(e) => handleDeletePost(item, e)}
-                            disabled={deletingPostId === item.id}
-                            sx={{
-                              color: 'error.main',
-                              '&:hover': {
-                                bgcolor: alpha(muiTheme.palette.error.main, 0.08)
-                              },
-                              transition: 'all 0.2s ease'
-                            }}
-                          >
-                            {deletingPostId === item.id ? (
-                              <Spinner size={32} />
-                            ) : (
-                              <DeleteIcon fontSize="small" />
-                            )}
-                          </IconButton>
-                        )}
+                      
+                      {/* Middle: Name and Date */}
+                      <Box sx={{ flex: 1, minWidth: 0 }}>
+                        <Typography 
+                          variant="subtitle2" 
+                          onClick={(e) => handleMemberClick(
+                            item.itemType === 'post' ? item.memberId : item.created_by, 
+                            e
+                          )}
+                          sx={{ 
+                            fontWeight: 600,
+                            color: customLightText,
+                            cursor: 'pointer',
+                            '&:hover': {
+                              color: muiTheme.palette.primary.main,
+                              textDecoration: 'underline'
+                            },
+                            transition: 'color 0.2s ease',
+                            lineHeight: 1.4,
+                            mb: 0.5
+                          }}
+                        >
+                          {item.itemType === 'post' ? 
+                            item.memberName : 
+                            networkMembers.find(m => m.id === item.created_by)?.full_name || 'Network Admin'}
+                        </Typography>
+                        <Typography 
+                          variant="caption" 
+                          color={customFadedText}
+                          sx={{ 
+                            whiteSpace: 'nowrap',
+                            fontSize: '0.75rem',
+                            fontWeight: 500,
+                            lineHeight: 1,
+                            display: 'block'
+                          }}
+                        >
+                          {formatTimeAgo(item.createdAt)}
+                        </Typography>
+                      </Box>
+                      
+                      {/* Right: Actions */}
+                      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 1 }}>
+                        {/* Top row: Action buttons */}
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          {/* Delete button for user's own posts */}
+                          {isUserPost(item) && (
+                            <IconButton
+                              size="small"
+                              onClick={(e) => handleDeletePost(item, e)}
+                              disabled={deletingPostId === item.id}
+                              sx={{
+                                color: 'error.main',
+                                width: 28,
+                                height: 28,
+                                '&:hover': {
+                                  bgcolor: alpha(muiTheme.palette.error.main, 0.08)
+                                },
+                                transition: 'all 0.2s ease'
+                              }}
+                            >
+                              {deletingPostId === item.id ? (
+                                <Spinner size={16} />
+                              ) : (
+                                <DeleteIcon sx={{ fontSize: 16 }} />
+                              )}
+                            </IconButton>
+                          )}
+                          
+                          {item.itemType === 'news' && (
+                            <Box
+                              sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                width: 28,
+                                height: 28,
+                                borderRadius: '50%',
+                                bgcolor: alpha(muiTheme.palette.primary.main, 0.12),
+                                border: `1px solid ${alpha(muiTheme.palette.primary.main, 0.3)}`,
+                                transition: 'all 0.2s ease',
+                                '&:hover': {
+                                  bgcolor: alpha(muiTheme.palette.primary.main, 0.18),
+                                  borderColor: alpha(muiTheme.palette.primary.main, 0.4),
+                                  transform: 'scale(1.05)'
+                                }
+                              }}
+                            >
+                              <CampaignIcon
+                                sx={{
+                                  fontSize: 14,
+                                  color: muiTheme.palette.primary.main
+                                }}
+                              />
+                            </Box>
+                          )}
+                        </Box>
                         
                         {/* Category indicator */}
                         {item.category_id && categories.find(c => c.id === item.category_id) && (
@@ -951,6 +1028,7 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                               bgcolor: alpha(categories.find(c => c.id === item.category_id).color, 0.12),
                               border: `1px solid ${alpha(categories.find(c => c.id === item.category_id).color, 0.3)}`,
                               transition: 'all 0.2s ease',
+                              whiteSpace: 'nowrap',
                               '&:hover': {
                                 bgcolor: alpha(categories.find(c => c.id === item.category_id).color, 0.18),
                                 borderColor: alpha(categories.find(c => c.id === item.category_id).color, 0.4),
@@ -960,78 +1038,20 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                             <Typography
                               variant="caption"
                               sx={{
-                                fontSize: '0.75rem',
+                                fontSize: '0.7rem',
                                 fontWeight: 600,
                                 color: categories.find(c => c.id === item.category_id).color,
-                                letterSpacing: '0.02em'
+                                letterSpacing: '0.02em',
+                                whiteSpace: 'nowrap'
                               }}
                             >
                               #{categories.find(c => c.id === item.category_id).name}
                             </Typography>
                           </Box>
                         )}
-                        
-                        {item.itemType === 'news' && (
-                          <Box
-                            sx={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              width: 32,
-                              height: 32,
-                              borderRadius: '50%',
-                              bgcolor: alpha(muiTheme.palette.primary.main, 0.12),
-                              border: `2px solid ${alpha(muiTheme.palette.primary.main, 0.3)}`,
-                              transition: 'all 0.2s ease',
-                              '&:hover': {
-                                bgcolor: alpha(muiTheme.palette.primary.main, 0.18),
-                                borderColor: alpha(muiTheme.palette.primary.main, 0.4),
-                                transform: 'scale(1.05)'
-                              }
-                            }}
-                          >
-                            <CampaignIcon
-                              sx={{
-                                fontSize: 16,
-                                color: muiTheme.palette.primary.main
-                              }}
-                            />
-                          </Box>
-                        )}
                       </Box>
-                    }
-                    title={
-                      <Typography 
-                        variant="subtitle2" 
-                        onClick={(e) => handleMemberClick(
-                          item.itemType === 'post' ? item.memberId : item.created_by, 
-                          e
-                        )}
-                        sx={{ 
-                          fontWeight: 600,
-                          color: customLightText,
-                          cursor: 'pointer',
-                          '&:hover': {
-                            color: muiTheme.palette.primary.main,
-                            textDecoration: 'underline'
-                          },
-                          transition: 'color 0.2s ease'
-                        }}
-                      >
-                        {item.itemType === 'post' ? 
-                          item.memberName : 
-                          networkMembers.find(m => m.id === item.created_by)?.full_name || 'Network Admin'}
-                      </Typography>
-                    }
-                    subheader={
-                      <Typography 
-                        variant="caption" 
-                        color={customFadedText}
-                      >
-                        {formatTimeAgo(item.createdAt)}
-                      </Typography>
-                    }
-                  />
+                    </Box>
+                  </Box>
                   
                   {/* Display media based on type - images, PDFs, etc. */}
                   {item.file_type === 'pdf' && item.file_url ? (

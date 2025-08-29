@@ -406,13 +406,16 @@ const PostCard = ({
       },
       ...sx
     }}>
-      {/* Header with author info and actions */}
-      <CardHeader
-        avatar={
+      {/* Custom header layout */}
+      <Box sx={{ p: 2, pb: 1 }}>
+        <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+          {/* Left column: Avatar */}
           <Avatar 
             src={author?.profile_picture_url}
             onClick={handleAuthorClick}
             sx={{ 
+              width: 40,
+              height: 40,
               cursor: 'pointer',
               transition: 'all 0.3s ease',
               '&:hover': {
@@ -423,47 +426,87 @@ const PostCard = ({
           >
             {author?.full_name?.[0]?.toUpperCase() || 'U'}
           </Avatar>
-        }
-        action={
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1, mr: 1 }}>
-            {/* Edit/Delete menu for owner */}
-            {isPostOwner && (
-              <>
-                <IconButton
-                  size="small"
-                  onClick={handleMenuClick}
-                  disabled={isDeleting}
-                  sx={{
-                    color: 'text.secondary',
-                    '&:hover': {
-                      bgcolor: alpha(theme.palette.primary.main, 0.08)
-                    }
-                  }}
-                >
-                  {isDeleting ? (
-                    <Spinner size={32} />
-                  ) : (
-                    <MoreVertIcon fontSize="small" />
-                  )}
-                </IconButton>
-                <Menu
-                  anchorEl={anchorEl}
-                  open={Boolean(anchorEl)}
-                  onClose={handleMenuClose}
-                  anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-                  transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-                >
-                  <MenuItem onClick={handleEdit}>
-                    <EditIcon sx={{ mr: 1 }} fontSize="small" />
-                    Edit
-                  </MenuItem>
-                  <MenuItem onClick={handleDelete}>
-                    <DeleteIcon sx={{ mr: 1 }} fontSize="small" />
-                    Delete
-                  </MenuItem>
-                </Menu>
-              </>
-            )}
+          
+          {/* Middle: Name and Date */}
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Typography 
+              variant="subtitle2" 
+              sx={{ 
+                fontWeight: 600,
+                cursor: 'pointer',
+                color: darkMode ? 'grey.100' : 'text.primary',
+                '&:hover': {
+                  color: theme.palette.primary.main,
+                  textDecoration: 'underline'
+                },
+                transition: 'color 0.2s ease',
+                lineHeight: 1.4,
+                mb: 0.5
+              }}
+              onClick={handleAuthorClick}
+            >
+              {author?.full_name || 'Unknown User'}
+            </Typography>
+            <Typography 
+              variant="caption" 
+              color="text.secondary"
+              sx={{ 
+                whiteSpace: 'nowrap',
+                fontSize: '0.75rem',
+                fontWeight: 500,
+                lineHeight: 1,
+                display: 'block'
+              }}
+            >
+              {timeAgo}
+            </Typography>
+          </Box>
+          
+          {/* Right: Actions */}
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 1 }}>
+            {/* Top row: Action buttons */}
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              {/* Edit/Delete menu for owner */}
+              {isPostOwner && (
+                <>
+                  <IconButton
+                    size="small"
+                    onClick={handleMenuClick}
+                    disabled={isDeleting}
+                    sx={{
+                      color: 'text.secondary',
+                      width: 28,
+                      height: 28,
+                      '&:hover': {
+                        bgcolor: alpha(theme.palette.primary.main, 0.08)
+                      }
+                    }}
+                  >
+                    {isDeleting ? (
+                      <Spinner size={16} />
+                    ) : (
+                      <MoreVertIcon sx={{ fontSize: 16 }} />
+                    )}
+                  </IconButton>
+                  <Menu
+                    anchorEl={anchorEl}
+                    open={Boolean(anchorEl)}
+                    onClose={handleMenuClose}
+                    anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                    transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+                  >
+                    <MenuItem onClick={handleEdit}>
+                      <EditIcon sx={{ mr: 1 }} fontSize="small" />
+                      Edit
+                    </MenuItem>
+                    <MenuItem onClick={handleDelete}>
+                      <DeleteIcon sx={{ mr: 1 }} fontSize="small" />
+                      Delete
+                    </MenuItem>
+                  </Menu>
+                </>
+              )}
+            </Box>
             
             {/* Category indicator */}
             {category && (
@@ -478,6 +521,7 @@ const PostCard = ({
                   bgcolor: alpha(category.color, 0.12),
                   border: `1px solid ${alpha(category.color, 0.3)}`,
                   transition: 'all 0.2s ease',
+                  whiteSpace: 'nowrap',
                   '&:hover': {
                     bgcolor: alpha(category.color, 0.18),
                     borderColor: alpha(category.color, 0.4),
@@ -487,10 +531,11 @@ const PostCard = ({
                 <Typography
                   variant="caption"
                   sx={{
-                    fontSize: '0.75rem',
+                    fontSize: '0.7rem',
                     fontWeight: 600,
                     color: category.color,
-                    letterSpacing: '0.02em'
+                    letterSpacing: '0.02em',
+                    whiteSpace: 'nowrap'
                   }}
                 >
                   #{category.name}
@@ -498,27 +543,8 @@ const PostCard = ({
               </Box>
             )}
           </Box>
-        }
-        title={
-          <Typography 
-            variant="subtitle2" 
-            sx={{ 
-              fontWeight: 600,
-              cursor: 'pointer',
-              color: darkMode ? 'grey.100' : 'text.primary'
-            }}
-            onClick={handleAuthorClick}
-          >
-            {author?.full_name || 'Unknown User'}
-          </Typography>
-        }
-        subheader={
-          <Typography variant="caption" color="text.secondary">
-            {timeAgo}
-          </Typography>
-        }
-        sx={{ pb: 1 }}
-      />
+        </Box>
+      </Box>
 
       {/* Media content */}
       {renderMedia()}
