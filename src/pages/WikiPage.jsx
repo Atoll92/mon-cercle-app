@@ -34,11 +34,16 @@ import {
   Stack,
   alpha,
   useTheme as muiUseTheme,
-  Card
+  Card,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemAvatar
 } from '@mui/material';
 import Spinner from '../components/Spinner';
 import MemberDetailsModal from '../components/MembersDetailModal';
 import CommentSection from '../components/CommentSection';
+import UserContent from '../components/UserContent';
 
 import {
   Edit as EditIcon,
@@ -394,222 +399,8 @@ const WikiPage = () => {
   }
 
   const displayContent = viewingRevision ? viewingRevision.content : page.content;
-
-  // Dark mode styling adjustments for the wiki content - FORCE OVERRIDE ALL STYLES
-  const wikiContentStyles = {
-    // Force text color to use theme colors with !important
-    color: `${theme.palette.text.primary} !important`,
-    lineHeight: 1.7,
-    fontSize: '1rem',
-    // Handle text overflow with word-break
-    wordBreak: 'break-word',
-    overflowWrap: 'break-word',
     
-    // FORCE all text elements to use theme colors
-    '& *': {
-      color: `${theme.palette.text.primary} !important`
-    },
-    
-    // Typography hierarchy with forced colors
-    '& h1, & h2, & h3, & h4, & h5, & h6': {
-      color: `${theme.palette.text.primary} !important`,
-      fontWeight: '600 !important',
-      lineHeight: '1.3 !important',
-      margin: '1.5em 0 0.5em 0 !important',
-      '&:first-child': {
-        marginTop: '0 !important'
-      }
-    },
-    
-    '& h1': { fontSize: '2.25rem !important' },
-    '& h2': { fontSize: '1.875rem !important' },
-    '& h3': { fontSize: '1.5rem !important' },
-    '& h4': { fontSize: '1.25rem !important' },
-    '& h5': { fontSize: '1.125rem !important' },
-    '& h6': { fontSize: '1rem !important' },
-    
-    // Force paragraphs and text elements
-    '& p': {
-      margin: '1em 0 !important',
-      color: `${theme.palette.text.primary} !important`
-    },
-    
-    '& div': {
-      color: `${theme.palette.text.primary} !important`
-    },
-    
-    '& span': {
-      color: `${theme.palette.text.primary} !important`
-    },
-    
-    '& text': {
-      color: `${theme.palette.text.primary} !important`
-    },
-    
-    // Links with forced colors
-    '& a': {
-      color: `${theme.palette.primary.main} !important`,
-      textDecoration: 'underline !important',
-      textDecorationColor: `${alpha(theme.palette.primary.main, 0.4)} !important`,
-      transition: 'all 0.2s ease !important',
-      '&:hover': {
-        color: `${theme.palette.primary.light} !important`,
-        textDecorationColor: `${theme.palette.primary.main} !important`
-      }
-    },
-    
-    // Lists with forced colors
-    '& ul, & ol': {
-      margin: '1em 0 !important',
-      paddingLeft: '2em !important',
-      color: `${theme.palette.text.primary} !important`,
-      '& li': {
-        margin: '0.5em 0 !important',
-        color: `${theme.palette.text.primary} !important`
-      }
-    },
-    
-    // Images
-    '& img': {
-      maxWidth: '100% !important',
-      height: 'auto !important',
-      borderRadius: `${theme.shape.borderRadius}px !important`,
-      border: `1px solid ${alpha(theme.palette.divider, 0.2)} !important`,
-      boxShadow: `${theme.shadows[1]} !important`
-    },
-    
-    // Code blocks and inline code with forced colors
-    '& pre': {
-      backgroundColor: `${theme.palette.mode === 'dark' 
-        ? alpha(theme.palette.common.white, 0.05) 
-        : alpha(theme.palette.common.black, 0.05)} !important`,
-      border: `1px solid ${alpha(theme.palette.divider, 0.2)} !important`,
-      borderRadius: `${theme.shape.borderRadius}px !important`,
-      padding: '1em !important',
-      margin: '1em 0 !important',
-      overflow: 'auto !important',
-      fontFamily: 'monospace !important',
-      fontSize: '0.875rem !important',
-      lineHeight: '1.5 !important',
-      color: `${theme.palette.text.primary} !important`
-    },
-    
-    '& code': {
-      backgroundColor: `${theme.palette.mode === 'dark' 
-        ? alpha(theme.palette.common.white, 0.08) 
-        : alpha(theme.palette.common.black, 0.08)} !important`,
-      color: `${theme.palette.text.primary} !important`,
-      padding: '0.2em 0.4em !important',
-      borderRadius: `${theme.shape.borderRadius}px !important`,
-      fontFamily: 'monospace !important',
-      fontSize: '0.875em !important',
-      border: `1px solid ${alpha(theme.palette.divider, 0.1)} !important`
-    },
-    
-    // Tables with forced colors
-    '& table': {
-      borderCollapse: 'collapse !important',
-      width: '100% !important',
-      margin: '1em 0 !important',
-      border: `1px solid ${theme.palette.divider} !important`,
-      borderRadius: `${theme.shape.borderRadius}px !important`,
-      overflow: 'hidden !important',
-      color: `${theme.palette.text.primary} !important`
-    },
-    
-    '& th, & td': {
-      border: `1px solid ${theme.palette.divider} !important`,
-      padding: '12px 16px !important',
-      textAlign: 'left !important',
-      color: `${theme.palette.text.primary} !important`
-    },
-    
-    '& th': {
-      backgroundColor: `${theme.palette.mode === 'dark' 
-        ? alpha(theme.palette.common.white, 0.05) 
-        : alpha(theme.palette.common.black, 0.05)} !important`,
-      fontWeight: '600 !important',
-      borderBottom: `2px solid ${theme.palette.divider} !important`,
-      color: `${theme.palette.text.primary} !important`
-    },
-    
-    '& tbody tr': {
-      color: `${theme.palette.text.primary} !important`,
-      '&:nth-of-type(even)': {
-        backgroundColor: `${theme.palette.mode === 'dark' 
-          ? alpha(theme.palette.common.white, 0.02) 
-          : alpha(theme.palette.common.black, 0.02)} !important`
-      },
-      '&:hover': {
-        backgroundColor: `${theme.palette.mode === 'dark' 
-          ? alpha(theme.palette.common.white, 0.05) 
-          : alpha(theme.palette.common.black, 0.05)} !important`
-      }
-    },
-    
-    // Blockquotes with forced colors
-    '& blockquote': {
-      borderLeft: `4px solid ${theme.palette.primary.main} !important`,
-      backgroundColor: `${alpha(theme.palette.primary.main, 0.05)} !important`,
-      margin: '1em 0 !important',
-      padding: '1em 1.5em !important',
-      borderRadius: `0 ${theme.shape.borderRadius}px ${theme.shape.borderRadius}px 0 !important`,
-      color: `${theme.palette.text.primary} !important`,
-      fontStyle: 'italic !important',
-      '& p': {
-        margin: '0.5em 0 !important',
-        color: `${theme.palette.text.primary} !important`,
-        '&:first-child': { marginTop: '0 !important' },
-        '&:last-child': { marginBottom: '0 !important' }
-      }
-    },
-    
-    // Horizontal rules
-    '& hr': {
-      border: 'none !important',
-      height: '1px !important',
-      backgroundColor: `${theme.palette.divider} !important`,
-      margin: '2em 0 !important'
-    },
-    
-    // Strong and emphasis with forced colors
-    '& strong, & b': {
-      fontWeight: '600 !important',
-      color: `${theme.palette.text.primary} !important`
-    },
-    
-    '& em, & i': {
-      fontStyle: 'italic !important',
-      color: `${theme.palette.text.primary} !important`
-    },
-    
-    // Mark/highlight
-    '& mark': {
-      backgroundColor: `${alpha(theme.palette.warning.main, 0.3)} !important`,
-      color: `${theme.palette.text.primary} !important`,
-      padding: '0 0.2em !important',
-      borderRadius: '2px !important'
-    },
-    
-    // Override any potential editor-specific classes
-    '& .ql-editor': {
-      color: `${theme.palette.text.primary} !important`
-    },
-    
-    '& .ql-editor p': {
-      color: `${theme.palette.text.primary} !important`
-    },
-    
-    // Override Quill editor styles if present
-    '& .ql-container': {
-      color: `${theme.palette.text.primary} !important`
-    },
-    
-    // Override any potential inline styles or other editor classes
-    '& [style*="color"]': {
-      color: `${theme.palette.text.primary} !important`
-    }
-  };
+  
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
@@ -650,6 +441,104 @@ const WikiPage = () => {
               <Typography color="textPrimary" sx={{ fontWeight: 500 }}>{page.title}</Typography>
             </Breadcrumbs>
           </Box>
+
+      {/* Revision history - moved to top when viewing history */}
+      {showRevisionHistory && (
+        <Grow in={true} timeout={300}>
+          <Paper 
+            sx={{ 
+              p: 4, 
+              mt: 3,
+              mb: 3,
+              borderRadius: 2,
+              boxShadow: theme.shadows[1]
+            }}
+          >
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+              <Typography 
+                variant="h5" 
+                sx={{ 
+                  fontWeight: 600,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1
+                }}
+              >
+                <HistoryIcon sx={{ color: theme.palette.primary.main }} />
+                Revision History
+              </Typography>
+              <Button 
+                size="small"
+                onClick={() => setShowRevisionHistory(false)}
+                sx={{
+                  borderRadius: 1,
+                  textTransform: 'none'
+                }}
+              >
+                Close
+              </Button>
+            </Box>
+          
+          {revisions.length > 0 ? (
+            <List>
+              {revisions.map(revision => (
+                <ListItem 
+                  key={revision.id}
+                  button
+                  onClick={() => handleViewRevision(revision)}
+                  sx={{ 
+                    borderLeft: revision.is_approved ? '3px solid #4caf50' : 
+                              viewingRevision?.id === revision.id ? '3px solid #2196f3' : 'none',
+                    pl: revision.is_approved || viewingRevision?.id === revision.id ? 2 : 3,
+                    backgroundColor: viewingRevision?.id === revision.id ? 
+                      (darkMode ? 'rgba(33, 150, 243, 0.15)' : 'rgba(33, 150, 243, 0.1)') : 'inherit'
+                  }}
+                >
+                  <ListItemText
+                    primary={
+                      <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
+                        <Typography variant="body2" component="span">
+                          Revision #{revision.revision_number}
+                        </Typography>
+                        {revision.is_approved && (
+                          <Chip 
+                            label="Published" 
+                            size="small" 
+                            color="success" 
+                            variant="outlined"
+                          />
+                        )}
+                      </Box>
+                    }
+                    secondary={
+                      <>
+                        <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+                          Created by {revision.creator?.full_name || 'Unknown'} on {formatDateTime(revision.created_at)}
+                        </Typography>
+                        {revision.comment && (
+                          <Typography variant="caption" sx={{ display: 'block', mt: 0.5 }}>
+                            "{revision.comment}"
+                          </Typography>
+                        )}
+                        {revision.is_approved && revision.approver && (
+                          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
+                            Approved by {revision.approver.full_name} on {formatDateTime(revision.approved_at)}
+                          </Typography>
+                        )}
+                      </>
+                    }
+                  />
+                </ListItem>
+              ))}
+            </List>
+          ) : (
+            <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', py: 2 }}>
+              No revisions available for this page.
+            </Typography>
+          )}
+          </Paper>
+        </Grow>
+      )}
 
         {viewingRevision && (
           <Alert 
@@ -767,12 +656,11 @@ const WikiPage = () => {
         {/* Page content - with dark mode styling */}
         <Box sx={{ mb: 4 }}>
           {displayContent ? (
-            <Box className="wiki-content" sx={wikiContentStyles}>
-              <div 
-                className="prose max-w-none" 
-                dangerouslySetInnerHTML={{ __html: displayContent }}
-              />
-            </Box>
+            <UserContent 
+              content={displayContent}
+              html={true}
+              sx={{ mt: 3, mb: 3 }}
+            />
           ) : (
             <Typography variant="body1" color="text.secondary">
               This page has no content yet. Click the edit button to add content.
@@ -797,103 +685,6 @@ const WikiPage = () => {
         </Box>
         </Paper>
       </Fade>
-
-      {/* Revision history sidebar - with dark mode compatible styling */}
-      {showRevisionHistory && (
-        <Grow in={true} timeout={300}>
-          <Paper 
-            sx={{ 
-              p: 4, 
-              mt: 3,
-              borderRadius: 2,
-              boxShadow: theme.shadows[1]
-            }}
-          >
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-              <Typography 
-                variant="h5" 
-                sx={{ 
-                  fontWeight: 600,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 1
-                }}
-              >
-                <HistoryIcon sx={{ color: theme.palette.primary.main }} />
-                Revision History
-              </Typography>
-              <Button 
-                size="small"
-                onClick={() => setShowRevisionHistory(false)}
-                sx={{
-                  borderRadius: 1,
-                  textTransform: 'none'
-                }}
-              >
-                Close
-              </Button>
-            </Box>
-          
-          {revisions.length > 0 ? (
-            <List>
-              {revisions.map(revision => (
-                <ListItem 
-                  key={revision.id}
-                  button
-                  onClick={() => handleViewRevision(revision)}
-                  sx={{ 
-                    borderLeft: revision.is_approved ? '3px solid #4caf50' : 
-                              viewingRevision?.id === revision.id ? '3px solid #2196f3' : 'none',
-                    pl: revision.is_approved || viewingRevision?.id === revision.id ? 2 : 3,
-                    backgroundColor: viewingRevision?.id === revision.id ? 
-                      (darkMode ? 'rgba(33, 150, 243, 0.15)' : 'rgba(33, 150, 243, 0.1)') : 'inherit'
-                  }}
-                >
-                  <ListItemText
-                    primary={
-                      <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
-                        <Typography variant="body2" component="span">
-                          Revision #{revision.revision_number}
-                        </Typography>
-                        {revision.is_approved && (
-                          <Chip 
-                            label="Published" 
-                            size="small" 
-                            color="success" 
-                            variant="outlined"
-                          />
-                        )}
-                      </Box>
-                    }
-                    secondary={
-                      <>
-                        <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-                          Created by {revision.creator?.full_name || 'Unknown'} on {formatDateTime(revision.created_at)}
-                        </Typography>
-                        {revision.comment && (
-                          <Typography variant="caption" sx={{ display: 'block', mt: 0.5 }}>
-                            "{revision.comment}"
-                          </Typography>
-                        )}
-                        {revision.is_approved && revision.approver && (
-                          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
-                            Approved by {revision.approver.full_name} on {formatDateTime(revision.approved_at)}
-                          </Typography>
-                        )}
-                      </>
-                    }
-                  />
-                </ListItem>
-              ))}
-            </List>
-          ) : (
-            <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', py: 2 }}>
-              No revisions available for this page.
-            </Typography>
-          )}
-          </Paper>
-        </Grow>
-      )}
 
       {/* Delete confirmation dialog */}
       <Dialog

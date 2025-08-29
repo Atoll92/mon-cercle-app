@@ -65,13 +65,3 @@ export const sanitizeRichText = (html) => {
   });
 };
 
-/**
- * Sanitize HTML for comments or minimal formatting
- * This is more restrictive
- */
-export const sanitizeComment = (html) => {
-  return sanitizeHtml(html, {
-    ALLOWED_TAGS: ['p', 'br', 'span', 'a', 'b', 'strong', 'i', 'em', 'u'],
-    ALLOWED_ATTR: ['href', 'target', 'rel'],
-  });
-};

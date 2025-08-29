@@ -30,8 +30,7 @@ import {
 import { supabase } from '../supabaseclient';
 import { formatDate } from '../utils/dateFormatting';
 import MediaPlayer from '../components/MediaPlayer';
-import { sanitizeRichText } from '../utils/sanitizeHtml';
-import { linkifyHtml } from '../utils/textFormatting';
+import UserContent from '../components/UserContent';
 import { fetchNetworkCategories } from '../api/categories';
 import CommentSection from '../components/CommentSection';
 
@@ -409,21 +408,10 @@ function AnnouncementPostPage() {
         })()}
 
         {/* Content */}
-        <Box 
-          sx={{ 
-            '& p': { mb: 2 },
-            '& h1, & h2, & h3, & h4, & h5, & h6': { mt: 3, mb: 1 },
-            '& ul, & ol': { mb: 2 },
-            '& img': { maxWidth: '100%', height: 'auto', borderRadius: 1 },
-            '& blockquote': { 
-              borderLeft: '3px solid', 
-              borderColor: 'primary.main',
-              pl: 2,
-              ml: 0,
-              my: 2
-            }
-          }}
-          dangerouslySetInnerHTML={{ __html: linkifyHtml(sanitizeRichText(announcementPost.content)) }}
+        <UserContent 
+          content={announcementPost.content}
+          html={true}
+          sx={{ mt: 2, mb: 3 }}
         />
 
         {/* Footer */}

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/authcontext';
 import { useProfile } from '../context/profileContext';
 import { useTranslation } from '../hooks/useTranslation';
-import LinkifiedText from './LinkifiedText';
+import UserContent from './UserContent';
 import {
   Box,
   Typography,
@@ -240,8 +240,8 @@ const CommentSection = ({ itemType, itemId, darkMode, isAdmin = false, initialCo
                 />
               )}
             </Box>
-            <LinkifiedText
-              text={comment.content}
+            <UserContent
+              content={comment.content}
               component="div"
               sx={{
                 color: theme.palette.text.primary,

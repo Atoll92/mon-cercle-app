@@ -215,6 +215,19 @@ STRIPE_SECRET_KEY (Edge Functions)
 - Supabase: `src/supabaseclient.jsx`
 - Error Handling: `src/utils/errorHandling.js`
 
+### Key Components
+
+#### UserContent Component
+- **Purpose**: Display all user-generated text content with consistent formatting
+- **Location**: `src/components/UserContent.jsx`
+- **Usage**: Use for ANY user-generated content (comments, posts, wiki pages, etc.)
+- **Features**: Automatic text overflow handling, URL linkification
+- **Props**:
+  - `content` (string, required): The text/HTML to display
+  - `html` (boolean, default: false): Whether content contains HTML
+  - `component` (string, default: 'div'): Root element type
+  - `sx` (object): Additional MUI styles
+
 ### Testing Commands
 ```bash
 npm run test          # Run tests
