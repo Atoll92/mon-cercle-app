@@ -54,6 +54,7 @@ import { fetchNetworkCategories } from '../api/categories';
 import PollCard from './PollCard';
 import MediaUpload from './MediaUpload';
 import MediaPlayer from './MediaPlayer';
+import MediaCarousel from './MediaCarousel';
 import ImageViewerModal from './ImageViewerModal';
 import { linkifyHtml } from '../utils/textFormatting';
 
@@ -617,24 +618,53 @@ const NewsTab = ({ darkMode }) => {
           <StaggeredListItem key={post.id} index={index}>
             <AnimatedCard sx={{ mb: 3, overflow: 'hidden' }}>
               {/* Display media content */}
-              {post.media_url ? (
-                <Box sx={{ p: 2, bgcolor: 'background.default' }}>
-                  {(() => {
-                    // Determine media type from URL if media_type is missing
-                    let mediaType = post.media_type;
-                    if (!mediaType && post.media_url) {
-                      const url = post.media_url.toLowerCase();
-                      if (url.includes('.mp4') || url.includes('.webm') || url.includes('.ogg') || url.includes('.mov')) {
-                        mediaType = 'video';
-                      } else if (url.includes('.mp3') || url.includes('.wav') || url.includes('.m4a') || url.includes('.aac')) {
-                        mediaType = 'audio';
-                      } else if (url.includes('.jpg') || url.includes('.jpeg') || url.includes('.png') || url.includes('.gif') || url.includes('.webp')) {
-                        mediaType = 'image';
-                      }
+              {(() => {
+                // Check for multiple media items - first check direct field, then check media_metadata
+                let mediaItemsArray = null;
+                
+                if (post.media_items && Array.isArray(post.media_items) && post.media_items.length > 0) {
+                  mediaItemsArray = post.media_items;
+                } else if (post.media_metadata?.media_items && Array.isArray(post.media_metadata.media_items) && post.media_metadata.media_items.length > 0) {
+                  mediaItemsArray = post.media_metadata.media_items;
+                }
+                
+                if (mediaItemsArray) {
+                  return (
+                    <Box sx={{ bgcolor: darkMode ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.05)', p: 2 }}>
+                      <MediaCarousel
+                        media={mediaItemsArray.map(item => ({
+                          url: item.url,
+                          type: item.type,
+                          metadata: item.metadata || {}
+                        }))}
+                        darkMode={darkMode}
+                        height={400}
+                        autoplay={false}
+                        showThumbnails={true}
+                        compact={false}
+                      />
+                    </Box>
+                  );
+                }
+                
+                // Single media item fallback
+                if (post.media_url) {
+                  // Determine media type from URL if media_type is missing
+                  let mediaType = post.media_type;
+                  if (!mediaType && post.media_url) {
+                    const url = post.media_url.toLowerCase();
+                    if (url.includes('.mp4') || url.includes('.webm') || url.includes('.ogg') || url.includes('.mov')) {
+                      mediaType = 'video';
+                    } else if (url.includes('.mp3') || url.includes('.wav') || url.includes('.m4a') || url.includes('.aac')) {
+                      mediaType = 'audio';
+                    } else if (url.includes('.jpg') || url.includes('.jpeg') || url.includes('.png') || url.includes('.gif') || url.includes('.webp')) {
+                      mediaType = 'image';
                     }
-                    
-                    if (mediaType === 'image') {
-                      return (
+                  }
+                  
+                  return (
+                    <Box sx={{ p: 2, bgcolor: 'background.default' }}>
+                      {mediaType === 'image' ? (
                         <CardMedia
                           component="img"
                           height="400"
@@ -651,9 +681,7 @@ const NewsTab = ({ darkMode }) => {
                           }}
                           onClick={() => handleImageClick(post.media_url, post.title)}
                         />
-                      );
-                    } else {
-                      return (
+                      ) : (
                         <MediaPlayer
                           src={post.media_url}
                           type={mediaType === 'video' ? 'video' : mediaType === 'pdf' ? 'pdf' : 'audio'}
@@ -665,27 +693,34 @@ const NewsTab = ({ darkMode }) => {
                           thumbnail={post.media_metadata?.thumbnail}
                           darkMode={darkMode}
                         />
-                      );
-                    }
-                  })()}
-                </Box>
-              ) : post.image_url && (
-                <CardMedia
-                  component="img"
-                  height="240"
-                  image={post.image_url}
-                  alt={post.title}
-                  sx={{ 
-                    objectFit: 'cover',
-                    cursor: 'pointer',
-                    transition: 'opacity 0.2s',
-                    '&:hover': {
-                      opacity: 0.9
-                    }
-                  }}
-                  onClick={() => handleImageClick(post.image_url, post.title)}
-                />
-              )}
+                      )}
+                    </Box>
+                  );
+                }
+                
+                // Legacy image_url fallback
+                if (post.image_url) {
+                  return (
+                    <CardMedia
+                      component="img"
+                      height="240"
+                      image={post.image_url}
+                      alt={post.title}
+                      sx={{ 
+                        objectFit: 'cover',
+                        cursor: 'pointer',
+                        transition: 'opacity 0.2s',
+                        '&:hover': {
+                          opacity: 0.9
+                        }
+                      }}
+                      onClick={() => handleImageClick(post.image_url, post.title)}
+                    />
+                  );
+                }
+                
+                return null;
+              })()}
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
                 <Typography variant="h6">

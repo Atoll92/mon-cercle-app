@@ -8,7 +8,6 @@ import {
   Avatar,
   IconButton,
   Box,
-  Chip,
   Button,
   Menu,
   MenuItem,
@@ -28,6 +27,7 @@ import {
   ChatBubbleOutline as CommentIcon
 } from '@mui/icons-material';
 import MediaPlayer from './MediaPlayer';
+import MediaCarousel from './MediaCarousel';
 import LazyImage from './LazyImage';
 import LinkPreview from './LinkPreview';
 import LinkifiedText from './LinkifiedText';
@@ -75,10 +75,10 @@ const PostCard = ({
   }
   
   // Get networkId from context - make it reactive
-  const { currentNetworkId, hasNetworkContext } = useMemo(() => {
+  const { hasNetworkContext } = useMemo(() => {
     const contextNetworkId = networkContext?.network?.id;
     return {
-      currentNetworkId: contextNetworkId,
+      // currentNetworkId: contextNetworkId, // Keep for future use
       hasNetworkContext: Boolean(contextNetworkId)
     };
   }, [networkContext?.network?.id]);
@@ -240,6 +240,35 @@ const PostCard = ({
 
   // Render media content
   const renderMedia = () => {
+    // Check for multiple media items - first check direct field, then check media_metadata
+    let mediaItemsArray = null;
+    
+    if (post.media_items && Array.isArray(post.media_items) && post.media_items.length > 0) {
+      mediaItemsArray = post.media_items;
+    } else if (post.media_metadata?.media_items && Array.isArray(post.media_metadata.media_items) && post.media_metadata.media_items.length > 0) {
+      mediaItemsArray = post.media_metadata.media_items;
+    }
+    
+    if (mediaItemsArray) {
+      return (
+        <Box sx={{ bgcolor: darkMode ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.05)', p: 2 }}>
+          <MediaCarousel
+            media={mediaItemsArray.map(item => ({
+              url: item.url,
+              type: item.type,
+              metadata: item.metadata || {}
+            }))}
+            darkMode={darkMode}
+            height={400}
+            autoplay={false}
+            showThumbnails={true}
+            compact={false}
+          />
+        </Box>
+      );
+    }
+    
+    // Single media item fallback
     if (!mediaUrl) return null;
 
     // Handle legacy file_url for PDFs
@@ -305,7 +334,7 @@ const PostCard = ({
     return null;
   };
 
-  const contentTypeIcon = getContentTypeIcon();
+  // const contentTypeIcon = getContentTypeIcon(); // Keep for future use
 
   return (
     <Card sx={{

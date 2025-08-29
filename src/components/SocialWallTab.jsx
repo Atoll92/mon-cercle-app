@@ -57,6 +57,7 @@ import {
   Campaign as CampaignIcon
 } from '@mui/icons-material';
 import MediaPlayer from './MediaPlayer';
+import MediaCarousel from './MediaCarousel';
 import LazyImage from './LazyImage';
 import ImageViewerModal from './ImageViewerModal';
 import CommentSection from './CommentSection';
@@ -1043,56 +1044,86 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                         darkMode={darkMode}
                       />
                     </Box>
-                  ) : item.media_url ? (
-                    // New media format (video/audio/image) - with fallback for missing media_type
-                    <Box sx={{ bgcolor: darkMode ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.05)', p: 2 }}>
-                      {(() => {
-                        // Determine media type from URL if media_type is missing
-                        let mediaType = item.media_type;
-                        if (!mediaType && item.media_url) {
-                          const url = item.media_url.toLowerCase();
-                          if (url.includes('.mp4') || url.includes('.webm') || url.includes('.ogg') || url.includes('.mov')) {
-                            mediaType = 'video';
-                          } else if (url.includes('.mp3') || url.includes('.wav') || url.includes('.m4a') || url.includes('.aac')) {
-                            mediaType = 'audio';
-                          } else if (url.includes('.pdf')) {
-                            mediaType = 'pdf';
-                          } else if (url.includes('.jpg') || url.includes('.jpeg') || url.includes('.png') || url.includes('.gif') || url.includes('.webp')) {
-                            mediaType = 'image';
-                          }
-                        }
-                        
-                        if (mediaType === 'image') {
-                          return (
-                            <Box 
-                              sx={{ 
-                                position: 'relative', 
-                                width: '100%', 
-                                pt: '56.25%',
-                                cursor: 'pointer',
-                                '&:hover': {
-                                  opacity: 0.9
-                                }
-                              }}
-                              onClick={() => handleImageClick(item.media_url, item.title)}
-                            >
-                              <LazyImage
-                                src={item.media_url}
-                                alt={item.title}
-                                style={{ 
-                                  position: 'absolute',
-                                  top: 0,
-                                  left: 0,
-                                  width: '100%',
-                                  height: '100%',
-                                  backgroundColor: darkMode ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.05)',
-                                  padding: '8px'
-                                }}
-                                objectFit="contain"
-                              />
-                            </Box>
-                          );
-                        } else if (mediaType === 'audio') {
+                  ) : (() => {
+                    // Check for multiple media items - first check direct field, then check media_metadata  
+                    let mediaItemsArray = null;
+                    
+                    if (item.media_items && Array.isArray(item.media_items) && item.media_items.length > 0) {
+                      mediaItemsArray = item.media_items;
+                    } else if (item.media_metadata?.media_items && Array.isArray(item.media_metadata.media_items) && item.media_metadata.media_items.length > 0) {
+                      mediaItemsArray = item.media_metadata.media_items;
+                    }
+                    
+                    if (mediaItemsArray) {
+                      return (
+                        <Box sx={{ bgcolor: darkMode ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.05)', p: 2 }}>
+                          <MediaCarousel
+                            media={mediaItemsArray.map(mediaItem => ({
+                              url: mediaItem.url,
+                              type: mediaItem.type,
+                              metadata: mediaItem.metadata || {}
+                            }))}
+                            darkMode={darkMode}
+                            height={400}
+                            autoplay={false}
+                            showThumbnails={true}
+                            compact={false}
+                          />
+                        </Box>
+                      );
+                    }
+                    
+                    // Single media item fallback
+                    if (item.media_url) {
+                      return (
+                        <Box sx={{ bgcolor: darkMode ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.05)', p: 2 }}>
+                          {(() => {
+                            // Determine media type from URL if media_type is missing
+                            let mediaType = item.media_type;
+                            if (!mediaType && item.media_url) {
+                              const url = item.media_url.toLowerCase();
+                              if (url.includes('.mp4') || url.includes('.webm') || url.includes('.ogg') || url.includes('.mov')) {
+                                mediaType = 'video';
+                              } else if (url.includes('.mp3') || url.includes('.wav') || url.includes('.m4a') || url.includes('.aac')) {
+                                mediaType = 'audio';
+                              } else if (url.includes('.pdf')) {
+                                mediaType = 'pdf';
+                              } else if (url.includes('.jpg') || url.includes('.jpeg') || url.includes('.png') || url.includes('.gif') || url.includes('.webp')) {
+                                mediaType = 'image';
+                              }
+                            }
+                            
+                            if (mediaType === 'image') {
+                              return (
+                                <Box 
+                                  sx={{ 
+                                    position: 'relative', 
+                                    width: '100%', 
+                                    pt: '56.25%',
+                                    cursor: 'pointer',
+                                    '&:hover': {
+                                      opacity: 0.9
+                                    }
+                                  }}
+                                  onClick={() => handleImageClick(item.media_url, item.title)}
+                                >
+                                  <LazyImage
+                                    src={item.media_url}
+                                    alt={item.title}
+                                    style={{ 
+                                      position: 'absolute',
+                                      top: 0,
+                                      left: 0,
+                                      width: '100%',
+                                      height: '100%',
+                                      backgroundColor: darkMode ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.05)',
+                                      padding: '8px'
+                                    }}
+                                    objectFit="contain"
+                                  />
+                                </Box>
+                              );
+                            } else if (mediaType === 'audio') {
                           // Custom audio display with large artwork
                           const audioThumbnail = item.media_metadata?.thumbnail || item.image_url;
                           
@@ -1213,44 +1244,53 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                               hideControlsUntilInteraction={true}
                             />
                           );
-                        }
-                      })()}
-                    </Box>
-                  ) : item.image_url && (
-                    // Legacy image format
-                    <Box 
-                      sx={{ 
-                        position: 'relative', 
-                        width: '100%', 
-                        pt: '56.25%', /* 16:9 aspect ratio container */
-                        cursor: 'pointer',
-                        '&:hover': {
-                          opacity: 0.9
-                        }
-                      }}
-                      onClick={() => handleImageClick(item.image_url, item.title)}
-                    >
-                      <LazyImage
-                        src={item.image_url}
-                        alt={item.title}
-                        style={{ 
-                          position: 'absolute',
-                          top: 0,
-                          left: 0,
-                          width: '100%',
-                          height: '100%',
-                          backgroundColor: darkMode ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.05)',
-                          padding: '8px'
-                        }}
-                        objectFit="contain"
-                        onError={(e) => {
-                          console.error("Error loading image:", item.image_url);
-                          e.target.onerror = null; // Prevent infinite error loop
-                          e.target.src = 'https://via.placeholder.com/300x200?text=Image+Not+Available';
-                        }}
-                      />
-                    </Box>
-                  )}
+                            }
+                          })()}
+                        </Box>
+                      );
+                    }
+                    
+                    // Legacy image_url fallback
+                    if (item.image_url) {
+                      return (
+                        <Box 
+                          sx={{ 
+                            position: 'relative', 
+                            width: '100%', 
+                            pt: '56.25%',
+                            cursor: 'pointer',
+                            '&:hover': {
+                              opacity: 0.9
+                            }
+                          }}
+                          onClick={() => handleImageClick(item.image_url, item.title)}
+                        >
+                          <LazyImage
+                            src={item.image_url}
+                            alt={item.title}
+                            style={{ 
+                              position: 'absolute',
+                              top: 0,
+                              left: 0,
+                              width: '100%',
+                              height: '100%',
+                              backgroundColor: darkMode ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.05)',
+                              padding: '8px'
+                            }}
+                            objectFit="contain"
+                            onError={(e) => {
+                              console.error("Error loading image:", item.image_url);
+                              e.target.onerror = null;
+                              e.target.src = 'https://via.placeholder.com/300x200?text=Image+Not+Available';
+                            }}
+                          />
+                        </Box>
+                      );
+                    }
+                    
+                    return null;
+                  })()}
+                  
                   
                   <CardContent sx={{ pt: 1, pb: 2 }}>
                     <Typography 

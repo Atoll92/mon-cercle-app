@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import MediaPlayer from './MediaPlayer';
+import MediaCarousel from './MediaCarousel';
 import LinkifiedText from './LinkifiedText';
 import ImageViewerModal from './ImageViewerModal';
 import { formatTimeAgo } from '../utils/dateFormatting';
@@ -164,7 +165,35 @@ const AnnouncementCard = ({ news, networkId, onMemberClick, category }) => {
             </Typography>
 
             {(() => {
-              // Determine media type and URL
+              // Check for multiple media items - first check direct field, then check media_metadata
+              let mediaItemsArray = null;
+              
+              if (news.media_items && Array.isArray(news.media_items) && news.media_items.length > 0) {
+                mediaItemsArray = news.media_items;
+              } else if (news.media_metadata?.media_items && Array.isArray(news.media_metadata.media_items) && news.media_metadata.media_items.length > 0) {
+                mediaItemsArray = news.media_metadata.media_items;
+              }
+              
+              if (mediaItemsArray) {
+                return (
+                  <Box sx={{ mb: 1 }}>
+                    <MediaCarousel
+                      media={mediaItemsArray.map(item => ({
+                        url: item.url,
+                        type: item.type,
+                        metadata: item.metadata || {}
+                      }))}
+                      darkMode={false}
+                      height={200}
+                      autoplay={false}
+                      showThumbnails={false}
+                      compact={true}
+                    />
+                  </Box>
+                );
+              }
+              
+              // Single media item fallback
               const mediaUrl = news.media_url || news.image_url;
               const mediaType = detectMediaType(mediaUrl, news.media_type);
               const mediaConfig = getMediaConfig(mediaType);
