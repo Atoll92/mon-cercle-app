@@ -22,7 +22,6 @@ import { lazyWithRetry } from './utils/lazyWithRetry';
 // Eagerly loaded pages (small, frequently accessed)
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
-import SimpleLandingPage from './pages/SimpleLandingPage';
 import NotFoundPage from './pages/NotFoundPage';
 import EventPage from './pages/EventPage';
 
@@ -32,7 +31,6 @@ const DashboardPage = lazyWithRetry(() => import('./pages/DashboardPage'));
 const ProfilePage = lazyWithRetry(() => import('./pages/ProfilePage'));
 const EditProfilePage = lazyWithRetry(() => import('./pages/EditProfilePage'));
 const NetworkAdminPage = lazyWithRetry(() => import('./pages/NetworkAdminPage'));
-const LandingPage = lazyWithRetry(() => import('./pages/LandingPage'));
 const WikiListPage = lazyWithRetry(() => import('./pages/WikiListPage'));
 const WikiPage = lazyWithRetry(() => import('./pages/WikiPage'));
 const WikiEditPage = lazyWithRetry(() => import('./pages/WikiEditPage'));
@@ -41,7 +39,6 @@ const BillingPage = lazyWithRetry(() => import('./pages/BillingPage'));
 const SharedFilesPage = lazyWithRetry(() => import('./pages/SharedFilesPage'));
 const MoodboardPage = lazyWithRetry(() => import('./pages/MoodboardPage'));
 const NetworkLandingPage = lazyWithRetry(() => import('./pages/NetworkLandingPage'));
-const DemoPage = lazyWithRetry(() => import('./pages/DemoPage'));
 const DirectMessagesPage = lazyWithRetry(() => import('./pages/DirectMessagesPage'));
 const PricingPage = lazyWithRetry(() => import('./pages/PricingPage'));
 const PersonalMoodboardsPage = lazyWithRetry(() => import('./pages/PersonalMoodboardPage'));
@@ -54,14 +51,11 @@ const NetworkLandingPageOverlap = lazyWithRetry(() => import('./pages/NetworkLan
 const JoinNetworkPage = lazyWithRetry(() => import('./pages/JoinNetworkPage'));
 const NewsPostPage = lazyWithRetry(() => import('./pages/NewsPostPage'));
 const PostPage = lazyWithRetry(() => import('./pages/PostPage'));
-const MediaTest = lazyWithRetry(() => import('./pages/MediaTest'));
 const TermsPage = lazyWithRetry(() => import('./pages/TermsPage'));
 const PrivacyPage = lazyWithRetry(() => import('./pages/PrivacyPage'));
 const NetworkLandingPageFloatingElements = lazyWithRetry(() => import('./pages/NetworkLandingPageFloatingElements'));
 const NetworkLandingPageAlt = lazyWithRetry(() => import('./pages/NetworkLandingPageAlt'));
 const DocumentationPage = lazyWithRetry(() => import('./pages/DocumentationPage'));
-const EnhancedLandingPage = lazyWithRetry(() => import('./pages/EnhancedLandingPage'));
-const AlternativeLandingPage = lazyWithRetry(() => import('./pages/AlternativeLandingPage'));
 const SimpleConclavLanding = lazyWithRetry(() => import('./pages/SimpleConclavLanding'));
 
 // Loading component for lazy loaded routes
@@ -182,16 +176,11 @@ function App() {
                 <Routes>
             {/* Public Routes */}
             <Route path="/" element={<SimpleConclavLanding/>}/>
-            <Route path="/enhanced" element={<EnhancedLandingPage/>}/>
-            <Route path="/simple" element={<SimpleLandingPage/>}/>
             <Route path="/simple-conclav" element={<SimpleConclavLanding/>}/>
-            <Route path="/old" element={<LandingPage/>}/>
-            <Route path="/alt" element={<AlternativeLandingPage/>}/>
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignupPage />} />
             <Route path="/password-reset" element={<PasswordResetPage />} />
             <Route path="/update-password" element={<PasswordUpdatePage />} />
-            <Route path="/demo" element={<DemoPage />} />
             <Route path="/pricing" element={<PricingPage />} />
             <Route path="/payment-success" element={<PaymentSuccessPage />} />
             <Route path="/terms" element={<TermsPage />} />
@@ -269,7 +258,6 @@ function App() {
             <Route path="/post/:postId" element={<PostPage />} />
             
             {/* Test routes */}
-            <Route path="/media-test" element={<MediaTest />} />
             <Route path="/network-overlap" element={<ProfileAwareRoute><NetworkLandingPageOverlap /></ProfileAwareRoute>} />
             <Route path="/network-overlap/:networkId" element={<NetworkLandingPageOverlap />} />
             <Route path="/network-floating" element={<ProfileAwareRoute><NetworkLandingPageFloatingElements /></ProfileAwareRoute>} />
