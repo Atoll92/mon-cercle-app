@@ -168,9 +168,9 @@ const WikiPage = () => {
         
         // Get comment count
         const { data: commentData, error: commentError } = await supabase
-          .from('wiki_comments')
+          .from('comments')
           .select('*', { count: 'exact', head: true })
-          .eq('page_id', pageData.id)
+          .eq('wiki_id', pageData.id)
           .eq('is_hidden', false);
           
         if (!commentError) {
@@ -401,6 +401,9 @@ const WikiPage = () => {
     color: `${theme.palette.text.primary} !important`,
     lineHeight: 1.7,
     fontSize: '1rem',
+    // Handle text overflow with word-break
+    wordBreak: 'break-word',
+    overflowWrap: 'break-word',
     
     // FORCE all text elements to use theme colors
     '& *': {
@@ -789,7 +792,7 @@ const WikiPage = () => {
             darkMode={darkMode}
             isAdmin={isAdmin}
             initialCount={commentCount}
-            defaultExpanded={false}
+            defaultExpanded={true}
           />
         </Box>
         </Paper>

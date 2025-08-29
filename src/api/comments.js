@@ -5,7 +5,7 @@ import { queueCommentNotification } from '../services/emailNotificationService';
 export const getItemComments = async (itemType, itemId) => {
   try {
     // Map item type to the correct foreign key field
-    const entityField = `${itemType === 'post' ? 'post' : itemType}_id`;
+    const entityField = `${itemType}_id`;
     
     // First get top-level comments
     const { data: topLevelComments, error: topLevelError } = await supabase
@@ -60,8 +60,8 @@ export const getItemComments = async (itemType, itemId) => {
 export const addComment = async (itemType, itemId, profileId, content, parentCommentId = null) => {
   try {
     // Map the item type to the correct entity type and field
-    const entityType = itemType === 'post' ? 'post' : itemType;
-    const entityField = `${entityType}_id`;
+    const entityType = itemType;
+    const entityField = `${itemType}_id`;
     
     // Build insert data
     const insertData = {
@@ -227,7 +227,7 @@ export const toggleCommentVisibility = async (commentId, isHidden) => {
 export const getCommentCount = async (itemType, itemId) => {
   try {
     // Map item type to the correct foreign key field
-    const entityField = `${itemType === 'post' ? 'post' : itemType}_id`;
+    const entityField = `${itemType}_id`;
     
     const { count, error } = await supabase
       .from('comments')

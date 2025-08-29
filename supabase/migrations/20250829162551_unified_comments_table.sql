@@ -27,7 +27,7 @@ CREATE TABLE public.comments (
   news_id UUID REFERENCES network_news(id) ON DELETE CASCADE,
   post_id UUID REFERENCES portfolio_items(id) ON DELETE CASCADE,
   event_id UUID REFERENCES network_events(id) ON DELETE CASCADE,
-  wiki_page_id UUID REFERENCES wiki_pages(id) ON DELETE CASCADE,
+  wiki_id UUID REFERENCES wiki_pages(id) ON DELETE CASCADE,
   
   -- Common fields
   profile_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
@@ -50,7 +50,7 @@ CREATE TABLE public.comments (
     (CASE WHEN news_id IS NOT NULL THEN 1 ELSE 0 END +
      CASE WHEN post_id IS NOT NULL THEN 1 ELSE 0 END +
      CASE WHEN event_id IS NOT NULL THEN 1 ELSE 0 END +
-     CASE WHEN wiki_page_id IS NOT NULL THEN 1 ELSE 0 END) = 1
+     CASE WHEN wiki_id IS NOT NULL THEN 1 ELSE 0 END) = 1
   ),
   
   -- Ensure entity_type matches the non-null foreign key
@@ -58,7 +58,7 @@ CREATE TABLE public.comments (
     (entity_type = 'news' AND news_id IS NOT NULL) OR
     (entity_type = 'post' AND post_id IS NOT NULL) OR
     (entity_type = 'event' AND event_id IS NOT NULL) OR
-    (entity_type = 'wiki' AND wiki_page_id IS NOT NULL)
+    (entity_type = 'wiki' AND wiki_id IS NOT NULL)
   )
 );
 
@@ -66,7 +66,7 @@ CREATE TABLE public.comments (
 CREATE INDEX idx_comments_news ON comments(news_id) WHERE news_id IS NOT NULL AND NOT is_hidden;
 CREATE INDEX idx_comments_post ON comments(post_id) WHERE post_id IS NOT NULL AND NOT is_hidden;
 CREATE INDEX idx_comments_event ON comments(event_id) WHERE event_id IS NOT NULL AND NOT is_hidden;
-CREATE INDEX idx_comments_wiki ON comments(wiki_page_id) WHERE wiki_page_id IS NOT NULL AND NOT is_hidden;
+CREATE INDEX idx_comments_wiki ON comments(wiki_id) WHERE wiki_id IS NOT NULL AND NOT is_hidden;
 CREATE INDEX idx_comments_profile ON comments(profile_id);
 CREATE INDEX idx_comments_parent ON comments(parent_comment_id) WHERE parent_comment_id IS NOT NULL;
 CREATE INDEX idx_comments_created ON comments(created_at DESC);
@@ -130,7 +130,7 @@ WHERE parent_comment_id IS NULL;
 
 -- From wiki_comments (no threading support in original)
 INSERT INTO comments (
-  id, content, entity_type, wiki_page_id, profile_id,
+  id, content, entity_type, wiki_id, profile_id,
   is_hidden, hidden_by, hidden_at, created_at
 )
 SELECT 
