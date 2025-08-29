@@ -355,16 +355,19 @@ function MediaPlayer({
         src={src}
         style={{
           width: '100%',
-          height: 'auto',
+          height: '100%',
           maxWidth: '100%',
           maxHeight: '100%',
+          objectFit: 'contain',
           display: 'block',
           cursor: hideControlsUntilInteraction && !hasInteracted ? 'pointer' : 'default'
         }}
         poster={thumbnail}
         preload="metadata"
         muted={muted}
+        controls={false}
         onClick={handleVideoClick}
+        loop={muted && autoplay}
       />
 
       {/* Video controls overlay */}

@@ -158,7 +158,10 @@ const MediaCarousel = ({
               position: 'relative',
               width: '100%',
               height: compact ? 200 : height,
-              bgcolor: 'black'
+              bgcolor: 'black',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
             }}
           >
             <MediaPlayer
@@ -167,8 +170,8 @@ const MediaCarousel = ({
               title={metadata?.fileName}
               thumbnail={metadata?.thumbnail}
               darkMode={darkMode}
-              autoplay={autoplay && index === 0}
-              muted={autoplay}
+              autoplay={true}
+              muted={true}
               hideControlsUntilInteraction={true}
               onRef={(ref) => { videoRefs.current[index] = ref; }}
             />

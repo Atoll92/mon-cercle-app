@@ -144,27 +144,8 @@ const AnnouncementCard = ({ news, networkId, onMemberClick, category }) => {
           }
           sx={{ pb: 1 }}
         />
-        <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column', pt: 0 }}>
-
-          {/* News content */}
-          <Box sx={{ flex: 1, overflow: 'hidden' }}>
-            <Typography 
-              variant="subtitle1" 
-              fontWeight={600} 
-              sx={{
-                display: '-webkit-box',
-                WebkitLineClamp: 2,
-                WebkitBoxOrient: 'vertical',
-                overflow: 'hidden',
-                lineHeight: 1.3,
-                fontSize: '1rem',
-                mb: 1
-              }}
-            >
-              {news.title}
-            </Typography>
-
-            {(() => {
+        {/* Media content - moved outside CardContent to match PostCard layout */}
+        {(() => {
               // Check for multiple media items - first check direct field, then check media_metadata
               let mediaItemsArray = null;
               
@@ -183,7 +164,7 @@ const AnnouncementCard = ({ news, networkId, onMemberClick, category }) => {
                   // For images, use img element directly since MediaPlayer doesn't handle images
                   if (mediaType === 'image') {
                     return (
-                      <Box sx={{ mb: 1 }}>
+                      <Box sx={{ bgcolor: 'rgba(0,0,0,0.05)', p: 2 }}>
                         <img
                           src={mediaItem.url}
                           alt={mediaItem.metadata?.fileName || news.title}
@@ -191,9 +172,9 @@ const AnnouncementCard = ({ news, networkId, onMemberClick, category }) => {
                           style={{
                             width: '100%',
                             height: 'auto',
-                            maxHeight: '300px',
+                            maxHeight: '400px',
                             objectFit: 'contain',
-                            borderRadius: 4,
+                            borderRadius: 8,
                             cursor: 'pointer',
                             transition: 'opacity 0.2s ease',
                           }}
@@ -206,14 +187,14 @@ const AnnouncementCard = ({ news, networkId, onMemberClick, category }) => {
                   
                   // For video, audio, pdf use MediaPlayer
                   return (
-                    <Box sx={{ mb: 1 }}>
+                    <Box sx={{ bgcolor: 'rgba(0,0,0,0.05)', p: 2 }}>
                       <MediaPlayer
                         src={mediaItem.url}
                         type={mediaType}
                         title={mediaItem.metadata?.fileName || news.title}
                         thumbnail={mediaItem.metadata?.thumbnail}
                         darkMode={false}
-                        compact={true}
+                        compact={false}
                         autoplay={false}
                       />
                     </Box>
@@ -222,7 +203,7 @@ const AnnouncementCard = ({ news, networkId, onMemberClick, category }) => {
                 
                 // For multiple media items, use MediaCarousel
                 return (
-                  <Box sx={{ mb: 1 }}>
+                  <Box sx={{ bgcolor: 'rgba(0,0,0,0.05)', p: 2 }}>
                     <MediaCarousel
                       media={mediaItemsArray.map(item => ({
                         url: item.url,
@@ -230,10 +211,10 @@ const AnnouncementCard = ({ news, networkId, onMemberClick, category }) => {
                         metadata: item.metadata || {}
                       }))}
                       darkMode={false}
-                      height={200}
+                      height={400}
                       autoplay={false}
-                      showThumbnails={false}
-                      compact={true}
+                      showThumbnails={true}
+                      compact={false}
                     />
                   </Box>
                 );
@@ -247,14 +228,7 @@ const AnnouncementCard = ({ news, networkId, onMemberClick, category }) => {
               if (mediaUrl) {
                 if (mediaType !== MEDIA_TYPES.IMAGE && mediaType !== MEDIA_TYPES.UNKNOWN) {
                   return (
-                    <Box sx={{ 
-                      mb: 1, 
-                      aspectRatio: mediaConfig.aspectRatio,
-                      minHeight: 80,
-                      maxHeight: 120,
-                      width: '100%',
-                      overflow: 'hidden'
-                    }}>
+                    <Box sx={{ bgcolor: 'rgba(0,0,0,0.05)', p: 2 }}>
                       <MediaPlayer
                         src={mediaUrl}
                         type={mediaType}
@@ -264,31 +238,15 @@ const AnnouncementCard = ({ news, networkId, onMemberClick, category }) => {
                         numPages={news.media_metadata?.numPages}
                         author={news.media_metadata?.author}
                         thumbnail={news.media_metadata?.thumbnail || news.media_metadata?.albumArt || news.image_url}
-                        darkMode={true}
-                        compact={true}
-                        sx={{
-                          width: '100%',
-                          height: '100%',
-                          borderRadius: 0.5,
-                          '& video': {
-                            width: '100%',
-                            height: '100%',
-                            objectFit: 'cover',
-                            borderRadius: 0.5
-                          },
-                          '& audio': {
-                            width: '100%',
-                            height: '100%',
-                            borderRadius: 0.5
-                          }
-                        }}
+                        darkMode={false}
+                        compact={false}
                       />
                     </Box>
                   );
                 } else {
                   // Default to image display
                   return (
-                    <Box sx={{ mb: 1 }}>
+                    <Box sx={{ bgcolor: 'rgba(0,0,0,0.05)', p: 2 }}>
                       <img
                         src={mediaUrl}
                         alt={news.image_caption || news.title}
@@ -296,9 +254,9 @@ const AnnouncementCard = ({ news, networkId, onMemberClick, category }) => {
                         style={{
                           width: '100%',
                           height: 'auto',
-                          maxHeight: '300px',
+                          maxHeight: '400px',
                           objectFit: 'contain',
-                          borderRadius: 4,
+                          borderRadius: 8,
                           cursor: 'pointer',
                           transition: 'opacity 0.2s ease',
                         }}
@@ -311,6 +269,25 @@ const AnnouncementCard = ({ news, networkId, onMemberClick, category }) => {
               }
               return null;
             })()}
+        
+        <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column', pt: 2 }}>
+          {/* News content - title now comes after media like in PostCard */}
+          <Box sx={{ flex: 1, overflow: 'hidden' }}>
+            <Typography 
+              variant="subtitle1" 
+              fontWeight={600} 
+              sx={{
+                display: '-webkit-box',
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden',
+                lineHeight: 1.3,
+                fontSize: '1rem',
+                mb: 2
+              }}
+            >
+              {news.title}
+            </Typography>
 
             <LinkifiedText 
               text={truncateContent(stripHtml(news.content), 150)}
