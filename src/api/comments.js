@@ -1,41 +1,24 @@
 import { supabase } from '../supabaseclient';
 import { queueCommentNotification } from '../services/emailNotificationService';
 
-// Get comments for a social wall item (supports 'news', 'post', 'event', 'wiki')
+// Get comments for any item type
 export const getItemComments = async (itemType, itemId) => {
   try {
-    // Determine which table to use based on item type
-    const isEventComment = itemType === 'event';
-    const isWikiComment = itemType === 'wiki';
-    const tableName = isEventComment ? 'event_comments' : 
-                     isWikiComment ? 'wiki_comments' : 
-                     'social_wall_comments';
+    // Map item type to the correct foreign key field
+    const entityField = `${itemType === 'post' ? 'post' : itemType}_id`;
     
-    // Build base query
-    let baseQuery = supabase
-      .from(tableName)
+    // First get top-level comments
+    const { data: topLevelComments, error: topLevelError } = await supabase
+      .from('comments')
       .select(`
         *,
-        profile:profiles(
+        profile:profiles!comments_profile_id_fkey(
           id,
           full_name,
           profile_picture_url
         )
-      `);
-    
-    // Add filters based on item type
-    if (isEventComment) {
-      baseQuery = baseQuery.eq('event_id', itemId);
-    } else if (isWikiComment) {
-      baseQuery = baseQuery.eq('page_id', itemId);
-    } else {
-      baseQuery = baseQuery
-        .eq('item_type', itemType)
-        .eq('item_id', itemId);
-    }
-    
-    // First get top-level comments
-    const { data: topLevelComments, error: topLevelError } = await baseQuery
+      `)
+      .eq(entityField, itemId)
       .is('parent_comment_id', null)
       .order('created_at', { ascending: false });
 
@@ -43,12 +26,12 @@ export const getItemComments = async (itemType, itemId) => {
 
     // Then get replies for each comment
     const commentsWithReplies = await Promise.all(
-      topLevelComments.map(async (comment) => {
+      (topLevelComments || []).map(async (comment) => {
         const { data: replies, error: repliesError } = await supabase
-          .from(tableName)
+          .from('comments')
           .select(`
             *,
-            profile:profiles(
+            profile:profiles!comments_profile_id_fkey(
               id,
               full_name,
               profile_picture_url
@@ -73,38 +56,28 @@ export const getItemComments = async (itemType, itemId) => {
   }
 };
 
-// Add a comment (supports 'news', 'post', 'event', 'wiki')
+// Add a comment to any item type
 export const addComment = async (itemType, itemId, profileId, content, parentCommentId = null) => {
   try {
-    // Determine which table to use based on item type
-    const isEventComment = itemType === 'event';
-    const isWikiComment = itemType === 'wiki';
-    const tableName = isEventComment ? 'event_comments' : 
-                     isWikiComment ? 'wiki_comments' : 
-                     'social_wall_comments';
+    // Map the item type to the correct entity type and field
+    const entityType = itemType === 'post' ? 'post' : itemType;
+    const entityField = `${entityType}_id`;
     
-    // Build insert data based on table structure
+    // Build insert data
     const insertData = {
       profile_id: profileId,
       content,
-      parent_comment_id: parentCommentId
+      parent_comment_id: parentCommentId,
+      entity_type: entityType,
+      [entityField]: itemId
     };
-    
-    if (isEventComment) {
-      insertData.event_id = itemId;
-    } else if (isWikiComment) {
-      insertData.page_id = itemId;
-    } else {
-      insertData.item_type = itemType;
-      insertData.item_id = itemId;
-    }
 
     const { data, error } = await supabase
-      .from(tableName)
+      .from('comments')
       .insert([insertData])
       .select(`
         *,
-        profile:profiles(
+        profile:profiles!comments_profile_id_fkey(
           id,
           full_name,
           profile_picture_url
@@ -122,7 +95,7 @@ export const addComment = async (itemType, itemId, profileId, content, parentCom
       let originalPosterId = null;
       let postTitle = '';
       
-      if (isEventComment) {
+      if (itemType === 'event') {
         // Get event creator
         const { data: event } = await supabase
           .from('network_events')
@@ -176,7 +149,7 @@ export const addComment = async (itemType, itemId, profileId, content, parentCom
       let parentCommentAuthorId = null;
       if (parentCommentId) {
         const { data: parentComment } = await supabase
-          .from(tableName)
+          .from('comments')
           .select('profile_id')
           .eq('id', parentCommentId)
           .single();
@@ -213,49 +186,14 @@ export const addComment = async (itemType, itemId, profileId, content, parentCom
 };
 
 // Delete a comment
-export const deleteComment = async (commentId, itemType = null) => {
+export const deleteComment = async (commentId) => {
   try {
-    // If itemType is provided, use it to determine the table
-    // Otherwise, try both tables (for backward compatibility)
-    if (itemType === 'event') {
-      const { error } = await supabase
-        .from('event_comments')
-        .delete()
-        .eq('id', commentId);
-      
-      if (error) throw error;
-    } else if (itemType === 'wiki') {
-      const { error } = await supabase
-        .from('wiki_comments')
-        .delete()
-        .eq('id', commentId);
-      
-      if (error) throw error;
-    } else if (itemType && itemType !== 'event') {
-      const { error } = await supabase
-        .from('social_wall_comments')
-        .delete()
-        .eq('id', commentId);
-      
-      if (error) throw error;
-    } else {
-      // Try event_comments first, then social_wall_comments (backward compatibility)
-      const { error: eventError } = await supabase
-        .from('event_comments')
-        .delete()
-        .eq('id', commentId);
-      
-      if (eventError && eventError.code !== 'PGRST116') {
-        // Try social_wall_comments if not found in event_comments
-        const { error: socialError } = await supabase
-          .from('social_wall_comments')
-          .delete()
-          .eq('id', commentId);
-        
-        if (socialError) throw socialError;
-      }
-    }
-
+    const { error } = await supabase
+      .from('comments')
+      .delete()
+      .eq('id', commentId);
+    
+    if (error) throw error;
     return { error: null };
   } catch (error) {
     console.error('Error deleting comment:', error);
@@ -264,49 +202,20 @@ export const deleteComment = async (commentId, itemType = null) => {
 };
 
 // Hide/unhide a comment (admin only)
-export const toggleCommentVisibility = async (commentId, isHidden, itemType = null) => {
+export const toggleCommentVisibility = async (commentId, isHidden) => {
   try {
-    // If itemType is provided, use it to determine the table
-    // Otherwise, try both tables (for backward compatibility)
-    if (itemType === 'event') {
-      const { error } = await supabase
-        .from('event_comments')
-        .update({ is_hidden: isHidden })
-        .eq('id', commentId);
-      
-      if (error) throw error;
-    } else if (itemType === 'wiki') {
-      const { error } = await supabase
-        .from('wiki_comments')
-        .update({ is_hidden: isHidden })
-        .eq('id', commentId);
-      
-      if (error) throw error;
-    } else if (itemType && itemType !== 'event') {
-      const { error } = await supabase
-        .from('social_wall_comments')
-        .update({ is_hidden: isHidden })
-        .eq('id', commentId);
-      
-      if (error) throw error;
-    } else {
-      // Try event_comments first, then social_wall_comments (backward compatibility)
-      const { error: eventError } = await supabase
-        .from('event_comments')
-        .update({ is_hidden: isHidden })
-        .eq('id', commentId);
-      
-      if (eventError && eventError.code !== 'PGRST116') {
-        // Try social_wall_comments if not found in event_comments
-        const { error: socialError } = await supabase
-          .from('social_wall_comments')
-          .update({ is_hidden: isHidden })
-          .eq('id', commentId);
-        
-        if (socialError) throw socialError;
-      }
-    }
-
+    const updateData = { 
+      is_hidden: isHidden,
+      hidden_at: isHidden ? new Date().toISOString() : null
+    };
+    
+    // If hiding, we should also set hidden_by (would need to pass profileId)
+    const { error } = await supabase
+      .from('comments')
+      .update(updateData)
+      .eq('id', commentId);
+    
+    if (error) throw error;
     return { error: null };
   } catch (error) {
     console.error('Error toggling comment visibility:', error);
@@ -317,30 +226,14 @@ export const toggleCommentVisibility = async (commentId, isHidden, itemType = nu
 // Get comment count for an item
 export const getCommentCount = async (itemType, itemId) => {
   try {
-    // Determine which table to use based on item type
-    const isEventComment = itemType === 'event';
-    const isWikiComment = itemType === 'wiki';
-    const tableName = isEventComment ? 'event_comments' : 
-                     isWikiComment ? 'wiki_comments' : 
-                     'social_wall_comments';
+    // Map item type to the correct foreign key field
+    const entityField = `${itemType === 'post' ? 'post' : itemType}_id`;
     
-    let query = supabase
-      .from(tableName)
+    const { count, error } = await supabase
+      .from('comments')
       .select('*', { count: 'exact', head: true })
+      .eq(entityField, itemId)
       .eq('is_hidden', false);
-    
-    // Add filters based on item type
-    if (isEventComment) {
-      query = query.eq('event_id', itemId);
-    } else if (isWikiComment) {
-      query = query.eq('page_id', itemId);
-    } else {
-      query = query
-        .eq('item_type', itemType)
-        .eq('item_id', itemId);
-    }
-
-    const { count, error } = await query;
 
     if (error) throw error;
     return { count, error: null };

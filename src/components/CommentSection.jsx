@@ -117,7 +117,7 @@ const CommentSection = ({ itemType, itemId, darkMode, isAdmin = false, initialCo
   };
 
   const handleDeleteComment = async (commentId, parentId = null) => {
-    const { error } = await deleteComment(commentId, itemType);
+    const { error } = await deleteComment(commentId);
     if (!error) {
       if (parentId) {
         // Remove reply
@@ -141,7 +141,7 @@ const CommentSection = ({ itemType, itemId, darkMode, isAdmin = false, initialCo
 
   const handleToggleVisibility = async (commentId) => {
     const comment = comments.find(c => c.id === commentId);
-    const { error } = await toggleCommentVisibility(commentId, !comment.is_hidden, itemType);
+    const { error } = await toggleCommentVisibility(commentId, !comment.is_hidden);
     if (!error) {
       setComments(prev => prev.map(c => 
         c.id === commentId ? { ...c, is_hidden: !c.is_hidden } : c

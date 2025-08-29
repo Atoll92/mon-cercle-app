@@ -23,6 +23,13 @@ npm run test:watch   # Run tests in watch mode
 - **[Application Status](./status.md)** - Current state and production readiness
 - **[Pre-Launch Tasks](./tasks.md)** - Remaining tasks before production launch
 
+### Recent Changes (2025-08-29)
+- **Unified Comments Table**: Consolidated 3 separate comment tables into single `comments` table
+  - Migration: `20250829162551_unified_comments_table.sql`
+  - Simplified API: `src/api/comments.js` now uses single table
+  - Wiki comments now support threading
+  - Full referential integrity with cascading deletes
+
 ### Technical References
 - **[Project Structure](./docs/PROJECT_STRUCTURE.md)** - Directory organization
 - **[Database Schema](./docs/DATABASE_SCHEMA.md)** - Table definitions
@@ -157,6 +164,7 @@ if (file.type.startsWith('image/')) {
 - **Direct Messaging**: Real-time chat with media support
 - **Social Wall**: Combined feed of news and portfolio items
 - **Media System**: 20MB uploads, image/video/audio/PDF support
+- **Unified Comments**: Single `comments` table for all content types (news, posts, events, wiki)
 
 ### Admin Features
 - **Network Admin**: Member, content, and settings management
