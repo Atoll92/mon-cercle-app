@@ -1055,6 +1055,26 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                     }
                     
                     if (mediaItemsArray) {
+                      // For single media items, use MediaPlayer directly for better aspect ratio handling
+                      if (mediaItemsArray.length === 1) {
+                        const mediaItem = mediaItemsArray[0];
+                        return (
+                          <Box sx={{ bgcolor: darkMode ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.05)', p: 2 }}>
+                            <MediaPlayer
+                              src={mediaItem.url}
+                              type={mediaItem.type}
+                              title={mediaItem.metadata?.fileName}
+                              thumbnail={mediaItem.metadata?.thumbnail}
+                              darkMode={darkMode}
+                              autoplay={true}
+                              muted={true}
+                              hideControlsUntilInteraction={true}
+                            />
+                          </Box>
+                        );
+                      }
+                      
+                      // For multiple media items, use MediaCarousel
                       return (
                         <Box sx={{ bgcolor: darkMode ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.05)', p: 2 }}>
                           <MediaCarousel
