@@ -579,9 +579,17 @@ const WikiPage = () => {
 
         {/* Page header */}
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-          <Typography variant="h4" component="h1">
-            {page.title}
-          </Typography>
+          <UserContent 
+            content={page.title}
+            html={false}
+            component="h1"
+            sx={{
+              fontSize: '2.125rem',
+              fontWeight: 400,
+              lineHeight: 1.235,
+              letterSpacing: '0.00735em'
+            }}
+          />
           
           <Box>
             <IconButton onClick={handleMenuOpen}>

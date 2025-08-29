@@ -274,21 +274,16 @@ const AnnouncementCard = ({ news, networkId, onMemberClick, category }) => {
         <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column', pt: 2 }}>
           {/* News content - title now comes after media like in PostCard */}
           <Box sx={{ flex: 1, overflow: 'hidden' }}>
-            <Typography 
-              variant="subtitle1" 
-              fontWeight={600} 
+            <UserContent 
+              content={news.title}
+              html={false}
+              maxLines={2}
               sx={{
-                display: '-webkit-box',
-                WebkitLineClamp: 2,
-                WebkitBoxOrient: 'vertical',
-                overflow: 'hidden',
-                lineHeight: 1.3,
+                fontWeight: 600,
                 fontSize: '1rem',
                 mb: 2
               }}
-            >
-              {news.title}
-            </Typography>
+            />
 
             <UserContent 
               content={news.content}

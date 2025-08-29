@@ -462,9 +462,18 @@ function EventPage() {
             )}
 
             {/* Title */}
-            <Typography variant="h3" component="h1" gutterBottom>
-              {event.title}
-            </Typography>
+            <UserContent 
+              content={event.title}
+              html={false}
+              component="h1"
+              sx={{
+                fontSize: '3rem',
+                fontWeight: 400,
+                lineHeight: 1.167,
+                letterSpacing: '0em',
+                mb: 2
+              }}
+            />
 
             {/* Date and Time */}
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, flexWrap: 'wrap', gap: 2 }}>

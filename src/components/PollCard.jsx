@@ -153,9 +153,18 @@ const PollCard = ({ poll, onVoteSubmit }) => {
         <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 2 }}>
           <PollIcon color="primary" sx={{ mr: 1, mt: 0.5 }} />
           <Box sx={{ flex: 1 }}>
-            <Typography variant="h6" gutterBottom>
-              {poll.title}
-            </Typography>
+            <UserContent 
+              content={poll.title}
+              html={false}
+              component="h6"
+              sx={{
+                fontSize: '1.25rem',
+                fontWeight: 500,
+                lineHeight: 1.6,
+                letterSpacing: '0.0075em',
+                mb: 1
+              }}
+            />
             {poll.description && (
               <UserContent
                 content={poll.description}

@@ -526,17 +526,18 @@ const PostCard = ({
       {/* Post content */}
       <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
         {/* Title */}
-        <Typography 
-          variant="h6" 
-          color="text.primary" 
+        <UserContent 
+          content={post.title}
+          html={false}
+          component="h6"
           sx={{ 
+            fontSize: '1.25rem',
             fontWeight: 600, 
             lineHeight: 1.3,
-            mb: 2
+            mb: 2,
+            color: 'text.primary'
           }}
-        >
-          {post.title}
-        </Typography>
+        />
 
         {/* Description */}
         {post.description && (

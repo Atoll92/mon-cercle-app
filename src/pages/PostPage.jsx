@@ -38,6 +38,7 @@ import LazyImage from '../components/LazyImage';
 import ImageViewerModal from '../components/ImageViewerModal';
 import CommentSection from '../components/CommentSection';
 import LinkifiedText from '../components/LinkifiedText';
+import UserContent from '../components/UserContent';
 
 function PostPage() {
   const { postId } = useParams();
@@ -267,9 +268,17 @@ function PostPage() {
         {/* Title and Tags */}
         <Box sx={{ mb: 3 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-            <Typography variant="h4" component="h1">
-              {post.title}
-            </Typography>
+            <UserContent 
+              content={post.title}
+              html={false}
+              component="h1"
+              sx={{ 
+                fontSize: '2.125rem',
+                fontWeight: 400,
+                lineHeight: 1.235,
+                letterSpacing: '0.00735em'
+              }}
+            />
             {contentType && (
               <Chip
                 size="small"
@@ -389,13 +398,11 @@ function PostPage() {
         {/* Description */}
         {post.description && (
           <Box sx={{ mb: 3 }}>
-            <LinkifiedText
-              text={post.description}
-              component="div"
+            <UserContent
+              content={post.description}
+              html={false}
               sx={{ 
-                whiteSpace: 'pre-wrap',
                 fontSize: '1rem',
-                lineHeight: 1.6,
                 color: 'text.primary'
               }}
             />
