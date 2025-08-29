@@ -23,11 +23,13 @@ import {
 import {
   Close as CloseIcon,
   Save as SaveIcon,
-  Cancel as CancelIcon
+  Cancel as CancelIcon,
+  Add as AddIcon
 } from '@mui/icons-material';
 import { createNewsPost } from '../api/networks';
 import { fetchNetworkCategories } from '../api/categories';
 import MediaUpload from './MediaUpload';
+import MediaCarousel from './MediaCarousel';
 import { useProfile } from '../context/profileContext';
 import { useTheme } from './ThemeProvider';
 
@@ -40,6 +42,8 @@ const CreateAnnouncementModal = ({ open, onClose, networkId, onNewsCreated }) =>
   const [mediaUrl, setMediaUrl] = useState(null);
   const [mediaType, setMediaType] = useState(null);
   const [mediaMetadata, setMediaMetadata] = useState({});
+  // New state for multiple media items
+  const [mediaItems, setMediaItems] = useState([]);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState('');
@@ -72,6 +76,7 @@ const CreateAnnouncementModal = ({ open, onClose, networkId, onNewsCreated }) =>
       setMediaUrl(null);
       setMediaType(null);
       setMediaMetadata({});
+      setMediaItems([]);
       setSelectedCategory('');
       setError(null);
       if (editor) {
@@ -81,18 +86,41 @@ const CreateAnnouncementModal = ({ open, onClose, networkId, onNewsCreated }) =>
   }, [open, editor]);
 
   const handleMediaUpload = (uploadResult) => {
+    const newMediaItem = {
+      url: uploadResult.url,
+      type: uploadResult.type,
+      metadata: uploadResult.metadata || {
+        fileName: uploadResult.fileName,
+        fileSize: uploadResult.fileSize,
+        mimeType: uploadResult.mimeType
+      }
+    };
+    
+    // Add to media items array
+    setMediaItems(prev => [...prev, newMediaItem]);
+    
+    // Keep single media state for backwards compatibility
     setMediaUrl(uploadResult.url);
     setMediaType(uploadResult.type);
-    setMediaMetadata(uploadResult.metadata || {
-      fileName: uploadResult.fileName,
-      fileSize: uploadResult.fileSize,
-      mimeType: uploadResult.mimeType
-    });
+    setMediaMetadata(newMediaItem.metadata);
     
     if (uploadResult.type === 'image') {
       setImagePreview(uploadResult.url);
     } else {
       setImagePreview(null);
+    }
+  };
+  
+  // Handle removal of specific media item
+  const handleRemoveMediaItem = (index) => {
+    setMediaItems(prev => prev.filter((_, i) => i !== index));
+    // If no media items left, clear single media state
+    if (mediaItems.length === 1) {
+      setMediaUrl(null);
+      setMediaType(null);
+      setMediaMetadata({});
+      setImagePreview(null);
+      setImageCaption('');
     }
   };
 
@@ -119,7 +147,8 @@ const CreateAnnouncementModal = ({ open, onClose, networkId, onNewsCreated }) =>
         mediaUrl,
         mediaType,
         mediaMetadata,
-        selectedCategory || null
+        selectedCategory || null,
+        mediaItems // Pass the media_items array
       );
 
       if (result.success) {
@@ -203,33 +232,46 @@ const CreateAnnouncementModal = ({ open, onClose, networkId, onNewsCreated }) =>
 
         <Box sx={{ mb: 2, p: 2, border: '1px dashed grey', borderRadius: 1 }}>
           <Typography variant="subtitle2" gutterBottom>
-            Featured Media (optional)
+            Featured Media (optional) - You can add multiple files
           </Typography>
 
-          {imagePreview && (
-            <Box sx={{ position: 'relative', mb: 2 }}>
-              <img
-                src={imagePreview}
-                alt="Preview"
-                style={{ maxWidth: '100%', maxHeight: '200px', display: 'block', margin: '0 auto' }}
+          {mediaItems.length > 0 ? (
+            <Box sx={{ mb: 2 }}>
+              <MediaCarousel
+                media={mediaItems}
+                onRemove={handleRemoveMediaItem}
+                isEditMode={true}
+                darkMode={darkMode}
+                height={300}
+                autoplay={false}
+                showThumbnails={true}
+                compact={false}
               />
-              <IconButton
-                sx={{ position: 'absolute', top: 0, right: 0, bgcolor: 'rgba(0,0,0,0.5)', color: 'white' }}
-                onClick={() => {
-                  setImagePreview(null);
-                  setImageCaption('');
-                  setMediaUrl(null);
-                  setMediaType(null);
-                  setMediaMetadata({});
-                }}
-                size="small"
-              >
-                <CancelIcon />
-              </IconButton>
+              
+              {/* Add more media button */}
+              <Box sx={{ mt: 2, textAlign: 'center' }}>
+                <MediaUpload
+                  onUpload={handleMediaUpload}
+                  allowedTypes={['IMAGE', 'VIDEO', 'AUDIO', 'PDF']}
+                  bucket="networks"
+                  path={`announcements/${networkId}`}
+                  maxFiles={1}
+                  showPreview={false}
+                  autoUpload={true}
+                  customButton={
+                    <Button
+                      variant="outlined"
+                      startIcon={<AddIcon />}
+                      disabled={submitting || mediaItems.length >= 10}
+                      size="small"
+                    >
+                      Add More Media ({mediaItems.length}/10)
+                    </Button>
+                  }
+                />
+              </Box>
             </Box>
-          )}
-
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
+          ) : (
             <MediaUpload
               onUpload={handleMediaUpload}
               allowedTypes={['IMAGE', 'VIDEO', 'AUDIO', 'PDF']}
@@ -239,23 +281,10 @@ const CreateAnnouncementModal = ({ open, onClose, networkId, onNewsCreated }) =>
               showPreview={false}
               autoUpload={true}
             />
+          )}
 
-            {mediaUrl && (
-              <Chip
-                label={`${mediaType?.toUpperCase()} uploaded: ${mediaMetadata?.fileName}`}
-                color="success"
-                size="small"
-                onDelete={() => {
-                  setMediaUrl(null);
-                  setMediaType(null);
-                  setMediaMetadata({});
-                  setImagePreview(null);
-                }}
-              />
-            )}
-          </Box>
-
-          {(imageCaption || mediaUrl) && (
+          {/* Caption for first image */}
+          {(mediaItems.some(item => item.type === 'image') || mediaUrl) && (
             <TextField
               fullWidth
               label="Media Caption"

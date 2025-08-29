@@ -23,7 +23,8 @@ export const createPost = async (postData) => {
     category_id,
     mediaUrl,
     mediaType,
-    mediaMetadata
+    mediaMetadata,
+    media_items
   } = postData;
 
   // Validate required fields
@@ -45,11 +46,29 @@ export const createPost = async (postData) => {
       category_id: category_id || null
     };
 
-    // Add media fields if media was uploaded
-    if (mediaUrl) {
+    // Handle media fields - prioritize media_items array over single media
+    if (media_items && Array.isArray(media_items) && media_items.length > 0) {
+      // Use first media item for single media fields (backwards compatibility)
+      const firstMedia = media_items[0];
+      newPost.media_url = firstMedia.url;
+      newPost.media_type = firstMedia.type;
+      newPost.media_metadata = firstMedia.metadata || {};
+      
+      // Store the full media items array in media_metadata under a special key
+      newPost.media_metadata = {
+        ...newPost.media_metadata,
+        media_items: media_items
+      };
+      
+      // For backward compatibility, also set image_url if first item is an image
+      if (firstMedia.type === 'image') {
+        newPost.image_url = firstMedia.url;
+      }
+    } else if (mediaUrl) {
+      // Fallback to single media fields
       newPost.media_url = mediaUrl;
       newPost.media_type = mediaType;
-      newPost.media_metadata = mediaMetadata;
+      newPost.media_metadata = mediaMetadata || {};
       
       // For backward compatibility, also set image_url if it's an image
       if (mediaType === 'image') {
@@ -132,7 +151,8 @@ export const updatePost = async (postId, postData) => {
     category_id,
     mediaUrl,
     mediaType,
-    mediaMetadata
+    mediaMetadata,
+    media_items
   } = postData;
 
   // Validate required fields
@@ -153,15 +173,34 @@ export const updatePost = async (postId, postData) => {
       category_id: category_id || null
     };
 
-    // Add media fields if media was uploaded
-    if (mediaUrl) {
+    // Handle media fields - prioritize media_items array over single media
+    if (media_items && Array.isArray(media_items) && media_items.length > 0) {
+      // Use first media item for single media fields (backwards compatibility)
+      const firstMedia = media_items[0];
+      updateData.media_url = firstMedia.url;
+      updateData.media_type = firstMedia.type;
+      updateData.media_metadata = {
+        ...(firstMedia.metadata || {}),
+        media_items: media_items
+      };
+      
+      // For backward compatibility, also set image_url if first item is an image
+      if (firstMedia.type === 'image') {
+        updateData.image_url = firstMedia.url;
+      } else {
+        updateData.image_url = null;
+      }
+    } else if (mediaUrl) {
+      // Fallback to single media fields
       updateData.media_url = mediaUrl;
       updateData.media_type = mediaType;
-      updateData.media_metadata = mediaMetadata;
+      updateData.media_metadata = mediaMetadata || {};
       
       // For backward compatibility, also set image_url if it's an image
       if (mediaType === 'image') {
         updateData.image_url = mediaUrl;
+      } else {
+        updateData.image_url = null;
       }
     } else {
       // If no media, clear media fields

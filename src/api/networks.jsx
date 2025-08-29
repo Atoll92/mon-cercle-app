@@ -1163,7 +1163,7 @@ export const uploadEventImage = async (eventId, imageFile) => {
 };
 
 // News post functions
-export const createNewsPost = async (networkId, profileId, title, content, imageUrl = null, imageCaption = null, mediaUrl = null, mediaType = null, mediaMetadata = {}, categoryId = null) => {
+export const createNewsPost = async (networkId, profileId, title, content, imageUrl = null, imageCaption = null, mediaUrl = null, mediaType = null, mediaMetadata = {}, categoryId = null, mediaItems = null) => {
   try {
     // Create base post object
     const postData = {
@@ -1178,8 +1178,24 @@ export const createNewsPost = async (networkId, profileId, title, content, image
       postData.category_id = categoryId;
     }
     
-    // Add media fields if provided
-    if (mediaUrl) {
+    // Handle media fields - prioritize media_items array over single media
+    if (mediaItems && Array.isArray(mediaItems) && mediaItems.length > 0) {
+      // Use first media item for single media fields (backwards compatibility)
+      const firstMedia = mediaItems[0];
+      postData.media_url = firstMedia.url;
+      postData.media_type = firstMedia.type;
+      postData.media_metadata = {
+        ...(firstMedia.metadata || {}),
+        media_items: mediaItems
+      };
+      
+      // For backward compatibility, also set image fields if first item is an image
+      if (firstMedia.type === 'image') {
+        postData.image_url = firstMedia.url;
+        postData.image_caption = imageCaption;
+      }
+    } else if (mediaUrl) {
+      // Fallback to single media fields
       postData.media_url = mediaUrl;
       postData.media_type = mediaType;
       postData.media_metadata = mediaMetadata;

@@ -32,6 +32,7 @@ import {
 import { useAuth } from '../context/authcontext';
 import { useProfile } from '../context/profileContext';
 import MediaUpload from './MediaUpload';
+import MediaCarousel from './MediaCarousel';
 import { fetchNetworkCategories } from '../api/categories';
 import { createPost, updatePost } from '../api/posts';
 
@@ -57,6 +58,8 @@ const CreatePostModal = ({
   const [mediaUrl, setMediaUrl] = useState(null);
   const [mediaType, setMediaType] = useState(null);
   const [mediaMetadata, setMediaMetadata] = useState({});
+  // New state for multiple media items
+  const [mediaItems, setMediaItems] = useState([]);
   
   // UI state
   const [creating, setCreating] = useState(false);
@@ -85,16 +88,48 @@ const CreatePostModal = ({
       setUrl(editPost.url || '');
       setSelectedCategory(editPost.category_id || '');
       
-      // Set media fields
-      if (editPost.media_url) {
+      // Set media fields - check both direct and nested media_items
+      if (editPost.media_items && Array.isArray(editPost.media_items) && editPost.media_items.length > 0) {
+        // Handle multiple media items (direct field)
+        setMediaItems(editPost.media_items);
+        // Set first item as single media for backwards compatibility
+        if (editPost.media_items.length > 0) {
+          const firstItem = editPost.media_items[0];
+          setMediaUrl(firstItem.url);
+          setMediaType(firstItem.type);
+          setMediaMetadata(firstItem.metadata || {});
+        }
+      } else if (editPost.media_metadata?.media_items && Array.isArray(editPost.media_metadata.media_items) && editPost.media_metadata.media_items.length > 0) {
+        // Handle multiple media items (nested in media_metadata)
+        setMediaItems(editPost.media_metadata.media_items);
+        // Set first item as single media for backwards compatibility
+        if (editPost.media_metadata.media_items.length > 0) {
+          const firstItem = editPost.media_metadata.media_items[0];
+          setMediaUrl(firstItem.url);
+          setMediaType(firstItem.type);
+          setMediaMetadata(firstItem.metadata || {});
+        }
+      } else if (editPost.media_url) {
+        // Handle single media
         setMediaUrl(editPost.media_url);
         setMediaType(editPost.media_type);
         setMediaMetadata(editPost.media_metadata || {});
+        // Also add to media items array
+        setMediaItems([{
+          url: editPost.media_url,
+          type: editPost.media_type,
+          metadata: editPost.media_metadata || {}
+        }]);
       } else if (editPost.image_url) {
         // Handle legacy image_url
         setMediaUrl(editPost.image_url);
         setMediaType('image');
         setMediaMetadata({});
+        setMediaItems([{
+          url: editPost.image_url,
+          type: 'image',
+          metadata: {}
+        }]);
       }
     }
   }, [mode, editPost, open]);
@@ -112,6 +147,7 @@ const CreatePostModal = ({
           setMediaUrl(null);
           setMediaType(null);
           setMediaMetadata({});
+          setMediaItems([]);
         }
         setError('');
         setSuccess(false);
@@ -119,39 +155,55 @@ const CreatePostModal = ({
     }
   }, [open, mode]);
 
-  // Handle media upload - exact same as DashboardPage
+  // Handle media upload - supports multiple media
   const handleMediaUpload = (uploadResult) => {
     console.log("=== handleMediaUpload called ===");
     console.log("Upload result received:", uploadResult);
-    console.log("Upload result URL:", uploadResult.url);
-    console.log("Upload result type:", uploadResult.type);
-    console.log("Upload result metadata:", uploadResult.metadata);
     
+    const newMediaItem = {
+      url: uploadResult.url,
+      type: uploadResult.type,
+      metadata: {
+        fileName: uploadResult.metadata?.fileName || uploadResult.fileName,
+        fileSize: uploadResult.metadata?.fileSize || uploadResult.fileSize,
+        mimeType: uploadResult.metadata?.mimeType || uploadResult.mimeType,
+        duration: uploadResult.metadata?.duration,
+        thumbnail: uploadResult.metadata?.thumbnail,
+        title: uploadResult.metadata?.title,
+        artist: uploadResult.metadata?.artist,
+        album: uploadResult.metadata?.album,
+        albumArt: uploadResult.metadata?.albumArt
+      }
+    };
+    
+    // Add to media items array
+    setMediaItems(prev => [...prev, newMediaItem]);
+    
+    // Keep single media state for backwards compatibility
     setMediaUrl(uploadResult.url);
     setMediaType(uploadResult.type);
-    setMediaMetadata({
-      fileName: uploadResult.metadata?.fileName || uploadResult.fileName,
-      fileSize: uploadResult.metadata?.fileSize || uploadResult.fileSize,
-      mimeType: uploadResult.metadata?.mimeType || uploadResult.mimeType,
-      duration: uploadResult.metadata?.duration,
-      thumbnail: uploadResult.metadata?.thumbnail,
-      title: uploadResult.metadata?.title,
-      artist: uploadResult.metadata?.artist,
-      album: uploadResult.metadata?.album,
-      albumArt: uploadResult.metadata?.albumArt
-    });
-    
-    console.log("State after setting - mediaUrl:", uploadResult.url);
-    console.log("State after setting - mediaType:", uploadResult.type);
+    setMediaMetadata(newMediaItem.metadata);
     
     setError('');
   };
 
-  // Handle media deletion
+  // Handle removal of specific media item
+  const handleRemoveMediaItem = (index) => {
+    setMediaItems(prev => prev.filter((_, i) => i !== index));
+    // If no media items left, clear single media state
+    if (mediaItems.length === 1) {
+      setMediaUrl(null);
+      setMediaType(null);
+      setMediaMetadata({});
+    }
+  };
+
+  // Handle media deletion (clear all)
   const handleDeleteMedia = () => {
     setMediaUrl(null);
     setMediaType(null);
     setMediaMetadata({});
+    setMediaItems([]);
   };
 
   // Get media icon
@@ -181,9 +233,12 @@ const CreatePostModal = ({
         description: content,
         url: url,
         category_id: selectedCategory || null,
+        // Include single media for backwards compatibility
         mediaUrl: mediaUrl,
         mediaType: mediaType,
-        mediaMetadata: mediaMetadata
+        mediaMetadata: mediaMetadata,
+        // Include multiple media items if available
+        media_items: mediaItems.length > 0 ? mediaItems : undefined
       };
       
       let data;
@@ -360,58 +415,47 @@ const CreatePostModal = ({
           {/* Media Upload */}
           <Box>
             <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
-              Add Media (Optional)
+              Add Media (Optional) - You can add multiple files
             </Typography>
             
-            {mediaUrl ? (
-              <Card sx={{ position: 'relative', mb: 2 }}>
-                {mediaType === 'image' ? (
-                  <CardMedia
-                    component="img"
-                    image={mediaUrl}
-                    alt="Preview"
-                    sx={{ 
-                      maxHeight: 200, 
-                      objectFit: 'contain',
-                      bgcolor: darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)'
-                    }}
-                  />
-                ) : (
-                  <Box 
-                    sx={{ 
-                      p: 3, 
-                      textAlign: 'center',
-                      bgcolor: darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)'
-                    }}
-                  >
-                    {getMediaIcon(mediaType)}
-                    <Typography variant="body2" sx={{ mt: 1 }}>
-                      {mediaMetadata?.fileName || 'Media file uploaded'}
-                    </Typography>
-                    <Chip 
-                      label={mediaType?.toUpperCase() || 'FILE'} 
-                      size="small" 
-                      sx={{ mt: 1 }} 
-                    />
-                  </Box>
-                )}
-                <IconButton
-                  onClick={handleDeleteMedia}
-                  disabled={creating}
-                  sx={{
-                    position: 'absolute',
-                    top: 8,
-                    right: 8,
-                    bgcolor: 'rgba(0,0,0,0.6)',
-                    color: 'white',
-                    '&:hover': {
-                      bgcolor: 'rgba(0,0,0,0.8)'
+            {mediaItems.length > 0 ? (
+              <Box sx={{ mb: 2 }}>
+                <MediaCarousel
+                  media={mediaItems}
+                  onRemove={handleRemoveMediaItem}
+                  isEditMode={true}
+                  darkMode={darkMode}
+                  height={300}
+                  autoplay={false}
+                  showThumbnails={true}
+                  compact={false}
+                />
+                
+                {/* Add more media button */}
+                <Box sx={{ mt: 2, textAlign: 'center' }}>
+                  <MediaUpload
+                    onUpload={handleMediaUpload}
+                    allowedTypes={['IMAGE', 'VIDEO', 'AUDIO', 'PDF']}
+                    bucket="profiles"
+                    path={`portfolios/${user?.id}`}
+                    maxFiles={1}
+                    autoUpload={true}
+                    showPreview={false}
+                    compact={true}
+                    disabled={creating || mediaItems.length >= 10}
+                    customButton={
+                      <Button
+                        variant="outlined"
+                        startIcon={<AddIcon />}
+                        disabled={creating || mediaItems.length >= 10}
+                        size="small"
+                      >
+                        Add More Media ({mediaItems.length}/10)
+                      </Button>
                     }
-                  }}
-                >
-                  <DeleteIcon fontSize="small" />
-                </IconButton>
-              </Card>
+                  />
+                </Box>
+              </Box>
             ) : (
               <MediaUpload
                 onUpload={handleMediaUpload}
