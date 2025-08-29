@@ -74,25 +74,8 @@ const theme = createTheme({
       }
       
       try {
-        // Get network ID from active profile, fallback to direct query
-        let networkId = activeProfile?.network_id;
-        
-        if (!networkId && user?.id) {
-          // Fallback for backward compatibility - use maybeSingle to handle no results gracefully
-          const { data: profile, error: profileError } = await supabase
-            .from('profiles')
-            .select('network_id')
-            .eq('user_id', user.id)
-            .maybeSingle();
-            
-          if (profileError) {
-            console.error('Error loading profile for theme:', profileError);
-            // Don't throw - just use default theme
-            setNetworkTheme(prev => ({ ...prev, loaded: true }));
-            return;
-          }
-          networkId = profile?.network_id;
-        }
+        // Get network ID from active profile
+        const networkId = activeProfile?.network_id;
         
         // If user has no network, use default theme
         if (!networkId) {
@@ -133,23 +116,8 @@ const theme = createTheme({
     }
     
     try {
-      // Get network ID from active profile, fallback to direct query
-      let networkId = activeProfile?.network_id;
-      
-      if (!networkId && user?.id) {
-        // Fallback for backward compatibility - use maybeSingle to handle no results gracefully
-        const { data: profile, error: profileError } = await supabase
-          .from('profiles')
-          .select('network_id')
-          .eq('user_id', user.id)
-          .maybeSingle();
-          
-        if (profileError) {
-          console.error('Error loading profile for theme refresh:', profileError);
-          return;
-        }
-        networkId = profile?.network_id;
-      }
+      // Get network ID from active profile
+      const networkId = activeProfile?.network_id;
       
       // If user has no network, use default theme
       if (!networkId) {
