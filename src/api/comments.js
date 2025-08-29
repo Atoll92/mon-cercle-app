@@ -1,12 +1,15 @@
 import { supabase } from '../supabaseclient';
 import { queueCommentNotification } from '../services/emailNotificationService';
 
-// Get comments for a social wall item (supports 'news', 'post', 'event')
+// Get comments for a social wall item (supports 'news', 'post', 'event', 'wiki')
 export const getItemComments = async (itemType, itemId) => {
   try {
     // Determine which table to use based on item type
     const isEventComment = itemType === 'event';
-    const tableName = isEventComment ? 'event_comments' : 'social_wall_comments';
+    const isWikiComment = itemType === 'wiki';
+    const tableName = isEventComment ? 'event_comments' : 
+                     isWikiComment ? 'wiki_comments' : 
+                     'social_wall_comments';
     
     // Build base query
     let baseQuery = supabase
@@ -23,6 +26,8 @@ export const getItemComments = async (itemType, itemId) => {
     // Add filters based on item type
     if (isEventComment) {
       baseQuery = baseQuery.eq('event_id', itemId);
+    } else if (isWikiComment) {
+      baseQuery = baseQuery.eq('page_id', itemId);
     } else {
       baseQuery = baseQuery
         .eq('item_type', itemType)
@@ -68,12 +73,15 @@ export const getItemComments = async (itemType, itemId) => {
   }
 };
 
-// Add a comment (supports 'news', 'post', 'event')
+// Add a comment (supports 'news', 'post', 'event', 'wiki')
 export const addComment = async (itemType, itemId, profileId, content, parentCommentId = null) => {
   try {
     // Determine which table to use based on item type
     const isEventComment = itemType === 'event';
-    const tableName = isEventComment ? 'event_comments' : 'social_wall_comments';
+    const isWikiComment = itemType === 'wiki';
+    const tableName = isEventComment ? 'event_comments' : 
+                     isWikiComment ? 'wiki_comments' : 
+                     'social_wall_comments';
     
     // Build insert data based on table structure
     const insertData = {
@@ -84,6 +92,8 @@ export const addComment = async (itemType, itemId, profileId, content, parentCom
     
     if (isEventComment) {
       insertData.event_id = itemId;
+    } else if (isWikiComment) {
+      insertData.page_id = itemId;
     } else {
       insertData.item_type = itemType;
       insertData.item_id = itemId;
@@ -148,6 +158,18 @@ export const addComment = async (itemType, itemId, profileId, content, parentCom
           originalPosterId = post.profile_id;
           postTitle = post.title;
         }
+      } else if (itemType === 'wiki') {
+        // Get wiki page creator
+        const { data: page } = await supabase
+          .from('wiki_pages')
+          .select('created_by, title')
+          .eq('id', itemId)
+          .single();
+        
+        if (page) {
+          originalPosterId = page.created_by;
+          postTitle = page.title;
+        }
       }
       
       // If this is a reply, also get the parent comment author
@@ -202,6 +224,13 @@ export const deleteComment = async (commentId, itemType = null) => {
         .eq('id', commentId);
       
       if (error) throw error;
+    } else if (itemType === 'wiki') {
+      const { error } = await supabase
+        .from('wiki_comments')
+        .delete()
+        .eq('id', commentId);
+      
+      if (error) throw error;
     } else if (itemType && itemType !== 'event') {
       const { error } = await supabase
         .from('social_wall_comments')
@@ -246,6 +275,13 @@ export const toggleCommentVisibility = async (commentId, isHidden, itemType = nu
         .eq('id', commentId);
       
       if (error) throw error;
+    } else if (itemType === 'wiki') {
+      const { error } = await supabase
+        .from('wiki_comments')
+        .update({ is_hidden: isHidden })
+        .eq('id', commentId);
+      
+      if (error) throw error;
     } else if (itemType && itemType !== 'event') {
       const { error } = await supabase
         .from('social_wall_comments')
@@ -283,7 +319,10 @@ export const getCommentCount = async (itemType, itemId) => {
   try {
     // Determine which table to use based on item type
     const isEventComment = itemType === 'event';
-    const tableName = isEventComment ? 'event_comments' : 'social_wall_comments';
+    const isWikiComment = itemType === 'wiki';
+    const tableName = isEventComment ? 'event_comments' : 
+                     isWikiComment ? 'wiki_comments' : 
+                     'social_wall_comments';
     
     let query = supabase
       .from(tableName)
@@ -293,6 +332,8 @@ export const getCommentCount = async (itemType, itemId) => {
     // Add filters based on item type
     if (isEventComment) {
       query = query.eq('event_id', itemId);
+    } else if (isWikiComment) {
+      query = query.eq('page_id', itemId);
     } else {
       query = query
         .eq('item_type', itemType)

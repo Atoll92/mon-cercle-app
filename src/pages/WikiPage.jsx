@@ -6,7 +6,6 @@ import { useAuth } from '../context/authcontext';
 import { useProfile } from '../context/profileContext';
 // Import the useTheme hook from your ThemeProvider
 import { useTheme } from '../components/ThemeProvider';
-import { useTranslation } from '../hooks/useTranslation';
 import { formatDateTime } from '../utils/dateFormatting';
 
 import {
@@ -27,10 +26,6 @@ import {
   DialogContent,
   DialogActions,
   TextField,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemAvatar,
   Avatar,
   Tooltip,
   Fade,
@@ -43,13 +38,13 @@ import {
 } from '@mui/material';
 import Spinner from '../components/Spinner';
 import MemberDetailsModal from '../components/MembersDetailModal';
+import CommentSection from '../components/CommentSection';
 
 import {
   Edit as EditIcon,
   History as HistoryIcon,
   DeleteOutline as DeleteIcon,
   MoreVert as MoreVertIcon,
-  Comment as CommentIcon,
   Visibility as ViewIcon,
   Check as ApproveIcon,
   Close as RejectIcon,
@@ -63,7 +58,6 @@ import {
 } from '@mui/icons-material';
 
 const WikiPage = () => {
-  const { t } = useTranslation();
   const { networkId, pageSlug } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -77,14 +71,10 @@ const WikiPage = () => {
   const [error, setError] = useState(null);
   const [categories, setCategories] = useState([]);
   const [revisions, setRevisions] = useState([]);
-  const [comments, setComments] = useState([]);
-  const [userProfile, setUserProfile] = useState(null);
+  const [commentCount, setCommentCount] = useState(0);
   const [isAdmin, setIsAdmin] = useState(false);
   const [showRevisionHistory, setShowRevisionHistory] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
-  const [commentText, setCommentText] = useState('');
-  const [showCommentBox, setShowCommentBox] = useState(false);
-  const [submittingComment, setSubmittingComment] = useState(false);
   const [selectedMember, setSelectedMember] = useState(null);
   const [showMemberDetailsModal, setShowMemberDetailsModal] = useState(false);
   
@@ -105,8 +95,8 @@ const WikiPage = () => {
         setLoading(true);
         setError(null);
 
-        // Fetch the user's profile
-        if (user) {
+        // Check if user is admin
+        if (user && activeProfile) {
           const { data: profileData, error: profileError } = await supabase
             .from('profiles')
             .select('id, role, network_id')
@@ -114,7 +104,6 @@ const WikiPage = () => {
             .single();
             
           if (!profileError) {
-            setUserProfile(profileData);
             setIsAdmin(profileData.role === 'admin' && profileData.network_id === networkId);
           }
         }
@@ -177,20 +166,15 @@ const WikiPage = () => {
           setRevisions(revisionData || []);
         }
         
-        // Fetch comments
+        // Get comment count
         const { data: commentData, error: commentError } = await supabase
           .from('wiki_comments')
-          .select(`
-            *,
-            profiles:profile_id(id, full_name, profile_picture_url),
-            hider:hidden_by(id, full_name)
-          `)
+          .select('*', { count: 'exact', head: true })
           .eq('page_id', pageData.id)
-          .eq('is_hidden', false)
-          .order('created_at', { ascending: true });
+          .eq('is_hidden', false);
           
         if (!commentError) {
-          setComments(commentData || []);
+          setCommentCount(commentData || 0);
         }
         
       } catch (error) {
@@ -202,7 +186,7 @@ const WikiPage = () => {
     };
     
     fetchData();
-  }, [networkId, pageSlug, user]);
+  }, [networkId, pageSlug, user, activeProfile]);
 
   const handleMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
@@ -243,68 +227,6 @@ const WikiPage = () => {
     }
   };
 
-  const handleAddComment = async () => {
-    if (!commentText.trim()) return;
-    
-    try {
-      setSubmittingComment(true);
-      
-      const { error } = await supabase
-        .from('wiki_comments')
-        .insert({
-          page_id: page.id,
-          profile_id: activeProfile.id,
-          content: commentText.trim()
-        });
-        
-      if (error) throw error;
-      
-      // Refresh comments
-      const { data: newComments, error: fetchError } = await supabase
-        .from('wiki_comments')
-        .select(`
-          *,
-          profiles:profile_id(id, full_name, profile_picture_url),
-          hider:hidden_by(id, full_name)
-        `)
-        .eq('page_id', page.id)
-        .eq('is_hidden', false)
-        .order('created_at', { ascending: true });
-        
-      if (!fetchError) {
-        setComments(newComments || []);
-      }
-      
-      setCommentText('');
-      setShowCommentBox(false);
-    } catch (error) {
-      console.error('Error adding comment:', error);
-      setError('Failed to add comment. Please try again.');
-    } finally {
-      setSubmittingComment(false);
-    }
-  };
-
-  const handleHideComment = async (commentId) => {
-    try {
-      const { error } = await supabase
-        .from('wiki_comments')
-        .update({
-          is_hidden: true,
-          hidden_by: activeProfile.id,
-          hidden_at: new Date().toISOString()
-        })
-        .eq('id', commentId);
-        
-      if (error) throw error;
-      
-      // Update comments list
-      setComments(comments.filter(c => c.id !== commentId));
-    } catch (error) {
-      console.error('Error hiding comment:', error);
-      setError('Failed to hide comment. Please try again.');
-    }
-  };
 
   const handleViewRevision = (revision) => {
     setViewingRevision(revision);
@@ -855,141 +777,20 @@ const WikiPage = () => {
           )}
         </Box>
 
-        {/* Comments section */}
+        {/* Comments section using unified component */}
         <Divider sx={{ mb: 3 }} />
         <Box sx={{ mb: 3 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-            <Typography variant="h6">
-              Comments ({comments.length})
-            </Typography>
-            
-            {user && (
-              <Button 
-                startIcon={<CommentIcon />}
-                onClick={() => setShowCommentBox(!showCommentBox)}
-              >
-                {t('dashboard.comment')}
-              </Button>
-            )}
-          </Box>
-          
-          {showCommentBox && (
-            <Box sx={{ mb: 3 }}>
-              <TextField
-                fullWidth
-                multiline
-                rows={4}
-                placeholder="Write your comment here..."
-                value={commentText}
-                onChange={(e) => setCommentText(e.target.value)}
-                sx={{ mb: 2 }}
-              />
-              <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
-                <Button 
-                  onClick={() => setShowCommentBox(false)}
-                >
-                  Cancel
-                </Button>
-                <Button 
-                  variant="contained"
-                  onClick={handleAddComment}
-                  disabled={!commentText.trim() || submittingComment}
-                >
-                  {submittingComment ? 'Submitting...' : t('dashboard.comment')}
-                </Button>
-              </Box>
-            </Box>
-          )}
-          
-          {comments.length > 0 ? (
-            <List>
-              {comments.map(comment => (
-                <ListItem 
-                  key={comment.id}
-                  alignItems="flex-start"
-                  sx={{ 
-                    pb: 2, 
-                    borderBottom: '1px solid',
-                    borderColor: 'divider',
-                    '&:last-child': { borderBottom: 'none' } 
-                  }}
-                  secondaryAction={
-                    isAdmin && (
-                      <Tooltip title="Hide comment">
-                        <IconButton 
-                          edge="end" 
-                          onClick={() => handleHideComment(comment.id)}
-                        >
-                          <DeleteIcon />
-                        </IconButton>
-                      </Tooltip>
-                    )
-                  }
-                >
-                  <ListItemAvatar>
-                    <Avatar 
-                      src={comment.profiles?.profile_picture_url}
-                      onClick={() => {
-                        if (comment.profiles) {
-                          setSelectedMember(comment.profiles);
-                          setShowMemberDetailsModal(true);
-                        }
-                      }}
-                      sx={{ 
-                        cursor: 'pointer',
-                        '&:hover': {
-                          opacity: 0.8
-                        }
-                      }}
-                    >
-                      {comment.profiles?.full_name?.charAt(0) || '?'}
-                    </Avatar>
-                  </ListItemAvatar>
-                  <ListItemText
-                    primary={
-                      <Typography 
-                        variant="subtitle2"
-                        onClick={() => {
-                          if (comment.profiles) {
-                            setSelectedMember(comment.profiles);
-                            setShowMemberDetailsModal(true);
-                          }
-                        }}
-                        sx={{ 
-                          cursor: 'pointer',
-                          '&:hover': {
-                            color: 'primary.main',
-                            textDecoration: 'underline'
-                          }
-                        }}
-                      >
-                        {comment.profiles?.full_name || 'Unknown User'}
-                      </Typography>
-                    }
-                    secondary={
-                      <>
-                        <Typography
-                          component="span"
-                          variant="body2"
-                          color="text.primary"
-                          sx={{ display: 'block', my: 1 }}
-                        >
-                          {comment.content}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          Posted on {formatDateTime(comment.created_at)}
-                        </Typography>
-                      </>
-                    }
-                  />
-                </ListItem>
-              ))}
-            </List>
-          ) : (
-            <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', py: 2 }}>
-              No comments yet. Be the first to comment!
-            </Typography>
-          )}
+          <Typography variant="h6" sx={{ mb: 2 }}>
+            Comments
+          </Typography>
+          <CommentSection
+            itemType="wiki"
+            itemId={page.id}
+            darkMode={darkMode}
+            isAdmin={isAdmin}
+            initialCount={commentCount}
+            defaultExpanded={false}
+          />
         </Box>
         </Paper>
       </Fade>
