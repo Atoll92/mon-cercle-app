@@ -1,5 +1,5 @@
-import React from 'react';
-import { Box, Typography, Link, useTheme, alpha } from '@mui/material';
+import React, { useState, useRef, useEffect } from 'react';
+import { Box, Typography, Link, Button, useTheme, alpha } from '@mui/material';
 import { linkifyText, linkifyHtml } from '../utils/textFormatting';
 import { sanitizeRichText } from '../utils/sanitizeHtml';
 
@@ -11,16 +11,44 @@ import { sanitizeRichText } from '../utils/sanitizeHtml';
  * @param {string} props.content - The content to display
  * @param {boolean} props.html - Whether content contains HTML (default: false)
  * @param {string} props.component - Root component type (default: 'div')
+ * @param {number} props.maxLines - Maximum lines before truncation (optional)
  * @param {Object} props.sx - Additional styles
  */
 const UserContent = ({
   content,
   html = false,
   component = 'div',
+  maxLines,
   sx = {},
   ...otherProps
 }) => {
   const theme = useTheme();
+  const [expanded, setExpanded] = useState(false);
+  const [isTruncated, setIsTruncated] = useState(false);
+  const contentRef = useRef(null);
+
+  // Check if content is actually truncated
+  useEffect(() => {
+    if (maxLines && contentRef.current) {
+      const element = contentRef.current;
+      // Temporarily remove truncation to measure real height
+      const originalWebkitLineClamp = element.style.webkitLineClamp;
+      const originalOverflow = element.style.overflow;
+      
+      element.style.webkitLineClamp = 'unset';
+      element.style.overflow = 'visible';
+      
+      const lineHeight = parseFloat(window.getComputedStyle(element).lineHeight);
+      const maxHeight = lineHeight * maxLines;
+      const actualHeight = element.scrollHeight;
+      
+      // Restore truncation styles
+      element.style.webkitLineClamp = originalWebkitLineClamp;
+      element.style.overflow = originalOverflow;
+      
+      setIsTruncated(actualHeight > maxHeight);
+    }
+  }, [content, maxLines]);
 
   if (!content) return null;
 
@@ -30,16 +58,28 @@ const UserContent = ({
     overflowWrap: 'break-word'
   };
 
+  // Truncation styles when maxLines is specified and not expanded
+  const truncationStyles = maxLines && !expanded ? {
+    display: '-webkit-box',
+    WebkitLineClamp: maxLines,
+    WebkitBoxOrient: 'vertical',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis'
+  } : {};
+
   // Handle HTML content
   if (html) {
     const processedContent = linkifyHtml(sanitizeRichText(content));
     
     return (
-      <Box
-        component={component}
-        sx={{
-          ...overflowStyles,
-          ...sx,
+      <>
+        <Box
+          ref={contentRef}
+          component={component}
+          sx={{
+            ...overflowStyles,
+            ...truncationStyles,
+            ...sx,
           // Apply overflow styles to all nested elements
           '& *': overflowStyles,
           // Links
@@ -85,6 +125,26 @@ const UserContent = ({
         dangerouslySetInnerHTML={{ __html: processedContent }}
         {...otherProps}
       />
+      {maxLines && isTruncated && (
+        <Button
+          size="small"
+          onClick={() => setExpanded(!expanded)}
+          sx={{
+            textTransform: 'none',
+            mt: 0.5,
+            p: 0,
+            minWidth: 'auto',
+            color: theme.palette.primary.main,
+            '&:hover': {
+              backgroundColor: 'transparent',
+              textDecoration: 'underline'
+            }
+          }}
+        >
+          {expanded ? 'Show less' : 'Show more'}
+        </Button>
+      )}
+      </>
     );
   }
 
@@ -94,9 +154,30 @@ const UserContent = ({
   // No links found
   if (typeof parts === 'string') {
     return (
-      <Typography component={component} sx={{ ...overflowStyles, ...sx }} {...otherProps}>
-        {content}
-      </Typography>
+      <>
+        <Typography ref={contentRef} component={component} sx={{ ...overflowStyles, ...truncationStyles, ...sx }} {...otherProps}>
+          {content}
+        </Typography>
+        {maxLines && isTruncated && (
+          <Button
+            size="small"
+            onClick={() => setExpanded(!expanded)}
+            sx={{
+              textTransform: 'none',
+              mt: 0.5,
+              p: 0,
+              minWidth: 'auto',
+              color: theme.palette.primary.main,
+              '&:hover': {
+                backgroundColor: 'transparent',
+                textDecoration: 'underline'
+              }
+            }}
+          >
+            {expanded ? 'Show less' : 'Show more'}
+          </Button>
+        )}
+      </>
     );
   }
 
@@ -124,9 +205,30 @@ const UserContent = ({
   });
 
   return (
-    <Typography component={component} sx={{ ...overflowStyles, ...sx }} {...otherProps}>
-      {elements}
-    </Typography>
+    <>
+      <Typography ref={contentRef} component={component} sx={{ ...overflowStyles, ...truncationStyles, ...sx }} {...otherProps}>
+        {elements}
+      </Typography>
+      {maxLines && isTruncated && (
+        <Button
+          size="small"
+          onClick={() => setExpanded(!expanded)}
+          sx={{
+            textTransform: 'none',
+            mt: 0.5,
+            p: 0,
+            minWidth: 'auto',
+            color: theme.palette.primary.main,
+            '&:hover': {
+              backgroundColor: 'transparent',
+              textDecoration: 'underline'
+            }
+          }}
+        >
+          {expanded ? 'Show less' : 'Show more'}
+        </Button>
+      )}
+    </>
   );
 };
 

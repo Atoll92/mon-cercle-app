@@ -185,6 +185,34 @@ export const addComment = async (itemType, itemId, profileId, content, parentCom
   }
 };
 
+// Update a comment
+export const updateComment = async (commentId, content) => {
+  try {
+    const { data, error } = await supabase
+      .from('comments')
+      .update({ 
+        content,
+        edited_at: new Date().toISOString()
+      })
+      .eq('id', commentId)
+      .select(`
+        *,
+        profile:profiles!comments_profile_id_fkey(
+          id,
+          full_name,
+          profile_picture_url
+        )
+      `)
+      .single();
+    
+    if (error) throw error;
+    return { data, error: null };
+  } catch (error) {
+    console.error('Error updating comment:', error);
+    return { data: null, error: error.message };
+  }
+};
+
 // Delete a comment
 export const deleteComment = async (commentId) => {
   try {

@@ -221,11 +221,12 @@ STRIPE_SECRET_KEY (Edge Functions)
 - **Purpose**: Display all user-generated text content with consistent formatting
 - **Location**: `src/components/UserContent.jsx`
 - **Usage**: Use for ANY user-generated content (comments, posts, wiki pages, etc.)
-- **Features**: Automatic text overflow handling, URL linkification
+- **Features**: Automatic text overflow handling, URL linkification, truncation with "Show more"
 - **Props**:
   - `content` (string, required): The text/HTML to display
   - `html` (boolean, default: false): Whether content contains HTML
   - `component` (string, default: 'div'): Root element type
+  - `maxLines` (number, optional): Max lines before truncation with "Show more" button
   - `sx` (object): Additional MUI styles
 
 ### Testing Commands

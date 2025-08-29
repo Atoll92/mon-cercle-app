@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../context/authcontext';
 import { useProfile } from '../context/profileContext';
 import { useTranslation } from '../hooks/useTranslation';
@@ -27,10 +27,11 @@ import {
   MoreVert as MoreIcon,
   Reply as ReplyIcon,
   Delete as DeleteIcon,
+  Edit as EditIcon,
   VisibilityOff as HideIcon,
   Close as CloseIcon
 } from '@mui/icons-material';
-import { getItemComments, addComment, deleteComment, toggleCommentVisibility } from '../api/comments';
+import { getItemComments, addComment, updateComment, deleteComment, toggleCommentVisibility } from '../api/comments';
 import { formatTimeAgo } from '../utils/dateFormatting';
 
 const CommentSection = ({ itemType, itemId, darkMode, isAdmin = false, initialCount = 0, onMemberClick, defaultExpanded = false }) => {
@@ -45,10 +46,12 @@ const CommentSection = ({ itemType, itemId, darkMode, isAdmin = false, initialCo
   const [replyingTo, setReplyingTo] = useState(null);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [anchorEl, setAnchorEl] = useState(null);
+  const [menuPosition, setMenuPosition] = useState(null);
   const [selectedComment, setSelectedComment] = useState(null);
   const [selectedMember, setSelectedMember] = useState(null);
   const [showMemberDetailsModal, setShowMemberDetailsModal] = useState(false);
+  const [editingComment, setEditingComment] = useState(null);
+  const [editContent, setEditContent] = useState('');
 
   // Update comment count when initialCount changes
   useEffect(() => {
@@ -151,13 +154,48 @@ const CommentSection = ({ itemType, itemId, darkMode, isAdmin = false, initialCo
   };
 
   const handleOpenMenu = (event, comment) => {
-    setAnchorEl(event.currentTarget);
+    event.stopPropagation();
+    event.preventDefault();
+    const rect = event.currentTarget.getBoundingClientRect();
+    setMenuPosition({
+      top: rect.bottom,
+      left: rect.left
+    });
     setSelectedComment(comment);
   };
 
   const handleCloseMenu = () => {
-    setAnchorEl(null);
+    setMenuPosition(null);
     setSelectedComment(null);
+  };
+
+  const handleEditComment = async (commentId, newContent) => {
+    const { data, error } = await updateComment(commentId, newContent);
+    if (!error && data) {
+      setComments(prev => prev.map(comment => {
+        if (comment.id === commentId) {
+          return { ...data, replies: comment.replies };
+        }
+        // Check if it's a reply being edited
+        if (comment.replies) {
+          return {
+            ...comment,
+            replies: comment.replies.map(reply => 
+              reply.id === commentId ? data : reply
+            )
+          };
+        }
+        return comment;
+      }));
+      setEditingComment(null);
+      setEditContent('');
+    }
+  };
+
+  const startEditing = (comment) => {
+    setEditingComment(comment.id);
+    setEditContent(comment.content);
+    handleCloseMenu();
   };
 
   // Default member click handler that opens MemberDetailsModal
@@ -166,7 +204,36 @@ const CommentSection = ({ itemType, itemId, darkMode, isAdmin = false, initialCo
     setShowMemberDetailsModal(true);
   };
 
-  const CommentItem = ({ comment, isReply = false, parentId = null }) => {
+  const handleOpenMenuCallback = useCallback((event, comment) => {
+    handleOpenMenu(event, comment);
+  }, []);
+
+  const CommentItem = React.memo(({ comment, isReply = false, parentId = null, onOpenMenu }) => {
+    const [localEditContent, setLocalEditContent] = useState(comment.content);
+    const isEditing = editingComment === comment.id;
+    const editFieldRef = useRef(null);
+
+    useEffect(() => {
+      if (isEditing && editContent === '') {
+        // Only set initial content when starting to edit
+        setLocalEditContent(comment.content);
+        // Set cursor to end of content after render
+        setTimeout(() => {
+          if (editFieldRef.current) {
+            const input = editFieldRef.current.querySelector('textarea');
+            if (input) {
+              input.focus();
+              input.setSelectionRange(input.value.length, input.value.length);
+            }
+          }
+        }, 0);
+      }
+    }, [isEditing]);
+
+    const handleLocalEdit = (e) => {
+      setLocalEditContent(e.target.value);
+    };
+
     return (
       <>
         <Box
@@ -232,26 +299,108 @@ const CommentSection = ({ itemType, itemId, darkMode, isAdmin = false, initialCo
               >
                 {formatTimeAgo(comment.created_at)}
               </Typography>
+              {comment.edited_at && (
+                <Typography
+                  variant="caption"
+                  sx={{
+                    color: theme.palette.text.secondary,
+                    fontSize: '0.7rem',
+                    fontStyle: 'italic'
+                  }}
+                >
+                  (edited)
+                </Typography>
+              )}
+              {(activeProfile?.id === comment.profile_id || isAdmin) && (
+                <IconButton
+                  size="small"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onOpenMenu(e, comment);
+                  }}
+                  sx={{
+                    p: 0.25,
+                    ml: 'auto',
+                    color: theme.palette.text.secondary,
+                    '&:hover': {
+                      color: theme.palette.text.primary
+                    }
+                  }}
+                >
+                  <MoreIcon sx={{ fontSize: 16 }} />
+                </IconButton>
+              )}
               {comment.is_hidden && (
                 <Chip
                   label="Hidden"
                   size="small"
-                  sx={{ height: 16, fontSize: '0.65rem' }}
+                  sx={{ height: 16, fontSize: '0.65rem', ml: comment.is_hidden && !((activeProfile?.id === comment.profile_id || isAdmin)) ? 'auto' : 0 }}
                 />
               )}
             </Box>
-            <UserContent
-              content={comment.content}
-              component="div"
-              sx={{
-                color: theme.palette.text.primary,
-                mb: 0.5,
-                fontSize: '0.875rem',
-                lineHeight: 1.5
-              }}
-            />
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              {!isReply && (
+            {isEditing ? (
+              <Box sx={{ display: 'flex', gap: 1, mb: 1 }}>
+                <TextField
+                  ref={editFieldRef}
+                  fullWidth
+                  size="small"
+                  multiline
+                  value={localEditContent}
+                  onChange={handleLocalEdit}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      if (localEditContent.trim()) {
+                        handleEditComment(comment.id, localEditContent);
+                      }
+                    }
+                    if (e.key === 'Escape') {
+                      setEditingComment(null);
+                      setEditContent('');
+                    }
+                  }}
+                  autoFocus
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      fontSize: '0.875rem',
+                      bgcolor: theme.palette.background.paper
+                    }
+                  }}
+                />
+                <IconButton
+                  size="small"
+                  onClick={() => handleEditComment(comment.id, localEditContent)}
+                  disabled={!localEditContent.trim()}
+                  sx={{ color: theme.palette.primary.main }}
+                >
+                  <SendIcon sx={{ fontSize: 18 }} />
+                </IconButton>
+                <IconButton
+                  size="small"
+                  onClick={() => {
+                    setEditingComment(null);
+                    setEditContent('');
+                  }}
+                  sx={{ color: theme.palette.text.secondary }}
+                >
+                  <CloseIcon sx={{ fontSize: 18 }} />
+                </IconButton>
+              </Box>
+            ) : (
+              <UserContent
+                content={comment.content}
+                component="div"
+                maxLines={3}
+                sx={{
+                  color: theme.palette.text.primary,
+                  mb: 0.5,
+                  fontSize: '0.875rem',
+                  lineHeight: 1.5
+                }}
+              />
+            )}
+            {!isReply && (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Button
                   size="small"
                   startIcon={<ReplyIcon sx={{ fontSize: 14 }} />}
@@ -270,23 +419,8 @@ const CommentSection = ({ itemType, itemId, darkMode, isAdmin = false, initialCo
                 >
                   Reply
                 </Button>
-              )}
-              {/* {(user?.id === comment.profile_id || isAdmin) && ( //commented out because the "hide" functionality is not implemented yet
-                <IconButton
-                  size="small"
-                  onClick={(e) => handleOpenMenu(e, comment)}
-                  sx={{
-                    p: 0.5,
-                    color: theme.palette.text.secondary,
-                    '&:hover': {
-                      color: theme.palette.text.primary
-                    }
-                  }}
-                >
-                  <MoreIcon sx={{ fontSize: 16 }} />
-                </IconButton>
-              )} */}
-            </Box>
+              </Box>
+            )}
           </Box>
         </Box>
       {/* Reply input field - shown directly below the comment being replied to */}
@@ -365,8 +499,19 @@ const CommentSection = ({ itemType, itemId, darkMode, isAdmin = false, initialCo
         </Box>
       )}
     </>
-  );
-  };
+    );
+  }, (prevProps, nextProps) => {
+    // Custom comparison to prevent unnecessary rerenders
+    // Only rerender if the comment data, edit state, or reply state changes
+    return (
+      prevProps.comment.id === nextProps.comment.id &&
+      prevProps.comment.content === nextProps.comment.content &&
+      prevProps.comment.edited_at === nextProps.comment.edited_at &&
+      prevProps.comment.is_hidden === nextProps.comment.is_hidden &&
+      prevProps.isReply === nextProps.isReply &&
+      prevProps.parentId === nextProps.parentId
+    );
+  });
 
   return (
     <Box sx={{ mt: 2 }}>
@@ -473,7 +618,7 @@ const CommentSection = ({ itemType, itemId, darkMode, isAdmin = false, initialCo
               {comments.map(comment => (
                 <Fade in key={comment.id}>
                   <Box>
-                    <CommentItem comment={comment} />
+                    <CommentItem comment={comment} onOpenMenu={handleOpenMenuCallback} />
                     {/* Replies */}
                     {comment.replies?.map(reply => (
                       <CommentItem
@@ -481,6 +626,7 @@ const CommentSection = ({ itemType, itemId, darkMode, isAdmin = false, initialCo
                         comment={reply}
                         isReply
                         parentId={comment.id}
+                        onOpenMenu={handleOpenMenuCallback}
                       />
                     ))}
                   </Box>
@@ -493,16 +639,26 @@ const CommentSection = ({ itemType, itemId, darkMode, isAdmin = false, initialCo
 
       {/* Context menu */}
       <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
+        open={Boolean(menuPosition)}
         onClose={handleCloseMenu}
-        PaperProps={{
-          sx: {
+        anchorReference="anchorPosition"
+        anchorPosition={menuPosition}
+        sx={{
+          '& .MuiPaper-root': {
             boxShadow: theme.shadows[2]
           }
         }}
       >
-        {user?.id === selectedComment?.profile_id && (
+        {activeProfile?.id === selectedComment?.profile_id && (
+          <MenuItem
+            onClick={() => startEditing(selectedComment)}
+            sx={{ fontSize: '0.875rem' }}
+          >
+            <EditIcon sx={{ fontSize: 18, mr: 1 }} />
+            Edit
+          </MenuItem>
+        )}
+        {activeProfile?.id === selectedComment?.profile_id && (
           <MenuItem
             onClick={() => handleDeleteComment(selectedComment.id, selectedComment.parent_comment_id)}
             sx={{ fontSize: '0.875rem' }}
@@ -511,6 +667,7 @@ const CommentSection = ({ itemType, itemId, darkMode, isAdmin = false, initialCo
             Delete
           </MenuItem>
         )}
+        {/* Hide functionality not implemented yet
         {isAdmin && (
           <MenuItem
             onClick={() => handleToggleVisibility(selectedComment?.id)}
@@ -520,6 +677,7 @@ const CommentSection = ({ itemType, itemId, darkMode, isAdmin = false, initialCo
             {selectedComment?.is_hidden ? 'Unhide' : 'Hide'}
           </MenuItem>
         )}
+        */}
       </Menu>
 
       {/* Member Details Modal */}
