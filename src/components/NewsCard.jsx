@@ -175,6 +175,52 @@ const AnnouncementCard = ({ news, networkId, onMemberClick, category }) => {
               }
               
               if (mediaItemsArray) {
+                // For single media items, use appropriate component based on type
+                if (mediaItemsArray.length === 1) {
+                  const mediaItem = mediaItemsArray[0];
+                  const mediaType = mediaItem.type?.toLowerCase();
+                  
+                  // For images, use img element directly since MediaPlayer doesn't handle images
+                  if (mediaType === 'image') {
+                    return (
+                      <Box sx={{ mb: 1 }}>
+                        <img
+                          src={mediaItem.url}
+                          alt={mediaItem.metadata?.fileName || news.title}
+                          onClick={() => handleImageClick(mediaItem.url, news.title)}
+                          style={{
+                            width: '100%',
+                            height: 'auto',
+                            maxHeight: '300px',
+                            objectFit: 'contain',
+                            borderRadius: 4,
+                            cursor: 'pointer',
+                            transition: 'opacity 0.2s ease',
+                          }}
+                          onMouseOver={(e) => e.target.style.opacity = 0.9}
+                          onMouseOut={(e) => e.target.style.opacity = 1}
+                        />
+                      </Box>
+                    );
+                  }
+                  
+                  // For video, audio, pdf use MediaPlayer
+                  return (
+                    <Box sx={{ mb: 1 }}>
+                      <MediaPlayer
+                        src={mediaItem.url}
+                        type={mediaType}
+                        title={mediaItem.metadata?.fileName || news.title}
+                        thumbnail={mediaItem.metadata?.thumbnail}
+                        darkMode={false}
+                        compact={true}
+                        autoplay={false}
+                      />
+                    </Box>
+                  );
+                }
+                
+                // For multiple media items, use MediaCarousel
                 return (
                   <Box sx={{ mb: 1 }}>
                     <MediaCarousel

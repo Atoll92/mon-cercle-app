@@ -65,18 +65,6 @@ const NewsTab = ({ darkMode }) => {
   const { activeProfile } = useProfile();
   const { network, news: networkNews, members: networkMembers, refreshNews, isAdmin } = useNetwork();
   
-  // Debug: Log the announcements data to see what we're getting
-  useEffect(() => {
-    console.log('Network announcements data:', networkNews);
-    if (networkNews && networkNews.length > 0) {
-      console.log('First announcement:', networkNews[0]);
-      console.log('Media fields:', {
-        media_url: networkNews[0].media_url,
-        media_type: networkNews[0].media_type,
-        media_metadata: networkNews[0].media_metadata
-      });
-    }
-  }, [networkNews]);
   
   // State for editing/creating announcements
   const [isCreating, setIsCreating] = useState(false);
@@ -629,18 +617,42 @@ const NewsTab = ({ darkMode }) => {
                 }
                 
                 if (mediaItemsArray) {
-                  // For single media items, use MediaPlayer directly for better aspect ratio handling
+                  // For single media items, use appropriate component based on type
                   if (mediaItemsArray.length === 1) {
                     const mediaItem = mediaItemsArray[0];
+                    const mediaType = mediaItem.type?.toLowerCase();
+                    
+                    // For images, use img element directly since MediaPlayer doesn't handle images
+                    if (mediaType === 'image') {
+                      return (
+                        <Box sx={{ bgcolor: darkMode ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.05)', p: 2 }}>
+                          <img
+                            src={mediaItem.url}
+                            alt={mediaItem.metadata?.fileName || post.title}
+                            style={{
+                              width: '100%',
+                              height: 'auto',
+                              maxHeight: '400px',
+                              objectFit: 'contain',
+                              borderRadius: '8px',
+                              cursor: 'pointer'
+                            }}
+                            onClick={() => handleImageClick(mediaItem.url, post.title)}
+                          />
+                        </Box>
+                      );
+                    }
+                    
+                    // For video, audio, pdf use MediaPlayer
                     return (
                       <Box sx={{ bgcolor: darkMode ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.05)', p: 2 }}>
                         <MediaPlayer
                           src={mediaItem.url}
-                          type={mediaItem.type}
+                          type={mediaType}
                           title={mediaItem.metadata?.fileName || post.title}
                           thumbnail={mediaItem.metadata?.thumbnail}
                           darkMode={darkMode}
-                          autoplay={true}
+                          autoplay={mediaType === 'video'}
                           muted={true}
                           hideControlsUntilInteraction={true}
                         />

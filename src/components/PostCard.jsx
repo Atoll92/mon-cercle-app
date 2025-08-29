@@ -250,9 +250,43 @@ const PostCard = ({
     }
     
     if (mediaItemsArray) {
-      // For single media items, use MediaPlayer directly for better aspect ratio handling
+      // For single media items, use appropriate component based on type
       if (mediaItemsArray.length === 1) {
         const mediaItem = mediaItemsArray[0];
+        const mediaType = mediaItem.type?.toLowerCase();
+        
+        // For images, use img element directly since MediaPlayer doesn't handle images
+        if (mediaType === 'image') {
+          return (
+            <Box sx={{ bgcolor: darkMode ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.05)', p: 2 }}>
+              <Box 
+                sx={{ 
+                  position: 'relative', 
+                  width: '100%',
+                  cursor: 'pointer',
+                  borderRadius: 1,
+                  overflow: 'hidden',
+                  '&:hover': { opacity: 0.9 }
+                }}
+                onClick={() => handleImageClick(mediaItem.url, mediaItem.metadata?.fileName || post.title)}
+              >
+                <LazyImage
+                  src={mediaItem.url}
+                  alt={mediaItem.metadata?.fileName || post.title}
+                  style={{ 
+                    width: '100%',
+                    height: 'auto',
+                    display: 'block',
+                    maxHeight: '400px',
+                    objectFit: 'contain'
+                  }}
+                />
+              </Box>
+            </Box>
+          );
+        }
+        
+        // For video, audio, pdf use MediaPlayer
         return (
           <Box sx={{ bgcolor: darkMode ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.05)', p: 2 }}>
             <MediaPlayer

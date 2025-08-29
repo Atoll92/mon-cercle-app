@@ -1055,18 +1055,40 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                     }
                     
                     if (mediaItemsArray) {
-                      // For single media items, use MediaPlayer directly for better aspect ratio handling
+                      // For single media items, use appropriate component based on type
                       if (mediaItemsArray.length === 1) {
                         const mediaItem = mediaItemsArray[0];
+                        const mediaType = mediaItem.type?.toLowerCase();
+                        
+                        // For images, use img element directly since MediaPlayer doesn't handle images
+                        if (mediaType === 'image') {
+                          return (
+                            <Box sx={{ bgcolor: darkMode ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.05)', p: 2 }}>
+                              <img
+                                src={mediaItem.url}
+                                alt={mediaItem.metadata?.fileName || item.title}
+                                style={{
+                                  width: '100%',
+                                  height: 'auto',
+                                  maxHeight: '400px',
+                                  objectFit: 'contain',
+                                  borderRadius: '8px'
+                                }}
+                              />
+                            </Box>
+                          );
+                        }
+                        
+                        // For video, audio, pdf use MediaPlayer
                         return (
                           <Box sx={{ bgcolor: darkMode ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.05)', p: 2 }}>
                             <MediaPlayer
                               src={mediaItem.url}
-                              type={mediaItem.type}
+                              type={mediaType}
                               title={mediaItem.metadata?.fileName}
                               thumbnail={mediaItem.metadata?.thumbnail}
                               darkMode={darkMode}
-                              autoplay={true}
+                              autoplay={mediaType === 'video'}
                               muted={true}
                               hideControlsUntilInteraction={true}
                             />
