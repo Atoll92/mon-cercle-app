@@ -86,26 +86,30 @@ const CreateAnnouncementModal = ({ open, onClose, networkId, onNewsCreated }) =>
   }, [open, editor]);
 
   const handleMediaUpload = (uploadResult) => {
-    const newMediaItem = {
-      url: uploadResult.url,
-      type: uploadResult.type,
-      metadata: uploadResult.metadata || {
-        fileName: uploadResult.fileName,
-        fileSize: uploadResult.fileSize,
-        mimeType: uploadResult.mimeType
+    // Handle both single file and multiple files
+    const uploadResults = Array.isArray(uploadResult) ? uploadResult : [uploadResult];
+    
+    const newMediaItems = uploadResults.map(result => ({
+      url: result.url,
+      type: result.type,
+      metadata: result.metadata || {
+        fileName: result.fileName,
+        fileSize: result.fileSize,
+        mimeType: result.mimeType
       }
-    };
+    }));
     
-    // Add to media items array
-    setMediaItems(prev => [...prev, newMediaItem]);
+    // Add all new items to media items array
+    setMediaItems(prev => [...prev, ...newMediaItems]);
     
-    // Keep single media state for backwards compatibility
-    setMediaUrl(uploadResult.url);
-    setMediaType(uploadResult.type);
-    setMediaMetadata(newMediaItem.metadata);
+    // Keep single media state for backwards compatibility (use first item)
+    const firstItem = newMediaItems[0];
+    setMediaUrl(firstItem.url);
+    setMediaType(firstItem.type);
+    setMediaMetadata(firstItem.metadata);
     
-    if (uploadResult.type === 'image') {
-      setImagePreview(uploadResult.url);
+    if (firstItem.type === 'image') {
+      setImagePreview(firstItem.url);
     } else {
       setImagePreview(null);
     }
@@ -255,7 +259,7 @@ const CreateAnnouncementModal = ({ open, onClose, networkId, onNewsCreated }) =>
                   allowedTypes={['IMAGE', 'VIDEO', 'AUDIO', 'PDF']}
                   bucket="networks"
                   path={`announcements/${networkId}`}
-                  maxFiles={1}
+                  maxFiles={10 - mediaItems.length} // Allow remaining slots up to 10
                   showPreview={false}
                   autoUpload={true}
                   customButton={
@@ -277,7 +281,7 @@ const CreateAnnouncementModal = ({ open, onClose, networkId, onNewsCreated }) =>
               allowedTypes={['IMAGE', 'VIDEO', 'AUDIO', 'PDF']}
               bucket="networks"
               path={`announcements/${networkId}`}
-              maxFiles={1}
+              maxFiles={10 - mediaItems.length} // Allow up to 10 total, minus current items
               showPreview={false}
               autoUpload={true}
             />

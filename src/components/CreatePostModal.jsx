@@ -160,29 +160,33 @@ const CreatePostModal = ({
     console.log("=== handleMediaUpload called ===");
     console.log("Upload result received:", uploadResult);
     
-    const newMediaItem = {
-      url: uploadResult.url,
-      type: uploadResult.type,
+    // Handle both single file and multiple files
+    const uploadResults = Array.isArray(uploadResult) ? uploadResult : [uploadResult];
+    
+    const newMediaItems = uploadResults.map(result => ({
+      url: result.url,
+      type: result.type,
       metadata: {
-        fileName: uploadResult.metadata?.fileName || uploadResult.fileName,
-        fileSize: uploadResult.metadata?.fileSize || uploadResult.fileSize,
-        mimeType: uploadResult.metadata?.mimeType || uploadResult.mimeType,
-        duration: uploadResult.metadata?.duration,
-        thumbnail: uploadResult.metadata?.thumbnail,
-        title: uploadResult.metadata?.title,
-        artist: uploadResult.metadata?.artist,
-        album: uploadResult.metadata?.album,
-        albumArt: uploadResult.metadata?.albumArt
+        fileName: result.metadata?.fileName || result.fileName,
+        fileSize: result.metadata?.fileSize || result.fileSize,
+        mimeType: result.metadata?.mimeType || result.mimeType,
+        duration: result.metadata?.duration,
+        thumbnail: result.metadata?.thumbnail,
+        title: result.metadata?.title,
+        artist: result.metadata?.artist,
+        album: result.metadata?.album,
+        albumArt: result.metadata?.albumArt
       }
-    };
+    }));
     
-    // Add to media items array
-    setMediaItems(prev => [...prev, newMediaItem]);
+    // Add all new items to media items array
+    setMediaItems(prev => [...prev, ...newMediaItems]);
     
-    // Keep single media state for backwards compatibility
-    setMediaUrl(uploadResult.url);
-    setMediaType(uploadResult.type);
-    setMediaMetadata(newMediaItem.metadata);
+    // Keep single media state for backwards compatibility (use first item)
+    const firstItem = newMediaItems[0];
+    setMediaUrl(firstItem.url);
+    setMediaType(firstItem.type);
+    setMediaMetadata(firstItem.metadata);
     
     setError('');
   };
@@ -438,7 +442,7 @@ const CreatePostModal = ({
                     allowedTypes={['IMAGE', 'VIDEO', 'AUDIO', 'PDF']}
                     bucket="profiles"
                     path={`portfolios/${user?.id}`}
-                    maxFiles={1}
+                    maxFiles={10 - mediaItems.length} // Allow remaining slots up to 10
                     autoUpload={true}
                     showPreview={false}
                     compact={true}
@@ -462,7 +466,7 @@ const CreatePostModal = ({
                 allowedTypes={['IMAGE', 'VIDEO', 'AUDIO', 'PDF']}
                 bucket="profiles"
                 path={`portfolios/${user?.id}`}
-                maxFiles={1}
+                maxFiles={10 - mediaItems.length} // Allow up to 10 total, minus current items
                 autoUpload={true}
                 showPreview={false}
                 compact={true}
