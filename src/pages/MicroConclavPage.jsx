@@ -350,51 +350,7 @@ const MicroConclavPage = () => {
         </Box>
       </Box>
 
-      {/* User Info Card - top right */}
-      <Paper
-        elevation={4}
-        sx={{
-          position: 'absolute',
-          top: '1rem',
-          right: '1rem',
-          p: 2,
-          borderRadius: 2,
-          backgroundColor: theme.palette.background.paper,
-          zIndex: 1001,
-          minWidth: 250,
-          maxWidth: 300,
-        }}
-      >
-        <Box display="flex" alignItems="center" gap={2}>
-          <Avatar
-            src={profile.profile_picture_url}
-            alt={profile.full_name}
-            sx={{ width: 60, height: 60 }}
-          />
-          <Box>
-            <Typography variant="h6" sx={{ fontWeight: 600 }}>
-              {profile.full_name}
-            </Typography>
-            {profile.bio && (
-              <Typography
-                variant="body2"
-                color="text.secondary"
-                sx={{
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  display: '-webkit-box',
-                  WebkitLineClamp: 2,
-                  WebkitBoxOrient: 'vertical',
-                }}
-              >
-                {profile.bio}
-              </Typography>
-            )}
-          </Box>
-        </Box>
-      </Paper>
-
-      {/* Content Zone */}
+      {/* Content Zone with User Info Card */}
       <Box
         ref={containerRef}
         sx={{
@@ -404,6 +360,50 @@ const MicroConclavPage = () => {
           bgcolor: viewMode === 'grid' ? (moodboardBackgroundColor || '#f5f5f5') : 'transparent',
         }}
       >
+        {/* User Info Card - positioned absolutely within content zone */}
+        <Paper
+          elevation={4}
+          sx={{
+            position: 'absolute',
+            top: '1rem',
+            right: '1rem',
+            p: 2,
+            borderRadius: 2,
+            backgroundColor: theme.palette.background.paper,
+            zIndex: 10,
+            minWidth: 250,
+            maxWidth: 300,
+          }}
+        >
+          <Box display="flex" alignItems="center" gap={2}>
+            <Avatar
+              src={profile.profile_picture_url}
+              alt={profile.full_name}
+              sx={{ width: 60, height: 60 }}
+            />
+            <Box>
+              <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                {profile.full_name}
+              </Typography>
+              {profile.bio && (
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    display: '-webkit-box',
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: 'vertical',
+                  }}
+                >
+                  {profile.bio}
+                </Typography>
+              )}
+            </Box>
+          </Box>
+        </Paper>
+
         {viewMode === 'grid' ? (
           /* Grid View */
           <Box
