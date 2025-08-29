@@ -6,6 +6,7 @@ import MemberDetailsModal from '../components/MembersDetailModal';
 import Spinner from '../components/Spinner';
 import CommentSection from '../components/CommentSection';
 import UserContent from '../components/UserContent';
+import CreateEventDialog from '../components/CreateEventDialog';
 import { linkifyHtml } from '../utils/textFormatting';
 import {
   Container,
@@ -66,6 +67,7 @@ function EventPage() {
   const [network, setNetwork] = useState(null);
   const [selectedMember, setSelectedMember] = useState(null);
   const [showMemberDetailsModal, setShowMemberDetailsModal] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
 
   // Use refs to track last fetched IDs to prevent unnecessary re-fetches
   const lastFetchedEventId = useRef(null);
@@ -235,7 +237,7 @@ function EventPage() {
   };
 
   const handleEdit = () => {
-    // TODO: Navigate to edit page
+    setShowEditDialog(true);
     handleMenuClose();
   };
 
@@ -789,6 +791,25 @@ function EventPage() {
             setSelectedMember(null);
           }}
           member={selectedMember}
+        />
+      )}
+
+      {/* Edit Event Dialog */}
+      {event && (
+        <CreateEventDialog
+          open={showEditDialog}
+          onClose={() => setShowEditDialog(false)}
+          networkId={networkId}
+          profileId={profileId}
+          editingEvent={event}
+          isAdmin={isAdmin}
+          onEventUpdated={(updatedEvent) => {
+            // Update the local event state with the updated data
+            setEvent(updatedEvent);
+            setShowEditDialog(false);
+            // Refresh the event data to get any server-side updates
+            fetchEventData();
+          }}
         />
       )}
     </Container>
