@@ -7,6 +7,7 @@
       "news": "Announcements Management",
       "events": "Events Management",
       "polls": "Polls Management",
+      "courses": "Courses Management",
       "theme": "Theme & Branding",
       "moderation": "Moderation Tools",
       "monetization": "Monetization",
@@ -235,6 +236,70 @@
       "storageLimitReached": "Storage limit reached! Upgrade your plan to continue uploading files.",
       "storageUsageWarning": "You're using {{percentage}}% of your storage.",
       "unableToLoadStorage": "Unable to load storage info"
+    },
+    "courses": {
+      "title": "Course Management",
+      "description": "Seamlessly blend courses with your community. Create engaging learning experiences with native video hosting, file storage, quizzes, and comprehensive student analytics.",
+      "features": {
+        "nativeVideo": {
+          "title": "Native Video",
+          "description": "Built-in video hosting"
+        },
+        "fileStorage": {
+          "title": "File Storage", 
+          "description": "Secure file management"
+        },
+        "quizzes": {
+          "title": "Quizzes",
+          "description": "Interactive assessments"
+        },
+        "studentDashboard": {
+          "title": "Student Dashboard",
+          "description": "Student progress tracking"
+        },
+        "courseAnalytics": {
+          "title": "Course Analytics",
+          "description": "Performance insights"
+        }
+      },
+      "buttons": {
+        "createNewCourse": "Create New Course",
+        "preview": "Preview",
+        "edit": "Edit",
+        "delete": "Delete",
+        "cancel": "Cancel",
+        "create": "Create",
+        "update": "Update",
+        "save": "Save Course"
+      },
+      "dialogs": {
+        "createCourse": "Create New Course",
+        "editCourse": "Edit Course"
+      },
+      "fields": {
+        "courseTitle": "Course Title",
+        "description": "Description", 
+        "category": "Category",
+        "difficulty": "Difficulty",
+        "estimatedHours": "Estimated Hours",
+        "price": "Price ($)"
+      },
+      "difficulty": {
+        "beginner": "Beginner",
+        "intermediate": "Intermediate", 
+        "advanced": "Advanced"
+      },
+      "stats": {
+        "enrolled": "enrolled",
+        "completion": "completion",
+        "completionRate": "Completion Rate",
+        "videos": "videos",
+        "quizzes": "quizzes", 
+        "files": "files"
+      },
+      "coursesList": {
+        "title": "Your Courses ({{count}})"
+      }
     }
   },
   "memberOnboarding": {

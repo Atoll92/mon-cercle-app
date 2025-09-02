@@ -104,7 +104,7 @@ const AdminLayout = ({
       index: 5 
     },
     { 
-      name: 'Courses', 
+      name: t('admin.tabs.courses'), 
       icon: <SchoolIcon />, 
       index: 6 
     },

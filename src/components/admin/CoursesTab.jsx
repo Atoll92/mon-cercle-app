@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from '../../hooks/useTranslation.jsx';
 import {
   Box,
   Typography,
@@ -38,6 +39,7 @@ import {
 
 function CoursesTab({ networkId, darkMode }) {
   const theme = useTheme();
+  const { t } = useTranslation();
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -143,58 +145,57 @@ function CoursesTab({ networkId, darkMode }) {
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
           <CourseIcon sx={{ mr: 2, color: theme.palette.primary.main, fontSize: 32 }} />
           <Typography variant="h5" component="h2" sx={{ color: theme.palette.custom.lightText }}>
-            Course Management
+            {t('admin.courses.title')}
           </Typography>
         </Box>
         
         <Typography variant="body1" sx={{ color: theme.palette.custom.mediumText, mb: 3 }}>
-          Seamlessly blend courses with your community. Create engaging learning experiences with native video hosting, 
-          file storage, quizzes, and comprehensive student analytics.
+          {t('admin.courses.description')}
         </Typography>
 
         <Grid container spacing={3} sx={{ mb: 3 }}>
           <Grid item xs={12} md={2.4}>
             <Card sx={{ textAlign: 'center', p: 2 }}>
               <VideoIcon sx={{ fontSize: 40, color: theme.palette.primary.main, mb: 1 }} />
-              <Typography variant="h6">Native Video</Typography>
+              <Typography variant="h6">{t('admin.courses.features.nativeVideo.title')}</Typography>
               <Typography variant="body2" color="text.secondary">
-                Built-in video hosting
+                {t('admin.courses.features.nativeVideo.description')}
               </Typography>
             </Card>
           </Grid>
           <Grid item xs={12} md={2.4}>
             <Card sx={{ textAlign: 'center', p: 2 }}>
               <FileIcon sx={{ fontSize: 40, color: theme.palette.secondary.main, mb: 1 }} />
-              <Typography variant="h6">File Storage</Typography>
+              <Typography variant="h6">{t('admin.courses.features.fileStorage.title')}</Typography>
               <Typography variant="body2" color="text.secondary">
-                Secure file management
+                {t('admin.courses.features.fileStorage.description')}
               </Typography>
             </Card>
           </Grid>
           <Grid item xs={12} md={2.4}>
             <Card sx={{ textAlign: 'center', p: 2 }}>
               <QuizIcon sx={{ fontSize: 40, color: theme.palette.warning.main, mb: 1 }} />
-              <Typography variant="h6">Quizzes</Typography>
+              <Typography variant="h6">{t('admin.courses.features.quizzes.title')}</Typography>
               <Typography variant="body2" color="text.secondary">
-                Interactive assessments
+                {t('admin.courses.features.quizzes.description')}
               </Typography>
             </Card>
           </Grid>
           <Grid item xs={12} md={2.4}>
             <Card sx={{ textAlign: 'center', p: 2 }}>
               <StudentsIcon sx={{ fontSize: 40, color: theme.palette.info.main, mb: 1 }} />
-              <Typography variant="h6">Student Dashboard</Typography>
+              <Typography variant="h6">{t('admin.courses.features.studentDashboard.title')}</Typography>
               <Typography variant="body2" color="text.secondary">
-                Student progress tracking
+                {t('admin.courses.features.studentDashboard.description')}
               </Typography>
             </Card>
           </Grid>
           <Grid item xs={12} md={2.4}>
             <Card sx={{ textAlign: 'center', p: 2 }}>
               <AnalyticsIcon sx={{ fontSize: 40, color: theme.palette.success.main, mb: 1 }} />
-              <Typography variant="h6">Course Analytics</Typography>
+              <Typography variant="h6">{t('admin.courses.features.courseAnalytics.title')}</Typography>
               <Typography variant="body2" color="text.secondary">
-                Performance insights
+                {t('admin.courses.features.courseAnalytics.description')}
               </Typography>
             </Card>
           </Grid>
@@ -206,13 +207,13 @@ function CoursesTab({ networkId, darkMode }) {
           onClick={handleCreateCourse}
           sx={{ mt: 2 }}
         >
-          Create New Course
+          {t('admin.courses.buttons.createNewCourse')}
         </Button>
       </Paper>
 
       {/* Courses List */}
       <Typography variant="h6" sx={{ mb: 2, color: theme.palette.custom.lightText }}>
-        Your Courses ({courses.length})
+        {t('admin.courses.coursesList.title', { count: courses.length })}
       </Typography>
 
       <Grid container spacing={3}>
@@ -233,7 +234,7 @@ function CoursesTab({ networkId, darkMode }) {
                     {course.title}
                   </Typography>
                   <Chip
-                    label={course.difficulty}
+                    label={t(`admin.courses.difficulty.${course.difficulty}`)}
                     color={getDifficultyColor(course.difficulty)}
                     size="small"
                   />
@@ -254,7 +255,7 @@ function CoursesTab({ networkId, darkMode }) {
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                       <StudentsIcon sx={{ fontSize: 16, mr: 0.5, color: theme.palette.custom.mediumText }} />
                       <Typography variant="caption">
-                        {course.enrolled_count} enrolled
+                        {course.enrolled_count} {t('admin.courses.stats.enrolled')}
                       </Typography>
                     </Box>
                   </Grid>
@@ -262,7 +263,7 @@ function CoursesTab({ networkId, darkMode }) {
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                       <AnalyticsIcon sx={{ fontSize: 16, mr: 0.5, color: theme.palette.custom.mediumText }} />
                       <Typography variant="caption">
-                        {course.completion_rate}% completion
+                        {course.completion_rate}% {t('admin.courses.stats.completion')}
                       </Typography>
                     </Box>
                   </Grid>
@@ -270,7 +271,7 @@ function CoursesTab({ networkId, darkMode }) {
 
                 <Box sx={{ mb: 2 }}>
                   <Typography variant="caption" sx={{ color: theme.palette.custom.mediumText }}>
-                    Completion Rate
+                    {t('admin.courses.stats.completionRate')}
                   </Typography>
                   <LinearProgress
                     variant="determinate"
@@ -283,7 +284,7 @@ function CoursesTab({ networkId, darkMode }) {
                   <Grid item>
                     <Chip
                       icon={<VideoIcon />}
-                      label={`${course.videos} videos`}
+                      label={`${course.videos} ${t('admin.courses.stats.videos')}`}
                       size="small"
                       variant="outlined"
                     />
@@ -291,7 +292,7 @@ function CoursesTab({ networkId, darkMode }) {
                   <Grid item>
                     <Chip
                       icon={<QuizIcon />}
-                      label={`${course.quizzes} quizzes`}
+                      label={`${course.quizzes} ${t('admin.courses.stats.quizzes')}`}
                       size="small"
                       variant="outlined"
                     />
@@ -299,7 +300,7 @@ function CoursesTab({ networkId, darkMode }) {
                   <Grid item>
                     <Chip
                       icon={<FileIcon />}
-                      label={`${course.files} files`}
+                      label={`${course.files} ${t('admin.courses.stats.files')}`}
                       size="small"
                       variant="outlined"
                     />
@@ -313,7 +314,7 @@ function CoursesTab({ networkId, darkMode }) {
                   startIcon={<PlayIcon />}
                   variant="outlined"
                 >
-                  Preview
+                  {t('admin.courses.buttons.preview')}
                 </Button>
                 <Box>
                   <IconButton
@@ -343,13 +344,13 @@ function CoursesTab({ networkId, darkMode }) {
         fullWidth
       >
         <DialogTitle>
-          {selectedCourse ? 'Edit Course' : 'Create New Course'}
+          {selectedCourse ? t('admin.courses.dialogs.editCourse') : t('admin.courses.dialogs.createCourse')}
         </DialogTitle>
         <DialogContent>
           <Box sx={{ pt: 1 }}>
             <TextField
               fullWidth
-              label="Course Title"
+              label={t('admin.courses.fields.courseTitle')}
               value={newCourse.title}
               onChange={(e) => setNewCourse({ ...newCourse, title: e.target.value })}
               sx={{ mb: 2 }}
@@ -357,7 +358,7 @@ function CoursesTab({ networkId, darkMode }) {
             
             <TextField
               fullWidth
-              label="Description"
+              label={t('admin.courses.fields.description')}
               multiline
               rows={3}
               value={newCourse.description}
@@ -369,21 +370,21 @@ function CoursesTab({ networkId, darkMode }) {
               <Grid item xs={12} sm={6}>
                 <TextField
                   fullWidth
-                  label="Category"
+                  label={t('admin.courses.fields.category')}
                   value={newCourse.category}
                   onChange={(e) => setNewCourse({ ...newCourse, category: e.target.value })}
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
                 <FormControl fullWidth>
-                  <InputLabel>Difficulty</InputLabel>
+                  <InputLabel>{t('admin.courses.fields.difficulty')}</InputLabel>
                   <Select
                     value={newCourse.difficulty}
                     onChange={(e) => setNewCourse({ ...newCourse, difficulty: e.target.value })}
                   >
-                    <MenuItem value="beginner">Beginner</MenuItem>
-                    <MenuItem value="intermediate">Intermediate</MenuItem>
-                    <MenuItem value="advanced">Advanced</MenuItem>
+                    <MenuItem value="beginner">{t('admin.courses.difficulty.beginner')}</MenuItem>
+                    <MenuItem value="intermediate">{t('admin.courses.difficulty.intermediate')}</MenuItem>
+                    <MenuItem value="advanced">{t('admin.courses.difficulty.advanced')}</MenuItem>
                   </Select>
                 </FormControl>
               </Grid>
@@ -393,7 +394,7 @@ function CoursesTab({ networkId, darkMode }) {
               <Grid item xs={12} sm={6}>
                 <TextField
                   fullWidth
-                  label="Estimated Hours"
+                  label={t('admin.courses.fields.estimatedHours')}
                   type="number"
                   value={newCourse.estimated_hours}
                   onChange={(e) => setNewCourse({ ...newCourse, estimated_hours: e.target.value })}
@@ -402,7 +403,7 @@ function CoursesTab({ networkId, darkMode }) {
               <Grid item xs={12} sm={6}>
                 <TextField
                   fullWidth
-                  label="Price ($)"
+                  label={t('admin.courses.fields.price')}
                   type="number"
                   value={newCourse.price}
                   onChange={(e) => setNewCourse({ ...newCourse, price: parseFloat(e.target.value) || 0 })}
@@ -413,10 +414,10 @@ function CoursesTab({ networkId, darkMode }) {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setDialogOpen(false)}>
-            Cancel
+            {t('admin.courses.buttons.cancel')}
           </Button>
           <Button onClick={handleSaveCourse} variant="contained">
-            {selectedCourse ? 'Update' : 'Create'} Course
+            {selectedCourse ? t('admin.courses.buttons.update') : t('admin.courses.buttons.create')}
           </Button>
         </DialogActions>
       </Dialog>

@@ -324,7 +324,7 @@ function NetworkAdminPage() {
             {activeTab === 3 && t('admin.tabs.news')}
             {activeTab === 4 && t('admin.tabs.events')}
             {activeTab === 5 && t('admin.tabs.polls')}
-            {activeTab === 6 && 'Courses'}
+            {activeTab === 6 && t('admin.tabs.courses')}
             {activeTab === 7 && t('admin.tabs.theme')}
             {activeTab === 8 && t('admin.tabs.moderation')}
             {activeTab === 9 && t('admin.tabs.monetization')}

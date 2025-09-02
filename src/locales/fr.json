@@ -7,6 +7,7 @@
       "news": "Gestion des annonces",
       "events": "Gestion des événements",
       "polls": "Gestion des sondages",
+      "courses": "Gestion des cours",
       "theme": "Thème et image de marque",
       "moderation": "Outils de modération",
       "monetization": "Monétisation",
@@ -235,6 +236,70 @@
       "storageLimitReached": "Limite de stockage atteinte ! Mettez à niveau votre plan pour continuer à télécharger des fichiers.",
       "storageUsageWarning": "Vous utilisez {{percentage}}% de votre stockage.",
       "unableToLoadStorage": "Impossible de charger les informations de stockage"
+    },
+    "courses": {
+      "title": "Gestion des cours",
+      "description": "Intégrez parfaitement les cours à votre communauté. Créez des expériences d'apprentissage engageantes avec hébergement vidéo natif, stockage de fichiers, quiz et analyses complètes des étudiants.",
+      "features": {
+        "nativeVideo": {
+          "title": "Vidéo native",
+          "description": "Hébergement vidéo intégré"
+        },
+        "fileStorage": {
+          "title": "Stockage de fichiers", 
+          "description": "Gestion sécurisée des fichiers"
+        },
+        "quizzes": {
+          "title": "Quiz",
+          "description": "Évaluations interactives"
+        },
+        "studentDashboard": {
+          "title": "Tableau de bord étudiant",
+          "description": "Suivi des progrès des étudiants"
+        },
+        "courseAnalytics": {
+          "title": "Analyses de cours",
+          "description": "Aperçus de performance"
+        }
+      },
+      "buttons": {
+        "createNewCourse": "Créer un nouveau cours",
+        "preview": "Aperçu",
+        "edit": "Modifier",
+        "delete": "Supprimer",
+        "cancel": "Annuler",
+        "create": "Créer",
+        "update": "Mettre à jour",
+        "save": "Enregistrer le cours"
+      },
+      "dialogs": {
+        "createCourse": "Créer un nouveau cours",
+        "editCourse": "Modifier le cours"
+      },
+      "fields": {
+        "courseTitle": "Titre du cours",
+        "description": "Description", 
+        "category": "Catégorie",
+        "difficulty": "Difficulté",
+        "estimatedHours": "Heures estimées",
+        "price": "Prix (€)"
+      },
+      "difficulty": {
+        "beginner": "Débutant",
+        "intermediate": "Intermédiaire", 
+        "advanced": "Avancé"
+      },
+      "stats": {
+        "enrolled": "inscrits",
+        "completion": "achèvement",
+        "completionRate": "Taux d'achèvement",
+        "videos": "vidéos",
+        "quizzes": "quiz", 
+        "files": "fichiers"
+      },
+      "coursesList": {
+        "title": "Vos cours ({{count}})"
+      }
     }
   },
   "memberOnboarding": {
