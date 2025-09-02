@@ -21,8 +21,44 @@ import {
   LinkedIn as LinkedInIcon,
   Language as LanguageIcon,
   AdminPanelSettings as AdminIcon,
-  Person as PersonIcon
+  Person as PersonIcon,
+  Instagram as InstagramIcon,
+  GitHub as GitHubIcon,
+  YouTube as YouTubeIcon,
+  Link as LinkIcon,
+  AudioFile as AudioFileIcon,
+  VideoFile as VideoFileIcon,
+  Cloud as CloudIcon,
+  SportsEsports as SportsEsportsIcon,
+  Chat as ChatIcon,
+  LiveTv as LiveTvIcon,
+  Forum as ForumIcon,
+  Article as ArticleIcon,
+  Palette as PaletteIcon,
+  Brush as BrushIcon
 } from '@mui/icons-material';
+
+// Import real brand logos from react-icons
+import {
+  FaLinkedinIn,
+  FaFacebookF,
+  FaTwitter,
+  FaInstagram,
+  FaGithub,
+  FaYoutube,
+  FaSoundcloud,
+  FaVimeoV,
+  FaTiktok,
+  FaDiscord,
+  FaTwitch,
+  FaMastodon,
+  FaMediumM,
+  FaBehance,
+  FaDribbble,
+  FaGlobe,
+  FaLink
+} from 'react-icons/fa';
+import { SiBluesky } from 'react-icons/si';
 
 const MemberCard = ({ 
   member, 
@@ -40,14 +76,16 @@ const MemberCard = ({
   const customBorder = theme.palette.custom?.border || (darkMode ? alpha('#ffffff', 0.12) : alpha('#000000', 0.12));
   
   // Extract social media links
-  const socialMedia = {
-    facebook: member.facebook_url || null,
-    twitter: member.twitter_url || null,
-    linkedin: member.linkedin_url || null,
-    website: member.website_url || null
-  };
+  const socialMedia = member.social_links || [];
   
-  const hasSocialMedia = Object.values(socialMedia).some(url => url);
+  // Support legacy linkedin_url field if no social_links
+  const legacySocial = [];
+  if (socialMedia.length === 0 && member.linkedin_url) {
+    legacySocial.push({ platform: 'linkedin', url: member.linkedin_url });
+  }
+  
+  const allSocialLinks = [...socialMedia, ...legacySocial];
+  const hasSocialMedia = allSocialLinks.length > 0;
   
   return (
     <Box
@@ -395,97 +433,106 @@ const MemberCard = ({
               borderTop: `1px solid ${customBorder}`,
               mt: 'auto'
             }}>
-              {socialMedia.facebook && (
-                <Tooltip title="Facebook">
-                  <IconButton 
-                    size="small" 
-                    component="a" 
-                    href={socialMedia.facebook} 
-                    target="_blank"
-                    onClick={(e) => e.stopPropagation()}
-                    sx={{ 
-                      bgcolor: darkMode ? alpha('#1877f2', 0.15) : alpha('#1877f2', 0.08),
-                      color: '#1877f2',
-                      '&:hover': { 
-                        bgcolor: darkMode ? alpha('#1877f2', 0.25) : alpha('#1877f2', 0.15),
-                        transform: 'translateY(-2px)'
-                      },
-                      transition: 'all 0.2s ease'
-                    }}
-                  >
-                    <FacebookIcon fontSize="small" />
-                  </IconButton>
-                </Tooltip>
-              )}
-              
-              {socialMedia.twitter && (
-                <Tooltip title="Twitter">
-                  <IconButton 
-                    size="small" 
-                    component="a" 
-                    href={socialMedia.twitter} 
-                    target="_blank"
-                    onClick={(e) => e.stopPropagation()}
-                    sx={{ 
-                      bgcolor: darkMode ? alpha('#1DA1F2', 0.15) : alpha('#1DA1F2', 0.08),
-                      color: '#1DA1F2',
-                      '&:hover': { 
-                        bgcolor: darkMode ? alpha('#1DA1F2', 0.25) : alpha('#1DA1F2', 0.15),
-                        transform: 'translateY(-2px)'
-                      },
-                      transition: 'all 0.2s ease'
-                    }}
-                  >
-                    <TwitterIcon fontSize="small" />
-                  </IconButton>
-                </Tooltip>
-              )}
-              
-              {socialMedia.linkedin && (
-                <Tooltip title="LinkedIn">
-                  <IconButton 
-                    size="small" 
-                    component="a" 
-                    href={socialMedia.linkedin} 
-                    target="_blank"
-                    onClick={(e) => e.stopPropagation()}
-                    sx={{ 
-                      bgcolor: darkMode ? alpha('#0A66C2', 0.15) : alpha('#0A66C2', 0.08),
-                      color: '#0A66C2',
-                      '&:hover': { 
-                        bgcolor: darkMode ? alpha('#0A66C2', 0.25) : alpha('#0A66C2', 0.15),
-                        transform: 'translateY(-2px)'
-                      },
-                      transition: 'all 0.2s ease'
-                    }}
-                  >
-                    <LinkedInIcon fontSize="small" />
-                  </IconButton>
-                </Tooltip>
-              )}
-              
-              {socialMedia.website && (
-                <Tooltip title="Website">
-                  <IconButton 
-                    size="small" 
-                    component="a" 
-                    href={socialMedia.website} 
-                    target="_blank"
-                    onClick={(e) => e.stopPropagation()}
-                    sx={{ 
-                      bgcolor: darkMode ? alpha('#00c853', 0.15) : alpha('#00c853', 0.08),
-                      color: '#00c853',
-                      '&:hover': { 
-                        bgcolor: darkMode ? alpha('#00c853', 0.25) : alpha('#00c853', 0.15),
-                        transform: 'translateY(-2px)'
-                      },
-                      transition: 'all 0.2s ease'
-                    }}
-                  >
-                    <LanguageIcon fontSize="small" />
-                  </IconButton>
-                </Tooltip>
-              )}
+              {allSocialLinks.slice(0, 5).map((link, index) => {
+                const getSocialIcon = (platform) => {
+                  const icons = {
+                    linkedin: FaLinkedinIn,
+                    facebook: FaFacebookF,
+                    twitter: FaTwitter,
+                    instagram: FaInstagram,
+                    github: FaGithub,
+                    youtube: FaYoutube,
+                    soundcloud: FaSoundcloud,
+                    vimeo: FaVimeoV,
+                    bluesky: SiBluesky,
+                    tiktok: FaTiktok,
+                    discord: FaDiscord,
+                    twitch: FaTwitch,
+                    mastodon: FaMastodon,
+                    medium: FaMediumM,
+                    behance: FaBehance,
+                    dribbble: FaDribbble,
+                    website: FaGlobe,
+                    other: FaLink
+                  };
+                  return icons[platform] || FaLink;
+                };
+                
+                const getSocialColor = (platform) => {
+                  const colors = {
+                    linkedin: '#0A66C2',
+                    facebook: '#1877f2',
+                    twitter: '#1DA1F2',
+                    instagram: '#E4405F',
+                    github: darkMode ? '#ffffff' : '#181717',
+                    youtube: '#FF0000',
+                    soundcloud: '#FF5500',
+                    vimeo: '#1AB7EA',
+                    bluesky: '#00A8E8',
+                    tiktok: '#000000',
+                    discord: '#5865F2',
+                    twitch: '#9146FF',
+                    mastodon: '#6364FF',
+                    medium: '#00AB6C',
+                    behance: '#1769FF',
+                    dribbble: '#EA4C89',
+                    website: '#00c853',
+                    other: '#757575'
+                  };
+                  return colors[platform] || '#757575';
+                };
+                
+                const getPlatformLabel = (platform) => {
+                  const labels = {
+                    linkedin: 'LinkedIn',
+                    facebook: 'Facebook',
+                    twitter: 'Twitter/X',
+                    instagram: 'Instagram',
+                    github: 'GitHub',
+                    youtube: 'YouTube',
+                    soundcloud: 'SoundCloud',
+                    vimeo: 'Vimeo',
+                    bluesky: 'Bluesky',
+                    tiktok: 'TikTok',
+                    discord: 'Discord',
+                    twitch: 'Twitch',
+                    mastodon: 'Mastodon',
+                    medium: 'Medium',
+                    behance: 'Behance',
+                    dribbble: 'Dribbble',
+                    website: 'Website',
+                    other: link.label || 'Link'
+                  };
+                  return labels[platform] || platform;
+                };
+                
+                const Icon = getSocialIcon(link.platform);
+                const color = getSocialColor(link.platform);
+                const label = getPlatformLabel(link.platform);
+                
+                return (
+                  <Tooltip key={index} title={label}>
+                    <IconButton 
+                      size="small" 
+                      component="a" 
+                      href={link.url} 
+                      target="_blank"
+                      onClick={(e) => e.stopPropagation()}
+                      sx={{ 
+                        bgcolor: darkMode ? alpha(color, 0.15) : alpha(color, 0.08),
+                        color: color,
+                        '&:hover': { 
+                          bgcolor: darkMode ? alpha(color, 0.25) : alpha(color, 0.15),
+                          transform: 'translateY(-2px)'
+                        },
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
+                      <Icon style={{ fontSize: '16px', color: color }} />
+                    </IconButton>
+                  </Tooltip>
+                );
+              })}
             </Box>
           )}
         </CardContent>

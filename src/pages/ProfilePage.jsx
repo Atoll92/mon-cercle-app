@@ -51,9 +51,47 @@ import {
   MoreHoriz as MoreHorizIcon,
   Description as DescriptionIcon,
   Dashboard as DashboardIcon,
-  Badge as Badge
+  Badge as Badge,
+  Facebook as FacebookIcon,
+  Twitter as TwitterIcon,
+  Instagram as InstagramIcon,
+  GitHub as GitHubIcon,
+  YouTube as YouTubeIcon,
+  Link as LinkIcon,
+  AudioFile as AudioFileIcon,
+  VideoFile as VideoFileIcon,
+  Cloud as CloudIcon,
+  SportsEsports as SportsEsportsIcon,
+  Chat as ChatIcon,
+  LiveTv as LiveTvIcon,
+  Forum as ForumIcon,
+  Article as ArticleIcon,
+  Palette as PaletteIcon,
+  Brush as BrushIcon
 } from '@mui/icons-material';
 import { formatEventDate } from '../utils/dateFormatting';
+
+// Import real brand logos from react-icons
+import {
+  FaLinkedinIn,
+  FaFacebookF,
+  FaTwitter,
+  FaInstagram,
+  FaGithub,
+  FaYoutube,
+  FaSoundcloud,
+  FaVimeoV,
+  FaTiktok,
+  FaDiscord,
+  FaTwitch,
+  FaMastodon,
+  FaMediumM,
+  FaBehance,
+  FaDribbble,
+  FaGlobe,
+  FaLink
+} from 'react-icons/fa';
+import { SiBluesky } from 'react-icons/si';
 
 function ProfilePage() {
   const { userId } = useParams();
@@ -536,6 +574,7 @@ function ProfilePage() {
                         </Box>
                       )}
                       
+                      {/* Legacy LinkedIn URL support */}
                       {profile.linkedin_url && (
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                           <LinkedInIcon fontSize="small" color="action" />
@@ -550,6 +589,111 @@ function ProfilePage() {
                             LinkedIn
                           </Typography>
                         </Box>
+                      )}
+                      
+                      {/* Social Links */}
+                      {profile.social_links && profile.social_links.length > 0 && (
+                        <>
+                          {profile.social_links.map((link, index) => {
+                            const getSocialIcon = (platform) => {
+                              const icons = {
+                                linkedin: FaLinkedinIn,
+                                facebook: FaFacebookF,
+                                twitter: FaTwitter,
+                                instagram: FaInstagram,
+                                github: FaGithub,
+                                youtube: FaYoutube,
+                                soundcloud: FaSoundcloud,
+                                vimeo: FaVimeoV,
+                                bluesky: SiBluesky,
+                                tiktok: FaTiktok,
+                                discord: FaDiscord,
+                                twitch: FaTwitch,
+                                mastodon: FaMastodon,
+                                medium: FaMediumM,
+                                behance: FaBehance,
+                                dribbble: FaDribbble,
+                                website: FaGlobe,
+                                other: FaLink
+                              };
+                              return icons[platform] || FaLink;
+                            };
+                            
+                            const getSocialColor = (platform) => {
+                              const colors = {
+                                linkedin: '#0A66C2',
+                                facebook: '#1877f2',
+                                twitter: '#1DA1F2',
+                                instagram: '#E4405F',
+                                github: '#181717',
+                                youtube: '#FF0000',
+                                soundcloud: '#FF5500',
+                                vimeo: '#1AB7EA',
+                                bluesky: '#00A8E8',
+                                tiktok: '#000000',
+                                discord: '#5865F2',
+                                twitch: '#9146FF',
+                                mastodon: '#6364FF',
+                                medium: '#00AB6C',
+                                behance: '#1769FF',
+                                dribbble: '#EA4C89',
+                                website: '#00c853',
+                                other: '#757575'
+                              };
+                              return colors[platform] || '#757575';
+                            };
+                            
+                            const Icon = getSocialIcon(link.platform);
+                            const color = getSocialColor(link.platform);
+                            const getPlatformLabel = (platform) => {
+                              const labels = {
+                                linkedin: 'LinkedIn',
+                                facebook: 'Facebook',
+                                twitter: 'Twitter/X',
+                                instagram: 'Instagram',
+                                github: 'GitHub',
+                                youtube: 'YouTube',
+                                soundcloud: 'SoundCloud',
+                                vimeo: 'Vimeo',
+                                bluesky: 'Bluesky',
+                                tiktok: 'TikTok',
+                                discord: 'Discord',
+                                twitch: 'Twitch',
+                                mastodon: 'Mastodon',
+                                medium: 'Medium',
+                                behance: 'Behance',
+                                dribbble: 'Dribbble',
+                                website: 'Website',
+                                other: link.label || 'Link'
+                              };
+                              return labels[platform] || platform;
+                            };
+                            
+                            return (
+                              <Box key={index} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <Icon style={{ fontSize: '16px', color: color }} />
+                                <Tooltip title={link.url}>
+                                  <Typography 
+                                    variant="body2" 
+                                    component="a" 
+                                    href={link.url} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    sx={{ 
+                                      textDecoration: 'none', 
+                                      color: 'primary.main',
+                                      '&:hover': {
+                                        textDecoration: 'underline'
+                                      }
+                                    }}
+                                  >
+                                    {getPlatformLabel(link.platform)}
+                                  </Typography>
+                                </Tooltip>
+                              </Box>
+                            );
+                          })}
+                        </>
                       )}
                     </Stack>
                   </Paper>

@@ -35,7 +35,8 @@ import {
   FormControl,
   InputLabel,
   Select,
-  MenuItem
+  MenuItem,
+  alpha
 } from '@mui/material';
 import {
   Save as SaveIcon,
@@ -49,12 +50,51 @@ import {
   Mail as MailIcon,
   Badge as BadgeIcon,
   Settings as SettingsIcon,
-  Delete as DeleteIcon
+  Delete as DeleteIcon,
+  Facebook as FacebookIcon,
+  Twitter as TwitterIcon,
+  Instagram as InstagramIcon,
+  GitHub as GitHubIcon,
+  YouTube as YouTubeIcon,
+  Link as LinkIcon,
+  Close as CloseIcon,
+  AudioFile as AudioFileIcon,
+  VideoFile as VideoFileIcon,
+  Cloud as CloudIcon,
+  SportsEsports as SportsEsportsIcon,
+  Chat as ChatIcon,
+  LiveTv as LiveTvIcon,
+  Forum as ForumIcon,
+  Article as ArticleIcon,
+  Palette as PaletteIcon,
+  Brush as BrushIcon
 } from '@mui/icons-material';
 import NotificationSettings from '../components/NotificationSettings';
 import CreatePostModal from '../components/CreatePostModal';
 import PostCard from '../components/PostCard';
 import MemberOnboardingWizard from '../components/MemberOnboardingWizard';
+
+// Import real brand logos from react-icons
+import {
+  FaLinkedinIn,
+  FaFacebookF,
+  FaTwitter,
+  FaInstagram,
+  FaGithub,
+  FaYoutube,
+  FaSoundcloud,
+  FaVimeoV,
+  FaTiktok,
+  FaDiscord,
+  FaTwitch,
+  FaMastodon,
+  FaMediumM,
+  FaBehance,
+  FaDribbble,
+  FaGlobe,
+  FaLink
+} from 'react-icons/fa';
+import { SiBluesky } from 'react-icons/si';
 
 function EditProfilePage() {
   const { user } = useAuth();
@@ -69,6 +109,7 @@ function EditProfilePage() {
   const [tagline, setTagline] = useState('');
   const [portfolioUrl, setPortfolioUrl] = useState('');
   const [linkedinUrl, setLinkedinUrl] = useState('');
+  const [socialLinks, setSocialLinks] = useState([]);
   const [skillsInput, setSkillsInput] = useState([]);
   const [skillOptions, setSkillOptions] = useState([]);
   const [avatar, setAvatar] = useState(null);
@@ -114,6 +155,90 @@ function EditProfilePage() {
   const [profile, setProfile] = useState(null);
   const [showOnboardingWizard, setShowOnboardingWizard] = useState(false);
   const [networkDetails, setNetworkDetails] = useState(null);
+
+  // Social media platform options with real brand logos
+  const socialPlatforms = [
+    { value: 'linkedin', label: 'LinkedIn', icon: FaLinkedinIn, color: '#0A66C2', patterns: ['linkedin.com', 'linkedin.fr'] },
+    { value: 'facebook', label: 'Facebook', icon: FaFacebookF, color: '#1877f2', patterns: ['facebook.com', 'fb.com', 'fb.me'] },
+    { value: 'twitter', label: 'Twitter/X', icon: FaTwitter, color: '#1DA1F2', patterns: ['twitter.com', 'x.com'] },
+    { value: 'instagram', label: 'Instagram', icon: FaInstagram, color: '#E4405F', patterns: ['instagram.com', 'instagr.am'] },
+    { value: 'github', label: 'GitHub', icon: FaGithub, color: '#181717', patterns: ['github.com'] },
+    { value: 'youtube', label: 'YouTube', icon: FaYoutube, color: '#FF0000', patterns: ['youtube.com', 'youtu.be'] },
+    { value: 'soundcloud', label: 'SoundCloud', icon: FaSoundcloud, color: '#FF5500', patterns: ['soundcloud.com'] },
+    { value: 'vimeo', label: 'Vimeo', icon: FaVimeoV, color: '#1AB7EA', patterns: ['vimeo.com'] },
+    { value: 'bluesky', label: 'Bluesky', icon: SiBluesky, color: '#00A8E8', patterns: ['bsky.app'] },
+    { value: 'tiktok', label: 'TikTok', icon: FaTiktok, color: '#000000', patterns: ['tiktok.com', 'vm.tiktok.com'] },
+    { value: 'discord', label: 'Discord', icon: FaDiscord, color: '#5865F2', patterns: ['discord.gg', 'discord.com'] },
+    { value: 'twitch', label: 'Twitch', icon: FaTwitch, color: '#9146FF', patterns: ['twitch.tv'] },
+    { value: 'mastodon', label: 'Mastodon', icon: FaMastodon, color: '#6364FF', patterns: ['mastodon.social', 'mstdn.'] },
+    { value: 'medium', label: 'Medium', icon: FaMediumM, color: '#00AB6C', patterns: ['medium.com', 'medium.'] },
+    { value: 'behance', label: 'Behance', icon: FaBehance, color: '#1769FF', patterns: ['behance.net'] },
+    { value: 'dribbble', label: 'Dribbble', icon: FaDribbble, color: '#EA4C89', patterns: ['dribbble.com'] },
+    { value: 'website', label: 'Website', icon: FaGlobe, color: '#00c853', patterns: [] },
+    { value: 'other', label: 'Other', icon: FaLink, color: '#757575', patterns: [] }
+  ];
+  
+  // Function to detect platform from URL
+  const detectPlatform = (url) => {
+    if (!url) return 'other';
+    
+    const urlLower = url.toLowerCase();
+    
+    for (const platform of socialPlatforms) {
+      if (platform.patterns && platform.patterns.length > 0) {
+        for (const pattern of platform.patterns) {
+          if (urlLower.includes(pattern)) {
+            return platform.value;
+          }
+        }
+      }
+    }
+    
+    // Check if it's a regular website (has http/https and a domain)
+    if (urlLower.startsWith('http://') || urlLower.startsWith('https://')) {
+      return 'website';
+    }
+    
+    return 'other';
+  };
+  
+  const handleAddSocialLink = () => {
+    if (socialLinks.length < 5) {
+      setSocialLinks([...socialLinks, { platform: 'other', url: '', label: '' }]);
+    }
+  };
+  
+  const handleUpdateSocialLink = (index, field, value) => {
+    const updated = [...socialLinks];
+    
+    if (field === 'url') {
+      // Auto-detect platform when URL is pasted
+      const detectedPlatform = detectPlatform(value);
+      updated[index] = { 
+        ...updated[index], 
+        url: value,
+        platform: detectedPlatform
+      };
+    } else {
+      updated[index] = { ...updated[index], [field]: value };
+    }
+    
+    setSocialLinks(updated);
+  };
+  
+  const handleRemoveSocialLink = (index) => {
+    setSocialLinks(socialLinks.filter((_, i) => i !== index));
+  };
+  
+  const getSocialIcon = (platform) => {
+    const platformConfig = socialPlatforms.find(p => p.value === platform);
+    return platformConfig ? platformConfig.icon : LinkIcon;
+  };
+  
+  const getSocialColor = (platform) => {
+    const platformConfig = socialPlatforms.find(p => p.value === platform);
+    return platformConfig ? platformConfig.color : '#757575';
+  };
 
   // Common skill suggestions
   const commonSkills = [
@@ -274,6 +399,20 @@ function EditProfilePage() {
         setTagline(data.tagline || '');
         setPortfolioUrl(data.portfolio_url || '');
         setLinkedinUrl(data.linkedin_url || '');
+        
+        // Handle social links with migration from legacy linkedin_url
+        let socialLinksData = data.social_links || [];
+        
+        // If no social links but has legacy linkedin_url, migrate it
+        if (socialLinksData.length === 0 && data.linkedin_url) {
+          socialLinksData = [{
+            platform: 'linkedin',
+            url: data.linkedin_url,
+            label: ''
+          }];
+        }
+        
+        setSocialLinks(socialLinksData);
         setSkillsInput(data.skills || []);
         setAvatarUrl(data.profile_picture_url || '');
         
@@ -473,6 +612,7 @@ function EditProfilePage() {
         tagline,
         portfolio_url: portfolioUrl,
         linkedin_url: linkedinUrl,
+        social_links: socialLinks,
         skills: skillsInput,
         profile_picture_url: newAvatarUrl,
         updated_at: new Date()
@@ -960,17 +1100,101 @@ function EditProfilePage() {
                       }}
                     />
                     
-                    <TextField
-                      fullWidth
-                      label="LinkedIn URL"
-                      value={linkedinUrl}
-                      onChange={(e) => setLinkedinUrl(e.target.value)}
-                      placeholder="https://linkedin.com/in/your-profile"
-                      InputLabelProps={{ shrink: true }}
-                      InputProps={{
-                        startAdornment: <LinkedInIcon color="action" sx={{ mr: 1 }} />
-                      }}
-                    />
+                    {/* Social Links Section - Compact Design */}
+                    <Box>
+                      <Box sx={{ 
+                        display: 'flex', 
+                        justifyContent: 'space-between', 
+                        alignItems: 'center',
+                        mb: 2
+                      }}>
+                        <Typography variant="subtitle1" fontWeight="500">
+                          Social Links ({socialLinks.length}/5)
+                        </Typography>
+                        
+                        <Button
+                          size="small"
+                          startIcon={<AddIcon />}
+                          onClick={handleAddSocialLink}
+                          disabled={socialLinks.length >= 5}
+                          variant="outlined"
+                        >
+                          Add Link
+                        </Button>
+                      </Box>
+                      
+                      {socialLinks.length === 0 ? (
+                        <Alert severity="info" variant="outlined" sx={{ mb: 2 }}>
+                          Add social links - just paste URLs and we'll detect the platform!
+                        </Alert>
+                      ) : (
+                        <Stack spacing={1.5}>
+                          {socialLinks.map((link, index) => {
+                            const Icon = getSocialIcon(link.platform);
+                            const color = getSocialColor(link.platform);
+                            
+                            return (
+                              <Paper 
+                                key={index} 
+                                variant="outlined" 
+                                sx={{ 
+                                  p: 1.5,
+                                  borderRadius: 2,
+                                  bgcolor: (theme) => theme.palette.mode === 'dark' ? 'grey.900' : 'grey.50'
+                                }}
+                              >
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                  {/* Platform Icon */}
+                                  <Box sx={{ 
+                                    display: 'flex', 
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    bgcolor: alpha(color, 0.1),
+                                    width: 36,
+                                    height: 36,
+                                    borderRadius: 1,
+                                    flexShrink: 0
+                                  }}>
+                                    <Icon style={{ fontSize: 20, color: color }} />
+                                  </Box>
+                                  
+                                  {/* URL Input */}
+                                  <TextField
+                                    fullWidth
+                                    size="small"
+                                    placeholder="Paste your social media URL..."
+                                    value={link.url}
+                                    onChange={(e) => handleUpdateSocialLink(index, 'url', e.target.value)}
+                                    error={link.url && !link.url.startsWith('http')}
+                                    helperText={
+                                      link.url && !link.url.startsWith('http') 
+                                        ? 'URL must start with http:// or https://' 
+                                        : `${socialPlatforms.find(p => p.value === link.platform)?.label || 'Other'} detected`
+                                    }
+                                    sx={{ 
+                                      '& .MuiFormHelperText-root': {
+                                        fontSize: '0.75rem',
+                                        mt: 0.5
+                                      }
+                                    }}
+                                  />
+                                  
+                                  {/* Remove Button */}
+                                  <IconButton
+                                    onClick={() => handleRemoveSocialLink(index)}
+                                    color="error"
+                                    size="small"
+                                    sx={{ flexShrink: 0 }}
+                                  >
+                                    <CloseIcon fontSize="small" />
+                                  </IconButton>
+                                </Box>
+                              </Paper>
+                            );
+                          })}
+                        </Stack>
+                      )}
+                    </Box>
                     
                     <Autocomplete
                       multiple
