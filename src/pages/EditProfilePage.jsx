@@ -1199,7 +1199,7 @@ function EditProfilePage() {
                     <Autocomplete
                       multiple
                       freeSolo
-                      options={skillOptions}
+                      options={[]}
                       value={skillsInput}
                       onChange={(_, newValue) => setSkillsInput(newValue)}
                       renderTags={(value, getTagProps) =>
