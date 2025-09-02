@@ -5,6 +5,7 @@ import { supabase } from '../supabaseclient';
 import { useAuth } from '../context/authcontext';
 import { useProfile } from '../context/profileContext';
 import { useTranslation } from '../hooks/useTranslation';
+import { createProfileForNetwork } from '../api/profiles';
 import {
   Box,
   Stepper,
@@ -271,99 +272,29 @@ const NetworkOnboardingWizard = ({ profile }) => {
 
       if (networkError) throw networkError;
 
-      // Check if user already has a profile, if not create one
-      // Detect schema version first
-      const { data: schemaCheck } = await supabase
-        .from('profiles')
-        .select('user_id')
-        .limit(1);
-      
-      const hasUserIdColumn = schemaCheck !== null;
-      
-      let checkQuery;
-      if (hasUserIdColumn) {
-        // NEW SCHEMA: Look up by user_id
-        checkQuery = supabase
-          .from('profiles')
-          .select('id')
-          .eq('user_id', user.id);
-      } else {
-        // OLD SCHEMA: Look up by id
-        checkQuery = supabase
-          .from('profiles')
-          .select('id')
-          .eq('id', user.id);
-      }
-      
-      const { data: existingProfile, error: checkError } = await checkQuery.single();
-
-      let isNewUser = false;
-
-      if (checkError && checkError.code === 'PGRST116') {
-        // No profile exists, create one
-        isNewUser = true;
-        
-        const profileData = {
-          network_id: network.id,
-          role: 'admin',
+      // Create a profile for the new network (user is the admin)
+      const { data: newProfile, error: profileError } = await createProfileForNetwork(
+        user.id,
+        network.id,
+        {
           full_name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'Admin',
           contact_email: user.email,
           bio: '',
           skills: [],
-          created_at: new Date().toISOString()
-        };
-        
-        if (hasUserIdColumn) {
-          // NEW SCHEMA: profiles.user_id = auth.users.id, profiles.id = generated UUID
-          profileData.user_id = user.id;
-        } else {
-          // OLD SCHEMA: profiles.id = auth.users.id
-          profileData.id = user.id;
+          role: 'admin' // Network creator is always admin
         }
-        
-        const { error: createProfileError } = await supabase
-          .from('profiles')
-          .insert(profileData);
+      );
 
-        if (createProfileError) throw createProfileError;
-      } else if (checkError) {
-        throw checkError;
-      } else {
-        // Profile exists, update it with the new network_id
-        let updateQuery;
-        if (hasUserIdColumn) {
-          // NEW SCHEMA: Update by profile id (existingProfile.id)
-          updateQuery = supabase
-            .from('profiles')
-            .update({ 
-              network_id: network.id, 
-              role: 'admin'
-            })
-            .eq('id', existingProfile.id);
-        } else {
-          // OLD SCHEMA: Update by user id
-          updateQuery = supabase
-            .from('profiles')
-            .update({ 
-              network_id: network.id, 
-              role: 'admin'
-            })
-            .eq('id', user.id);
-        }
-
-        const { error: profileError } = await updateQuery;
-        if (profileError) throw profileError;
-      }
+      if (profileError) throw new Error(profileError);
 
       // Refresh the user session to ensure the profile update is reflected
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       if (sessionError) console.error('Error refreshing session:', sessionError);
 
       // Reload user profiles to pick up the new network
-      const { profiles } = await loadUserProfiles();
+      await loadUserProfiles();
       
-      // Find the newly created profile for this network and set it as active
-      const newProfile = profiles.find(p => p.network_id === network.id);
+      // The newProfile returned from createProfileForNetwork should be set as active
       if (newProfile) {
         console.log('Setting newly created profile as active:', newProfile);
         await setActiveProfile(newProfile);
