@@ -41,6 +41,7 @@ import BillingTab from '../components/admin/BillingTab';
 import BadgesTab from '../components/admin/BadgesTab';
 import SupportTicketsTab from '../components/admin/SupportTicketsTab';
 import CategoriesTab from '../components/admin/CategoriesTab';
+import CoursesTab from '../components/admin/CoursesTab';
 import AdminLayout from '../components/admin/AdminLayout';
 import AdminBreadcrumbs from '../components/admin/AdminBreadcrumbs';
 import OnboardingGuide, { WithOnboardingHighlight } from '../components/OnboardingGuide';
@@ -53,12 +54,13 @@ const TAB_MAPPING = {
   'news': 3,
   'events': 4,
   'polls': 5,
-  'theme': 6,
-  'moderation': 7,
-  'monetization': 8,
-  'billing': 9,
-  'badges': 10,
-  'support': 11
+  'courses': 6,
+  'theme': 7,
+  'moderation': 8,
+  'monetization': 9,
+  'billing': 10,
+  'badges': 11,
+  'support': 12
 };
 
 // Index to tab name mapping
@@ -322,12 +324,13 @@ function NetworkAdminPage() {
             {activeTab === 3 && t('admin.tabs.news')}
             {activeTab === 4 && t('admin.tabs.events')}
             {activeTab === 5 && t('admin.tabs.polls')}
-            {activeTab === 6 && t('admin.tabs.theme')}
-            {activeTab === 7 && t('admin.tabs.moderation')}
-            {activeTab === 8 && t('admin.tabs.monetization')}
-            {activeTab === 9 && t('admin.tabs.billing')}
-            {activeTab === 10 && t('admin.tabs.badges')}
-            {activeTab === 11 && t('admin.tabs.support')}
+            {activeTab === 6 && 'Courses'}
+            {activeTab === 7 && t('admin.tabs.theme')}
+            {activeTab === 8 && t('admin.tabs.moderation')}
+            {activeTab === 9 && t('admin.tabs.monetization')}
+            {activeTab === 10 && t('admin.tabs.billing')}
+            {activeTab === 11 && t('admin.tabs.badges')}
+            {activeTab === 12 && t('admin.tabs.support')}
           </Typography>
         </Box>
 
@@ -406,6 +409,14 @@ function NetworkAdminPage() {
         )}
 
         {activeTab === 6 && (
+          /* Courses Management Component */
+          <CoursesTab
+            networkId={network.id}
+            darkMode={darkMode} // Pass dark mode to component
+          />
+        )}
+
+        {activeTab === 7 && (
           /* Theme Settings Component */
           <ThemeTab 
             network={network} 
@@ -414,7 +425,7 @@ function NetworkAdminPage() {
           />
         )}
         
-        {activeTab === 7 && (
+        {activeTab === 8 && (
           /* Moderation Tools Component */
           <ModerationTab
             network={network}
@@ -424,7 +435,7 @@ function NetworkAdminPage() {
           />
         )}
         
-        {activeTab === 8 && (
+        {activeTab === 9 && (
           /* Monetization Component */
           <MonetizationTab
             networkId={network.id}
@@ -433,7 +444,7 @@ function NetworkAdminPage() {
           />
         )}
         
-        {activeTab === 9 && (
+        {activeTab === 10 && (
           /* Billing & Plan Component */
           <BillingTab
             activeProfile={activeProfile}
@@ -441,7 +452,7 @@ function NetworkAdminPage() {
           />
         )}
         
-        {activeTab === 10 && (
+        {activeTab === 11 && (
           /* Badges & Engagement Component */
           <BadgesTab
             networkId={network.id}
@@ -450,7 +461,7 @@ function NetworkAdminPage() {
           />
         )}
         
-        {activeTab === 11 && (
+        {activeTab === 12 && (
           /* Support Tickets Component */
           <SupportTicketsTab 
             network={network}

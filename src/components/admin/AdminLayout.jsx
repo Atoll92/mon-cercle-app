@@ -36,7 +36,8 @@ import {
   CreditCard as CreditCardIcon,
   EmojiEvents as BadgeIcon,
   Support as SupportIcon,
-  Category as CategoryIcon
+  Category as CategoryIcon,
+  School as SchoolIcon
 } from '@mui/icons-material';
 import LanguageSwitcher from '../LanguageSwitcher';
 import { useTranslation } from '../../hooks/useTranslation.jsx';
@@ -103,34 +104,39 @@ const AdminLayout = ({
       index: 5 
     },
     { 
+      name: 'Courses', 
+      icon: <SchoolIcon />, 
+      index: 6 
+    },
+    { 
       name: t('admin.tabs.theme'), 
       icon: <PaletteIcon />, 
-      index: 6 
+      index: 7 
     },
     { 
       name: t('admin.tabs.moderation'), 
       icon: <SecurityIcon />, 
-      index: 7 
+      index: 8 
     },
     { 
       name: t('admin.tabs.monetization'), 
       icon: <MonetizationIcon />, 
-      index: 8 
+      index: 9 
     },
     { 
       name: t('admin.tabs.billing'), 
       icon: <CreditCardIcon />, 
-      index: 9 
+      index: 10 
     },
     { 
       name: t('admin.tabs.badges'), 
       icon: <BadgeIcon />, 
-      index: 10 
+      index: 11 
     },
     { 
       name: t('admin.tabs.support'), 
       icon: <SupportIcon />, 
-      index: 11 
+      index: 12 
     }
   ];
 
