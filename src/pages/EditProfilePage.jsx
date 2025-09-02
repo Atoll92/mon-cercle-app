@@ -950,10 +950,11 @@ function EditProfilePage() {
                           position: 'absolute',
                           bottom: 5,
                           right: 5,
-                          bgcolor: 'white',
+                          bgcolor: (theme) => theme.palette.mode === 'dark' ? 'grey.800' : 'white',
+                          color: (theme) => theme.palette.mode === 'dark' ? 'white' : 'text.primary',
                           boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
                           '&:hover': {
-                            bgcolor: 'grey.100'
+                            bgcolor: (theme) => theme.palette.mode === 'dark' ? 'grey.700' : 'grey.100'
                           }
                         }}
                         component="label"
