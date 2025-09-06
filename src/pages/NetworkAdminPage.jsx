@@ -42,6 +42,7 @@ import BadgesTab from '../components/admin/BadgesTab';
 import SupportTicketsTab from '../components/admin/SupportTicketsTab';
 import CategoriesTab from '../components/admin/CategoriesTab';
 import CoursesTab from '../components/admin/CoursesTab';
+import CRMTab from '../components/admin/CRMTab';
 import AdminLayout from '../components/admin/AdminLayout';
 import AdminBreadcrumbs from '../components/admin/AdminBreadcrumbs';
 import OnboardingGuide, { WithOnboardingHighlight } from '../components/OnboardingGuide';
@@ -55,12 +56,13 @@ const TAB_MAPPING = {
   'events': 4,
   'polls': 5,
   'courses': 6,
-  'theme': 7,
-  'moderation': 8,
-  'monetization': 9,
-  'billing': 10,
-  'badges': 11,
-  'support': 12
+  'crm': 7,
+  'theme': 8,
+  'moderation': 9,
+  'monetization': 10,
+  'billing': 11,
+  'badges': 12,
+  'support': 13
 };
 
 // Index to tab name mapping
@@ -325,12 +327,13 @@ function NetworkAdminPage() {
             {activeTab === 4 && t('admin.tabs.events')}
             {activeTab === 5 && t('admin.tabs.polls')}
             {activeTab === 6 && t('admin.tabs.courses')}
-            {activeTab === 7 && t('admin.tabs.theme')}
-            {activeTab === 8 && t('admin.tabs.moderation')}
-            {activeTab === 9 && t('admin.tabs.monetization')}
-            {activeTab === 10 && t('admin.tabs.billing')}
-            {activeTab === 11 && t('admin.tabs.badges')}
-            {activeTab === 12 && t('admin.tabs.support')}
+            {activeTab === 7 && t('admin.tabs.crm')}
+            {activeTab === 8 && t('admin.tabs.theme')}
+            {activeTab === 9 && t('admin.tabs.moderation')}
+            {activeTab === 10 && t('admin.tabs.monetization')}
+            {activeTab === 11 && t('admin.tabs.billing')}
+            {activeTab === 12 && t('admin.tabs.badges')}
+            {activeTab === 13 && t('admin.tabs.support')}
           </Typography>
         </Box>
 
@@ -417,6 +420,16 @@ function NetworkAdminPage() {
         )}
 
         {activeTab === 7 && (
+          /* CRM Component */
+          <CRMTab
+            networkId={network.id}
+            members={members}
+            darkMode={darkMode} // Pass dark mode to component
+            activeProfile={activeProfile}
+          />
+        )}
+
+        {activeTab === 8 && (
           /* Theme Settings Component */
           <ThemeTab 
             network={network} 
