@@ -14,6 +14,7 @@ import {
 import LinkPreview from '../LinkPreview';
 import MediaPlayer from '../MediaPlayer';
 import PDFPreviewEnhanced from '../PDFPreviewEnhanced';
+import UserContent from '../UserContent';
 
 const MoodboardItem = ({ 
   item, 
@@ -367,27 +368,36 @@ const MoodboardItem = ({
         );
       case 'text':
         return (
-          <Box sx={{ width: '100%', height: '100%', pointerEvents: 'none' }}>
-            <Typography 
-              variant="body1" 
-              component="div" 
+          <Box 
+            sx={{ 
+              width: '100%', 
+              height: '100%', 
+              pointerEvents: 'none',
+              p: 2,
+              overflow: 'hidden', // No scrollbars
+              backgroundColor: item.backgroundColor || 'transparent',
+              display: 'flex',
+              alignItems: item.text_align === 'center' ? 'center' : 'flex-start',
+              justifyContent: item.text_align === 'center' ? 'center' : 'flex-start'
+            }}
+          >
+            <UserContent
+              content={item.content || ''}
+              html={false}
+              component="div"
               sx={{ 
-                p: 2, 
-                overflow: 'auto',
                 width: '100%',
-                height: '100%',
                 color: item.textColor || '#000000',
-                backgroundColor: item.backgroundColor || 'transparent',
                 fontFamily: item.font_family || 'inherit',
                 fontSize: item.font_size || 'inherit',
                 fontWeight: item.font_weight || 'normal',
                 lineHeight: item.line_height || 'normal',
                 textAlign: item.text_align || 'left',
-                pointerEvents: 'none'
+                pointerEvents: 'none',
+                wordBreak: 'break-word',
+                overflowWrap: 'break-word'
               }}
-            >
-              {item.content}
-            </Typography>
+            />
           </Box>
         );
       case 'link':
@@ -419,10 +429,23 @@ const MoodboardItem = ({
     }
   };
 
+  // Calculate shadow opacity based on background transparency and item opacity
+  const hasTransparentBg = !item.backgroundColor || item.backgroundColor === 'transparent';
+  const itemOpacity = item.opacity !== undefined ? item.opacity : 1;
+  const shadowOpacity = hasTransparentBg ? 0 : itemOpacity;
+  
+  // Calculate elevation-based shadow with opacity
+  const getBoxShadow = (elevation) => {
+    if (shadowOpacity === 0) return 'none';
+    const baseAlpha = elevation === 8 ? 0.2 : 0.1;
+    const alpha = baseAlpha * shadowOpacity;
+    return `0 ${elevation}px ${elevation * 2}px rgba(0, 0, 0, ${alpha})`;
+  };
+
   return (
     <Paper
       ref={itemRef}
-      elevation={selected ? 8 : 1}
+      elevation={0} // Disable MUI's default shadow, we'll handle it manually
       sx={{
         position: 'absolute',
         left: `${item.x}px`,
@@ -432,14 +455,15 @@ const MoodboardItem = ({
         overflow: 'hidden',
         cursor: isEditable ? 'move' : 'default',
         border: selected ? '2px solid #2196f3' : 'none',
-        transition: isDragging || isResizing ? 'none' : 'box-shadow 0.2s ease',
+        boxShadow: getBoxShadow(selected ? 8 : 1),
+        transition: isDragging || isResizing ? 'none' : 'box-shadow 0.2s ease, opacity 0.2s ease',
         zIndex: selected ? 100 : item.zIndex || 1,
         opacity: item.opacity !== undefined ? item.opacity : 1,
         backgroundColor: item.backgroundColor || 'transparent',
         borderRadius: `${item.border_radius || 0}px`,
         transform: `rotate(${item.rotation || 0}deg)`,
         '&:hover': {
-          boxShadow: isEditable ? '0 6px 12px rgba(0,0,0,0.15)' : 'none'
+          boxShadow: isEditable && shadowOpacity > 0 ? `0 6px 12px rgba(0, 0, 0, ${0.15 * shadowOpacity})` : 'none'
         }
       }}
       onMouseDown={handleMouseDown}

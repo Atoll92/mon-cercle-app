@@ -150,6 +150,8 @@ const UserContent = ({
 
   // Handle plain text content
   const parts = linkifyText(content);
+
+  sx.whiteSpace = sx.whiteSpace || 'pre-wrap';
   
   // No links found
   if (typeof parts === 'string') {

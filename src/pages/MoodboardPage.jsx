@@ -13,6 +13,7 @@ import MoodboardSettingsDialog from '../components/Moodboard/MoodboardSettingsDi
 import { updateMoodboard } from '../api/moodboards';
 import { useMoodboardCanvas } from '../hooks/useMoodboardCanvas';
 import Spinner from '../components/Spinner';
+import UserContent from '../components/UserContent';
 import {
   Box,
   Paper,
@@ -557,21 +558,24 @@ const EditItemDialog = ({
                 bgcolor: editedBackgroundColor,
                 opacity: editedOpacity !== undefined ? editedOpacity / 100 : 1,
                 transform: `rotate(${editedRotation}deg)`,
-                transition: 'all 0.2s ease'
+                transition: 'all 0.2s ease',
+                overflow: 'hidden' // No scrollbars
               }}>
-                <Typography 
-                  variant="body1"
+                <UserContent
+                  content={editedContent || 'Preview of your text will appear here'}
+                  html={false}
+                  component="div"
                   sx={{ 
                     color: editedTextColor,
                     fontFamily: editedFont_family,
                     fontSize: editedFont_size,
                     fontWeight: editedFont_weight,
                     textAlign: editedText_align,
-                    lineHeight: editedLine_height
+                    lineHeight: editedLine_height,
+                    wordBreak: 'break-word',
+                    overflowWrap: 'break-word'
                   }}
-                >
-                  {editedContent || 'Preview of your text will appear here'}
-                </Typography>
+                />
               </Box>
             </>
           );
@@ -1147,6 +1151,36 @@ function MoodboardPage() {
     try {
       setSaving(true);
       
+      // First, load the image to get its dimensions
+      const img = new Image();
+      const imageUrl = URL.createObjectURL(newImage);
+      
+      await new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = reject;
+        img.src = imageUrl;
+      });
+      
+      // Calculate the aspect ratio and appropriate size
+      const aspectRatio = img.width / img.height;
+      const maxWidth = 400;
+      const maxHeight = 400;
+      
+      let itemWidth, itemHeight;
+      
+      if (aspectRatio > 1) {
+        // Landscape image
+        itemWidth = Math.min(img.width, maxWidth);
+        itemHeight = itemWidth / aspectRatio;
+      } else {
+        // Portrait or square image
+        itemHeight = Math.min(img.height, maxHeight);
+        itemWidth = itemHeight * aspectRatio;
+      }
+      
+      // Clean up the object URL
+      URL.revokeObjectURL(imageUrl);
+      
       // Upload image to storage
       const fileExt = newImage.name.split('.').pop();
       const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
@@ -1171,16 +1205,16 @@ function MoodboardPage() {
       const centerX = (canvasRect.width / 2 - position.x) / scale;
       const centerY = (canvasRect.height / 2 - position.y) / scale;
       
-      // Create new item
+      // Create new item with calculated dimensions
       const newItem = {
         moodboard_id: moodboardId,
         type: 'image',
         content: publicUrl,
-        backgroundColor: '#ffffff',
-        x: centerX - 150, // Center the item in view
-        y: centerY - 100,
-        width: 300,
-        height: 200,
+        backgroundColor: 'transparent', // Start with transparent background for images
+        x: centerX - itemWidth / 2, // Center the item in view
+        y: centerY - itemHeight / 2,
+        width: itemWidth,
+        height: itemHeight,
         zIndex: items.length + 1,
         created_by: activeProfile?.id || user.id
       };
@@ -1222,22 +1256,75 @@ function MoodboardPage() {
         throw new Error('No active profile selected. Please refresh the page.');
       }
       
+      // Calculate text dimensions by creating a temporary element
+      const tempDiv = document.createElement('div');
+      tempDiv.style.position = 'absolute';
+      tempDiv.style.visibility = 'hidden';
+      tempDiv.style.padding = '16px'; // Match the padding in the text item (p: 2 = 16px)
+      tempDiv.style.fontSize = '1rem'; // Default font size
+      tempDiv.style.lineHeight = 'normal';
+      tempDiv.style.fontFamily = 'inherit';
+      tempDiv.style.whiteSpace = 'pre-wrap';
+      tempDiv.style.wordBreak = 'break-word';
+      tempDiv.style.overflowWrap = 'break-word';
+      
+      // Set a reasonable max width for measurement
+      const maxWidth = 400;
+      const minWidth = 200;
+      const minHeight = 100;
+      const maxHeight = 600;
+      
+      tempDiv.style.width = `${maxWidth}px`;
+      tempDiv.innerText = newText;
+      
+      document.body.appendChild(tempDiv);
+      
+      // Measure the actual content height
+      const contentHeight = tempDiv.scrollHeight;
+      
+      // Try to find optimal width by testing different widths
+      let optimalWidth = maxWidth;
+      let optimalHeight = contentHeight;
+      
+      // If content is short, try smaller widths
+      if (contentHeight < 150) {
+        for (let testWidth = minWidth; testWidth <= maxWidth; testWidth += 50) {
+          tempDiv.style.width = `${testWidth}px`;
+          const testHeight = tempDiv.scrollHeight;
+          
+          // Find a good aspect ratio (not too wide, not too tall)
+          const aspectRatio = testWidth / testHeight;
+          if (aspectRatio >= 1 && aspectRatio <= 3 && testHeight <= maxHeight) {
+            optimalWidth = testWidth;
+            optimalHeight = testHeight;
+            if (testHeight >= minHeight) break; // Good enough
+          }
+        }
+      }
+      
+      // Clean up
+      document.body.removeChild(tempDiv);
+      
+      // Ensure minimum and maximum bounds
+      const itemWidth = Math.max(minWidth, Math.min(maxWidth, optimalWidth));
+      const itemHeight = Math.max(minHeight, Math.min(maxHeight, optimalHeight));
+      
       // Calculate position based on current view
       const canvasRect = canvasRef.current.getBoundingClientRect();
       const centerX = (canvasRect.width / 2 - position.x) / scale;
       const centerY = (canvasRect.height / 2 - position.y) / scale;
       
-      // Create new item
+      // Create new item with calculated dimensions
       const newItem = {
         moodboard_id: moodboardId,
         type: 'text',
         content: newText,
         textColor: newTextColor,
         backgroundColor: newTextBgColor,
-        x: centerX - 125, // Center the item in view
-        y: centerY - 75,
-        width: 250,
-        height: 150,
+        x: centerX - itemWidth / 2, // Center the item in view
+        y: centerY - itemHeight / 2,
+        width: itemWidth,
+        height: itemHeight,
         zIndex: items.length + 1,
         created_by: activeProfile.id
       };
@@ -1871,16 +1958,62 @@ const handleUpdateItem = async (updatedItem) => {
           <Box sx={{ mt: 1, mb: 2 }}>
             <MediaUpload
               onUpload={async (mediaData) => {
+                // Calculate position based on current view
+                const canvasRect = canvasRef.current.getBoundingClientRect();
+                const centerX = (canvasRect.width / 2 - position.x) / scale;
+                const centerY = (canvasRect.height / 2 - position.y) / scale;
+                
+                let itemWidth = 400;
+                let itemHeight = 300;
+                
+                // For images, load them to get aspect ratio
+                if (mediaData.mediaType === 'IMAGE') {
+                  try {
+                    const img = new Image();
+                    await new Promise((resolve, reject) => {
+                      img.onload = resolve;
+                      img.onerror = () => resolve(); // Continue even if loading fails
+                      img.src = mediaData.url;
+                    });
+                    
+                    if (img.width && img.height) {
+                      const aspectRatio = img.width / img.height;
+                      const maxWidth = 400;
+                      const maxHeight = 400;
+                      
+                      if (aspectRatio > 1) {
+                        // Landscape
+                        itemWidth = Math.min(img.width, maxWidth);
+                        itemHeight = itemWidth / aspectRatio;
+                      } else {
+                        // Portrait or square
+                        itemHeight = Math.min(img.height, maxHeight);
+                        itemWidth = itemHeight * aspectRatio;
+                      }
+                    }
+                  } catch (err) {
+                    console.warn('Could not load image dimensions:', err);
+                    // Use default dimensions if loading fails
+                  }
+                } else if (mediaData.mediaType === 'AUDIO') {
+                  itemWidth = 300;
+                  itemHeight = 80;
+                } else if (mediaData.mediaType === 'VIDEO') {
+                  // Videos typically have 16:9 aspect ratio
+                  itemWidth = 400;
+                  itemHeight = 225;
+                }
+                
                 // Handle the uploaded media
                 const newItem = {
                   // Don't include id - let Supabase generate it
                   type: mediaData.mediaType.toLowerCase(),
                   content: mediaData.url,
-                  backgroundColor: '#ffffff',
-                  x: 50,
-                  y: 50,
-                  width: mediaData.mediaType === 'AUDIO' ? 300 : 400,
-                  height: mediaData.mediaType === 'AUDIO' ? 80 : 300,
+                  backgroundColor: mediaData.mediaType === 'IMAGE' ? 'transparent' : '#ffffff',
+                  x: centerX - itemWidth / 2,
+                  y: centerY - itemHeight / 2,
+                  width: itemWidth,
+                  height: itemHeight,
                   zIndex: items.length + 1,
                   metadata: {
                     fileName: mediaData.fileName,
@@ -1971,11 +2104,18 @@ const handleUpdateItem = async (updatedItem) => {
             borderColor: 'divider',
             borderRadius: 1,
             bgcolor: newTextBgColor,
-            color: newTextColor
+            overflow: 'hidden' // No scrollbars
           }}>
-            <Typography variant="body1">
-              {newText || 'Preview of your text will appear here'}
-            </Typography>
+            <UserContent
+              content={newText || 'Preview of your text will appear here'}
+              html={false}
+              component="div"
+              sx={{
+                color: newTextColor,
+                wordBreak: 'break-word',
+                overflowWrap: 'break-word'
+              }}
+            />
           </Box>
         </DialogContent>
         <DialogActions>
