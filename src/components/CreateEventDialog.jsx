@@ -64,7 +64,8 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
     currency: 'EUR',
     max_tickets: '',
     category_id: '',
-    online: false
+    online: false,
+    all_day: false
   });
   const [locationSuggestion, setLocationSuggestion] = useState(null);
   const [eventImageFile, setEventImageFile] = useState(null);
@@ -113,7 +114,8 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
         currency: 'EUR',
         max_tickets: '',
         category_id: '',
-        online: false
+        online: false,
+        all_day: false
       });
       setLocationSuggestion(null);
       setEventImageFile(null);
@@ -134,6 +136,9 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
       }
       
       // Populate form with event data for editing
+      // Check if event is all-day (time is 00:00)
+      const isAllDay = editingEvent.date && new Date(editingEvent.date).toTimeString().startsWith('00:00:00');
+      
       setEventForm({
         title: editingEvent.title || '',
         date: formattedDate,
@@ -147,7 +152,8 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
         currency: editingEvent.currency || 'EUR',
         max_tickets: editingEvent.max_tickets || '',
         category_id: editingEvent.category_id || '',
-        online: editingEvent.online || false
+        online: editingEvent.online || false,
+        all_day: isAllDay
       });
       // Set location suggestion if we have coordinates
       if (editingEvent.location) {
@@ -288,10 +294,24 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
 
     try {
       // Prepare event data
+      // For all-day events, append T00:00 to make it a valid datetime
+      let eventDate = eventForm.date;
+      let eventEndDate = eventForm.end_date || null;
+      
+      if (eventForm.all_day) {
+        // Convert date-only inputs to datetime with 00:00 time
+        if (eventDate && !eventDate.includes('T')) {
+          eventDate = eventDate + 'T00:00';
+        }
+        if (eventEndDate && !eventEndDate.includes('T')) {
+          eventEndDate = eventEndDate + 'T00:00';
+        }
+      }
+      
       const eventData = {
         title: eventForm.title,
-        date: eventForm.date,
-        end_date: eventForm.end_date || null,
+        date: eventDate,
+        end_date: eventEndDate,
         location: eventForm.online ? 'Online' : eventForm.location,
         description: eventForm.description,
         capacity: eventForm.capacity ? parseInt(eventForm.capacity) : null,
@@ -370,39 +390,64 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
                     placeholder="Enter a descriptive title for your event"
                   />
                   
-                  <TextField
-                    label="Start Date and Time"
-                    type="datetime-local"
-                    fullWidth
-                    required
-                    slotProps={{ inputLabel: { shrink: true } }}
-                    value={eventForm.date}
-                    onChange={(e) => setEventForm({ ...eventForm, date: e.target.value })}
-                    sx={{ mb: 3 }}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <AccessTimeIcon />
-                        </InputAdornment>
-                      ),
-                    }}
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={eventForm.all_day}
+                        onChange={(e) => {
+                          const isAllDay = e.target.checked;
+                          setEventForm({ 
+                            ...eventForm, 
+                            all_day: isAllDay,
+                            // If switching to all-day, set time to 00:00 if date exists
+                            date: eventForm.date && isAllDay ? eventForm.date.split('T')[0] : eventForm.date,
+                            end_date: eventForm.end_date && isAllDay ? eventForm.end_date.split('T')[0] : eventForm.end_date
+                          });
+                        }}
+                      />
+                    }
+                    label="All-day event"
+                    sx={{ mb: 2 }}
                   />
                   
                   <TextField
-                    label="End Date and Time (Optional)"
-                    type="datetime-local"
+                    label={eventForm.all_day ? "Start Date" : "Start Date & Time"}
+                    type={eventForm.all_day ? "date" : "datetime-local"}
                     fullWidth
-                    slotProps={{ inputLabel: { shrink: true } }}
+                    required
+                    slotProps={{ 
+                      inputLabel: { shrink: true },
+                      input: {
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <AccessTimeIcon />
+                          </InputAdornment>
+                        ),
+                      }
+                    }}
+                    value={eventForm.date}
+                    onChange={(e) => setEventForm({ ...eventForm, date: e.target.value })}
+                    sx={{ mb: 3 }}
+                    helperText={eventForm.all_day ? "Date for the all-day event" : "Select date and time for your event"}
+                  />
+                  
+                  <TextField
+                    label={eventForm.all_day ? "End Date (Optional)" : "End Date & Time (Optional)"}
+                    type={eventForm.all_day ? "date" : "datetime-local"}
+                    fullWidth
+                    slotProps={{ 
+                      inputLabel: { shrink: true },
+                      input: {
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <AccessTimeIcon />
+                          </InputAdornment>
+                        ),
+                      }
+                    }}
                     value={eventForm.end_date}
                     onChange={(e) => setEventForm({ ...eventForm, end_date: e.target.value })}
                     sx={{ mb: 3 }}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <AccessTimeIcon />
-                        </InputAdornment>
-                      ),
-                    }}
                     helperText="Leave empty for single-day events"
                   />
                   
@@ -553,12 +598,14 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
                     placeholder={eventForm.online ? "https://zoom.us/j/123456789" : "https://example.com/your-event"}
                     value={eventForm.event_link}
                     onChange={(e) => setEventForm({ ...eventForm, event_link: e.target.value })}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <LinkIcon />
-                        </InputAdornment>
-                      ),
+                    slotProps={{
+                      input: {
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <LinkIcon />
+                          </InputAdornment>
+                        ),
+                      }
                     }}
                     helperText={eventForm.online 
                       ? "Add the meeting link (Zoom, Teams, etc.) for attendees to join"
@@ -709,7 +756,7 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
                         value={eventForm.price}
                         onChange={(e) => setEventForm({ ...eventForm, price: parseFloat(e.target.value) || 0 })}
                         placeholder="0.00"
-                        inputProps={{ step: '0.01', min: '0' }}
+                        slotProps={{ htmlInput: { step: '0.01', min: '0' } }}
                       />
                     </Grid>
                     <Grid item xs={4}>
@@ -784,10 +831,12 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
       onClose={onClose} 
       maxWidth="lg" 
       fullWidth
-      PaperProps={{
-        sx: { 
-          borderRadius: 2,
-          maxHeight: '90vh'
+      slotProps={{
+        paper: {
+          sx: { 
+            borderRadius: 2,
+            maxHeight: '90vh'
+          }
         }
       }}
     >
