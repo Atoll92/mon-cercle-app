@@ -33,6 +33,7 @@ import { useAuth } from '../context/authcontext';
 import { useProfile } from '../context/profileContext';
 import MediaUpload from './MediaUpload';
 import MediaCarousel from './MediaCarousel';
+import UserContent from './UserContent';
 import { fetchNetworkCategories } from '../api/categories';
 import { createPost, updatePost } from '../api/posts';
 

@@ -11,6 +11,7 @@ import {
   alpha,
   useTheme
 } from '@mui/material';
+import UserContent from './UserContent';
 import {
   Favorite as FavoriteIcon,
   Comment as CommentIcon,
@@ -284,21 +285,17 @@ const PostsGrid = ({ posts, author, isOwnProfile, loading = false }) => {
                 {post.title}
               </Typography>
 
-              <Typography 
-                variant="body2" 
-                color="text.secondary"
+              <UserContent
+                content={post.description || 'No description'}
+                html={false}
+                maxLines={2}
                 sx={{
                   mb: 2,
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  display: '-webkit-box',
-                  WebkitLineClamp: 2,
-                  WebkitBoxOrient: 'vertical',
-                  flexGrow: 1
+                  flexGrow: 1,
+                  color: 'text.secondary',
+                  fontSize: '0.875rem'
                 }}
-              >
-                {post.description || 'No description'}
-              </Typography>
+              />
 
               {/* Footer with stats */}
               <Box sx={{ 

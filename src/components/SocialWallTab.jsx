@@ -1371,66 +1371,17 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                     
                     {item.itemType === 'post' ? (
                       <>
-                        <Box 
-                          sx={{
-                            transition: 'max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease',
-                            overflow: 'hidden',
-                            maxHeight: expandedCardId === `${item.itemType}-${item.id}` ? '2000px' : '4.5em',
-                            position: 'relative',
-                            mb: 2
-                          }}
-                        >
-                          <Typography 
-                            variant="body2" 
-                            color={customFadedText}
-                            sx={{ 
-                              ...(expandedCardId !== `${item.itemType}-${item.id}` && {
-                                display: '-webkit-box',
-                                WebkitLineClamp: 3,
-                                WebkitBoxOrient: 'vertical',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis'
-                              })
+                        <Box sx={{ mb: 2 }}>
+                          <UserContent
+                            content={item.description}
+                            html={false}
+                            maxLines={3}
+                            sx={{
+                              color: customFadedText,
+                              fontSize: '0.875rem'
                             }}
-                          >
-                            {item.description}
-                          </Typography>
-                          {expandedCardId !== `${item.itemType}-${item.id}` && item.description && item.description.length > 180 && (
-                            <Box 
-                              sx={{
-                                position: 'absolute',
-                                bottom: 0,
-                                left: 0,
-                                right: 0,
-                                height: '24px',
-                                background: `linear-gradient(to bottom, ${alpha(darkMode ? '#1e1e1e' : '#ffffff', 0)}, ${alpha(darkMode ? '#1e1e1e' : '#ffffff', 0.9)})`,
-                                pointerEvents: 'none'
-                              }}
-                            />
-                          )}
+                          />
                         </Box>
-                        
-                        {/* Read more button only if there's more content and not expanded */}
-                        {item.description && item.description.length > 180 && (
-                          <Button 
-                            size="small" 
-                            onClick={(e) => {
-                              e.stopPropagation(); // Prevent card click
-                              handleExpandCard(`${item.itemType}-${item.id}`); 
-                            }}
-                            startIcon={expandedCardId === `${item.itemType}-${item.id}` ? <ExpandLessIcon /> : <ReadMoreIcon />}
-                            sx={{ 
-                              mb: 2, 
-                              color: muiTheme.palette.secondary.main,
-                              '&:hover': {
-                                backgroundColor: alpha(muiTheme.palette.secondary.main, 0.08)
-                              },
-                              transition: 'all 0.2s ease-in-out',
-                            }}
-                          >
-                            {expandedCardId === `${item.itemType}-${item.id}` ? t('socialWall.showLess') : t('socialWall.readMore')}
-                          </Button>
-                        )}
                         
                         {/* Link Preview for portfolio items with URLs */}
                         {item.url && (

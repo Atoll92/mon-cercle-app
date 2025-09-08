@@ -30,6 +30,7 @@ import { createNewsPost } from '../api/networks';
 import { fetchNetworkCategories } from '../api/categories';
 import MediaUpload from './MediaUpload';
 import MediaCarousel from './MediaCarousel';
+import UserContent from './UserContent';
 import { useProfile } from '../context/profileContext';
 import { useTheme } from './ThemeProvider';
 
