@@ -147,6 +147,7 @@ const MoodboardItemSimple = ({ item, style = {} }) => {
                 objectFit: 'contain',
               }}
               onError={() => setMediaError(true)}
+              playsInline
             />
             {mediaError && (
               <Box sx={{ 

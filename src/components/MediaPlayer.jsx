@@ -368,6 +368,7 @@ function MediaPlayer({
         controls={false}
         onClick={handleVideoClick}
         loop={muted && autoplay}
+        playsInline
       />
 
       {/* Video controls overlay */}
