@@ -385,8 +385,14 @@ const MicroConclavWidget = () => {
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
                   {moodboard.description}
                 </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 2, opacity: 0.8, maxWidth: 320 }}>
+                  {t('language') === 'fr' 
+                    ? "Votre espace personnel pour vous exprimer sans limites. Partagez photos, vidéos, textes, audio et bien plus encore."
+                    : "Your personal space to express yourself without limits. Share photos, videos, texts, audio and much more."
+                  }
+                </Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 3, opacity: 0.7 }}>
-                  Add content to see it previewed here
+                  {t('language') === 'fr' ? "Ajoutez du contenu pour le voir apparaître ici" : "Add content to see it previewed here"}
                 </Typography>
               </>
             )}
