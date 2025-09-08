@@ -54,6 +54,7 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
   const [eventForm, setEventForm] = useState({
     title: '',
     date: '',
+    end_date: '',
     location: '',
     description: '',
     capacity: '',
@@ -102,6 +103,7 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
       setEventForm({
         title: '',
         date: '',
+        end_date: '',
         location: '',
         description: '',
         capacity: '',
@@ -120,16 +122,22 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
     } else if (editingEvent) {
       // Format date for datetime-local input
       let formattedDate = '';
+      let formattedEndDate = '';
       if (editingEvent.date) {
         const date = new Date(editingEvent.date);
         // Format as YYYY-MM-DDTHH:mm for datetime-local input
         formattedDate = date.toISOString().slice(0, 16);
+      }
+      if (editingEvent.end_date) {
+        const endDate = new Date(editingEvent.end_date);
+        formattedEndDate = endDate.toISOString().slice(0, 16);
       }
       
       // Populate form with event data for editing
       setEventForm({
         title: editingEvent.title || '',
         date: formattedDate,
+        end_date: formattedEndDate,
         location: editingEvent.location || '',
         description: editingEvent.description || '',
         capacity: editingEvent.capacity || '',
@@ -252,7 +260,7 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
     // Validate required fields FIRST, before setting updating
     if (!eventForm.title || !eventForm.date) {
       console.error('🎯 [EVENT DIALOG] Validation failed: Missing title or date');
-      setError('Please fill in all required fields (Title, Date)');
+      setError('Please fill in all required fields (Title, Start Date)');
       return;
     }
     
@@ -261,6 +269,17 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
       console.error('🎯 [EVENT DIALOG] Validation failed: Missing location for in-person event');
       setError('Please provide a location for in-person events');
       return;
+    }
+    
+    // Validate that end date is after start date if provided
+    if (eventForm.end_date && eventForm.date) {
+      const startDate = new Date(eventForm.date);
+      const endDate = new Date(eventForm.end_date);
+      if (endDate <= startDate) {
+        console.error('🎯 [EVENT DIALOG] Validation failed: End date must be after start date');
+        setError('End date must be after the start date');
+        return;
+      }
     }
 
     console.log('🎯 [EVENT DIALOG] Validation passed, proceeding with submission');
@@ -272,6 +291,7 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
       const eventData = {
         title: eventForm.title,
         date: eventForm.date,
+        end_date: eventForm.end_date || null,
         location: eventForm.online ? 'Online' : eventForm.location,
         description: eventForm.description,
         capacity: eventForm.capacity ? parseInt(eventForm.capacity) : null,
@@ -351,7 +371,7 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
                   />
                   
                   <TextField
-                    label="Date and Time"
+                    label="Start Date and Time"
                     type="datetime-local"
                     fullWidth
                     required
@@ -367,6 +387,54 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
                       ),
                     }}
                   />
+                  
+                  <TextField
+                    label="End Date and Time (Optional)"
+                    type="datetime-local"
+                    fullWidth
+                    slotProps={{ inputLabel: { shrink: true } }}
+                    value={eventForm.end_date}
+                    onChange={(e) => setEventForm({ ...eventForm, end_date: e.target.value })}
+                    sx={{ mb: 3 }}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <AccessTimeIcon />
+                        </InputAdornment>
+                      ),
+                    }}
+                    helperText="Leave empty for single-day events"
+                  />
+                  
+                  {eventForm.end_date && eventForm.date && (() => {
+                    const startDate = new Date(eventForm.date);
+                    const endDate = new Date(eventForm.end_date);
+                    const isValid = endDate > startDate;
+                    const duration = isValid ? Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) : 0;
+                    
+                    return (
+                      <Fade in={true}>
+                        <Paper sx={{ 
+                          mt: 2,
+                          mb: 3,
+                          p: 2, 
+                          backgroundColor: isValid ? 'success.50' : 'error.50',
+                          border: '1px solid',
+                          borderColor: isValid ? 'success.200' : 'error.200'
+                        }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                            <EventIcon sx={{ mr: 1, color: isValid ? 'success.main' : 'error.main' }} />
+                            <Typography variant="body2" color={isValid ? 'success.dark' : 'error.dark'}>
+                              {isValid 
+                                ? `Multi-day event: ${duration} day${duration !== 1 ? 's' : ''}`
+                                : 'End date must be after start date'
+                              }
+                            </Typography>
+                          </Box>
+                        </Paper>
+                      </Fade>
+                    );
+                  })()}
                   
                   <FormControlLabel
                     control={

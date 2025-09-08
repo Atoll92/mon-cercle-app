@@ -119,13 +119,42 @@ const EventDetailsDialog = ({
                     <CalendarMonthIcon fontSize="small" color="primary" />
                     <Box>
                       <Typography variant="body2" fontWeight="medium">
-                        Date & Time
+                        {event.end_date ? 'Start Date & Time' : 'Date & Time'}
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
                         {formatEventDate(event.date, true)}
                       </Typography>
                     </Box>
                   </Box>
+                  
+                  {event.end_date && (
+                    <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+                      <CalendarMonthIcon fontSize="small" color="primary" />
+                      <Box>
+                        <Typography variant="body2" fontWeight="medium">
+                          End Date & Time
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {formatEventDate(event.end_date, true)}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  )}
+                  
+                  {event.end_date && (() => {
+                    const startDate = new Date(event.date);
+                    const endDate = new Date(event.end_date);
+                    const duration = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+                    const isMultiDay = startDate.toDateString() !== endDate.toDateString();
+                    
+                    return isMultiDay ? (
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                        <Typography variant="body2" fontWeight="medium" color="info.main">
+                          Duration: {duration} day{duration !== 1 ? 's' : ''}
+                        </Typography>
+                      </Box>
+                    ) : null;
+                  })()}
                   
                   {event.category && (
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
