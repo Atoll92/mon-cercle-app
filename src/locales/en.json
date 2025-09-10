@@ -8,6 +8,7 @@
       "events": "Events Management",
       "polls": "Polls Management",
       "courses": "Courses Management",
+      "marketplace": "Marketplace",
       "crm": "Email CRM",
       "theme": "Theme & Branding",
       "moderation": "Moderation Tools",
@@ -168,6 +169,14 @@
         "notifications": {
           "label": "Notifications",
           "description": "Email notifications"
+        },
+        "courses": {
+          "label": "Courses",
+          "description": "Educational courses and learning materials"
+        },
+        "marketplace": {
+          "label": "Marketplace",
+          "description": "Buy and sell products within the network"
         }
       },
       "tabs": {
@@ -177,7 +186,9 @@
         "chat": "Chat",
         "files": "Files",
         "wiki": "Wiki",
-        "social": "Social Wall"
+        "social": "Social Wall",
+        "courses": "Courses",
+        "marketplace": "Marketplace"
       },
       "navigationTabs": {
         "description": "Select which tabs will appear in your network navigation. Drag to reorder them.",
@@ -447,6 +458,10 @@
       "wikiDesc": "Create and maintain knowledge resources",
       "moodboards": "Moodboards",
       "moodboardsDesc": "Visual collaboration and inspiration boards",
+      "courses": "Courses",
+      "coursesDesc": "Educational courses and learning materials",
+      "marketplace": "Marketplace",
+      "marketplaceDesc": "Buy and sell products within the network",
       "changeInfo": "You can enable or disable features later from the Admin Panel."
     },
     "branding": {
@@ -475,7 +490,9 @@
           "chat": "Chat",
           "files": "Files",
           "wiki": "Wiki",
-          "social": "Social Wall"
+          "social": "Social Wall",
+          "courses": "Courses",
+          "marketplace": "Marketplace"
         }
       },
       "theme": {
@@ -695,6 +712,7 @@
       "chat": "Chat",
       "files": "Files",
       "wiki": "Wiki",
+      "courses": "Courses",
       "social": "Social Wall",
       "about": "About"
     },
@@ -965,6 +983,176 @@
     "viewFullPost": "View Full Post",
     "readFullPost": "Read Full Post",
     "endOfWall": "You've reached the end of the social wall"
+  },
+  "courses": {
+    "title": "Courses",
+    "marketplace": "Course Marketplace",
+    "myCourses": "My Courses",
+    "teaching": "Teaching",
+    "learning": "Learning",
+    "searchPlaceholder": "Search courses...",
+    "noCoursesFound": "No courses found",
+    "noCoursesFoundDescription": "Try adjusting your filters to find more courses.",
+    "noCourses": "No courses available",
+    "noCoursesDescription": "Check back later for new course offerings.",
+    "filters": {
+      "category": "Category",
+      "allCategories": "All Categories",
+      "difficulty": "Difficulty", 
+      "allLevels": "All Levels",
+      "beginner": "Beginner",
+      "intermediate": "Intermediate",
+      "advanced": "Advanced",
+      "price": "Price",
+      "allPrices": "All Prices",
+      "free": "Free",
+      "paid": "Paid",
+      "sortBy": "Sort By",
+      "featured": "Featured",
+      "newest": "Newest",
+      "popularity": "Most Popular",
+      "rating": "Highest Rated",
+      "moreFilters": "More Filters"
+    },
+    "card": {
+      "lessons": "{{count}} lessons",
+      "hours": "{{count}}h",
+      "students": "{{count}} students",
+      "enrolled": "Enrolled",
+      "enrollFree": "Enroll Free",
+      "enrollNow": "Enroll Now",
+      "continueLearning": "Continue Learning",
+      "preview": "Preview"
+    },
+    "detail": {
+      "backToCourses": "Back to Courses",
+      "aboutCourse": "About This Course",
+      "whatYoullLearn": "What You'll Learn",
+      "prerequisites": "Prerequisites",
+      "courseStats": "Course Stats",
+      "studentsEnrolled": "Students Enrolled",
+      "averageRating": "Average Rating",
+      "totalReviews": "Total Reviews",
+      "lastUpdated": "Last Updated",
+      "curriculum": "Course Curriculum",
+      "totalLessons": "{{lessons}} lessons • {{hours}} hours total",
+      "reviews": "Student Reviews",
+      "noReviews": "No reviews yet. Be the first to review this course!",
+      "enrollmentConfirm": {
+        "title": "Enroll in Course",
+        "aboutToEnroll": "You are about to enroll in {{title}}",
+        "price": "Price: {{price}}",
+        "lifetimeAccess": "After enrollment, you will have lifetime access to this course content.",
+        "cancel": "Cancel",
+        "confirm": "Confirm Enrollment",
+        "enrolling": "Enrolling..."
+      },
+      "progress": "Progress: {{completed}} of {{total}} lessons completed",
+      "lesson": "Lesson {{number}}",
+      "duration": "{{minutes}}min",
+      "startLesson": "Start Lesson"
+    },
+    "creation": {
+      "title": "Create New Course",
+      "basicInformation": "Basic Information",
+      "courseTitle": "Course Title",
+      "courseTitlePlaceholder": "e.g., Complete React Development Course",
+      "urlSlug": "URL Slug",
+      "urlSlugHelper": "Auto-generated from title. Used in the course URL.",
+      "shortDescription": "Short Description",
+      "shortDescriptionHelper": "Brief description for course cards (max 500 characters)",
+      "courseDescription": "Course Description",
+      "courseDescriptionHelper": "Detailed course description",
+      "category": "Category",
+      "difficultyLevel": "Difficulty Level",
+      "pricing": "Pricing",
+      "freeCourse": "This is a free course",
+      "price": "Price",
+      "currency": "Currency",
+      "courseDetails": "Course Details",
+      "estimatedDuration": "Estimated Duration (Hours)",
+      "estimatedDurationHelper": "Total course duration in hours",
+      "maxStudents": "Maximum Students",
+      "maxStudentsHelper": "Leave empty for unlimited enrollment",
+      "targetAudience": "Target Audience",
+      "targetAudiencePlaceholder": "Who is this course designed for?",
+      "learningObjectives": "Learning Objectives",
+      "learningObjectivesHelper": "What will students learn in this course?",
+      "addLearningObjective": "Add Learning Objective",
+      "prerequisites": "Prerequisites",
+      "prerequisitesHelper": "What should students know before taking this course?",
+      "addPrerequisite": "Add Prerequisite",
+      "tags": "Tags",
+      "addTag": "Add",
+      "courseThumbnail": "Course Thumbnail",
+      "uploadThumbnail": "Upload Thumbnail",
+      "thumbnailSelected": "Selected: {{filename}}",
+      "createCourse": "Create Course",
+      "cancel": "Cancel",
+      "errors": {
+        "titleRequired": "Course title is required",
+        "shortDescriptionRequired": "Short description is required",
+        "descriptionRequired": "Course description is required",
+        "categoryRequired": "Category is required",
+        "priceRequired": "Price must be greater than 0 for paid courses",
+        "durationRequired": "Estimated duration is required",
+        "objectivesRequired": "At least one learning objective is required"
+      }
+    },
+    "status": {
+      "draft": "Draft",
+      "published": "Published",
+      "archived": "Archived",
+      "underReview": "Under Review"
+    }
+  },
+  "marketplace": {
+    "title": "Marketplace Management",
+    "general": "General",
+    "categories": "Categories",
+    "listings": "Listings",
+    "courses": "Courses",
+    "transactions": "Transactions",
+    "shippingPayment": "Shipping & Payment",
+    "policies": "Policies & Security",
+    "settings": {
+      "enableMarketplace": "Enable Marketplace",
+      "marketplaceEnabled": "Marketplace is enabled. Users can now list and purchase items within your network.",
+      "allowedTypes": "Allowed Item Types",
+      "digitalGoods": "Digital Goods (e-books, templates, software)",
+      "physicalGoods": "Physical Goods (require shipping)",
+      "onlineCourses": "Online Courses (educational content)",
+      "commissionFees": "Commission & Fees",
+      "commissionRate": "Commission Rate (%)",
+      "commissionHelper": "Percentage taken from each sale",
+      "moderationSettings": "Moderation Settings",
+      "requireApproval": "Require admin approval for new listings",
+      "saveSettings": "Save Settings",
+      "cancel": "Cancel"
+    },
+    "stats": {
+      "totalCourses": "Total Courses",
+      "totalEnrollments": "Total Enrollments",
+      "courseRevenue": "Course Revenue",
+      "averageRating": "Average Rating",
+      "activeStudents": "Active students",
+      "grossRevenue": "Total gross revenue",
+      "acrossCategories": "Across all categories",
+      "acrossAllCourses": "Across all courses"
+    },
+    "courseManagement": {
+      "title": "Course Management",
+      "createCourse": "Create Course",
+      "courseTitle": "Course Title",
+      "instructor": "Instructor",
+      "category": "Category",
+      "difficulty": "Difficulty",
+      "price": "Price",
+      "enrollments": "Enrollments",
+      "rating": "Rating",
+      "status": "Status",
+      "actions": "Actions"
+    }
   },
   "footer": {
     "cta": {

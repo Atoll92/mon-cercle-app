@@ -38,7 +38,8 @@ import {
   Support as SupportIcon,
   Category as CategoryIcon,
   School as SchoolIcon,
-  Email as EmailIcon
+  Email as EmailIcon,
+  Store as StoreIcon
 } from '@mui/icons-material';
 import LanguageSwitcher from '../LanguageSwitcher';
 import { useTranslation } from '../../hooks/useTranslation.jsx';
@@ -72,6 +73,19 @@ const AdminLayout = ({
     }
   };
 
+  // Parse features config from network
+  const featuresConfig = React.useMemo(() => {
+    if (!network?.features_config) return {};
+    try {
+      return typeof network.features_config === 'string' 
+        ? JSON.parse(network.features_config) 
+        : network.features_config;
+    } catch (e) {
+      console.error('Error parsing features config:', e);
+      return {};
+    }
+  }, [network?.features_config]);
+
   // Navigation items for the drawer
   const navItems = [
     { 
@@ -92,12 +106,14 @@ const AdminLayout = ({
     { 
       name: t('admin.tabs.news'), 
       icon: <ArticleIcon />, 
-      index: 3 
+      index: 3,
+      feature: 'news' // Feature flag
     },
     { 
       name: t('admin.tabs.events'), 
       icon: <EventIcon />, 
-      index: 4 
+      index: 4,
+      feature: 'events' // Feature flag
     },
     { 
       name: t('admin.tabs.polls'), 
@@ -107,7 +123,8 @@ const AdminLayout = ({
     { 
       name: t('admin.tabs.courses'), 
       icon: <SchoolIcon />, 
-      index: 6 
+      index: 6,
+      feature: 'courses' // Feature flag
     },
     { 
       name: t('admin.tabs.crm'), 
@@ -143,8 +160,20 @@ const AdminLayout = ({
       name: t('admin.tabs.support'), 
       icon: <SupportIcon />, 
       index: 13 
+    },
+    { 
+      name: t('admin.tabs.marketplace'), 
+      icon: <StoreIcon />, 
+      index: 14,
+      feature: 'marketplace' // Feature flag
     }
-  ];
+  ].filter(item => {
+    // Filter out items that require a feature that is disabled
+    if (item.feature && featuresConfig[item.feature] === false) {
+      return false;
+    }
+    return true;
+  });
 
   // Drawer content
   const drawer = (

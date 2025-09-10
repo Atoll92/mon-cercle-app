@@ -1,4 +1,7 @@
 /* src/index.css */
+/* Import animations CSS */
+@import './styles/animations.css';
+
 /* Reset and base styles */
 * {
   box-sizing: border-box;
@@ -1402,6 +1405,3 @@ html {
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(0, 0, 0, 0.3);
 }
-
-/* Import animations CSS */
-@import './styles/animations.css';

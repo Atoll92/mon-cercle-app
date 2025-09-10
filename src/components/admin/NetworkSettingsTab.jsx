@@ -60,7 +60,9 @@ import {
   Timeline as TimelineIcon,
   DragIndicator as DragIndicatorIcon,
   Edit as EditIcon,
-  Description as DescriptionIcon
+  Description as DescriptionIcon,
+  School as CoursesIcon,
+  Store as MarketplaceIcon
 } from '@mui/icons-material';
 import { updateNetworkDetails } from '../../api/networks';
 import { triggerNetworkRefresh } from '../../hooks/useNetworkRefresh';
@@ -156,7 +158,9 @@ const NetworkSettingsTab = ({ network, onNetworkUpdate, darkMode }) => {
           wiki: config.wiki !== false,
           moodboards: config.moodboards !== false,
           location: config.location_sharing || false,
-          notifications: config.notifications !== false
+          notifications: config.notifications !== false,
+          courses: config.courses || false,
+          marketplace: config.marketplace || false
         };
       } catch (e) {
         console.error('Error parsing features config:', e);
@@ -170,7 +174,9 @@ const NetworkSettingsTab = ({ network, onNetworkUpdate, darkMode }) => {
       wiki: true,
       moodboards: true,
       location: false,
-      notifications: true
+      notifications: true,
+      courses: false,
+      marketplace: false
     };
   });
   
@@ -242,7 +248,9 @@ const NetworkSettingsTab = ({ network, onNetworkUpdate, darkMode }) => {
         wiki: features.wiki,
         moodboards: features.moodboards,
         location_sharing: features.location,
-        notifications: features.notifications
+        notifications: features.notifications,
+        courses: features.courses,
+        marketplace: features.marketplace
       }),
       enabled_tabs: enabledTabs,
       tab_descriptions: tabDescriptions
@@ -342,6 +350,18 @@ const NetworkSettingsTab = ({ network, onNetworkUpdate, darkMode }) => {
       label: t('admin.networkSettings.tabs.social'), 
       icon: <TimelineIcon fontSize="small" />,
       defaultDescription: defaultTabDescriptions.social
+    },
+    { 
+      id: 'courses', 
+      label: t('admin.networkSettings.tabs.courses'), 
+      icon: <CoursesIcon fontSize="small" />,
+      defaultDescription: defaultTabDescriptions.courses
+    },
+    { 
+      id: 'marketplace', 
+      label: t('admin.networkSettings.tabs.marketplace'), 
+      icon: <MarketplaceIcon fontSize="small" />,
+      defaultDescription: defaultTabDescriptions.marketplace
     }
   ];
   
@@ -352,6 +372,8 @@ const NetworkSettingsTab = ({ network, onNetworkUpdate, darkMode }) => {
     { key: 'chat', label: t('admin.networkSettings.features.chat.label'), icon: <ForumIcon />, description: t('admin.networkSettings.features.chat.description') },
     { key: 'wiki', label: t('admin.networkSettings.features.wiki.label'), icon: <WikiIcon />, description: t('admin.networkSettings.features.wiki.description') },
     { key: 'moodboards', label: t('admin.networkSettings.features.moodboards.label'), icon: <ImageIcon />, description: t('admin.networkSettings.features.moodboards.description') },
+    { key: 'courses', label: t('admin.networkSettings.features.courses.label'), icon: <CoursesIcon />, description: t('admin.networkSettings.features.courses.description') },
+    { key: 'marketplace', label: t('admin.networkSettings.features.marketplace.label'), icon: <MarketplaceIcon />, description: t('admin.networkSettings.features.marketplace.description') },
     { key: 'location', label: t('admin.networkSettings.features.location.label'), icon: <LocationIcon />, description: t('admin.networkSettings.features.location.description') },
     { key: 'notifications', label: t('admin.networkSettings.features.notifications.label'), icon: <NotificationsIcon />, description: t('admin.networkSettings.features.notifications.description') }
   ];
