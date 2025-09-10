@@ -282,8 +282,8 @@ const MoodboardItemPanel = ({
             />
             
             <Grid container spacing={2} sx={{ mt: 1 }}>
-              {/* Text Color */}
-              <Grid item xs={12}>
+              {/* Text Color and Font Family */}
+              <Grid item sx={{ flex: 1, minWidth: '120px' }}>
                 <TextField
                   label="Text Color"
                   type="color"
@@ -298,8 +298,7 @@ const MoodboardItemPanel = ({
                 />
               </Grid>
               
-              {/* Font Family */}
-              <Grid item xs={12}>
+              <Grid item sx={{ flex: 1, minWidth: '120px' }}>
                 <FormControl fullWidth size="small">
                   <InputLabel>Font Family</InputLabel>
                   <Select
@@ -321,8 +320,8 @@ const MoodboardItemPanel = ({
                 </FormControl>
               </Grid>
               
-              {/* Font Size */}
-              <Grid item xs={12}>
+              {/* Font Size and Font Weight */}
+              <Grid item sx={{ flex: 1, minWidth: '120px' }}>
                 <TextField
                   label="Font Size"
                   value={editedFont_size}
@@ -336,17 +335,16 @@ const MoodboardItemPanel = ({
                 />
               </Grid>
               
-              {/* Font Weight */}
-              <Grid item xs={12}>
+              <Grid item sx={{ flex: 1, minWidth: '120px' }}>
                 <FormControl fullWidth size="small">
-                  <InputLabel>Weight</InputLabel>
+                  <InputLabel>Font Weight</InputLabel>
                   <Select
                     value={editedFont_weight}
                     onChange={(e) => {
                       setEditedFont_weight(e.target.value);
                       updateProperty('font_weight', e.target.value);
                     }}
-                    label="Weight"
+                    label="Font Weight"
                   >
                     <MenuItem value="normal">Normal</MenuItem>
                     <MenuItem value="bold">Bold</MenuItem>
@@ -365,17 +363,17 @@ const MoodboardItemPanel = ({
                 </FormControl>
               </Grid>
               
-              {/* Text Align */}
-              <Grid item xs={12}>
+              {/* Text Align and Line Height */}
+              <Grid item sx={{ flex: 1, minWidth: '120px' }}>
                 <FormControl fullWidth size="small">
-                  <InputLabel>Align</InputLabel>
+                  <InputLabel>Text Align</InputLabel>
                   <Select
                     value={editedText_align}
                     onChange={(e) => {
                       setEditedText_align(e.target.value);
                       updateProperty('text_align', e.target.value);
                     }}
-                    label="Align"
+                    label="Text Align"
                   >
                     <MenuItem value="left">Left</MenuItem>
                     <MenuItem value="center">Center</MenuItem>
@@ -385,8 +383,7 @@ const MoodboardItemPanel = ({
                 </FormControl>
               </Grid>
               
-              {/* Line Height */}
-              <Grid item xs={12}>
+              <Grid item sx={{ flex: 1, minWidth: '120px' }}>
                 <TextField
                   label="Line Height"
                   value={editedLine_height}
