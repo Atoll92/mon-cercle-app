@@ -39,7 +39,7 @@ import {
   LocalOffer as LocalOfferIcon,
   MenuBook as MenuBookIcon
 } from '@mui/icons-material';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../context/authcontext';
 import { useProfile } from '../../context/ProfileContext';
 import { getCourses, getCourseCategories, enrollInCourse, getEnrollmentStatus } from '../../api/courses';
 import { supabase } from '../../supabaseClient';
