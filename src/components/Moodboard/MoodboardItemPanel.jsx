@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Box,
   Drawer,
@@ -20,15 +20,18 @@ import {
   Close as CloseIcon,
   Delete as DeleteIcon,
   Link as LinkIcon,
-  PictureAsPdf as PdfIcon
+  PictureAsPdf as PdfIcon,
+  CloudUpload as CloudUploadIcon
 } from '@mui/icons-material';
+import { supabase } from '../../supabaseclient';
 
 const MoodboardItemPanel = ({ 
   open, 
   item, 
   onClose, 
   onUpdate, 
-  onDelete 
+  onDelete,
+  moodboardId 
 }) => {
   // State for all editable properties - using exact field names from database
   const [editedContent, setEditedContent] = useState('');
@@ -44,6 +47,11 @@ const MoodboardItemPanel = ({
   const [editedBorder_radius, setEditedBorder_radius] = useState(0);
   const [editedRotation, setEditedRotation] = useState(0);
   const [editedZIndex, setEditedZIndex] = useState(1);
+  const [uploading, setUploading] = useState(false);
+  
+  // File input refs
+  const imageInputRef = useRef(null);
+  const pdfInputRef = useRef(null);
   
   // Initialize form values when item changes
   useEffect(() => {
@@ -442,8 +450,76 @@ const MoodboardItemPanel = ({
               Image Properties
             </Typography>
             
+            <input
+              ref={imageInputRef}
+              type="file"
+              accept="image/*"
+              style={{ display: 'none' }}
+              onChange={async (e) => {
+                if (!e.target.files || e.target.files.length === 0) return;
+                
+                const file = e.target.files[0];
+                
+                // Check file size (20MB max)
+                if (file.size > 20 * 1024 * 1024) {
+                  alert('Image file size must be less than 20MB');
+                  return;
+                }
+                
+                try {
+                  setUploading(true);
+                  
+                  // Upload new image to storage
+                  const fileExt = file.name.split('.').pop();
+                  const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+                  const filePath = `moodboards/${moodboardId}/${fileName}`;
+                  
+                  const { error: uploadError } = await supabase.storage
+                    .from('shared')
+                    .upload(filePath, file, {
+                      cacheControl: '3600',
+                      upsert: true
+                    });
+                  
+                  if (uploadError) throw uploadError;
+                  
+                  // Get public URL
+                  const { data: { publicUrl } } = supabase.storage
+                    .from('shared')
+                    .getPublicUrl(filePath);
+                  
+                  // Update the item with new image URL
+                  const updatedItem = {
+                    ...item,
+                    content: publicUrl
+                  };
+                  
+                  onUpdate(updatedItem);
+                  
+                } catch (error) {
+                  console.error('Error uploading image:', error);
+                  alert('Failed to upload image');
+                } finally {
+                  setUploading(false);
+                  // Reset input
+                  e.target.value = '';
+                }
+              }}
+            />
+            
+            <Button
+              variant="outlined"
+              fullWidth
+              startIcon={uploading ? null : <CloudUploadIcon />}
+              onClick={() => imageInputRef.current?.click()}
+              disabled={uploading}
+              sx={{ mt: 2 }}
+            >
+              {uploading ? 'Uploading...' : 'Replace Image'}
+            </Button>
+            
             <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
-              Image properties are updated in real-time on the canvas. To change the image itself, delete this item and add a new one.
+              Upload a new image to replace the current one. Properties will be preserved.
             </Typography>
           </Box>
         );
@@ -454,6 +530,64 @@ const MoodboardItemPanel = ({
             <Typography variant="subtitle2" gutterBottom sx={{ fontWeight: 'bold' }}>
               PDF Properties
             </Typography>
+            
+            <input
+              ref={pdfInputRef}
+              type="file"
+              accept="application/pdf"
+              style={{ display: 'none' }}
+              onChange={async (e) => {
+                if (!e.target.files || e.target.files.length === 0) return;
+                
+                const file = e.target.files[0];
+                
+                // Check file size (20MB max)
+                if (file.size > 20 * 1024 * 1024) {
+                  alert('PDF file size must be less than 20MB');
+                  return;
+                }
+                
+                try {
+                  setUploading(true);
+                  
+                  // Upload new PDF to storage
+                  const fileExt = file.name.split('.').pop();
+                  const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+                  const filePath = `moodboards/${moodboardId}/pdfs/${fileName}`;
+                  
+                  const { error: uploadError } = await supabase.storage
+                    .from('shared')
+                    .upload(filePath, file, {
+                      cacheControl: '3600',
+                      upsert: true
+                    });
+                  
+                  if (uploadError) throw uploadError;
+                  
+                  // Get public URL
+                  const { data: { publicUrl } } = supabase.storage
+                    .from('shared')
+                    .getPublicUrl(filePath);
+                  
+                  // Update the item with new PDF URL and title
+                  const updatedItem = {
+                    ...item,
+                    content: publicUrl,
+                    title: file.name.replace(/\.pdf$/i, '') // Update title to new filename
+                  };
+                  
+                  onUpdate(updatedItem);
+                  
+                } catch (error) {
+                  console.error('Error uploading PDF:', error);
+                  alert('Failed to upload PDF');
+                } finally {
+                  setUploading(false);
+                  // Reset input
+                  e.target.value = '';
+                }
+              }}
+            />
             
             {item?.content && (
               <Box sx={{ mt: 2 }}>
@@ -467,11 +601,22 @@ const MoodboardItemPanel = ({
                   size="small"
                   fullWidth
                 >
-                  View PDF
+                  View Current PDF
+                </Button>
+                
+                <Button
+                  variant="outlined"
+                  fullWidth
+                  startIcon={uploading ? null : <CloudUploadIcon />}
+                  onClick={() => pdfInputRef.current?.click()}
+                  disabled={uploading}
+                  sx={{ mt: 1 }}
+                >
+                  {uploading ? 'Uploading...' : 'Replace PDF'}
                 </Button>
                 
                 <Typography variant="caption" color="text.secondary" sx={{ mt: 2, display: 'block' }}>
-                  PDF properties are updated in real-time on the canvas. To change the PDF file, delete this item and add a new one.
+                  Upload a new PDF to replace the current one. Properties will be preserved.
                 </Typography>
               </Box>
             )}

@@ -1441,6 +1441,7 @@ function MoodboardPage() {
       <MoodboardItemPanel
         open={sidePanelOpen}
         item={selectedItem}
+        moodboardId={moodboardId}
         onClose={() => {
           setSidePanelOpen(false);
           setSelectedItemId(null);
