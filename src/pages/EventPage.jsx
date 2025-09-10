@@ -344,7 +344,12 @@ function EventPage() {
   const isOrganizer = useMemo(() => userId === event?.created_by, [userId, event?.created_by]);
   const canModerate = useMemo(() => isAdmin || isOrganizer, [isAdmin, isOrganizer]);
   const eventDate = useMemo(() => event?.date ? new Date(event.date) : null, [event?.date]);
-  const isPastEvent = useMemo(() => eventDate ? eventDate < new Date() : false, [eventDate]);
+  const eventEndDate = useMemo(() => event?.end_date ? new Date(event.end_date) : null, [event?.end_date]);
+  const isPastEvent = useMemo(() => {
+    const endDate = eventEndDate || eventDate;
+    return endDate ? endDate < new Date() : false;
+  }, [eventDate, eventEndDate]);
+  const isMultiDay = useMemo(() => eventDate && eventEndDate && eventDate.toDateString() !== eventEndDate.toDateString(), [eventDate, eventEndDate]);
   const attendingCount = useMemo(() => participants.filter(p => p.status === 'attending').length, [participants]);
   const maybeCount = useMemo(() => participants.filter(p => p.status === 'maybe').length, [participants]);
 
@@ -481,9 +486,21 @@ function EventPage() {
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, flexWrap: 'wrap', gap: 2 }}>
               <Chip
                 icon={<CalendarIcon />}
-                label={formatEventDate(event.date, true)}
+                label={isMultiDay 
+                  ? `${formatEventDate(event.date, true)} - ${formatEventDate(event.end_date, true)}`
+                  : formatEventDate(event.date, true)
+                }
                 color={isPastEvent ? 'default' : 'primary'}
+                sx={isMultiDay ? { maxWidth: '100%' } : {}}
               />
+              {isMultiDay && (
+                <Chip
+                  icon={<ScheduleIcon />}
+                  label={`${Math.ceil((eventEndDate - eventDate) / (1000 * 60 * 60 * 24))} days`}
+                  size="small"
+                  color="info"
+                />
+              )}
               {isPastEvent && (
                 <Chip
                   label="Past Event"
