@@ -3,12 +3,9 @@ import {
   Box,
   Paper,
   Typography,
-  IconButton,
 } from '@mui/material';
 import Spinner from '../Spinner';
 import {
-  Edit as EditIcon,
-  Delete as DeleteIcon,
   PictureAsPdf as PdfIcon
 } from '@mui/icons-material';
 import LinkPreview from '../LinkPreview';
@@ -33,7 +30,7 @@ const MoodboardItem = ({
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [size, setSize] = useState({ width: item.width, height: item.height });
   const [imageLoaded, setImageLoaded] = useState(false);
-  const [showControls, setShowControls] = useState(selected);
+  // Removed showControls state - no longer needed
   const itemRef = useRef(null);
 
   useEffect(() => {
@@ -41,21 +38,10 @@ const MoodboardItem = ({
     setSize({ width: item.width, height: item.height });
   }, [item.width, item.height]);
 
-  // Update controls visibility when selected state changes
-  useEffect(() => {
-    setShowControls(selected);
-  }, [selected]);
+  // Removed controls visibility effect - no longer needed
 
   const handleMouseDown = (e) => {
     if (!isEditable) return;
-    
-    // Skip if clicking on edit/delete buttons or resize handle
-    if (e.target.closest('.MuiIconButton-root') || 
-        e.target.classList.contains('resize-handle') ||
-        e.target.closest('.resize-handle')) {
-      e.stopPropagation();
-      return;
-    }
     
     e.stopPropagation();
     e.preventDefault(); // Prevent default behavior
@@ -467,88 +453,41 @@ const MoodboardItem = ({
         }
       }}
       onMouseDown={handleMouseDown}
-      onMouseEnter={() => isEditable && setShowControls(true)}
-      onMouseLeave={() => isEditable && !selected && setShowControls(false)}
+      onClick={(e) => {
+        if (isEditable) {
+          e.stopPropagation();
+          onSelect(item.id);
+        }
+      }}
     >
       {renderContent()}
       
-      {/* Controls - visible when selected or hovered */}
-      {(selected || showControls) && isEditable && (
-        <>
-          <Box 
-            className="resize-handle"
-            sx={{
+      {/* Resize handle - only visible when selected */}
+      {selected && isEditable && (
+        <Box 
+          className="resize-handle"
+          sx={{
+            position: 'absolute',
+            right: 0,
+            bottom: 0,
+            width: 24,
+            height: 24,
+            cursor: 'nwse-resize',
+            zIndex: 101,
+            backgroundColor: 'rgba(255,255,255,0.7)',
+            '&::after': {
+              content: '""',
               position: 'absolute',
-              right: 0,
-              bottom: 0,
-              width: 24,
-              height: 24,
-              cursor: 'nwse-resize',
-              zIndex: 101,
-              backgroundColor: 'rgba(255,255,255,0.7)',
-              '&::after': {
-                content: '""',
-                position: 'absolute',
-                right: 3,
-                bottom: 3,
-                width: 14,
-                height: 14,
-                borderRight: '3px solid #2196f3',
-                borderBottom: '3px solid #2196f3'
-              }
-            }}
-            onMouseDown={handleResizeMouseDown}
-          />
-          
-          <Box 
-            sx={{
-              position: 'absolute',
-              top: 0,
-              right: 0,
-              display: 'flex',
-              gap: 0.5,
-              p: 0.5,
-              bgcolor: 'rgba(255,255,255,0.95)',
-              borderRadius: '0 0 0 8px',
-              zIndex: 101,
-              boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <IconButton 
-              size="small" 
-              color="primary" 
-              onClick={(e) => {
-                e.stopPropagation(); 
-                e.preventDefault();
-                onEdit(item);
-              }}
-              sx={{
-                '&:hover': {
-                  bgcolor: 'rgba(33, 150, 243, 0.1)'
-                }
-              }}
-            >
-              <EditIcon fontSize="small" />
-            </IconButton>
-            <IconButton 
-              size="small" 
-              color="error" 
-              onClick={(e) => {
-                e.stopPropagation();
-                e.preventDefault();
-                onDelete(item.id);
-              }}
-              sx={{
-                '&:hover': {
-                  bgcolor: 'rgba(244, 67, 54, 0.1)'
-                }
-              }}
-            >
-              <DeleteIcon fontSize="small" />
-            </IconButton>
-          </Box>
-        </>
+              right: 3,
+              bottom: 3,
+              width: 14,
+              height: 14,
+              borderRight: '3px solid #2196f3',
+              borderBottom: '3px solid #2196f3'
+            }
+          }}
+          onMouseDown={handleResizeMouseDown}
+        />
       )}
     </Paper>
   );
