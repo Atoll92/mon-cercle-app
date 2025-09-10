@@ -15,6 +15,7 @@ import ChatIcon from '@mui/icons-material/Chat';
 import TimelineIcon from '@mui/icons-material/Timeline';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import AttachmentIcon from '@mui/icons-material/Attachment';
+import SchoolIcon from '@mui/icons-material/School';
 
 import {
   Container,
@@ -51,6 +52,7 @@ import NewsTab from '../components/NewsTab';
 import ChatTab from '../components/ChatTab';
 import SocialWallTab from '../components/SocialWallTab';
 import WikiTab from '../components/WikiTab';
+import CoursesTab from '../components/CoursesTab';
 import AboutTab from '../components/AboutTab';
 import MemberDetailsModal from '../components/MembersDetailModal';
 import FilesTab from '../components/FilesTab';
@@ -186,6 +188,7 @@ function NetworkLandingPage() {
     { id: 'chat', icon: <ChatIcon />, label: t('dashboard.tabs.chat') },
     { id: 'files', icon: <AttachmentIcon />, label: t('dashboard.tabs.files') },
     { id: 'wiki', icon: <MenuBookIcon />, label: t('dashboard.tabs.wiki') },
+    { id: 'courses', icon: <SchoolIcon />, label: t('dashboard.tabs.courses') },
     { id: 'social', icon: <TimelineIcon />, label: t('dashboard.tabs.social') },
     // Always show About tab regardless of config
     { id: 'about', icon: <InfoIcon />, label: t('dashboard.tabs.about') }
@@ -1548,6 +1551,14 @@ function NetworkLandingPage() {
                 networkId={network.id}
                 isUserMember={isUserMember}
                 darkMode={darkMode} // Pass dark mode to wiki tab
+              />
+            )}
+
+            {currentTabId === 'courses' && (
+              <CoursesTab
+                networkId={network.id}
+                isUserMember={isUserMember}
+                darkMode={darkMode} // Pass dark mode to courses tab
               />
             )}
 

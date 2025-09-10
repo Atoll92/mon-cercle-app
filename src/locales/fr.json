@@ -8,6 +8,7 @@
       "events": "Gestion des événements",
       "polls": "Gestion des sondages",
       "courses": "Gestion des cours",
+      "marketplace": "Marketplace",
       "crm": "CRM Email",
       "theme": "Thème et image de marque",
       "moderation": "Outils de modération",
@@ -168,6 +169,14 @@
         "notifications": {
           "label": "Notifications",
           "description": "Notifications par email"
+        },
+        "courses": {
+          "label": "Cours",
+          "description": "Cours éducatifs et matériel d'apprentissage"
+        },
+        "marketplace": {
+          "label": "Marché",
+          "description": "Acheter et vendre des produits dans le réseau"
         }
       },
       "tabs": {
@@ -177,7 +186,9 @@
         "chat": "Chat",
         "files": "Fichiers",
         "wiki": "Wiki",
-        "social": "Mur social"
+        "social": "Mur social",
+        "courses": "Cours",
+        "marketplace": "Marché"
       },
       "navigationTabs": {
         "description": "Sélectionnez les onglets qui apparaîtront dans la navigation de votre réseau. Glissez pour les réorganiser.",
@@ -447,6 +458,10 @@
       "wikiDesc": "Créer et maintenir des ressources de connaissances",
       "moodboards": "Tableaux d'inspiration",
       "moodboardsDesc": "Tableaux de collaboration visuelle et d'inspiration",
+      "courses": "Cours",
+      "coursesDesc": "Cours éducatifs et matériel d'apprentissage",
+      "marketplace": "Marché",
+      "marketplaceDesc": "Acheter et vendre des produits dans le réseau",
       "changeInfo": "Vous pouvez activer ou désactiver des fonctionnalités plus tard depuis le panneau d'administration."
     },
     "branding": {
@@ -475,7 +490,9 @@
           "chat": "Chat",
           "files": "Fichiers",
           "wiki": "Wiki",
-          "social": "Mur social"
+          "social": "Mur social",
+          "courses": "Cours",
+          "marketplace": "Marché"
         }
       },
       "theme": {
@@ -696,6 +713,7 @@
       "chat": "Chat",
       "files": "Fichiers",
       "wiki": "Wiki",
+      "courses": "Cours",
       "social": "Social Wall",
       "about": "À propos"
     },
@@ -958,6 +976,176 @@
     "viewFullPost": "Voir le post complet",
     "readFullPost": "Lire l'article complet",
     "endOfWall": "Vous avez atteint la fin du mur social"
+  },
+  "courses": {
+    "title": "Cours",
+    "marketplace": "Marché des cours",
+    "myCourses": "Mes cours",
+    "teaching": "Enseignement",
+    "learning": "Apprentissage",
+    "searchPlaceholder": "Rechercher des cours...",
+    "noCoursesFound": "Aucun cours trouvé",
+    "noCoursesFoundDescription": "Essayez d'ajuster vos filtres pour trouver plus de cours.",
+    "noCourses": "Aucun cours disponible",
+    "noCoursesDescription": "Revenez plus tard pour de nouvelles offres de cours.",
+    "filters": {
+      "category": "Catégorie",
+      "allCategories": "Toutes les catégories",
+      "difficulty": "Difficulté", 
+      "allLevels": "Tous les niveaux",
+      "beginner": "Débutant",
+      "intermediate": "Intermédiaire",
+      "advanced": "Avancé",
+      "price": "Prix",
+      "allPrices": "Tous les prix",
+      "free": "Gratuit",
+      "paid": "Payant",
+      "sortBy": "Trier par",
+      "featured": "À la une",
+      "newest": "Plus récents",
+      "popularity": "Plus populaires",
+      "rating": "Mieux notés",
+      "moreFilters": "Plus de filtres"
+    },
+    "card": {
+      "lessons": "{{count}} leçons",
+      "hours": "{{count}}h",
+      "students": "{{count}} étudiants",
+      "enrolled": "Inscrit",
+      "enrollFree": "S'inscrire gratuitement",
+      "enrollNow": "S'inscrire maintenant",
+      "continueLearning": "Continuer l'apprentissage",
+      "preview": "Aperçu"
+    },
+    "detail": {
+      "backToCourses": "Retour aux cours",
+      "aboutCourse": "À propos de ce cours",
+      "whatYoullLearn": "Ce que vous apprendrez",
+      "prerequisites": "Prérequis",
+      "courseStats": "Statistiques du cours",
+      "studentsEnrolled": "Étudiants inscrits",
+      "averageRating": "Note moyenne",
+      "totalReviews": "Total des avis",
+      "lastUpdated": "Dernière mise à jour",
+      "curriculum": "Programme du cours",
+      "totalLessons": "{{lessons}} leçons • {{hours}} heures au total",
+      "reviews": "Avis des étudiants",
+      "noReviews": "Pas encore d'avis. Soyez le premier à évaluer ce cours !",
+      "enrollmentConfirm": {
+        "title": "S'inscrire au cours",
+        "aboutToEnroll": "Vous êtes sur le point de vous inscrire à {{title}}",
+        "price": "Prix : {{price}}",
+        "lifetimeAccess": "Après l'inscription, vous aurez un accès à vie au contenu de ce cours.",
+        "cancel": "Annuler",
+        "confirm": "Confirmer l'inscription",
+        "enrolling": "Inscription en cours..."
+      },
+      "progress": "Progression : {{completed}} leçons sur {{total}} terminées",
+      "lesson": "Leçon {{number}}",
+      "duration": "{{minutes}}min",
+      "startLesson": "Commencer la leçon"
+    },
+    "creation": {
+      "title": "Créer un nouveau cours",
+      "basicInformation": "Informations de base",
+      "courseTitle": "Titre du cours",
+      "courseTitlePlaceholder": "ex. : Cours complet de développement React",
+      "urlSlug": "Identifiant URL",
+      "urlSlugHelper": "Généré automatiquement à partir du titre. Utilisé dans l'URL du cours.",
+      "shortDescription": "Description courte",
+      "shortDescriptionHelper": "Brève description pour les cartes de cours (max 500 caractères)",
+      "courseDescription": "Description du cours",
+      "courseDescriptionHelper": "Description détaillée du cours",
+      "category": "Catégorie",
+      "difficultyLevel": "Niveau de difficulté",
+      "pricing": "Tarification",
+      "freeCourse": "C'est un cours gratuit",
+      "price": "Prix",
+      "currency": "Devise",
+      "courseDetails": "Détails du cours",
+      "estimatedDuration": "Durée estimée (Heures)",
+      "estimatedDurationHelper": "Durée totale du cours en heures",
+      "maxStudents": "Nombre maximum d'étudiants",
+      "maxStudentsHelper": "Laisser vide pour un nombre illimité d'inscriptions",
+      "targetAudience": "Public cible",
+      "targetAudiencePlaceholder": "À qui s'adresse ce cours ?",
+      "learningObjectives": "Objectifs d'apprentissage",
+      "learningObjectivesHelper": "Qu'apprendront les étudiants dans ce cours ?",
+      "addLearningObjective": "Ajouter un objectif d'apprentissage",
+      "prerequisites": "Prérequis",
+      "prerequisitesHelper": "Que doivent savoir les étudiants avant de suivre ce cours ?",
+      "addPrerequisite": "Ajouter un prérequis",
+      "tags": "Tags",
+      "addTag": "Ajouter",
+      "courseThumbnail": "Miniature du cours",
+      "uploadThumbnail": "Télécharger une miniature",
+      "thumbnailSelected": "Sélectionné : {{filename}}",
+      "createCourse": "Créer le cours",
+      "cancel": "Annuler",
+      "errors": {
+        "titleRequired": "Le titre du cours est requis",
+        "shortDescriptionRequired": "La description courte est requise",
+        "descriptionRequired": "La description du cours est requise",
+        "categoryRequired": "La catégorie est requise",
+        "priceRequired": "Le prix doit être supérieur à 0 pour les cours payants",
+        "durationRequired": "La durée estimée est requise",
+        "objectivesRequired": "Au moins un objectif d'apprentissage est requis"
+      }
+    },
+    "status": {
+      "draft": "Brouillon",
+      "published": "Publié",
+      "archived": "Archivé",
+      "underReview": "En cours de révision"
+    }
+  },
+  "marketplace": {
+    "title": "Gestion du Marketplace",
+    "general": "Général",
+    "categories": "Catégories",
+    "listings": "Annonces",
+    "courses": "Cours",
+    "transactions": "Transactions",
+    "shippingPayment": "Livraison et paiement",
+    "policies": "Politiques et sécurité",
+    "settings": {
+      "enableMarketplace": "Activer le marketplace",
+      "marketplaceEnabled": "Le marketplace est activé. Les utilisateurs peuvent maintenant lister et acheter des articles dans votre réseau.",
+      "allowedTypes": "Types d'articles autorisés",
+      "digitalGoods": "Biens numériques (e-books, modèles, logiciels)",
+      "physicalGoods": "Biens physiques (nécessitent une livraison)",
+      "onlineCourses": "Cours en ligne (contenu éducatif)",
+      "commissionFees": "Commission et frais",
+      "commissionRate": "Taux de commission (%)",
+      "commissionHelper": "Pourcentage prélevé sur chaque vente",
+      "moderationSettings": "Paramètres de modération",
+      "requireApproval": "Exiger l'approbation de l'admin pour les nouvelles annonces",
+      "saveSettings": "Enregistrer les paramètres",
+      "cancel": "Annuler"
+    },
+    "stats": {
+      "totalCourses": "Total des cours",
+      "totalEnrollments": "Total des inscriptions",
+      "courseRevenue": "Revenus des cours",
+      "averageRating": "Note moyenne",
+      "activeStudents": "Étudiants actifs",
+      "grossRevenue": "Chiffre d'affaires brut total",
+      "acrossCategories": "Dans toutes les catégories",
+      "acrossAllCourses": "Pour tous les cours"
+    },
+    "courseManagement": {
+      "title": "Gestion des cours",
+      "createCourse": "Créer un cours",
+      "courseTitle": "Titre du cours",
+      "instructor": "Instructeur",
+      "category": "Catégorie",
+      "difficulty": "Difficulté",
+      "price": "Prix",
+      "enrollments": "Inscriptions",
+      "rating": "Note",
+      "status": "Statut",
+      "actions": "Actions"
+    }
   },
   "footer": {
     "cta": {

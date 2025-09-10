@@ -57,6 +57,8 @@ const NetworkLandingPageFloatingElements = lazyWithRetry(() => import('./pages/N
 const NetworkLandingPageAlt = lazyWithRetry(() => import('./pages/NetworkLandingPageAlt'));
 const DocumentationPage = lazyWithRetry(() => import('./pages/DocumentationPage'));
 const SimpleConclavLanding = lazyWithRetry(() => import('./pages/SimpleConclavLanding'));
+const CoursesPage = lazyWithRetry(() => import('./components/courses/CoursesPage'));
+const CourseDetailPage = lazyWithRetry(() => import('./components/courses/CourseDetailPage'));
 
 // Loading component for lazy loaded routes
 const PageLoader = () => (
@@ -208,6 +210,16 @@ function App() {
             <Route element={<ProtectedRoute />}>
               <Route path="/network/:networkId/wiki/new" element={<ProfileAwareRoute><WikiEditPage /></ProfileAwareRoute>} />
               <Route path="/network/:networkId/wiki/edit/:pageSlug" element={<ProfileAwareRoute><WikiEditPage /></ProfileAwareRoute>} />
+            </Route>
+
+            {/* Public Course routes */}
+            <Route path="/network/:networkId/courses" element={<CoursesPage />} />
+            <Route path="/network/:networkId/courses/:courseId" element={<CourseDetailPage />} />
+            
+            {/* Protected Course routes - need authentication for enrollment */}
+            <Route element={<ProtectedRoute />}>
+              <Route path="/courses" element={<ProfileAwareRoute><CoursesPage /></ProfileAwareRoute>} />
+              <Route path="/courses/:courseId" element={<ProfileAwareRoute><CourseDetailPage /></ProfileAwareRoute>} />
             </Route>
 
             <Route element={<ProtectedRoute />}>

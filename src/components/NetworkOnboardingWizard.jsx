@@ -58,6 +58,8 @@ import {
   Image as ImageIcon,
   Close as CloseIcon,
   DragIndicator as DragIndicatorIcon,
+  School as CoursesIcon,
+  Store as MarketplaceIcon,
 } from '@mui/icons-material';
 import {
   DndContext,
@@ -161,7 +163,9 @@ const NetworkOnboardingWizard = ({ profile }) => {
       files: true,
       chat: true,
       wiki: true,
-      moodboards: true
+      moodboards: true,
+      courses: false,
+      marketplace: false
     },
     enabledTabs: ['news', 'members', 'events', 'chat', 'files', 'wiki', 'social'],
     themeColor: theme.palette.primary.main
@@ -259,7 +263,9 @@ const NetworkOnboardingWizard = ({ profile }) => {
             files: networkData.features.files,
             chat: networkData.features.chat,
             wiki: networkData.features.wiki,
-            moodboards: networkData.features.moodboards
+            moodboards: networkData.features.moodboards,
+            courses: networkData.features.courses,
+            marketplace: networkData.features.marketplace
           }),
           privacy_level: networkData.privacyLevel,
           purpose: networkData.purpose,
@@ -625,6 +631,18 @@ const FeaturesStep = ({ networkData, setNetworkData }) => {
       title: t('networkOnboarding.features.moodboards'),
       icon: <ImageIcon fontSize="large" sx={{ color: theme.palette.error.main }} />,
       description: t('networkOnboarding.features.moodboardsDesc'),
+    },
+    {
+      name: 'courses',
+      title: t('networkOnboarding.features.courses'),
+      icon: <CoursesIcon fontSize="large" sx={{ color: theme.palette.primary.dark }} />,
+      description: t('networkOnboarding.features.coursesDesc'),
+    },
+    {
+      name: 'marketplace',
+      title: t('networkOnboarding.features.marketplace'),
+      icon: <MarketplaceIcon fontSize="large" sx={{ color: theme.palette.secondary.dark }} />,
+      description: t('networkOnboarding.features.marketplaceDesc'),
     }
   ];
 
@@ -716,7 +734,9 @@ const NavigationStep = ({ networkData, setNetworkData }) => {
     { id: 'chat', label: t('networkOnboarding.branding.navigation.tabs.chat'), icon: <ForumIcon fontSize="small" /> },
     { id: 'files', label: t('networkOnboarding.branding.navigation.tabs.files'), icon: <FileIcon fontSize="small" /> },
     { id: 'wiki', label: t('networkOnboarding.branding.navigation.tabs.wiki'), icon: <WikiIcon fontSize="small" /> },
-    { id: 'social', label: t('networkOnboarding.branding.navigation.tabs.social'), icon: <ImageIcon fontSize="small" /> }
+    { id: 'social', label: t('networkOnboarding.branding.navigation.tabs.social'), icon: <ImageIcon fontSize="small" /> },
+    { id: 'courses', label: t('networkOnboarding.branding.navigation.tabs.courses'), icon: <CoursesIcon fontSize="small" /> },
+    { id: 'marketplace', label: t('networkOnboarding.branding.navigation.tabs.marketplace'), icon: <MarketplaceIcon fontSize="small" /> }
   ];
   
   // Handle logo upload
