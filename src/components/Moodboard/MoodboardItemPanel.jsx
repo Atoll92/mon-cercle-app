@@ -14,7 +14,8 @@ import {
   Select,
   MenuItem,
   InputAdornment,
-  Divider
+  Divider,
+  Dialog
 } from '@mui/material';
 import {
   Close as CloseIcon,
@@ -24,6 +25,7 @@ import {
   CloudUpload as CloudUploadIcon
 } from '@mui/icons-material';
 import { supabase } from '../../supabaseclient';
+import PDFPreviewEnhanced from '../PDFPreviewEnhanced';
 
 const MoodboardItemPanel = ({ 
   open, 
@@ -48,6 +50,7 @@ const MoodboardItemPanel = ({
   const [editedRotation, setEditedRotation] = useState(0);
   const [editedZIndex, setEditedZIndex] = useState(1);
   const [uploading, setUploading] = useState(false);
+  const [pdfViewerOpen, setPdfViewerOpen] = useState(false);
   
   // File input refs
   const imageInputRef = useRef(null);
@@ -589,10 +592,7 @@ const MoodboardItemPanel = ({
             {item?.content && (
               <Box sx={{ mt: 2 }}>
                 <Button
-                  component="a"
-                  href={item.content}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  onClick={() => setPdfViewerOpen(true)}
                   variant="outlined"
                   startIcon={<PdfIcon />}
                   size="small"
@@ -702,6 +702,49 @@ const MoodboardItemPanel = ({
             </Box>
           </Box>
         </>
+      )}
+      
+      {/* PDF Viewer Modal */}
+      {item?.type === 'pdf' && item?.content && (
+        <Dialog
+          open={pdfViewerOpen}
+          onClose={() => setPdfViewerOpen(false)}
+          maxWidth="lg"
+          fullWidth
+          PaperProps={{
+            sx: {
+              height: '90vh',
+              display: 'flex',
+              flexDirection: 'column'
+            }
+          }}
+        >
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'space-between',
+            p: 2,
+            borderBottom: '1px solid',
+            borderColor: 'divider'
+          }}>
+            <Typography variant="h6">
+              {item.title || 'PDF Document'}
+            </Typography>
+            <IconButton onClick={() => setPdfViewerOpen(false)}>
+              <CloseIcon />
+            </IconButton>
+          </Box>
+          <Box sx={{ flex: 1, overflow: 'hidden', p: 2 }}>
+            <PDFPreviewEnhanced
+              url={item.content}
+              fileName={item.title || 'PDF Document'}
+              title={item.title || 'PDF Document'}
+              height="100%"
+              showFileName={false}
+              borderRadius={1}
+            />
+          </Box>
+        </Dialog>
       )}
     </Drawer>
   );

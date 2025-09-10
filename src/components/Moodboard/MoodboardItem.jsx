@@ -300,56 +300,6 @@ const MoodboardItem = ({
                 {item.title || 'PDF Document'}
               </Typography>
             </Box>
-            
-            {/* For view mode, we add a clickable overlay to open the PDF */}
-            {!isEditable && (
-              <Box 
-                component="a"
-                href={item.content}
-                target="_blank"
-                rel="noopener noreferrer"
-                sx={{ 
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  bgcolor: 'transparent',
-                  '&:hover': {
-                    bgcolor: 'rgba(0,0,0,0.04)',
-                    '& .view-pdf-overlay': {
-                      opacity: 1
-                    }
-                  }
-                }}
-                onClick={(e) => e.stopPropagation()}
-              >
-                <Box 
-                  className="view-pdf-overlay"
-                  sx={{ 
-                    bgcolor: 'rgba(255,255,255,0.9)',
-                    borderRadius: 1,
-                    px: 2,
-                    py: 1,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 1,
-                    boxShadow: 2,
-                    opacity: 0,
-                    transition: 'opacity 0.2s'
-                  }}
-                >
-                  <PdfIcon color="primary" />
-                  <Typography color="primary" fontWeight="medium">
-                    View PDF
-                  </Typography>
-                </Box>
-              </Box>
-            )}
           </Box>
         );
       case 'text':
