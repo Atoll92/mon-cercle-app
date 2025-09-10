@@ -55,7 +55,7 @@ import {
   getCourseReviews,
   getLessonProgress
 } from '../../api/courses';
-import { supabase } from '../../supabaseClient';
+import { supabase } from '../../supabaseclient';
 import UserContent from '../UserContent';
 
 const CourseDetailPage = () => {
