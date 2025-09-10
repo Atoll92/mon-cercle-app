@@ -40,7 +40,7 @@ import {
   MenuBook as MenuBookIcon
 } from '@mui/icons-material';
 import { useAuth } from '../../context/authcontext';
-import { useProfile } from '../../context/ProfileContext';
+import { useProfile } from '../../context/profileContext';
 import { getCourses, getCourseCategories, enrollInCourse, getEnrollmentStatus } from '../../api/courses';
 import { supabase } from '../../supabaseClient';
 

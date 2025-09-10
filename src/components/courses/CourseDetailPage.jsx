@@ -46,7 +46,7 @@ import {
   MenuBook as MenuBookIcon
 } from '@mui/icons-material';
 import { useAuth } from '../../context/authcontext';
-import { useProfile } from '../../context/ProfileContext';
+import { useProfile } from '../../context/profileContext';
 import { 
   getCourseById, 
   getCourseLessons, 
