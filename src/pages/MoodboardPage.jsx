@@ -95,9 +95,6 @@ const EditItemDialog = ({
     const [editedRotation, setEditedRotation] = useState(0);
     const [editedZIndex, setEditedZIndex] = useState(1);
     
-    // Ref for debounced autosave
-    const saveTimeoutRef = useRef(null);
-    
     // Initialize form values when dialog opens - using exact field names from database
     useEffect(() => {
       if (!currentItem) return;
@@ -179,15 +176,6 @@ const EditItemDialog = ({
       onSave(updatedItem);
     };
     
-    // Clean up timeout on unmount
-    useEffect(() => {
-      return () => {
-        if (saveTimeoutRef.current) {
-          clearTimeout(saveTimeoutRef.current);
-        }
-      };
-    }, []);
-    
     // Improved shared properties panel with better UI organization
     const renderSharedProperties = () => (
       <Box sx={{ mt: 3 }}>
@@ -204,9 +192,6 @@ const EditItemDialog = ({
                 value={editedTitle}
                 onChange={(e) => {
                   setEditedTitle(e.target.value);
-                  // Trigger autosave after user stops typing
-                  if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
-                  saveTimeoutRef.current = setTimeout(() => handleSave(), 800);
                 }}
                 fullWidth
                 size="small"
@@ -252,8 +237,6 @@ const EditItemDialog = ({
                     value={editedBackgroundColor === 'transparent' ? '#ffffff' : editedBackgroundColor}
                     onChange={(e) => {
                       setEditedBackgroundColor(e.target.value);
-                      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
-                      saveTimeoutRef.current = setTimeout(() => handleSave(), 800);
                     }}
                     fullWidth
                     size="small"
@@ -282,9 +265,6 @@ const EditItemDialog = ({
                   value={editedOpacity}
                   onChange={(e, newValue) => {
                     setEditedOpacity(newValue);
-                    // Trigger autosave after slider stops moving
-                    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
-                    saveTimeoutRef.current = setTimeout(() => handleSave(), 800);
                   }}
                   min={0}
                   max={100}
@@ -317,9 +297,6 @@ const EditItemDialog = ({
                   value={editedBorder_radius}
                   onChange={(e) => {
                     setEditedBorder_radius(parseInt(e.target.value) || 0);
-                    // Trigger autosave
-                    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
-                    saveTimeoutRef.current = setTimeout(() => handleSave(), 800);
                   }}
                   fullWidth
                   size="small"
@@ -451,8 +428,6 @@ const EditItemDialog = ({
                     value={editedTextColor}
                     onChange={(e) => {
                       setEditedTextColor(e.target.value);
-                      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
-                      saveTimeoutRef.current = setTimeout(() => handleSave(), 800);
                     }}
                     fullWidth
                     size="small"
@@ -592,9 +567,6 @@ const EditItemDialog = ({
                   value={editedContent}
                   onChange={(e) => {
                     setEditedContent(e.target.value);
-                    // Auto-save after typing stops
-                    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
-                    saveTimeoutRef.current = setTimeout(() => handleSave(), 800);
                   }}
                   fullWidth
                   margin="normal"
