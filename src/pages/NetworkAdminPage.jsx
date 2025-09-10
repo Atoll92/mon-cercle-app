@@ -43,6 +43,7 @@ import SupportTicketsTab from '../components/admin/SupportTicketsTab';
 import CategoriesTab from '../components/admin/CategoriesTab';
 import CoursesTab from '../components/admin/CoursesTab';
 import CRMTab from '../components/admin/CRMTab';
+import MarketplaceTab from '../components/admin/MarketplaceTab';
 import AdminLayout from '../components/admin/AdminLayout';
 import AdminBreadcrumbs from '../components/admin/AdminBreadcrumbs';
 import OnboardingGuide, { WithOnboardingHighlight } from '../components/OnboardingGuide';
@@ -62,7 +63,8 @@ const TAB_MAPPING = {
   'monetization': 10,
   'billing': 11,
   'badges': 12,
-  'support': 13
+  'support': 13,
+  'marketplace': 14
 };
 
 // Index to tab name mapping
@@ -70,6 +72,14 @@ const TAB_NAMES = Object.entries(TAB_MAPPING).reduce((acc, [name, index]) => {
   acc[index] = name;
   return acc;
 }, {});
+
+// Feature requirements for tabs
+const TAB_FEATURES = {
+  'news': 'news',
+  'events': 'events',
+  'courses': 'courses',
+  'marketplace': 'marketplace'
+};
 
 function NetworkAdminPage() {
   const { user } = useAuth();
@@ -79,11 +89,33 @@ function NetworkAdminPage() {
   const muiTheme = useMuiTheme(); // Get the MUI theme for accessing custom colors
   const [searchParams, setSearchParams] = useSearchParams();
   
+  // Helper function to check if a tab is enabled based on features config
+  const isTabEnabled = (tabName, featuresConfig) => {
+    const requiredFeature = TAB_FEATURES[tabName];
+    if (!requiredFeature) return true; // Tabs without feature requirements are always enabled
+    
+    if (!featuresConfig) return true; // If no config, show all tabs
+    
+    try {
+      const config = typeof featuresConfig === 'string' 
+        ? JSON.parse(featuresConfig) 
+        : featuresConfig;
+      return config[requiredFeature] !== false;
+    } catch (e) {
+      console.error('Error parsing features config:', e);
+      return true;
+    }
+  };
+  
   // Get initial tab from URL params
-  const getInitialTab = () => {
+  const getInitialTab = (featuresConfig = null) => {
     const tabParam = searchParams.get('tab');
     if (tabParam && TAB_MAPPING[tabParam] !== undefined) {
-      return TAB_MAPPING[tabParam];
+      const tabIndex = TAB_MAPPING[tabParam];
+      // Check if the tab is enabled
+      if (isTabEnabled(tabParam, featuresConfig)) {
+        return tabIndex;
+      }
     }
     return 0; // Default to settings tab
   };
@@ -94,7 +126,7 @@ function NetworkAdminPage() {
   const [members, setMembers] = useState([]);
   const [events, setEvents] = useState([]);
   const [newsPosts, setNewsPosts] = useState([]);
-  const [activeTab, setActiveTab] = useState(getInitialTab());
+  const [activeTab, setActiveTab] = useState(0); // Start with settings tab, will update when network loads
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [message, setMessage] = useState('');
@@ -111,14 +143,23 @@ function NetworkAdminPage() {
   
   // Handle URL parameter changes (e.g., browser back/forward)
   useEffect(() => {
+    if (!network) return; // Wait for network to load
+    
     const tabParam = searchParams.get('tab');
     if (tabParam && TAB_MAPPING[tabParam] !== undefined) {
       const newTab = TAB_MAPPING[tabParam];
-      if (newTab !== activeTab) {
-        setActiveTab(newTab);
+      // Check if the tab is enabled
+      if (isTabEnabled(tabParam, network.features_config)) {
+        if (newTab !== activeTab) {
+          setActiveTab(newTab);
+        }
+      } else {
+        // Tab is disabled, redirect to settings
+        setActiveTab(0);
+        setSearchParams({ tab: 'settings' });
       }
     }
-  }, [searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [searchParams, network?.features_config]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const fetchData = async () => {
@@ -154,6 +195,10 @@ function NetworkAdminPage() {
           throw new Error('Failed to load network details');
         }
         setNetwork(networkData);
+        
+        // Set initial tab based on URL and features config
+        const initialTab = getInitialTab(networkData.features_config);
+        setActiveTab(initialTab);
         
         // Get members using our API function
         const membersResponse = await fetchNetworkMembers(profileData.network_id);
@@ -334,6 +379,7 @@ function NetworkAdminPage() {
             {activeTab === 11 && t('admin.tabs.billing')}
             {activeTab === 12 && t('admin.tabs.badges')}
             {activeTab === 13 && t('admin.tabs.support')}
+            {activeTab === 14 && t('admin.tabs.marketplace')}
           </Typography>
         </Box>
 
@@ -438,7 +484,7 @@ function NetworkAdminPage() {
           />
         )}
         
-        {activeTab === 8 && (
+        {activeTab === 9 && (
           /* Moderation Tools Component */
           <ModerationTab
             network={network}
@@ -448,7 +494,7 @@ function NetworkAdminPage() {
           />
         )}
         
-        {activeTab === 9 && (
+        {activeTab === 10 && (
           /* Monetization Component */
           <MonetizationTab
             networkId={network.id}
@@ -457,7 +503,7 @@ function NetworkAdminPage() {
           />
         )}
         
-        {activeTab === 10 && (
+        {activeTab === 11 && (
           /* Billing & Plan Component */
           <BillingTab
             activeProfile={activeProfile}
@@ -465,7 +511,7 @@ function NetworkAdminPage() {
           />
         )}
         
-        {activeTab === 11 && (
+        {activeTab === 12 && (
           /* Badges & Engagement Component */
           <BadgesTab
             networkId={network.id}
@@ -474,12 +520,20 @@ function NetworkAdminPage() {
           />
         )}
         
-        {activeTab === 12 && (
+        {activeTab === 13 && (
           /* Support Tickets Component */
           <SupportTicketsTab 
             network={network}
             user={user}
             activeProfile={activeProfile}
+            darkMode={darkMode}
+          />
+        )}
+        
+        {activeTab === 14 && (
+          /* Marketplace Component */
+          <MarketplaceTab
+            networkId={network.id}
             darkMode={darkMode}
           />
         )}
