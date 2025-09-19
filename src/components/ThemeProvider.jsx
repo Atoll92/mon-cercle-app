@@ -160,7 +160,6 @@ const ThemeProvider = ({ children }) => {
         sharp: designSystem.transitions.easing.easeInOut,
       },
     },
-    zIndex: designSystem.zIndex,
     components: {
       // Button component overrides
       MuiButton: {
