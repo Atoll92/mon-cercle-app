@@ -65,18 +65,46 @@ const CommentSection = ({ itemType, itemId, darkMode, isAdmin = false, initialCo
     }
   }, [showComments, itemType, itemId]);
 
+  // Helper function to count all comments in nested structure
+  const countAllComments = (comments) => {
+    return comments.reduce((total, comment) => {
+      let count = 1; // Count the comment itself
+      if (comment.replies && comment.replies.length > 0) {
+        count += countAllComments(comment.replies); // Recursively count replies
+      }
+      return total + count;
+    }, 0);
+  };
+
   const fetchComments = async () => {
     setLoading(true);
     const { data, error } = await getItemComments(itemType, itemId);
     if (!error && data) {
       setComments(data);
-      // Count all comments including replies
-      const totalCount = data.reduce((acc, comment) => {
-        return acc + 1 + (comment.replies?.length || 0);
-      }, 0);
+      // Count all comments including nested replies
+      const totalCount = countAllComments(data);
       setCommentCount(totalCount);
     }
     setLoading(false);
+  };
+
+  // Helper function to add reply to nested comment structure
+  const addReplyToTree = (comments, parentId, newReply) => {
+    return comments.map(comment => {
+      if (comment.id === parentId) {
+        return {
+          ...comment,
+          replies: [...(comment.replies || []), newReply]
+        };
+      }
+      if (comment.replies && comment.replies.length > 0) {
+        return {
+          ...comment,
+          replies: addReplyToTree(comment.replies, parentId, newReply)
+        };
+      }
+      return comment;
+    });
   };
 
   const handleSubmitComment = async () => {
@@ -98,16 +126,8 @@ const CommentSection = ({ itemType, itemId, darkMode, isAdmin = false, initialCo
 
     if (!error && data) {
       if (replyingTo) {
-        // Add reply to parent comment
-        setComments(prev => prev.map(comment => {
-          if (comment.id === replyingTo) {
-            return {
-              ...comment,
-              replies: [...(comment.replies || []), data]
-            };
-          }
-          return comment;
-        }));
+        // Add reply to nested structure
+        setComments(prev => addReplyToTree(prev, replyingTo, data));
       } else {
         // Add new top-level comment
         setComments(prev => [data, ...prev]);
@@ -119,24 +139,31 @@ const CommentSection = ({ itemType, itemId, darkMode, isAdmin = false, initialCo
     setSubmitting(false);
   };
 
+  // Helper function to remove comment from nested structure
+  const removeCommentFromTree = (comments, commentId) => {
+    return comments.reduce((acc, comment) => {
+      if (comment.id === commentId) {
+        // Skip this comment (delete it)
+        return acc;
+      }
+      
+      if (comment.replies && comment.replies.length > 0) {
+        const filteredReplies = removeCommentFromTree(comment.replies, commentId);
+        acc.push({
+          ...comment,
+          replies: filteredReplies
+        });
+      } else {
+        acc.push(comment);
+      }
+      return acc;
+    }, []);
+  };
+
   const handleDeleteComment = async (commentId, parentId = null) => {
     const { error } = await deleteComment(commentId);
     if (!error) {
-      if (parentId) {
-        // Remove reply
-        setComments(prev => prev.map(comment => {
-          if (comment.id === parentId) {
-            return {
-              ...comment,
-              replies: comment.replies.filter(r => r.id !== commentId)
-            };
-          }
-          return comment;
-        }));
-      } else {
-        // Remove top-level comment
-        setComments(prev => prev.filter(c => c.id !== commentId));
-      }
+      setComments(prev => removeCommentFromTree(prev, commentId));
       setCommentCount(prev => prev - 1);
     }
     handleCloseMenu();
@@ -169,24 +196,26 @@ const CommentSection = ({ itemType, itemId, darkMode, isAdmin = false, initialCo
     setSelectedComment(null);
   };
 
+  // Helper function to update comment in nested structure
+  const updateCommentInTree = (comments, commentId, updatedComment) => {
+    return comments.map(comment => {
+      if (comment.id === commentId) {
+        return { ...updatedComment, replies: comment.replies };
+      }
+      if (comment.replies && comment.replies.length > 0) {
+        return {
+          ...comment,
+          replies: updateCommentInTree(comment.replies, commentId, updatedComment)
+        };
+      }
+      return comment;
+    });
+  };
+
   const handleEditComment = async (commentId, newContent) => {
     const { data, error } = await updateComment(commentId, newContent);
     if (!error && data) {
-      setComments(prev => prev.map(comment => {
-        if (comment.id === commentId) {
-          return { ...data, replies: comment.replies };
-        }
-        // Check if it's a reply being edited
-        if (comment.replies) {
-          return {
-            ...comment,
-            replies: comment.replies.map(reply => 
-              reply.id === commentId ? data : reply
-            )
-          };
-        }
-        return comment;
-      }));
+      setComments(prev => updateCommentInTree(prev, commentId, data));
       setEditingComment(null);
       setEditContent('');
     }
@@ -208,10 +237,14 @@ const CommentSection = ({ itemType, itemId, darkMode, isAdmin = false, initialCo
     handleOpenMenu(event, comment);
   }, []);
 
-  const CommentItem = React.memo(({ comment, isReply = false, parentId = null, onOpenMenu }) => {
+  const CommentItem = React.memo(({ comment, depth = 0, parentId = null, onOpenMenu }) => {
     const [localEditContent, setLocalEditContent] = useState(comment.content);
+    const [showReplies, setShowReplies] = useState(true);
     const isEditing = editingComment === comment.id;
     const editFieldRef = useRef(null);
+    const isReply = depth > 0;
+    const maxDepth = 6; // Maximum depth before collapsing
+    const shouldCollapse = depth >= maxDepth;
 
     useEffect(() => {
       if (isEditing && editContent === '') {
@@ -234,6 +267,18 @@ const CommentSection = ({ itemType, itemId, darkMode, isAdmin = false, initialCo
       setLocalEditContent(e.target.value);
     };
 
+    const getThreadLineColor = () => {
+      const colors = [
+        theme.palette.primary.main,
+        theme.palette.secondary.main,
+        theme.palette.error.main,
+        theme.palette.warning.main,
+        theme.palette.info.main,
+        theme.palette.success.main
+      ];
+      return colors[depth % colors.length];
+    };
+
     return (
       <>
         <Box
@@ -241,8 +286,19 @@ const CommentSection = ({ itemType, itemId, darkMode, isAdmin = false, initialCo
             display: 'flex',
             gap: 1.5,
             opacity: comment.is_hidden ? 0.5 : 1,
-            ml: isReply ? 6 : 0,
-            mb: isReply ? 1 : 2
+            ml: depth * 3, // Progressive indentation
+            mb: 1.5,
+            position: 'relative',
+            '&::before': isReply ? {
+              content: '""',
+              position: 'absolute',
+              left: -16,
+              top: 0,
+              bottom: 0,
+              width: 2,
+              backgroundColor: alpha(getThreadLineColor(), 0.3),
+              borderRadius: 1
+            } : undefined
           }}
         >
           <Avatar
@@ -255,13 +311,17 @@ const CommentSection = ({ itemType, itemId, darkMode, isAdmin = false, initialCo
               }
             }}
             sx={{
-              width: isReply ? 28 : 32,
-              height: isReply ? 28 : 32,
-              bgcolor: theme.palette.primary.main,
+              width: Math.max(24, 32 - depth * 2), // Smaller avatars for deeper threads
+              height: Math.max(24, 32 - depth * 2),
+              bgcolor: getThreadLineColor(),
               cursor: 'pointer',
+              fontSize: depth > 2 ? '0.75rem' : '1rem',
+              border: isReply ? `2px solid ${alpha(getThreadLineColor(), 0.2)}` : 'none',
               '&:hover': {
-                opacity: 0.8
-              }
+                opacity: 0.8,
+                transform: 'scale(1.05)'
+              },
+              transition: 'all 0.2s ease'
             }}
           >
             {comment.profile?.full_name?.[0] || '?'}
@@ -399,12 +459,30 @@ const CommentSection = ({ itemType, itemId, darkMode, isAdmin = false, initialCo
                 }}
               />
             )}
-            {!isReply && (
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
+              <Button
+                size="small"
+                startIcon={<ReplyIcon sx={{ fontSize: 14 }} />}
+                onClick={() => setReplyingTo(comment.id)}
+                sx={{
+                  textTransform: 'none',
+                  color: theme.palette.text.secondary,
+                  fontSize: '0.75rem',
+                  minWidth: 'auto',
+                  py: 0,
+                  '&:hover': {
+                    bgcolor: 'transparent',
+                    color: getThreadLineColor()
+                  }
+                }}
+              >
+                Reply
+              </Button>
+              
+              {comment.replies && comment.replies.length > 0 && (
                 <Button
                   size="small"
-                  startIcon={<ReplyIcon sx={{ fontSize: 14 }} />}
-                  onClick={() => setReplyingTo(comment.id)}
+                  onClick={() => setShowReplies(!showReplies)}
                   sx={{
                     textTransform: 'none',
                     color: theme.palette.text.secondary,
@@ -413,30 +491,42 @@ const CommentSection = ({ itemType, itemId, darkMode, isAdmin = false, initialCo
                     py: 0,
                     '&:hover': {
                       bgcolor: 'transparent',
-                      color: theme.palette.primary.main
+                      color: getThreadLineColor()
                     }
                   }}
                 >
-                  Reply
+                  {showReplies ? '▼' : '▶'} {comment.replies.length} repl{comment.replies.length === 1 ? 'y' : 'ies'}
                 </Button>
-              </Box>
-            )}
+              )}
+            </Box>
           </Box>
         </Box>
       {/* Reply input field - shown directly below the comment being replied to */}
       {replyingTo === comment.id && user && (
         <Box
           sx={{
-            ml: isReply ? 6 : 4,
+            ml: (depth + 1) * 3,
             mb: 2,
             display: 'flex',
-            gap: 1
+            gap: 1,
+            mt: 1,
+            p: 1.5,
+            bgcolor: alpha(getThreadLineColor(), 0.05),
+            borderRadius: 1,
+            border: `1px solid ${alpha(getThreadLineColor(), 0.2)}`
           }}
         >
           <Avatar
-            src={user.profile_picture_url}
-            sx={{ width: 28, height: 28 }}
-          />
+            src={activeProfile?.profile_picture_url || user.profile_picture_url}
+            sx={{ 
+              width: 28, 
+              height: 28,
+              bgcolor: getThreadLineColor(),
+              border: `2px solid ${alpha(getThreadLineColor(), 0.3)}`
+            }}
+          >
+            {activeProfile?.full_name?.[0] || user?.full_name?.[0] || '?'}
+          </Avatar>
           <Box sx={{ flex: 1 }}>
             <Box
               sx={{
@@ -446,13 +536,17 @@ const CommentSection = ({ itemType, itemId, darkMode, isAdmin = false, initialCo
                 mb: 1
               }}
             >
-              <Typography variant="caption" color="primary">
+              <Typography variant="caption" sx={{ color: getThreadLineColor(), fontWeight: 500 }}>
                 Replying to {comment.profile?.full_name || 'Unknown User'}
               </Typography>
               <IconButton
                 size="small"
                 onClick={() => setReplyingTo(null)}
-                sx={{ p: 0.25 }}
+                sx={{ 
+                  p: 0.25,
+                  color: theme.palette.text.secondary,
+                  '&:hover': { color: getThreadLineColor() }
+                }}
               >
                 <CloseIcon sx={{ fontSize: 14 }} />
               </IconButton>
@@ -477,7 +571,13 @@ const CommentSection = ({ itemType, itemId, darkMode, isAdmin = false, initialCo
                     fontSize: '0.875rem',
                     bgcolor: theme.palette.background.paper,
                     '& fieldset': {
-                      borderColor: alpha(theme.palette.divider, 0.2)
+                      borderColor: alpha(getThreadLineColor(), 0.3)
+                    },
+                    '&:hover fieldset': {
+                      borderColor: alpha(getThreadLineColor(), 0.5)
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: getThreadLineColor()
                     }
                   }
                 }}
@@ -486,9 +586,12 @@ const CommentSection = ({ itemType, itemId, darkMode, isAdmin = false, initialCo
                 onClick={handleSubmitComment}
                 disabled={!newComment.trim() || submitting}
                 sx={{
-                  color: theme.palette.primary.main,
+                  color: getThreadLineColor(),
                   '&:disabled': {
                     color: theme.palette.action.disabled
+                  },
+                  '&:hover': {
+                    bgcolor: alpha(getThreadLineColor(), 0.1)
                   }
                 }}
               >
@@ -497,6 +600,23 @@ const CommentSection = ({ itemType, itemId, darkMode, isAdmin = false, initialCo
             </Box>
           </Box>
         </Box>
+      )}
+      
+      {/* Render nested replies with unlimited depth */}
+      {showReplies && comment.replies && comment.replies.length > 0 && (
+        <Collapse in={showReplies}>
+          <Box sx={{ mt: 1 }}>
+            {comment.replies.map(reply => (
+              <CommentItem
+                key={reply.id}
+                comment={reply}
+                depth={depth + 1}
+                parentId={comment.id}
+                onOpenMenu={onOpenMenu}
+              />
+            ))}
+          </Box>
+        </Collapse>
       )}
     </>
     );
@@ -618,17 +738,11 @@ const CommentSection = ({ itemType, itemId, darkMode, isAdmin = false, initialCo
               {comments.map(comment => (
                 <Fade in key={comment.id}>
                   <Box>
-                    <CommentItem comment={comment} onOpenMenu={handleOpenMenuCallback} />
-                    {/* Replies */}
-                    {comment.replies?.map(reply => (
-                      <CommentItem
-                        key={reply.id}
-                        comment={reply}
-                        isReply
-                        parentId={comment.id}
-                        onOpenMenu={handleOpenMenuCallback}
-                      />
-                    ))}
+                    <CommentItem 
+                      comment={comment} 
+                      depth={0}
+                      onOpenMenu={handleOpenMenuCallback} 
+                    />
                   </Box>
                 </Fade>
               ))}

@@ -1,14 +1,24 @@
 import { supabase } from '../supabaseclient';
 import { queueCommentNotification } from '../services/emailNotificationService';
 
-// Get comments for any item type
+// Recursive function to build comment tree with unlimited depth
+const buildCommentTree = (comments, parentId = null) => {
+  const children = comments.filter(comment => comment.parent_comment_id === parentId);
+  
+  return children.map(comment => ({
+    ...comment,
+    replies: buildCommentTree(comments, comment.id)
+  }));
+};
+
+// Get comments for any item type with unlimited threading depth
 export const getItemComments = async (itemType, itemId) => {
   try {
     // Map item type to the correct foreign key field
     const entityField = `${itemType}_id`;
     
-    // First get top-level comments
-    const { data: topLevelComments, error: topLevelError } = await supabase
+    // Get ALL comments for this item in one query
+    const { data: allComments, error } = await supabase
       .from('comments')
       .select(`
         *,
@@ -19,37 +29,18 @@ export const getItemComments = async (itemType, itemId) => {
         )
       `)
       .eq(entityField, itemId)
-      .is('parent_comment_id', null)
-      .order('created_at', { ascending: false });
+      .eq('is_hidden', false)
+      .order('created_at', { ascending: true });
 
-    if (topLevelError) throw topLevelError;
+    if (error) throw error;
 
-    // Then get replies for each comment
-    const commentsWithReplies = await Promise.all(
-      (topLevelComments || []).map(async (comment) => {
-        const { data: replies, error: repliesError } = await supabase
-          .from('comments')
-          .select(`
-            *,
-            profile:profiles!comments_profile_id_fkey(
-              id,
-              full_name,
-              profile_picture_url
-            )
-          `)
-          .eq('parent_comment_id', comment.id)
-          .order('created_at', { ascending: true });
+    // Build the comment tree with unlimited depth
+    const commentTree = buildCommentTree(allComments || []);
+    
+    // Sort top-level comments by creation date (newest first)
+    commentTree.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
-        if (repliesError) {
-          console.error('Error fetching replies:', repliesError);
-          return { ...comment, replies: [] };
-        }
-
-        return { ...comment, replies: replies || [] };
-      })
-    );
-
-    return { data: commentsWithReplies, error: null };
+    return { data: commentTree, error: null };
   } catch (error) {
     console.error('Error fetching comments:', error);
     return { data: null, error: error.message };
