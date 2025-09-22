@@ -18,7 +18,13 @@ import {
   Switch,
   FormControlLabel,
   Tooltip,
-  Grid
+  Grid,
+  Tab,
+  Tabs,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel
 } from '@mui/material';
 import Spinner from '../Spinner';
 import {
@@ -48,6 +54,7 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import {
   fetchNetworkCategories,
+  fetchCategoriesByType,
   createCategory,
   updateCategory,
   deleteCategory,
@@ -117,6 +124,14 @@ const SortableItem = ({ category, onEdit, onDelete, onToggleStatus }) => {
             <Typography variant="caption" color="textSecondary">
               /{category.slug}
             </Typography>
+            {category.type && category.type !== 'general' && (
+              <Chip 
+                label={category.type.charAt(0).toUpperCase() + category.type.slice(1)} 
+                size="small" 
+                color="primary" 
+                variant="outlined" 
+              />
+            )}
             {!category.is_active && (
               <Chip label="Inactive" size="small" color="default" />
             )}
@@ -154,6 +169,12 @@ const SortableItem = ({ category, onEdit, onDelete, onToggleStatus }) => {
 
 const CategoriesTab = ({ networkId }) => {
   const [categories, setCategories] = useState([]);
+  const [categoriesByType, setCategoriesByType] = useState({
+    event: [],
+    news: [],
+    portfolio: [],
+    general: []
+  });
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
@@ -161,12 +182,14 @@ const CategoriesTab = ({ networkId }) => {
   const [categoryToDelete, setCategoryToDelete] = useState(null);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
+  const [activeTab, setActiveTab] = useState('all');
   
   const [formData, setFormData] = useState({
     name: '',
     slug: '',
     description: '',
     color: '#6366f1',
+    type: 'general',
     is_active: true
   });
 
@@ -185,7 +208,17 @@ const CategoriesTab = ({ networkId }) => {
   const loadCategories = async () => {
     setLoading(true);
     try {
-      const { data, error } = await fetchNetworkCategories(networkId, false); // Get all categories
+      const { data: groupedData, error: groupedError } = await fetchCategoriesByType(networkId, false); // Get all categories grouped by type
+      if (groupedError) throw groupedError;
+      setCategoriesByType(groupedData || {
+        event: [],
+        news: [],
+        portfolio: [],
+        general: []
+      });
+      
+      // Also load all categories for drag and drop
+      const { data, error } = await fetchNetworkCategories(networkId, false);
       if (error) throw error;
       setCategories(data || []);
     } catch (err) {
@@ -238,6 +271,7 @@ const CategoriesTab = ({ networkId }) => {
         slug: formData.slug.trim(),
         description: formData.description.trim(),
         color: formData.color,
+        type: formData.type,
         is_active: formData.is_active
       };
 
@@ -266,6 +300,7 @@ const CategoriesTab = ({ networkId }) => {
       slug: category.slug,
       description: category.description || '',
       color: category.color || '#6366f1',
+      type: category.type || 'general',
       is_active: category.is_active
     });
     setDialogOpen(true);
@@ -305,11 +340,21 @@ const CategoriesTab = ({ networkId }) => {
     const {active, over} = event;
 
     if (active.id !== over.id) {
-      const oldIndex = categories.findIndex(cat => cat.id === active.id);
-      const newIndex = categories.findIndex(cat => cat.id === over.id);
+      // Get the categories for current view
+      const currentCategories = activeTab === 'all' ? categories : categoriesByType[activeTab];
+      const oldIndex = currentCategories.findIndex(cat => cat.id === active.id);
+      const newIndex = currentCategories.findIndex(cat => cat.id === over.id);
       
-      const newCategories = arrayMove(categories, oldIndex, newIndex);
-      setCategories(newCategories);
+      const newCategories = arrayMove(currentCategories, oldIndex, newIndex);
+      
+      if (activeTab === 'all') {
+        setCategories(newCategories);
+      } else {
+        setCategoriesByType(prev => ({
+          ...prev,
+          [activeTab]: newCategories
+        }));
+      }
 
       try {
         const { error } = await reorderCategories(newCategories);
@@ -330,6 +375,7 @@ const CategoriesTab = ({ networkId }) => {
       slug: '',
       description: '',
       color: '#6366f1',
+      type: 'general',
       is_active: true
     });
   };
@@ -351,7 +397,13 @@ const CategoriesTab = ({ networkId }) => {
         <Button
           variant="contained"
           startIcon={<AddIcon />}
-          onClick={() => setDialogOpen(true)}
+          onClick={() => {
+            // Pre-set the type based on active tab
+            if (activeTab !== 'all') {
+              setFormData(prev => ({ ...prev, type: activeTab }));
+            }
+            setDialogOpen(true);
+          }}
         >
           Add Category
         </Button>
@@ -369,6 +421,19 @@ const CategoriesTab = ({ networkId }) => {
         </Alert>
       )}
 
+      {/* Category Type Tabs */}
+      <Tabs
+        value={activeTab}
+        onChange={(e, newValue) => setActiveTab(newValue)}
+        sx={{ mb: 3, borderBottom: 1, borderColor: 'divider' }}
+      >
+        <Tab label="All Categories" value="all" />
+        <Tab label="Event Categories" value="event" />
+        <Tab label="News Categories" value="news" />
+        <Tab label="Portfolio Categories" value="portfolio" />
+        <Tab label="General Categories" value="general" />
+      </Tabs>
+
       {categories.length === 0 ? (
         <Box textAlign="center" py={4}>
           <Typography color="textSecondary" gutterBottom>
@@ -385,11 +450,11 @@ const CategoriesTab = ({ networkId }) => {
           onDragEnd={handleDragEnd}
         >
           <SortableContext
-            items={categories.map(cat => cat.id)}
+            items={(activeTab === 'all' ? categories : categoriesByType[activeTab]).map(cat => cat.id)}
             strategy={verticalListSortingStrategy}
           >
             <List>
-              {categories.map((category) => (
+              {(activeTab === 'all' ? categories : categoriesByType[activeTab]).map((category) => (
                 <SortableItem
                   key={category.id}
                   category={category}
@@ -444,6 +509,21 @@ const CategoriesTab = ({ networkId }) => {
               multiline
               rows={2}
             />
+            
+            <FormControl fullWidth margin="normal">
+              <InputLabel>Category Type</InputLabel>
+              <Select
+                name="type"
+                value={formData.type}
+                onChange={handleInputChange}
+                label="Category Type"
+              >
+                <MenuItem value="general">General (All content types)</MenuItem>
+                <MenuItem value="event">Event Categories</MenuItem>
+                <MenuItem value="news">News Categories</MenuItem>
+                <MenuItem value="portfolio">Portfolio Categories</MenuItem>
+              </Select>
+            </FormControl>
             
             <Box sx={{ mt: 2, mb: 2 }}>
               <Typography variant="body2" gutterBottom>

@@ -1,7 +1,7 @@
 import { supabase } from '../supabaseclient';
 
 // Fetch all categories for a network
-export const fetchNetworkCategories = async (networkId, activeOnly = true) => {
+export const fetchNetworkCategories = async (networkId, activeOnly = true, type = null) => {
   try {
     let query = supabase
       .from('network_categories')
@@ -12,6 +12,12 @@ export const fetchNetworkCategories = async (networkId, activeOnly = true) => {
 
     if (activeOnly) {
       query = query.eq('is_active', true);
+    }
+
+    // Filter by type if specified
+    if (type) {
+      // Include both the specific type and 'general' categories
+      query = query.in('type', [type, 'general']);
     }
 
     const { data, error } = await query;
@@ -143,4 +149,44 @@ export const generateSlug = (name) => {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '');
+};
+
+// Fetch categories grouped by type
+export const fetchCategoriesByType = async (networkId, activeOnly = true) => {
+  try {
+    let query = supabase
+      .from('network_categories')
+      .select('*')
+      .eq('network_id', networkId)
+      .order('type', { ascending: true })
+      .order('sort_order', { ascending: true })
+      .order('name', { ascending: true });
+
+    if (activeOnly) {
+      query = query.eq('is_active', true);
+    }
+
+    const { data, error } = await query;
+
+    if (error) throw error;
+
+    // Group categories by type
+    const grouped = {
+      event: [],
+      news: [],
+      portfolio: [],
+      general: []
+    };
+
+    data?.forEach(category => {
+      if (grouped[category.type]) {
+        grouped[category.type].push(category);
+      }
+    });
+
+    return { data: grouped, error: null };
+  } catch (error) {
+    console.error('Error fetching categories by type:', error);
+    return { data: null, error };
+  }
 };
