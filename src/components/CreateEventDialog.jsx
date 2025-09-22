@@ -46,7 +46,7 @@ import {
 } from '@mui/icons-material';
 import AddressSuggestions from './AddressSuggestions';
 import { createEvent, updateEvent } from '../api/networks';
-import { fetchNetworkCategories } from '../api/categories';
+import { fetchNetworkCategories, createCategory, generateSlug } from '../api/categories';
 import { useTranslation } from '../hooks/useTranslation';
 
 const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated, editingEvent = null, onEventUpdated, isAdmin = false }) => {
@@ -75,6 +75,15 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
   const [categories, setCategories] = useState([]);
   const [dragOver, setDragOver] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
+  const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
+  const [newCategory, setNewCategory] = useState({
+    name: '',
+    slug: '',
+    description: '',
+    color: '#6366f1'
+  });
+  const [categoryCreating, setCategoryCreating] = useState(false);
+  const [categoryError, setCategoryError] = useState(null);
 
   const steps = [t('events.steps.basicInfo'), t('events.steps.detailsMedia'), t('events.steps.settings')];
 
@@ -88,12 +97,6 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
   // Load categories on mount
   useEffect(() => {
     if (networkId) {
-      const loadCategories = async () => {
-        const { data, error } = await fetchNetworkCategories(networkId, true);
-        if (data && !error) {
-          setCategories(data);
-        }
-      };
       loadCategories();
     }
   }, [networkId]);
@@ -362,6 +365,71 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
     } finally {
       setUpdating(false);
       console.log('🎯 [EVENT DIALOG] Event operation completed');
+    }
+  };
+
+  const handleCreateCategory = async () => {
+    setCategoryError(null);
+    setCategoryCreating(true);
+
+    try {
+      if (!newCategory.name.trim()) {
+        setCategoryError('Category name is required');
+        return;
+      }
+
+      const categoryData = {
+        network_id: networkId,
+        name: newCategory.name.trim(),
+        slug: newCategory.slug.trim() || generateSlug(newCategory.name.trim()),
+        description: newCategory.description.trim(),
+        color: newCategory.color,
+        type: 'event', // Event-specific category
+        is_active: true
+      };
+
+      const { data, error } = await createCategory(categoryData);
+      if (error) throw error;
+
+      // Refresh categories list
+      await loadCategories();
+      
+      // Set the new category as selected
+      setEventForm(prev => ({ ...prev, category_id: data.id }));
+      
+      // Close dialog and reset form
+      setCategoryDialogOpen(false);
+      setNewCategory({
+        name: '',
+        slug: '',
+        description: '',
+        color: '#6366f1'
+      });
+    } catch (err) {
+      setCategoryError(err.message || 'Failed to create category');
+    } finally {
+      setCategoryCreating(false);
+    }
+  };
+
+  const handleCategoryInputChange = (e) => {
+    const { name, value } = e.target;
+    setNewCategory(prev => {
+      const updated = { ...prev, [name]: value };
+      
+      // Auto-generate slug from name
+      if (name === 'name') {
+        updated.slug = generateSlug(value);
+      }
+      
+      return updated;
+    });
+  };
+
+  const loadCategories = async () => {
+    const { data, error } = await fetchNetworkCategories(networkId, true, 'event');
+    if (data && !error) {
+      setCategories(data);
     }
   };
 
@@ -800,7 +868,13 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
                       <InputLabel>Event Category (optional)</InputLabel>
                       <Select
                         value={eventForm.category_id}
-                        onChange={(e) => setEventForm({ ...eventForm, category_id: e.target.value })}
+                        onChange={(e) => {
+                          if (e.target.value === 'ADD_NEW') {
+                            setCategoryDialogOpen(true);
+                          } else {
+                            setEventForm({ ...eventForm, category_id: e.target.value });
+                          }
+                        }}
                         label="Event Category (optional)"
                       >
                         <MenuItem value="">
@@ -811,6 +885,12 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
                             {category.name}
                           </MenuItem>
                         ))}
+                        {isAdmin && <Divider />}
+                        {isAdmin && (
+                          <MenuItem value="ADD_NEW" sx={{ color: 'primary.main', fontWeight: 'medium' }}>
+                            + Add New Category
+                          </MenuItem>
+                        )}
                       </Select>
                     </FormControl>
                   </CardContent>
@@ -942,6 +1022,116 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
           </Button>
         )}
       </DialogActions>
+      
+      {/* Category Creation Dialog */}
+      <Dialog 
+        open={categoryDialogOpen} 
+        onClose={() => !categoryCreating && setCategoryDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Typography variant="h6">Create New Event Category</Typography>
+            <IconButton 
+              onClick={() => setCategoryDialogOpen(false)} 
+              disabled={categoryCreating}
+              size="small"
+            >
+              <CloseIcon />
+            </IconButton>
+          </Box>
+        </DialogTitle>
+        
+        <DialogContent>
+          {categoryError && (
+            <Alert 
+              severity="error" 
+              sx={{ mb: 2 }}
+              onClose={() => setCategoryError(null)}
+            >
+              {categoryError}
+            </Alert>
+          )}
+          
+          <TextField
+            autoFocus
+            label="Category Name"
+            fullWidth
+            required
+            name="name"
+            value={newCategory.name}
+            onChange={handleCategoryInputChange}
+            margin="normal"
+            disabled={categoryCreating}
+          />
+          
+          <TextField
+            label="Slug (URL-friendly identifier)"
+            fullWidth
+            name="slug"
+            value={newCategory.slug}
+            onChange={handleCategoryInputChange}
+            margin="normal"
+            helperText="Auto-generated from name. Only lowercase letters, numbers, and hyphens."
+            disabled={categoryCreating}
+          />
+          
+          <TextField
+            label="Description (optional)"
+            fullWidth
+            name="description"
+            value={newCategory.description}
+            onChange={handleCategoryInputChange}
+            margin="normal"
+            multiline
+            rows={2}
+            disabled={categoryCreating}
+          />
+          
+          <Box sx={{ mt: 2 }}>
+            <Typography variant="body2" gutterBottom>
+              Category Color
+            </Typography>
+            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+              {['#6366f1', '#8b5cf6', '#ec4899', '#f43f5e', '#f97316', '#22c55e', '#06b6d4', '#3b82f6'].map((color) => (
+                <Box
+                  key={color}
+                  onClick={() => !categoryCreating && setNewCategory(prev => ({ ...prev, color }))}
+                  sx={{
+                    width: 32,
+                    height: 32,
+                    bgcolor: color,
+                    borderRadius: 1,
+                    cursor: categoryCreating ? 'default' : 'pointer',
+                    border: newCategory.color === color ? '3px solid' : '1px solid',
+                    borderColor: newCategory.color === color ? 'primary.main' : 'divider',
+                    '&:hover': !categoryCreating && {
+                      transform: 'scale(1.1)'
+                    }
+                  }}
+                />
+              ))}
+            </Box>
+          </Box>
+        </DialogContent>
+        
+        <DialogActions>
+          <Button 
+            onClick={() => setCategoryDialogOpen(false)} 
+            disabled={categoryCreating}
+          >
+            Cancel
+          </Button>
+          <Button 
+            onClick={handleCreateCategory}
+            variant="contained"
+            disabled={categoryCreating || !newCategory.name.trim()}
+          >
+            {categoryCreating ? 'Creating...' : 'Create Category'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Dialog>
   );
 };
