@@ -44,7 +44,6 @@ import CreatePostModal from '../components/CreatePostModal';
 function PostPage() {
   const { postId } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuth();
   const { activeProfile } = useProfile();
   const [post, setPost] = useState(null);
   const [author, setAuthor] = useState(null);
@@ -57,7 +56,7 @@ function PostPage() {
 
   useEffect(() => {
     fetchPost();
-  }, [postId, user]);
+  }, [postId]);
 
   const fetchPost = async () => {
     try {
@@ -121,7 +120,7 @@ function PostPage() {
         .from('portfolio_items')
         .delete()
         .eq('id', postId)
-        .eq('profile_id', activeProfile?.id || user.id); // Ensure user can only delete their own posts
+        .eq('profile_id', activeProfile?.id); // Ensure user can only delete their own posts
 
       if (error) throw error;
 
@@ -198,7 +197,7 @@ function PostPage() {
     );
   }
 
-  const isAuthor = author && (author.user_id === user?.id || author.id === (activeProfile?.id || user?.id));
+  const isAuthor = author && (author.id === activeProfile?.id);
   const contentType = getContentTypeIcon();
 
   return (
