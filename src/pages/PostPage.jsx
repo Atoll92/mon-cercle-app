@@ -39,6 +39,7 @@ import ImageViewerModal from '../components/ImageViewerModal';
 import CommentSection from '../components/CommentSection';
 import LinkifiedText from '../components/LinkifiedText';
 import UserContent from '../components/UserContent';
+import CreatePostModal from '../components/CreatePostModal';
 
 function PostPage() {
   const { postId } = useParams();
@@ -52,6 +53,7 @@ function PostPage() {
   const [anchorEl, setAnchorEl] = useState(null);
   const [imageViewerOpen, setImageViewerOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState({ url: '', title: '' });
+  const [editModalOpen, setEditModalOpen] = useState(false);
 
   useEffect(() => {
     fetchPost();
@@ -105,9 +107,8 @@ function PostPage() {
   };
 
   const handleEdit = () => {
-    // Navigate to profile edit page
-    navigate(`/profile/${author.id}/edit`);
     handleMenuClose();
+    setEditModalOpen(true);
   };
 
   const handleDelete = async () => {
@@ -135,6 +136,11 @@ function PostPage() {
   const handleImageClick = (url, title) => {
     setSelectedImage({ url, title });
     setImageViewerOpen(true);
+  };
+
+  const handlePostUpdated = () => {
+    setEditModalOpen(false);
+    fetchPost(); // Refresh the post data
   };
 
   const getContentTypeIcon = () => {
@@ -218,7 +224,7 @@ function PostPage() {
             >
               <MenuItem onClick={handleEdit}>
                 <EditIcon sx={{ mr: 1 }} fontSize="small" />
-                Edit Profile
+                Edit Post
               </MenuItem>
               <MenuItem onClick={handleDelete}>
                 <DeleteIcon sx={{ mr: 1 }} fontSize="small" />
@@ -233,33 +239,33 @@ function PostPage() {
       <Paper sx={{ p: 4 }}>
         {/* Author Info */}
         {author && (
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-            <Avatar
-              src={author.profile_picture_url}
-              alt={author.full_name}
-              sx={{ width: 60, height: 60, mr: 2 }}
-              onClick={() => navigate(`/profile/${author.id}`)}
-              style={{ cursor: 'pointer' }}
-            >
-              {author.full_name?.[0]}
-            </Avatar>
-            <Box>
-              <Typography 
-                variant="h5" 
+          <Box sx={{ mb: 3 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+              <Avatar
+                src={author.profile_picture_url}
+                alt={author.full_name}
+                sx={{ width: 60, height: 60, mr: 2 }}
+                onClick={() => navigate(`/profile/${author.id}`)}
+                style={{ cursor: 'pointer' }}
+              >
+                {author.full_name?.[0]}
+              </Avatar>
+              <Typography
+                variant="h5"
                 component={Link}
                 to={`/profile/${author.id}`}
-                sx={{ 
-                  textDecoration: 'none', 
+                sx={{
+                  textDecoration: 'none',
                   color: 'inherit',
                   '&:hover': { textDecoration: 'underline' }
                 }}
               >
                 {author.full_name}
               </Typography>
-              <Typography variant="caption" color="text.secondary">
-                Posted on {formatDate(post.created_at, { year: 'numeric', month: 'long', day: 'numeric' })}
-              </Typography>
             </Box>
+            <Typography variant="body2" color="text.secondary" sx={{ ml: '76px' }}>
+              Posted on {formatDate(post.created_at, { year: 'numeric', month: 'long', day: 'numeric' })}
+            </Typography>
           </Box>
         )}
 
@@ -451,6 +457,15 @@ function PostPage() {
         onClose={() => setImageViewerOpen(false)}
         imageUrl={selectedImage.url}
         title={selectedImage.title}
+      />
+
+      {/* Edit Post Modal */}
+      <CreatePostModal
+        open={editModalOpen}
+        onClose={() => setEditModalOpen(false)}
+        onPostCreated={handlePostUpdated}
+        mode="edit"
+        editPost={post}
       />
     </Container>
   );
