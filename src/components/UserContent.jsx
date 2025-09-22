@@ -82,6 +82,14 @@ const UserContent = ({
             ...sx,
           // Apply overflow styles to all nested elements
           '& *': overflowStyles,
+          // Empty paragraphs - ensure they take up space
+          '& p': {
+            minHeight: '1em',
+            '&:empty::before': {
+              content: '"\\00a0"', // Non-breaking space
+              display: 'inline-block'
+            }
+          },
           // Links
           '& a': {
             color: theme.palette.primary.main,
