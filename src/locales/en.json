@@ -885,7 +885,9 @@
     "noNewsPosts": "No announcement posts available",
     "createFirstPost": "Create First Announcement Post",
     "postedBy": "Posted by",
-    "delete": "Delete"
+    "delete": "Delete",
+    "edit": "Edit",
+    "announcementUpdated": "Announcement updated successfully!"
   },
   "chatTab": {
     "expandToFullscreen": "Expand chat to fullscreen",

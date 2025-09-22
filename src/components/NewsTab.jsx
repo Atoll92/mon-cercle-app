@@ -33,6 +33,9 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  Menu,
+  ListItemIcon,
+  ListItemText,
   alpha
 } from '@mui/material';
 import Spinner from './Spinner';
@@ -44,11 +47,13 @@ import {
   Cancel as CancelIcon,
   Visibility as VisibilityIcon,
   Poll as PollIcon,
-  Campaign as AnnouncementIcon
+  Campaign as AnnouncementIcon,
+  MoreVert as MoreVertIcon
 } from '@mui/icons-material';
 import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
-import { createNewsPost, deleteNewsPost } from '../api/networks';
+import { createNewsPost, deleteNewsPost, updateNewsPost } from '../api/networks';
+import CreateNewsDialog from './CreateNewsDialog';
 import { getActivePolls } from '../api/polls';
 import { fetchNetworkCategories } from '../api/categories';
 import PollCard from './PollCard';
@@ -96,6 +101,14 @@ const NewsTab = ({ darkMode }) => {
   // Member detail modal state
   const [selectedMember, setSelectedMember] = useState(null);
   const [memberModalOpen, setMemberModalOpen] = useState(false);
+
+  // State for edit dialog
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editingNewsItem, setEditingNewsItem] = useState(null);
+
+  // State for menu anchor
+  const [menuAnchor, setMenuAnchor] = useState(null);
+  const [selectedPost, setSelectedPost] = useState(null);
 
   // Fetch active polls and categories
   useEffect(() => {
@@ -261,26 +274,60 @@ const NewsTab = ({ darkMode }) => {
   // Handle announcement deletion
   const handleDeleteAnnouncement = async (postId) => {
     if (!confirm(t('newsTab.confirmDelete'))) return;
-    
+
     setError(null);
     setMessage('');
-    
+    setMenuAnchor(null);
+
     try {
-      const { error } = await supabase
-        .from('network_news')
-        .delete()
-        .eq('id', postId);
-      
-      if (error) throw error;
-      
+      const result = await deleteNewsPost(postId);
+
+      if (!result.success) throw new Error(result.message);
+
       setMessage(t('newsTab.announcementDeleted'));
-      
+
       // Refresh announcements from context
       refreshNews();
     } catch (error) {
       console.error('Error deleting announcement:', error);
       setError(t('newsTab.deleteFailed') + ': ' + error.message);
     }
+  };
+
+  // Handle menu open
+  const handleMenuOpen = (event, post) => {
+    event.stopPropagation();
+    setMenuAnchor(event.currentTarget);
+    setSelectedPost(post);
+  };
+
+  // Handle menu close
+  const handleMenuClose = () => {
+    setMenuAnchor(null);
+    setSelectedPost(null);
+  };
+
+  // Handle edit click
+  const handleEditClick = () => {
+    setEditingNewsItem(selectedPost);
+    setEditDialogOpen(true);
+    handleMenuClose();
+  };
+
+  // Handle delete click
+  const handleDeleteClick = () => {
+    if (selectedPost) {
+      handleDeleteAnnouncement(selectedPost.id);
+    }
+    handleMenuClose();
+  };
+
+  // Handle news update
+  const handleNewsUpdated = () => {
+    setEditDialogOpen(false);
+    setEditingNewsItem(null);
+    refreshNews();
+    setMessage(t('newsTab.announcementUpdated'));
   };
 
   // Format a network member's name
@@ -755,49 +802,65 @@ const NewsTab = ({ darkMode }) => {
                 return null;
               })()}
             <CardContent>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
-                <Typography variant="h6">
-                  {post.title}
-                </Typography>
-                {post.category_id && categories.find(c => c.id === post.category_id) && (
-                  <Box
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flex: 1 }}>
+                  <Typography variant="h6">
+                    {post.title}
+                  </Typography>
+                  {post.category_id && categories.find(c => c.id === post.category_id) && (
+                    <Box
+                      sx={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 0.5,
+                        px: 1.5,
+                        py: 0.5,
+                        borderRadius: '16px',
+                        bgcolor: alpha(categories.find(c => c.id === post.category_id).color, 0.12),
+                        border: `1px solid ${alpha(categories.find(c => c.id === post.category_id).color, 0.3)}`,
+                        transition: 'all 0.2s ease',
+                        '&:hover': {
+                          bgcolor: alpha(categories.find(c => c.id === post.category_id).color, 0.18),
+                          borderColor: alpha(categories.find(c => c.id === post.category_id).color, 0.4),
+                        }
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          width: 6,
+                          height: 6,
+                          borderRadius: '50%',
+                          bgcolor: categories.find(c => c.id === post.category_id).color,
+                          flexShrink: 0
+                        }}
+                      />
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          fontSize: '0.75rem',
+                          fontWeight: 500,
+                          color: categories.find(c => c.id === post.category_id).color,
+                          letterSpacing: '0.02em'
+                        }}
+                      >
+                        {categories.find(c => c.id === post.category_id).name}
+                      </Typography>
+                    </Box>
+                  )}
+                </Box>
+                {isAdmin && (
+                  <IconButton
+                    size="small"
+                    onClick={(e) => handleMenuOpen(e, post)}
                     sx={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: 0.5,
-                      px: 1.5,
-                      py: 0.5,
-                      borderRadius: '16px',
-                      bgcolor: alpha(categories.find(c => c.id === post.category_id).color, 0.12),
-                      border: `1px solid ${alpha(categories.find(c => c.id === post.category_id).color, 0.3)}`,
-                      transition: 'all 0.2s ease',
+                      ml: 'auto',
                       '&:hover': {
-                        bgcolor: alpha(categories.find(c => c.id === post.category_id).color, 0.18),
-                        borderColor: alpha(categories.find(c => c.id === post.category_id).color, 0.4),
+                        bgcolor: 'action.hover'
                       }
                     }}
                   >
-                    <Box
-                      sx={{
-                        width: 6,
-                        height: 6,
-                        borderRadius: '50%',
-                        bgcolor: categories.find(c => c.id === post.category_id).color,
-                        flexShrink: 0
-                      }}
-                    />
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        fontSize: '0.75rem',
-                        fontWeight: 500,
-                        color: categories.find(c => c.id === post.category_id).color,
-                        letterSpacing: '0.02em'
-                      }}
-                    >
-                      {categories.find(c => c.id === post.category_id).name}
-                    </Typography>
-                  </Box>
+                    <MoreVertIcon />
+                  </IconButton>
                 )}
               </Box>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
@@ -838,19 +901,6 @@ const NewsTab = ({ darkMode }) => {
                 html={true}
               />
             </CardContent>
-            
-            {isAdmin && (
-              <CardActions>
-                <Button 
-                  size="small" 
-                  color="error"
-                  onClick={() => handleDeleteAnnouncement(post.id)}
-                  startIcon={<DeleteIcon />}
-                >
-                  {t('newsTab.delete')}
-                </Button>
-              </CardActions>
-            )}
             </AnimatedCard>
           </StaggeredListItem>
         ))
@@ -872,6 +922,48 @@ const NewsTab = ({ darkMode }) => {
         member={selectedMember}
         darkMode={darkMode}
       />
+
+      {/* Edit News Dialog */}
+      <CreateNewsDialog
+        open={editDialogOpen}
+        onClose={() => {
+          setEditDialogOpen(false);
+          setEditingNewsItem(null);
+        }}
+        networkId={network?.id}
+        profileId={activeProfile?.id || user?.id}
+        editingNews={editingNewsItem}
+        onNewsUpdated={handleNewsUpdated}
+        darkMode={darkMode}
+      />
+
+      {/* Menu for Edit/Delete */}
+      <Menu
+        anchorEl={menuAnchor}
+        open={Boolean(menuAnchor)}
+        onClose={handleMenuClose}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+      >
+        <MenuItem onClick={handleEditClick}>
+          <ListItemIcon>
+            <EditIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>{t('newsTab.edit')}</ListItemText>
+        </MenuItem>
+        <MenuItem onClick={handleDeleteClick}>
+          <ListItemIcon>
+            <DeleteIcon fontSize="small" color="error" />
+          </ListItemIcon>
+          <ListItemText sx={{ color: 'error.main' }}>{t('newsTab.delete')}</ListItemText>
+        </MenuItem>
+      </Menu>
     </PageTransition>
   );
 };

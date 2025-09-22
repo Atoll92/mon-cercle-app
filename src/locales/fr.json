@@ -878,7 +878,9 @@
     "noAnnouncements": "Aucune annonce disponible",
     "createFirstPost": "Créer la première annonce",
     "postedBy": "Publié par",
-    "delete": "Supprimer"
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "announcementUpdated": "Annonce mise à jour avec succès !"
   },
   "chatTab": {
     "expandToFullscreen": "Étendre le chat en plein écran",
