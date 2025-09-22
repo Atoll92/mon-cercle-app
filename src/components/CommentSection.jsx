@@ -34,7 +34,7 @@ import {
 import { getItemComments, addComment, updateComment, deleteComment, toggleCommentVisibility } from '../api/comments';
 import { formatTimeAgo } from '../utils/dateFormatting';
 
-const CommentSection = ({ itemType, itemId, darkMode, isAdmin = false, initialCount = 0, onMemberClick, defaultExpanded = false }) => {
+const CommentSection = ({ itemType, itemId, darkMode, initialCount = 0, onMemberClick, defaultExpanded = false }) => {
   const { t } = useTranslation();
   const { user } = useAuth();
   const { activeProfile } = useProfile();
@@ -371,7 +371,7 @@ const CommentSection = ({ itemType, itemId, darkMode, isAdmin = false, initialCo
                   (edited)
                 </Typography>
               )}
-              {(activeProfile?.id === comment.profile_id || isAdmin) && (
+              {(activeProfile?.id === comment.profile_id) && (
                 <IconButton
                   size="small"
                   onClick={(e) => {
@@ -394,7 +394,7 @@ const CommentSection = ({ itemType, itemId, darkMode, isAdmin = false, initialCo
                 <Chip
                   label="Hidden"
                   size="small"
-                  sx={{ height: 16, fontSize: '0.65rem', ml: comment.is_hidden && !((activeProfile?.id === comment.profile_id || isAdmin)) ? 'auto' : 0 }}
+                  sx={{ height: 16, fontSize: '0.65rem', ml: comment.is_hidden && !(activeProfile?.id === comment.profile_id) ? 'auto' : 0 }}
                 />
               )}
             </Box>
