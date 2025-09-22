@@ -856,21 +856,36 @@ Deno.serve(async (req) => {
               `
             } else if (notification.notification_type === 'comment') {
               console.log('📨 Creating comment notification email')
+              console.log('📨 Comment metadata:', JSON.stringify(metadata))
+              console.log('📨 Related item ID:', notification.related_item_id)
+              console.log('📨 Network ID:', notification.network_id)
+
               emailSubject = subject || `New comment on your post in ${networkName}`
-              
+
               // Build the correct URL based on item type
               let itemUrl = '/dashboard'
               if (notification.related_item_id) {
                 if (metadata.itemType === 'event') {
                   // Events have dedicated pages
                   itemUrl = `/network/${notification.network_id}/event/${notification.related_item_id}`
+                  console.log('📨 Event URL:', itemUrl)
                 } else if (metadata.itemType === 'news') {
                   // News posts have dedicated pages
                   itemUrl = `/network/${notification.network_id}/news/${notification.related_item_id}`
+                  console.log('📨 News URL:', itemUrl)
                 } else if (metadata.itemType === 'post') {
                   // Portfolio posts have their own route (not network-specific)
                   itemUrl = `/post/${notification.related_item_id}`
+                  console.log('📨 Post URL:', itemUrl)
+                } else if (metadata.itemType === 'wiki' && metadata.pageSlug) {
+                  // Wiki pages use slug-based URLs
+                  itemUrl = `/network/${notification.network_id}/wiki/${metadata.pageSlug}`
+                  console.log('📨 Wiki URL:', itemUrl)
+                } else {
+                  console.log('📨 No matching itemType or missing pageSlug. itemType:', metadata.itemType, 'pageSlug:', metadata.pageSlug)
                 }
+              } else {
+                console.log('📨 No related_item_id found')
               }
               
               emailHtml = `
@@ -882,7 +897,7 @@ Deno.serve(async (req) => {
                   
                   <div style="background-color: white; padding: 24px; border: 1px solid #e0e0e0; border-radius: 0 0 8px 8px; border-top: none;">
                     <div style="margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #f0f0f0;">
-                      <p style="margin: 0; color: #666; font-size: 14px;"><strong>${metadata.commenterName || 'Someone'}</strong> commented on your ${metadata.itemType === 'news' ? 'news post' : metadata.itemType === 'event' ? 'event' : 'portfolio post'}</p>
+                      <p style="margin: 0; color: #666; font-size: 14px;"><strong>${metadata.commenterName || 'Someone'}</strong> commented on your ${metadata.itemType === 'news' ? 'news post' : metadata.itemType === 'event' ? 'event' : metadata.itemType === 'wiki' ? 'wiki page' : 'portfolio post'}</p>
                       ${metadata.postTitle ? `<p style="margin: 4px 0 0 0; color: #999; font-size: 13px;">On: "${metadata.postTitle}"</p>` : ''}
                     </div>
                     
@@ -911,21 +926,36 @@ Deno.serve(async (req) => {
               `
             } else if (notification.notification_type === 'comment_reply') {
               console.log('📨 Creating comment reply notification email')
+              console.log('📨 Comment reply metadata:', JSON.stringify(metadata))
+              console.log('📨 Related item ID:', notification.related_item_id)
+              console.log('📨 Network ID:', notification.network_id)
+
               emailSubject = subject || `Reply to your comment in ${networkName}`
-              
+
               // Build the correct URL based on item type
               let itemUrl = '/dashboard'
               if (notification.related_item_id) {
                 if (metadata.itemType === 'event') {
                   // Events have dedicated pages
                   itemUrl = `/network/${notification.network_id}/event/${notification.related_item_id}`
+                  console.log('📨 Event URL:', itemUrl)
                 } else if (metadata.itemType === 'news') {
                   // News posts have dedicated pages
                   itemUrl = `/network/${notification.network_id}/news/${notification.related_item_id}`
+                  console.log('📨 News URL:', itemUrl)
                 } else if (metadata.itemType === 'post') {
                   // Portfolio posts have their own route (not network-specific)
                   itemUrl = `/post/${notification.related_item_id}`
+                  console.log('📨 Post URL:', itemUrl)
+                } else if (metadata.itemType === 'wiki' && metadata.pageSlug) {
+                  // Wiki pages use slug-based URLs
+                  itemUrl = `/network/${notification.network_id}/wiki/${metadata.pageSlug}`
+                  console.log('📨 Wiki URL:', itemUrl)
+                } else {
+                  console.log('📨 No matching itemType or missing pageSlug. itemType:', metadata.itemType, 'pageSlug:', metadata.pageSlug)
                 }
+              } else {
+                console.log('📨 No related_item_id found')
               }
               
               emailHtml = `

@@ -123,13 +123,13 @@ export const addComment = async (itemType, itemId, profileId, content, parentCom
           postTitle = post.title;
         }
       } else if (itemType === 'wiki') {
-        // Get wiki page creator
+        // Get wiki page creator and slug
         const { data: page } = await supabase
           .from('wiki_pages')
-          .select('created_by, title')
+          .select('created_by, title, slug')
           .eq('id', itemId)
           .single();
-        
+
         if (page) {
           originalPosterId = page.created_by;
           postTitle = page.title;
@@ -150,6 +150,20 @@ export const addComment = async (itemType, itemId, profileId, content, parentCom
         }
       }
       
+      // Get additional metadata for wiki pages
+      let pageSlug = null;
+      if (itemType === 'wiki') {
+        const { data: wikiPage } = await supabase
+          .from('wiki_pages')
+          .select('slug')
+          .eq('id', itemId)
+          .single();
+
+        if (wikiPage) {
+          pageSlug = wikiPage.slug;
+        }
+      }
+
       // Queue notifications
       await queueCommentNotification({
         itemType,
@@ -161,6 +175,7 @@ export const addComment = async (itemType, itemId, profileId, content, parentCom
         originalPosterId,
         parentCommentAuthorId,
         postTitle,
+        pageSlug, // Include wiki page slug if applicable
         isReply: !!parentCommentId
       });
       

@@ -421,6 +421,7 @@ export const queueCommentNotification = async (params) => {
     originalPosterId,
     parentCommentAuthorId,
     postTitle,
+    pageSlug,
     isReply
   } = params;
 
@@ -466,6 +467,7 @@ export const queueCommentNotification = async (params) => {
             commenterName,
             itemType,
             postTitle,
+            pageSlug,
             isReply: false
           })
         });
@@ -493,6 +495,7 @@ export const queueCommentNotification = async (params) => {
             commenterName,
             itemType,
             postTitle,
+            pageSlug,
             isReply: true
           })
         });
