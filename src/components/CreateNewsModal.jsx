@@ -33,10 +33,12 @@ import MediaCarousel from './MediaCarousel';
 import UserContent from './UserContent';
 import { useProfile } from '../context/profileContext';
 import { useTheme } from './ThemeProvider';
+import { useTranslation } from '../hooks/useTranslation';
 
 const CreateAnnouncementModal = ({ open, onClose, networkId, onNewsCreated }) => {
   const { activeProfile } = useProfile();
   const { darkMode } = useTheme();
+  const { t } = useTranslation();
   const [announcementTitle, setAnnouncementTitle] = useState('');
   const [imageCaption, setImageCaption] = useState('');
   const [imagePreview, setImagePreview] = useState(null);
@@ -328,7 +330,7 @@ const CreateAnnouncementModal = ({ open, onClose, networkId, onNewsCreated }) =>
           startIcon={<SaveIcon />}
           disabled={submitting || !announcementTitle.trim()}
         >
-          {submitting ? 'Publishing...' : 'Publish Announcement'}
+          {submitting ? t('news.publishing') : t('news.publish')}
         </Button>
       </DialogActions>
     </Dialog>

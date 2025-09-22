@@ -309,11 +309,11 @@ function CRMTab({ networkId, members = [], darkMode, activeProfile }) {
   // Get status chip
   const getStatusChip = (notification) => {
     if (notification.is_sent) {
-      return <Chip label="Sent" color="success" size="small" icon={<SendIcon />} />;
+      return <Chip label={t('common.status.sent')} color="success" size="small" icon={<SendIcon />} />;
     } else if (notification.error_message) {
-      return <Chip label="Failed" color="error" size="small" icon={<ErrorIcon />} />;
+      return <Chip label={t('common.status.failed')} color="error" size="small" icon={<ErrorIcon />} />;
     } else {
-      return <Chip label="Pending" color="warning" size="small" icon={<ScheduleIcon />} />;
+      return <Chip label={t('common.status.pending')} color="warning" size="small" icon={<ScheduleIcon />} />;
     }
   };
 
@@ -456,9 +456,9 @@ function CRMTab({ networkId, members = [], darkMode, activeProfile }) {
               size="small"
             >
               <MenuItem value="">All Status</MenuItem>
-              <MenuItem value="sent">Sent</MenuItem>
-              <MenuItem value="pending">Pending</MenuItem>
-              <MenuItem value="failed">Failed</MenuItem>
+              <MenuItem value="sent">{t('common.status.sent')}</MenuItem>
+              <MenuItem value="pending">{t('common.status.pending')}</MenuItem>
+              <MenuItem value="failed">{t('common.status.failed')}</MenuItem>
             </TextField>
           </Grid>
           <Grid item xs={12} sm={6} md={2}>
@@ -596,7 +596,7 @@ function CRMTab({ networkId, members = [], darkMode, activeProfile }) {
                     {getStatusChip(notification)}
                   </TableCell>
                   <TableCell align="center">
-                    <Tooltip title="View Details">
+                    <Tooltip title={t('common.actions.viewDetails')}>
                       <IconButton
                         size="small"
                         onClick={() => setSelectedNotification(notification)}

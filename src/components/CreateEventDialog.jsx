@@ -76,7 +76,7 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
   const [dragOver, setDragOver] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
 
-  const steps = ['Basic Info', 'Details & Media', 'Settings'];
+  const steps = [t('events.steps.basicInfo'), t('events.steps.detailsMedia'), t('events.steps.settings')];
 
   const currencies = [
     { code: 'EUR', symbol: '€' },
@@ -196,7 +196,7 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
 
   const processImageFile = (file) => {
     if (file.size > 5 * 1024 * 1024) {
-      setError('Image size must be less than 5MB');
+      setError(t('events.errors.imageSizeTooLarge'));
       return;
     }
     

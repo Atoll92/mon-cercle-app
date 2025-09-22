@@ -37,10 +37,12 @@ import {
 import { submitVote, getUserVote, getPollWithVotes } from '../api/polls';
 import { useAuth } from '../context/authcontext';
 import { useProfile } from '../context/profileContext';
+import { useTranslation } from '../hooks/useTranslation';
 
 const PollCard = ({ poll, onVoteSubmit }) => {
   const { user } = useAuth();
   const { activeProfile } = useProfile();
+  const { t } = useTranslation();
   const [selectedOptions, setSelectedOptions] = useState([]);
   const [userVote, setUserVote] = useState(null);
   const [hasVoted, setHasVoted] = useState(false);
@@ -82,12 +84,12 @@ const PollCard = ({ poll, onVoteSubmit }) => {
 
   const handleVote = async () => {
     if (!activeProfile) {
-      setError('Please select a profile to vote');
+      setError(t('polls.errors.selectProfile'));
       return;
     }
     
     if (selectedOptions.length === 0) {
-      setError('Please select at least one option');
+      setError(t('polls.errors.selectOption'));
       return;
     }
 
@@ -97,7 +99,7 @@ const PollCard = ({ poll, onVoteSubmit }) => {
     const { data, error } = await submitVote(poll.id, selectedOptions, activeProfile.id);
     
     if (error) {
-      setError('Failed to submit vote');
+      setError(t('polls.errors.submitFailed'));
       setSubmitting(false);
     } else {
       setHasVoted(true);
@@ -182,21 +184,21 @@ const PollCard = ({ poll, onVoteSubmit }) => {
         <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
           <Chip
             icon={<PeopleIcon />}
-            label={`${pollStats?.totalVotes || 0} votes`}
+            label={t('polls.voteCount', { count: pollStats?.totalVotes || 0 })}
             size="small"
             variant="outlined"
           />
           {poll.ends_at && (
             <Chip
               icon={<ScheduleIcon />}
-              label={`${isExpired ? 'Ended' : 'Ends'} ${new Date(poll.ends_at).toLocaleDateString()}`}
+              label={`${isExpired ? t('polls.ended') : t('polls.ends')} ${new Date(poll.ends_at).toLocaleDateString()}`}
               size="small"
               variant="outlined"
               color={isExpired ? 'default' : 'primary'}
             />
           )}
           {poll.is_anonymous && (
-            <Chip label="Anonymous" size="small" variant="outlined" />
+            <Chip label={t('polls.anonymous')} size="small" variant="outlined" />
           )}
         </Box>
 
@@ -291,13 +293,13 @@ const PollCard = ({ poll, onVoteSubmit }) => {
                   <FormControlLabel
                     value="yes"
                     control={<Radio />}
-                    label="Yes"
+                    label={t('polls.yes')}
                     sx={{ flex: 1 }}
                   />
                   <FormControlLabel
                     value="no"
                     control={<Radio />}
-                    label="No"
+                    label={t('polls.no')}
                     sx={{ flex: 1 }}
                   />
                 </RadioGroup>
@@ -309,7 +311,7 @@ const PollCard = ({ poll, onVoteSubmit }) => {
                     {pollStats?.options.yes.percentage}%
                   </Typography>
                   <Typography variant="body2">
-                    Yes ({pollStats?.options.yes.count})
+                    {t('polls.yes')} ({pollStats?.options.yes.count})
                     {userVote?.selected_options[0] === 'yes' && (
                       <CheckCircleIcon sx={{ ml: 1, fontSize: 16 }} />
                     )}
@@ -320,7 +322,7 @@ const PollCard = ({ poll, onVoteSubmit }) => {
                     {pollStats?.options.no.percentage}%
                   </Typography>
                   <Typography variant="body2">
-                    No ({pollStats?.options.no.count})
+                    {t('polls.no')} ({pollStats?.options.no.count})
                     {userVote?.selected_options[0] === 'no' && (
                       <CheckCircleIcon sx={{ ml: 1, fontSize: 16 }} />
                     )}
@@ -365,7 +367,7 @@ const PollCard = ({ poll, onVoteSubmit }) => {
                       />
                       {hasVoted && (
                         <Chip
-                          label={`${voteCount} vote${voteCount !== 1 ? 's' : ''}`}
+                          label={t('polls.voteCount', { count: voteCount })}
                           size="small"
                           color={userVote?.selected_options.includes(dateStr) ? 'primary' : 'default'}
                         />
@@ -387,7 +389,7 @@ const PollCard = ({ poll, onVoteSubmit }) => {
               disabled={submitting || selectedOptions.length === 0}
               startIcon={submitting ? <Spinner size={32} /> : null}
             >
-              {submitting ? 'Submitting...' : 'Submit Vote'}
+              {submitting ? t('polls.submitting') : t('polls.submitVote')}
             </Button>
           </Box>
         )}
@@ -395,13 +397,13 @@ const PollCard = ({ poll, onVoteSubmit }) => {
         {/* Status Messages */}
         {hasVoted && !isExpired && (
           <Alert severity="success" sx={{ mt: 2 }}>
-            Thank you for voting!
+            {t('polls.thankYou')}
           </Alert>
         )}
 
         {isExpired && (
           <Alert severity="info" sx={{ mt: 2 }}>
-            This poll has ended.
+            {t('polls.pollEnded')}
           </Alert>
         )}
       </CardContent>

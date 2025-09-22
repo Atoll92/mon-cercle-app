@@ -5,12 +5,14 @@ import Spinner from './Spinner';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { formatEventDate } from '../utils/dateFormatting';
+import { useTranslation } from '../hooks/useTranslation';
 
 // Use the provided token and custom style
 const MAPBOX_TOKEN = 'pk.eyJ1IjoiZGdjb2Jvc3MiLCJhIjoiY2xzY2JkNTdqMGJzbDJrbzF2Zm84aWxwZCJ9.b9GP9FrGHsVquJf7ubWfKQ';
 const MAPBOX_STYLE = 'mapbox://styles/dgcoboss/cm5k9ztpe003g01s76e7v8owz';
 
 export default function EventsMap({ events = [], onEventSelect, initialCoordinates = null }) {
+  const { t } = useTranslation();
   const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
   const markersRef = useRef([]);
@@ -89,7 +91,7 @@ export default function EventsMap({ events = [], onEventSelect, initialCoordinat
         };
       } catch (error) {
         console.error('Error loading map:', error);
-        setMapError('Failed to load map. Please try again later.');
+        setMapError(t('events.errors.mapLoadFailed'));
         setLoading(false);
       }
     };
@@ -109,7 +111,9 @@ export default function EventsMap({ events = [], onEventSelect, initialCoordinat
     const addEventMarkers = async () => {
       // If there are no events or events is undefined, we'll skip this part
       if (!mapRef.current || !events || events.length === 0) return;
-      
+
+      const viewDetailsText = t('events.map.viewDetails');
+
       try {
         // Remove existing markers
         markersRef.current.forEach(marker => marker.remove());
@@ -164,7 +168,7 @@ export default function EventsMap({ events = [], onEventSelect, initialCoordinat
                   </p>` : ''
                 }
                 <button style="margin-top: 8px; padding: 4px 8px; background: #1976d2; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">
-                  View Details
+                  ${viewDetailsText}
                 </button>
               </div>
             `);
@@ -211,7 +215,7 @@ export default function EventsMap({ events = [], onEventSelect, initialCoordinat
     if (!loading && mapRef.current) {
       addEventMarkers();
     }
-  }, [events, loading, onEventSelect]);
+  }, [events, loading, onEventSelect, t]);
   
   return (
     <Box sx={{ position: 'relative', width: '100%', height: '350px', borderRadius: 1, overflow: 'hidden' }}>

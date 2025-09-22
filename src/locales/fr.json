@@ -1149,6 +1149,98 @@
       "actions": "Actions"
     }
   },
+  "polls": {
+    "voteCount": "{{count}} vote{{count === 1 ? '' : 's'}}",
+    "ended": "Terminé",
+    "ends": "Se termine",
+    "anonymous": "Anonyme",
+    "yes": "Oui",
+    "no": "Non",
+    "submitting": "Envoi en cours...",
+    "submitVote": "Voter",
+    "thankYou": "Merci pour votre vote !",
+    "pollEnded": "Ce sondage est terminé.",
+    "errors": {
+      "selectProfile": "Veuillez sélectionner un profil pour voter",
+      "selectOption": "Veuillez sélectionner au moins une option",
+      "submitFailed": "Échec de l'envoi du vote"
+    }
+  },
+  "events": {
+    "steps": {
+      "basicInfo": "Informations de base",
+      "detailsMedia": "Détails et médias",
+      "settings": "Paramètres"
+    },
+    "errors": {
+      "imageSizeTooLarge": "La taille de l'image doit être inférieure à 5 Mo",
+      "mapLoadFailed": "Échec du chargement de la carte. Veuillez réessayer plus tard."
+    },
+    "map": {
+      "viewDetails": "Voir les détails"
+    }
+  },
+  "news": {
+    "createAnnouncement": "Créer une annonce",
+    "announcementTitle": "Titre de l'annonce",
+    "category": "Catégorie",
+    "none": "Aucune",
+    "featuredMedia": "Média en vedette (facultatif) - Vous pouvez ajouter plusieurs fichiers",
+    "addMoreMedia": "Ajouter plus de médias ({{count}}/{{max}})",
+    "mediaCaption": "Légende du média",
+    "cancel": "Annuler",
+    "publish": "Publier l'annonce",
+    "publishing": "Publication...",
+    "errors": {
+      "fillRequired": "Veuillez remplir le titre et le contenu",
+      "publishFailed": "Échec de la publication de l'annonce : {{error}}"
+    }
+  },
+  "common": {
+    "status": {
+      "sent": "Envoyé",
+      "pending": "En attente",
+      "failed": "Échoué",
+      "success": "Succès",
+      "warning": "Avertissement",
+      "error": "Erreur",
+      "info": "Info",
+      "active": "Actif",
+      "inactive": "Inactif",
+      "online": "En ligne",
+      "offline": "Hors ligne",
+      "available": "Disponible",
+      "unavailable": "Indisponible",
+      "draft": "Brouillon",
+      "published": "Publié",
+      "archived": "Archivé"
+    },
+    "actions": {
+      "filter": "Filtrer",
+      "sort": "Trier",
+      "search": "Rechercher",
+      "viewDetails": "Voir les détails",
+      "showMore": "Afficher plus",
+      "showLess": "Afficher moins",
+      "viewAll": "Voir tout",
+      "seeAll": "Tout voir",
+      "back": "Retour",
+      "next": "Suivant",
+      "previous": "Précédent",
+      "continue": "Continuer",
+      "skip": "Passer",
+      "finish": "Terminer"
+    },
+    "labels": {
+      "optional": "Facultatif",
+      "required": "Requis",
+      "none": "Aucun",
+      "empty": "Vide",
+      "notFound": "Non trouvé",
+      "loading": "Chargement",
+      "noResults": "Aucun résultat"
+    }
+  },
   "footer": {
     "cta": {
       "title": "Prêt à fédérer votre propre communauté ?",

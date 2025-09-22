@@ -34,6 +34,7 @@ import {
 import NotificationSystemTester from './NotificationSystemTester';
 import { supabase } from '../supabaseclient';
 import { useProfile } from '../context/profileContext';
+import { useTranslation } from '../hooks/useTranslation';
 import { 
   queueNewsNotifications, 
   queueEventNotifications,
@@ -43,6 +44,7 @@ import {
 
 const NotificationSystemManager = () => {
   const { activeProfile } = useProfile();
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [triggeredNotifications, setTriggeredNotifications] = useState([]);
@@ -447,12 +449,12 @@ const NotificationSystemManager = () => {
 
   const getStatusChip = (notification) => {
     if (notification.error_message) {
-      return <Chip icon={<ErrorIcon />} label="Failed" color="error" size="small" />;
+      return <Chip icon={<ErrorIcon />} label={t('common.status.failed')} color="error" size="small" />;
     }
     if (notification.is_sent) {
-      return <Chip icon={<CheckCircleIcon />} label="Sent" color="success" size="small" />;
+      return <Chip icon={<CheckCircleIcon />} label={t('common.status.sent')} color="success" size="small" />;
     }
-    return <Chip icon={<ScheduleIcon />} label="Pending" color="warning" size="small" />;
+    return <Chip icon={<ScheduleIcon />} label={t('common.status.pending')} color="warning" size="small" />;
   };
 
   const formatDate = (dateString) => {

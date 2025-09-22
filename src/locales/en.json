@@ -1156,6 +1156,98 @@
       "actions": "Actions"
     }
   },
+  "polls": {
+    "voteCount": "{{count}} vote{{count === 1 ? '' : 's'}}",
+    "ended": "Ended",
+    "ends": "Ends",
+    "anonymous": "Anonymous",
+    "yes": "Yes",
+    "no": "No",
+    "submitting": "Submitting...",
+    "submitVote": "Submit Vote",
+    "thankYou": "Thank you for voting!",
+    "pollEnded": "This poll has ended.",
+    "errors": {
+      "selectProfile": "Please select a profile to vote",
+      "selectOption": "Please select at least one option",
+      "submitFailed": "Failed to submit vote"
+    }
+  },
+  "events": {
+    "steps": {
+      "basicInfo": "Basic Info",
+      "detailsMedia": "Details & Media",
+      "settings": "Settings"
+    },
+    "errors": {
+      "imageSizeTooLarge": "Image size must be less than 5MB",
+      "mapLoadFailed": "Failed to load map. Please try again later."
+    },
+    "map": {
+      "viewDetails": "View Details"
+    }
+  },
+  "news": {
+    "createAnnouncement": "Create Announcement",
+    "announcementTitle": "Announcement Title",
+    "category": "Category",
+    "none": "None",
+    "featuredMedia": "Featured Media (optional) - You can add multiple files",
+    "addMoreMedia": "Add More Media ({{count}}/{{max}})",
+    "mediaCaption": "Media Caption",
+    "cancel": "Cancel",
+    "publish": "Publish Announcement",
+    "publishing": "Publishing...",
+    "errors": {
+      "fillRequired": "Please fill in both title and content",
+      "publishFailed": "Failed to publish announcement: {{error}}"
+    }
+  },
+  "common": {
+    "status": {
+      "sent": "Sent",
+      "pending": "Pending",
+      "failed": "Failed",
+      "success": "Success",
+      "warning": "Warning",
+      "error": "Error",
+      "info": "Info",
+      "active": "Active",
+      "inactive": "Inactive",
+      "online": "Online",
+      "offline": "Offline",
+      "available": "Available",
+      "unavailable": "Unavailable",
+      "draft": "Draft",
+      "published": "Published",
+      "archived": "Archived"
+    },
+    "actions": {
+      "filter": "Filter",
+      "sort": "Sort",
+      "search": "Search",
+      "viewDetails": "View Details",
+      "showMore": "Show More",
+      "showLess": "Show Less",
+      "viewAll": "View All",
+      "seeAll": "See All",
+      "back": "Back",
+      "next": "Next",
+      "previous": "Previous",
+      "continue": "Continue",
+      "skip": "Skip",
+      "finish": "Finish"
+    },
+    "labels": {
+      "optional": "Optional",
+      "required": "Required",
+      "none": "None",
+      "empty": "Empty",
+      "notFound": "Not Found",
+      "loading": "Loading",
+      "noResults": "No Results"
+    }
+  },
   "footer": {
     "cta": {
       "title": "Ready to gather your own community?",
