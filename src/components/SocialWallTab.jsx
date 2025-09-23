@@ -19,23 +19,21 @@ import {
   IconButton,
   useTheme,
   alpha,
-  Button,
   Select,
   MenuItem,
   FormControl,
   InputLabel,
   TextField,
-  Alert
+  Button,
 } from '@mui/material';
 import {
   ArrowUpward as ArrowUpwardIcon,
-  ExpandLess as ExpandLessIcon,
+  ArrowForward as ArrowForwardIcon,
   PlayCircleFilled as PlayIcon,
   Pause as PauseIcon,
   Add as AddIcon,
   Delete as DeleteIcon,
   Campaign as CampaignIcon,
-  ReadMore as ReadMoreIcon,
 } from '@mui/icons-material';
 import MediaPlayer from './MediaPlayer';
 import MediaCarousel from './MediaCarousel';
@@ -77,12 +75,8 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [scrollPosition, setScrollPosition] = useState(0);
   
-  // State for expanded cards
-  const [expandedCardId, setExpandedCardId] = useState(null);
-  
   // Refs for scroll and animations
   const observer = useRef();
-  const expandedCardRef = useRef(null);
   const animationFrameRef = useRef();
   const cardRefs = useRef(new Map());
   
@@ -106,37 +100,6 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
   
   // Delete post state
   const [deletingPostId, setDeletingPostId] = useState(null);
-  
-  // Toggle card expansion with improved scroll handling
-  const handleExpandCard = (id) => {
-    // Toggle expanded state
-    setExpandedCardId(prevId => prevId === id ? null : id);
-    
-    // We'll handle scrolling in the effect below, not here
-  };
-  
-  // Effect to handle scrolling after expansion/collapse
-  useEffect(() => {
-    // Only run when expandedCardId changes
-    if (expandedCardRef.current) {
-      // Allow DOM to update before scrolling
-      const timer = setTimeout(() => {
-        const cardRect = expandedCardRef.current.getBoundingClientRect();
-        const windowHeight = window.innerHeight;
-        
-        // Only scroll if card is not fully visible in viewport
-        if (cardRect.top < 100 || cardRect.bottom > windowHeight - 20) {
-          const scrollOffset = cardRect.top + window.pageYOffset - 100;
-          window.scrollTo({ 
-            top: scrollOffset, 
-            behavior: 'smooth' 
-          });
-        }
-      }, 100); // Short delay for DOM update
-      
-      return () => clearTimeout(timer);
-    }
-  }, [expandedCardId]);
   
   // Declare a ref for the loadMore function to avoid circular dependencies
   const loadMoreFn = useRef(null);
@@ -771,7 +734,7 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                 );
               }
               
-              // Handle news items with existing Card component
+              // Handle announcement items with existing Card component
               return (
                 <Card 
                   key={cardId}
@@ -787,9 +750,6 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                     if (isRefItem && lastItemRef) {
                       lastItemRef(el);
                     }
-                    if (expandedCardId === cardId && expandedCardRef) {
-                      expandedCardRef.current = el;
-                    }
                   }}
                   sx={{ 
                     mb: 3,
@@ -799,21 +759,12 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                     // Smooth transitions for all transform and opacity changes
                     transition: 'transform 0.15s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.15s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease',
                     '&:hover': {
-                      // Only apply hover transform if not expanded and not actively animating
-                      ...(!expandedCardId || expandedCardId !== cardId ? {
-                        transform: 'translateY(-2px) !important', // Subtle hover lift
-                        boxShadow: darkMode ? '0 6px 20px rgba(0,0,0,0.25)' : '0 6px 20px rgba(0,0,0,0.08)'
-                      } : {})
+                      transform: 'translateY(-2px) !important', // Subtle hover lift
+                      boxShadow: darkMode ? '0 6px 20px rgba(0,0,0,0.25)' : '0 6px 20px rgba(0,0,0,0.08)'
                     },
                     bgcolor: darkMode ? alpha('#1e1e1e', 0.5) : 'background.paper',
                     backdropFilter: 'blur(10px)',
-                    border: `1px solid ${customBorder}`,
-                    // Apply special styles when expanded
-                    ...(expandedCardId === cardId && {
-                      zIndex: 10,
-                      boxShadow: darkMode ? '0 12px 40px rgba(0,0,0,0.6)' : '0 12px 40px rgba(0,0,0,0.2)',
-                      position: 'relative'
-                    })
+                    border: `1px solid ${customBorder}`
                   }}
                 >
                   <Box sx={{ p: 2, pb: 1 }}>
@@ -1296,142 +1247,25 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                       {item.title}
                     </Typography>
                     
-                    {item.itemType === 'post' ? (
-                      <>
-                        <Box sx={{ mb: 2 }}>
-                          <UserContent
-                            content={item.description}
-                            html={false}
-                            maxLines={3}
-                            sx={{
-                              color: customFadedText,
-                              fontSize: '0.875rem'
-                            }}
-                          />
-                        </Box>
-                        
-                        {/* Link Preview for portfolio items with URLs */}
-                        {item.url && (
-                          <Box sx={{ 
-                            mb: 2, 
-                            bgcolor: darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)', 
-                            borderRadius: 1, 
-                            overflow: 'hidden'
-                          }}>
-                            <LinkPreview 
-                              url={item.url} 
-                              compact={true}
-                              darkMode={darkMode}
-                            />
-                          </Box>
-                        )}
-                      </>
-                    ) : (
-                      <>
-                        {/* Note: News post images are now handled by the common image section above */}
-                        
-                        <Box 
-                          sx={{
-                            transition: 'max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease',
-                            overflow: 'hidden',
-                            maxHeight: expandedCardId === `${item.itemType}-${item.id}` ? '2000px' : '4.5em',
-                            position: 'relative',
-                            mb: 2
-                          }}
-                        >
-                          <UserContent
-                            content={item.content}
-                            html={true}
-                            maxLines={expandedCardId === `${item.itemType}-${item.id}` ? undefined : 3}
-                            sx={{ 
-                              color: customFadedText,
-                              fontSize: '0.875rem'
-                            }}
-                          />
-                          {expandedCardId !== `${item.itemType}-${item.id}` && item.content && item.content.length > 180 && (
-                            <Box 
-                              sx={{
-                                position: 'absolute',
-                                bottom: 0,
-                                left: 0,
-                                right: 0,
-                                height: '24px',
-                                background: `linear-gradient(to bottom, ${alpha(darkMode ? '#1e1e1e' : '#ffffff', 0)}, ${alpha(darkMode ? '#1e1e1e' : '#ffffff', 0.9)})`,
-                                pointerEvents: 'none'
-                              }}
-                            />
-                          )}
-                        </Box>
-                        
-                        {/* Read more button only if there's more content and not expanded */}
-                        {item.content && item.content.length > 180 && (
-                          <Button 
-                            size="small" 
-                            onClick={(e) => {
-                              e.stopPropagation(); // Prevent card click
-                              handleExpandCard(`${item.itemType}-${item.id}`); 
-                            }}
-                            startIcon={expandedCardId === `${item.itemType}-${item.id}` ? <ExpandLessIcon /> : <ReadMoreIcon />}
-                            sx={{ 
-                              mb: 2,
-                              color: muiTheme.palette.primary.main,
-                              '&:hover': {
-                                backgroundColor: alpha(muiTheme.palette.primary.main, 0.08)
-                              },
-                              transition: 'all 0.2s ease-in-out',
-                            }}
-                          >
-                            {expandedCardId === `${item.itemType}-${item.id}` ? t('socialWall.showLess') : t('socialWall.readMore')}
-                          </Button>
-                        )}
-                      </>
-                    )}
-                    
-                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', mt: 1 }}>
-                      <Box>
-                        {item.itemType === 'post' && item.file_type === 'pdf' && item.file_url && !item.url ? (
-                          <a 
-                            href={item.file_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="view-project-btn"
-                            style={{ 
-                              display: 'inline-block',
-                              padding: '6px 12px',
-                              backgroundColor: muiTheme.palette.secondary.main,
-                              color: '#ffffff',
-                              textDecoration: 'none',
-                              borderRadius: '4px',
-                              fontWeight: 'bold',
-                              fontSize: '14px'
-                            }}
-                            onClick={(e) => e.stopPropagation()} // Prevent card expansion
-                          >
-                            {t('socialWall.viewPdf')}
-                          </a>
-                        ) : (
-                          <Link 
-                            to={item.itemType === 'post' ? 
-                              `/post/${item.id}` : 
-                              `/network/${item.network_id}/news/${item.id}`}
-                            className="view-project-btn"
-                            style={{ 
-                              display: 'inline-block',
-                              padding: '6px 12px',
-                              backgroundColor: item.itemType === 'post' ? 
-                                muiTheme.palette.secondary.main : muiTheme.palette.primary.main,
-                              color: '#ffffff',
-                              textDecoration: 'none',
-                              borderRadius: '4px',
-                              fontWeight: 'bold',
-                              fontSize: '14px'
-                            }}
-                            onClick={(e) => e.stopPropagation()} // Prevent card expansion
-                          >
-                            {item.itemType === 'post' ? t('socialWall.viewFullPost') : t('socialWall.readFullPost')}
-                          </Link>
-                        )}
-                      </Box>
+                    <Box 
+                      sx={{
+                        transition: 'max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease',
+                        overflow: 'hidden',
+                        maxHeight: '4.5em',
+                        position: 'relative',
+                        mb: 2
+                      }}
+                    >
+                      <UserContent
+                        content={item.content}
+                        html={true}
+                        noShowMore={true} // Disable built-in "Show more" since we have a button below to view full announcement
+                        maxLines={3}
+                        sx={{ 
+                          color: customFadedText,
+                          fontSize: '0.875rem'
+                        }}
+                      />
                     </Box>
                     
                     {/* Comments Section */}
@@ -1442,6 +1276,17 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                       isAdmin={isAdmin}
                       initialCount={commentCounts[`${item.itemType}-${item.id}`] || 0}
                       onMemberClick={handleMemberClick}
+                      TopRightElement={
+                        <Button
+                          component={Link}
+                          to={`/network/${item.network_id}/news/${item.id}`}
+                          size="small"
+                          endIcon={<ArrowForwardIcon />}
+                          sx={{ alignSelf: 'flex-start' }}
+                        >
+                          {t('socialWall.readFullPost')}
+                        </Button>
+                      }
                     />
                   </CardContent>
                 </Card>

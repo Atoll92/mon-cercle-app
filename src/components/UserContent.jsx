@@ -11,6 +11,7 @@ import { sanitizeRichText } from '../utils/sanitizeHtml';
  * @param {string} props.content - The content to display
  * @param {boolean} props.html - Whether content contains HTML (default: false)
  * @param {string} props.component - Root component type (default: 'div')
+ * @param {boolean} props.noShowMore - Prevent showing "Show more"/"Show less" button even if truncated (default: false)
  * @param {number} props.maxLines - Maximum lines before truncation (optional)
  * @param {Object} props.sx - Additional styles
  */
@@ -18,6 +19,7 @@ const UserContent = ({
   content,
   html = false,
   component = 'div',
+  noShowMore = false,
   maxLines,
   sx = {},
   ...otherProps
@@ -133,7 +135,7 @@ const UserContent = ({
         dangerouslySetInnerHTML={{ __html: processedContent }}
         {...otherProps}
       />
-      {maxLines && isTruncated && (
+      {maxLines && isTruncated && !noShowMore && (
         <Button
           size="small"
           onClick={() => setExpanded(!expanded)}
@@ -168,7 +170,7 @@ const UserContent = ({
         <Typography ref={contentRef} component={component} sx={{ ...overflowStyles, ...truncationStyles, ...sx }} {...otherProps}>
           {content}
         </Typography>
-        {maxLines && isTruncated && (
+        {maxLines && isTruncated && !noShowMore && (
           <Button
             size="small"
             onClick={() => setExpanded(!expanded)}
@@ -219,7 +221,7 @@ const UserContent = ({
       <Typography ref={contentRef} component={component} sx={{ ...overflowStyles, ...truncationStyles, ...sx }} {...otherProps}>
         {elements}
       </Typography>
-      {maxLines && isTruncated && (
+      {maxLines && isTruncated && !noShowMore && (
         <Button
           size="small"
           onClick={() => setExpanded(!expanded)}

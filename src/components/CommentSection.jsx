@@ -34,7 +34,7 @@ import {
 import { getItemComments, addComment, updateComment, deleteComment, toggleCommentVisibility } from '../api/comments';
 import { formatTimeAgo } from '../utils/dateFormatting';
 
-const CommentSection = ({ itemType, itemId, darkMode, initialCount = 0, onMemberClick, defaultExpanded = false }) => {
+const CommentSection = ({ itemType, itemId, darkMode, initialCount = 0, onMemberClick, defaultExpanded = false, TopRightElement }) => {
   const { t } = useTranslation();
   const { user } = useAuth();
   const { activeProfile } = useProfile();
@@ -635,25 +635,34 @@ const CommentSection = ({ itemType, itemId, darkMode, initialCount = 0, onMember
 
   return (
     <Box sx={{ mt: 2 }}>
-      {/* Subtle comment toggle */}
-      <Button
-        startIcon={<CommentIcon sx={{ fontSize: 18 }} />}
-        onClick={() => setShowComments(!showComments)}
-        sx={{
-          textTransform: 'none',
-          color: theme.palette.text.secondary,
-          fontSize: '0.875rem',
-          py: 0.5,
-          px: 1,
-          minHeight: 'auto',
-          '&:hover': {
-            bgcolor: alpha(theme.palette.primary.main, 0.08),
-            color: theme.palette.primary.main
-          }
-        }}
-      >
-        {commentCount > 0 ? `${commentCount} comment${commentCount !== 1 ? 's' : ''}` : t('dashboard.comment')}
-      </Button>
+      
+      {/* Header with button to open comments, comment count and optional top-right element */}
+      <Box display="flex" alignItems="center" justifyContent="space-between">
+        <Button
+          startIcon={<CommentIcon sx={{ fontSize: 18 }} />}
+          onClick={() => setShowComments(!showComments)}
+          sx={{
+            textTransform: 'none',
+            color: theme.palette.text.secondary,
+            fontSize: '0.875rem',
+            py: 0.5,
+            px: 1,
+            minHeight: 'auto',
+            '&:hover': {
+              bgcolor: alpha(theme.palette.primary.main, 0.08),
+              color: theme.palette.primary.main
+            }
+          }}
+        >
+          {commentCount > 0 ? `${commentCount} comment${commentCount !== 1 ? 's' : ''}` : t('dashboard.comment')}
+        </Button>
+        {TopRightElement && (
+          <Box>
+            {TopRightElement}
+          </Box>
+        )}
+      </Box>
+      
 
       {/* Comments section */}
       <Collapse in={showComments}>

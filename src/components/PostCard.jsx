@@ -209,36 +209,6 @@ const PostCard = ({
     }
   };
 
-  // Content type icon for media type - matches SocialWallTab implementation
-  const getContentTypeIcon = () => {
-    // Check for PDF
-    if (post.file_type === 'pdf' || (post.file_url && !post.media_url && !post.image_url)) {
-      return { icon: <PdfIcon fontSize="small" />, label: 'PDF', color: 'error' };
-    }
-    
-    // Check for media
-    if (mediaUrl && mediaType) {
-      switch (mediaType) {
-        case 'image':
-          return { icon: <ImageIcon fontSize="small" />, label: 'Image', color: 'success' };
-        case 'video':
-          return { icon: <VideoIcon fontSize="small" />, label: 'Video', color: 'info' };
-        case 'audio':
-          return { icon: <AudioIcon fontSize="small" />, label: 'Audio', color: 'warning' };
-        case 'pdf':
-          return { icon: <PdfIcon fontSize="small" />, label: 'PDF', color: 'error' };
-      }
-    }
-    
-    // Check for legacy image
-    if (post.image_url) {
-      return { icon: <ImageIcon fontSize="small" />, label: 'Image', color: 'success' };
-    }
-    
-    // Default to article/text
-    return { icon: <ArticleIcon fontSize="small" />, label: 'Text', color: 'default' };
-  };
-
   // Render media content
   const renderMedia = () => {
     // Check for multiple media items - first check direct field, then check media_metadata
@@ -570,6 +540,7 @@ const PostCard = ({
           <UserContent 
             content={post.description}
             html={false}
+            noShowMore={true} // Disable "Show more" for description because we already have a button to view full post below
             maxLines={3}
             sx={{ 
               mb: 2, 
