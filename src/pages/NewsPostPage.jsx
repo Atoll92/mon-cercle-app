@@ -435,7 +435,6 @@ function AnnouncementPostPage() {
         <CommentSection
           itemType="news"
           itemId={announcementPost.id}
-          initialCount={0}
           defaultExpanded={true}
         />
       </Paper>

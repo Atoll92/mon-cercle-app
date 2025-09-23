@@ -39,19 +39,18 @@ import { formatTimeAgo } from '../utils/dateFormatting';
  * @param {string} itemType - Type of the item ('event', 'news', 'post', or 'wiki')
  * @param {string} itemId - ID of the item being commented on
  * @param {boolean} darkMode - Whether to use dark mode styles
- * @param {number} initialCount - Initial comment count
  * @param {function} onMemberClick - Callback for member click events
  * @param {boolean} defaultExpanded - Whether to expand comments by default
  * @param {React.Element} TopRightElement - Optional element to render in the top right corner, on the same line as the comment count
  */
 
-const CommentSection = ({ itemType, itemId, darkMode, initialCount = 0, onMemberClick, defaultExpanded = false, TopRightElement }) => {
+const CommentSection = ({ itemType, itemId, darkMode, onMemberClick, defaultExpanded = false, TopRightElement }) => {
   const { t } = useTranslation();
   const { user } = useAuth();
   const { activeProfile } = useProfile();
   const theme = useTheme();
   const [comments, setComments] = useState([]);
-  const [commentCount, setCommentCount] = useState(initialCount);
+  const [commentCount, setCommentCount] = useState(0);
   const [showComments, setShowComments] = useState(defaultExpanded);
   const [newComment, setNewComment] = useState('');
   const [replyingTo, setReplyingTo] = useState(null);
@@ -64,17 +63,12 @@ const CommentSection = ({ itemType, itemId, darkMode, initialCount = 0, onMember
   const [editingComment, setEditingComment] = useState(null);
   const [editContent, setEditContent] = useState('');
 
-  // Update comment count when initialCount changes
+  // Fetch comments if we have a user and when itemType or itemId changes
   useEffect(() => {
-    setCommentCount(initialCount);
-  }, [initialCount]);
-
-  // Fetch comments when expanded
-  useEffect(() => {
-    if (showComments && user) {
+    if (user) {
       fetchComments();
     }
-  }, [showComments, itemType, itemId]);
+  }, [itemType, itemId, user]);
 
   // Helper function to count all comments in nested structure
   const countAllComments = (comments) => {

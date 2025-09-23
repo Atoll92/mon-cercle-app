@@ -687,7 +687,6 @@ const WikiPage = () => {
             itemId={page.id}
             darkMode={darkMode}
             isAdmin={isAdmin}
-            initialCount={commentCount}
             defaultExpanded={true}
           />
         </Box>

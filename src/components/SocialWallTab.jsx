@@ -1273,8 +1273,6 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                       itemType={item.itemType}
                       itemId={item.id}
                       darkMode={darkMode}
-                      isAdmin={isAdmin}
-                      initialCount={commentCounts[`${item.itemType}-${item.id}`] || 0}
                       onMemberClick={handleMemberClick}
                       TopRightElement={
                         <Button
