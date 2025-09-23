@@ -34,7 +34,8 @@ import {
   Pause as PauseIcon,
   Add as AddIcon,
   Delete as DeleteIcon,
-  Campaign as CampaignIcon
+  Campaign as CampaignIcon,
+  ReadMore as ReadMoreIcon,
 } from '@mui/icons-material';
 import MediaPlayer from './MediaPlayer';
 import MediaCarousel from './MediaCarousel';
