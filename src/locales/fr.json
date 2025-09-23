@@ -940,6 +940,9 @@
     "deleting": "Suppression...",
     "deletePage": "Supprimer la page"
   },
+  "postcard": {
+    "readFullPost": "Voir la publication"
+  },
   "socialWall": {
     "justNow": "À l'instant",
     "minutesAgo": "il y a {{minutes}}m",

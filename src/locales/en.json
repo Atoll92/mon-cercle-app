@@ -947,6 +947,9 @@
     "deleting": "Deleting...",
     "deletePage": "Delete Page"
   },
+  "postcard": {
+    "readFullPost": "View post"
+  },
   "socialWall": {
     "justNow": "Just now",
     "minutesAgo": "{{minutes}}m ago",

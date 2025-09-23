@@ -43,6 +43,7 @@ import { useProfile } from '../context/profileContext';
 import { useNetwork } from '../context/networkContext';
 import { useAuth } from '../context/authcontext';
 import { useTranslation } from '../hooks/useTranslation';
+import CommentSection from './CommentSection';
 
 /**
  * PostCard component for displaying portfolio posts
@@ -565,39 +566,25 @@ const PostCard = ({
             />
           </Box>
         )}
-
-        {/* Comment count and actions */}
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 2 }}>
-          <Button
-            component={Link}
-            to={`/post/${post.id}`}
-            startIcon={<CommentIcon sx={{ fontSize: 18 }} />}
-            sx={{
-              textTransform: 'none',
-              color: theme.palette.text.secondary,
-              fontSize: '0.875rem',
-              py: 0.5,
-              px: 1,
-              minHeight: 'auto',
-              '&:hover': {
-                bgcolor: alpha(theme.palette.primary.main, 0.08),
-                color: theme.palette.primary.main
-              }
-            }}
-          >
-            {commentCount > 0 ? `${commentCount} comment${commentCount !== 1 ? 's' : ''}` : t('dashboard.comment')}
-          </Button>
-          
-          <Button
-            component={Link}
-            to={`/post/${post.id}`}
-            size="small"
-            endIcon={<ArrowForwardIcon />}
-            sx={{ alignSelf: 'flex-start' }}
-          >
-            {t('dashboard.viewPost')}
-          </Button>
-        </Box>
+        
+        {/* Comments Section and view post button */}
+        <CommentSection
+          itemType={'post'}
+          itemId={post.id}
+          darkMode={darkMode}
+          onMemberClick={(onAuthorClick ? onAuthorClick : handleAuthorClick)}
+          TopRightElement={
+            <Button
+              component={Link}
+              to={`/post/${post.id}`}
+              size="small"
+              endIcon={<ArrowForwardIcon />}
+              sx={{ alignSelf: 'flex-start' }}
+            >
+              {t('postcard.readFullPost')}
+            </Button>
+          }
+        />
       </CardContent>
       
       {/* Image Viewer Modal */}
