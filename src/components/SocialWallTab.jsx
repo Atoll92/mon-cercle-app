@@ -7,25 +7,18 @@ import PostCard from './PostCard';
 import UserContent from './UserContent';
 import Spinner from './Spinner';
 import { formatTimeAgo } from '../utils/dateFormatting';
-import MediaUpload from './MediaUpload';
-import { createPost } from '../api/posts';
 import {
   Typography,
   Paper,
   Divider,
   Box,
   Avatar,
-  Chip,
   Fade,
   Card,
   CardContent,
-  CardMedia,
-  CardHeader,
   IconButton,
   useTheme,
-  useMediaQuery,
   alpha,
-  Collapse,
   Button,
   Select,
   MenuItem,
@@ -35,26 +28,12 @@ import {
   Alert
 } from '@mui/material';
 import {
-  Favorite as FavoriteIcon,
-  Comment as CommentIcon,
-  Share as ShareIcon,
-  MoreVert as MoreVertIcon,
   ArrowUpward as ArrowUpwardIcon,
-  ExpandMore as ExpandMoreIcon,
   ExpandLess as ExpandLessIcon,
-  ReadMore as ReadMoreIcon,
-  PictureAsPdf as PdfIcon,
-  Image as ImageIcon,
-  VideoLibrary as VideoIcon,
-  AudioFile as AudioIcon,
-  Article as ArticleIcon,
   PlayCircleFilled as PlayIcon,
   Pause as PauseIcon,
-  FilterList as FilterListIcon,
   Add as AddIcon,
-  Create as CreateIcon,
   Delete as DeleteIcon,
-  Edit as EditIcon,
   Campaign as CampaignIcon
 } from '@mui/icons-material';
 import MediaPlayer from './MediaPlayer';
@@ -78,25 +57,10 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
   const { user } = useAuth();
   const { activeProfile } = useProfile();
   const muiTheme = useTheme();
-  const isMobile = useMediaQuery(muiTheme.breakpoints.down('sm'));
   
   // Category filtering state
   const [selectedCategory, setSelectedCategory] = useState('');
   const [categories, setCategories] = useState([]);
-  const [showFilter, setShowFilter] = useState(false);
-  
-  // Debug log for items received
-  React.useEffect(() => {
-    console.log('SocialWallTab received items:', socialWallItems);
-    console.log('NetworkId:', networkId);
-    console.log('Categories loaded:', categories);
-    // Log post items specifically
-    const postItems = socialWallItems.filter(item => item.itemType === 'post');
-    console.log('Post items:', postItems);
-    // Log if there are post items with images
-    const postItemsWithImages = postItems.filter(item => item.image_url);
-    console.log('Post items with images:', postItemsWithImages);
-  }, [socialWallItems, networkId, categories]);
   
   // When using theme.palette.custom, check first if it exists
   // This is for compatibility with both your custom theme and the default theme
@@ -111,7 +75,6 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
   const [loading, setLoading] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [scrollPosition, setScrollPosition] = useState(0);
-  const [animationType, setAnimationType] = useState('shrink'); // Always use subtle shrink animation
   
   // State for expanded cards
   const [expandedCardId, setExpandedCardId] = useState(null);
@@ -343,15 +306,6 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
   // Animation utilities
   const dvh = () => window.visualViewport?.height || document.documentElement.clientHeight;
   
-  const seededRandom = (seed) => {
-    let x = Math.sin(seed) * 10000;
-    return (x - Math.floor(x)) * 2 - 1;
-  };
-  
-  const fmod = (a, b) => {
-    return a - b * Math.floor(a / b);
-  };
-  
   // Update CSS variables for animations
   const updateAnimationVariables = useCallback(() => {
     document.documentElement.style.setProperty('--vertical-center', `${window.scrollY + dvh()/2}`);
@@ -492,34 +446,6 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
     }
   };
 
-  // Get content type icon
-  const getContentTypeIcon = (item) => {
-    // Check for PDF
-    if (item.file_type === 'pdf') {
-      return { icon: <PdfIcon fontSize="small" />, label: t('socialWall.pdf'), color: 'error' };
-    }
-    
-    // Check for media
-    if (item.media_url && item.media_type) {
-      switch (item.media_type) {
-        case 'image':
-          return { icon: <ImageIcon fontSize="small" />, label: t('socialWall.image'), color: 'success' };
-        case 'video':
-          return { icon: <VideoIcon fontSize="small" />, label: t('socialWall.video'), color: 'info' };
-        case 'audio':
-          return { icon: <AudioIcon fontSize="small" />, label: t('socialWall.audio'), color: 'warning' };
-      }
-    }
-    
-    // Check for legacy image
-    if (item.image_url) {
-      return { icon: <ImageIcon fontSize="small" />, label: t('socialWall.image'), color: 'success' };
-    }
-    
-    // Default to article/text
-    return { icon: <ArticleIcon fontSize="small" />, label: t('socialWall.text'), color: 'default' };
-  };
-  
   // Get height for masonry layout
   const getCardHeight = (item) => {
     // All cards now have dynamic height based on content

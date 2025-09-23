@@ -43,27 +43,36 @@ const NetworkSelector = ({ onProfileSelected }) => {
     setSelectedProfileId(profile.id);
   };
 
+  const handleProfileDoubleClick = async (profile) => {
+    setSelectedProfileId(profile.id);
+    await handleContinueWithProfile(profile);
+  };
+
   const handleContinue = async () => {
     if (!selectedProfileId) return;
-    
-    setIsSelecting(true);
+
     const profile = userProfiles.find(p => p.id === selectedProfileId);
-    
     if (profile) {
-      const result = await setActiveProfile(profile);
-      
-      if (result.success) {
-        if (onProfileSelected) {
-          onProfileSelected(profile);
-        } else {
-          // Navigate to dashboard by default
-          navigate('/dashboard');
-        }
-      } else {
-        console.error('Failed to set active profile:', result.error);
-      }
+      await handleContinueWithProfile(profile);
     }
-    
+  };
+
+  const handleContinueWithProfile = async (profile) => {
+    setIsSelecting(true);
+
+    const result = await setActiveProfile(profile);
+
+    if (result.success) {
+      if (onProfileSelected) {
+        onProfileSelected(profile);
+      } else {
+        // Navigate to dashboard by default
+        navigate('/dashboard');
+      }
+    } else {
+      console.error('Failed to set active profile:', result.error);
+    }
+
     setIsSelecting(false);
   };
 
@@ -172,6 +181,7 @@ const NetworkSelector = ({ onProfileSelected }) => {
                   >
                     <CardActionArea
                       onClick={() => handleProfileSelect(profile)}
+                      onDoubleClick={() => handleProfileDoubleClick(profile)}
                       sx={{ height: '100%' }}
                     >
                       <CardContent sx={{ p: 3 }}>
