@@ -2,7 +2,6 @@ import { useState, useEffect, useMemo } from 'react';
 import Spinner from './Spinner';
 import {
   Card,
-  CardHeader,
   CardContent,
   Typography,
   Avatar,
@@ -19,25 +18,17 @@ import {
   Edit as EditIcon,
   Delete as DeleteIcon,
   ArrowForward as ArrowForwardIcon,
-  PictureAsPdf as PdfIcon,
-  Image as ImageIcon,
-  VideoLibrary as VideoIcon,
-  AudioFile as AudioIcon,
-  Article as ArticleIcon,
-  ChatBubbleOutline as CommentIcon
 } from '@mui/icons-material';
 import MediaPlayer from './MediaPlayer';
 import MediaCarousel from './MediaCarousel';
 import LazyImage from './LazyImage';
 import LinkPreview from './LinkPreview';
-import LinkifiedText from './LinkifiedText';
 import UserContent from './UserContent';
 import ImageViewerModal from './ImageViewerModal';
 import CreatePostModal from './CreatePostModal';
 import MembersDetailModal from './MembersDetailModal';
 import { formatTimeAgo } from '../utils/dateFormatting';
 import { Link, useNavigate } from 'react-router-dom';
-import { getCommentCount } from '../api/comments';
 import { deletePost } from '../api/posts';
 import { useProfile } from '../context/profileContext';
 import { useNetwork } from '../context/networkContext';
@@ -64,7 +55,6 @@ const PostCard = ({
   const { t } = useTranslation();
   const theme = useTheme();
   const navigate = useNavigate();
-  const { user } = useAuth();
   const { activeProfile } = useProfile();
   
   // Get network context - component requires NetworkProvider
@@ -93,23 +83,10 @@ const PostCard = ({
   }, [hasNetworkContext, isOwner, activeProfile, post.profile_id]);
   const [anchorEl, setAnchorEl] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [commentCount, setCommentCount] = useState(0);
   const [imageViewerOpen, setImageViewerOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState({ url: '', title: '' });
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [memberModalOpen, setMemberModalOpen] = useState(false);
-
-  // Fetch comment count on mount
-  useEffect(() => {
-    const fetchCommentCount = async () => {
-      if (post?.id) {
-        const { count } = await getCommentCount('post', post.id);
-        setCommentCount(count || 0);
-      }
-    };
-    
-    fetchCommentCount();
-  }, [post?.id]);
 
   // Handle image click internally
   const handleImageClick = (url, title) => {
@@ -177,6 +154,8 @@ const PostCard = ({
 
   const handlePostUpdated = (updatedPost) => {
     setEditModalOpen(false);
+
+    // Notify parent of the update
     if (onPostUpdated) {
       onPostUpdated(updatedPost);
     }
@@ -610,7 +589,7 @@ const PostCard = ({
         onClose={() => setMemberModalOpen(false)}
         member={author}
         posts={[]} // Don't show posts in the modal to avoid infinite nesting
-        isCurrentUser={author?.id === (activeProfile?.id || user?.id)}
+        isCurrentUser={author?.id === activeProfile?.id}
         darkMode={darkMode}
       />
     </Card>

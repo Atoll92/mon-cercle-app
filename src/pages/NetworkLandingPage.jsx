@@ -297,10 +297,10 @@ function NetworkLandingPage() {
   // Handle post creation from social wall
   const handlePostCreated = (newPost) => {
     console.log('New post created:', newPost);
-    
+
     // Find the member info for the new post
     const member = networkMembers.find(m => m.id === newPost.profile_id);
-    
+
     // Transform the new post to match the social wall format
     const postWithMemberInfo = {
       ...newPost,
@@ -315,11 +315,41 @@ function NetworkLandingPage() {
       media_metadata: newPost.media_metadata,
       image_url: newPost.image_url || newPost.file_url || ''
     };
-    
+
     // Add the new post to the beginning of the list
     setPostItems(prevItems => [postWithMemberInfo, ...prevItems]);
   };
-  
+
+  // Handle post update from social wall
+  const handlePostUpdated = (updatedPost) => {
+    console.log('Post updated:', updatedPost);
+
+    // Find the member info for the updated post
+    const member = networkMembers.find(m => m.id === updatedPost.profile_id);
+
+    // Transform the updated post to match the social wall format
+    const postWithMemberInfo = {
+      ...updatedPost,
+      itemType: 'post',
+      createdAt: updatedPost.created_at,
+      memberName: member?.full_name || activeProfile?.full_name || 'Network Member',
+      memberAvatar: member?.profile_picture_url || activeProfile?.profile_picture_url || '',
+      memberId: updatedPost.profile_id,
+      // Preserve all media fields
+      media_url: updatedPost.media_url,
+      media_type: updatedPost.media_type,
+      media_metadata: updatedPost.media_metadata,
+      image_url: updatedPost.image_url || updatedPost.file_url || ''
+    };
+
+    // Update the post in the list
+    setPostItems(prevItems =>
+      prevItems.map(item =>
+        item.id === updatedPost.id ? postWithMemberInfo : item
+      )
+    );
+  };
+
   // Check if user just joined the network or came from invitation
   useEffect(() => {
     if (!user || !network || !activeProfile) {
@@ -1543,6 +1573,7 @@ function NetworkLandingPage() {
                 networkId={network.id}
                 onPostDeleted={handlePostDeleted}
                 onPostCreated={handlePostCreated}
+                onPostUpdated={handlePostUpdated}
               />
             )}
 

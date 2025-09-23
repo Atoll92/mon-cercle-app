@@ -49,7 +49,7 @@ import { getUserProfile } from '../api/networks';
 // Number of items to display initially
 const ITEMS_PER_FETCH = 6;
 
-const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = false, isAdmin = false, networkId, onPostDeleted, onPostCreated }) => {
+const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = false, isAdmin = false, networkId, onPostDeleted, onPostCreated, onPostUpdated }) => {
   const { t } = useTranslation();
   const { user } = useAuth();
   const { activeProfile } = useProfile();
@@ -420,13 +420,32 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
   // Handle post creation
   const handlePostCreated = (newPost) => {
     console.log('New post created:', newPost);
-    
+
     // Call the parent's callback to update the social wall items
     if (onPostCreated) {
       onPostCreated(newPost);
     }
-    
+
     // The new post will appear through the updated socialWallItems prop
+  };
+
+  // Handle post update - pass it up to parent and update local state
+  const handlePostUpdated = (updatedPost) => {
+    console.log('Post updated in SocialWallTab:', updatedPost);
+
+    // Update the local display items immediately for instant feedback
+    setDisplayItems(prevItems =>
+      prevItems.map(item =>
+        item.id === updatedPost.id && item.itemType === 'post'
+          ? { ...item, ...updatedPost, itemType: 'post' }
+          : item
+      )
+    );
+
+    // Call the parent's callback to update the main social wall items
+    if (onPostUpdated) {
+      onPostUpdated(updatedPost);
+    }
   };
   
   // Handle post deletion
@@ -689,7 +708,7 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                       darkMode={darkMode}
                       isOwner={item.profile_id === (activeProfile?.id || user?.id)}
                       onAuthorClick={handleMemberClick}
-                      onPostUpdated={onPostDeleted}
+                      onPostUpdated={handlePostUpdated}
                       onPostDeleted={onPostDeleted}
                       sx={{ 
                         transition: 'transform 0.15s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.15s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease',
