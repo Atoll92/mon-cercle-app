@@ -685,8 +685,6 @@ const WikiPage = () => {
           <CommentSection
             itemType="wiki"
             itemId={page.id}
-            darkMode={darkMode}
-            isAdmin={isAdmin}
             defaultExpanded={true}
           />
         </Box>

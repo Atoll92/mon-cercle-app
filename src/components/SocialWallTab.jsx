@@ -40,8 +40,6 @@ import MediaCarousel from './MediaCarousel';
 import LazyImage from './LazyImage';
 import ImageViewerModal from './ImageViewerModal';
 import CommentSection from './CommentSection';
-import LinkPreview from './LinkPreview';
-import { getCommentCount } from '../api/comments';
 import { fetchNetworkCategories } from '../api/categories';
 import { supabase } from '../supabaseclient';
 import { useAuth } from '../context/authcontext';
@@ -87,9 +85,6 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
   // State for image viewer modal
   const [imageViewerOpen, setImageViewerOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState({ url: '', title: '' });
-  
-  // State for comment counts
-  const [commentCounts, setCommentCounts] = useState({});
   
   // Member detail modal state
   const [selectedMember, setSelectedMember] = useState(null);
@@ -181,29 +176,6 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
     });
   }, [socialWallItems, selectedCategory]);
 
-  // Fetch comment counts for all items
-  const fetchCommentCounts = useCallback(async (items) => {
-    const counts = {};
-    
-    // Fetch counts in parallel for better performance
-    const countPromises = items.map(async (item) => {
-      const { count } = await getCommentCount(item.itemType, item.id);
-      return { 
-        key: `${item.itemType}-${item.id}`, 
-        count: count || 0 
-      };
-    });
-    
-    const results = await Promise.all(countPromises);
-    
-    // Convert array of results to object
-    results.forEach(({ key, count }) => {
-      counts[key] = count;
-    });
-    
-    setCommentCounts(counts);
-  }, []);
-
   // Initial load
   useEffect(() => {
     if (filteredItems && filteredItems.length > 0) {
@@ -220,14 +192,11 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
       setDisplayItems(initialItems);
       setPage(Math.ceil(initialLoadCount / ITEMS_PER_FETCH)); // Set appropriate page number
       setHasMore(filteredItems.length > initialLoadCount);
-      
-      // Fetch comment counts for all items
-      fetchCommentCounts(socialWallItems);
     } else {
       setDisplayItems([]);
       setHasMore(false);
     }
-  }, [filteredItems, fetchCommentCounts]);
+  }, [filteredItems]);
   
   // Load more items
   const loadMoreItems = useCallback(() => {
@@ -1272,7 +1241,6 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                     <CommentSection
                       itemType={item.itemType}
                       itemId={item.id}
-                      darkMode={darkMode}
                       onMemberClick={handleMemberClick}
                       TopRightElement={
                         <Button

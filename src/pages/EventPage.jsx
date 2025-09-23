@@ -653,7 +653,6 @@ function EventPage() {
             <CommentSection
               itemType="event"
               itemId={eventId}
-              isAdmin={isAdmin}
               onMemberClick={handleMemberClick}
               defaultExpanded={true}
             />

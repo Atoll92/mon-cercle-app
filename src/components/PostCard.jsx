@@ -571,7 +571,6 @@ const PostCard = ({
         <CommentSection
           itemType={'post'}
           itemId={post.id}
-          darkMode={darkMode}
           onMemberClick={(onAuthorClick ? onAuthorClick : handleAuthorClick)}
           TopRightElement={
             <Button

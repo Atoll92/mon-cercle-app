@@ -38,17 +38,17 @@ import { formatTimeAgo } from '../utils/dateFormatting';
  * CommentSection component to display and manage comments for a given item
  * @param {string} itemType - Type of the item ('event', 'news', 'post', or 'wiki')
  * @param {string} itemId - ID of the item being commented on
- * @param {boolean} darkMode - Whether to use dark mode styles
  * @param {function} onMemberClick - Callback for member click events
  * @param {boolean} defaultExpanded - Whether to expand comments by default
  * @param {React.Element} TopRightElement - Optional element to render in the top right corner, on the same line as the comment count
  */
 
-const CommentSection = ({ itemType, itemId, darkMode, onMemberClick, defaultExpanded = false, TopRightElement }) => {
+const CommentSection = ({ itemType, itemId, onMemberClick, defaultExpanded = false, TopRightElement }) => {
   const { t } = useTranslation();
   const { user } = useAuth();
   const { activeProfile } = useProfile();
   const theme = useTheme();
+  const darkMode = theme.darkMode;
   const [comments, setComments] = useState([]);
   const [commentCount, setCommentCount] = useState(0);
   const [showComments, setShowComments] = useState(defaultExpanded);
