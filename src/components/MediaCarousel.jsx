@@ -249,20 +249,32 @@ const MediaCarousel = ({
               width: '100%',
               height: compact ? 200 : height,
               bgcolor: darkMode ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.05)',
-              p: 2
+              overflow: 'hidden', // Prevent PDF content from overflowing
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
             }}
           >
-            <MediaPlayer
-              src={url}
-              type="pdf"
-              title={metadata?.fileName}
-              fileName={metadata?.fileName}
-              fileSize={metadata?.fileSize}
-              numPages={metadata?.numPages}
-              author={metadata?.author}
-              thumbnail={metadata?.thumbnail}
-              darkMode={darkMode}
-            />
+            <Box
+              sx={{
+                width: '100%',
+                height: '100%',
+                overflow: 'hidden', // Double insurance against overflow
+                position: 'relative'
+              }}
+            >
+              <MediaPlayer
+                src={url}
+                type="pdf"
+                title={metadata?.fileName}
+                fileName={metadata?.fileName}
+                fileSize={metadata?.fileSize}
+                numPages={metadata?.numPages}
+                author={metadata?.author}
+                thumbnail={metadata?.thumbnail}
+                darkMode={darkMode}
+              />
+            </Box>
           </Box>
         );
 
