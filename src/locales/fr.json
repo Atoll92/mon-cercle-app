@@ -851,7 +851,17 @@
     "proposeEvent": "Proposer un événement",
     "eventProposalSubmitted": "Votre proposition d'événement a été soumise et sera examinée par un administrateur.",
     "eventCreatedSuccessfully": "Événement créé avec succès !",
-    "approvalNotice": "Votre proposition d'événement sera examinée par un administrateur avant d'être visible aux autres membres."
+    "approvalNotice": "Votre proposition d'événement sera examinée par un administrateur avant d'être visible aux autres membres.",
+    "pastEvents": "Événements passés",
+    "browseArchivedEvents": "Parcourir les événements archivés",
+    "noPastEvents": "Aucun événement passé à afficher",
+    "attended": "Assisté",
+    "maybeAttended": "Peut-être assisté",
+    "didNotAttend": "Non assisté",
+    "attending": "Participe",
+    "maybe": "Peut-être",
+    "notAttending": "Ne participe pas",
+    "online": "En ligne"
   },
   "newsTab": {
     "fillRequiredFields": "Veuillez remplir au moins le titre et le contenu",

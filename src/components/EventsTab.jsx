@@ -270,7 +270,7 @@ const EventsTab = ({
               </Typography>
             </Box>
             <EventsMap 
-              events={filteredEvents} 
+              events={filteredEvents.filter(event => new Date(event.date) >= new Date())} 
               onEventSelect={(event) => {
                 setSelectedEvent(event);
                 setShowEventDialog(true);
@@ -1692,6 +1692,217 @@ const EventsTab = ({
           </List>
         </Box>
       </Dialog>
+      
+      {/* Past Events Navigation */}
+      <Paper 
+        elevation={0} 
+        variant="outlined" 
+        sx={{ 
+          mt: 3,
+          borderRadius: 2,
+          overflow: 'hidden',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+          border: '1px solid',
+          borderColor: 'divider'
+        }}
+      >
+        <Box sx={{ 
+          p: 2, 
+          bgcolor: 'background.paper', 
+          borderBottom: '1px solid', 
+          borderColor: 'divider',
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center'
+        }}>
+          <Box>
+            <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center' }}>
+              <TimelineIcon sx={{ mr: 1 }} color="action" />
+              {t('eventsTab.pastEvents')}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              {t('eventsTab.browseArchivedEvents')}
+            </Typography>
+          </Box>
+          
+          <Chip 
+            label={t('eventsTab.eventsCount', { count: filteredEvents.filter(event => new Date(event.date) < new Date()).length })} 
+            size="small" 
+            color="default" 
+            variant="outlined" 
+          />
+        </Box>
+        
+        <Box sx={{ p: 2 }}>
+          {filteredEvents.filter(event => new Date(event.date) < new Date()).length === 0 ? (
+            <Box sx={{ textAlign: 'center', py: 4 }}>
+              <Typography variant="body1" color="text.secondary">
+                {t('eventsTab.noPastEvents')}
+              </Typography>
+            </Box>
+          ) : (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {/* Past events grouped by month */}
+              {(() => {
+                const pastEvents = filteredEvents
+                  .filter(event => new Date(event.date) < new Date())
+                  .sort((a, b) => new Date(b.date) - new Date(a.date));
+                
+                // Group events by month
+                const eventsByMonth = pastEvents.reduce((groups, event) => {
+                  const date = new Date(event.date);
+                  const monthKey = `${date.getFullYear()}-${date.getMonth()}`;
+                  const monthLabel = date.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+                  
+                  if (!groups[monthKey]) {
+                    groups[monthKey] = {
+                      label: monthLabel,
+                      events: []
+                    };
+                  }
+                  groups[monthKey].events.push(event);
+                  return groups;
+                }, {});
+                
+                return Object.values(eventsByMonth).map((monthGroup, groupIndex) => (
+                  <Box key={groupIndex}>
+                    <Typography 
+                      variant="subtitle2" 
+                      sx={{ 
+                        fontWeight: 'bold',
+                        color: 'text.secondary',
+                        mb: 1,
+                        textTransform: 'uppercase',
+                        fontSize: '0.75rem',
+                        letterSpacing: 1
+                      }}
+                    >
+                      {monthGroup.label}
+                    </Typography>
+                    
+                    <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 2 }}>
+                      {monthGroup.events.map((event) => {
+                        const participation = userParticipations.find(p => p.event_id === event.id);
+                        const eventDate = new Date(event.date);
+                        
+                        return (
+                          <Card 
+                            key={event.id}
+                            sx={{ 
+                              cursor: 'pointer',
+                              transition: 'all 0.2s ease',
+                              borderRadius: 2,
+                              overflow: 'hidden',
+                              bgcolor: 'background.paper',
+                              '&:hover': {
+                                transform: 'translateY(-2px)',
+                                boxShadow: '0 8px 24px rgba(0,0,0,0.1)'
+                              }
+                            }}
+                            onClick={() => {
+                              setSelectedEvent(event);
+                              setShowEventDialog(true);
+                            }}
+                          >
+                            {/* Mini cover image */}
+                            {event.cover_image_url && (
+                              <Box sx={{ 
+                                height: 120, 
+                                overflow: 'hidden',
+                                position: 'relative'
+                              }}>
+                                <img
+                                  src={event.cover_image_url}
+                                  alt={event.title}
+                                  style={{
+                                    width: '100%',
+                                    height: '100%',
+                                    objectFit: 'cover'
+                                  }}
+                                />
+                                {/* Overlay with date */}
+                                <Box sx={{
+                                  position: 'absolute',
+                                  top: 8,
+                                  left: 8,
+                                  bgcolor: 'rgba(0,0,0,0.7)',
+                                  color: 'white',
+                                  px: 1,
+                                  py: 0.5,
+                                  borderRadius: 1,
+                                  fontSize: '0.75rem',
+                                  fontWeight: 'bold'
+                                }}>
+                                  {formatDate(event.date, { month: 'short', day: 'numeric' })}
+                                </Box>
+                              </Box>
+                            )}
+                            
+                            <CardContent sx={{ p: 2 }}>
+                              <Typography 
+                                variant="subtitle2" 
+                                sx={{ 
+                                  fontWeight: 'medium',
+                                  mb: 0.5,
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  whiteSpace: 'nowrap'
+                                }}
+                              >
+                                {event.title}
+                              </Typography>
+                              
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 1 }}>
+                                <LocationOnIcon sx={{ fontSize: 14, color: 'text.secondary' }} />
+                                <Typography 
+                                  variant="caption" 
+                                  color="text.secondary"
+                                  sx={{
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    whiteSpace: 'nowrap'
+                                  }}
+                                >
+                                  {event.location}
+                                </Typography>
+                              </Box>
+                              
+                              {/* Participation indicator */}
+                              {participation && (
+                                <Chip
+                                  label={
+                                    participation.status === 'attending' ? t('eventsTab.attended') : 
+                                    participation.status === 'maybe' ? t('eventsTab.maybeAttended') : 
+                                    t('eventsTab.didNotAttend')
+                                  }
+                                  size="small"
+                                  sx={{
+                                    height: 20,
+                                    fontSize: '0.7rem',
+                                    bgcolor: participation.status === 'attending' ? 'rgba(76, 175, 80, 0.1)' : 
+                                             participation.status === 'maybe' ? 'rgba(255, 152, 0, 0.1)' : 
+                                             'rgba(244, 67, 54, 0.1)',
+                                    color: participation.status === 'attending' ? '#4caf50' : 
+                                           participation.status === 'maybe' ? '#ff9800' : '#f44336',
+                                    border: '1px solid',
+                                    borderColor: participation.status === 'attending' ? '#4caf50' : 
+                                                participation.status === 'maybe' ? '#ff9800' : '#f44336'
+                                  }}
+                                />
+                              )}
+                            </CardContent>
+                          </Card>
+                        );
+                      })}
+                    </Box>
+                  </Box>
+                ));
+              })()}
+            </Box>
+          )}
+        </Box>
+      </Paper>
+      
       </Paper>
     </PageTransition>
   );

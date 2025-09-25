@@ -850,7 +850,17 @@
     "proposeEvent": "Propose Event",
     "eventProposalSubmitted": "Your event proposal has been submitted and will be reviewed by an admin.",
     "eventCreatedSuccessfully": "Event created successfully!",
-    "approvalNotice": "Your event proposal will be reviewed by an admin before it becomes visible to other members."
+    "approvalNotice": "Your event proposal will be reviewed by an admin before it becomes visible to other members.",
+    "pastEvents": "Past Events",
+    "browseArchivedEvents": "Browse through archived events",
+    "noPastEvents": "No past events to display",
+    "attended": "Attended",
+    "maybeAttended": "Maybe Attended",
+    "didNotAttend": "Did Not Attend",
+    "attending": "Attending",
+    "maybe": "Maybe",
+    "notAttending": "Not Attending",
+    "online": "Online"
   },
   "newsTab": {
     "fillRequiredFields": "Please fill in at least the title and content",
