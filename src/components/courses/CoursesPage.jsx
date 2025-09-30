@@ -278,11 +278,11 @@ const CoursesPage = () => {
 
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
             <Avatar 
-              src={course.instructor?.avatar_url}
+              src={course.instructor?.profile_picture_url}
               sx={{ width: 24, height: 24 }}
             />
             <Typography variant="body2" color="text.secondary">
-              {course.instructor?.display_name}
+              {course.instructor?.full_name}
             </Typography>
           </Box>
 

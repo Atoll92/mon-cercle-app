@@ -35,13 +35,12 @@ import {
   School as SchoolIcon
 } from '@mui/icons-material';
 
-const CourseCreationDialog = ({ open, onClose, onSubmit, categories = [] }) => {
+const CourseCreationDialog = ({ open, onClose, onSubmit, categories = [], loading = false }) => {
   const [formData, setFormData] = useState({
     title: '',
     slug: '',
     shortDescription: '',
     description: '',
-    categoryId: '',
     price: 0,
     currency: 'USD',
     isFree: false,
@@ -147,9 +146,6 @@ const CourseCreationDialog = ({ open, onClose, onSubmit, categories = [] }) => {
       newErrors.description = 'Course description is required';
     }
 
-    if (!formData.categoryId) {
-      newErrors.categoryId = 'Category is required';
-    }
 
     if (!formData.isFree && (!formData.price || formData.price <= 0)) {
       newErrors.price = 'Price must be greater than 0 for paid courses';
@@ -169,9 +165,15 @@ const CourseCreationDialog = ({ open, onClose, onSubmit, categories = [] }) => {
   };
 
   const handleSubmit = () => {
+    console.log('CourseCreationDialog: handleSubmit called');
+    console.log('Form data:', formData);
+    
     if (!validateForm()) {
+      console.log('CourseCreationDialog: Form validation failed');
       return;
     }
+
+    console.log('CourseCreationDialog: Form validation passed');
 
     // Clean up arrays - remove empty items
     const cleanedData = {
@@ -183,8 +185,9 @@ const CourseCreationDialog = ({ open, onClose, onSubmit, categories = [] }) => {
       estimatedDurationHours: parseInt(formData.estimatedDurationHours)
     };
 
+    console.log('CourseCreationDialog: Calling onSubmit with:', cleanedData);
     onSubmit(cleanedData, thumbnailFile);
-    handleClose();
+    // Don't close immediately - let the parent handle closing after success
   };
 
   const handleClose = () => {
@@ -193,7 +196,6 @@ const CourseCreationDialog = ({ open, onClose, onSubmit, categories = [] }) => {
       slug: '',
       shortDescription: '',
       description: '',
-      categoryId: '',
       price: 0,
       currency: 'USD',
       isFree: false,
@@ -295,29 +297,7 @@ const CourseCreationDialog = ({ open, onClose, onSubmit, categories = [] }) => {
             />
           </Grid>
 
-          <Grid item xs={12} sm={6}>
-            <FormControl fullWidth error={!!errors.categoryId}>
-              <InputLabel>Category *</InputLabel>
-              <Select
-                value={formData.categoryId}
-                onChange={(e) => handleInputChange('categoryId', e.target.value)}
-                label="Category *"
-              >
-                {categories.map((category) => (
-                  <MenuItem key={category.id} value={category.id}>
-                    {category.name}
-                  </MenuItem>
-                ))}
-              </Select>
-              {errors.categoryId && (
-                <Typography variant="caption" color="error" sx={{ ml: 2 }}>
-                  {errors.categoryId}
-                </Typography>
-              )}
-            </FormControl>
-          </Grid>
-
-          <Grid item xs={12} sm={6}>
+          <Grid item xs={12}>
             <FormControl fullWidth>
               <InputLabel>Difficulty Level</InputLabel>
               <Select
@@ -624,8 +604,9 @@ const CourseCreationDialog = ({ open, onClose, onSubmit, categories = [] }) => {
           variant="contained"
           color="primary"
           size="large"
+          disabled={loading}
         >
-          Create Course
+          {loading ? 'Creating...' : 'Create Course'}
         </Button>
       </DialogActions>
     </Dialog>

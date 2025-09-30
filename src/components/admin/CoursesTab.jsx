@@ -11,18 +11,12 @@ import {
   CardActions,
   Chip,
   IconButton,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   useTheme,
   Alert,
-  LinearProgress
+  Skeleton,
+  CardMedia,
+  Avatar,
+  Rating
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -34,91 +28,142 @@ import {
   FilePresent as FileIcon,
   Analytics as AnalyticsIcon,
   People as StudentsIcon,
-  School as CourseIcon
+  School as CourseIcon,
+  AccessTime as AccessTimeIcon
 } from '@mui/icons-material';
+import { useAuth } from '../../context/authcontext';
+import { useProfile } from '../../context/profileContext';
+import { supabase } from '../../supabaseclient';
+import { getCourses, createCourse } from '../../api/courses';
+import CourseCreationDialog from './CourseCreationDialog';
 
-function CoursesTab({ networkId, darkMode }) {
+function CoursesTab({ networkId }) {
   const theme = useTheme();
   const { t } = useTranslation();
+  const { user } = useAuth();
+  const { activeProfile } = useProfile();
   const [courses, setCourses] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [selectedCourse, setSelectedCourse] = useState(null);
-  const [newCourse, setNewCourse] = useState({
-    title: '',
-    description: '',
-    category: '',
-    difficulty: 'beginner',
-    estimated_hours: '',
-    price: 0
-  });
 
-  // Mock data for demonstration
+  const profileId = activeProfile?.id || user?.id;
+
+  // Load courses and categories
   useEffect(() => {
-    setCourses([
-      {
-        id: 1,
-        title: 'Introduction to Community Building',
-        description: 'Learn the fundamentals of building and managing online communities',
-        category: 'Community',
-        difficulty: 'beginner',
-        estimated_hours: 8,
-        enrolled_count: 24,
-        completion_rate: 78,
-        price: 49.99,
-        modules: 6,
-        quizzes: 4,
-        videos: 12,
-        files: 8
-      },
-      {
-        id: 2,
-        title: 'Advanced Networking Strategies',
-        description: 'Master advanced techniques for professional networking',
-        category: 'Professional',
-        difficulty: 'advanced',
-        estimated_hours: 12,
-        enrolled_count: 18,
-        completion_rate: 65,
-        price: 99.99,
-        modules: 8,
-        quizzes: 6,
-        videos: 18,
-        files: 15
+    if (networkId) {
+      loadData();
+    }
+  }, [networkId]);
+
+  const loadData = async () => {
+    console.log('CoursesTab: loadData called for networkId:', networkId);
+    setLoading(true);
+    setError(null);
+    
+    try {
+      // Load courses
+      console.log('CoursesTab: Calling getCourses API...');
+      const coursesResult = await getCourses(supabase, networkId, { status: 'all' });
+      console.log('CoursesTab: getCourses result:', coursesResult);
+
+      if (coursesResult.error) {
+        throw new Error(coursesResult.error);
       }
-    ]);
-  }, []);
+
+      console.log('CoursesTab: Setting courses data:', coursesResult.data);
+      setCourses(coursesResult.data || []);
+      console.log('CoursesTab: Courses state updated with', coursesResult.data?.length || 0, 'courses');
+    } catch (error) {
+      console.error('Error loading courses:', error);
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleCreateCourse = () => {
-    setSelectedCourse(null);
-    setNewCourse({
-      title: '',
-      description: '',
-      category: '',
-      difficulty: 'beginner',
-      estimated_hours: '',
-      price: 0
-    });
     setDialogOpen(true);
   };
 
-  const handleEditCourse = (course) => {
-    setSelectedCourse(course);
-    setNewCourse({
-      title: course.title,
-      description: course.description,
-      category: course.category,
-      difficulty: course.difficulty,
-      estimated_hours: course.estimated_hours,
-      price: course.price
-    });
-    setDialogOpen(true);
-  };
+  const handleSubmitCourse = async (courseData, thumbnailFile) => {
+    console.log('CoursesTab: handleSubmitCourse called');
+    console.log('Received courseData:', courseData);
+    console.log('NetworkId:', networkId, 'ProfileId:', profileId);
+    
+    try {
+      setLoading(true);
+      
+      // Prepare course data with proper field names
+      const coursePayload = {
+        network_id: networkId,
+        instructor_profile_id: profileId,
+        title: courseData.title,
+        slug: courseData.slug,
+        short_description: courseData.shortDescription,
+        description: courseData.description,
+        category_id: null, // No category required
+        difficulty_level: courseData.difficultyLevel,
+        price: courseData.price,
+        currency: courseData.currency,
+        is_free: courseData.isFree,
+        estimated_duration_hours: courseData.estimatedDurationHours,
+        language: courseData.language,
+        max_students: courseData.maxStudents,
+        learning_objectives: courseData.learningObjectives,
+        prerequisites: courseData.prerequisites,
+        target_audience: courseData.targetAudience,
+        tags: courseData.tags,
+        status: 'draft' // Start as draft
+      };
 
-  const handleSaveCourse = () => {
-    // Here you would implement the actual save logic
-    console.log('Saving course:', newCourse);
-    setDialogOpen(false);
+      console.log('CoursesTab: Sending coursePayload to API:', coursePayload);
+
+      // Create the course
+      const result = await createCourse(supabase, coursePayload);
+      console.log('CoursesTab: createCourse result:', result);
+      
+      if (result.error) {
+        throw new Error(result.error);
+      }
+
+      // Upload thumbnail if provided (temporarily disabled for debugging)
+      if (thumbnailFile && result.data) {
+        console.log('CoursesTab: Would upload thumbnail for course:', result.data.id);
+        // TODO: Re-enable thumbnail upload after basic course creation is working
+        /*
+        const fileExt = thumbnailFile.name.split('.').pop();
+        const fileName = `${result.data.id}/thumbnail.${fileExt}`;
+        const { error: uploadError } = await supabase.storage
+          .from('course-thumbnails')
+          .upload(fileName, thumbnailFile);
+
+        if (!uploadError) {
+          // Update course with thumbnail URL
+          const { data: { publicUrl } } = supabase.storage
+            .from('course-thumbnails')
+            .getPublicUrl(fileName);
+          
+          await supabase
+            .from('courses')
+            .update({ thumbnail_url: publicUrl })
+            .eq('id', result.data.id);
+        }
+        */
+      }
+
+      // Reload courses
+      console.log('CoursesTab: Reloading course list...');
+      await loadData();
+      console.log('CoursesTab: Course list reloaded, closing dialog');
+      setDialogOpen(false);
+    } catch (error) {
+      console.error('CoursesTab: Error creating course:', error);
+      setError(error.message || 'Failed to create course');
+    } finally {
+      console.log('CoursesTab: Setting loading to false');
+      setLoading(false);
+    }
   };
 
   const getDifficultyColor = (difficulty) => {
@@ -128,6 +173,14 @@ function CoursesTab({ networkId, darkMode }) {
       case 'advanced': return 'error';
       default: return 'default';
     }
+  };
+
+  const formatPrice = (price, currency = 'USD') => {
+    if (price === 0) return 'Free';
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: currency
+    }).format(price);
   };
 
   return (
@@ -211,216 +264,223 @@ function CoursesTab({ networkId, darkMode }) {
         </Button>
       </Paper>
 
+      {/* Error Alert */}
+      {error && (
+        <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError(null)}>
+          {error}
+        </Alert>
+      )}
+
       {/* Courses List */}
-      <Typography variant="h6" sx={{ mb: 2, color: theme.palette.custom.lightText }}>
-        {t('admin.courses.coursesList.title', { count: courses.length })}
-      </Typography>
+      {loading ? (
+        <Grid container spacing={3}>
+          {[...Array(3)].map((_, index) => (
+            <Grid item xs={12} md={6} lg={4} key={index}>
+              <Card>
+                <Skeleton variant="rectangular" height={200} />
+                <CardContent>
+                  <Skeleton variant="text" height={32} />
+                  <Skeleton variant="text" height={20} />
+                  <Skeleton variant="text" height={20} width="60%" />
+                </CardContent>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+      ) : (
+        <>
+          <Typography variant="h6" sx={{ mb: 2, color: theme.palette.custom.lightText }}>
+            {t('admin.courses.coursesList.title', { count: courses.length })}
+          </Typography>
 
-      <Grid container spacing={3}>
-        {courses.map((course) => (
-          <Grid item xs={12} md={6} lg={4} key={course.id}>
-            <Card
-              sx={{
-                height: '100%',
-                display: 'flex',
-                flexDirection: 'column',
-                bgcolor: theme.palette.background.paper,
-                border: `1px solid ${theme.palette.custom.border}`
-              }}
-            >
-              <CardContent sx={{ flexGrow: 1 }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-                  <Typography variant="h6" component="h3" sx={{ color: theme.palette.custom.lightText }}>
-                    {course.title}
-                  </Typography>
-                  <Chip
-                    label={t(`admin.courses.difficulty.${course.difficulty}`)}
-                    color={getDifficultyColor(course.difficulty)}
-                    size="small"
-                  />
-                </Box>
-                
-                <Typography variant="body2" sx={{ color: theme.palette.custom.mediumText, mb: 2 }}>
-                  {course.description}
-                </Typography>
-
-                <Box sx={{ mb: 2 }}>
-                  <Typography variant="body2" sx={{ color: theme.palette.custom.mediumText }}>
-                    Category: {course.category} • {course.estimated_hours}h • ${course.price}
-                  </Typography>
-                </Box>
-
-                <Grid container spacing={2} sx={{ mb: 2 }}>
-                  <Grid item xs={6}>
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <StudentsIcon sx={{ fontSize: 16, mr: 0.5, color: theme.palette.custom.mediumText }} />
-                      <Typography variant="caption">
-                        {course.enrolled_count} {t('admin.courses.stats.enrolled')}
-                      </Typography>
-                    </Box>
-                  </Grid>
-                  <Grid item xs={6}>
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <AnalyticsIcon sx={{ fontSize: 16, mr: 0.5, color: theme.palette.custom.mediumText }} />
-                      <Typography variant="caption">
-                        {course.completion_rate}% {t('admin.courses.stats.completion')}
-                      </Typography>
-                    </Box>
-                  </Grid>
-                </Grid>
-
-                <Box sx={{ mb: 2 }}>
-                  <Typography variant="caption" sx={{ color: theme.palette.custom.mediumText }}>
-                    {t('admin.courses.stats.completionRate')}
-                  </Typography>
-                  <LinearProgress
-                    variant="determinate"
-                    value={course.completion_rate}
-                    sx={{ mt: 0.5, height: 6, borderRadius: 3 }}
-                  />
-                </Box>
-
-                <Grid container spacing={1}>
-                  <Grid item>
-                    <Chip
-                      icon={<VideoIcon />}
-                      label={`${course.videos} ${t('admin.courses.stats.videos')}`}
-                      size="small"
-                      variant="outlined"
-                    />
-                  </Grid>
-                  <Grid item>
-                    <Chip
-                      icon={<QuizIcon />}
-                      label={`${course.quizzes} ${t('admin.courses.stats.quizzes')}`}
-                      size="small"
-                      variant="outlined"
-                    />
-                  </Grid>
-                  <Grid item>
-                    <Chip
-                      icon={<FileIcon />}
-                      label={`${course.files} ${t('admin.courses.stats.files')}`}
-                      size="small"
-                      variant="outlined"
-                    />
-                  </Grid>
-                </Grid>
-              </CardContent>
-              
-              <CardActions sx={{ justifyContent: 'space-between' }}>
-                <Button
-                  size="small"
-                  startIcon={<PlayIcon />}
-                  variant="outlined"
-                >
-                  {t('admin.courses.buttons.preview')}
-                </Button>
-                <Box>
-                  <IconButton
-                    size="small"
-                    onClick={() => handleEditCourse(course)}
+          {courses.length === 0 ? (
+            <Paper sx={{ p: 6, textAlign: 'center' }}>
+              <CourseIcon sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
+              <Typography variant="h6" gutterBottom>
+                No courses yet
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                Create your first course to get started
+              </Typography>
+              <Button
+                variant="contained"
+                startIcon={<AddIcon />}
+                onClick={handleCreateCourse}
+              >
+                Create First Course
+              </Button>
+            </Paper>
+          ) : (
+            <Grid container spacing={3}>
+              {console.log('CoursesTab: Rendering', courses.length, 'courses:', courses)}
+              {courses.map((course) => (
+                <Grid item xs={12} md={6} lg={4} key={course.id}>
+                  <Card
+                    sx={{
+                      height: '100%',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      bgcolor: theme.palette.background.paper,
+                      border: `1px solid ${theme.palette.custom.border}`
+                    }}
                   >
-                    <EditIcon />
-                  </IconButton>
-                  <IconButton
-                    size="small"
-                    color="error"
-                  >
-                    <DeleteIcon />
-                  </IconButton>
-                </Box>
-              </CardActions>
-            </Card>
-          </Grid>
-        ))}
-      </Grid>
+                    {/* Course Thumbnail */}
+                    <CardMedia
+                      component="div"
+                      sx={{
+                        height: 180,
+                        background: course.thumbnail_url 
+                          ? `url(${course.thumbnail_url})` 
+                          : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                        position: 'relative'
+                      }}
+                    >
+                      {course.is_featured && (
+                        <Chip
+                          label="Featured"
+                          color="primary"
+                          size="small"
+                          sx={{
+                            position: 'absolute',
+                            top: 8,
+                            left: 8
+                          }}
+                        />
+                      )}
+                      <Chip
+                        label={course.status}
+                        color={course.status === 'published' ? 'success' : 'warning'}
+                        size="small"
+                        sx={{
+                          position: 'absolute',
+                          top: 8,
+                          right: 8
+                        }}
+                      />
+                    </CardMedia>
 
-      {/* Create/Edit Course Dialog */}
-      <Dialog
+                    <CardContent sx={{ flexGrow: 1 }}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+                        <Typography variant="h6" component="h3" sx={{ color: theme.palette.custom.lightText }}>
+                          {course.title}
+                        </Typography>
+                        <Chip
+                          label={t(`admin.courses.difficulty.${course.difficulty_level}`)}
+                          color={getDifficultyColor(course.difficulty_level)}
+                          size="small"
+                        />
+                      </Box>
+
+                      {/* Instructor */}
+                      {course.instructor && (
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                          <Avatar 
+                            src={course.instructor.profile_picture_url}
+                            sx={{ width: 24, height: 24 }}
+                          />
+                          <Typography variant="body2" color="text.secondary">
+                            {course.instructor.full_name}
+                          </Typography>
+                        </Box>
+                      )}
+                      
+                      <Typography 
+                        variant="body2" 
+                        sx={{ 
+                          color: theme.palette.custom.mediumText, 
+                          mb: 2,
+                          display: '-webkit-box',
+                          WebkitLineClamp: 3,
+                          WebkitBoxOrient: 'vertical',
+                          overflow: 'hidden'
+                        }}
+                      >
+                        {course.short_description || course.description}
+                      </Typography>
+
+                      <Box sx={{ mb: 2 }}>
+                        <Typography variant="body2" sx={{ color: theme.palette.custom.mediumText }}>
+                          {course.estimated_duration_hours}h • {formatPrice(course.price, course.currency)}
+                        </Typography>
+                      </Box>
+
+                      <Grid container spacing={2} sx={{ mb: 2 }}>
+                        <Grid item xs={6}>
+                          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                            <StudentsIcon sx={{ fontSize: 16, mr: 0.5, color: theme.palette.custom.mediumText }} />
+                            <Typography variant="caption">
+                              {course.enrollment_count || 0} {t('admin.courses.stats.enrolled')}
+                            </Typography>
+                          </Box>
+                        </Grid>
+                        <Grid item xs={6}>
+                          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                            <AccessTimeIcon sx={{ fontSize: 16, mr: 0.5, color: theme.palette.custom.mediumText }} />
+                            <Typography variant="caption">
+                              Created {new Date(course.created_at).toLocaleDateString()}
+                            </Typography>
+                          </Box>
+                        </Grid>
+                      </Grid>
+
+                      {/* Rating if available */}
+                      {course.rating_average > 0 && (
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 2 }}>
+                          <Rating 
+                            value={course.rating_average} 
+                            precision={0.1} 
+                            size="small" 
+                            readOnly 
+                          />
+                          <Typography variant="caption" color="text.secondary">
+                            ({course.rating_count || 0})
+                          </Typography>
+                        </Box>
+                      )}
+                    </CardContent>
+                    
+                    <CardActions sx={{ justifyContent: 'space-between' }}>
+                      <Button
+                        size="small"
+                        startIcon={<PlayIcon />}
+                        variant="outlined"
+                      >
+                        {t('admin.courses.buttons.preview')}
+                      </Button>
+                      <Box>
+                        <IconButton
+                          size="small"
+                          onClick={() => console.log('Edit course:', course.id)}
+                        >
+                          <EditIcon />
+                        </IconButton>
+                        <IconButton
+                          size="small"
+                          color="error"
+                          onClick={() => console.log('Delete course:', course.id)}
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </Box>
+                    </CardActions>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+          )}
+        </>
+      )}
+
+      {/* Course Creation Dialog */}
+      <CourseCreationDialog
         open={dialogOpen}
         onClose={() => setDialogOpen(false)}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle>
-          {selectedCourse ? t('admin.courses.dialogs.editCourse') : t('admin.courses.dialogs.createCourse')}
-        </DialogTitle>
-        <DialogContent>
-          <Box sx={{ pt: 1 }}>
-            <TextField
-              fullWidth
-              label={t('admin.courses.fields.courseTitle')}
-              value={newCourse.title}
-              onChange={(e) => setNewCourse({ ...newCourse, title: e.target.value })}
-              sx={{ mb: 2 }}
-            />
-            
-            <TextField
-              fullWidth
-              label={t('admin.courses.fields.description')}
-              multiline
-              rows={3}
-              value={newCourse.description}
-              onChange={(e) => setNewCourse({ ...newCourse, description: e.target.value })}
-              sx={{ mb: 2 }}
-            />
-
-            <Grid container spacing={2} sx={{ mb: 2 }}>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label={t('admin.courses.fields.category')}
-                  value={newCourse.category}
-                  onChange={(e) => setNewCourse({ ...newCourse, category: e.target.value })}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <FormControl fullWidth>
-                  <InputLabel>{t('admin.courses.fields.difficulty')}</InputLabel>
-                  <Select
-                    value={newCourse.difficulty}
-                    onChange={(e) => setNewCourse({ ...newCourse, difficulty: e.target.value })}
-                  >
-                    <MenuItem value="beginner">{t('admin.courses.difficulty.beginner')}</MenuItem>
-                    <MenuItem value="intermediate">{t('admin.courses.difficulty.intermediate')}</MenuItem>
-                    <MenuItem value="advanced">{t('admin.courses.difficulty.advanced')}</MenuItem>
-                  </Select>
-                </FormControl>
-              </Grid>
-            </Grid>
-
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label={t('admin.courses.fields.estimatedHours')}
-                  type="number"
-                  value={newCourse.estimated_hours}
-                  onChange={(e) => setNewCourse({ ...newCourse, estimated_hours: e.target.value })}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label={t('admin.courses.fields.price')}
-                  type="number"
-                  value={newCourse.price}
-                  onChange={(e) => setNewCourse({ ...newCourse, price: parseFloat(e.target.value) || 0 })}
-                />
-              </Grid>
-            </Grid>
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDialogOpen(false)}>
-            {t('admin.courses.buttons.cancel')}
-          </Button>
-          <Button onClick={handleSaveCourse} variant="contained">
-            {selectedCourse ? t('admin.courses.buttons.update') : t('admin.courses.buttons.create')}
-          </Button>
-        </DialogActions>
-      </Dialog>
+        onSubmit={handleSubmitCourse}
+        categories={[]}
+        loading={loading}
+      />
     </Box>
   );
 }

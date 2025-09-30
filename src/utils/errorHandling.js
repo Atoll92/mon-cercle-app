@@ -60,3 +60,27 @@ export const logError = (error, operation, metadata = {}) => {
   
   return errorInfo;
 };
+
+/**
+ * Wrapper for successful array responses from Supabase
+ * @param {Array} data - The successful data array
+ * @returns {object} Standardized success response
+ */
+export const handleArraySuccess = (data) => {
+  return {
+    data: data || [],
+    error: null
+  };
+};
+
+/**
+ * Wrapper for successful object responses from Supabase
+ * @param {object} data - The successful data object
+ * @returns {object} Standardized success response
+ */
+export const handleObjectSuccess = (data) => {
+  return {
+    data: data || null,
+    error: null
+  };
+};

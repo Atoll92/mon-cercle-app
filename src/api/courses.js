@@ -1,4 +1,4 @@
-import { handleArrayError, handleObjectError } from '../utils/errorHandling';
+import { handleArrayError, handleObjectError, handleArraySuccess, handleObjectSuccess } from '../utils/errorHandling';
 
 // Course Categories API
 
@@ -12,7 +12,7 @@ export const getCourseCategories = async (supabase, networkId) => {
       .order('sort_order', { ascending: true });
     
     if (error) throw error;
-    return handleArrayError(data);
+    return handleArraySuccess(data);
   } catch (error) {
     console.error('Error fetching course categories:', error);
     return { error: error.message };
@@ -28,7 +28,7 @@ export const createCourseCategory = async (supabase, categoryData) => {
       .single();
     
     if (error) throw error;
-    return handleObjectError(data);
+    return handleObjectSuccess(data);
   } catch (error) {
     console.error('Error creating course category:', error);
     return { error: error.message };
@@ -45,7 +45,7 @@ export const updateCourseCategory = async (supabase, categoryId, updates) => {
       .single();
     
     if (error) throw error;
-    return handleObjectError(data);
+    return handleObjectSuccess(data);
   } catch (error) {
     console.error('Error updating course category:', error);
     return { error: error.message };
@@ -70,25 +70,31 @@ export const deleteCourseCategory = async (supabase, categoryId) => {
 // Courses API
 
 export const getCourses = async (supabase, networkId, filters = {}) => {
+  console.log('API getCourses: called with networkId:', networkId, 'filters:', filters);
+  
   try {
     let query = supabase
       .from('courses')
       .select(`
         *,
         category:course_categories(id, name, color, icon),
-        instructor:profiles!instructor_profile_id(id, display_name, avatar_url),
+        instructor:profiles!instructor_profile_id(id, full_name, profile_picture_url),
         enrollment_count,
         rating_average,
         rating_count
       `)
       .eq('network_id', networkId);
 
+    console.log('API getCourses: Base query created for networkId:', networkId);
+
     // Apply filters
-    if (filters.status) {
+    if (filters.status && filters.status !== 'all') {
       query = query.eq('status', filters.status);
-    } else {
+    } else if (!filters.status) {
+      // Only filter by published if no status filter is provided
       query = query.eq('status', 'published');
     }
+    // If filters.status === 'all', don't filter by status at all
 
     if (filters.categoryId) {
       query = query.eq('category_id', filters.categoryId);
@@ -124,10 +130,16 @@ export const getCourses = async (supabase, networkId, filters = {}) => {
                    .order('created_at', { ascending: false });
     }
 
+    console.log('API getCourses: Executing query...');
     const { data, error } = await query;
     
+    console.log('API getCourses: Database response - data:', data, 'error:', error);
+    
     if (error) throw error;
-    return handleArrayError(data);
+    
+    const result = handleArraySuccess(data);
+    console.log('API getCourses: Final result:', result);
+    return result;
   } catch (error) {
     console.error('Error fetching courses:', error);
     return { error: error.message };
@@ -141,7 +153,7 @@ export const getCourseById = async (supabase, courseId) => {
       .select(`
         *,
         category:course_categories(id, name, color, icon),
-        instructor:profiles!instructor_profile_id(id, display_name, avatar_url, bio),
+        instructor:profiles!instructor_profile_id(id, full_name, profile_picture_url, bio),
         lessons:course_lessons(
           id, title, slug, description, is_preview, 
           video_duration_seconds, estimated_duration_minutes, sort_order
@@ -151,7 +163,7 @@ export const getCourseById = async (supabase, courseId) => {
       .single();
     
     if (error) throw error;
-    return handleObjectError(data);
+    return handleObjectSuccess(data);
   } catch (error) {
     console.error('Error fetching course:', error);
     return { error: error.message };
@@ -159,17 +171,25 @@ export const getCourseById = async (supabase, courseId) => {
 };
 
 export const createCourse = async (supabase, courseData) => {
+  console.log('API createCourse: called with data:', courseData);
+  
   try {
+    console.log('API createCourse: Inserting course into database...');
     const { data, error } = await supabase
       .from('courses')
       .insert([courseData])
       .select()
       .single();
     
+    console.log('API createCourse: Database response - data:', data, 'error:', error);
+    
     if (error) throw error;
-    return handleObjectError(data);
+    
+    const result = handleObjectSuccess(data);
+    console.log('API createCourse: Final result:', result);
+    return result;
   } catch (error) {
-    console.error('Error creating course:', error);
+    console.error('API createCourse: Error caught:', error);
     return { error: error.message };
   }
 };
@@ -184,7 +204,7 @@ export const updateCourse = async (supabase, courseId, updates) => {
       .single();
     
     if (error) throw error;
-    return handleObjectError(data);
+    return handleObjectSuccess(data);
   } catch (error) {
     console.error('Error updating course:', error);
     return { error: error.message };
@@ -219,7 +239,7 @@ export const publishCourse = async (supabase, courseId) => {
       .single();
     
     if (error) throw error;
-    return handleObjectError(data);
+    return handleObjectSuccess(data);
   } catch (error) {
     console.error('Error publishing course:', error);
     return { error: error.message };
@@ -237,7 +257,7 @@ export const getCourseLessons = async (supabase, courseId) => {
       .order('sort_order', { ascending: true });
     
     if (error) throw error;
-    return handleArrayError(data);
+    return handleArraySuccess(data);
   } catch (error) {
     console.error('Error fetching course lessons:', error);
     return { error: error.message };
@@ -256,7 +276,7 @@ export const getLessonById = async (supabase, lessonId) => {
       .single();
     
     if (error) throw error;
-    return handleObjectError(data);
+    return handleObjectSuccess(data);
   } catch (error) {
     console.error('Error fetching lesson:', error);
     return { error: error.message };
@@ -272,7 +292,7 @@ export const createLesson = async (supabase, lessonData) => {
       .single();
     
     if (error) throw error;
-    return handleObjectError(data);
+    return handleObjectSuccess(data);
   } catch (error) {
     console.error('Error creating lesson:', error);
     return { error: error.message };
@@ -289,7 +309,7 @@ export const updateLesson = async (supabase, lessonId, updates) => {
       .single();
     
     if (error) throw error;
-    return handleObjectError(data);
+    return handleObjectSuccess(data);
   } catch (error) {
     console.error('Error updating lesson:', error);
     return { error: error.message };
@@ -319,7 +339,7 @@ export const getCourseEnrollments = async (supabase, courseId) => {
       .from('course_enrollments')
       .select(`
         *,
-        student:profiles!student_profile_id(id, display_name, avatar_url),
+        student:profiles!student_profile_id(id, full_name, profile_picture_url),
         course:courses(id, title)
       `)
       .eq('course_id', courseId)
@@ -327,7 +347,7 @@ export const getCourseEnrollments = async (supabase, courseId) => {
       .order('enrolled_at', { ascending: false });
     
     if (error) throw error;
-    return handleArrayError(data);
+    return handleArraySuccess(data);
   } catch (error) {
     console.error('Error fetching course enrollments:', error);
     return { error: error.message };
@@ -342,7 +362,7 @@ export const getStudentEnrollments = async (supabase, studentProfileId) => {
         *,
         course:courses(
           id, title, slug, thumbnail_url, instructor_profile_id,
-          instructor:profiles!instructor_profile_id(id, display_name, avatar_url)
+          instructor:profiles!instructor_profile_id(id, full_name, profile_picture_url)
         )
       `)
       .eq('student_profile_id', studentProfileId)
@@ -350,7 +370,7 @@ export const getStudentEnrollments = async (supabase, studentProfileId) => {
       .order('enrolled_at', { ascending: false });
     
     if (error) throw error;
-    return handleArrayError(data);
+    return handleArraySuccess(data);
   } catch (error) {
     console.error('Error fetching student enrollments:', error);
     return { error: error.message };
@@ -366,7 +386,7 @@ export const enrollInCourse = async (supabase, enrollmentData) => {
       .single();
     
     if (error) throw error;
-    return handleObjectError(data);
+    return handleObjectSuccess(data);
   } catch (error) {
     console.error('Error enrolling in course:', error);
     return { error: error.message };
@@ -386,7 +406,7 @@ export const updateEnrollmentProgress = async (supabase, enrollmentId, progressD
       .single();
     
     if (error) throw error;
-    return handleObjectError(data);
+    return handleObjectSuccess(data);
   } catch (error) {
     console.error('Error updating enrollment progress:', error);
     return { error: error.message };
@@ -407,7 +427,7 @@ export const getEnrollmentStatus = async (supabase, courseId, studentProfileId) 
       throw error;
     }
     
-    return { data: data || null };
+    return handleObjectSuccess(data);
   } catch (error) {
     console.error('Error checking enrollment status:', error);
     return { error: error.message };
@@ -422,14 +442,14 @@ export const getCourseReviews = async (supabase, courseId) => {
       .from('course_reviews')
       .select(`
         *,
-        reviewer:profiles!reviewer_profile_id(id, display_name, avatar_url)
+        reviewer:profiles!reviewer_profile_id(id, full_name, profile_picture_url)
       `)
       .eq('course_id', courseId)
       .eq('is_approved', true)
       .order('created_at', { ascending: false });
     
     if (error) throw error;
-    return handleArrayError(data);
+    return handleArraySuccess(data);
   } catch (error) {
     console.error('Error fetching course reviews:', error);
     return { error: error.message };
@@ -445,7 +465,7 @@ export const createCourseReview = async (supabase, reviewData) => {
       .single();
     
     if (error) throw error;
-    return handleObjectError(data);
+    return handleObjectSuccess(data);
   } catch (error) {
     console.error('Error creating course review:', error);
     return { error: error.message };
@@ -466,7 +486,7 @@ export const getLessonProgress = async (supabase, enrollmentId) => {
       .order('lesson.sort_order', { ascending: true });
     
     if (error) throw error;
-    return handleArrayError(data);
+    return handleArraySuccess(data);
   } catch (error) {
     console.error('Error fetching lesson progress:', error);
     return { error: error.message };
@@ -486,7 +506,7 @@ export const updateLessonProgress = async (supabase, enrollmentId, lessonId, pro
       .single();
     
     if (error) throw error;
-    return handleObjectError(data);
+    return handleObjectSuccess(data);
   } catch (error) {
     console.error('Error updating lesson progress:', error);
     return { error: error.message };
@@ -579,7 +599,7 @@ export const getInstructorStats = async (supabase, instructorProfileId) => {
         .select(`
           *,
           course:courses!inner(id, title, instructor_profile_id),
-          student:profiles!student_profile_id(display_name)
+          student:profiles!student_profile_id(full_name)
         `)
         .eq('course.instructor_profile_id', instructorProfileId)
         .eq('is_active', true)
@@ -610,7 +630,7 @@ export const getInstructorStats = async (supabase, instructorProfileId) => {
         recentEnrollments: recentEnrollments.map(e => ({
           id: e.id,
           courseName: e.course.title,
-          studentName: e.student.display_name,
+          studentName: e.student.full_name,
           enrolledAt: e.enrolled_at,
           amountPaid: e.amount_paid
         }))
