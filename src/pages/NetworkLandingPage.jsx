@@ -284,71 +284,6 @@ function NetworkLandingPage() {
     });
   };
 
-  // State to hold post items for all members (stored as portfolio_items in database)
-  const [postItems, setPostItems] = useState([]);
-  
-  // Handle post deletion from social wall
-  const handlePostDeleted = (postId, itemType) => {
-    if (itemType === 'post') {
-      setPostItems(prevItems => prevItems.filter(item => item.id !== postId));
-    }
-  };
-
-  // Handle post creation from social wall
-  const handlePostCreated = (newPost) => {
-    console.log('New post created:', newPost);
-
-    // Find the member info for the new post
-    const member = networkMembers.find(m => m.id === newPost.profile_id);
-
-    // Transform the new post to match the social wall format
-    const postWithMemberInfo = {
-      ...newPost,
-      itemType: 'post',
-      createdAt: newPost.created_at,
-      memberName: member?.full_name || activeProfile?.full_name || 'Network Member',
-      memberAvatar: member?.profile_picture_url || activeProfile?.profile_picture_url || '',
-      memberId: newPost.profile_id,
-      // Preserve all media fields
-      media_url: newPost.media_url,
-      media_type: newPost.media_type,
-      media_metadata: newPost.media_metadata,
-      image_url: newPost.image_url || newPost.file_url || ''
-    };
-
-    // Add the new post to the beginning of the list
-    setPostItems(prevItems => [postWithMemberInfo, ...prevItems]);
-  };
-
-  // Handle post update from social wall
-  const handlePostUpdated = (updatedPost) => {
-    console.log('Post updated:', updatedPost);
-
-    // Find the member info for the updated post
-    const member = networkMembers.find(m => m.id === updatedPost.profile_id);
-
-    // Transform the updated post to match the social wall format
-    const postWithMemberInfo = {
-      ...updatedPost,
-      itemType: 'post',
-      createdAt: updatedPost.created_at,
-      memberName: member?.full_name || activeProfile?.full_name || 'Network Member',
-      memberAvatar: member?.profile_picture_url || activeProfile?.profile_picture_url || '',
-      memberId: updatedPost.profile_id,
-      // Preserve all media fields
-      media_url: updatedPost.media_url,
-      media_type: updatedPost.media_type,
-      media_metadata: updatedPost.media_metadata,
-      image_url: updatedPost.image_url || updatedPost.file_url || ''
-    };
-
-    // Update the post in the list
-    setPostItems(prevItems =>
-      prevItems.map(item =>
-        item.id === updatedPost.id ? postWithMemberInfo : item
-      )
-    );
-  };
 
   // Check if user just joined the network or came from invitation
   useEffect(() => {
@@ -547,119 +482,7 @@ function NetworkLandingPage() {
     fetchUserParticipations();
   }, [user, events]);
 
-  // Fetch post items for all network members (stored as portfolio_items in database)
-  useEffect(() => {
-    const fetchPostItems = async () => {
-      if (!networkMembers || !Array.isArray(networkMembers) || networkMembers.length === 0) {
-        console.log("Skipping post fetch - networkMembers not ready:", networkMembers);
-        return;
-      }
-      
-      try {
-        console.log("Fetching posts (stored as portfolio_items in the database)");
-        // Fetch all portfolio items from the database (will display as posts in UI)
-        const { data, error } = await supabase
-          .from('portfolio_items')
-          .select('*')
-          .in('profile_id', networkMembers.map(m => m.id));
-          
-        if (error) throw error;
-        
-        console.log('Fetched posts from database:', data); // Debug log
-        
-        // Add member info to each post item
-        const itemsWithMemberInfo = (data || []).map(item => {
-          const member = Array.isArray(networkMembers) ? networkMembers.find(m => m.id === item.profile_id) : null;
-          return {
-            ...item,
-            itemType: 'post', // Item from portfolio_items table displayed as post
-            createdAt: item.created_at,
-            memberName: member?.full_name || 'Network Member',
-            memberAvatar: member?.profile_picture_url || '',
-            memberId: member?.id,
-            // Preserve all media fields from the database
-            media_url: item.media_url,
-            media_type: item.media_type,
-            media_metadata: item.media_metadata,
-            // Ensure image_url is properly used - database field is still image_url
-            image_url: item.image_url || item.file_url || ''
-          };
-        });
-        
-        console.log('Portfolio items transformed to posts with member info:', itemsWithMemberInfo); // Debug log
-        setPostItems(itemsWithMemberInfo);
-      } catch (err) {
-        console.error('Error fetching post items:', err);
-      }
-    };
-    
-    fetchPostItems();
-  }, [networkMembers]);
 
-  // Store initial order of items to prevent reordering after load
-  const [initialItemOrder, setInitialItemOrder] = useState(null);
-  
-  // Prepare social wall items
-  const socialWallItems = React.useMemo(() => {
-    // Create arrays for news and post items
-    const newsItems = networkNews ? networkNews.map(item => ({
-      ...item,
-      itemType: 'news',
-      createdAt: item.created_at,
-      stableId: `news-${item.id}` // Add stable ID
-    })) : [];
-    
-    // Log the post items before combining
-    console.log('Using post items in socialWallItems:', postItems);
-    
-    // Add stable IDs to post items
-    const postItemsWithIds = postItems.map(item => ({
-      ...item,
-      stableId: `post-${item.id}` // Add stable ID
-    }));
-    
-    // Combine news and post items
-    let combinedFeed = [...newsItems, ...postItemsWithIds];
-    
-    // If we have an initial order, use it to maintain stable ordering
-    if (initialItemOrder && initialItemOrder.length > 0) {
-      // Create a map for quick lookup
-      const itemMap = new Map();
-      combinedFeed.forEach(item => {
-        itemMap.set(item.stableId, item);
-      });
-      
-      // First, add items in their original order
-      const orderedItems = [];
-      initialItemOrder.forEach(stableId => {
-        const item = itemMap.get(stableId);
-        if (item) {
-          orderedItems.push(item);
-          itemMap.delete(stableId); // Remove from map to track what's left
-        }
-      });
-      
-      // Then add any new items at the beginning (they'll be the newest)
-      const newItems = Array.from(itemMap.values());
-      newItems.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-      
-      combinedFeed = [...newItems, ...orderedItems];
-    } else {
-      // Initial sort by creation date
-      combinedFeed.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-      
-      // Store the initial order
-      if (combinedFeed.length > 0) {
-        const order = combinedFeed.map(item => item.stableId);
-        setInitialItemOrder(order);
-      }
-    }
-    
-    // Log the final combined feed
-    console.log('Final social wall items:', combinedFeed);
-    
-    return combinedFeed;
-  }, [networkNews, postItems, initialItemOrder]);
 
   // Handle scroll to make tabs sticky with ultra smooth transition
   useEffect(() => {
@@ -675,7 +498,6 @@ function NetworkLandingPage() {
     
     let transitionTimeout;
     let animationFrame;
-    let lastScrollY = 0;
     let ticking = false;
     
     // Calculate the fixed trigger point based on background height
@@ -686,8 +508,6 @@ function NetworkLandingPage() {
     const updateScrollState = () => {
       try {
         const scrollY = window.scrollY || window.pageYOffset || 0;
-        const scrollDirection = scrollY > lastScrollY ? 'down' : 'up';
-        lastScrollY = scrollY;
         
         // Calculate scroll progress for smooth transitions with extended range
         const maxScroll = 400;
@@ -1566,14 +1386,9 @@ function NetworkLandingPage() {
 
             {currentTabId === 'social' && (
               <SocialWallTab
-                socialWallItems={socialWallItems}
-                networkMembers={networkMembers}
                 darkMode={darkMode} // Pass dark mode to social wall tab
                 isAdmin={isUserAdmin}
                 networkId={network.id}
-                onPostDeleted={handlePostDeleted}
-                onPostCreated={handlePostCreated}
-                onPostUpdated={handlePostUpdated}
               />
             )}
 
@@ -1618,7 +1433,7 @@ function NetworkLandingPage() {
         open={showMemberModal}
         onClose={() => setShowMemberModal(false)}
         member={selectedMember}
-        posts={selectedMember ? postItems.filter(item => item.profile_id === selectedMember.id) : []}
+        posts={[]} // Modal can fetch its own posts if needed
         darkMode={membersTabDarkMode}
       />
       

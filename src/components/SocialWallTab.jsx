@@ -45,16 +45,24 @@ import { supabase } from '../supabaseclient';
 import { useAuth } from '../context/authcontext';
 import { useProfile } from '../context/profileContext';
 import { getUserProfile } from '../api/networks';
+import { useNetwork } from '../context/networkContext';
 
 // Number of items to display initially
 const ITEMS_PER_FETCH = 6;
 
-const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = false, isAdmin = false, networkId, onPostDeleted, onPostCreated, onPostUpdated }) => {
+const SocialWallTab = ({ darkMode = false, isAdmin = false, networkId, onPostDeleted, onPostCreated, onPostUpdated }) => {
   const { t } = useTranslation();
   const { user } = useAuth();
   const { activeProfile } = useProfile();
   const muiTheme = useTheme();
-  
+
+  // Get network data from context
+  const { news: networkNews = [], network } = useNetwork();
+
+  // State for post items
+  const [postItems, setPostItems] = useState([]);
+  const [initialItemOrder, setInitialItemOrder] = useState(null);
+
   // Category filtering state
   const [selectedCategory, setSelectedCategory] = useState('');
   const [categories, setCategories] = useState([]);
@@ -95,14 +103,191 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
   
   // Delete post state
   const [deletingPostId, setDeletingPostId] = useState(null);
+
+  // Extract fetchPostItems logic to a reusable function
+  const fetchPostItemsForNetwork = async (currentNetworkId) => {
+    if (!currentNetworkId) {
+      console.log("Skipping post fetch - network ID not available");
+      return;
+    }
+
+    try {
+      console.log("Fetching posts for network:", currentNetworkId);
+      // Fetch all portfolio items with profile information for this network
+      const { data, error } = await supabase
+        .from('portfolio_items')
+        .select(`
+          *,
+          profiles!inner (
+            id,
+            full_name,
+            profile_picture_url,
+            network_id
+          )
+        `)
+        .eq('profiles.network_id', currentNetworkId);
+
+      if (error) throw error;
+
+      console.log('Fetched posts from database:', data); // Debug log
+
+      // Transform the data to include member info
+      const itemsWithMemberInfo = (data || []).map(item => {
+        return {
+          ...item,
+          itemType: 'post', // Item from portfolio_items table displayed as post
+          createdAt: item.created_at,
+          memberName: item.profiles?.full_name || 'Network Member',
+          memberAvatar: item.profiles?.profile_picture_url || '',
+          memberId: item.profiles?.id,
+          // Preserve all media fields from the database
+          media_url: item.media_url,
+          media_type: item.media_type,
+          media_metadata: item.media_metadata,
+          // Ensure image_url is properly used - database field is still image_url
+          image_url: item.image_url || item.file_url || ''
+        };
+      });
+
+      console.log('Portfolio items transformed to posts with member info:', itemsWithMemberInfo); // Debug log
+      setPostItems(itemsWithMemberInfo);
+    } catch (err) {
+      console.error('Error fetching post items:', err);
+    }
+  };
+
+  // Handle post created callback
+  const handlePostCreated = (newPost) => {
+    if (onPostCreated) {
+      onPostCreated(newPost);
+    }
+    // Re-fetch posts to include the new one
+    const currentNetworkId = networkId || network?.id || activeProfile?.network_id;
+    if (currentNetworkId) {
+      fetchPostItemsForNetwork(currentNetworkId);
+    }
+  };
+
+  // Handle post deleted callback
+  const handlePostDeleted = (postId) => {
+    setPostItems(prevItems => prevItems.filter(item => item.id !== postId));
+    if (onPostDeleted) {
+      onPostDeleted(postId);
+    }
+  };
+
+  // Handle post updated callback
+  const handlePostUpdated = (updatedPost) => {
+    console.log('Post updated in SocialWallTab:', updatedPost);
+
+    // Update post items
+    setPostItems(prevItems =>
+      prevItems.map(item =>
+        item.id === updatedPost.id
+          ? { ...item, ...updatedPost, itemType: 'post', createdAt: updatedPost.created_at }
+          : item
+      )
+    );
+
+    // Update the local display items immediately for instant feedback
+    setDisplayItems(prevItems =>
+      prevItems.map(item =>
+        item.id === updatedPost.id && item.itemType === 'post'
+          ? { ...item, ...updatedPost, itemType: 'post', createdAt: updatedPost.created_at }
+          : item
+      )
+    );
+
+    if (onPostUpdated) {
+      onPostUpdated(updatedPost);
+    }
+  };
   
   // Declare a ref for the loadMore function to avoid circular dependencies
   const loadMoreFn = useRef(null);
-  
+
+  // Prepare social wall items - must be defined before any useEffect that references it
+  const socialWallItems = React.useMemo(() => {
+    // Create arrays for news and post items
+    const newsItems = networkNews ? networkNews.map(item => {
+      // Check if author info is available
+      const authorName = item.author?.full_name || item.profiles?.full_name;
+      const authorAvatar = item.author?.profile_picture_url || item.profiles?.profile_picture_url;
+
+      // Log error if author info is missing but created_by exists
+      if (!authorName && item.created_by) {
+        console.error(`Missing author information for news item ${item.id} created by profile ${item.created_by}`);
+      }
+
+      return {
+        ...item,
+        itemType: 'news',
+        createdAt: item.created_at,
+        stableId: `news-${item.id}`, // Add stable ID
+        // Use author info from the join query
+        memberName: authorName || (item.created_by ? 'Unknown Author' : 'Network Admin'),
+        memberAvatar: authorAvatar || '',
+        memberId: item.created_by || null
+      };
+    }) : [];
+
+    // Log the post items before combining
+    console.log('Using post items in socialWallItems:', postItems);
+
+    // Add stable IDs to post items
+    const postItemsWithIds = postItems.map(item => ({
+      ...item,
+      stableId: `post-${item.id}` // Add stable ID
+    }));
+
+    // Combine news and post items
+    let combinedFeed = [...newsItems, ...postItemsWithIds];
+
+    // If we have an initial order, use it to maintain stable ordering
+    if (initialItemOrder && initialItemOrder.length > 0) {
+      // Create a map for quick lookup
+      const itemMap = new Map();
+      combinedFeed.forEach(item => {
+        itemMap.set(item.stableId, item);
+      });
+
+      // First, add items in their original order
+      const orderedItems = [];
+      initialItemOrder.forEach(stableId => {
+        const item = itemMap.get(stableId);
+        if (item) {
+          orderedItems.push(item);
+          itemMap.delete(stableId); // Remove from map to track what's left
+        }
+      });
+
+      // Then add any new items at the beginning (they'll be the newest)
+      const newItems = Array.from(itemMap.values());
+      newItems.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+      combinedFeed = [...newItems, ...orderedItems];
+    } else {
+      // Initial sort by creation date
+      combinedFeed.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+      // Store the initial order
+      if (combinedFeed.length > 0) {
+        const order = combinedFeed.map(item => item.stableId);
+        setInitialItemOrder(order);
+      }
+    }
+
+    // Log the final combined feed
+    console.log('Final social wall items:', combinedFeed);
+
+    return combinedFeed;
+  }, [networkNews, postItems, initialItemOrder]);
+
+  // Callback for the last item in the list (for infinite scroll)
   const lastItemRef = useCallback(node => {
     if (loading) return;
     if (observer.current) observer.current.disconnect();
-    
+
     observer.current = new IntersectionObserver(entries => {
       if (entries[0].isIntersecting && hasMore && loadMoreFn.current) {
         console.log('Last item is visible, loading more items...');
@@ -112,11 +297,9 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
       rootMargin: '200px', // Load more content before reaching the end
       threshold: 0.1 // Trigger when at least 10% of the element is visible
     });
-    
+
     if (node) observer.current.observe(node);
   }, [loading, hasMore]);
-  
-  // No additional preload function needed, we're using the ref to loadMoreItems
 
   // Scroll position tracking
   useEffect(() => {
@@ -124,11 +307,11 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
       const currentPosition = window.pageYOffset;
       setShowScrollTop(currentPosition > 300);
       setScrollPosition(currentPosition);
-      
+
       // If user is scrolling back up and not near the bottom, preload more content
       const scrollingUp = currentPosition < scrollPosition;
       const nearBottom = window.innerHeight + currentPosition > document.body.offsetHeight - 1000;
-      
+
       if (scrollingUp && !nearBottom && hasMore && !loading) {
         // Preload more content when scrolling up to ensure content is already loaded
         const shouldPreloadMore = page * ITEMS_PER_FETCH < socialWallItems.length;
@@ -138,11 +321,19 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
         }
       }
     };
-    
+
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, [scrollPosition, hasMore, loading, page, socialWallItems.length]);
-  
+
+  // Fetch post items for the network (stored as portfolio_items in database)
+  useEffect(() => {
+    const currentNetworkId = networkId || network?.id || activeProfile?.network_id;
+    if (currentNetworkId) {
+      fetchPostItemsForNetwork(currentNetworkId);
+    }
+  }, [networkId, network?.id, activeProfile?.network_id]);
+
   // Load categories on mount
   useEffect(() => {
     const loadCategories = async () => {
@@ -395,20 +586,22 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
   const handleMemberClick = async (memberId, e) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
+    // Don't do anything if no memberId
+    if (!memberId) {
+      console.log('No member ID provided, skipping member click');
+      return;
+    }
+
     try {
-      // Find member in networkMembers first
-      let member = networkMembers.find(m => m.id === memberId);
-      
-      if (!member) {
-        // If not found in networkMembers, fetch from profiles table
-        member = await getUserProfile(memberId);
-        if (!member) throw new Error('Profile not found');
-      }
-      
+      // Always fetch fresh profile data
+      const member = await getUserProfile(memberId);
+
       if (member) {
         setSelectedMember(member);
         setMemberModalOpen(true);
+      } else {
+        throw new Error('Profile not found');
       }
     } catch (err) {
       console.error('Error fetching member details:', err);
@@ -417,36 +610,6 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
     }
   };
   
-  // Handle post creation
-  const handlePostCreated = (newPost) => {
-    console.log('New post created:', newPost);
-
-    // Call the parent's callback to update the social wall items
-    if (onPostCreated) {
-      onPostCreated(newPost);
-    }
-
-    // The new post will appear through the updated socialWallItems prop
-  };
-
-  // Handle post update - pass it up to parent and update local state
-  const handlePostUpdated = (updatedPost) => {
-    console.log('Post updated in SocialWallTab:', updatedPost);
-
-    // Update the local display items immediately for instant feedback
-    setDisplayItems(prevItems =>
-      prevItems.map(item =>
-        item.id === updatedPost.id && item.itemType === 'post'
-          ? { ...item, ...updatedPost, itemType: 'post' }
-          : item
-      )
-    );
-
-    // Call the parent's callback to update the main social wall items
-    if (onPostUpdated) {
-      onPostUpdated(updatedPost);
-    }
-  };
   
   // Handle post deletion
   const handleDeletePost = async (item, e) => {
@@ -760,13 +923,12 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                     <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
                       {/* Left column: Avatar */}
                       <Avatar
-                        src={item.itemType === 'post' ? item.memberAvatar : 
-                            networkMembers.find(m => m.id === item.created_by)?.profile_picture_url}
+                        src={item.memberAvatar}
                         onClick={(e) => handleMemberClick(
-                          item.itemType === 'post' ? item.memberId : item.created_by, 
+                          item.memberId || item.created_by,
                           e
                         )}
-                        sx={{ 
+                        sx={{
                           width: 40,
                           height: 40,
                           border: `2px solid ${customBorder}`,
@@ -779,20 +941,18 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                           }
                         }}
                       >
-                        {item.itemType === 'post' ? 
-                          (item.memberName ? item.memberName.charAt(0).toUpperCase() : 'U') : 
-                          (networkMembers.find(m => m.id === item.created_by)?.full_name?.charAt(0).toUpperCase() || 'U')}
+                        {item.memberName ? item.memberName.charAt(0).toUpperCase() : 'U'}
                       </Avatar>
                       
                       {/* Middle: Name and Date */}
                       <Box sx={{ flex: 1, minWidth: 0 }}>
-                        <Typography 
-                          variant="subtitle2" 
+                        <Typography
+                          variant="subtitle2"
                           onClick={(e) => handleMemberClick(
-                            item.itemType === 'post' ? item.memberId : item.created_by, 
+                            item.memberId || item.created_by,
                             e
                           )}
-                          sx={{ 
+                          sx={{
                             fontWeight: 600,
                             color: customLightText,
                             cursor: 'pointer',
@@ -805,9 +965,7 @@ const SocialWallTab = ({ socialWallItems = [], networkMembers = [], darkMode = f
                             mb: 0.5
                           }}
                         >
-                          {item.itemType === 'post' ? 
-                            item.memberName : 
-                            networkMembers.find(m => m.id === item.created_by)?.full_name || 'Network Admin'}
+                          {item.memberName}
                         </Typography>
                         <Typography 
                           variant="caption" 

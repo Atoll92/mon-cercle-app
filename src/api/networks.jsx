@@ -591,6 +591,11 @@ export const fetchNetworkNews = async (networkId, options = {}) => {
           id,
           name,
           color
+        ),
+        author:profiles!network_news_created_by_fkey(
+          id,
+          full_name,
+          profile_picture_url
         )
       `, { count: 'exact' })
       .eq('network_id', networkId)
