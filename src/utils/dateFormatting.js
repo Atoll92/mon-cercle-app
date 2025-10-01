@@ -97,36 +97,91 @@ export const formatEventDate = (dateString, detailed = false) => {
   return formatDate(dateString);
 };
 
+// Import translations directly
+import enTranslations from '../locales/en.json';
+import frTranslations from '../locales/fr.json';
+
+const translations = {
+  en: enTranslations,
+  fr: frTranslations
+};
+
+// Helper to get translation function
+const getTranslation = (key, params = {}) => {
+  const language = localStorage.getItem('language') || 'en';
+  const keys = key.split('.');
+  let value = translations[language];
+
+  for (const k of keys) {
+    value = value?.[k];
+    if (!value) break;
+  }
+
+  if (typeof value === 'string') {
+    // Replace parameters like {{count}}
+    return value.replace(/\{\{(\w+)\}\}/g, (match, param) =>
+      params.hasOwnProperty(param) ? params[param] : match
+    );
+  }
+
+  // Fallback to English if translation not found
+  value = translations.en;
+  for (const k of keys) {
+    value = value?.[k];
+    if (!value) break;
+  }
+
+  if (typeof value === 'string') {
+    return value.replace(/\{\{(\w+)\}\}/g, (match, param) =>
+      params.hasOwnProperty(param) ? params[param] : match
+    );
+  }
+
+  return key; // Return key if no translation found
+};
+
 /**
  * Format a date as relative time (e.g., "2 hours ago", "3 days ago")
+ * Now with automatic translation support
  * @param {string} dateString - ISO date string
- * @returns {string} Relative time string
+ * @returns {string} Localized relative time string
  */
 export const formatTimeAgo = (dateString) => {
   if (!dateString) return '';
-  
+
   const date = new Date(dateString);
   const now = new Date();
   const seconds = Math.floor((now - date) / 1000);
-  
+
   const intervals = [
-    { label: 'year', seconds: 31536000 },
-    { label: 'month', seconds: 2592000 },
-    { label: 'week', seconds: 604800 },
-    { label: 'day', seconds: 86400 },
-    { label: 'hour', seconds: 3600 },
-    { label: 'minute', seconds: 60 },
-    { label: 'second', seconds: 1 }
+    { key: 'year', seconds: 31536000 },
+    { key: 'month', seconds: 2592000 },
+    { key: 'week', seconds: 604800 },
+    { key: 'day', seconds: 86400 },
+    { key: 'hour', seconds: 3600 },
+    { key: 'minute', seconds: 60 },
+    { key: 'second', seconds: 1 }
   ];
-  
+
   for (const interval of intervals) {
     const count = Math.floor(seconds / interval.seconds);
     if (count >= 1) {
-      return count === 1 
-        ? `${count} ${interval.label} ago`
-        : `${count} ${interval.label}s ago`;
+      const unitKey = count === 1 ? `time.${interval.key}` : `time.${interval.key}s`;
+      const unit = getTranslation(unitKey);
+      const template = count === 1 ? 'time.timeAgo.singular' : 'time.timeAgo.plural';
+      return getTranslation(template, { count, unit });
     }
   }
-  
-  return 'just now';
+
+  return getTranslation('time.justNow');
+};
+
+/**
+ * Format "Joined X ago" with automatic translation
+ * @param {string} dateString - ISO date string
+ * @returns {string} Localized "Joined X ago" string
+ */
+export const formatJoinedTime = (dateString) => {
+  const timeAgo = formatTimeAgo(dateString);
+  return `${getTranslation('time.joined')} ${timeAgo}`;
 };

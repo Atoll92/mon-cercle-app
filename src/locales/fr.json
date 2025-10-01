@@ -1216,6 +1216,32 @@
       "publishFailed": "Échec de la publication de l'annonce : {{error}}"
     }
   },
+  "time": {
+    "justNow": "à l'instant",
+    "second": "seconde",
+    "seconds": "secondes",
+    "minute": "minute",
+    "minutes": "minutes",
+    "hour": "heure",
+    "hours": "heures",
+    "day": "jour",
+    "days": "jours",
+    "week": "semaine",
+    "weeks": "semaines",
+    "month": "mois",
+    "months": "mois",
+    "year": "an",
+    "years": "ans",
+    "ago": "il y a",
+    "timeAgo": {
+      "singular": "il y a {{count}} {{unit}}",
+      "plural": "il y a {{count}} {{unit}}"
+    },
+    "joined": "A rejoint",
+    "lastActive": "Dernière activité",
+    "uploaded": "Téléchargé",
+    "created": "Créé"
+  },
   "common": {
     "status": {
       "sent": "Envoyé",

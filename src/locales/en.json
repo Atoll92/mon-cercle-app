@@ -1223,6 +1223,32 @@
       "publishFailed": "Failed to publish announcement: {{error}}"
     }
   },
+  "time": {
+    "justNow": "just now",
+    "second": "second",
+    "seconds": "seconds",
+    "minute": "minute",
+    "minutes": "minutes",
+    "hour": "hour",
+    "hours": "hours",
+    "day": "day",
+    "days": "days",
+    "week": "week",
+    "weeks": "weeks",
+    "month": "month",
+    "months": "months",
+    "year": "year",
+    "years": "years",
+    "ago": "ago",
+    "timeAgo": {
+      "singular": "{{count}} {{unit}} ago",
+      "plural": "{{count}} {{unit}} ago"
+    },
+    "joined": "Joined",
+    "lastActive": "Last active",
+    "uploaded": "Uploaded",
+    "created": "Created"
+  },
   "common": {
     "status": {
       "sent": "Sent",

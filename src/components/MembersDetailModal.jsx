@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { supabase } from '../supabaseclient';
 import { useProfile } from '../context/profileContext';
 import { useFadeIn } from '../hooks/useAnimation';
-import { formatTimeAgo } from '../utils/dateFormatting';
+import { formatJoinedTime } from '../utils/dateFormatting';
 import PostsGrid from './PostsGrid';
 import Spinner from './Spinner';
 import MoodboardItemSimple from './Moodboard/MoodboardItemSimple';
@@ -603,7 +603,7 @@ const MemberDetailsModal = ({
                   {member.created_at && (
                     <Chip
                       icon={<EventNoteIcon fontSize="small" />}
-                      label={`Joined ${formatTimeAgo(member.created_at)}`}
+                      label={formatJoinedTime(member.created_at)}
                       size="small"
                       sx={{ 
                         bgcolor: darkMode ? alpha('#555555', 0.8) : undefined,
