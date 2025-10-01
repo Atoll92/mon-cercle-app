@@ -123,7 +123,7 @@ const LatestAnnouncementsWidget = ({ networkId, onMemberClick, darkMode = false 
                 onClick={() => setCreateAnnouncementModalOpen(true)}
                 startIcon={<AddIcon />}
               >
-                Create Announcement
+                {t('dashboard.buttons.createAnnouncement')}
               </Button>
             )
           }
@@ -132,8 +132,8 @@ const LatestAnnouncementsWidget = ({ networkId, onMemberClick, darkMode = false 
         <Box sx={{ flex: 1, p: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <WidgetEmptyState
             emptyIcon={<AnnouncementIcon />}
-            emptyMessage="No announcements yet"
-            emptySubMessage={isAdmin ? "Create the first announcement for your network!" : "Check back later for updates from your network."}
+            emptyMessage={t('dashboard.widgets.noAnnouncementsYet')}
+            emptySubMessage={isAdmin ? t('dashboard.widgets.createFirstAnnouncement') : t('dashboard.widgets.checkBackLater')}
           />
         </Box>
         
@@ -172,7 +172,7 @@ const LatestAnnouncementsWidget = ({ networkId, onMemberClick, darkMode = false 
               onClick={() => setCreateAnnouncementModalOpen(true)}
               startIcon={<AddIcon />}
             >
-              Create Announcement
+              {t('dashboard.buttons.createAnnouncement')}
             </Button>
           )
         }

@@ -119,7 +119,7 @@ const LatestPostsWidget = ({ networkId, onMemberClick, darkMode = false, onPostU
               onClick={() => setCreatePostModalOpen(true)}
               startIcon={<AddIcon />}
             >
-              Create Post
+              {t('dashboard.buttons.createPost')}
             </Button>
           }
         />
@@ -127,8 +127,8 @@ const LatestPostsWidget = ({ networkId, onMemberClick, darkMode = false, onPostU
         <Box sx={{ flex: 1, p: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <WidgetEmptyState
             emptyIcon={<WorkIcon />}
-            emptyMessage="No portfolio posts yet"
-            emptySubMessage="Be the first to share your work!"
+            emptyMessage={t('dashboard.widgets.noPostsYet')}
+            emptySubMessage={t('dashboard.widgets.beFirstToShare')}
           />
         </Box>
         
@@ -165,7 +165,7 @@ const LatestPostsWidget = ({ networkId, onMemberClick, darkMode = false, onPostU
             onClick={() => setCreatePostModalOpen(true)}
             startIcon={<AddIcon />}
           >
-            Create Post
+            {t('dashboard.buttons.createPost')}
           </Button>
         }
       />

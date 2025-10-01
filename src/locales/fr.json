@@ -597,7 +597,9 @@
       "renewPlan": "Renouveler le plan",
       "billing": "Facturation",
       "upgradePlan": "Mettre à niveau le plan",
-      "settings": "Paramètres"
+      "settings": "Paramètres",
+      "createPost": "Créer une publication",
+      "createAnnouncement": "Créer une annonce"
     },
     "profile": {
       "notSet": "Non défini",
@@ -693,7 +695,12 @@
       "latestPosts": "Dernières publications",
       "latestAnnouncements": "Dernières annonces",
       "latestNews": "Annonces Récentes",
-      "myMicroConclav": "Mon Micro Conclav"
+      "myMicroConclav": "Mon Micro Conclav",
+      "noPostsYet": "Aucune publication de portfolio pour le moment",
+      "beFirstToShare": "Soyez le premier à partager votre travail !",
+      "noAnnouncementsYet": "Aucune annonce pour le moment",
+      "createFirstAnnouncement": "Créez la première annonce pour votre réseau !",
+      "checkBackLater": "Revenez plus tard pour les mises à jour de votre réseau."
     },
     "events": {
       "noUpcoming": "Aucun événement à venir programmé",

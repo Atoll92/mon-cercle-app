@@ -597,7 +597,9 @@
       "renewPlan": "Renew Plan",
       "billing": "Billing",
       "upgradePlan": "Upgrade Plan",
-      "settings": "Settings"
+      "settings": "Settings",
+      "createPost": "Create Post",
+      "createAnnouncement": "Create Announcement"
     },
     "profile": {
       "notSet": "Not set",
@@ -692,7 +694,12 @@
     "widgets": {
       "latestPosts": "Latest Posts",
       "latestNews": "Latest Announcements",
-      "myMicroConclav": "My Micro Conclav"
+      "myMicroConclav": "My Micro Conclav",
+      "noPostsYet": "No portfolio posts yet",
+      "beFirstToShare": "Be the first to share your work!",
+      "noAnnouncementsYet": "No announcements yet",
+      "createFirstAnnouncement": "Create the first announcement for your network!",
+      "checkBackLater": "Check back later for updates from your network."
     },
     "events": {
       "noUpcoming": "No upcoming events scheduled",

@@ -184,7 +184,7 @@ const CreateAnnouncementModal = ({ open, onClose, networkId, onNewsCreated }) =>
       }}
     >
       <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Typography variant="h6">Create Announcement</Typography>
+        <Typography variant="h6">{t('news.createAnnouncement')}</Typography>
         <IconButton onClick={onClose} size="small">
           <CloseIcon />
         </IconButton>
@@ -199,7 +199,7 @@ const CreateAnnouncementModal = ({ open, onClose, networkId, onNewsCreated }) =>
 
         <TextField
           fullWidth
-          label="Announcement Title"
+          label={t('news.announcementTitle')}
           value={announcementTitle}
           onChange={(e) => setAnnouncementTitle(e.target.value)}
           sx={{ mb: 2 }}
@@ -208,14 +208,14 @@ const CreateAnnouncementModal = ({ open, onClose, networkId, onNewsCreated }) =>
 
         {categories.length > 0 && (
           <FormControl fullWidth sx={{ mb: 2 }}>
-            <InputLabel>Category</InputLabel>
+            <InputLabel>{t('news.category')}</InputLabel>
             <Select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              label="Category"
+              label={t('news.category')}
             >
               <MenuItem value="">
-                <em>None</em>
+                <em>{t('news.none')}</em>
               </MenuItem>
               {categories.map((category) => (
                 <MenuItem key={category.id} value={category.id}>
@@ -239,7 +239,7 @@ const CreateAnnouncementModal = ({ open, onClose, networkId, onNewsCreated }) =>
 
         <Box sx={{ mb: 2, p: 2, border: '1px dashed grey', borderRadius: 1 }}>
           <Typography variant="subtitle2" gutterBottom>
-            Featured Media (optional) - You can add multiple files
+            {t('news.featuredMedia')}
           </Typography>
 
           {mediaItems.length > 0 ? (
@@ -272,7 +272,7 @@ const CreateAnnouncementModal = ({ open, onClose, networkId, onNewsCreated }) =>
                       disabled={submitting || mediaItems.length >= 10}
                       size="small"
                     >
-                      Add More Media ({mediaItems.length}/10)
+                      {t('news.addMoreMedia', {count: mediaItems.length, max: 10})}
                     </Button>
                   }
                 />
@@ -294,7 +294,7 @@ const CreateAnnouncementModal = ({ open, onClose, networkId, onNewsCreated }) =>
           {(mediaItems.some(item => item.type === 'image') || mediaUrl) && (
             <TextField
               fullWidth
-              label="Media Caption"
+              label={t('news.mediaCaption')}
               value={imageCaption}
               onChange={(e) => setImageCaption(e.target.value)}
               size="small"
@@ -322,7 +322,7 @@ const CreateAnnouncementModal = ({ open, onClose, networkId, onNewsCreated }) =>
 
       <DialogActions sx={{ p: 2 }}>
         <Button onClick={onClose} disabled={submitting}>
-          Cancel
+          {t('news.cancel')}
         </Button>
         <Button
           variant="contained"
