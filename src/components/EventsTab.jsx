@@ -5,6 +5,7 @@ import { AnimatedCard, StaggeredListItem, PageTransition } from './AnimatedCompo
 import EventDetailsDialog from './EventDetailsDialog';
 import { fetchNetworkCategories } from '../api/categories';
 import { formatEventDate, formatDate } from '../utils/dateFormatting';
+import { supabase } from '../supabaseclient';
 import {
   Box,
   Typography,
@@ -65,11 +66,10 @@ const localizer = dateFnsLocalizer({
   locales,
 });
 
-const EventsTab = ({ 
-  events = [], 
+const EventsTab = ({
+  events = [],
   user,
   isUserAdmin,
-  userParticipations = [],
   onParticipationChange,
   network,
   activeProfile,
@@ -86,6 +86,7 @@ const EventsTab = ({
   const [error, setError] = useState(null);
   const [calendarPopoverAnchor, setCalendarPopoverAnchor] = useState(null);
   const [popoverEvents, setPopoverEvents] = useState([]);
+  const [userParticipations, setUserParticipations] = useState([]);
 
   // Debug: Log props on mount and when they change
   React.useEffect(() => {
@@ -109,6 +110,46 @@ const EventsTab = ({
     console.log('=== END DEBUG ===');
   }, [events, userParticipations, user]);
 
+  // Fetch user's event participations
+  useEffect(() => {
+    const fetchUserParticipations = async () => {
+      if (!user || !events || events.length === 0) {
+        console.log("EventsTab: Skipping participation fetch - missing data:", {
+          user: !!user,
+          events: !!events,
+          eventsLength: events?.length || 0
+        });
+        return;
+      }
+
+      try {
+        console.log("EventsTab: Fetching participations for user:", user.id);
+        console.log("EventsTab: Events count:", events.length);
+
+        // Get all participations for this user
+        const { data: participations, error } = await supabase
+          .from('event_participations')
+          .select('*')
+          .eq('user_id', user.id);
+
+        if (error) throw error;
+
+        // Filter to only include participations for current events
+        const eventIds = events.map(e => e.id);
+        const relevantParticipations = (participations || []).filter(p =>
+          eventIds.includes(p.event_id)
+        );
+
+        console.log("EventsTab: Found participations:", relevantParticipations.length);
+        setUserParticipations(relevantParticipations);
+      } catch (err) {
+        console.error('EventsTab: Error fetching participations:', err);
+      }
+    };
+
+    fetchUserParticipations();
+  }, [user, events]);
+
   // Load categories on mount
   useEffect(() => {
     const loadCategories = async () => {
@@ -121,6 +162,44 @@ const EventsTab = ({
     };
     loadCategories();
   }, [network?.id]);
+
+  // Handle participation change locally
+  const handleParticipationChange = (eventId, newStatus) => {
+    // Update userParticipations state when status changes
+    setUserParticipations(prevParticipations => {
+      const existing = prevParticipations.find(p => p.event_id === eventId);
+
+      if (existing) {
+        // If null (removed), filter it out
+        if (newStatus === null) {
+          return prevParticipations.filter(p => p.event_id !== eventId);
+        }
+
+        // Otherwise update it
+        return prevParticipations.map(p =>
+          p.event_id === eventId
+            ? { ...p, status: newStatus }
+            : p
+        );
+      } else {
+        // Add new participation
+        if (newStatus !== null) {
+          return [...prevParticipations, {
+            event_id: eventId,
+            user_id: user?.id,
+            status: newStatus,
+            created_at: new Date().toISOString()
+          }];
+        }
+        return prevParticipations;
+      }
+    });
+
+    // Call parent callback if provided (for backwards compatibility)
+    if (onParticipationChange) {
+      onParticipationChange(eventId, newStatus);
+    }
+  };
 
   const handleEventSelect = (event) => {
     if (event.resource) {
@@ -583,7 +662,7 @@ const EventsTab = ({
                                     event={event} 
                                     size="small"
                                     compact={true}
-                                    onStatusChange={(status) => onParticipationChange(event.id, status)}
+                                    onStatusChange={(status) => handleParticipationChange(event.id, status)}
                                   />
                                 )}
                                 
@@ -1361,7 +1440,7 @@ const EventsTab = ({
                           <EventParticipation 
                             event={event} 
                             size="small"
-                            onStatusChange={(status) => onParticipationChange(event.id, status)}
+                            onStatusChange={(status) => handleParticipationChange(event.id, status)}
                           />
                         </Box>
                       )}
@@ -1415,7 +1494,7 @@ const EventsTab = ({
         onClose={closeEventDialog}
         event={selectedEvent}
         user={user}
-        onParticipationChange={onParticipationChange}
+        onParticipationChange={handleParticipationChange}
         showParticipants={true}
       />
       

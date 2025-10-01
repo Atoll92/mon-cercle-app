@@ -134,7 +134,6 @@ function NetworkLandingPage() {
   const [activeTab, setActiveTab] = useState(0);
   const [selectedMember, setSelectedMember] = useState(null);
   const [showMemberModal, setShowMemberModal] = useState(false);
-  const [userParticipations, setUserParticipations] = useState([]);
   const [memberCount, setMemberCount] = useState(0);
   
   // Update member count when networkMembers changes
@@ -260,29 +259,6 @@ function NetworkLandingPage() {
     setShowMemberModal(true);
   };
   
-  const handleParticipationChange = (eventId, newStatus) => {
-    // Update userParticipations state when status changes
-    setUserParticipations(prevParticipations => {
-      const existing = prevParticipations.find(p => p.event_id === eventId);
-      
-      if (existing) {
-        // If null (removed), filter it out
-        if (newStatus === null) {
-          return prevParticipations.filter(p => p.event_id !== eventId);
-        }
-        
-        // Otherwise update it
-        return prevParticipations.map(p => 
-          p.event_id === eventId ? { ...p, status: newStatus } : p
-        );
-      } else if (newStatus) {
-        // Add new participation if status isn't null
-        return [...prevParticipations, { event_id: eventId, status: newStatus }];
-      }
-      
-      return prevParticipations;
-    });
-  };
 
 
   // Check if user just joined the network or came from invitation
@@ -427,60 +403,6 @@ function NetworkLandingPage() {
     return () => clearTimeout(timer);
   }, [user, network, networkMembers, activeProfile, isUserAdmin, location]);
 
-  // Fetch user's event participations on component mount
-  useEffect(() => {
-    const fetchUserParticipations = async () => {
-      if (!user || !events || events.length === 0) {
-        console.log("SKIPPING participation fetch - missing data:", { 
-          user: !!user, 
-          events: !!events, 
-          eventsLength: events?.length || 0 
-        });
-        return;
-      }
-      
-      console.log("=== START PARTICIPATION FETCH ===");
-      console.log("User ID:", user.id);
-      console.log("Events count:", events.length);
-      console.log("Event IDs for fetch:", events.map(e => e.id));
-      
-      try {
-        // Refactor query to always return all possible participations
-        const { data, error } = await supabase
-          .from('event_participations')
-          .select('*')
-          .eq('profile_id', activeProfile.id);
-        
-        if (error) {
-          console.error('Error fetching user participations:', error);
-          return;
-        }
-        
-        console.log("FULL Fetched participations:", data);
-        
-        // Filter to just participations for events in our current view
-        const relevantParticipations = data.filter(p => 
-          events.some(e => e.id === p.event_id)
-        );
-        
-        console.log("FILTERED Fetched user participations:", relevantParticipations);
-        console.log("Mapped Status by Event:", relevantParticipations.map(p => ({
-          event_id: p.event_id,
-          event_title: events.find(e => e.id === p.event_id)?.title || 'Unknown',
-          status: p.status
-        })));
-        
-        // Always set the state, even if empty
-        setUserParticipations(relevantParticipations);
-        
-        console.log("=== END PARTICIPATION FETCH ===");
-      } catch (err) {
-        console.error('Error in fetchUserParticipations:', err);
-      }
-    };
-    
-    fetchUserParticipations();
-  }, [user, events]);
 
 
 
@@ -1359,8 +1281,6 @@ function NetworkLandingPage() {
                 events={events}
                 user={user}
                 isUserAdmin={isUserAdmin}
-                userParticipations={userParticipations}
-                onParticipationChange={handleParticipationChange}
                 network={network}
                 darkMode={darkMode} // Pass dark mode to events tab
                 activeProfile={activeProfile}
