@@ -47,14 +47,11 @@ const NetworkOnboardingPage = lazyWithRetry(() => import('./pages/NetworkOnboard
 const MicroConclavPage = lazyWithRetry(() => import('./pages/MicroConclavPage'));
 const SuperAdminDashboard = lazyWithRetry(() => import('./pages/SuperAdminDashboard'));
 const LogoAnimation = lazyWithRetry(() => import('./components/LogoAnimation'));
-const NetworkLandingPageOverlap = lazyWithRetry(() => import('./pages/NetworkLandingPageOverlap'));
 const JoinNetworkPage = lazyWithRetry(() => import('./pages/JoinNetworkPage'));
 const NewsPostPage = lazyWithRetry(() => import('./pages/NewsPostPage'));
 const PostPage = lazyWithRetry(() => import('./pages/PostPage'));
 const TermsPage = lazyWithRetry(() => import('./pages/TermsPage'));
 const PrivacyPage = lazyWithRetry(() => import('./pages/PrivacyPage'));
-const NetworkLandingPageFloatingElements = lazyWithRetry(() => import('./pages/NetworkLandingPageFloatingElements'));
-const NetworkLandingPageAlt = lazyWithRetry(() => import('./pages/NetworkLandingPageAlt'));
 const DocumentationPage = lazyWithRetry(() => import('./pages/DocumentationPage'));
 const SimpleConclavLanding = lazyWithRetry(() => import('./pages/SimpleConclavLanding'));
 const CoursesPage = lazyWithRetry(() => import('./components/courses/CoursesPage'));
@@ -268,14 +265,6 @@ function App() {
             
             {/* Individual post route */}
             <Route path="/post/:postId" element={<PostPage />} />
-            
-            {/* Test routes */}
-            <Route path="/network-overlap" element={<ProfileAwareRoute><NetworkLandingPageOverlap /></ProfileAwareRoute>} />
-            <Route path="/network-overlap/:networkId" element={<NetworkLandingPageOverlap />} />
-            <Route path="/network-floating" element={<ProfileAwareRoute><NetworkLandingPageFloatingElements /></ProfileAwareRoute>} />
-            <Route path="/network-floating/:networkId" element={<NetworkLandingPageFloatingElements />} />
-            <Route path="/network-alt" element={<ProfileAwareRoute><NetworkLandingPageAlt /></ProfileAwareRoute>} />
-            <Route path="/network-alt/:networkId" element={<NetworkLandingPageAlt />} />
             
             {/* Join network via invitation link */}
             <Route path="/join/:code" element={<JoinNetworkPage />} />
