@@ -373,7 +373,7 @@ const CommentSection = ({ itemType, itemId, onMemberClick, defaultExpanded = fal
                     fontStyle: 'italic'
                   }}
                 >
-                  (edited)
+                  {t('comments.edited')}
                 </Typography>
               )}
               {(activeProfile?.id === comment.profile_id) && (
@@ -500,7 +500,7 @@ const CommentSection = ({ itemType, itemId, onMemberClick, defaultExpanded = fal
                     }
                   }}
                 >
-                  {showReplies ? '▼' : '▶'} {comment.replies.length} repl{comment.replies.length === 1 ? 'y' : 'ies'}
+                  {showReplies ? '▼' : '▶'} {comment.replies.length} {comment.replies.length === 1 ? t('comments.reply') : t('comments.replies')}
                 </Button>
               )}
             </Box>
@@ -693,7 +693,7 @@ const CommentSection = ({ itemType, itemId, onMemberClick, defaultExpanded = fal
                 <TextField
                   fullWidth
                   size="small"
-                  placeholder="Write a comment..."
+                  placeholder={t('comments.writeComment')}
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
                   onKeyDown={(e) => {
@@ -745,7 +745,7 @@ const CommentSection = ({ itemType, itemId, onMemberClick, defaultExpanded = fal
                 py: 2
               }}
             >
-              No comments yet. Be the first to comment!
+              {t('comments.noCommentsYet')}
             </Typography>
           ) : (
             <Box>

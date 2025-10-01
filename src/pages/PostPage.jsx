@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from '../hooks/useTranslation';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/authcontext';
 import { useProfile } from '../context/profileContext';
@@ -42,6 +43,7 @@ import UserContent from '../components/UserContent';
 import CreatePostModal from '../components/CreatePostModal';
 
 function PostPage() {
+  const { t } = useTranslation();
   const { postId } = useParams();
   const navigate = useNavigate();
   const { activeProfile } = useProfile();
@@ -73,7 +75,7 @@ function PostPage() {
       if (postError) throw postError;
       
       if (!postData) {
-        setError('Post not found');
+        setError(t('pages.post.notFound'));
         return;
       }
 
@@ -91,7 +93,7 @@ function PostPage() {
       }
     } catch (err) {
       console.error('Error fetching post:', err);
-      setError('Failed to load post');
+      setError(t('pages.post.failedToLoad'));
     } finally {
       setLoading(false);
     }
@@ -111,7 +113,7 @@ function PostPage() {
   };
 
   const handleDelete = async () => {
-    if (!window.confirm('Are you sure you want to delete this post?')) {
+    if (!window.confirm(t('pages.post.confirmDelete'))) {
       return;
     }
 
@@ -127,7 +129,7 @@ function PostPage() {
       navigate(`/profile/${author.id}`, { replace: true });
     } catch (err) {
       console.error('Error deleting post:', err);
-      alert('Failed to delete post');
+      alert(t('pages.post.deleteFailed'));
     }
     handleMenuClose();
   };
@@ -185,13 +187,13 @@ function PostPage() {
     return (
       <Container maxWidth="md" sx={{ mt: 4 }}>
         <Alert severity="error" sx={{ mb: 2 }}>
-          {error || 'Post not found'}
+          {error || t('pages.post.notFound')}
         </Alert>
         <Button
           startIcon={<ArrowBackIcon />}
           onClick={() => navigate(-1)}
         >
-          Go Back
+          {t('pages.post.goBack')}
         </Button>
       </Container>
     );
@@ -208,7 +210,7 @@ function PostPage() {
           startIcon={<ArrowBackIcon />}
           onClick={() => navigate(-1)}
         >
-          Go Back
+          {t('pages.post.goBack')}
         </Button>
         
         {isAuthor && (
