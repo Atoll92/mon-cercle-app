@@ -30,10 +30,12 @@ import {
   CalendarToday as DateIcon,
   Category as CategoryIcon,
   FilterList as FilterIcon,
-  Refresh as RefreshIcon
+  Refresh as RefreshIcon,
+  Sync as SyncIcon,
+  CheckCircleOutline as SyncedIcon
 } from '@mui/icons-material';
 import { useTranslation } from '../../hooks/useTranslation';
-import { fetchAnnonces, moderateAnnonce } from '../../api/annonces';
+import { fetchAnnonces, moderateAnnonceWithSympa } from '../../api/annonces';
 import Spinner from '../Spinner';
 
 const CATEGORIES = [
@@ -88,17 +90,34 @@ function AnnoncesModerationTab({ networkId, darkMode }) {
   const handleModerate = async (annonceId, status, category = null) => {
     try {
       setModerating(prev => ({ ...prev, [annonceId]: true }));
-      await moderateAnnonce(annonceId, status, category);
 
-      // Update local state
+      // Use the new moderateAnnonceWithSympa API that triggers Sympa sync
+      const result = await moderateAnnonceWithSympa(annonceId, status, category);
+
+      console.log('Moderation result:', result);
+
+      // Update local state with sync status
       setAnnonces(prev => prev.map(a =>
         a.id === annonceId
-          ? { ...a, status, category: category || a.category, moderated_at: new Date().toISOString() }
+          ? {
+              ...a,
+              status,
+              category: category || a.category,
+              moderated_at: new Date().toISOString(),
+              synced_to_sympa: result?.synced || false
+            }
           : a
       ));
+
+      // Show success message
+      if (result?.synced) {
+        setError(null);
+      } else {
+        setError('Modération réussie (pas de synchronisation Sympa)');
+      }
     } catch (err) {
       console.error('Error moderating annonce:', err);
-      setError('Erreur lors de la modération de l\'annonce');
+      setError('Erreur lors de la modération de l\'annonce: ' + (err.message || 'Erreur inconnue'));
     } finally {
       setModerating(prev => ({ ...prev, [annonceId]: false }));
     }
@@ -294,6 +313,18 @@ function AnnoncesModerationTab({ networkId, darkMode }) {
                             fontWeight: 'medium'
                           }}
                         />
+                      )}
+                      {/* Sympa sync status indicator */}
+                      {annonce.status !== 'pending' && (
+                        <Tooltip title={annonce.synced_to_sympa ? 'Synchronisé avec Sympa' : 'Non synchronisé avec Sympa'}>
+                          <Chip
+                            icon={annonce.synced_to_sympa ? <SyncedIcon /> : <SyncIcon />}
+                            label={annonce.synced_to_sympa ? 'Sympa ✓' : 'App uniquement'}
+                            size="small"
+                            variant="outlined"
+                            color={annonce.synced_to_sympa ? 'success' : 'default'}
+                          />
+                        </Tooltip>
                       )}
                     </Stack>
                     <Typography variant="caption" color="text.secondary">

@@ -269,7 +269,22 @@ function RezoProSpecSignupPage() {
         const { setActiveProfile: apiSetActiveProfile } = await import('../api/profiles');
         await apiSetActiveProfile(profileResult.data.id);
 
-        setMessage('Inscription réussie ! Vous avez été ajouté à Rezo Pro Spec. Veuillez vérifier votre email pour confirmer votre compte.');
+        // Add user to Sympa subscription queue
+        try {
+          const { subscribeToSympa } = await import('../api/sympaSync');
+          await subscribeToSympa(
+            profileResult.data.id,
+            email,
+            ['immobilier', 'ateliers', 'cours', 'materiel', 'echange', 'casting', 'annonces', 'dons'], // All categories by default
+            '' // No motivation required for signup
+          );
+          console.log('Added to Sympa subscription queue');
+        } catch (sympaError) {
+          console.error('Error adding to Sympa subscription queue:', sympaError);
+          // Don't fail the signup if Sympa queue fails
+        }
+
+        setMessage('Inscription réussie ! Vous avez été ajouté à Rezo Pro Spec. Votre demande d\'inscription à la liste de diffusion est en attente d\'approbation par un administrateur. Veuillez vérifier votre email pour confirmer votre compte.');
       } catch (profileError) {
         console.error('Erreur lors de la création du profil:', profileError);
         setError(`L'inscription a réussi, mais impossible de rejoindre le réseau : ${profileError.message}. Veuillez contacter le support.`);

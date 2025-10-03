@@ -33,6 +33,7 @@ import {
 import { supabase } from '../supabaseclient';
 import { useAuth } from '../context/authcontext';
 import { useProfile } from '../context/profileContext';
+import { getCategoryPreferences, updateSympaCategories } from '../api/sympaSync';
 
 const NotificationSettings = () => {
   const { user } = useAuth();
@@ -67,13 +68,13 @@ const NotificationSettings = () => {
   // Load user's current notification preferences
   useEffect(() => {
     const loadPreferences = async () => {
-      if (!user) return;
+      if (!user || !activeProfile) return;
 
       try {
         setLoading(true);
         const { data, error } = await supabase
           .from('profiles')
-          .select('email_notifications_enabled, notify_on_news, notify_on_events, notify_on_mentions, notify_on_direct_messages')
+          .select('email_notifications_enabled, notify_on_news, notify_on_events, notify_on_mentions, notify_on_direct_messages, annonces_categories')
           .eq('id', activeProfile.id)
           .single();
 
@@ -87,6 +88,16 @@ const NotificationSettings = () => {
             notify_on_mentions: data.notify_on_mentions ?? true,
             notify_on_direct_messages: data.notify_on_direct_messages ?? true
           });
+
+          // Load annonces category preferences if this is the RezoProSpec network
+          if (showAnnoncesSection && data.annonces_categories) {
+            const categories = data.annonces_categories;
+            const newState = {};
+            Object.keys(annonceCategories).forEach(key => {
+              newState[key] = categories.includes(key);
+            });
+            setAnnonceCategories(newState);
+          }
         }
       } catch (err) {
         console.error('Error loading notification preferences:', err);
@@ -97,7 +108,7 @@ const NotificationSettings = () => {
     };
 
     loadPreferences();
-  }, [user]);
+  }, [user, activeProfile]);
 
   const handlePreferenceChange = async (field, value) => {
     try {
@@ -231,20 +242,45 @@ const NotificationSettings = () => {
     }
   ];
 
-  const handleAnnonceCategoryToggle = (category) => {
-    setAnnonceCategories(prev => ({
-      ...prev,
-      [category]: !prev[category]
-    }));
+  const handleAnnonceCategoryToggle = async (category) => {
+    const newCategories = {
+      ...annonceCategories,
+      [category]: !annonceCategories[category]
+    };
+    setAnnonceCategories(newCategories);
+
+    // Save to database
+    try {
+      const selectedCategories = Object.keys(newCategories).filter(key => newCategories[key]);
+      await updateSympaCategories(activeProfile.id, selectedCategories);
+      console.log('Category preferences updated:', selectedCategories);
+    } catch (err) {
+      console.error('Error updating category preferences:', err);
+      // Revert on error
+      setAnnonceCategories(annonceCategories);
+      setError('Failed to update category preferences');
+    }
   };
 
-  const handleToggleAllAnnonces = () => {
+  const handleToggleAllAnnonces = async () => {
     const allSelected = Object.values(annonceCategories).every(v => v);
     const newState = {};
     Object.keys(annonceCategories).forEach(key => {
       newState[key] = !allSelected;
     });
     setAnnonceCategories(newState);
+
+    // Save to database
+    try {
+      const selectedCategories = Object.keys(newState).filter(key => newState[key]);
+      await updateSympaCategories(activeProfile.id, selectedCategories);
+      console.log('All categories toggled:', selectedCategories);
+    } catch (err) {
+      console.error('Error updating category preferences:', err);
+      // Revert on error
+      setAnnonceCategories(annonceCategories);
+      setError('Failed to update category preferences');
+    }
   };
 
   const selectedAnnoncesCount = Object.values(annonceCategories).filter(v => v).length;

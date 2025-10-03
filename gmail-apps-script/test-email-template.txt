@@ -1,0 +1,305 @@
+# Test Email Templates for Sympa Integration
+
+Use these templates to test the Gmail + Sympa integration manually.
+
+## Template 1: Basic Moderation Request (French)
+
+**From:** sympa@lists.riseup.net
+**To:** your-email@gmail.com
+**Subject:** Message for list rezoprospec moderation
+
+**Body:**
+```
+Cher propriétaire de la liste rezoprospec,
+
+Un utilisateur a demandé à être abonné à votre liste. Pour consulter toutes
+les demandes en attente, veuillez cliquer sur ce lien :
+
+https://lists.riseup.net/www/ticket/35136367739771
+
+Vous pouvez également valider cette demande en envoyant un message à
+sympa@lists.riseup.net avec comme objet :
+AUTH 8d287915 ADD rezoprospec contact@librevoixmarseille.com
+
+Cordialement,
+L'équipe Sympa
+```
+
+---
+
+## Template 2: Message with Content (French)
+
+**From:** sympa@lists.riseup.net
+**To:** your-email@gmail.com
+**Subject:** Nouveau message à modérer pour rezoprospec
+
+**Body:**
+```
+Cher modérateur,
+
+Un nouveau message attend votre validation pour la liste rezoprospec.
+
+De: Marie Dupont <marie.dupont@example.com>
+Objet: Propose sous-location appartement T2 Marseille
+Date: 2025-10-03
+
+Message:
+Bonjour à tous,
+
+Je propose une sous-location de mon appartement T2 dans le 6e arrondissement
+de Marseille du 1er novembre au 15 décembre.
+
+Caractéristiques:
+- 45m², lumineux
+- 2e étage avec ascenseur
+- Proche métro Estrangin
+- Entièrement équipé
+
+Loyer: 650€ charges comprises
+
+Contact: marie.dupont@example.com
+
+---
+
+Pour valider ce message:
+https://lists.riseup.net/www/ticket/98765432
+
+Ou envoyez un email à sympa@lists.riseup.net avec:
+AUTH abc123xyz DISTRIBUTE rezoprospec 98765432
+```
+
+---
+
+## Template 3: Subscription Request
+
+**From:** sympa@lists.riseup.net
+**To:** your-email@gmail.com
+**Subject:** Demande d'abonnement à rezoprospec
+
+**Body:**
+```
+Cher propriétaire de la liste rezoprospec,
+
+Un utilisateur a demandé à être abonné à votre liste.
+
+Email: nouveau.membre@example.com
+Nom: Jean Martin
+Date: 2025-10-03 14:30:00
+
+Pour consulter toutes les demandes en attente, veuillez cliquer sur ce lien :
+https://lists.riseup.net/www/ticket/11223344
+
+Vous pouvez également valider cette demande en envoyant un message à
+sympa@lists.riseup.net avec comme objet :
+AUTH def456ghi ADD rezoprospec nouveau.membre@example.com
+
+Pour rejeter cette demande:
+AUTH def456ghi DEL rezoprospec nouveau.membre@example.com
+
+Cordialement,
+Sympa
+```
+
+---
+
+## Template 4: Workshop Announcement
+
+**From:** sympa@lists.riseup.net
+**To:** your-email@gmail.com
+**Subject:** Modération message: Atelier de théâtre
+
+**Body:**
+```
+Nouveau message à modérer pour la liste rezoprospec
+
+De: Sophie Laurent <sophie@theatre-marseille.fr>
+Objet: Atelier de théâtre tous les mardis
+Date: 2025-10-03 16:00:00
+
+Message:
+Bonjour à tous,
+
+Je propose des ateliers de théâtre tous les mardis de 19h à 21h dans mon
+studio à Marseille.
+
+Au programme:
+- Échauffement collectif
+- Improvisation
+- Travail sur textes
+- Exploration de différentes techniques
+
+Niveau débutant accepté. Groupe de 8 personnes max.
+Tarif: 25€/séance ou 200€ pour 10 séances.
+
+Contact: sophie@theatre-marseille.fr
+
+---
+
+Lien de modération:
+https://lists.riseup.net/www/ticket/55667788
+
+Commande email:
+AUTH xyz789abc DISTRIBUTE rezoprospec 55667788
+```
+
+---
+
+## Template 5: Casting Call
+
+**From:** sympa@lists.riseup.net
+**To:** your-email@gmail.com
+**Subject:** Annonce rezoprospec: Casting court-métrage
+
+**Body:**
+```
+Message en attente de modération
+
+De: Lucas Bernard <production@cinemarseille.fr>
+Objet: Recherche comédiens pour court-métrage
+Date: 2025-10-03
+
+Message:
+Production indépendante recherche comédiens H/F pour court-métrage fiction.
+
+Profils recherchés:
+- Femme 25-35 ans, rôle principal
+- Homme 40-50 ans, rôle secondaire
+- Plusieurs figurants
+
+Tournage prévu en décembre 2025 à Marseille (3 jours)
+Rémunération selon Convention Collective du cinéma.
+
+Merci d'envoyer:
+- CV
+- Photo récente
+- Bande démo si disponible
+
+Contact: production@cinemarseille.fr
+Deadline candidatures: 15 novembre 2025
+
+---
+
+Ticket: https://lists.riseup.net/www/ticket/99887766
+Auth: AUTH casting123 DISTRIBUTE rezoprospec 99887766
+```
+
+---
+
+## How to Use These Templates
+
+### Method 1: Send to Yourself
+
+1. Open Gmail
+2. Click **Compose**
+3. **To:** your-gmail-address@gmail.com
+4. Copy/paste one of the templates above
+5. **IMPORTANT:** Manually add the `Sympa-Moderation` label after sending
+6. Wait 5 minutes for Apps Script to run, OR run `processSympaEmails` manually
+
+### Method 2: Use Apps Script Mock Test
+
+1. Open your Apps Script project
+2. Select function: `testWithMockEmail`
+3. Edit the mock data in the function to match your test case
+4. Click **Run**
+5. Check execution log and database
+
+### Method 3: Forward Real Sympa Email
+
+1. Have a real Sympa moderation email in your inbox
+2. Forward it to your Gmail account
+3. Gmail filter will automatically label it
+4. Wait for processing or run manually
+
+---
+
+## Expected Results
+
+After processing, you should see in the database:
+
+```sql
+SELECT
+  id,
+  sender_email,
+  sender_name,
+  subject,
+  category,
+  status,
+  sympa_ticket_id,
+  sympa_auth_token,
+  created_at
+FROM annonces_moderation
+ORDER BY created_at DESC
+LIMIT 5;
+```
+
+**Example output:**
+```
+id: uuid
+sender_email: marie.dupont@example.com
+sender_name: Marie Dupont
+subject: Propose sous-location appartement T2 Marseille
+category: immobilier
+status: pending
+sympa_ticket_id: 98765432
+sympa_auth_token: abc123xyz
+created_at: 2025-10-03 ...
+```
+
+---
+
+## Category Detection Tests
+
+Test that auto-categorization works:
+
+| Keywords in Subject/Content | Expected Category |
+|------------------------------|-------------------|
+| appartement, logement, sous-location | immobilier |
+| atelier, workshop, formation | ateliers |
+| cours, professeur, leçon | cours |
+| vends, matériel, équipement | materiel |
+| échange, troc, swap | echange |
+| casting, comédien, tournage | casting |
+| don, gratuit, offre | dons |
+| (no matching keywords) | annonces or null |
+
+---
+
+## Troubleshooting Test Failures
+
+### Test fails with "Label not found"
+**Fix:** Create the `Sympa-Moderation` label in Gmail first
+
+### Test fails with "Authorization required"
+**Fix:** Run `processSympaEmails` manually once to authorize the script
+
+### Test succeeds but nothing in database
+**Check:**
+1. Edge Function logs in Supabase Dashboard
+2. Verify `SUPABASE_ANON_KEY` is correct in Apps Script
+3. Verify Edge Function URL is correct
+4. Check database RLS policies allow insert
+
+### Email processed but wrong data
+**Check:**
+1. Execution log in Apps Script for parse warnings
+2. Edge Function logs for parsing details
+3. Verify email format matches expected patterns
+
+---
+
+## Cleanup After Testing
+
+```sql
+-- Delete test annonces
+DELETE FROM annonces_moderation
+WHERE sender_email LIKE '%@example.com'
+  OR sympa_ticket_id IN ('12345678', '98765432', '35136367739771', '11223344', '55667788', '99887766');
+
+-- Verify deletion
+SELECT COUNT(*) FROM annonces_moderation;
+```
+
+---
+
+**Last Updated:** 2025-10-03
