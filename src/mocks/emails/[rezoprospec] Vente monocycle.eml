@@ -1,0 +1,268 @@
+Delivered-To: arthur.boval@gmail.com
+Received: by 2002:a17:907:a0ce:b0:b28:1ce4:1656 with SMTP id hw14csp220103ejc;
+        Thu, 25 Sep 2025 12:11:34 -0700 (PDT)
+X-Forwarded-Encrypted: i=3; AJvYcCXh1MbdBqrfcy3PrVDQmpHoWOvZ8oms48KhNFiYBYEfCalfKaX5IlV68gCCpS6oqlMXl77HoOQj/itYk0w=@gmail.com
+X-Google-Smtp-Source: AGHT+IHS7FLxrcBhWQveqrcGpvEMcZQ3DzeEAT5UdZI/7shRcupbrk9yQDy3hTz1FuaYdvGNf2Km
+X-Received: by 2002:a05:6a00:4b43:b0:776:1de0:4617 with SMTP id d2e1a72fcca58-780fce0a552mr4858430b3a.11.1758827493403;
+        Thu, 25 Sep 2025 12:11:33 -0700 (PDT)
+ARC-Seal: i=2; a=rsa-sha256; t=1758827493; cv=fail;
+        d=google.com; s=arc-20240605;
+        b=Pw6I0uEvniJCEb4IbtIkzus0CTwuGbRQbKudHn2qr5ydsHFImufxY9WR7uRTwZa72O
+         xsgo+/pm8A2/aMdbq3aux2bwCypqH6q4/vs7ZWEffnVxIH4h7AMKZQ0XGwSnsDVv7Qca
+         an8fstoMYTyciYS7WUgRoVNHTgUVXRh4m7St5DACfo+DJ+e54gbDLlNEsSKRFeYJGPgG
+         E7el53cvb5irBO/SdABedgKSRrLZEz+tR90fe4BVwU9miPsP799ASX7H1U5Yfv1lB/FF
+         hx7oE4FHhXeoHmr4+s9XHVpU8DjG/GQvBjHKVovILUDCOF5HCVtL7GqlCEJTBqq/1jp5
+         IFiA==
+ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=list-unsubscribe:list-subscribe:list-post:list-owner:list-help
+         :list-archive:list-id:sender:precedence:precedence:errors-to:subject
+         :reply-to:mime-version:msip_labels:accept-language:message-id:date
+         :thread-index:thread-topic:to:from:delivered-to:dkim-signature;
+        bh=aHO+ZYkB1N7s2EOAYURkW+/15x4STJSdorOLfnWi0yM=;
+        fh=pZH1YpFKppQPPC/D2q+OtmRQGlzvQp+xg1LESkz7KFY=;
+        b=jeZQ9XYLwSrwq8peupvLNQ3LB4MQPhTRWigyAogvNWeGQy8pITIFk8m3oNojdy6kEb
+         DXYo52k/ZFuK2Dglwc/9FWau0ZWHx69nTYpP8DSF8XHRGIZx9OuYeYXhCQNy+5xqcJRn
+         sP0+FvzuCSXRFrpI203UGm8Qy0s8LJ54WrJv/30Z48j86mNz5m7M6QwlWCRD8YpVchOC
+         eqUujKWUFmIVX80KSnd/szn04nR1jUggLg+bnY+sLx6NRbscr+uaTt8JgQOM3R/h7ht/
+         dF9CXP4ripELujMGTFW373Pt055rr5THfjNi368CkM9zbvS4urQDP5pYB0gUiMmxs50y
+         LpNA==;
+        dara=google.com
+ARC-Authentication-Results: i=2; mx.google.com;
+       dkim=pass header.i=@lists.riseup.net header.s=chirp header.b=kocVSd0R;
+       arc=fail (body hash mismatch);
+       spf=pass (google.com: domain of rezoprospec-owner@lists.riseup.net designates 198.252.153.88 as permitted sender) smtp.mailfrom=rezoprospec-owner@lists.riseup.net;
+       dmarc=pass (p=NONE sp=NONE dis=NONE) header.from=lists.riseup.net
+Return-Path: <rezoprospec-owner@lists.riseup.net>
+Received: from mx3.riseup.net (mx3.riseup.net. [198.252.153.88])
+        by mx.google.com with ESMTPS id d2e1a72fcca58-78102c0c2e1si1314757b3a.871.2025.09.25.12.11.33
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 25 Sep 2025 12:11:33 -0700 (PDT)
+Received-SPF: pass (google.com: domain of rezoprospec-owner@lists.riseup.net designates 198.252.153.88 as permitted sender) client-ip=198.252.153.88;
+Authentication-Results: mx.google.com;
+       dkim=pass header.i=@lists.riseup.net header.s=chirp header.b=kocVSd0R;
+       arc=fail (body hash mismatch);
+       spf=pass (google.com: domain of rezoprospec-owner@lists.riseup.net designates 198.252.153.88 as permitted sender) smtp.mailfrom=rezoprospec-owner@lists.riseup.net;
+       dmarc=pass (p=NONE sp=NONE dis=NONE) header.from=lists.riseup.net
+Received: from whimbrel.riseup.net (whimbrel-pn.riseup.net [10.0.1.39])
+	by mx3.riseup.net (Postfix) with ESMTP id 4cXjmn3Dlrz20l0;
+	Thu, 25 Sep 2025 19:03:52 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=lists.riseup.net;
+	s=chirp; t=1758827040;
+	bh=aHO+ZYkB1N7s2EOAYURkW+/15x4STJSdorOLfnWi0yM=;
+	h=From:To:Date:Reply-To:Subject:List-Id:List-Archive:List-Help:
+	 List-Owner:List-Post:List-Subscribe:List-Unsubscribe:From;
+	b=kocVSd0RNG+B9zbt2sYC77HZYz+7jGBCVYQp+vJtAkX75IEb+RmnsIr65T/0dHxxd
+	 /Zvlcg8x8z9EqC7ndAOrxpF32L0g8a7aL0yCz+QY0SZU6y1Zh0oYBnCOhdUOV9BrA1
+	 6ENR/9FU2P7V3bw4AsUnLfBRwd/Ll6oGEzoXnqhX2VEpg7T8QkIMyQz9A/FMoEbn4X
+	 MVYQsR5iPLpprFt9HUxEwhd5iTRzNE8/gf3g1rh6/m/9EO0kmUNKYkmjj3u1qAuYx/
+	 B8CjhbRgpxbzE+hWzWwsBVjNT8k7A8lF+k3n9FSHgHAFq76+7sHEXaJ118l6fqWa7H
+	 +uUA7md1vLBBg==
+Received: by whimbrel.riseup.net (Postfix, from userid 1000)
+	id 4cXjmm2g1Gz7skf; Thu, 25 Sep 2025 19:03:52 +0000 (UTC)
+X-Original-To: rezoprospec@lists.riseup.net
+Delivered-To: rezoprospec@lists.riseup.net
+Received: from OSPPR02CU001.outbound.protection.outlook.com (mail-norwayeastazolkn19013074.outbound.protection.outlook.com [52.103.51.74])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (P-384) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by whimbrel.riseup.net (Postfix) with ESMTPS id 4cXWcF6TFNz7sph
+	for <rezoprospec@lists.riseup.net>; Thu, 25 Sep 2025 11:25:49 +0000 (UTC)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=p79pHYDIBgNu6iM1+LYPpVRig56OcgMf45Tqnx9uMOLqFieiHdJLkbw7W0lCagMj32f8xAzOGP6a+YUmkEwHxj73qE1Vinqn6KpWu4OzhhOam76F1tqOLxLF2DU9xOMjydTpl7L7rrpleGJh00oVe/acSqxS8AwfUbSq4g3NzvZB6idt9ZNyzS5yrZnGKKcxy0B30EzB3jPF80F8zEOlKyBAOJDW21ltPqunka6o3QUWtiuFkyFXjE9e0T5vUrqWErX9+Zed8rLdpJtfYvB1IgfntDNOaGSY0xkNDhKPpyxWtztNlLlS1CDXIvVWPCZmh1M56npZe0+PlGF1dqvBkg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=77/b6AOti7rNsf8mGHUblIHCWFG5wgk2iV10BTpk7B0=;
+ b=elQrD2y+WAZmK7EpL2oFGXptOhTW8QA4X7WuOrY3SBoiDPQwbVVx9ArtkJQDoivfApTSloomkgo8C5hvX3GZOuCZG3MgLA4Axyz194JNtLvTDvVo4eAmzZ7kwhm7+ukJxqA/0/D6btidHuj4p2Bw5eUFIlhCNMGl8h369m8w0yf0hMMbBHk/zhO6odeEU5KECcc+WfVGQghX6n96V9tNi+Fqzcg/whMHMfK0HRBnqrbjUQgc5rVJ0rctiandWGqNYL0ENR072YhnmSyU85ZtzaMlTZApS2WQfyHZjABMT/JFTUzAStWJ0GOaNpSHCn11kQKhNU071mTl61r690KpKQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=none; dmarc=none;
+ dkim=none; arc=none
+Received: from PR3P194MB1667.EURP194.PROD.OUTLOOK.COM (2603:10a6:102:176::7)
+ by AS8P194MB1606.EURP194.PROD.OUTLOOK.COM (2603:10a6:20b:371::11) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9160.9; Thu, 25 Sep
+ 2025 11:25:40 +0000
+Received: from PR3P194MB1667.EURP194.PROD.OUTLOOK.COM
+ ([fe80::49d4:11e3:5711:6339]) by PR3P194MB1667.EURP194.PROD.OUTLOOK.COM
+ ([fe80::49d4:11e3:5711:6339%5]) with mapi id 15.20.9115.020; Thu, 25 Sep 2025
+ 11:25:40 +0000
+From: "Melissa Bommert" (via rezoprospec Mailing List) <rezoprospec@lists.riseup.net>
+To: rezoprospec <rezoprospec@lists.riseup.net>
+Thread-Topic: Vente monocycle
+Thread-Index: AQHcLgvYLHe0Zt7pP0+bHfm6pFTj3g==
+Date: Thu, 25 Sep 2025 11:25:40 +0000
+Message-ID:
+ <PR3P194MB166735C0A93711D16E79C07B831FA@PR3P194MB1667.EURP194.PROD.OUTLOOK.COM>
+Accept-Language: de-DE, en-US
+X-MS-Has-Attach:
+X-MS-TNEF-Correlator:
+msip_labels:
+x-ms-exchange-messagesentrepresentingtype: 1
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: PR3P194MB1667:EE_|AS8P194MB1606:EE_
+x-ms-office365-filtering-correlation-id: 04f274fd-6d00-4e0f-e2b1-08ddfc2641f4
+x-ms-exchange-slblob-mailprops:
+ c9/CzQ6A0FwUq1sL6VcVRaEu0GxDqo3ekNodnHgS7u/jVrWVm+QAff8690dR6aFg+AIgur+Lzyai8l/cMNdHnBWq1+bJS4r0mJd6y3AFmEBvdVPcjJAIwPoJLIQ0a3VxI32nk+qKiedweVyG9++/4PbITA3NzriEBq4aZuP/GVdaeb41JAaT2GpO2O8A05tjGIMpDrE/1kNIS77Wh+otOiJT47HxBtyNDthVkNDgRKI0gXyVd4p01Nw+ZnsSCVn/iEzT+474Lj8XT/yH39W65jgTQ9PH6MG08mHrp9gZ7FqMCnOC2Clq5hkvWEO2Q2riLmKz8x7BjpaEqraDAjdKQI1h1OIgZpmL1Ku5yBORV8TXlNRlCWd1AdGHFr2oF8gzkhKJ2IsgZgN8Px/P/X6eJezc0A0fqXlevJXoy4cnmMdjUuzGcLwUFuJxGcmWk5ElOZlS0408mdg5wQh6KtN646FDcYgxIMPXRl/2ITcR2nvtUDVv0w4+UjEvJv8YRYC1Z98IeB2YCfKozDlKJnsOXEp1VAXVuELbcNk0L+shHyNnhYEeWsFXxhiZYus3QGMUl/nFpHX4NJcSe1GJVML88hkheEMJ4m4UhpubVjKuYXk=
+x-microsoft-antispam:
+ BCL:0;ARA:14566002|8062599012|461199028|31061999003|19110799012|8060799015|15030799006|15080799012|3412199025|440099028|40105399003|102099032;
+x-microsoft-antispam-message-info:
+ =?Windows-1252?Q?C8sdV1dppRqaP9HeAHbhcwDolnnGWEjwYfn/SoblL5R7tww4g51YKX39?=
+ =?Windows-1252?Q?GExKo4VUTL3lYAI9zFRbzuPpoeG4+qvX+KX7ho58KCanVJIP4/Dkrnpw?=
+ =?Windows-1252?Q?roQmSn2q1DOQFCeGH/chszMm/yZHtpplKJL/b+yibleu/5FsabD/XNN3?=
+ =?Windows-1252?Q?519X9Vuijjk3yk0aGp4r+l9wR55szlaR5bKVqwICgQwB6p9AZxEAFkv0?=
+ =?Windows-1252?Q?PW7HMQnPhe+PCqHyByxuHLYfRjY0dxOBTIB9boPA+Yq/4XtRNMXhQnet?=
+ =?Windows-1252?Q?PYqDYC7L53/WVTPqiu6An9UuO+e+dp1jR9odDq57rQh6hChY7ZlIORYF?=
+ =?Windows-1252?Q?7QMqOVd/63B2clkzPVkKBpnkwacvYLCzcbJjMhwfFWo+wADfc2DakaX5?=
+ =?Windows-1252?Q?6pB9F+6hDZQMfsc78CySgzIvYnen6vgmaMS/t+DtuHefZ2OGrWWWS9eW?=
+ =?Windows-1252?Q?0jYH38VLwQ9m6xAqOwT8g2/NKitEavJmJhPkGPiMpxIfNUfBNaMZC8WC?=
+ =?Windows-1252?Q?XqIoutuUxgDxlJFQNyusapifC54C2YE/w/DejT3N4pNZmszKcq2e2tYO?=
+ =?Windows-1252?Q?CJ9Ehz0g3qr5j8xX7uW5C0TIqX7gojXkO6MkMNnDp+7OXO/A27CPPSEH?=
+ =?Windows-1252?Q?CfY1FkT0bXt22suk/UQY4S3DTG+WjOk7ff9UK9fhqCszZDqXW4gZ0wLB?=
+ =?Windows-1252?Q?fFhGRgkLJKhTHj++gdUxdrf8IBEfMW4qzrnAQSqE89+0r6v8tiZSfpIS?=
+ =?Windows-1252?Q?yJeg9khh3TMVLH071R8PwVuyrsNo2EQWCImM1jpGGzFVFChBqocyyEpb?=
+ =?Windows-1252?Q?Tbe2VD76Kbip65gF/RpxbHAhxzq0lglUcm7V/KI5yg/2W0eHDEDoWFqQ?=
+ =?Windows-1252?Q?0vYVb5TXwMlcPDzZgJpiCRFSjTg3wL6zq2kxZ8WG3RRqIf4PRXjwsQw4?=
+ =?Windows-1252?Q?SB/HcNKzEiM5/cSx9BXxNhod1YMRvwjX6al9n8xRaXMuRTu7F5pEQchq?=
+ =?Windows-1252?Q?Q86tY2aLNhHLre8h+ez7YfJQTEjqZLVhxmwnF1qA1L5hORBBluUDcLxQ?=
+ =?Windows-1252?Q?IGqHgLiriuKRw8xuY0Q57jPC56VrCGHRe+bFTk5vNxpTzmFJ4lxA7ssH?=
+ =?Windows-1252?Q?5wdXROQn9QS4yr3oqNgBeeZL4ha9OHCbxFVv9IFwAozOpQNAnXI42TtH?=
+ =?Windows-1252?Q?y/4CfXAXCUcH1K0JL4/4CrBuZcpSIH5Ywsj0FLCgEj27PGhyma7WCC7Y?=
+ =?Windows-1252?Q?8zqfIxCB6/IEZBngIiogVlpZqE5z+J61pFS/ctBC?=
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0:
+ =?Windows-1252?Q?UgK7djWbfMcQ4UEz+6sBMMnh1c+CYPzlfVICscwQhJUrTXsqwVfK8YNb?=
+ =?Windows-1252?Q?xURqM25fF7zIR8hk0xYXkpmLKgCJ73hcB71/kYZvaRRbwh4KG2OIS3t3?=
+ =?Windows-1252?Q?gR3XthZH0DTtCzeJIVWiEfmM9NmwyQV9jfQEE/bFYzjEXzqm+JX7deOl?=
+ =?Windows-1252?Q?SdvCZ3pg9dWvna5JlKIS+LoZOydErNQVb/1e5R6/adiCCGD8Tw6D7nxu?=
+ =?Windows-1252?Q?2X0FdhTpbS33uKYxEuk6uozGqnohKjf+snf6YgzzNJbjPGcbTAzoO3Zu?=
+ =?Windows-1252?Q?JN+3hTfqJfQOw7Lk01RfNtsS6pcl0CCBE3jUSZvyN1qYkwdwiWTzQDOV?=
+ =?Windows-1252?Q?T9Od23CvlEGDKH8WEAHgixATpuX/w4Ovf3NeaIdj7b+S24uLk+f3nL/O?=
+ =?Windows-1252?Q?vnHJwC6SbZ1x8kJPli9+a4F85baSox6AbPPLDmgh76fClwWPeRqdfvLT?=
+ =?Windows-1252?Q?qtbslpPzTePlRAqxzdsiqEiban8N6EjVGgvIXf8xFUi1qdjMH/eucY5B?=
+ =?Windows-1252?Q?S+P32IIww6zw36LgMtLmIiPS9W2OpshFFrO1ucrDA2NfStNQ+1vDZ303?=
+ =?Windows-1252?Q?S8qtjZ/czo7VcIzbLKGQYi7tvSgkom1VEBhXQMBdor2szYLMRCSsoWWj?=
+ =?Windows-1252?Q?fodpaxKzZiyclAtBqwftOm7IMaedZSpJ7yVIpNzI6suYSlojW+QuEn5c?=
+ =?Windows-1252?Q?jDmp7h2ymwXzU1GNEKW/CDllDxSOMpDhMphqqxjc5h45hIYftM/dIWRB?=
+ =?Windows-1252?Q?weCiKfBdlsTAFEQ/EzD3o984jvi970wAa6Rs+3IupqbJ9Ee4BM1kF+cS?=
+ =?Windows-1252?Q?gkqZZliEPKhnM/0+P6YY50P3JMl8HhiX/jU/Y7VfJjPyK4/1XkjGsIBS?=
+ =?Windows-1252?Q?3DD42MXZCEgFQRHRHFC34rf4hhpbBnhhIudMtXZr6UOiGQLg1upHtyzX?=
+ =?Windows-1252?Q?rgg7c6iwasc+bAvjvRox/fGK4ruOuw30I4hyN/+BTMX/pxoe0RuC3qXV?=
+ =?Windows-1252?Q?5b2iKGWAzulJ6ftm2xLtIbi7NajafaeM7RBUKtUgdYXfamILJne84I5F?=
+ =?Windows-1252?Q?nCP1CnMdg33BWh1fGDi+fwGDRRh0EsGPsoQx6cbCcYWjsBABgd41JCMs?=
+ =?Windows-1252?Q?KJADFSiBVsz3b9lu+zzIWYvMIYzTcG+vos8/Z5ibUbNKnC4qsQUTUFmT?=
+ =?Windows-1252?Q?I2+g0iiJapGgrF8i2b3X0dopJJSK1dAysySj/jKanPpz+7MV7O2xfEnC?=
+ =?Windows-1252?Q?3TlrCch+rRoMDjQ4E727N1ScTLBTKQK8hyI3KxsE0GbiJQLg7QsEcVXd?=
+ =?Windows-1252?Q?iIDFIw5kSZTRHXotNIJqpgWO6W6Akcvx6NyHk/AqNZufPT6Epk5mPMH5?=
+ =?Windows-1252?Q?+fSGa5rH3Dz2v8d/TJ4/E+x+JmUesq29pSU=3D?=
+MIME-Version: 1.0
+X-OriginatorOrg: outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: PR3P194MB1667.EURP194.PROD.OUTLOOK.COM
+X-MS-Exchange-CrossTenant-RMS-PersistedConsumerOrg: 00000000-0000-0000-0000-000000000000
+X-MS-Exchange-CrossTenant-Network-Message-Id: 04f274fd-6d00-4e0f-e2b1-08ddfc2641f4
+X-MS-Exchange-CrossTenant-originalarrivaltime: 25 Sep 2025 11:25:40.1235
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 84df9e7f-e9f6-40af-b435-aaaaaaaaaaaa
+X-MS-Exchange-CrossTenant-rms-persistedconsumerorg: 00000000-0000-0000-0000-000000000000
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: AS8P194MB1606
+X-Spam-Status: No, score=-6.2 required=6.0 shortcircuit=no autolearn=disabled
+	version=3.4.6
+X-Spam-Report: 
+	*  0.0 FORWARD_RELAY Appears to be relayed through list or forwarding
+	*  0.0 MAILPHISH4 Sent by a (cracked?) webmail system
+	*  0.0 RCVD_IN_VALIDITY_CERTIFIED_BLOCKED RBL: ADMINISTRATOR NOTICE:
+	*      The query to Validity was blocked.  See
+	*      https://knowledge.validity.com/hc/en-us/articles/20961730681243
+	*       for more information.
+	*      [52.103.51.74 listed in sa-accredit.habeas.com]
+	*  0.0 RCVD_IN_VALIDITY_RPBL_BLOCKED RBL: ADMINISTRATOR NOTICE: The
+	*      query to Validity was blocked.  See
+	*      https://knowledge.validity.com/hc/en-us/articles/20961730681243
+	*       for more information.
+	*      [52.103.51.74 listed in bl.score.senderscore.com]
+	* -0.0 SPF_PASS SPF: sender matches SPF record
+	* -0.0 SPF_HELO_PASS SPF: HELO matches SPF record
+	* -0.0 USER_IN_WELCOMELIST_TO User is listed in 'welcomelist_to'
+	*  0.0 FREEMAIL_FROM Sender email is commonly abused enduser mail
+	*      provider
+	*      [melissa.bommert[at]outlook.com]
+	*  0.0 INTL_PHONE BODY: Looks like international phone contact, poss
+	*      RU
+	*  0.0 HTML_MESSAGE BODY: HTML included in message
+	* -0.1 DKIM_VALID_EF Message has a valid DKIM or DK signature from
+	*      envelope-from domain
+	* -0.1 DKIM_VALID_AU Message has a valid DKIM or DK signature from
+	*      author's domain
+	* -0.1 DKIM_VALID Message has at least one valid DKIM or DK signature
+	*  0.1 CK_KARD_SIZE short, card virus size - avoid matches in long
+	*      text
+	*  0.0 CK_419SIZE typical 419 size - avoid matches in long text
+	*  0.1 DKIM_SIGNED Message has a DKIM or DK signature, not necessarily
+	*       valid
+	*  0.0 RCVD_IN_MSPIKE_H2 RBL: Average reputation (+2)
+	*      [52.103.51.74 listed in wl.mailspike.net]
+	* -0.1 AM_TRUNCATED Compensate on large message for misfiring rules
+	* -6.0 USER_IN_WHITELIST_TO DEPRECATED: See USER_IN_WELCOMELIST_TO
+X-Spam-Checker-Version: SpamAssassin 3.4.6 (2021-04-09) on towhee.riseup.net
+X-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=outlook.com;
+ s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=77/b6AOti7rNsf8mGHUblIHCWFG5wgk2iV10BTpk7B0=;
+ b=QCrd9LIeAXpM+Tww1oJ40rdfKygIc12rSwN9xa0CpyPznuD1r1lgOnZWAgBmG1WuwGAY51URtgNYlyxP/E3xiXDQrLXRVlyV0xwt6mf+1sSG/WiVk4Sq2R2v14X2OIvR8ORU/b2O74KqIOwpOtiXzfjBjmOWNv9k+rNt8OtPXgDn4ikCYh+xSFlXzvJv0RTGTZOfLRyvZJuWH3TukS4BoE5RoLXS0J2tmjgDjkNG/GvwuGPo7fWbLTCt4+uUSDiOXHS+6yl2Y6bNlhHokC+Vw1ghnd32fb6UcenCSGZI3ohLAiwzyodQeMSKur7g7EbkkdHbO23TPJ6vZcLbMugJXg==
+Reply-To: melissa.bommert@outlook.com
+X-Original-From: Melissa Bommert <melissa.bommert@outlook.com>
+Subject: [rezoprospec] Vente monocycle
+X-Loop: rezoprospec@lists.riseup.net
+X-Sequence: 22765
+Errors-to: rezoprospec-owner@lists.riseup.net
+Precedence: list
+Precedence: bulk
+Sender: rezoprospec-request@lists.riseup.net
+X-no-archive: yes
+List-Id: <rezoprospec.lists.riseup.net>
+List-Archive: <https://lists.riseup.net/www/arc/rezoprospec>
+List-Help: <mailto:sympa@lists.riseup.net?subject=help>
+List-Owner: <mailto:rezoprospec-request@lists.riseup.net>
+List-Post: <mailto:rezoprospec@lists.riseup.net>
+List-Subscribe: <mailto:sympa@lists.riseup.net?subject=subscribe%20rezoprospec>
+List-Unsubscribe: <mailto:sympa@lists.riseup.net?subject=unsubscribe%20rezoprospec>
+Content-type: multipart/mixed; boundary="----------=_1758827018-7564-139180"
+
+This is a multi-part message in MIME format...
+
+------------=_1758827018-7564-139180
+Content-Type: text/plain; charset="Windows-1252"
+Content-Transfer-Encoding: quoted-printable
+
+Salut le Rezo !
+Je m'appelle Melissa et je fais des arts perform=E9s et de la danse. Je vai=
+s d=E9m=E9nager =E0 l=92=E9tranger par train et pour =E7a je dois laisser q=
+uelques choses =E0 Marseille, y inclus mon monocycle. C'est un monocycle si=
+mple et standard, =E7a marche bien, c'est fun. Moi j'ai 1,74m et la selle e=
+st =E0 la hauteur maximale maintenant. Je le vente pour 20 Euro.
+Si =E7a t'int=E9resse =E9cris moi un message sur + 49 1578 92 87 400.
+
+Belle soir=E9e !
+Melissa
+
+
+
+
+
+
+
+
+
+------------=_1758827018-7564-139180
+Content-Type: text/plain; charset="UTF-8"
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+
+---
+Les membres de la communauté Rezo Pro Spec s'engagent à respecter la charte: http://rezoprospec.over-blog.com/la-charte
+
+Pour se désinscrire, merci d'envoyer un mail vide à rezoprospec-unsubscribe@lists.riseup.net
+To unsubscribe, send an empty mail to rezoprospec-unsubscribe@lists.riseup.net
+List help: https://riseup.net/lists
+
+------------=_1758827018-7564-139180--

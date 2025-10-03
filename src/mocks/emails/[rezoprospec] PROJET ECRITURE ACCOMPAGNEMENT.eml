@@ -1,0 +1,267 @@
+Delivered-To: arthur.boval@gmail.com
+Received: by 2002:a17:906:1350:b0:b40:93ba:cccc with SMTP id x16csp391854ejb;
+        Mon, 29 Sep 2025 10:01:41 -0700 (PDT)
+X-Forwarded-Encrypted: i=2; AJvYcCVAIh9vRI4xwit8fTsYCGFkfTMaKULt91rQp3jm/yUsx2wDeie1qTwP0bTYDfO9dqoagSc99tM++PNt/Uc=@gmail.com
+X-Google-Smtp-Source: AGHT+IG5UR6yFySG/u080Oye2JrzlDX+dTYq9/4yyXRnM7DdF88YBTDMxKHG1l3Ll9aXdNmp6QzI
+X-Received: by 2002:a05:6a20:e212:b0:2af:65aa:4eef with SMTP id adf61e73a8af0-2e7d37e3fa8mr20287583637.47.1759165300480;
+        Mon, 29 Sep 2025 10:01:40 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1759165300; cv=none;
+        d=google.com; s=arc-20240605;
+        b=dZZkqCRTzmmPjGyMHM6OhrEPQKW3sKHCUOUjk6rfYqHC+Z9WGbd+c+qzm96Jidy4XL
+         nLo1EnzG39Yl5jupVasyZZ8UC9xJsH3j0/yIIXSebdo56fpWdR/l1t+CGO0pgoEa7jNv
+         ra8mvN6NUIFPGjslhQLh0Rhw1UatkFMC8GHMICnDLcLzZgF5RdvClA9si0C205WfGros
+         Lkm4BkUfRlA54nR60dVEB6Tai/TAtSl4xYf1dKcuLAvBuIxHSqKPmIeyPpdtHzict8Yy
+         RFYpBq0YkkU7WW4MfmULYQguUEfmAsYfFgRMnnMTGbvGLEAUF+c3eKmbw2te8fyYZynI
+         SuZw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=list-unsubscribe:list-subscribe:list-post:list-owner:list-help
+         :list-archive:list-id:sender:precedence:precedence:errors-to:subject
+         :reply-to:to:message-id:date:from:mime-version:delivered-to
+         :dkim-signature;
+        bh=PTcI57LNNOGugaOJgfjj040Z5i6gPptsYkdopLFINGg=;
+        fh=UnwjiYJVCo1e7uB80l+b/RagOVoASBcEn1sgWRYKqx4=;
+        b=YKK2isgprHi2To59xZ/BhEhxKm6j/exZYNumkBRu7cJ9BOXPa2NEtvwfcIgJses+6y
+         HzTQMXrDv5WfTn14s71x0xD/KUrii6HVeOgPjXGR3OLx+dpESs/2EmYmEANMjRGjZ3KT
+         3IXzK1fpPvc7asgDKWT9T66nDToWlxkqCV0KC8+R/Yu0WMpjaz6zz4sOjyccrQHM/cTf
+         +sQm/cP6Ly/9HqWcw8bX2OJn00DoeZDpg45B/Od5+kWrHzM52TnJHaa8t7og5hW8yC0v
+         ZkVchU3NcF6IaL7421cLma5/Ohl8zU1HlhpXsIk+UOSKEZjRSy9aqsKn0klXMwYlBXVq
+         4aYA==;
+        dara=google.com
+ARC-Authentication-Results: i=1; mx.google.com;
+       dkim=pass header.i=@lists.riseup.net header.s=chirp header.b=ETsdZRWz;
+       spf=pass (google.com: domain of rezoprospec-owner@lists.riseup.net designates 198.252.153.88 as permitted sender) smtp.mailfrom=rezoprospec-owner@lists.riseup.net;
+       dmarc=pass (p=NONE sp=NONE dis=NONE) header.from=lists.riseup.net
+Return-Path: <rezoprospec-owner@lists.riseup.net>
+Received: from mx3.riseup.net (mx3.riseup.net. [198.252.153.88])
+        by mx.google.com with ESMTPS id d2e1a72fcca58-78102b6f8b9si6427720b3a.473.2025.09.29.10.01.39
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 29 Sep 2025 10:01:39 -0700 (PDT)
+Received-SPF: pass (google.com: domain of rezoprospec-owner@lists.riseup.net designates 198.252.153.88 as permitted sender) client-ip=198.252.153.88;
+Authentication-Results: mx.google.com;
+       dkim=pass header.i=@lists.riseup.net header.s=chirp header.b=ETsdZRWz;
+       spf=pass (google.com: domain of rezoprospec-owner@lists.riseup.net designates 198.252.153.88 as permitted sender) smtp.mailfrom=rezoprospec-owner@lists.riseup.net;
+       dmarc=pass (p=NONE sp=NONE dis=NONE) header.from=lists.riseup.net
+Received: from whimbrel.riseup.net (whimbrel-pn.riseup.net [10.0.1.39])
+	by mx3.riseup.net (Postfix) with ESMTP id 4cb6rn52BQz1y7t;
+	Mon, 29 Sep 2025 17:00:41 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=lists.riseup.net;
+	s=chirp; t=1759165247;
+	bh=PTcI57LNNOGugaOJgfjj040Z5i6gPptsYkdopLFINGg=;
+	h=From:Date:To:Reply-To:Subject:List-Id:List-Archive:List-Help:
+	 List-Owner:List-Post:List-Subscribe:List-Unsubscribe:From;
+	b=ETsdZRWzQE6w5ZYLhlzi6w6gMqSjPK3pzRRK75A4A6kwiNC2tFZZMLx6cUDSgkWSt
+	 SnxXkH2izxMWYVCNEv8r6oHlNZ3QzySg53D4rfpwYKkzuN6gRqmOFhClERzORsXhfr
+	 4YBd8FqYt8/jpnALeW7FImLSwbqG563uviIJXQZTnvyxu8EmlksujqJRIhK00N0hJ5
+	 w7jDl3SWho1ho3sr7gZmwxBvbGF4VthVvPDgoU59ZjJz3xZJ6GNA1hy7RemFfxnG0F
+	 9yXLhhYuqOHJbteVkITIC3CkeMbvD2dpYrtXFtFReY1n0c9S31w694ZYJpEe4mguCk
+	 7V6X2hv2rnhog==
+Received: by whimbrel.riseup.net (Postfix, from userid 1000)
+	id 4cb6rm2N7Sz7scb; Mon, 29 Sep 2025 17:00:40 +0000 (UTC)
+X-Original-To: rezoprospec@lists.riseup.net
+Delivered-To: rezoprospec@lists.riseup.net
+Received: from mail-wr1-f43.google.com (mail-wr1-f43.google.com [209.85.221.43])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by whimbrel.riseup.net (Postfix) with ESMTPS id 4cZwb02qvZz7sP7
+	for <rezoprospec@lists.riseup.net>; Mon, 29 Sep 2025 09:18:04 +0000 (UTC)
+Received: by mail-wr1-f43.google.com with SMTP id ffacd0b85a97d-3f2cf786abeso3157267f8f.3
+        for <rezoprospec@lists.riseup.net>; Mon, 29 Sep 2025 02:18:04 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1759137482; x=1759742282;
+        h=to:subject:message-id:date:from:mime-version:x-gm-message-state
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=UkT5h00UbH3rOKI4VuTELbcCy1a6uqq2ztasQyiwshM=;
+        b=nP8nJXUJCJadR1bq44g8WqgWWkZaZh1NNRjnjX+rMDMacLHIPpSvMDBWrgfZUqiLN8
+         nzYOsFcgd3ovjxQoj6TZQkTR7+8y+JtbJ8t678iF5G0yiezlE2rAb+pqJwDKQ9MZnZSE
+         uRfAd4g+W47Vg++GIRLiuAjZn8qWkQ71w6NyuqxWdc2seZdqyN7XpKd/RroLY81QNw0+
+         54NE/zNJA3JHe3080ONOFCQEkakSvtbJFAcH4Xu3cjRd4lEYvFRSYPTdBt9hjHRKtDyM
+         FhaBSSRpeav1kFPohuyFTmfTFzt1hUwKukJgJFZ4c6I+I5LXD1F8LCKiq1HmMsN1BgtK
+         d2dg==
+X-Gm-Message-State: AOJu0YxJhNJRnxS4w8i2TfVjzSwXwidItfvvLCUjmrcbaEAwVlrqe1lP
+	HspO7VsNA+KcrIrVxcR2alveSNgHgR+2ws87AwUKdW9+6iSGgJ2Ro8Ss2EvUx4emVWUqQxcyiK3
+	U6z/8ZtxKw8LrEb/PtZiYfMgwYthYp7yy2DS4
+X-Gm-Gg: ASbGnctQSc1eJ4MUFyTowWQDAtEPjvbczri+wX7yYqNvXmn16SvvJTk97427cTpdei/
+	7dW5paDmvEUUQvuQ0unp9blQ3cHR9sGWoIz2kAxTCJd6JAYzccWxl0mmfLutRbIv5jSzTM5UEUW
+	JcFijTZe2Uegd8PFCHJ5IQ3v5W2brelQ3tpu4mKx+sCBpPyk9qK0lTUYJgNgkE/hdZAbwevHaWD
+	Fu1X785lP4RvzFQPFd5A4U5nwAS4t6nFmmt32gJnsYAiC+TxDMN
+X-Received: by 2002:a05:6000:2c01:b0:3ec:75c0:9cf5 with SMTP id
+ ffacd0b85a97d-40e4ff19c78mr12853780f8f.47.1759137482187; Mon, 29 Sep 2025
+ 02:18:02 -0700 (PDT)
+MIME-Version: 1.0
+From: "Sandrine Guillamet" (via rezoprospec Mailing List) <rezoprospec@lists.riseup.net>
+Date: Mon, 29 Sep 2025 11:17:51 +0200
+X-Gm-Features: AS18NWAvrtQRUCzXCNNZamr6GWY_G6BaXgrvXS3UNsUUovw0ToZlH0i-cC3Tpq8
+Message-ID: <CAJRs_XC14RZbAWh2Chu_DE-akCTQfUscEOckh4PGJPJhXdVuLg@mail.gmail.com>
+To: rezoprospec@lists.riseup.net
+X-Spam-Status: No, score=-5.5 required=6.0 shortcircuit=no autolearn=disabled
+	version=3.4.6
+X-Spam-Report: 
+	* -0.0 RCVD_IN_DNSWL_NONE RBL: Sender listed at
+	*      https://www.dnswl.org/, no trust
+	*      [209.85.221.43 listed in dnswl.dnsbl]
+	*  0.0 SPF_HELO_NONE SPF: HELO does not publish an SPF Record
+	*  0.2 FREEMAIL_ENVFROM_END_DIGIT Envelope-from freemail username ends
+	*       in digit
+	*      [sandrineguillamet9[at]gmail.com]
+	* -0.0 SPF_PASS SPF: sender matches SPF record
+	* -0.0 USER_IN_WELCOMELIST_TO User is listed in 'welcomelist_to'
+	*  0.5 SUBJ_ALL_CAPS Subject is all capitals
+	*  0.0 FREEMAIL_FROM Sender email is commonly abused enduser mail
+	*      provider
+	*      [sandrineguillamet9[at]gmail.com]
+	*  0.0 RCVD_IN_VALIDITY_RPBL_BLOCKED RBL: ADMINISTRATOR NOTICE: The
+	*      query to Validity was blocked.  See
+	*      https://knowledge.validity.com/hc/en-us/articles/20961730681243
+	*       for more information.
+	*      [209.85.221.43 listed in bl.score.senderscore.com]
+	*  0.0 RCVD_IN_VALIDITY_CERTIFIED_BLOCKED RBL: ADMINISTRATOR NOTICE:
+	*      The query to Validity was blocked.  See
+	*      https://knowledge.validity.com/hc/en-us/articles/20961730681243
+	*       for more information.
+	*      [209.85.221.43 listed in sa-accredit.habeas.com]
+	* -0.0 RCVD_IN_MSPIKE_H2 RBL: Average reputation (+2)
+	*      [209.85.221.43 listed in wl.mailspike.net]
+	*  0.0 HTML_MESSAGE BODY: HTML included in message
+	* -0.1 DKIM_VALID_EF Message has a valid DKIM or DK signature from
+	*      envelope-from domain
+	*  0.0 CK_419SIZE typical 419 size - avoid matches in long text
+	* -0.1 DKIM_VALID_AU Message has a valid DKIM or DK signature from
+	*      author's domain
+	* -0.1 DKIM_VALID Message has at least one valid DKIM or DK signature
+	*  0.1 DKIM_SIGNED Message has a DKIM or DK signature, not necessarily
+	*       valid
+	* -6.0 USER_IN_WHITELIST_TO DEPRECATED: See USER_IN_WELCOMELIST_TO
+	* -0.1 AM_TRUNCATED Compensate on large message for misfiring rules
+	*  0.1 TO_NOREAL no real name(s), maybe not list
+X-Spam-Checker-Version: SpamAssassin 3.4.6 (2021-04-09) on budger.riseup.net
+X-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1759137482; x=1759742282; darn=lists.riseup.net;
+        h=to:subject:message-id:date:from:mime-version:from:to:cc:subject
+         :date:message-id:reply-to;
+        bh=UkT5h00UbH3rOKI4VuTELbcCy1a6uqq2ztasQyiwshM=;
+        b=iAdXvIYRh2E/FuREugqa2Oyx4zT6JcOT2RzuI9lQOSYaYNDA9Cc+ablTwJ+N0Xw8Q9
+         YQyqkrXf52mnJ8jzjXFg+vMB2V8PKtbH4elVMmyMLCFxjMLRYz304t2y4ImLN0VHoOD6
+         SRXQq/eY2IaRCs2yiJe3/utm1jeHRdw8/83sE9CSwmhI4rJLbwNfCmTP9FRCux8xfE6M
+         F3ye2Adn+wVVLGeLs3KzudJXNm68K6FwKAfBFW4o10eMtDRGkKaNV2J9aDxwD0RCVwM+
+         aeMjkDzqpVUYF++wZ+vU+3RDspFmsnS3TIVvQzEDWMfOY9xT50AjaLOKL3CMANQDnVs2
+         jZNg==
+Reply-To: sandrineguillamet9@gmail.com
+X-Original-From: Sandrine Guillamet <sandrineguillamet9@gmail.com>
+Subject: [rezoprospec] PROJET ECRITURE ACCOMPAGNEMENT
+X-Loop: rezoprospec@lists.riseup.net
+X-Sequence: 22814
+Errors-to: rezoprospec-owner@lists.riseup.net
+Precedence: list
+Precedence: bulk
+Sender: rezoprospec-request@lists.riseup.net
+X-no-archive: yes
+List-Id: <rezoprospec.lists.riseup.net>
+List-Archive: <https://lists.riseup.net/www/arc/rezoprospec>
+List-Help: <mailto:sympa@lists.riseup.net?subject=help>
+List-Owner: <mailto:rezoprospec-request@lists.riseup.net>
+List-Post: <mailto:rezoprospec@lists.riseup.net>
+List-Subscribe: <mailto:sympa@lists.riseup.net?subject=subscribe%20rezoprospec>
+List-Unsubscribe: <mailto:sympa@lists.riseup.net?subject=unsubscribe%20rezoprospec>
+Content-type: multipart/mixed; boundary="----------=_1759165234-7564-145171"
+
+This is a multi-part message in MIME format...
+
+------------=_1759165234-7564-145171
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+Bonjour le Rezo,
+
+
+Ecrire, c'est donner de la voix =C3=A0 ce qui est voil=C3=A9, cach=C3=A9, i=
+nterne,
+sensible, vivant =C3=A0 l'int=C3=A9rieur et le donner =C3=A0 voir =C3=A0 l'=
+ext=C3=A9rieur,
+l'affirmer, le porter, l'assumer.
+
+Vous avez avanc=C3=A9 ou termin=C3=A9 un projet d'=C3=A9criture et souhaite=
+z avoir un
+regard d'expertise sur votre travail? Vous avez l'id=C3=A9e d'un projet et
+souhaitez =C3=AAtre accompagn=C3=A9 pour plonger pleinement ?
+
+Lib=C3=A9rez votre plume et donnez vie =C3=A0 votre projet d'=C3=A9criture =
+avec un
+accompagnement personnalis=C3=A9 et sur-mesure pour vous lancer ou vous
+remotiver, identifier des difficult=C3=A9s ou blocages et les d=C3=A9passer,
+structurer, organiser, avancer pas =C3=A0 pas, lib=C3=A9rer et affirmer vot=
+re style
+d'=C3=A9criture, gagner en confiance et en clart=C3=A9, vous assurer de la =
+coh=C3=A9rence
+de votre travail, avoir des retours constructifs sur la forme, approfondir
+votre processus de cr=C3=A9ation...
+
+Je vous propose deux formules selon l'=C3=A9tat d'avancement de votre projet
+d'=C3=A9criture, soit un regard d'expertise pour les projets avanc=C3=A9s o=
+u finis,
+soit un accompagnement pour d=C3=A9marrer.
+
+Pour toute personne ayant le d=C3=A9sir d'accoucher de son projet d'=C3=A9c=
+riture,
+quel qu'il soit (livre jeunesse, recueil de po=C3=A9sie, essai, t=C3=A9moig=
+nage,
+roman....).
+
+N'h=C3=A9sitez pas =C3=A0 me contacter par mail ou t=C3=A9l=C3=A9phone pour=
+ toute demande
+compl=C3=A9mentaire.
+
+
+T=C3=A9moignages
+ Patrick Lobry : "Merci Sandrine ! Elle m'a permis de trouver ma mission et
+les mots pour le dire."
+Alix Margnat : "Avec Sandrine vous serez accompagn=C3=A9s bien plus loin que
+vous ne le pensez."
+
+
+*=C3=89galement atelier d'=C3=A9criture exp=C3=A9rientiel mensuel
+Prochaine s=C3=A9ance Jeudi 23/10 18h 19h30
+chez Si par Azar 18 rue Pastoret 13006
+Places limit=C3=A9es =C3=A0 6 participants (4 places restantes)
+25 euros
+Inscription par sms 0610197595
+
+
+* Pour =C3=A9couter l'interview =C3=A0 Radio Gal=C3=A8re sur mes ateliers d=
+'=C3=A9criture
+https://www.vodio.fr/vodiotheque/c/830/scribens/
+
+
+Sandrine Guillamet, art-th=C3=A9rapeute certifi=C3=A9e (IRFAT 2015), dipl=
+=C3=B4m=C3=A9e d'une
+ma=C3=AEtrise de Lettres Modernes et Capes (La Sorbonne 2000), form=C3=A9e =
+=C3=A9galement
+=C3=A0 la voix au Centre Artistique International Roy Hart, propose des
+accompagnements individuels et collectifs voix et =C3=A9criture. Des espaces
+d'expression et de lib=C3=A9ration de votre voix/e authentique.
+Elle poursuit =C3=A9galement ses recherches artistiques autour de la po=C3=
+=A9sie
+sonore, la performance et est sur le point d'=C3=AAtre publi=C3=A9e aux =C3=
+=A9ditions Les
+Bonnes Feuilles avec son premier recueil de po=C3=A9sie *Je supravis.*
+
+
+Au plaisir,
+Sandrine Guillamet
+0610197595
+www.sandrineguillamet.com
+insta @sila_grine
+
+------------=_1759165234-7564-145171
+Content-Type: text/plain; charset="UTF-8"
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+
+---
+Les membres de la communauté Rezo Pro Spec s'engagent à respecter la charte: http://rezoprospec.over-blog.com/la-charte
+
+Pour se désinscrire, merci d'envoyer un mail vide à rezoprospec-unsubscribe@lists.riseup.net
+To unsubscribe, send an empty mail to rezoprospec-unsubscribe@lists.riseup.net
+List help: https://riseup.net/lists
+
+------------=_1759165234-7564-145171--

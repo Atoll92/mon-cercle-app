@@ -1,0 +1,212 @@
+Delivered-To: arthur.boval@gmail.com
+Received: by 2002:a17:906:1350:b0:b40:93ba:cccc with SMTP id x16csp1087263ejb;
+        Tue, 30 Sep 2025 10:14:51 -0700 (PDT)
+X-Forwarded-Encrypted: i=2; AJvYcCVlM60gaBn1pS6G2I8lpueJMW8ghPeE3O2Hb5NaiDqVIiIW9TSKi+LVt/pupJdAqtrqIA474WMig/ZEQf4=@gmail.com
+X-Google-Smtp-Source: AGHT+IHIlkB/5wi7Y0NYkbHhMnSAWq+sItyfFzKT+RxrvGxTz0aQ52lyLBWIfZHHhsfgQI0ClW3e
+X-Received: by 2002:a17:902:db11:b0:248:7018:c739 with SMTP id d9443c01a7336-28e7f2f7581mr6165785ad.28.1759252490576;
+        Tue, 30 Sep 2025 10:14:50 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1759252490; cv=none;
+        d=google.com; s=arc-20240605;
+        b=MIzQZpDrgpmJhtV091ZSrcff2IA0LwYWmKxZJWhMq60kEuhXpDe9z9llAGLQlODaFD
+         C50GEQ+dsn2UC8Cf9eLbsOL8r+EGEGnwsWNPJsmaOeQ8UoJ0Jp7R1BbVO/JJB8WyFpUT
+         StwJobkr1e1QSyFBLJ2ADuqSPNYEbhkoVMoSzjVUjWSUOhugkeFQeFkaZTbFwAOJXGgp
+         YsA9bOxOugCRZXkaZonrj4uk3XER5JIBrU4jdABSyZOYdGNuB2Hpzh1HBK1188oVYulH
+         hdkgkgxtZhBF34On1ENTdHbbgGdza2N8ff649xAZYaTyLlXu+buf8mWenjWhOeBcoUnZ
+         QrUA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=list-unsubscribe:list-subscribe:list-post:list-owner:list-help
+         :list-archive:list-id:sender:precedence:precedence:errors-to:subject
+         :reply-to:to:date:message-id:mime-version:from:delivered-to
+         :dkim-signature;
+        bh=dd3OjZ1m98G0E64T3FEqG9+WeSCMK4eHt/RVuQsyf4c=;
+        fh=UnwjiYJVCo1e7uB80l+b/RagOVoASBcEn1sgWRYKqx4=;
+        b=kFFLKfiNDyP9cp1S3554sSGyVXg/kb6mso5P3pbsfQldqdMOmiPW11fb+ryR3xCW+F
+         B87BVgyfGk9hpZa1AuROyQ512D431OGeBvVXflt8OE5AQCT6un7QDiDh5PgQim9cU/1v
+         mi8xECFgQciL8PpGIWpdyEEds1ayg/nez6eitiRz8SdW+F7OX3CP+0hUztRhHRvdf2wC
+         I0upcRxnuk1mYK1EUBE9SbtGHSJdsQ3IEeentxQC8xG0Axez/l5yfmqw7lkNLc6HYaCf
+         C5Kn+5dqjwQGKal5Z/kk8/dB1H31Nf6rG/K0dZz2uudJWAk1Zy5PFTzo2WLNsgnRA9EL
+         kuWg==;
+        dara=google.com
+ARC-Authentication-Results: i=1; mx.google.com;
+       dkim=pass header.i=@lists.riseup.net header.s=chirp header.b=Ife8e292;
+       spf=pass (google.com: domain of rezoprospec-owner@lists.riseup.net designates 198.252.153.88 as permitted sender) smtp.mailfrom=rezoprospec-owner@lists.riseup.net;
+       dmarc=pass (p=NONE sp=NONE dis=NONE) header.from=lists.riseup.net
+Return-Path: <rezoprospec-owner@lists.riseup.net>
+Received: from mx3.riseup.net (mx3.riseup.net. [198.252.153.88])
+        by mx.google.com with ESMTPS id d9443c01a7336-27ed6abeb7asi91243215ad.475.2025.09.30.10.14.50
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 30 Sep 2025 10:14:50 -0700 (PDT)
+Received-SPF: pass (google.com: domain of rezoprospec-owner@lists.riseup.net designates 198.252.153.88 as permitted sender) client-ip=198.252.153.88;
+Authentication-Results: mx.google.com;
+       dkim=pass header.i=@lists.riseup.net header.s=chirp header.b=Ife8e292;
+       spf=pass (google.com: domain of rezoprospec-owner@lists.riseup.net designates 198.252.153.88 as permitted sender) smtp.mailfrom=rezoprospec-owner@lists.riseup.net;
+       dmarc=pass (p=NONE sp=NONE dis=NONE) header.from=lists.riseup.net
+Received: from whimbrel.riseup.net (whimbrel-pn.riseup.net [10.0.1.39])
+	by mx3.riseup.net (Postfix) with ESMTP id 4cbkxZ41mCz21C2;
+	Tue, 30 Sep 2025 17:06:57 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=lists.riseup.net;
+	s=chirp; t=1759252021;
+	bh=dd3OjZ1m98G0E64T3FEqG9+WeSCMK4eHt/RVuQsyf4c=;
+	h=From:Date:To:Reply-To:Subject:List-Id:List-Archive:List-Help:
+	 List-Owner:List-Post:List-Subscribe:List-Unsubscribe:From;
+	b=Ife8e2929Ocshhwkvtm9fTNS+liZkDsNrqJzjei9i5Cfgc5yGMAfxHv3elV6GfElh
+	 b8q4w0JsukMYoxLoyL3jEMEwYux9GtzAhY22mgkwPjge9OV4wXYEjADMCQb6/d9mVE
+	 pEz+/jCjtMXU+tJi+pSSRD3RDNJIHXEtw0moefJ4jQjIxkQCafsGKTXE8yfyiIrMnf
+	 uvmnCoKBHZ7EJw1af/zd9kZOHy5Nv+xW/RixYJ/s3jkQ3X0r8nARii7mErarndZwoc
+	 ZNVvXek36DScKyPmNm4IJmRe1ABVFaACAUkZJ6fq/Ap7S9LY5YD6roiQYmiPGmSmFf
+	 5nhvfIYvFEgJA==
+Received: by whimbrel.riseup.net (Postfix, from userid 1000)
+	id 4cbkxY3VNLz7sjZ; Tue, 30 Sep 2025 17:06:57 +0000 (UTC)
+X-Original-To: rezoprospec@lists.riseup.net
+Delivered-To: rezoprospec@lists.riseup.net
+Received: from mail-wm1-f45.google.com (mail-wm1-f45.google.com [209.85.128.45])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by whimbrel.riseup.net (Postfix) with ESMTPS id 4cbZkJ2BN2z7sfJ
+	for <rezoprospec@lists.riseup.net>; Tue, 30 Sep 2025 10:56:29 +0000 (UTC)
+Received: by mail-wm1-f45.google.com with SMTP id 5b1f17b1804b1-45b4d89217aso37319655e9.2
+        for <rezoprospec@lists.riseup.net>; Tue, 30 Sep 2025 03:56:29 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1759229787; x=1759834587;
+        h=to:date:message-id:subject:mime-version:content-transfer-encoding
+         :from:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=evf95QhHup+C2BZDfBj8YY5+kllAE2rbwPs5pdoSPKU=;
+        b=FT7eBY8LgCOHz4jD/mTXQRu7ekGLImobaO3Ehli2NBWfgzGFelqo2Gf/arIzoG5nww
+         87+sZVQ0wxGe6hZ+1mal8ANrI4zY7j0T1QOIuhl1PRIHG8g7/mnZe59LicQDb8S6I+ph
+         fTd4Hh6zsdlGZPqHKH2V/Qxvv+Szie+mMNr3X/HMxQPTFIVC47fh10COiL6FP7uixUKj
+         ucCkF/fPEEDWCCIHSPk3TnOB50Fear/36xcyiT+l5KFjJAjQuHjJg0XOh1FsU4WLVSFz
+         Td22egsr8ivd2MZR8mihQqlQcOD5Z1MQQXFfYmB7EatCEoUkD9YrM57RHdpg2TwQZrJt
+         FL4w==
+X-Gm-Message-State: AOJu0YxrnQVilS65/ZJSHnKo5TyY+zka/mb2cltSSD3hB0wInAbCJ5kj
+	MiBT5fQP5KYMOgQNyCxRuKVQkUTQ+lNcKcEPJUwms1vfOxK6lM+y6d0YWHxCUw==
+X-Gm-Gg: ASbGncu59pq/aepu+FoRanYbCG8Px0TRMlbi6asnp+DzwbzUO0NSngjBlJLBahhYuJw
+	rZFj91Sb6ygyqSWbQxT5T7t5aOlbeaWngM3NhoWrHxZIoHgNe4g4S8IqSqBOSDEsX08mIFKNy8v
+	eFNB+BCRZctemKQeXfny6wJTfgyo0GFzNnQrlFW47vU1MdtzLmyrb2UkpOXfpUh9dqtkPqLrLcs
+	3sm1CPk3LuzyzP1whKwB+vTikt8rLd1poaV3WXV/D/Rs5KvyxzBnkEQWuLLF3ikOZkt4wuGLZKe
+	rkOeKRqoPhR0Oaz+Yg+vOdeTY2F7vhG1iMUBmrK2cInLpA63orjtPRAOSGtMSP5hLVcllBSdxHD
+	bCYyBD0n86hvrYxnpkBYHtJuEblPnmrajmpKSOpkW16aZRe0ZZLbjOVMYY5n7t21Jm9FX9fKRcw
+	hDfqIW26APAriJTRZKqjtjWBGEKW0tjPqZzHPTpqj4jcP7gpN0iLHP
+X-Received: by 2002:a05:600c:6048:b0:46c:a569:71a0 with SMTP id 5b1f17b1804b1-46e329fbcfcmr151892335e9.26.1759229787478;
+        Tue, 30 Sep 2025 03:56:27 -0700 (PDT)
+Received: from ?IPv6:2001:861:3743:e630:a1de:717:20b3:29ae? ([2001:861:3743:e630:a1de:717:20b3:29ae])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-46e56f3dab0sm50995235e9.1.2025.09.30.03.56.26
+        for <rezoprospec@lists.riseup.net>
+        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
+        Tue, 30 Sep 2025 03:56:27 -0700 (PDT)
+From: "Adrienne Winling" (via rezoprospec Mailing List) <rezoprospec@lists.riseup.net>
+Mime-Version: 1.0 (Mac OS X Mail 13.4 \(3608.120.23.2.4\))
+Message-Id: <79982558-E24C-44F5-A197-640ACBD7B1D2@gmail.com>
+Date: Tue, 30 Sep 2025 12:56:26 +0200
+To: rezoprospec@lists.riseup.net
+X-Mailer: Apple Mail (2.3608.120.23.2.4)
+X-Spam-Status: No, score=-6.1 required=6.0 shortcircuit=no autolearn=disabled
+	version=3.4.6
+X-Spam-Report: 
+	* -0.0 RCVD_IN_DNSWL_NONE RBL: Sender listed at
+	*      https://www.dnswl.org/, no trust
+	*      [209.85.128.45 listed in dnswl.dnsbl]
+	*  0.0 RCVD_IN_VALIDITY_RPBL_BLOCKED RBL: ADMINISTRATOR NOTICE: The
+	*      query to Validity was blocked.  See
+	*      https://knowledge.validity.com/hc/en-us/articles/20961730681243
+	*       for more information.
+	*      [209.85.128.45 listed in bl.score.senderscore.com]
+	*  0.0 RCVD_IN_VALIDITY_SAFE_BLOCKED RBL: ADMINISTRATOR NOTICE: The
+	*      query to Validity was blocked.  See
+	*      https://knowledge.validity.com/hc/en-us/articles/20961730681243
+	*       for more information.
+	*      [209.85.128.45 listed in sa-trusted.bondedsender.org]
+	*  0.0 FREEMAIL_FROM Sender email is commonly abused enduser mail
+	*      provider
+	*      [adrienne.winling[at]gmail.com]
+	*  0.0 SPF_HELO_NONE SPF: HELO does not publish an SPF Record
+	* -0.0 USER_IN_WELCOMELIST_TO User is listed in 'welcomelist_to'
+	* -0.0 SPF_PASS SPF: sender matches SPF record
+	* -0.1 DKIM_VALID_EF Message has a valid DKIM or DK signature from
+	*      envelope-from domain
+	*  0.0 CK_419SIZE typical 419 size - avoid matches in long text
+	*  0.1 DKIM_SIGNED Message has a DKIM or DK signature, not necessarily
+	*       valid
+	* -0.1 DKIM_VALID_AU Message has a valid DKIM or DK signature from
+	*      author's domain
+	* -0.1 DKIM_VALID Message has at least one valid DKIM or DK signature
+	*  0.1 CK_KARD_SIZE short, card virus size - avoid matches in long
+	*      text
+	*  0.0 RCVD_IN_MSPIKE_H2 RBL: Average reputation (+2)
+	*      [209.85.128.45 listed in wl.mailspike.net]
+	* -0.1 AM_TRUNCATED Compensate on large message for misfiring rules
+	*  0.1 TO_NOREAL no real name(s), maybe not list
+	* -6.0 USER_IN_WHITELIST_TO DEPRECATED: See USER_IN_WELCOMELIST_TO
+X-Spam-Checker-Version: SpamAssassin 3.4.6 (2021-04-09) on spoonbill.riseup.net
+X-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1759229787; x=1759834587; darn=lists.riseup.net;
+        h=to:date:message-id:subject:mime-version:content-transfer-encoding
+         :from:from:to:cc:subject:date:message-id:reply-to;
+        bh=evf95QhHup+C2BZDfBj8YY5+kllAE2rbwPs5pdoSPKU=;
+        b=J39o6ZF9uDHW5EOCtRVh1hwdWleXT4p6sVGCgJzQrJ7t41vn4ZLi2OYWpq1vP/sg66
+         C7y+VwKwhB3n2VEJPwK162wx0/bPNuet9oaRDy5gDumcJJsApx2IR2ByR5onTMpDpokb
+         9Wylh93N6RT9BhnO7rsWiIbJ+V6fnKk7LLSSQV6Y9HRlTQcuTktu0smu6EDfZmI8OZw3
+         H67yo0pMEcTtjsKt7KlanurIhMeezgAQsk2bHJwM8oaRXJ7OaZw5XruQhEZf1BGdV6U8
+         MEhb+FzVxpHYiwFlmmzwXoxbbXik09A3M3Q1oEUAUJu5MRZPcPfLyU7wgN1FGO8XrwnM
+         PEIw==
+Reply-To: adrienne.winling@gmail.com
+X-Original-From: Adrienne Winling <adrienne.winling@gmail.com>
+Subject: [rezoprospec] URGENT propose sous-loc T2 Camas du 13 octobre au 2
+ novembre
+X-Loop: rezoprospec@lists.riseup.net
+X-Sequence: 22850
+Errors-to: rezoprospec-owner@lists.riseup.net
+Precedence: list
+Precedence: bulk
+Sender: rezoprospec-request@lists.riseup.net
+X-no-archive: yes
+List-Id: <rezoprospec.lists.riseup.net>
+List-Archive: <https://lists.riseup.net/www/arc/rezoprospec>
+List-Help: <mailto:sympa@lists.riseup.net?subject=help>
+List-Owner: <mailto:rezoprospec-request@lists.riseup.net>
+List-Post: <mailto:rezoprospec@lists.riseup.net>
+List-Subscribe: <mailto:sympa@lists.riseup.net?subject=subscribe%20rezoprospec>
+List-Unsubscribe: <mailto:sympa@lists.riseup.net?subject=unsubscribe%20rezoprospec>
+Content-type: multipart/mixed; boundary="----------=_1759251944-7564-147490"
+
+This is a multi-part message in MIME format...
+
+------------=_1759251944-7564-147490
+Content-Type: text/plain;
+	charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+
+Salut le Rezo!=20
+
+Suite =C3=A0 un d=C3=A9sistement, je reporte le message ci-dessous:
+
+Je suis com=C3=A9dienne et je pars en tourn=C3=A9e du 12 octobre au 2 novem=
+bre inclus.=20
+Je propose mon appartement en sous-location: c=E2=80=99est un T2 de 40m2 tr=
+=C3=A8s calme, super lumineux (dernier =C3=A9tage orientation sud et sud-es=
+t), il y a une cuisine/salon qui donne sur une petite terrasse, plein de pl=
+antes =C3=A0 dorloter, une chambre s=C3=A9par=C3=A9e, une salle de bains av=
+ec baignoire, des toilettes s=C3=A9par=C3=A9es avec machine =C3=A0 laver. I=
+l est situ=C3=A9 dans le quartier du Camas.
+Je le sous-loue =C3=A0 550=E2=82=AC tout compris pour la p=C3=A9riode.
+
+N=E2=80=99h=C3=A9sitez pas =C3=A0 me demander des photos et des infos!
+
+Bonne journ=C3=A9e!
+
+Adrienne
+0670886105=
+
+------------=_1759251944-7564-147490
+Content-Type: text/plain; charset="UTF-8"
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+
+---
+Les membres de la communauté Rezo Pro Spec s'engagent à respecter la charte: http://rezoprospec.over-blog.com/la-charte
+
+Pour se désinscrire, merci d'envoyer un mail vide à rezoprospec-unsubscribe@lists.riseup.net
+To unsubscribe, send an empty mail to rezoprospec-unsubscribe@lists.riseup.net
+List help: https://riseup.net/lists
+
+------------=_1759251944-7564-147490--

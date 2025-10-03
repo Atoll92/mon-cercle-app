@@ -22,6 +22,7 @@ import { lazyWithRetry } from './utils/lazyWithRetry';
 // Eagerly loaded pages (small, frequently accessed)
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
+import RezoProSpecSignupPage from './pages/RezoProSpecSignupPage';
 import NotFoundPage from './pages/NotFoundPage';
 import EventPage from './pages/EventPage';
 
@@ -178,6 +179,7 @@ function App() {
             <Route path="/simple-conclav" element={<SimpleConclavLanding/>}/>
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignupPage />} />
+            <Route path="/signup/rezoprospec" element={<RezoProSpecSignupPage />} />
             <Route path="/password-reset" element={<PasswordResetPage />} />
             <Route path="/update-password" element={<PasswordUpdatePage />} />
             <Route path="/pricing" element={<PricingPage />} />

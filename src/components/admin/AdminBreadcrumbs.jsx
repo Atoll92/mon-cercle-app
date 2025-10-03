@@ -17,7 +17,8 @@ import {
   Article as ArticleIcon,
   Event as EventIcon,
   Palette as PaletteIcon,
-  Dashboard as DashboardIcon
+  Dashboard as DashboardIcon,
+  Campaign as CampaignIcon
 } from '@mui/icons-material';
 
 const AdminBreadcrumbs = ({ activeTab, networkName, darkMode }) => {
@@ -36,6 +37,8 @@ const AdminBreadcrumbs = ({ activeTab, networkName, darkMode }) => {
         return <EventIcon fontSize="small" sx={{ mr: 0.5 }} />;
       case 4:
         return <PaletteIcon fontSize="small" sx={{ mr: 0.5 }} />;
+      case 10:
+        return <CampaignIcon fontSize="small" sx={{ mr: 0.5 }} />;
       default:
         return <AdminIcon fontSize="small" sx={{ mr: 0.5 }} />;
     }
@@ -54,6 +57,8 @@ const AdminBreadcrumbs = ({ activeTab, networkName, darkMode }) => {
         return "Events Management";
       case 4:
         return "Theme & Branding";
+      case 10:
+        return "Modération Annonces";
       default:
         return "Admin Panel";
     }

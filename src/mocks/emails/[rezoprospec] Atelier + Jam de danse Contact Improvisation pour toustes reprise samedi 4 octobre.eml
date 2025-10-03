@@ -1,0 +1,277 @@
+Delivered-To: arthur.boval@gmail.com
+Received: by 2002:a17:906:1350:b0:b40:93ba:cccc with SMTP id x16csp395879ejb;
+        Mon, 29 Sep 2025 10:06:04 -0700 (PDT)
+X-Forwarded-Encrypted: i=2; AJvYcCXy9I90HzZyI7jhWm1qhxkXePqnVwGwWKSmZE/0tY2vnklAYxv/t2m/lJyqDF5+j8+g7g7QvbUKNnP6P6c=@gmail.com
+X-Google-Smtp-Source: AGHT+IHExiAna1JpFgcd79Tzozt56e6zInp1EHLtiXy2C4Vt4aC3j21eFpohGOvEVxt2dqpklmMP
+X-Received: by 2002:a17:90b:350c:b0:330:6c04:a72b with SMTP id 98e67ed59e1d1-3342a2498f2mr18456038a91.3.1759165564070;
+        Mon, 29 Sep 2025 10:06:04 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1759165564; cv=none;
+        d=google.com; s=arc-20240605;
+        b=k7gJQw4k92y8W3gnQxpIK96eqb2imqrIZrLi9hsWhNxJCilGvm9qLLXTGXGS433jvy
+         eENKv8e13Hs66j7IkUb3P+pf2XCSTAID9/e8XIo5HL0o2rnwWOGmK5+ONkoQ1BojN2hF
+         6uU5F9MVO0UlJ0iaT3GZ8mOimzSI5Pii5vDG1xj5NLteTR3Ex4vvHnOtjTk9ryrx62mI
+         fZr0cfRsjmiQAaAKqXa9FuyK9z77DipWWZjOqtfPKissFF2ABEEQuae6gnIMHI2ZcXZ2
+         mKn+c59BnbiyBUfNOQ6bKBLVlRPgi8t3mHT3XNZ/5IdBLjf3d/lIz/AGVTv5JX8iwgPo
+         eaMg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=list-unsubscribe:list-subscribe:list-post:list-owner:list-help
+         :list-archive:list-id:sender:precedence:precedence:errors-to:subject
+         :reply-to:message-id:mime-version:date:to:from:delivered-to
+         :dkim-signature;
+        bh=kTGcBMyWE0Iw8FwlTlL+NKqpPAV1gqOaObzBqVMad9I=;
+        fh=UnwjiYJVCo1e7uB80l+b/RagOVoASBcEn1sgWRYKqx4=;
+        b=eMLIYmeQXROKNtZosKjLTL68gkBKctus915+AvDJuYR7lZQm9r9Ct4NY/Nsin3kD32
+         NCpCa6yL1RHYvRDDknJk2R1+S6az/GfUf+r3+Z/rc7OZgLsnfMaFw/O9/+sY4cI1dIaW
+         /6L8ETuDJbAZ+xhWA4JB/7lyJcHS9hL/iyIdeG1/Z/mj4u4JauJ6/IMBd+S4JC7KNiLT
+         jK/e+8R6deaQKvbsDxCdhyEOu6wiU6fn/5xMEgPa/sOv06X+nvmj7oEr1r+XEmDv1N0u
+         AnNxZIKrhW66Widm7BjZLdkRaGHwIgBVOdDZFN65N9/8IQp9+IemiFWVfYGJfl/Uz4tI
+         vEdg==;
+        dara=google.com
+ARC-Authentication-Results: i=1; mx.google.com;
+       dkim=pass header.i=@lists.riseup.net header.s=chirp header.b=Jih2wIxo;
+       spf=pass (google.com: domain of rezoprospec-owner@lists.riseup.net designates 198.252.153.88 as permitted sender) smtp.mailfrom=rezoprospec-owner@lists.riseup.net;
+       dmarc=pass (p=NONE sp=NONE dis=NONE) header.from=lists.riseup.net
+Return-Path: <rezoprospec-owner@lists.riseup.net>
+Received: from mx3.riseup.net (mx3.riseup.net. [198.252.153.88])
+        by mx.google.com with ESMTPS id 41be03b00d2f7-b57c55f77desi6546170a12.623.2025.09.29.10.06.03
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 29 Sep 2025 10:06:04 -0700 (PDT)
+Received-SPF: pass (google.com: domain of rezoprospec-owner@lists.riseup.net designates 198.252.153.88 as permitted sender) client-ip=198.252.153.88;
+Authentication-Results: mx.google.com;
+       dkim=pass header.i=@lists.riseup.net header.s=chirp header.b=Jih2wIxo;
+       spf=pass (google.com: domain of rezoprospec-owner@lists.riseup.net designates 198.252.153.88 as permitted sender) smtp.mailfrom=rezoprospec-owner@lists.riseup.net;
+       dmarc=pass (p=NONE sp=NONE dis=NONE) header.from=lists.riseup.net
+Received: from whimbrel.riseup.net (whimbrel-pn.riseup.net [10.0.1.39])
+	by mx3.riseup.net (Postfix) with ESMTP id 4cb6vT1zrdz21S3;
+	Mon, 29 Sep 2025 17:03:00 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=lists.riseup.net;
+	s=chirp; t=1759165392;
+	bh=kTGcBMyWE0Iw8FwlTlL+NKqpPAV1gqOaObzBqVMad9I=;
+	h=From:To:Date:Reply-To:Subject:List-Id:List-Archive:List-Help:
+	 List-Owner:List-Post:List-Subscribe:List-Unsubscribe:From;
+	b=Jih2wIxojIstR9peP7/ZVOql2qZbLPGE7lBxrgYtSepgkZJYdvMx7BfsutXVTDZPf
+	 mjsHhY0za7AN+U9OYWb4VamzUxwVG/kIgqxHaC75X/OfxumIVufDFku0/PU5DLu47G
+	 s8cbUmLtS44Z/9BCM46OHbIc7gdVGGD8QTkp2hov0UgcoRaFhryfSWlp97HACziicz
+	 RpaXljLlNdy4H/srBqOSRZuoyb85Nni1qiCwfv7+juX++ZkIlZSapVM7Gx3fbGw2ZV
+	 YFVaYwTsAS4Qv0ykcZ/dXfEcC4xziBSMihIm8gmu9XJztXR6vmKSGqOHaP3qAlVKhG
+	 gAC/n6mE4F5LQ==
+Received: by whimbrel.riseup.net (Postfix, from userid 1000)
+	id 4cb6vS0kkqz7scs; Mon, 29 Sep 2025 17:03:00 +0000 (UTC)
+X-Original-To: rezoprospec@lists.riseup.net
+Delivered-To: rezoprospec@lists.riseup.net
+Received: from mailo.com (msg-3.mailo.com [213.182.54.8])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by whimbrel.riseup.net (Postfix) with ESMTPS id 4cZssW5py8z7sTf
+	for <rezoprospec@lists.riseup.net>; Mon, 29 Sep 2025 07:15:27 +0000 (UTC)
+Received: by www.mailopourlilo.org with http webmail; Mon, 29 Sep
+  2025 09:15:20 +0200 (CEST)
+X-EA-Auth: IqVkMx2ihdhE5hQKmJLJwhkjqyxuXIxRnzVF1ekpATO5JS8SmYjO2yaWIItKmhGIOdGPd9a4QNWqD8M6VZdwo6WFtOcXvtyF
+From: "oddinmotion" (via rezoprospec Mailing List) <rezoprospec@lists.riseup.net>
+To: rezoprospec@lists.riseup.net
+Date: Mon, 29 Sep 2025 09:15:20 +0200 (CEST)
+X-Priority: 3
+MIME-Version: 1.0
+X-Mailer: COMS/EA24.10/r20250630
+Message-ID: <ea-mime-68da3208-6b4e-1ad18a53@www.mailopourlilo.org>
+X-Spam-Status: No, score=-5.2 required=6.0 shortcircuit=no autolearn=disabled
+	version=3.4.6
+X-Spam-Report: 
+	*  0.1 NO_REAL_NAME From: does not include a real name
+	*  0.0 RCVD_IN_VALIDITY_RPBL_BLOCKED RBL: ADMINISTRATOR NOTICE: The
+	*      query to Validity was blocked.  See
+	*      https://knowledge.validity.com/hc/en-us/articles/20961730681243
+	*       for more information.
+	*      [213.182.54.8 listed in bl.score.senderscore.com]
+	*  0.0 RCVD_IN_VALIDITY_SAFE_BLOCKED RBL: ADMINISTRATOR NOTICE: The
+	*      query to Validity was blocked.  See
+	*      https://knowledge.validity.com/hc/en-us/articles/20961730681243
+	*       for more information.
+	*      [213.182.54.8 listed in sa-accredit.habeas.com]
+	* -0.0 SPF_PASS SPF: sender matches SPF record
+	* -0.0 SPF_HELO_PASS SPF: HELO matches SPF record
+	* -0.0 USER_IN_WELCOMELIST_TO User is listed in 'welcomelist_to'
+	*  0.1 GAPPY_LET BODY: stock text obfuscation or Markov
+	*  0.0 HTML_MESSAGE BODY: HTML included in message
+	* -0.1 DKIM_VALID Message has at least one valid DKIM or DK signature
+	* -0.1 DKIM_VALID_AU Message has a valid DKIM or DK signature from
+	*      author's domain
+	* -0.1 DKIM_VALID_EF Message has a valid DKIM or DK signature from
+	*      envelope-from domain
+	*  0.0 CK_419SIZE typical 419 size - avoid matches in long text
+	*  0.1 DKIM_SIGNED Message has a DKIM or DK signature, not necessarily
+	*       valid
+	*  0.8 KAM_INFOUSMEBIZ Prevalent use of
+	*      .info|.us|.me|.me.uk|.biz|xyz|id|rocks|life domains in
+	*      spam/malware
+	*  0.1 TO_NOREAL no real name(s), maybe not list
+	* -0.1 AM_TRUNCATED Compensate on large message for misfiring rules
+	* -6.0 USER_IN_WHITELIST_TO DEPRECATED: See USER_IN_WELCOMELIST_TO
+X-Spam-Checker-Version: SpamAssassin 3.4.6 (2021-04-09) on vireo.riseup.net
+X-Original-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=lilo.org; s=mailo;
+	t=1759130120; bh=7HryMKTfcxb28/gwwuA9VjOByTVjDacffVEPkT6qtt8=;
+	h=X-EA-Auth:From:To:Date:Subject:MIME-Version:X-Mailer:Message-ID:
+	 Content-Type;
+	b=Nwwfhdft5tbgNPSMNPi7ephAatgOtiWVDjBbHPPSJOijvS582q7mA28pUxl/86LCC
+	 iKg6kJ1WIayHoXyFRPYkdhu6LZ4QnjPK5hiXNiXKmHUwwVny1//3nxGg/EV2v/f/LC
+	 ZdHWSQeJ9ZjnZ12Q5v1C+8/8dpiO2UQJ9lcDCqZQ=
+Reply-To: oddinmotion@lilo.org
+X-Original-From: oddinmotion@lilo.org
+Subject: [rezoprospec] Atelier + Jam de danse Contact Improvisation pour
+ toustes reprise samedi 4 octobre
+X-Loop: rezoprospec@lists.riseup.net
+X-Sequence: 22823
+Errors-to: rezoprospec-owner@lists.riseup.net
+Precedence: list
+Precedence: bulk
+Sender: rezoprospec-request@lists.riseup.net
+X-no-archive: yes
+List-Id: <rezoprospec.lists.riseup.net>
+List-Archive: <https://lists.riseup.net/www/arc/rezoprospec>
+List-Help: <mailto:sympa@lists.riseup.net?subject=help>
+List-Owner: <mailto:rezoprospec-request@lists.riseup.net>
+List-Post: <mailto:rezoprospec@lists.riseup.net>
+List-Subscribe: <mailto:sympa@lists.riseup.net?subject=subscribe%20rezoprospec>
+List-Unsubscribe: <mailto:sympa@lists.riseup.net?subject=unsubscribe%20rezoprospec>
+Content-type: multipart/mixed; boundary="----------=_1759165358-7564-145197"
+
+This is a multi-part message in MIME format...
+
+------------=_1759165358-7564-145197
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain;
+ charset="UTF-8"
+
+Hello Le R=C3=A9zo
+
+
+
+je m'appelle Aude et je suis danseureuse, performeureuse et je vous =C3=A9c=
+ris pour vous annoncer
+
+
+
+la reprise des ateliers de danse Contact Improvisation un samedi matin tous=
+ les 15 jours =C3=A0 Kashdance-CIAM
+
+5 rue Camoin Jeune, 13004, un lieu qui nous accueille depuis des ann=C3=A9es
+
+
+
+Le Contact Impro est une forme de danse qui a emerg=C3=A9 fin des ann=C3=A9=
+es 1960-70 aux Etats-Unis, des noms comme Steve Paxton, Nancy Stark Smith, =
+Nita Little, Karen Nelson, Lisa Nelson... vous disent s=C3=BBrement quelque=
+ chose. Est-ce pass=C3=A9 d'une danse=C2=A0sportive, sensorielle, inattendu=
+e et d=C3=A9structur=C3=A9e=C2=A0inspir=C3=A9e de la chute et de l'a=C3=AFk=
+ido...=C2=A0 =C3=A0 un RDV "social" pour =C3=AAtre en connexion avec soi, e=
+xplorer sa relation au monde, aux autres, aux objets, o=C3=B9 ce que vous v=
+oudrez ?=C2=A0
+
+
+
+Pour moi, =C3=A7a reste une danse ludique, organique, en lien avec l'espace=
+, le toucher, le moment pr=C3=A9sent et l'=C3=A9change de poids avec le sol=
+ et/ou le collectif.
+
+Je trouve que c'est un super terrain de jeu et d'=C3=A9tude d'une certaine =
+physicalit=C3=A9 et d'empuissancement personnel.
+
+
+
+Si =C3=A7a vous dit de venir faire l'exp=C3=A9rience de mon approche que j'=
+appelle Voyage Dans=C3=A9 (qui associe esprit but=C3=B4 et techniques du Co=
+ntact Improvisation) venez samedi 4 octobre
+
+je propose un atelier de 10 h =C3=A0 11 h 45
+
+et la Jam dans la foul=C3=A9e qui dure jusque 13 h30.
+
+
+
+C'est possible de faire toute la matin=C3=A9e ou juste l'atelier et observe=
+r la jam,=C2=A0 ou quand on connait la mati=C3=A8re et qu'on se sent =C3=A0=
+ l'aise, de ne venir qu'=C3=A0 la jam.
+
+et si vous jouez d'un instrument de musique : WELCOME =C3=A0 la jam, on peu=
+t co-cr=C3=A9er ensemble.
+
+
+
+les autres RDV ouverts =C3=A0 toustes seront les samedis suivants=C2=A0
+
+15 novembre, 14 d=C3=A9cembre, 17 janvier 2026, 14 f=C3=A9vrier, 14 mars, 0=
+4 avril, 02 mai et 30 mai.
+
+
+
+Les RDV ci-dessous s'adressent aux personnes qui souhaitent faire l'exp=C3=
+=A9rience d'un espace en mixit=C3=A9 choisie (sans hommes cis) :
+
+les samedis 18 octobre, 06 d=C3=A9cembre, 31 janvier, 28 f=C3=A9vrier, 21 m=
+ars et 18 avril, et 16 mai
+
+(je cherche une salle pour le 1er novembre.)
+
+
+
+La Global Underscore annuelle aura lieu le 20/06/26
+
+
+
+si vous voulez en savoir plus vous pouvez m'=C3=A9crire =C3=A0 compagnieama=
+ko@riseup.net
+
+
+
+Ah, les tarifs :
+
+la s=C3=A9ance compl=C3=A8te 15 =C3=A0 20 euros, =C3=A9chelle libre.
+
+la jam uniquement, de 7 =C3=A0 10 euros
+
+(et pour l'ann=C3=A9e et d'autres activit=C3=A9s adh=C3=A9sion =C3=A0 Cie A=
+MAKO de 10 =E2=82=AC).
+
+
+
+en esp=C3=A9rant vous retrouver samedi pour remuer nos cellules et nos corp=
+s.
+
+https://www.kashdance-ciam.fr/pratiques-a-decouvrir-au-ciam/contact-improvi=
+sation-page-43
+
+
+
+belle semaine =C3=A0 vous
+
+Aude=C2=A0
+
+
+
+
+Aude Fondard =C2=B7 Oddinmotion
+
+(they / them =C2=B7 iel / ellui)
+
+
+
+https://vimeo.com/oddinmotion
+
+http://oddinmotion.info/
+
+
+
+------------=_1759165358-7564-145197
+Content-Type: text/plain; charset="UTF-8"
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+
+---
+Les membres de la communauté Rezo Pro Spec s'engagent à respecter la charte: http://rezoprospec.over-blog.com/la-charte
+
+Pour se désinscrire, merci d'envoyer un mail vide à rezoprospec-unsubscribe@lists.riseup.net
+To unsubscribe, send an empty mail to rezoprospec-unsubscribe@lists.riseup.net
+List help: https://riseup.net/lists
+
+------------=_1759165358-7564-145197--

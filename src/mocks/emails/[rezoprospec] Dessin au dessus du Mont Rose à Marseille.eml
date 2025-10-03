@@ -1,0 +1,235 @@
+Delivered-To: arthur.boval@gmail.com
+Received: by 2002:a17:906:1350:b0:b40:93ba:cccc with SMTP id x16csp391802ejb;
+        Mon, 29 Sep 2025 10:01:38 -0700 (PDT)
+X-Forwarded-Encrypted: i=2; AJvYcCWhHlldfayyTkYJqEDtQLDWPwaiThf9F86mEiLUDBd3eDYORetUMZxyrsGfFnMRdIT2qHxlk3PYorhRgwY=@gmail.com
+X-Google-Smtp-Source: AGHT+IExSs6OxonYxqxsj7xKhrrqXiGiuqiQ5jeyxImo0X2FU+cWm9S1+9VFPHtph/X96W+Xi1R/
+X-Received: by 2002:a05:6a00:4b54:b0:77e:76df:2705 with SMTP id d2e1a72fcca58-787c8390074mr1247987b3a.7.1759165297808;
+        Mon, 29 Sep 2025 10:01:37 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1759165297; cv=none;
+        d=google.com; s=arc-20240605;
+        b=Em7p2+0Poyy8nCBraLy7tLFwejizc/m368y4nlwlh9SPmhQ8y3EUUedCdSaZwOAC/v
+         Ynq0vcZppV+RZMpNVcVsFGtw3MMBE/FfwLIYg8zdCOl1mdhVL4EvO68NJbEarXWJ00LP
+         KKoBYa2PkYdrouWi9LMNZwxwz6btdyy+SMHkn21e5gjOJoGRtYgQ/NP5dhrLUKh+GUfc
+         hZqUexz1qwtUsuygZhb7bQzr6KO0Q7yLPaoWKx6MvXBFzVXG93Rl7uunzXMEURbLnJYo
+         IHxXdBZHSgOAXgNZuSc0K3epJh5qaqBjwfwvyL740HbZq8FkizpnolmPDJdGZZnxy1hT
+         Qc0w==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=list-unsubscribe:list-subscribe:list-post:list-owner:list-help
+         :list-archive:list-id:sender:precedence:precedence:errors-to:subject
+         :reply-to:mime-version:references:in-reply-to:message-id:to:from
+         :date:delivered-to:dkim-signature;
+        bh=ixkIkFmj2gniNuDv4klSSuD2CNkXbPEuZTzGpIx2UFs=;
+        fh=qnaqslVXN8P0FiUNOe+rjX/IUR1x29L82gEqW07jaRI=;
+        b=Jvz537jXW3OLJj49V5XwNFazQbPq1C7DcFFPuwlBtto2v4M5YNux8l3T39hwQtgN1z
+         HiJDtrRsdSNtzfkFCtsdc/lR8tzK3N5BkCWKGl3VQKSLnhT+2/9zUWfz0Y9z0q0qU0vB
+         5Vg/kwmElBnANO4nX5lZf2XObvJ3uSYqgg/XBk5fi5ImPOfcH5jKG41XErcVoxr0IpJv
+         ampG9sEf5J1cETALCLz2N/JiG4tf7gPmkNIVp7aJGhG3LMVyMnIJOkCFnWQup8isd680
+         nVRIRK0/FkRn7ZSfcMwBjhYKrOkr1Zy+kODrSr7+QT/wWuLMhn60y4G/rtyMVKipr9Pm
+         O53A==;
+        dara=google.com
+ARC-Authentication-Results: i=1; mx.google.com;
+       dkim=pass header.i=@lists.riseup.net header.s=chirp header.b=joiq335t;
+       spf=pass (google.com: domain of rezoprospec-owner@lists.riseup.net designates 198.252.153.8 as permitted sender) smtp.mailfrom=rezoprospec-owner@lists.riseup.net;
+       dmarc=pass (p=NONE sp=NONE dis=NONE) header.from=lists.riseup.net
+Return-Path: <rezoprospec-owner@lists.riseup.net>
+Received: from mx2.riseup.net (mx2.riseup.net. [198.252.153.8])
+        by mx.google.com with ESMTPS id d2e1a72fcca58-7810238ce2dsi6527921b3a.34.2025.09.29.10.01.37
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 29 Sep 2025 10:01:37 -0700 (PDT)
+Received-SPF: pass (google.com: domain of rezoprospec-owner@lists.riseup.net designates 198.252.153.8 as permitted sender) client-ip=198.252.153.8;
+Authentication-Results: mx.google.com;
+       dkim=pass header.i=@lists.riseup.net header.s=chirp header.b=joiq335t;
+       spf=pass (google.com: domain of rezoprospec-owner@lists.riseup.net designates 198.252.153.8 as permitted sender) smtp.mailfrom=rezoprospec-owner@lists.riseup.net;
+       dmarc=pass (p=NONE sp=NONE dis=NONE) header.from=lists.riseup.net
+Received: from whimbrel.riseup.net (whimbrel-pn.riseup.net [10.0.1.39])
+	by mx2.riseup.net (Postfix) with ESMTP id 4cb6sm0J83z15VD;
+	Mon, 29 Sep 2025 17:01:31 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=lists.riseup.net;
+	s=chirp; t=1759165296;
+	bh=ixkIkFmj2gniNuDv4klSSuD2CNkXbPEuZTzGpIx2UFs=;
+	h=Date:From:To:In-Reply-To:References:Reply-To:Subject:List-Id:
+	 List-Archive:List-Help:List-Owner:List-Post:List-Subscribe:
+	 List-Unsubscribe:From;
+	b=joiq335t5rj5F3OXzzLk7wdOzXFa+qRQQWalOjP6jrSoJzWMRvpDFnXbJitT5L4Bn
+	 NWO/u5oBn9v6uSB3AdY+NYl757r+jST9mrgDjU5hf2XY+aPaaevGMoeZn2TJ3c/vGo
+	 bz/+L5kpp4aZLgcnVh08xaB/UHsqXZcnXxS+8s0c60bEsj6YK79D0++ZatYF41UvR9
+	 GYOD1jgF4E0HqNVREYlZLX0Rnd9LKMbHoB7uyxi+BKWlpZLne84wPB+L048D0iHQiX
+	 oUnxVE6xbKA7/reD21FS6XOruZKgHqRpGcSvUgbGCViHbxZe96MFFH0FVsC/k4MVSM
+	 UAENGOrVCr/Gg==
+Received: by whimbrel.riseup.net (Postfix, from userid 1000)
+	id 4cb6sl6dkWz7sh4; Mon, 29 Sep 2025 17:01:31 +0000 (UTC)
+X-Original-To: rezoprospec@lists.riseup.net
+Delivered-To: rezoprospec@lists.riseup.net
+Received: from sonic301-21.consmr.mail.ir2.yahoo.com (sonic301-21.consmr.mail.ir2.yahoo.com [77.238.176.98])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by whimbrel.riseup.net (Postfix) with ESMTPS id 4cb0XF6FRwz7sNv
+	for <rezoprospec@lists.riseup.net>; Mon, 29 Sep 2025 12:15:57 +0000 (UTC)
+X-SONIC-DKIM-SIGN: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yahoo.com; s=s2048; t=1759148150; bh=Mgt0MYL4vmt4285khtj1qGtUnfdokJG7LIt2Y6ZuMbE=; h=X-Sonic-MF:Date:From:To:Subject:From:Subject; b=qGx3FPcNGN5z9SAsf7rZBQhw1v7Pkv5dc9MjfY0NPQg1H2xUDUkbhNvfuEquI4MtGwE9K6EPDSHikJtKHqi1zsKc0H5gLM+XVvHstqgeQnEvSTnbsrrjkGijP40bNtB4HZ2MeLhK/wCIvkhYmtBwpDSBK+GYl4fXQdiU5llXOomTXx1Sju1sYrtfEWRQBaqXprh/KaqLSotYucbRi739gPDdZidHB847rtAWAthCutoNjfO6xFnJIo4UdnFg0q6nvoLX65zuSHuJgRMcybVMdGqQO5Duyl3l0xz2fnyOHezO4+RqCUwU/EP3u5MKaw3qq5FYMtOgHCuG1XIdIyANkw==
+X-YMail-OSG: ZulVdWoVM1kYjBObBSNzG6f0gM6Q3RP1INAvrjnP1CIOYUgvVX4udiYm_WrLVKO
+ UileHqJMw1.yxqHbDq6LGmSoXJdWWd5wASQkT8qa.T6yNP5WrNw6kGYgZSYG_bYTEBctPShPprow
+ 3yHKhiSWv_1FCv38KFv54i9JrHsymYLVrssdkfcoDcOJoPg7wH4qpbJafAGi5savwyQhv8MhKU_7
+ AxI_79Aq4Yvr8AeteNDvSFUD1fCoSRuzQI_mzWy8Znm03jcafhDba_3G_15F8Nl.V4IB3dEZOdkl
+ MXL5JxBLHsvbJfsb_ZEjgvDTz9K64qEViFmn0O2zZBxZ9FKWGZD76HWATpIuMXGTMDmc1igG7yBc
+ iXgAlFJ2dQWiJzd8IUQq49_cNSfdIEv8zbzUv0ZDjb0MOYpN51FKVjyN9ml9Evo2WYpLaiOMZJnm
+ qA4qL0kNyKlTm.mkNW5u5po5iiMbZx5V4tM1v7I4BJ5i369O_j.bEztKCxR0OVqaAgl1SfYNw8mz
+ Ql0h.Y3Yz4c3mYN.O1mHCcvR0KTuYNVspw4fDvLVvhaT9JprgED9nhwcfBr7RsZicOd5Jq02UAhE
+ K.soiUD.WJsdwp2HfvhFYv5b81kfTF4BfCPA9k0bE7wEu9_u0WIEdIXuaWM6F86ZTf7rIiFMeliC
+ 7FFLIUVFsNQI5AZCwAPeSl8B6eaBMdV2FSrzYDPNNILNzsFugfM7I.wDEiJHygaxG8GigB58s5n4
+ sK3ggaagGFXdbv4XgMYJc1NDtWbbD.Pl34WNBGvjNnSeXNM6EhUWdXbWur.2WMYpOWn17JOiXXR1
+ u6gFTCwFa4XUGOZG_vz0S24XxIVJV2jT.bXy114IE2V5fs30ZK5yEbtDSQk.uTYULNetJb_IaUja
+ 4c6avr6giiss_rNkCN30Kt4Cz1wkeiPZoHH5ijCVxp4tvnaG_Xp0HZv4lUmMv3aMPnyo4HIiHlMI
+ n0mGSquoTZAsIBXOk5O7ITKCFtAz.93ILYJyfrCriIahGe3RPL49yl5YBeQY03ZrTX55.p6DjAP5
+ M0UuAu4PZM8d5BFWDQdKc00rVTNn1gcgzy0KU5nHTeHrXqbiythU2Q8ilM.898BLPr9Pr3XR5lVB
+ Pg2SZFOSjg3CHPCSn_va3IsauGX8v6ot2OMFzvyApOgcV6ELSu3A2I3mgbMc8rJvton_GyZWMsHP
+ 6LuZ.6bYlwLBmOBX_dF.JcBwiELjJpFu.NuNUrV.rDiy_sM7INysEFgC6KVF_P2mlMcyeTfqGzdl
+ aXJiXADAiT7YfUjNGyvNIaDfJ66yo1aOam9aHiu4lcOlxGjDQTOQxDABa2tygHBLfo0GBJ9U822K
+ cT3M8ioEtkyTauphSlcPyeX9kv0OkNQL4O8Oisfz.ZbSxhAWZUQoTx95gSKWfohJX46NhLCJPzVy
+ UjIGHyGCRqD05HE4XrO0_KtByCfqUVSOhT.wgkgy0fGKrYWqqRGA8s58u0xIn33G2qh56LwFB18D
+ r1DK58vzcjb2qxTJ73PvzBVltsmCucyy0mXcZSsXE0tqZ0.f42JV0t55C_Xd7uhWu5n2fgvLHjZp
+ 1JHal_FScBTlwXbIMuA1uzijgC.cJKuSDXkdv1AytXVB8VyucBsWp3XcTRdqqem5xMc.TM20ChU5
+ qyPJ1f0m0TMROpHxskb6nncuk0K11iVsuk6ydQL5xH_nEbwe53TsLh5xyEcUFZlxhPleMAHK_Vxj
+ 3JH1Tv1V0eRw.cNEWgJ0IW.xVU4cRdhLkK5bvZChu2ppyJc7OKo9cmPcMocoxIJhdnTV_IZFYm8d
+ bp6NQpW0jc8v4UGmyU5ej.Ua0sibdJ2OnU6p51g9CQXes3dN8_BEPiS_iY9kFTOYnzAmd8sgw9xX
+ x7HmBOExnihdCPt6ZzLOq410CCwR01F2oKhXq7fwnrE3XFejhQdqI9WHG5LG7IvNCGpAARQAwOHs
+ GfdF40sRdrncR3l3xiiq7KnGHmFBw1LvF42fVu92hzoL0hoHw_68rm1uvFQw65D.iOLJSvLOzryH
+ 0aWVobS7H3lkAUmRX0Xl6kyT1y8rV6ylREgGe1jK0_9d0L2sz_1aOEqikZqCE1691CaA5Tv6DejJ
+ 5xq9v0GOVGP5tIUypN5.E4Nl.g5U0nqbTJU9aXolmyf9cnHNwdUi2iK0d_MFwkP2Cz62ke8wPM.r
+ giAQ.ZIp4HMAjOkxo0oNHdTPzpofH_4E5XwH6Gk.OQ9C4UWd4izT4iyIOrIIKujA.c7E3WCdOmht
+ r79O5fccryosS6VnUaPX_ltOHaE8Rwsdi5K7MWDrk8qZ_MEea1nFar5L4E607EFmjnMLVn5Aa2T0
+ 1Q5QDHUtpwogDTDNWgqGdDkp428qo4rPo
+X-Sonic-MF: <geanina_capita@yahoo.fr>
+X-Sonic-ID: 17f34934-0fc8-43a0-8bc3-eeabd186223d
+Received: from sonic.gate.mail.ne1.yahoo.com by sonic301.consmr.mail.ir2.yahoo.com with HTTP; Mon, 29 Sep 2025 12:15:50 +0000
+Date: Mon, 29 Sep 2025 12:15:47 +0000 (UTC)
+From: "geanina capita" (via rezoprospec Mailing List) <rezoprospec@lists.riseup.net>
+To: Rezoprospec Liste Groupe <rezoprospec@yahoogroupes.fr>, 
+	"rezoprospec@lists.riseup.net" <rezoprospec@lists.riseup.net>
+Message-ID: <904272083.3128585.1759148147723@mail.yahoo.com>
+In-Reply-To: <1308600764.1239598.1756116950560@mail.yahoo.com>
+References: <1534266063.657331.1752773124267.ref@mail.yahoo.com> <1534266063.657331.1752773124267@mail.yahoo.com> <60915036.2724867.1753167502406@mail.yahoo.com> <CAC1YKRM5eugcoVoaLJrzNLUbMWGMudU+8Jp+pWQy8z42M23PBA@mail.gmail.com> <2014498951.4260774.1753353302036@mail.yahoo.com> <556663163.107349.1755242598295@mail.yahoo.com> <1308600764.1239598.1756116950560@mail.yahoo.com>
+MIME-Version: 1.0
+X-Mailer: WebService/1.1.24485 YMailNorrin
+X-Spam-Status: No, score=-7.0 required=6.0 shortcircuit=no autolearn=disabled
+	version=3.4.6
+X-Spam-Report: 
+	* -0.0 RCVD_IN_DNSWL_NONE RBL: Sender listed at
+	*      https://www.dnswl.org/, no trust
+	*      [77.238.176.98 listed in dnswl.dnsbl]
+	*  0.0 MAILPHISH4 Sent by a (cracked?) webmail system
+	*  0.0 RCVD_IN_VALIDITY_RPBL_BLOCKED RBL: ADMINISTRATOR NOTICE: The
+	*      query to Validity was blocked.  See
+	*      https://knowledge.validity.com/hc/en-us/articles/20961730681243
+	*       for more information.
+	*      [77.238.176.98 listed in bl.score.senderscore.com]
+	*  0.0 RCVD_IN_VALIDITY_CERTIFIED_BLOCKED RBL: ADMINISTRATOR NOTICE:
+	*      The query to Validity was blocked.  See
+	*      https://knowledge.validity.com/hc/en-us/articles/20961730681243
+	*       for more information.
+	*      [77.238.176.98 listed in sa-accredit.habeas.com]
+	*  0.0 SPF_HELO_NONE SPF: HELO does not publish an SPF Record
+	*  0.0 FREEMAIL_FROM Sender email is commonly abused enduser mail
+	*      provider
+	*      [geanina_capita[at]yahoo.fr]
+	* -0.0 SPF_PASS SPF: sender matches SPF record
+	* -0.0 USER_IN_WELCOMELIST_TO User is listed in 'welcomelist_to'
+	*  0.0 ODD_PUNCTUATION2 BODY: general bad punctuation as in 419s
+	*  0.1 GAPPY_LET BODY: stock text obfuscation or Markov
+	* -0.0 RCVD_IN_MSPIKE_H2 RBL: Average reputation (+2)
+	*      [77.238.176.98 listed in wl.mailspike.net]
+	*  0.0 HTML_MESSAGE BODY: HTML included in message
+	* -0.1 DKIM_VALID_EF Message has a valid DKIM or DK signature from
+	*      envelope-from domain
+	*  0.0 CK_419SIZE typical 419 size - avoid matches in long text
+	* -0.1 DKIM_VALID_AU Message has a valid DKIM or DK signature from
+	*      author's domain
+	*  0.1 DKIM_SIGNED Message has a DKIM or DK signature, not necessarily
+	*       valid
+	* -0.1 DKIM_VALID Message has at least one valid DKIM or DK signature
+	* -0.8 DCC_REPUT_00_12 DCC reputation between 0 and 12 %  (mostly ham)
+	* -0.1 AM_TRUNCATED Compensate on large message for misfiring rules
+	* -6.0 USER_IN_WHITELIST_TO DEPRECATED: See USER_IN_WELCOMELIST_TO
+X-Spam-Checker-Version: SpamAssassin 3.4.6 (2021-04-09) on grosbeak.riseup.net
+X-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yahoo.fr; s=s2048; t=1759148150; bh=0Ir6qlbneXT5WuxDfV8Sw8ZDdvBY+j5epshCZqwS2uo=; h=Date:From:To:In-Reply-To:References:Subject:From:Subject:Reply-To; b=fEXs/7451qGMKVvEZEpaHjD/U64JdLoT1e35a3gVP2XHXSFp8yw7H0cMNVRjLDdDjWQg1DZicIr7H5X2/0feRiOf9m0+vzFtIAcAjBN6lmk0XcLRro7ooQKr243O+1FijaM0GLf1Uru7p/fFSjkMOFR2qyuH2QuOewWrpbr1AeysFbdAkRC3Nni/faNoF5CNRyX9jLx2atET2uDGo2uASunn/839yutSs9b2eS/8UiyYjufEerQCQtMCQ6xuofSCN4ZR5tkIsXERt4Sb2N3Dj0rMUUfGz+pHtP/JuApTWoa5hUZyAZencsHgJ0tPmGCvIyvk224ROdsw7P8sUeGdKA==
+Reply-To: geanina_capita@yahoo.fr
+X-Original-From: geanina capita <geanina_capita@yahoo.fr>
+Subject: [rezoprospec] =?UTF-8?Q?Dessin_au_dessus_du_Mont_Rose_=C3=A0_Mars?=
+ =?UTF-8?Q?eille?=
+X-Loop: rezoprospec@lists.riseup.net
+X-Sequence: 22817
+Errors-to: rezoprospec-owner@lists.riseup.net
+Precedence: list
+Precedence: bulk
+Sender: rezoprospec-request@lists.riseup.net
+X-no-archive: yes
+List-Id: <rezoprospec.lists.riseup.net>
+List-Archive: <https://lists.riseup.net/www/arc/rezoprospec>
+List-Help: <mailto:sympa@lists.riseup.net?subject=help>
+List-Owner: <mailto:rezoprospec-request@lists.riseup.net>
+List-Post: <mailto:rezoprospec@lists.riseup.net>
+List-Subscribe: <mailto:sympa@lists.riseup.net?subject=subscribe%20rezoprospec>
+List-Unsubscribe: <mailto:sympa@lists.riseup.net?subject=unsubscribe%20rezoprospec>
+Content-type: multipart/mixed; boundary="----------=_1759165277-7564-145179"
+
+This is a multi-part message in MIME format...
+
+------------=_1759165277-7564-145179
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+
+
+ Objet : Dessin peinture, incursion dans le paysage
+Ch=C3=A8re Rezo,=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0je=
+ propose la continuation du cycle, dessin peinture, incursion dans le paysa=
+ge.=C2=A0Un cours de dessin et de peinture, un voyage initiatique au c=C5=
+=93ur de la nature.=C2=A0Nous partirons vendredi le 3 octobre , vers 7 h ( =
+=C3=A7a reste =C3=A0 d=C3=A9finir) du matin, pour une journ=C3=A9e enti=C3=
+=A8re d'inspiration, avec un retour pr=C3=A9vu en fin d'apr=C3=A8s-midi.=C2=
+=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 Cette exp=C3=A9rience se conc=
+lura par une exposition de vos =C5=93uvres, avec de l'eau fra=C3=AEche et d=
+u caf=C3=A9 =C3=A0 votre disposition.=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0Nous explorerons par le dessin : les ph=C3=A9nom=C3=A8nes, la grandeu=
+r de l'espace, les lignes de force rencontrer dans la nature en face des mo=
+ntagnes, mer, les contrastes, les volumes, la mat=C3=A9rialit=C3=A9, l'invi=
+sible, la pr=C3=A9paration de la couleur et leur r=C3=A9sonance etc.=C2=A0=
+=C3=80 la fin et pendant la s=C3=A9ance des conseils vous serez apport=C3=
+=A9s.=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=C2=A0Tou=
+t outil d'exp=C3=A9rimentation, d'exploration: loupe, t=C3=A9lescope, polar=
+oid etc. sont bien venus.=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0Je vous remercie de me cont=
+acter pour plus de d=C3=A9tails avant le jeudi 2 octobre.=C2=A0Geanina Capi=
+ta.=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 =C2=A0 =C2=A0 =C2=A0=C2=A0T=C3=A9l. 06 30 14 11 92=C2=A0@geaninatch=
+=C2=A0
+
+=C2=A0 =C2=A0
+
+=20=20=20=20=20=20=20
+=20=
+
+------------=_1759165277-7564-145179
+Content-Type: text/plain; charset="UTF-8"
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+
+---
+Les membres de la communauté Rezo Pro Spec s'engagent à respecter la charte: http://rezoprospec.over-blog.com/la-charte
+
+Pour se désinscrire, merci d'envoyer un mail vide à rezoprospec-unsubscribe@lists.riseup.net
+To unsubscribe, send an empty mail to rezoprospec-unsubscribe@lists.riseup.net
+List help: https://riseup.net/lists
+
+------------=_1759165277-7564-145179--

@@ -1,0 +1,211 @@
+Delivered-To: arthur.boval@gmail.com
+Received: by 2002:a17:907:a0ce:b0:b28:1ce4:1656 with SMTP id hw14csp1422877ejc;
+        Sat, 27 Sep 2025 09:17:33 -0700 (PDT)
+X-Forwarded-Encrypted: i=2; AJvYcCV02fkNnBbsHAyFLrYxH+etNUy3pLXya94VzepgsXJESltbRKhS8d3IyR27IMCjFVxFaGwzAtCulD5ucok=@gmail.com
+X-Google-Smtp-Source: AGHT+IFAdsFSll4rZtOcMQe4D01K2BPQu7ei1Clo/FblV8N/ybLDNVAQXQ3EtqZFVR1gS3MYReiL
+X-Received: by 2002:a05:6a00:a8a:b0:77e:8130:fda with SMTP id d2e1a72fcca58-780fce20ddfmr11787332b3a.13.1758989852558;
+        Sat, 27 Sep 2025 09:17:32 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1758989852; cv=none;
+        d=google.com; s=arc-20240605;
+        b=PJeM5E+3wsHaS/wFX4Ew6SwbdlQcMFx/58NRfTeQGthrfxpjIUGhX9DoWpm+moUDX3
+         5vhPskFypUelbxmyQQ0CXXgXkkkqF5e1IaZ75+u8rdKzvq+vo4UIsbk2RYpoNwXl8+WN
+         wBTapXbunD75oDxLcAtx5RJd7DzIcYiM0qSeeyqnYNShYugT+ZrMZIckah5vBhhOqwJ9
+         ymFoACPdva+fT6WN5S8Ss9qwrDET3uWg42y6exCSObNhyCI93iHv4yAjG/RRbVK+lpj7
+         mvsgl2V/P9BV8ennxUFPe79aiydG6WiS1sGS6VDKGjFsu1tPRPUnP84AdE2kN6TvzJ0b
+         duwQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=list-unsubscribe:list-subscribe:list-post:list-owner:list-help
+         :list-archive:list-id:sender:precedence:precedence:errors-to:subject
+         :reply-to:references:to:date:message-id:mime-version:from
+         :delivered-to:dkim-signature;
+        bh=OJplYhxWwTzVObaNjIwm+8MkjZN8EPmquG0YIP2I0FY=;
+        fh=UnwjiYJVCo1e7uB80l+b/RagOVoASBcEn1sgWRYKqx4=;
+        b=f/0MdnBYq7EDJmT6TzW/+xcMTUooIiYgn1plypnVUwQTir4FB5ST01pdb1VsnioM3u
+         bYUGvAo3Ntt/L5Z22NS87dsNktjfxBeSeGJpozF9lrB9G0yJKJ1vlAo8jKKDtKa7dMrr
+         dueqE/1uO8OoIU1c1nhTwYc/1M6WPgk5JNOY6h6ddHDgjLwLZImN5P01CY5shjhEXlSO
+         5W5rYDb0gYhi4XT4N5FRihXcEeBs7QEnuJHMd3OwRwz74YYcrR1YLco4k8QQ8GCIGS2R
+         UDEl0wwxl8POFEmaf93kie8jb7fyfwCyHOlpJeA+VDwtDNAsPxfp+L9lxEOhx84y7KbE
+         ghXQ==;
+        dara=google.com
+ARC-Authentication-Results: i=1; mx.google.com;
+       dkim=pass header.i=@lists.riseup.net header.s=chirp header.b=iES+IpiN;
+       spf=pass (google.com: domain of rezoprospec-owner@lists.riseup.net designates 198.252.153.8 as permitted sender) smtp.mailfrom=rezoprospec-owner@lists.riseup.net;
+       dmarc=pass (p=NONE sp=NONE dis=NONE) header.from=lists.riseup.net
+Return-Path: <rezoprospec-owner@lists.riseup.net>
+Received: from mx2.riseup.net (mx2.riseup.net. [198.252.153.8])
+        by mx.google.com with ESMTPS id d2e1a72fcca58-78102b293a7si4096885b3a.308.2025.09.27.09.17.31
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sat, 27 Sep 2025 09:17:32 -0700 (PDT)
+Received-SPF: pass (google.com: domain of rezoprospec-owner@lists.riseup.net designates 198.252.153.8 as permitted sender) client-ip=198.252.153.8;
+Authentication-Results: mx.google.com;
+       dkim=pass header.i=@lists.riseup.net header.s=chirp header.b=iES+IpiN;
+       spf=pass (google.com: domain of rezoprospec-owner@lists.riseup.net designates 198.252.153.8 as permitted sender) smtp.mailfrom=rezoprospec-owner@lists.riseup.net;
+       dmarc=pass (p=NONE sp=NONE dis=NONE) header.from=lists.riseup.net
+Received: from whimbrel.riseup.net (whimbrel-pn.riseup.net [10.0.1.39])
+	by mx2.riseup.net (Postfix) with ESMTP id 4cYsnr0FSHz1DHV;
+	Sat, 27 Sep 2025 16:08:46 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=lists.riseup.net;
+	s=chirp; t=1758989335;
+	bh=OJplYhxWwTzVObaNjIwm+8MkjZN8EPmquG0YIP2I0FY=;
+	h=From:Date:To:References:Reply-To:Subject:List-Id:List-Archive:
+	 List-Help:List-Owner:List-Post:List-Subscribe:List-Unsubscribe:
+	 From;
+	b=iES+IpiN+jcEdgFDE0qlcnA7asVUG6HxEiQc8zlFkjUtng0872tvncf5rRqMIwiBN
+	 84VmWq6VC6d0vGAvQSUpOHJsl11Vsh6parL9r9UbaPbqLcl4z9SAy5LlW0XB6TsDiQ
+	 +HXh2tvgP8Rm4t67gtPOlbtxmNEI7lf+x7v/ebeBEw1lGS3L1dr2esxlE3GoWC4W2j
+	 vx8kvwb0u62Z0FaOCgoh4nVWsfW/bCDTfdjE3AgIl4gpQuhSJA3b/HcMGwZzCPkfFb
+	 Q71VxiqpyFaITrAF/Xc/mVLcf14fzy9Yn9c6cVyE5LN4fsjbz5CsLXqvDvbv+kWIwj
+	 jN3x653KnQtQw==
+Received: by whimbrel.riseup.net (Postfix, from userid 1000)
+	id 4cYsnp68q2z7sVw; Sat, 27 Sep 2025 16:08:46 +0000 (UTC)
+X-Original-To: rezoprospec@lists.riseup.net
+Delivered-To: rezoprospec@lists.riseup.net
+Received: from sonic314-19.consmr.mail.ir2.yahoo.com (sonic314-19.consmr.mail.ir2.yahoo.com [77.238.177.145])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by whimbrel.riseup.net (Postfix) with ESMTPS id 4cYpXN0rkVz7sMq
+	for <rezoprospec@lists.riseup.net>; Sat, 27 Sep 2025 13:41:55 +0000 (UTC)
+X-SONIC-DKIM-SIGN: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yahoo.com; s=s2048; t=1758980508; bh=8fPw+dOIyL5ZwMCm+NxkgHAX7Zyry59KlgyD5oeFi/K=; h=X-Sonic-MF:From:Subject:Date:To:From:Subject; b=gI0RE0f4oPQOscoT+Fu+XZc5LIDDwbq4tJN0Lo3uADvXt6KnU6AcJ7M9L9L3fziEv5WKFjPWCdiGZn0EDmmTXTWuvgbNvWPGgoGhfDK9QEsJ0W711Gscsmme6rN6JkJVm9gbGSmZVySc4WRsEEmbs6NgJiLTzr/R2vgF80EdFZU00GWGvaCKvdkh97GlydcXfvdjZR70xLglshEejlSa5hcvelPKrmewMNhKuHk0UKGGF9U3KfHcC8uh9o5vc55YoRk3/ErITWuh1/GmPKWrUx+98OWB1lApFkqIawgeR9YSKxauiLEd7lJID6h9oI525ay2ULg1yZ7chEP60A7dDA==
+X-YMail-OSG: 7eEc4tcVM1lISeuVC88fCUf1jJNM7ByQiTwlRldcA78wSsS5A7q2RKXYh47T_du
+ YWa.t.aYP9BXFwx523IIk0l.NHpbADwKsHL6DU9YRf55cEnIL.cTPv.hXCG2Or407qZPOJOKM3TP
+ DD7w1oniq5UcdskIEzZ_FqeY_92iVKP6UIbHScYAZ0VLXXYigZkafVVURCCKdWqe1.fXXdrCwzFI
+ _3oVyG4ZRkE6hq3JjGOu9E6kfbKdbGSHHj_3MmRNc43E4PnfxNOfUqOryGURHaDz2FDGCaeY_Z1Q
+ AyvKRhjAbpY7B.O6MWOilF3FYqMQa4DW0U32JGTvP44_4oxt1AoP.hLMZGKQJ59Ykc59vKjJAJLT
+ yXBasCNoPO8UZqyCnJb_86gXXePUeM8_S7.nLQ7nP56d77GvC1gkJ4F2G_wuQKYDdvAsywztrnKt
+ nF5aG1vkNoKzbQTlD07c2TFWe7Fm1POO_FsIr5zU1UPgzBRE0ztkl2whg9cBnj4LgKgZn.D1kjOG
+ I.U0w_Nc4E44wrSu6_k5gkTkAb.pWz0p6ltIXvILa4UyvfKysjKmcT.Sj3j0KyKXmJYzk6iKXO1W
+ rxTqFD_rWAAbT3qKMGC9CjeSEQOSfdG4.TR.ZD.bIrlAiKzAbj0ozE4DDs37F1UpPpbZY5v0HKq_
+ RC0.8M5smxdDvo3sD24ak5V8RWzgSWOqaqztI8olR34m6qBi3duU_39bP8qmO1f9BJ4S7jPydyHt
+ 7jfZU8kzyoPJVej16DRsYts3i.6xXDC14TKT7Gydvm8opBYPrPdaUK9NrRUUbHx4VKbVejZQAWMh
+ Z_10bV3JZalJO.8rdE67fNo3OiPa8oBjwOk0YMAmrCe8YL7DKZ9i3rGzhawROjwIVW4bzap8RbZ_
+ 52nyTF57ueRkD9WJ75SIovyREc1dEwKi0CPIVFNO3krK8mvjIOee0b_bK2BDjF4Z_mBxX1Q5NiDi
+ 3kbDpGY_5fiq27w_LHMfuul03iu3wDuD2mHiRLkGutxTylJwGB2d5qOQS0U2utUAnb9e4RXOYEBR
+ fwCBy2h29w2cU8zUq8Fq_X7BTc3yEf0JHtYYJafwNukcv2GaeyY0F_u7cbcfs4N1f8Gum6YxyKBA
+ cz64kFPvit4tP9i0hAp6Tdi3Ze54N6O4.YfB6MbKJY5HodINdivt_esUcUVwYf_iinnjX.zNpul3
+ Rrekp0OBVAKMr3L4lfZklu_aUewqXNinRad8jvnLCgoJHPtO1y7N9Htbfun7MhRDlMIMKbixBLrX
+ XDJVJTIpVoi8NJ1_KYInWOAHXvROr0J80dpCYPtSTUuSFIdQnY9JDSQbP4iMgmeYjmpEeTcDS1WP
+ Oz6RQHIolHbgSl8goxtkVG6SVKsSQlC0X6MFZuPNfQE62IzGPLFhIAgct607LhTwc4h0qxLObyhH
+ ebO9Qf4Q_14JBna4RHlNXGtvcN.y.02R88yjaKgPW0geqInB5x2CG2D4WQsnBi1VMNdOyVxw20jD
+ DDdgT0cbIvy9D0F4UOrIOIHPsXUgI2VzjoHLsCBaExYHaa_snWkF7bb543PZAyYhLAXfsAOFvXyL
+ rr31gjwXmbFiGzVxFBpPySEUCla9Ix.weg54E_kpG9J5nA9MMB1_yIS5xyqm2AGlAJqWJIDt5twx
+ UsETjJ04ow_1gd29m30HMqAxI2S0CwkXHmf_B.LizYfV3hGyHIbZVA0z9dzIR3xDHDtOwTS5M5jL
+ GzSNn4TKJBIyVQNrmhcrpnfLKaFUlz8eHqe_lpsRLnr580N0v7X65kvbRPZfuWNYgUnlgTKG0.3J
+ 6aMBeF.jtyg64mw8fQlFOnQtI9y27nGM98lLmAq4Cf6PrbAX2UMnmGR7xssgEljOWz2XFHPQ.Srl
+ K3IC2ha1bufRD7vce8pGosW6.Tp5aHfqyr4sOTslLz2Xt.omzSJ13Sv6YS_pZbgZK1Pdqzd4Ex6x
+ AUXRoyy_beLxcHE27fyNVBgeITkA06YGxErBt8KMB_rwqDTRiVkQA5pfxnhsKqh6Vz1Quk3_LZLs
+ Rvmb.fycIJ8DZ6habk9weF_tz6v.ykym0kfQzr.OHbNgDUvf739yebnaFBtQMf29NvJuOWid9uai
+ K6qtJ1JMtkvdeZSqd9jo6pxu5EpU.ivOgX966GoUSBqCtoz.7vc81Pd40w4CLvvIzbT6EEsU5F7x
+ d9SBXZI8awgGDFvPIbDCLTMnO2lpzRQEQSLkQqbAexBV5r0HoLWnHxPWVG7YCYfGU.3W9AHXPl87
+ utAUt1UkSjpJOS0tD.twWbMQ4Ur.naEPdPKOklaJ9jmCrnY142w--
+X-Sonic-MF: <brijtfabr@yahoo.fr>
+X-Sonic-ID: 09dfe704-4fbe-4e4c-9c5c-da054e54232d
+Received: from sonic.gate.mail.ne1.yahoo.com by sonic314.consmr.mail.ir2.yahoo.com with HTTP; Sat, 27 Sep 2025 13:41:48 +0000
+Received: by hermes--production-ir2-ccdb4f9c8-jsjlk (Yahoo Inc. Hermes SMTP Server) with ESMTPA ID f994863f66826259a8555e28fcca1d3a;
+          Sat, 27 Sep 2025 13:41:46 +0000 (UTC)
+From: "Brigitte Fabre" (via rezoprospec Mailing List) <rezoprospec@lists.riseup.net>
+Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3776.700.51\))
+Message-Id: <3399C750-18B9-4073-AAB8-986E11224052@yahoo.fr>
+Date: Sat, 27 Sep 2025 15:41:35 +0200
+To: rezoprospec@lists.riseup.net
+X-Mailer: Apple Mail (2.3776.700.51)
+References: <3399C750-18B9-4073-AAB8-986E11224052.ref@yahoo.fr>
+X-Spam-Status: No, score=-6.9 required=6.0 shortcircuit=no autolearn=disabled
+	version=3.4.6
+X-Spam-Report: 
+	* -0.0 RCVD_IN_DNSWL_NONE RBL: Sender listed at
+	*      https://www.dnswl.org/, no trust
+	*      [77.238.177.145 listed in dnswl.dnsbl]
+	*  0.0 MAILPHISH4 Sent by a (cracked?) webmail system
+	*  0.0 RCVD_IN_VALIDITY_RPBL_BLOCKED RBL: ADMINISTRATOR NOTICE: The
+	*      query to Validity was blocked.  See
+	*      https://knowledge.validity.com/hc/en-us/articles/20961730681243
+	*       for more information.
+	*      [77.238.177.145 listed in bl.score.senderscore.com]
+	*  0.0 RCVD_IN_VALIDITY_CERTIFIED_BLOCKED RBL: ADMINISTRATOR NOTICE:
+	*      The query to Validity was blocked.  See
+	*      https://knowledge.validity.com/hc/en-us/articles/20961730681243
+	*       for more information.
+	*      [77.238.177.145 listed in sa-accredit.habeas.com]
+	* -0.0 SPF_PASS SPF: sender matches SPF record
+	* -0.0 USER_IN_WELCOMELIST_TO User is listed in 'welcomelist_to'
+	*  0.0 FREEMAIL_FROM Sender email is commonly abused enduser mail
+	*      provider
+	*      [brijtfabr[at]yahoo.fr]
+	*  0.0 SPF_HELO_NONE SPF: HELO does not publish an SPF Record
+	* -0.1 DKIM_VALID_EF Message has a valid DKIM or DK signature from
+	*      envelope-from domain
+	* -0.1 DKIM_VALID Message has at least one valid DKIM or DK signature
+	*  0.1 CK_KARD_SIZE short, card virus size - avoid matches in long
+	*      text
+	*  0.1 DKIM_SIGNED Message has a DKIM or DK signature, not necessarily
+	*       valid
+	* -0.1 DKIM_VALID_AU Message has a valid DKIM or DK signature from
+	*      author's domain
+	*  0.0 CK_419SIZE typical 419 size - avoid matches in long text
+	*  0.0 RCVD_IN_MSPIKE_H2 RBL: Average reputation (+2)
+	*      [77.238.177.145 listed in wl.mailspike.net]
+	* -0.8 DCC_REPUT_00_12 DCC reputation between 0 and 12 %  (mostly ham)
+	*  0.1 TO_NOREAL no real name(s), maybe not list
+	* -6.0 USER_IN_WHITELIST_TO DEPRECATED: See USER_IN_WELCOMELIST_TO
+	* -0.1 AM_TRUNCATED Compensate on large message for misfiring rules
+X-Spam-Checker-Version: SpamAssassin 3.4.6 (2021-04-09) on vireo.riseup.net
+X-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yahoo.fr; s=s2048; t=1758980508; bh=bRyeIZU0zDAbXSBbCjT5fRYOS5ZxWZzgUhwoI0XX7Ms=; h=From:Subject:Date:To:References:From:Subject:Reply-To; b=sOOf5cZUCdfTaENbtIqiCXEscHdZnhdgE2mdhBe9/Zw2tWJMRAbdQt7y5lcAipvB1Sx4mtYIFTvolS5kHercgR+IR1PgLFa1VU90tljUVSg6yoKwk8TTnP4689tSB/a3OzSX/c6011xuE/HhIMj5jas0ONJ87S4e5ANXxnLZShGpoYXakw5sZRiw9U+KDvrhcQ1Dp3h/XpQ626oyaZLjeocFFrF897JBts8OGRtZcurGOclELUCvMOKpIK4jwdZyXBVG6GFtCdjVeeUlzCsjOe8Mys9Gy8KzVq31iHvic1vy1cde5zP3q6hVt0HPyTTY9JEoLB3/PXLUgCBOySOXLQ==
+Reply-To: brijtfabr@yahoo.fr
+X-Original-From: Brigitte Fabre <brijtfabr@yahoo.fr>
+Subject: [rezoprospec] =?UTF-8?Q?Propose_chorale_=C3=A0_Luminy?=
+X-Loop: rezoprospec@lists.riseup.net
+X-Sequence: 22803
+Errors-to: rezoprospec-owner@lists.riseup.net
+Precedence: list
+Precedence: bulk
+Sender: rezoprospec-request@lists.riseup.net
+X-no-archive: yes
+List-Id: <rezoprospec.lists.riseup.net>
+List-Archive: <https://lists.riseup.net/www/arc/rezoprospec>
+List-Help: <mailto:sympa@lists.riseup.net?subject=help>
+List-Owner: <mailto:rezoprospec-request@lists.riseup.net>
+List-Post: <mailto:rezoprospec@lists.riseup.net>
+List-Subscribe: <mailto:sympa@lists.riseup.net?subject=subscribe%20rezoprospec>
+List-Unsubscribe: <mailto:sympa@lists.riseup.net?subject=unsubscribe%20rezoprospec>
+Content-type: multipart/mixed; boundary="----------=_1758989315-7564-142117"
+
+This is a multi-part message in MIME format...
+
+------------=_1758989315-7564-142117
+Content-Type: text/plain;
+	charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+
+Bonjour le Rezo et les r=C3=A9zotistes!
+
+Ici Brigitte, cheffe de ch=C5=93ur =C3=A0 Marseille.
+Avec la chorale des Beaux Arts de Luminy (cit=C3=A9 de la Musique), tous le=
+s jeudis soirs (hors cong=C3=A9s scolaires) de 18:30 =C3=A0 21:00, on appre=
+nd un r=C3=A9pertoire classique et baroque et on pr=C3=A9pare de beaux conc=
+erts avec instruments et solistes :=20
+
+Messe de Minuit de Charpentier - Concert en D=C3=A9cembre 25
+Gloria de Vivaldi - Concert en juin 26
+Messe en Sol de Schubert - Concert fin 26
+
+N=E2=80=99h=C3=A9sitez pas =C3=A0 me contacter pour toute question ou pour =
+candidater!
+0620172178
+
+=C3=80 bient=C3=B4t!
+Brigitte FABRE=
+
+------------=_1758989315-7564-142117
+Content-Type: text/plain; charset="UTF-8"
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+
+---
+Les membres de la communauté Rezo Pro Spec s'engagent à respecter la charte: http://rezoprospec.over-blog.com/la-charte
+
+Pour se désinscrire, merci d'envoyer un mail vide à rezoprospec-unsubscribe@lists.riseup.net
+To unsubscribe, send an empty mail to rezoprospec-unsubscribe@lists.riseup.net
+List help: https://riseup.net/lists
+
+------------=_1758989315-7564-142117--
