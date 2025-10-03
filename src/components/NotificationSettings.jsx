@@ -8,7 +8,10 @@ import {
   CardContent,
   Divider,
   Alert,
-  Stack
+  Stack,
+  Checkbox,
+  FormGroup,
+  Chip
 } from '@mui/material';
 import Spinner from './Spinner';
 import {
@@ -16,7 +19,16 @@ import {
   Article as NewsIcon,
   Event as EventIcon,
   AlternateEmail as MentionIcon,
-  Message as MessageIcon
+  Message as MessageIcon,
+  Home as ImmobilierIcon,
+  Build as AteliersIcon,
+  School as CoursIcon,
+  Category as MaterielIcon,
+  SwapHoriz as EchangeIcon,
+  Email as EmailIcon,
+  Mic as CastingIcon,
+  Campaign as AnnoncesIcon,
+  VolunteerActivism as DonsIcon
 } from '@mui/icons-material';
 import { supabase } from '../supabaseclient';
 import { useAuth } from '../context/authcontext';
@@ -25,6 +37,9 @@ import { useProfile } from '../context/profileContext';
 const NotificationSettings = () => {
   const { user } = useAuth();
   const { activeProfile } = useProfile();
+
+  // Check if this is the specific network that should show annonces
+  const showAnnoncesSection = activeProfile?.network_id === 'b4e51e21-de8f-4f5b-b35d-f98f6df27508';
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
@@ -35,6 +50,18 @@ const NotificationSettings = () => {
     notify_on_events: true,
     notify_on_mentions: true,
     notify_on_direct_messages: true
+  });
+
+  // Demo state for annonces categories (not connected to database)
+  const [annonceCategories, setAnnonceCategories] = useState({
+    immobilier: true,
+    ateliers: true,
+    cours: true,
+    materiel: true,
+    echange: true,
+    casting: true,
+    annonces: true,
+    dons: true
   });
 
   // Load user's current notification preferences
@@ -145,6 +172,84 @@ const NotificationSettings = () => {
     }
   ];
 
+  const annonceCategoryOptions = [
+    {
+      key: 'immobilier',
+      label: 'Immobilier',
+      description: 'Locations, ventes, colocations',
+      icon: <ImmobilierIcon />,
+      color: '#2196f3'
+    },
+    {
+      key: 'ateliers',
+      label: 'Ateliers',
+      description: 'Ateliers et formations',
+      icon: <AteliersIcon />,
+      color: '#9c27b0'
+    },
+    {
+      key: 'cours',
+      label: 'Cours',
+      description: 'Cours particuliers et collectifs',
+      icon: <CoursIcon />,
+      color: '#ff9800'
+    },
+    {
+      key: 'materiel',
+      label: 'Matériel',
+      description: 'Vente et location de matériel',
+      icon: <MaterielIcon />,
+      color: '#4caf50'
+    },
+    {
+      key: 'echange',
+      label: 'Échange',
+      description: 'Trocs et échanges de services',
+      icon: <EchangeIcon />,
+      color: '#e91e63'
+    },
+    {
+      key: 'casting',
+      label: 'Casting',
+      description: 'Castings et auditions',
+      icon: <CastingIcon />,
+      color: '#f44336'
+    },
+    {
+      key: 'annonces',
+      label: 'Annonces',
+      description: 'Annonces diverses',
+      icon: <AnnoncesIcon />,
+      color: '#00bcd4'
+    },
+    {
+      key: 'dons',
+      label: 'Dons',
+      description: 'Dons et collectes',
+      icon: <DonsIcon />,
+      color: '#8bc34a'
+    }
+  ];
+
+  const handleAnnonceCategoryToggle = (category) => {
+    setAnnonceCategories(prev => ({
+      ...prev,
+      [category]: !prev[category]
+    }));
+  };
+
+  const handleToggleAllAnnonces = () => {
+    const allSelected = Object.values(annonceCategories).every(v => v);
+    const newState = {};
+    Object.keys(annonceCategories).forEach(key => {
+      newState[key] = !allSelected;
+    });
+    setAnnonceCategories(newState);
+  };
+
+  const selectedAnnoncesCount = Object.values(annonceCategories).filter(v => v).length;
+  const allAnnoncesSelected = selectedAnnoncesCount === annonceCategoryOptions.length;
+
   return (
     <Card>
       <CardContent>
@@ -193,49 +298,156 @@ const NotificationSettings = () => {
 
           <Divider />
 
-          {/* Specific notification types */}
-          <Box>
-            <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-              Notification Types
-            </Typography>
-            <Stack spacing={2}>
-              {notificationTypes.map((type) => (
-                <FormControlLabel
-                  key={type.key}
-                  control={
-                    <Switch
-                      checked={preferences[type.key] && preferences.email_notifications_enabled}
-                      onChange={(e) => handlePreferenceChange(type.key, e.target.checked)}
-                      disabled={saving || !preferences.email_notifications_enabled}
-                    />
-                  }
-                  label={
-                    <Box display="flex" alignItems="flex-start" gap={2} sx={{ opacity: preferences.email_notifications_enabled ? 1 : 0.5 }}>
-                      <Box color="primary.main" mt={0.5}>
-                        {type.icon}
-                      </Box>
-                      <Box>
-                        <Typography variant="body1" fontWeight={500}>
-                          {type.label}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {type.description}
-                        </Typography>
-                      </Box>
-                    </Box>
-                  }
-                  sx={{ 
-                    alignItems: 'flex-start',
-                    ml: 0,
-                    '& .MuiFormControlLabel-label': { 
-                      flex: 1,
-                      mt: 1
+          {/* Specific notification types - only show if NOT the annonces network */}
+          {!showAnnoncesSection && (
+            <Box>
+              <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                Notification Types
+              </Typography>
+              <Stack spacing={2}>
+                {notificationTypes.map((type) => (
+                  <FormControlLabel
+                    key={type.key}
+                    control={
+                      <Switch
+                        checked={preferences[type.key] && preferences.email_notifications_enabled}
+                        onChange={(e) => handlePreferenceChange(type.key, e.target.checked)}
+                        disabled={saving || !preferences.email_notifications_enabled}
+                      />
                     }
-                  }}
-                />
-              ))}
-            </Stack>
+                    label={
+                      <Box display="flex" alignItems="flex-start" gap={2} sx={{ opacity: preferences.email_notifications_enabled ? 1 : 0.5 }}>
+                        <Box color="primary.main" mt={0.5}>
+                          {type.icon}
+                        </Box>
+                        <Box>
+                          <Typography variant="body1" fontWeight={500}>
+                            {type.label}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            {type.description}
+                          </Typography>
+                        </Box>
+                      </Box>
+                    }
+                    sx={{
+                      alignItems: 'flex-start',
+                      ml: 0,
+                      '& .MuiFormControlLabel-label': {
+                        flex: 1,
+                        mt: 1
+                      }
+                    }}
+                  />
+                ))}
+              </Stack>
+            </Box>
+          )}
+
+          {/* Annonces Categories Section - only show for specific network */}
+          {showAnnoncesSection && (
+            <Box>
+            <Box display="flex" alignItems="center" gap={2} mb={2}>
+              <EmailIcon color="primary" />
+              <Box flex={1}>
+                <Typography variant="subtitle1" fontWeight={600}>
+                  Catégories d'Annonces
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Choisissez les types d'annonces pour lesquelles vous souhaitez recevoir des notifications par email
+                </Typography>
+              </Box>
+              <Chip
+                label={allAnnoncesSelected ? 'Toutes' : `${selectedAnnoncesCount}/${annonceCategoryOptions.length}`}
+                color={allAnnoncesSelected ? 'primary' : 'default'}
+                size="small"
+              />
+            </Box>
+
+            {/* Toggle All Button */}
+            <Box sx={{ mb: 2 }}>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={allAnnoncesSelected}
+                    indeterminate={selectedAnnoncesCount > 0 && selectedAnnoncesCount < annonceCategoryOptions.length}
+                    onChange={handleToggleAllAnnonces}
+                    disabled={saving || !preferences.email_notifications_enabled}
+                  />
+                }
+                label={
+                  <Typography variant="body2" fontWeight={500}>
+                    Toutes les catégories
+                  </Typography>
+                }
+                sx={{ opacity: preferences.email_notifications_enabled ? 1 : 0.5 }}
+              />
+            </Box>
+
+            {/* Category Checkboxes */}
+            <FormGroup>
+              <Stack spacing={1.5} sx={{ pl: 1 }}>
+                {annonceCategoryOptions.map((category) => (
+                  <FormControlLabel
+                    key={category.key}
+                    control={
+                      <Checkbox
+                        checked={annonceCategories[category.key] && preferences.email_notifications_enabled}
+                        onChange={() => handleAnnonceCategoryToggle(category.key)}
+                        disabled={saving || !preferences.email_notifications_enabled}
+                        sx={{
+                          color: category.color,
+                          '&.Mui-checked': {
+                            color: category.color
+                          }
+                        }}
+                      />
+                    }
+                    label={
+                      <Box
+                        display="flex"
+                        alignItems="flex-start"
+                        gap={1.5}
+                        sx={{ opacity: preferences.email_notifications_enabled ? 1 : 0.5 }}
+                      >
+                        <Box
+                          sx={{
+                            color: category.color,
+                            mt: 0.25,
+                            display: 'flex',
+                            alignItems: 'center'
+                          }}
+                        >
+                          {category.icon}
+                        </Box>
+                        <Box>
+                          <Typography
+                            variant="body2"
+                            fontWeight={500}
+                            sx={{ color: category.color }}
+                          >
+                            {category.label}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            {category.description}
+                          </Typography>
+                        </Box>
+                      </Box>
+                    }
+                    sx={{
+                      alignItems: 'flex-start',
+                      ml: 0,
+                      mb: 0.5,
+                      '& .MuiFormControlLabel-label': {
+                        flex: 1
+                      }
+                    }}
+                  />
+                ))}
+              </Stack>
+            </FormGroup>
           </Box>
+          )}
         </Stack>
 
         {saving && (

@@ -44,6 +44,7 @@ import CategoriesTab from '../components/admin/CategoriesTab';
 import CoursesTab from '../components/admin/CoursesTab';
 import CRMTab from '../components/admin/CRMTab';
 import MarketplaceTab from '../components/admin/MarketplaceTab';
+import AnnoncesModerationTab from '../components/admin/AnnoncesModerationTab';
 import AdminLayout from '../components/admin/AdminLayout';
 import AdminBreadcrumbs from '../components/admin/AdminBreadcrumbs';
 import OnboardingGuide, { WithOnboardingHighlight } from '../components/OnboardingGuide';
@@ -60,11 +61,12 @@ const TAB_MAPPING = {
   'crm': 7,
   'theme': 8,
   'moderation': 9,
-  'monetization': 10,
-  'billing': 11,
-  'badges': 12,
-  'support': 13,
-  'marketplace': 14
+  'annonces': 10,
+  'monetization': 11,
+  'billing': 12,
+  'badges': 13,
+  'support': 14,
+  'marketplace': 15
 };
 
 // Index to tab name mapping
@@ -375,11 +377,12 @@ function NetworkAdminPage() {
             {activeTab === 7 && t('admin.tabs.crm')}
             {activeTab === 8 && t('admin.tabs.theme')}
             {activeTab === 9 && t('admin.tabs.moderation')}
-            {activeTab === 10 && t('admin.tabs.monetization')}
-            {activeTab === 11 && t('admin.tabs.billing')}
-            {activeTab === 12 && t('admin.tabs.badges')}
-            {activeTab === 13 && t('admin.tabs.support')}
-            {activeTab === 14 && t('admin.tabs.marketplace')}
+            {activeTab === 10 && 'Modération Annonces'}
+            {activeTab === 11 && t('admin.tabs.monetization')}
+            {activeTab === 12 && t('admin.tabs.billing')}
+            {activeTab === 13 && t('admin.tabs.badges')}
+            {activeTab === 14 && t('admin.tabs.support')}
+            {activeTab === 15 && t('admin.tabs.marketplace')}
           </Typography>
         </Box>
 
@@ -493,8 +496,22 @@ function NetworkAdminPage() {
             darkMode={darkMode} // Pass dark mode to component
           />
         )}
-        
-        {activeTab === 10 && (
+
+        {activeTab === 10 && network.id === 'b4e51e21-de8f-4f5b-b35d-f98f6df27508' && (
+          /* Annonces Moderation Component */
+          <AnnoncesModerationTab
+            networkId={network.id}
+            darkMode={darkMode}
+          />
+        )}
+
+        {activeTab === 10 && network.id !== 'b4e51e21-de8f-4f5b-b35d-f98f6df27508' && (
+          <Alert severity="info">
+            Cette fonctionnalité n'est pas disponible pour ce réseau.
+          </Alert>
+        )}
+
+        {activeTab === 11 && (
           /* Monetization Component */
           <MonetizationTab
             networkId={network.id}
@@ -502,16 +519,16 @@ function NetworkAdminPage() {
             darkMode={darkMode} // Pass dark mode to component
           />
         )}
-        
-        {activeTab === 11 && (
+
+        {activeTab === 12 && (
           /* Billing & Plan Component */
           <BillingTab
             activeProfile={activeProfile}
             darkMode={darkMode} // Pass dark mode to component
           />
         )}
-        
-        {activeTab === 12 && (
+
+        {activeTab === 13 && (
           /* Badges & Engagement Component */
           <BadgesTab
             networkId={network.id}
@@ -519,18 +536,18 @@ function NetworkAdminPage() {
             darkMode={darkMode} // Pass dark mode to component
           />
         )}
-        
-        {activeTab === 13 && (
+
+        {activeTab === 14 && (
           /* Support Tickets Component */
-          <SupportTicketsTab 
+          <SupportTicketsTab
             network={network}
             user={user}
             activeProfile={activeProfile}
             darkMode={darkMode}
           />
         )}
-        
-        {activeTab === 14 && (
+
+        {activeTab === 15 && (
           /* Marketplace Component */
           <MarketplaceTab
             networkId={network.id}

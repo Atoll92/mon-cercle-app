@@ -39,7 +39,8 @@ import {
   Category as CategoryIcon,
   School as SchoolIcon,
   Email as EmailIcon,
-  Store as StoreIcon
+  Store as StoreIcon,
+  Campaign as CampaignIcon
 } from '@mui/icons-material';
 import LanguageSwitcher from '../LanguageSwitcher';
 import { useTranslation } from '../../hooks/useTranslation.jsx';
@@ -136,40 +137,50 @@ const AdminLayout = ({
       icon: <PaletteIcon />, 
       index: 8 
     },
-    { 
-      name: t('admin.tabs.moderation'), 
-      icon: <SecurityIcon />, 
-      index: 9 
+    {
+      name: t('admin.tabs.moderation'),
+      icon: <SecurityIcon />,
+      index: 9
     },
-    { 
-      name: t('admin.tabs.monetization'), 
-      icon: <MonetizationIcon />, 
-      index: 10 
+    {
+      name: 'Modération Annonces',
+      icon: <CampaignIcon />,
+      index: 10,
+      networkId: 'b4e51e21-de8f-4f5b-b35d-f98f6df27508' // Only for specific network
     },
-    { 
-      name: t('admin.tabs.billing'), 
-      icon: <CreditCardIcon />, 
-      index: 11 
+    {
+      name: t('admin.tabs.monetization'),
+      icon: <MonetizationIcon />,
+      index: 11
     },
-    { 
-      name: t('admin.tabs.badges'), 
-      icon: <BadgeIcon />, 
-      index: 12 
+    {
+      name: t('admin.tabs.billing'),
+      icon: <CreditCardIcon />,
+      index: 12
     },
-    { 
-      name: t('admin.tabs.support'), 
-      icon: <SupportIcon />, 
-      index: 13 
+    {
+      name: t('admin.tabs.badges'),
+      icon: <BadgeIcon />,
+      index: 13
     },
-    { 
-      name: t('admin.tabs.marketplace'), 
-      icon: <StoreIcon />, 
-      index: 14,
+    {
+      name: t('admin.tabs.support'),
+      icon: <SupportIcon />,
+      index: 14
+    },
+    {
+      name: t('admin.tabs.marketplace'),
+      icon: <StoreIcon />,
+      index: 15,
       feature: 'marketplace' // Feature flag
     }
   ].filter(item => {
     // Filter out items that require a feature that is disabled
     if (item.feature && featuresConfig[item.feature] === false) {
+      return false;
+    }
+    // Filter out items that are network-specific
+    if (item.networkId && network?.id !== item.networkId) {
       return false;
     }
     return true;
