@@ -262,27 +262,48 @@ function parseSympaEmail(email: EmailData): ParsedSympaData | null {
     return null
   }
 
-  // Extract original message subject (look for Subject: or Objet: in forwarded message)
-  let subject = 'Message sans objet'
-  const subjectMatch = body.match(/(?:Subject|Objet):\s*(.+?)(?:\n|$)/im)
-  if (subjectMatch) {
-    subject = subjectMatch[1].trim()
+  // Extract original message subject
+  // Apps Script now extracts the actual subject from raw MIME and sends it in email.subject
+  let subject = email.subject || 'Message sans objet'
+
+  // Check if it's a Sympa notification subject (not the actual message subject)
+  const isSympaNotification = subject.toLowerCase().includes('message for list') ||
+                              subject.toLowerCase().includes('to be approved') ||
+                              subject.toLowerCase() === 'moderate'
+
+  if (isSympaNotification) {
+    // Fallback: Try to extract from HTML body first line
+    if (email.html) {
+      const htmlText = email.html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
+      const firstLine = htmlText.split(/[\r\n]+/)[0].trim()
+
+      if (firstLine && firstLine.length > 0 && firstLine.length <= 150) {
+        subject = firstLine
+        console.log('⚠️ Using HTML first line as subject:', subject)
+      }
+    }
+
+    // Last fallback: Use first meaningful line from body
+    if (subject === 'Message sans objet' || isSympaNotification) {
+      const firstLine = body.split(/[\r\n]+/).find(line => {
+        const trimmed = line.trim()
+        return trimmed.length > 0 &&
+               !trimmed.includes('One new message') &&
+               !trimmed.includes('messages are awaiting') &&
+               !trimmed.includes('To view the messages') &&
+               !trimmed.includes('To distribute') &&
+               !trimmed.startsWith('http')
+      })?.trim()
+
+      if (firstLine && firstLine.length <= 150) {
+        subject = firstLine
+        console.log('⚠️ Using first body line as subject:', subject)
+      }
+    }
+  } else {
     // Remove any "Re:" or "Fwd:" prefixes
     subject = subject.replace(/^(?:Re|Fwd|TR):\s*/i, '').trim()
-  } else {
-    // Fallback: Use the email subject if available and not a Sympa command
-    const emailSubject = email.subject?.toLowerCase() || ''
-    const isSympaCommand = emailSubject === 'moderate' ||
-                          emailSubject.includes('distribute') ||
-                          emailSubject.includes('reject')
-
-    if (email.subject && !isSympaCommand) {
-      subject = email.subject
-      console.log('⚠️ Using email subject as fallback:', subject)
-    } else {
-      // Email subject is a Sympa command, will use content's first line later
-      console.log('⚠️ Email subject is Sympa command, will use first line of content')
-    }
+    console.log('✅ Using subject from Apps Script:', subject)
   }
 
   // Extract sender name from forwarded message header
@@ -294,64 +315,10 @@ function parseSympaEmail(email: EmailData): ParsedSympaData | null {
     senderName = senderName.replace(/[<>]/g, '').trim()
   }
 
-  // Extract message content and subject from forwarded message
+  // Extract message content from email body
   let content = 'Contenu du message à modérer'
 
-  // DEBUG: Check for forwarded message markers
-  console.log('🔍 Checking for forwarded message delimiter...')
-  console.log('Body contains "Forwarded message":', body.includes('Forwarded message'))
-  console.log('Body contains "---------- Forwarded":', body.includes('---------- Forwarded'))
-  const forwardedIndex = body.indexOf('Forwarded message')
-  if (forwardedIndex > -1) {
-    console.log('Found "Forwarded message" at index:', forwardedIndex)
-    console.log('Context:', body.substring(Math.max(0, forwardedIndex - 50), forwardedIndex + 100))
-  }
-
-  // Method 1: Look for content after forwarded message headers
-  // The content is typically after the forwarded message delimiter and headers
-  // Try multiple variations of the forwarded message delimiter
-  let forwardedSectionMatch = body.match(/---------- Forwarded message ----------(.+?)$/is)
-  if (!forwardedSectionMatch) {
-    // Try with different dash characters or spacing
-    forwardedSectionMatch = body.match(/[-–—]{5,}\s*Forwarded message\s*[-–—]{5,}(.+?)$/is)
-  }
-  if (!forwardedSectionMatch) {
-    // Try to find just "Forwarded message" with surrounding dashes/equals
-    forwardedSectionMatch = body.match(/[=-]{5,}.*?Forwarded message.*?[=-]{5,}(.+?)$/is)
-  }
-
-  if (forwardedSectionMatch) {
-    const forwardedBody = forwardedSectionMatch[1]
-    console.log('✅ Found forwarded section, length:', forwardedBody.length)
-
-    // Extract subject from forwarded section if not found earlier
-    if (subject === 'Message sans objet') {
-      const forwardedSubjectMatch = forwardedBody.match(/Subject:\s*(.+?)(?:\n|$)/im)
-      if (forwardedSubjectMatch) {
-        subject = forwardedSubjectMatch[1].trim()
-        console.log('✅ Extracted subject from forwarded section:', subject)
-      }
-    }
-
-    // Extract content after all headers (From, Date, Subject, To, Cc, Bcc)
-    const contentMatch = forwardedBody.match(/^(?:From|Date|Subject|To|Cc|Bcc|De|Objet):.+?\n(?:(?:From|Date|Subject|To|Cc|Bcc|De|Objet):.+?\n)*\s*(.+)$/ims)
-    if (contentMatch) {
-      content = contentMatch[1].trim()
-      console.log('✅ Extracted content via regex, length:', content.length)
-    } else {
-      console.log('❌ Content regex did not match, trying simpler pattern')
-      // Simpler fallback: get everything after Subject: line
-      const simpleMatch = forwardedBody.match(/Subject:.+?\n\s*(.+)$/is)
-      if (simpleMatch) {
-        content = simpleMatch[1].trim()
-        console.log('✅ Extracted via simple pattern after Subject, length:', content.length)
-      }
-    }
-  } else {
-    console.log('❌ No forwarded section found in email body')
-  }
-
-  // Fallback methods if forwarded section not found
+  // Apps Script sends plain text body - extract content after Sympa headers
   if (content === 'Contenu du message à modérer') {
     // Method 2: Extract content AFTER "The messages moderating documentation:" link
     // Pattern: docs link, then URL, then blank lines, then actual content
@@ -397,15 +364,7 @@ function parseSympaEmail(email: EmailData): ParsedSympaData | null {
     }
   }
 
-  // If no subject found or subject is a Sympa command, use first line of content as subject
-  // (Gmail's getPlainBody() strips the forwarded section, so we can't get the real subject)
-  if ((subject === 'Message sans objet' || subject.includes('DISTRIBUTE') || subject.includes('REJECT')) && content !== 'Contenu du message à modérer') {
-    const firstLine = content.split(/[\r\n]+/)[0].trim()
-    if (firstLine && firstLine.length > 0 && firstLine.length <= 150) {
-      subject = firstLine
-      console.log('✅ Using first line of content as subject (Gmail strips forwarded section):', subject)
-    }
-  }
+  // No additional fallback needed - subject is already extracted from HTML/content above
 
   // Limit content length
   if (content.length > 5000) {

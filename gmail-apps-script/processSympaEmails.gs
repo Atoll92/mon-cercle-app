@@ -63,7 +63,7 @@ function processSympaEmails() {
     const processedLabel = getOrCreateLabel(PROCESSED_LABEL);
     const failedLabel = getOrCreateLabel(FAILED_LABEL);
 
-    // Get unread threads with Sympa-Moderation label
+    // Get threads with Sympa-Moderation label
     const threads = label.getThreads(0, MAX_EMAILS_PER_RUN);
 
     if (threads.length === 0) {
@@ -71,7 +71,7 @@ function processSympaEmails() {
       return;
     }
 
-    Logger.log(`📧 Found ${threads.length} thread(s) to process`);
+    Logger.log(`📧 Found ${threads.length} thread(s) with ${GMAIL_LABEL} label`);
 
     let successCount = 0;
     let failCount = 0;
@@ -84,6 +84,8 @@ function processSympaEmails() {
       messages.forEach(message => {
         // Skip messages that already have Sympa-Processed or Sympa-Failed label
         const labels = message.getThread().getLabels().map(l => l.getName());
+        Logger.log(`📋 Message "${message.getSubject()}" has labels: ${labels.join(', ')}`);
+
         if (labels.includes(PROCESSED_LABEL) || labels.includes(FAILED_LABEL)) {
           Logger.log(`⏭️ Skipping already processed message: "${message.getSubject()}"`);
           return;
@@ -92,13 +94,53 @@ function processSympaEmails() {
         try {
           Logger.log(`\n📨 Processing: "${message.getSubject()}"`);
 
-          // Parse email data - use plain body which has proper line breaks
+          // Extract actual subject from raw MIME content (forwarded message has the real subject)
+          const rawContent = message.getRawContent();
+          let actualSubject = '';
+
+          // Extract ALL Subject: lines (including continuation lines with leading whitespace)
+          const subjectMatch = rawContent.match(/Subject:\s*([^\r\n]+(?:\r?\n[ \t][^\r\n]+)*)/gi);
+          if (subjectMatch && subjectMatch.length > 1) {
+            // Take the LAST subject (from forwarded message)
+            actualSubject = subjectMatch[subjectMatch.length - 1]
+              .replace(/^Subject:\s*/i, '')
+              .replace(/\r?\n[ \t]+/g, ' ')  // Join continuation lines
+              .trim();
+
+            Logger.log('📧 Raw extracted subject:', actualSubject);
+
+            // Decode MIME encoded subjects (=?UTF-8?Q?...?= or =?UTF-8?B?...?=)
+            if (actualSubject.includes('=?')) {
+              actualSubject = actualSubject.replace(/=\?([^?]+)\?([QB])\?([^?]+)\?=/gi, (match, charset, encoding, encoded) => {
+                try {
+                  if (encoding.toUpperCase() === 'Q') {
+                    // Quoted-printable
+                    return encoded.replace(/_/g, ' ').replace(/=([0-9A-F]{2})/gi, (m, hex) =>
+                      String.fromCharCode(parseInt(hex, 16))
+                    );
+                  } else if (encoding.toUpperCase() === 'B') {
+                    // Base64
+                    const bytes = Utilities.base64Decode(encoded);
+                    return Utilities.newBlob(bytes).getDataAsString('UTF-8');
+                  }
+                } catch (e) {
+                  Logger.log('⚠️ MIME decode error:', e);
+                  return match;  // Return original if decode fails
+                }
+                return match;
+              });
+            }
+
+            Logger.log('✅ Extracted actual subject:', actualSubject);
+          }
+
           const emailData = {
             from: message.getFrom(),
             to: message.getTo(),
-            subject: message.getSubject(),
+            subject: actualSubject || message.getSubject(),
             date: message.getDate().toISOString(),
-            body: message.getPlainBody() // Get plain text with line breaks preserved
+            body: message.getPlainBody(),
+            html: message.getBody()
           };
 
           // Send to Supabase Edge Function
@@ -299,16 +341,57 @@ function testWithRealEmail() {
   const message = threads[0].getMessages()[0];
   Logger.log(`Testing with: "${message.getSubject()}"`);
 
+  // Extract actual subject from raw MIME content
+  const rawContent = message.getRawContent();
+  let actualSubject = '';
+
+  // Extract ALL Subject: lines (including continuation lines with leading whitespace)
+  const subjectMatch = rawContent.match(/Subject:\s*([^\r\n]+(?:\r?\n[ \t][^\r\n]+)*)/gi);
+  if (subjectMatch && subjectMatch.length > 1) {
+    // Take the LAST subject (from forwarded message)
+    actualSubject = subjectMatch[subjectMatch.length - 1]
+      .replace(/^Subject:\s*/i, '')
+      .replace(/\r?\n[ \t]+/g, ' ')  // Join continuation lines
+      .trim();
+
+    Logger.log('📧 Raw extracted subject:', actualSubject);
+
+    // Decode MIME encoded subjects (=?UTF-8?Q?...?= or =?UTF-8?B?...?=)
+    if (actualSubject.includes('=?')) {
+      actualSubject = actualSubject.replace(/=\?([^?]+)\?([QB])\?([^?]+)\?=/gi, (match, charset, encoding, encoded) => {
+        try {
+          if (encoding.toUpperCase() === 'Q') {
+            // Quoted-printable
+            return encoded.replace(/_/g, ' ').replace(/=([0-9A-F]{2})/gi, (m, hex) =>
+              String.fromCharCode(parseInt(hex, 16))
+            );
+          } else if (encoding.toUpperCase() === 'B') {
+            // Base64
+            const bytes = Utilities.base64Decode(encoded);
+            return Utilities.newBlob(bytes).getDataAsString('UTF-8');
+          }
+        } catch (e) {
+          Logger.log('⚠️ MIME decode error:', e);
+          return match;  // Return original if decode fails
+        }
+        return match;
+      });
+    }
+
+    Logger.log('✅ Extracted actual subject from raw MIME:', actualSubject);
+  } else {
+    Logger.log('❌ Could not find multiple Subject: lines in raw content');
+    Logger.log('Subject matches found:', subjectMatch ? subjectMatch.length : 0);
+  }
+
   const emailData = {
     from: message.getFrom(),
     to: message.getTo(),
-    subject: message.getSubject(),
+    subject: actualSubject || message.getSubject(), // Use extracted subject or fallback to Gmail subject
     date: message.getDate().toISOString(),
-    body: message.getPlainBody() // Get plain text body
+    body: message.getPlainBody(),
+    html: message.getBody()
   };
-
-  Logger.log('Testing with plain body (first 500 chars):');
-  Logger.log(emailData.body.substring(0, 500));
 
   Logger.log('\n📤 Sending to Edge Function:');
   Logger.log('URL:', SUPABASE_WEBHOOK_URL);
