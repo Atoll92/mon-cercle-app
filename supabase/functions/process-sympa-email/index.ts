@@ -48,7 +48,14 @@ Deno.serve(async (req) => {
     const emailData: EmailData = await req.json()
 
     console.log(`Email from: ${emailData.from}`)
-    console.log(`Subject: ${emailData.subject}`)
+    console.log(`Email subject: ${emailData.subject}`)
+    console.log(`Email to: ${emailData.to}`)
+    console.log(`Email date: ${emailData.date}`)
+    console.log('\n📧 FULL EMAIL BODY:')
+    console.log('=' .repeat(80))
+    console.log(emailData.body)
+    console.log('=' .repeat(80))
+    console.log('\n')
 
     // Parse Sympa moderation email
     const parsedData = parseSympaEmail(emailData)
@@ -226,6 +233,20 @@ function parseSympaEmail(email: EmailData): ParsedSympaData | null {
     subject = subjectMatch[1].trim()
     // Remove any "Re:" or "Fwd:" prefixes
     subject = subject.replace(/^(?:Re|Fwd|TR):\s*/i, '').trim()
+  } else {
+    // Fallback: Use the email subject if available and not a Sympa command
+    const emailSubject = email.subject?.toLowerCase() || ''
+    const isSympaCommand = emailSubject === 'moderate' ||
+                          emailSubject.includes('distribute') ||
+                          emailSubject.includes('reject')
+
+    if (email.subject && !isSympaCommand) {
+      subject = email.subject
+      console.log('⚠️ Using email subject as fallback:', subject)
+    } else {
+      // Email subject is a Sympa command, will use content's first line later
+      console.log('⚠️ Email subject is Sympa command, will use first line of content')
+    }
   }
 
   // Extract sender name from forwarded message header
@@ -237,7 +258,7 @@ function parseSympaEmail(email: EmailData): ParsedSympaData | null {
     senderName = senderName.replace(/[<>]/g, '').trim()
   }
 
-  // Extract message content from forwarded message
+  // Extract message content and subject from forwarded message
   let content = 'Contenu du message à modérer'
 
   // DEBUG: Log the body to see structure
@@ -252,18 +273,27 @@ function parseSympaEmail(email: EmailData): ParsedSympaData | null {
     const forwardedBody = forwardedSectionMatch[1]
     console.log('✅ Found forwarded section, length:', forwardedBody.length)
 
-    // Extract content after all headers (From, Date, Subject, To)
-    const contentMatch = forwardedBody.match(/^(?:From|Date|Subject|To|De|Objet):.+?\n(?:(?:From|Date|Subject|To|De|Objet):.+?\n)*\n(.+)$/ims)
+    // Extract subject from forwarded section if not found earlier
+    if (subject === 'Message sans objet') {
+      const forwardedSubjectMatch = forwardedBody.match(/Subject:\s*(.+?)(?:\n|$)/im)
+      if (forwardedSubjectMatch) {
+        subject = forwardedSubjectMatch[1].trim()
+        console.log('✅ Extracted subject from forwarded section:', subject)
+      }
+    }
+
+    // Extract content after all headers (From, Date, Subject, To, Cc, Bcc)
+    const contentMatch = forwardedBody.match(/^(?:From|Date|Subject|To|Cc|Bcc|De|Objet):.+?\n(?:(?:From|Date|Subject|To|Cc|Bcc|De|Objet):.+?\n)*\s*(.+)$/ims)
     if (contentMatch) {
       content = contentMatch[1].trim()
       console.log('✅ Extracted content via regex, length:', content.length)
     } else {
       console.log('❌ Content regex did not match, trying simpler pattern')
-      // Simpler fallback: just get everything after the To: line
-      const simpleMatch = forwardedBody.match(/To:.+?\n\n(.+)$/is)
+      // Simpler fallback: get everything after Subject: line
+      const simpleMatch = forwardedBody.match(/Subject:.+?\n\s*(.+)$/is)
       if (simpleMatch) {
         content = simpleMatch[1].trim()
-        console.log('✅ Extracted via simple pattern, length:', content.length)
+        console.log('✅ Extracted via simple pattern after Subject, length:', content.length)
       }
     }
   } else {
@@ -272,38 +302,56 @@ function parseSympaEmail(email: EmailData): ParsedSympaData | null {
 
   // Fallback methods if forwarded section not found
   if (content === 'Contenu du message à modérer') {
-    // Method 2: Extract content after "To: rezoprospec@lists.riseup.net" line
-    const toLineMatch = body.match(/To:\s*rezoprospec@lists\.riseup\.net\s*[\r\n]+\s*[\r\n]+(.+?)(?:[\r\n]{2,}-{2,}|[\r\n]+Or:|$)/is)
-    if (toLineMatch) {
-      content = toLineMatch[1].trim()
-      console.log('✅ Extracted content after To: line, length:', content.length)
+    // Method 2: Extract content AFTER "The messages moderating documentation:" link
+    // Pattern: docs link, then URL, then blank lines, then actual content
+    const afterDocsMatch = body.match(/The messages moderating documentation:\s*[\r\n]+https?:\/\/[^\r\n]+[\r\n]+\s*[\r\n]+(.+)$/is)
+    if (afterDocsMatch) {
+      content = afterDocsMatch[1].trim()
+      // Remove any trailing quotes or extra whitespace
+      content = content.replace(/^["'\s]+|["'\s]+$/g, '').trim()
+      console.log('✅ Extracted content after moderating docs link, length:', content.length)
     } else {
-      // Method 3: Try generic "To:" followed by content
-      const genericToMatch = body.match(/To:\s*.+?[\r\n]+\s*[\r\n]+(.+?)(?:[\r\n]{2,}-{2,}|[\r\n]+Or:|$)/is)
-      if (genericToMatch) {
-        content = genericToMatch[1].trim()
-        console.log('✅ Extracted via generic To: pattern, length:', content.length)
-      } else {
-        // Method 4: Get everything after Subject: line with blank line
-        const afterSubjectMatch = body.match(/Subject:\s*.+?[\r\n]+[\r\n]+(.+?)(?:[\r\n]{2,}-{2,}|[\r\n]+Or:|$)/is)
-        if (afterSubjectMatch) {
-          content = afterSubjectMatch[1].trim()
-          console.log('✅ Extracted after Subject:, length:', content.length)
-        } else {
-          // Method 5: Look for quoted content (lines starting with >)
-          const quotedLines = body
-            .split('\n')
-            .filter(line => line.trim().startsWith('>'))
-            .map(line => line.replace(/^>\s*/, ''))
-            .join('\n')
-            .trim()
+      // Fallback: simpler pattern without requiring URL
+      const simpleAfterDocs = body.match(/The messages moderating documentation:[\s\S]*?[\r\n]{2,}(.+)$/is)
+      if (simpleAfterDocs) {
+        content = simpleAfterDocs[1].trim()
+        // Clean up: remove any URLs still present
+        content = content.replace(/https?:\/\/\S+/g, '').trim()
+        content = content.replace(/^["'\s]+|["'\s]+$/g, '').trim()
+        console.log('✅ Extracted via simple after docs pattern, length:', content.length)
+      }
+    }
 
-          if (quotedLines.length > 50) {
-            content = quotedLines
-            console.log('✅ Extracted quoted content, length:', content.length)
-          }
+    // If still no content, try other methods
+    if (content === 'Contenu du message à modérer') {
+      // Method 3: Extract content after "To: rezoprospec@lists.riseup.net" line
+      const toLineMatch = body.match(/To:\s*rezoprospec@lists\.riseup\.net\s*[\r\n]+\s*[\r\n]+(.+?)(?:[\r\n]+DISTRIBUTE|[\r\n]+Or:|$)/is)
+      if (toLineMatch) {
+        content = toLineMatch[1].trim()
+        console.log('✅ Extracted content after To: line, length:', content.length)
+      } else {
+        // Method 4: Look for quoted content (lines starting with >)
+        const quotedLines = body
+          .split('\n')
+          .filter(line => line.trim().startsWith('>'))
+          .map(line => line.replace(/^>\s*/, ''))
+          .join('\n')
+          .trim()
+
+        if (quotedLines.length > 50) {
+          content = quotedLines
+          console.log('✅ Extracted quoted content, length:', content.length)
         }
       }
+    }
+  }
+
+  // If no subject found, use first line of content as subject (if reasonable length)
+  if (subject === 'Message sans objet' && content !== 'Contenu du message à modérer') {
+    const firstLine = content.split(/[\r\n]+/)[0].trim()
+    if (firstLine && firstLine.length > 0 && firstLine.length <= 100) {
+      subject = firstLine
+      console.log('✅ Using first line of content as subject:', subject)
     }
   }
 
