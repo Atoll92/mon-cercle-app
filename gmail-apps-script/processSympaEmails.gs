@@ -92,14 +92,13 @@ function processSympaEmails() {
         try {
           Logger.log(`\n📨 Processing: "${message.getSubject()}"`);
 
-          // Parse email data
+          // Parse email data - use plain body which has proper line breaks
           const emailData = {
             from: message.getFrom(),
             to: message.getTo(),
             subject: message.getSubject(),
             date: message.getDate().toISOString(),
-            body: message.getPlainBody(),
-            html: message.getBody()
+            body: message.getPlainBody() // Get plain text with line breaks preserved
           };
 
           // Send to Supabase Edge Function
@@ -305,14 +304,22 @@ function testWithRealEmail() {
     to: message.getTo(),
     subject: message.getSubject(),
     date: message.getDate().toISOString(),
-    body: message.getPlainBody(),
-    html: message.getBody()
+    body: message.getPlainBody() // Get plain text body
   };
 
-  Logger.log('Email data:', JSON.stringify(emailData, null, 2));
+  Logger.log('Testing with plain body (first 500 chars):');
+  Logger.log(emailData.body.substring(0, 500));
+
+  Logger.log('\n📤 Sending to Edge Function:');
+  Logger.log('URL:', SUPABASE_WEBHOOK_URL);
+  Logger.log('ANON_KEY configured?', SUPABASE_ANON_KEY !== 'YOUR_SUPABASE_ANON_KEY_HERE');
+  Logger.log('ANON_KEY (first 50 chars):', SUPABASE_ANON_KEY.substring(0, 50) + '...');
+  Logger.log('Body length:', emailData.body.length);
+  Logger.log('Body contains "Forwarded message"?', emailData.body.includes('Forwarded message'));
+  Logger.log('Body contains "---------- Forwarded"?', emailData.body.includes('---------- Forwarded'));
 
   const response = sendToSupabase(emailData);
-  Logger.log('Response:', JSON.stringify(response, null, 2));
+  Logger.log('\n📥 Response:', JSON.stringify(response, null, 2));
 }
 
 /**

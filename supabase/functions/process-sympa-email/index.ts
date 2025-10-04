@@ -47,15 +47,20 @@ Deno.serve(async (req) => {
 
     const emailData: EmailData = await req.json()
 
-    console.log(`Email from: ${emailData.from}`)
-    console.log(`Email subject: ${emailData.subject}`)
-    console.log(`Email to: ${emailData.to}`)
-    console.log(`Email date: ${emailData.date}`)
-    console.log('\n📧 FULL EMAIL BODY:')
-    console.log('=' .repeat(80))
-    console.log(emailData.body)
-    console.log('=' .repeat(80))
-    console.log('\n')
+    console.log(`📧 Email from: ${emailData.from}`)
+    console.log(`📧 Email subject: ${emailData.subject}`)
+    console.log(`📧 Body length: ${emailData.body?.length || 0}`)
+    console.log(`📧 Body contains "Forwarded message": ${emailData.body?.includes('Forwarded message')}`)
+    console.log(`📧 Body contains "---------- Forwarded": ${emailData.body?.includes('---------- Forwarded')}`)
+
+    // Find where "Forwarded message" appears
+    const forwardedIdx = emailData.body?.indexOf('Forwarded message') ?? -1
+    if (forwardedIdx > -1) {
+      console.log(`📧 "Forwarded message" found at char ${forwardedIdx}`)
+      console.log(`📧 Context:`, emailData.body?.substring(forwardedIdx - 20, forwardedIdx + 150))
+    } else {
+      console.log(`📧 Last 400 chars of body:`, emailData.body?.substring((emailData.body?.length || 0) - 400))
+    }
 
     // Parse Sympa moderation email
     const parsedData = parseSympaEmail(emailData)
@@ -162,7 +167,38 @@ Deno.serve(async (req) => {
  * Parse Sympa moderation email to extract required information
  */
 function parseSympaEmail(email: EmailData): ParsedSympaData | null {
-  const body = email.body
+  let body = email.body
+
+  // If body contains email headers (raw email format), extract the plain text body
+  if (body.includes('Delivered-To:') || body.includes('X-Google-Smtp-Source:') || body.includes('Content-Type:')) {
+    console.log('📧 Detected raw email with headers, extracting plain text body...')
+    console.log('   Body length:', body.length)
+    console.log('   Has "Content-Type: text/plain"?', body.includes('Content-Type: text/plain'))
+    console.log('   First 500 chars of raw body:', body.substring(0, 500))
+
+    // For multipart emails, find the text/plain part
+    if (body.includes('Content-Type: text/plain')) {
+      const plainTextMatch = body.match(/Content-Type: text\/plain[^\n]*\n(?:Content-Transfer-Encoding: [^\n]*\n)?\n([\s\S]+?)(?:\n--|\nContent-Type:|$)/i)
+      if (plainTextMatch) {
+        body = plainTextMatch[1].trim()
+        console.log('✅ Extracted plain text from multipart MIME, length:', body.length)
+        console.log('   First 300 chars of extracted:', body.substring(0, 300))
+      } else {
+        console.log('❌ MIME regex did not match, keeping original body')
+      }
+    } else {
+      // Single part email - find body after headers (double newline)
+      console.log('   No text/plain found, trying single-part extraction...')
+      const bodyStartMatch = body.match(/\n\n([\s\S]+)$/)
+      if (bodyStartMatch) {
+        body = bodyStartMatch[1]
+        console.log('✅ Extracted from single-part, length:', body.length)
+        console.log('   First 300 chars:', body.substring(0, 300))
+      } else {
+        console.log('❌ Single-part regex failed too')
+      }
+    }
+  }
 
   console.log('🔍 Parsing email body...')
 
@@ -261,14 +297,29 @@ function parseSympaEmail(email: EmailData): ParsedSympaData | null {
   // Extract message content and subject from forwarded message
   let content = 'Contenu du message à modérer'
 
-  // DEBUG: Log the body to see structure
-  console.log('📧 Full email body for content extraction:')
-  console.log(body.substring(0, 1500)) // First 1500 chars
-  console.log('--- END DEBUG ---')
+  // DEBUG: Check for forwarded message markers
+  console.log('🔍 Checking for forwarded message delimiter...')
+  console.log('Body contains "Forwarded message":', body.includes('Forwarded message'))
+  console.log('Body contains "---------- Forwarded":', body.includes('---------- Forwarded'))
+  const forwardedIndex = body.indexOf('Forwarded message')
+  if (forwardedIndex > -1) {
+    console.log('Found "Forwarded message" at index:', forwardedIndex)
+    console.log('Context:', body.substring(Math.max(0, forwardedIndex - 50), forwardedIndex + 100))
+  }
 
   // Method 1: Look for content after forwarded message headers
   // The content is typically after the forwarded message delimiter and headers
-  const forwardedSectionMatch = body.match(/---------- Forwarded message ----------(.+?)$/is)
+  // Try multiple variations of the forwarded message delimiter
+  let forwardedSectionMatch = body.match(/---------- Forwarded message ----------(.+?)$/is)
+  if (!forwardedSectionMatch) {
+    // Try with different dash characters or spacing
+    forwardedSectionMatch = body.match(/[-–—]{5,}\s*Forwarded message\s*[-–—]{5,}(.+?)$/is)
+  }
+  if (!forwardedSectionMatch) {
+    // Try to find just "Forwarded message" with surrounding dashes/equals
+    forwardedSectionMatch = body.match(/[=-]{5,}.*?Forwarded message.*?[=-]{5,}(.+?)$/is)
+  }
+
   if (forwardedSectionMatch) {
     const forwardedBody = forwardedSectionMatch[1]
     console.log('✅ Found forwarded section, length:', forwardedBody.length)
@@ -346,12 +397,13 @@ function parseSympaEmail(email: EmailData): ParsedSympaData | null {
     }
   }
 
-  // If no subject found, use first line of content as subject (if reasonable length)
-  if (subject === 'Message sans objet' && content !== 'Contenu du message à modérer') {
+  // If no subject found or subject is a Sympa command, use first line of content as subject
+  // (Gmail's getPlainBody() strips the forwarded section, so we can't get the real subject)
+  if ((subject === 'Message sans objet' || subject.includes('DISTRIBUTE') || subject.includes('REJECT')) && content !== 'Contenu du message à modérer') {
     const firstLine = content.split(/[\r\n]+/)[0].trim()
-    if (firstLine && firstLine.length > 0 && firstLine.length <= 100) {
+    if (firstLine && firstLine.length > 0 && firstLine.length <= 150) {
       subject = firstLine
-      console.log('✅ Using first line of content as subject:', subject)
+      console.log('✅ Using first line of content as subject (Gmail strips forwarded section):', subject)
     }
   }
 
