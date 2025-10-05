@@ -90,11 +90,13 @@ Deno.serve(async (req) => {
     }
 
     // Build Sympa command based on action
+    // Format: DISTRIBUTE listname message_id OR REJECT listname message_id
+    // The sympa_auth_token IS the message_id
     let sympaCommand: string
     if (action === 'approved') {
-      sympaCommand = `AUTH ${annonce.sympa_auth_token} DISTRIBUTE ${SYMPA_LIST_NAME} ${annonce.sympa_ticket_id}`
+      sympaCommand = `DISTRIBUTE ${SYMPA_LIST_NAME} ${annonce.sympa_auth_token}`
     } else {
-      sympaCommand = `AUTH ${annonce.sympa_auth_token} REJECT ${SYMPA_LIST_NAME} ${annonce.sympa_ticket_id}`
+      sympaCommand = `REJECT ${SYMPA_LIST_NAME} ${annonce.sympa_auth_token}`
     }
 
     console.log(`📧 Sending Sympa command: ${sympaCommand.substring(0, 50)}...`)
