@@ -102,8 +102,7 @@ const AdminLayout = ({
     {
       name: t('admin.tabs.members'),
       icon: <PersonAddIcon />,
-      index: 1,
-      excludeNetworks: [REZOPROSPECT_NETWORK_ID] // Hide for rezoprospect
+      index: 1
     },
     {
       name: t('admin.tabs.categories'),

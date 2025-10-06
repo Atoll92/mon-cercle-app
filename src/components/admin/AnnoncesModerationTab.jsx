@@ -1,5 +1,5 @@
 // File: src/components/admin/AnnoncesModerationTab.jsx
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   Box,
   Paper,
@@ -32,7 +32,9 @@ import {
   FilterList as FilterIcon,
   Refresh as RefreshIcon,
   Sync as SyncIcon,
-  CheckCircleOutline as SyncedIcon
+  CheckCircleOutline as SyncedIcon,
+  ExpandMore as ExpandMoreIcon,
+  ExpandLess as ExpandLessIcon
 } from '@mui/icons-material';
 import { useTranslation } from '../../hooks/useTranslation';
 import { fetchAnnonces, moderateAnnonceWithSympa } from '../../api/annonces';
@@ -66,6 +68,8 @@ function AnnoncesModerationTab({ networkId, darkMode }) {
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [moderating, setModerating] = useState({});
+  const [expandedMessages, setExpandedMessages] = useState({});
+  const [truncatedMessages, setTruncatedMessages] = useState({});
 
   const loadAnnonces = async () => {
     try {
@@ -169,6 +173,13 @@ function AnnoncesModerationTab({ networkId, darkMode }) {
       case 'pending': return 'En attente';
       default: return status;
     }
+  };
+
+  const toggleMessageExpansion = (annonceId) => {
+    setExpandedMessages(prev => ({
+      ...prev,
+      [annonceId]: !prev[annonceId]
+    }));
   };
 
   if (loading && annonces.length === 0) {
@@ -280,10 +291,10 @@ function AnnoncesModerationTab({ networkId, darkMode }) {
           </Typography>
         </Paper>
       ) : (
-        <Grid container spacing={2}>
+        <Stack spacing={2}>
           {filteredAnnonces.map((annonce) => (
-            <Grid item xs={12} key={annonce.id}>
-              <Card
+            <Card
+              key={annonce.id}
                 elevation={0}
                 sx={{
                   border: `1px solid ${muiTheme.palette.custom.border}`,
@@ -363,21 +374,57 @@ function AnnoncesModerationTab({ networkId, darkMode }) {
                   </Typography>
 
                   {/* Content */}
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
-                    sx={{
-                      mb: 2,
-                      maxHeight: 120,
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      display: '-webkit-box',
-                      WebkitLineClamp: 5,
-                      WebkitBoxOrient: 'vertical'
-                    }}
-                  >
-                    {annonce.content}
-                  </Typography>
+                  <Box>
+                    <Typography
+                      ref={(el) => {
+                        if (el && !expandedMessages[annonce.id]) {
+                          // Check if content is actually truncated
+                          const isTruncated = el.scrollHeight > el.clientHeight;
+                          if (truncatedMessages[annonce.id] !== isTruncated) {
+                            setTruncatedMessages(prev => ({
+                              ...prev,
+                              [annonce.id]: isTruncated
+                            }));
+                          }
+                        }
+                      }}
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{
+                        mb: 2,
+                        ...(!expandedMessages[annonce.id] && {
+                          maxHeight: 120,
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          display: '-webkit-box',
+                          WebkitLineClamp: 5,
+                          WebkitBoxOrient: 'vertical'
+                        })
+                      }}
+                    >
+                      {annonce.content}
+                    </Typography>
+                    {truncatedMessages[annonce.id] && !expandedMessages[annonce.id] && (
+                      <Button
+                        size="small"
+                        onClick={() => toggleMessageExpansion(annonce.id)}
+                        endIcon={<ExpandMoreIcon />}
+                        sx={{ mb: 1 }}
+                      >
+                        Voir plus
+                      </Button>
+                    )}
+                    {expandedMessages[annonce.id] && (
+                      <Button
+                        size="small"
+                        onClick={() => toggleMessageExpansion(annonce.id)}
+                        endIcon={<ExpandLessIcon />}
+                        sx={{ mb: 1 }}
+                      >
+                        Voir moins
+                      </Button>
+                    )}
+                  </Box>
 
                   {annonce.moderated_at && (
                     <Typography variant="caption" color="text.secondary" sx={{ fontStyle: 'italic' }}>
@@ -465,9 +512,8 @@ function AnnoncesModerationTab({ networkId, darkMode }) {
                   </Stack>
                 </CardActions>
               </Card>
-            </Grid>
           ))}
-        </Grid>
+        </Stack>
       )}
     </Box>
   );
