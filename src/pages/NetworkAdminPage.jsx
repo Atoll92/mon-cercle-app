@@ -45,6 +45,7 @@ import CoursesTab from '../components/admin/CoursesTab';
 import CRMTab from '../components/admin/CRMTab';
 import MarketplaceTab from '../components/admin/MarketplaceTab';
 import AnnoncesModerationTab from '../components/admin/AnnoncesModerationTab';
+import UsersModerationTab from '../components/admin/UsersModerationTab';
 import AdminLayout from '../components/admin/AdminLayout';
 import AdminBreadcrumbs from '../components/admin/AdminBreadcrumbs';
 import OnboardingGuide, { WithOnboardingHighlight } from '../components/OnboardingGuide';
@@ -66,7 +67,8 @@ const TAB_MAPPING = {
   'billing': 12,
   'badges': 13,
   'support': 14,
-  'marketplace': 15
+  'marketplace': 15,
+  'users': 16
 };
 
 // Index to tab name mapping
@@ -383,6 +385,7 @@ function NetworkAdminPage() {
             {activeTab === 13 && t('admin.tabs.badges')}
             {activeTab === 14 && t('admin.tabs.support')}
             {activeTab === 15 && t('admin.tabs.marketplace')}
+            {activeTab === 16 && 'Modération Utilisateurs'}
           </Typography>
         </Box>
 
@@ -553,6 +556,20 @@ function NetworkAdminPage() {
             networkId={network.id}
             darkMode={darkMode}
           />
+        )}
+
+        {activeTab === 16 && network.id === 'b4e51e21-de8f-4f5b-b35d-f98f6df27508' && (
+          /* Users Moderation Component */
+          <UsersModerationTab
+            networkId={network.id}
+            darkMode={darkMode}
+          />
+        )}
+
+        {activeTab === 16 && network.id !== 'b4e51e21-de8f-4f5b-b35d-f98f6df27508' && (
+          <Alert severity="info">
+            Cette fonctionnalité n'est pas disponible pour ce réseau.
+          </Alert>
         )}
       </Paper>
       
