@@ -40,7 +40,8 @@ import {
   School as SchoolIcon,
   Email as EmailIcon,
   Store as StoreIcon,
-  Campaign as CampaignIcon
+  Campaign as CampaignIcon,
+  People as PeopleIcon
 } from '@mui/icons-material';
 import LanguageSwitcher from '../LanguageSwitcher';
 import { useTranslation } from '../../hooks/useTranslation.jsx';
@@ -159,6 +160,12 @@ const AdminLayout = ({
       name: 'Modération Annonces',
       icon: <CampaignIcon />,
       index: 10,
+      networkId: REZOPROSPECT_NETWORK_ID // Only for rezoprospect network
+    },
+    {
+      name: 'Modération Utilisateurs',
+      icon: <PeopleIcon />,
+      index: 16,
       networkId: REZOPROSPECT_NETWORK_ID // Only for rezoprospect network
     },
     {
