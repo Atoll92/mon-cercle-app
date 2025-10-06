@@ -124,6 +124,7 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
       setEventImageFile(null);
       setEventImagePreview(null);
       setError(null);
+      setCurrentStep(0);
     } else if (editingEvent) {
       // Format date for datetime-local input
       let formattedDate = '';

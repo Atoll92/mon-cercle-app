@@ -13,6 +13,7 @@ import {
   Chip
 } from '@mui/material';
 import InvitationLinkWidget from './InvitationLinkWidget';
+import UserContent from './UserContent';
 
 const AboutTab = ({ network, networkMembers, isUserAdmin, currentUserId }) => {
   const [selectedMember, setSelectedMember] = useState(null);
@@ -40,7 +41,7 @@ const AboutTab = ({ network, networkMembers, isUserAdmin, currentUserId }) => {
               
               {network.description ? (
                 <Typography variant="body1" paragraph>
-                  {network.description}
+                  <UserContent content={network.description} />
                 </Typography>
               ) : (
                 <Typography variant="body2" color="text.secondary">
