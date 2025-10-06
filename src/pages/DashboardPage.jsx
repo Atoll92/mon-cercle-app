@@ -259,7 +259,7 @@ const EventCard = ({ event, participationStatus, onViewDetails, t }) => {
   return (
     <Paper
       variant="outlined"
-      sx={{ p: 1, borderRadius: 2, display: 'flex', alignItems: 'center', gap: 1.5, minHeight: 80 }}
+      sx={{ p: 1, borderRadius: 2, display: 'flex', alignItems: 'center', gap: 1.5, minHeight: 80, flexWrap: 'wrap' }}
     >
       <Box sx={{ 
         width: 120, height: 80,
@@ -835,8 +835,8 @@ function DashboardPage() {
                         boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
                         display: 'flex',
                         flexDirection: 'column',
-                        height: 400,
-                        minHeight: 400,
+                        height: { xs: 'auto', md: 400 },
+                        minHeight: { xs: 'auto', md: 400 },
                         width: '100%',
                         flex: 1,
                         transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
@@ -1065,8 +1065,8 @@ function DashboardPage() {
                         sx={{ 
                           borderRadius: 2, 
                           boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-                          height: 400,
-                          minHeight: 400,
+                          height: { xs: 'auto', md : 400},
+                          minHeight: { xs: 'auto', md : 400},
                           width: '100%',
                           display: 'flex',
                           flexDirection: 'column',
@@ -1230,8 +1230,8 @@ function DashboardPage() {
                         sx={{ 
                           borderRadius: 2, 
                           boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-                          height: 400,
-                          minHeight: 400,
+                          height: { xs: 'auto', md : 400},
+                          minHeight: { xs: 'auto', md : 400},
                           width: '100%',
                           display: 'flex',
                           flexDirection: 'column',
@@ -1323,34 +1323,37 @@ function DashboardPage() {
                         display: 'flex',
                         flexDirection: 'column'
                       }}>
-                          <CardHeader
-                            title={<Typography variant="subtitle1">{t('dashboard.network.upcomingEvents')}</Typography>}
-                            avatar={<EventIcon color="primary" />}
-                            action={
-                              <Box sx={{ display: 'flex', gap: 1 }}>
-                                <Button
-                                  variant="contained"
-                                  size="small"
-                                  startIcon={<AddIcon />}
-                                  onClick={() => setCreateEventOpen(true)}
-                                >
-                                  {t('dashboard.buttons.createEvent')}
-                                </Button>
-                                <Button 
-                                  component={Link}
-                                  to="/network?tab=events"
-                                  endIcon={<ArrowForwardIcon />}
-                                  size="small"
-                                >
-                                  {t('dashboard.buttons.viewAll')}
-                                </Button>
-                              </Box>
-                            }
-                            sx={{ 
-                              bgcolor: 'rgba(25, 118, 210, 0.05)',
-                              py: 1
-                            }}
-                          />
+                        <CardHeader
+                          title={<Typography variant="subtitle1">{t('dashboard.network.upcomingEvents')}</Typography>}
+                          avatar={<EventIcon color="primary" />}
+                          action={
+                            <Box sx={{ display: 'flex', gap: 1 }}>
+                              <Button
+                                variant="contained"
+                                size="small"
+                                startIcon={<AddIcon />}
+                                onClick={() => setCreateEventOpen(true)}
+                              >
+                                {t('dashboard.buttons.createEvent')}
+                              </Button>
+                              <Button 
+                                component={Link}
+                                to="/network?tab=events"
+                                endIcon={<ArrowForwardIcon />}
+                                size="small"
+                              >
+                                {t('dashboard.buttons.viewAll')}
+                              </Button>
+                            </Box>
+                          }
+                          sx={{ 
+                            bgcolor: 'rgba(25, 118, 210, 0.05)',
+                            py: 1,
+                            gap: 1,
+                            flexWrap: 'wrap',
+                            '& .MuiCardHeader-action': { maxWidth: '100%' }
+                          }}
+                        />
                       
                       {loadingEvents ? (
                         <Box sx={{ p: 2, textAlign: 'center' }}>

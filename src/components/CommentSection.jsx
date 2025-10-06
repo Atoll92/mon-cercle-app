@@ -642,7 +642,7 @@ const CommentSection = ({ itemType, itemId, onMemberClick, defaultExpanded = fal
     <Box sx={{ mt: 2 }}>
       
       {/* Header with button to open comments, comment count and optional top-right element */}
-      <Box display="flex" alignItems="center" justifyContent="space-between">
+      <Box display="flex" alignItems="center" justifyContent="space-between" flexWrap="wrap" gap={1.5}>
         <Button
           startIcon={<CommentIcon sx={{ fontSize: 18 }} />}
           onClick={() => setShowComments(!showComments)}

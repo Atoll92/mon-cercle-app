@@ -311,7 +311,7 @@ const AnnouncementCard = ({ news, networkId, onMemberClick, category }) => {
           </Box>
 
           {/* Comment count and actions - matching PostCard */}
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 2, flexWrap: 'wrap', gap: 1 }}>
             <Button
               component={Link}
               to={`/network/${networkId}/news/${news.id}`}

@@ -46,7 +46,8 @@ const WidgetHeader = ({
         justifyContent: 'space-between',
         borderBottom: '1px solid',
         borderColor: 'divider',
-        bgcolor: 'rgba(25, 118, 210, 0.05)'
+        bgcolor: 'rgba(25, 118, 210, 0.05)',
+        flexWrap: 'wrap',
       }}
     >
       <Box sx={{ display: 'flex', alignItems: 'center' }}>
