@@ -111,13 +111,36 @@ function processSympaEmails() {
 
             // Decode MIME encoded subjects (=?UTF-8?Q?...?= or =?UTF-8?B?...?=)
             if (actualSubject.includes('=?')) {
+              // First, collapse spaces between adjacent MIME-encoded words
+              // RFC 2047: Whitespace between encoded-words should be ignored
+              actualSubject = actualSubject.replace(/(\?=)\s+(\=\?)/g, '$1$2');
+
               actualSubject = actualSubject.replace(/=\?([^?]+)\?([QB])\?([^?]+)\?=/gi, (match, charset, encoding, encoded) => {
                 try {
                   if (encoding.toUpperCase() === 'Q') {
-                    // Quoted-printable
-                    return encoded.replace(/_/g, ' ').replace(/=([0-9A-F]{2})/gi, (m, hex) =>
-                      String.fromCharCode(parseInt(hex, 16))
-                    );
+                    // Quoted-printable with proper UTF-8 multi-byte handling
+                    // Step 1: Replace underscores with spaces
+                    let withSpaces = encoded.replace(/_/g, ' ');
+
+                    // Step 2: Extract all hex-encoded bytes into an array
+                    const bytes = [];
+                    let i = 0;
+                    while (i < withSpaces.length) {
+                      if (withSpaces[i] === '=' && i + 2 < withSpaces.length) {
+                        // Convert hex byte to number
+                        const hexByte = withSpaces.substring(i + 1, i + 3);
+                        bytes.push(parseInt(hexByte, 16));
+                        i += 3;
+                      } else {
+                        // Regular ASCII character
+                        bytes.push(withSpaces.charCodeAt(i));
+                        i++;
+                      }
+                    }
+
+                    // Step 3: Decode byte array as UTF-8
+                    const blob = Utilities.newBlob(bytes);
+                    return blob.getDataAsString('UTF-8');
                   } else if (encoding.toUpperCase() === 'B') {
                     // Base64
                     const bytes = Utilities.base64Decode(encoded);
@@ -358,13 +381,36 @@ function testWithRealEmail() {
 
     // Decode MIME encoded subjects (=?UTF-8?Q?...?= or =?UTF-8?B?...?=)
     if (actualSubject.includes('=?')) {
+      // First, collapse spaces between adjacent MIME-encoded words
+      // RFC 2047: Whitespace between encoded-words should be ignored
+      actualSubject = actualSubject.replace(/(\?=)\s+(\=\?)/g, '$1$2');
+
       actualSubject = actualSubject.replace(/=\?([^?]+)\?([QB])\?([^?]+)\?=/gi, (match, charset, encoding, encoded) => {
         try {
           if (encoding.toUpperCase() === 'Q') {
-            // Quoted-printable
-            return encoded.replace(/_/g, ' ').replace(/=([0-9A-F]{2})/gi, (m, hex) =>
-              String.fromCharCode(parseInt(hex, 16))
-            );
+            // Quoted-printable with proper UTF-8 multi-byte handling
+            // Step 1: Replace underscores with spaces
+            let withSpaces = encoded.replace(/_/g, ' ');
+
+            // Step 2: Extract all hex-encoded bytes into an array
+            const bytes = [];
+            let i = 0;
+            while (i < withSpaces.length) {
+              if (withSpaces[i] === '=' && i + 2 < withSpaces.length) {
+                // Convert hex byte to number
+                const hexByte = withSpaces.substring(i + 1, i + 3);
+                bytes.push(parseInt(hexByte, 16));
+                i += 3;
+              } else {
+                // Regular ASCII character
+                bytes.push(withSpaces.charCodeAt(i));
+                i++;
+              }
+            }
+
+            // Step 3: Decode byte array as UTF-8
+            const blob = Utilities.newBlob(bytes);
+            return blob.getDataAsString('UTF-8');
           } else if (encoding.toUpperCase() === 'B') {
             // Base64
             const bytes = Utilities.base64Decode(encoded);

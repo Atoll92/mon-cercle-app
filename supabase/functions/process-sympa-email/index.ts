@@ -392,9 +392,9 @@ function parseSympaEmail(email: EmailData): ParsedSympaData | null {
 function autoCategorize(text: string): string | null {
   const lowerText = text.toLowerCase()
 
-  // Immobilier
+  // Logement (formerly Immobilier)
   if (/\b(appartement|logement|sous-loc|immobilier|location|loyer|studio|t2|t3|chambre|colocation)\b/i.test(lowerText)) {
-    return 'immobilier'
+    return 'logement'
   }
 
   // Ateliers

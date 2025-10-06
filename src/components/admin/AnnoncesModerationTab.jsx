@@ -39,7 +39,7 @@ import { fetchAnnonces, moderateAnnonceWithSympa } from '../../api/annonces';
 import Spinner from '../Spinner';
 
 const CATEGORIES = [
-  { value: 'immobilier', label: 'Logement', color: '#2196f3' },
+  { value: 'logement', label: 'Logement', color: '#2196f3' },
   { value: 'ateliers', label: 'Ateliers', color: '#9c27b0' },
   { value: 'cours', label: 'Cours', color: '#ff9800' },
   { value: 'materiel', label: 'Matériel', color: '#4caf50' },

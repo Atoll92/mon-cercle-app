@@ -55,7 +55,7 @@ const NotificationSettings = () => {
 
   // Demo state for annonces categories (not connected to database)
   const [annonceCategories, setAnnonceCategories] = useState({
-    immobilier: true,
+    logement: true,
     ateliers: true,
     cours: true,
     materiel: true,
@@ -185,7 +185,7 @@ const NotificationSettings = () => {
 
   const annonceCategoryOptions = [
     {
-      key: 'immobilier',
+      key: 'logement',
       label: 'Logement',
       description: 'Locations, ventes, colocations',
       icon: <ImmobilierIcon />,
