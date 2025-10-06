@@ -127,6 +127,7 @@ function NetworkLandingPage() {
     error,
     userRole,
     isAdmin: isUserAdmin,
+    enabledTabs,
     setEvents
   } = useNetwork();
   
@@ -152,32 +153,6 @@ function NetworkLandingPage() {
   
   // Animation setup - must be at top level, not conditional
   const contentRef = useFadeIn(200);
-  
-  // Parse enabled tabs from network configuration
-  const enabledTabs = React.useMemo(() => {
-    if (!network?.enabled_tabs) {
-      return ['news', 'members', 'events', 'chat', 'files', 'wiki', 'social'];
-    }
-    
-    try {
-      // Handle both new format (array) and legacy format (stringified array)
-      let tabs;
-      if (Array.isArray(network.enabled_tabs)) {
-        // New format: already an array
-        tabs = network.enabled_tabs;
-      } else if (typeof network.enabled_tabs === 'string') {
-        // Legacy format: stringified array
-        tabs = JSON.parse(network.enabled_tabs);
-      } else {
-        // Fallback
-        tabs = ['news', 'members', 'events', 'chat', 'files', 'wiki', 'social'];
-      }
-      return Array.isArray(tabs) && tabs.length > 0 ? tabs : ['news', 'members', 'events', 'chat', 'files', 'wiki', 'social'];
-    } catch (e) {
-      console.error('Error parsing enabled tabs:', e);
-      return ['news', 'members', 'events', 'chat', 'files', 'wiki', 'social'];
-    }
-  }, [network?.enabled_tabs]);
 
   // Define all available tabs with their properties (matching admin panel IDs)
   const allTabs = [
@@ -195,17 +170,20 @@ function NetworkLandingPage() {
 
   // Filter tabs based on network configuration, preserving order from enabledTabs
   const visibleTabs = React.useMemo(() => {
+    // Use enabledTabs from context, with fallback
+    const tabsToUse = enabledTabs && enabledTabs.length > 0 ? enabledTabs : ['news', 'members', 'events', 'chat', 'files', 'wiki', 'social'];
+
     // Create tabs in the order specified by enabledTabs, then add About at the end
-    const orderedTabs = enabledTabs
+    const orderedTabs = tabsToUse
       .map(tabId => allTabs.find(tab => tab.id === tabId))
       .filter(tab => tab); // Remove any undefined tabs
-    
+
     // Always add About tab at the end
     const aboutTab = allTabs.find(tab => tab.id === 'about');
     if (aboutTab && !orderedTabs.some(tab => tab.id === 'about')) {
       orderedTabs.push(aboutTab);
     }
-    
+
     return orderedTabs.length > 0 ? orderedTabs : allTabs;
   }, [enabledTabs, allTabs]);
   

@@ -31,6 +31,7 @@ export const NetworkProvider = ({ networkId, children }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [userRole, setUserRole] = useState('member');
+  const [enabledTabs, setEnabledTabs] = useState([]);
 
   // Fetch network details and related data
   useEffect(() => {
@@ -45,6 +46,30 @@ export const NetworkProvider = ({ networkId, children }) => {
         const networkData = await fetchNetworkDetails(networkId);
         if (!networkData) throw new Error('Network not found');
         setNetwork(networkData);
+
+        // Parse enabled tabs from network configuration
+        let parsedEnabledTabs = ['news', 'members', 'events', 'chat', 'files', 'wiki', 'social'];
+        if (networkData?.enabled_tabs) {
+          try {
+            // Handle both new format (array) and legacy format (stringified array)
+            let tabs;
+            if (Array.isArray(networkData.enabled_tabs)) {
+              // New format: already an array
+              tabs = networkData.enabled_tabs;
+            } else if (typeof networkData.enabled_tabs === 'string') {
+              // Legacy format: stringified array
+              tabs = JSON.parse(networkData.enabled_tabs);
+            } else {
+              // Fallback
+              tabs = ['news', 'members', 'events', 'chat', 'files', 'wiki', 'social'];
+            }
+            parsedEnabledTabs = Array.isArray(tabs) && tabs.length > 0 ? tabs : ['news', 'members', 'events', 'chat', 'files', 'wiki', 'social'];
+          } catch (e) {
+            console.error('Error parsing enabled tabs:', e);
+            parsedEnabledTabs = ['news', 'members', 'events', 'chat', 'files', 'wiki', 'social'];
+          }
+        }
+        setEnabledTabs(parsedEnabledTabs);
         
         // Fetch network members
         const membersResponse = await fetchNetworkMembers(networkId);
@@ -107,6 +132,7 @@ export const NetworkProvider = ({ networkId, children }) => {
     loading,
     error,
     userRole,
+    enabledTabs,
     isAdmin: userRole === 'admin',
     // Add utility functions for updating network data
     refreshMembers: async () => {
@@ -166,6 +192,27 @@ export const NetworkProvider = ({ networkId, children }) => {
         const networkData = await fetchNetworkDetails(networkId);
         if (!networkData) throw new Error('Network not found');
         setNetwork(networkData);
+
+        // Re-parse enabled tabs when refreshing network
+        let parsedEnabledTabs = ['news', 'members', 'events', 'chat', 'files', 'wiki', 'social'];
+        if (networkData?.enabled_tabs) {
+          try {
+            let tabs;
+            if (Array.isArray(networkData.enabled_tabs)) {
+              tabs = networkData.enabled_tabs;
+            } else if (typeof networkData.enabled_tabs === 'string') {
+              tabs = JSON.parse(networkData.enabled_tabs);
+            } else {
+              tabs = ['news', 'members', 'events', 'chat', 'files', 'wiki', 'social'];
+            }
+            parsedEnabledTabs = Array.isArray(tabs) && tabs.length > 0 ? tabs : ['news', 'members', 'events', 'chat', 'files', 'wiki', 'social'];
+          } catch (e) {
+            console.error('Error parsing enabled tabs:', e);
+            parsedEnabledTabs = ['news', 'members', 'events', 'chat', 'files', 'wiki', 'social'];
+          }
+        }
+        setEnabledTabs(parsedEnabledTabs);
+
         return { success: true };
       } catch (error) {
         console.error('Failed to refresh network:', error);
