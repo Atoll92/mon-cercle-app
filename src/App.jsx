@@ -10,7 +10,7 @@ import { preventResizeAnimations } from './utils/animationHelpers';
 import ThemeProvider from './components/ThemeProvider';
 import ProtectedRoute from './components/ProtectedRoute';
 import { DirectMessagesProvider } from './context/directMessagesContext';
-import { AppProvider } from './context/appContext';
+import { AppProvider, useApp } from './context/appContext';
 import ErrorBoundary from './components/ErrorBoundary';
 import { Analytics } from '@vercel/analytics/react';
 import { ProfileProvider, useProfile } from './context/profileContext';
@@ -25,6 +25,7 @@ import SignupPage from './pages/SignupPage';
 import RezoProSpecSignupPage from './pages/RezoProSpecSignupPage';
 import NotFoundPage from './pages/NotFoundPage';
 import EventPage from './pages/EventPage';
+import { NetworkProvider } from './context/networkContext.jsx';
 
 // Lazy loaded pages (larger, less frequently accessed)
 const PasswordResetPage = lazyWithRetry(() => import('./pages/PasswordResetPage'));
@@ -165,7 +166,9 @@ function App() {
              window.location.pathname !== "/network-alt" &&
              !window.location.pathname.match(/^\/network\/[^\/]+$/) &&
              !window.location.pathname.match(/^\/network-alt\/[^\/]+$/) && (
-              <NetworkHeader/>
+              <NetworkProvider>
+                <NetworkHeader/>
+              </NetworkProvider>
             )}
             <Box component="main" sx={{ 
               flex: 1, 

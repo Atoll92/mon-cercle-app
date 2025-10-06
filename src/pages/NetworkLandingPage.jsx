@@ -763,8 +763,8 @@ function NetworkLandingPage() {
                   '&::-webkit-scrollbar': {
                     display: 'none',
                   },
-                  '-ms-overflow-style': 'none',
-                  'scrollbar-width': 'none',
+                  msOverflowStyle: 'none',
+                  scrollbarWidth: 'none',
                   // Better responsive handling
                   [muiTheme.breakpoints.up('md')]: {
                     '& .MuiTabs-flexContainer': {
@@ -801,133 +801,91 @@ function NetworkLandingPage() {
         </Box>
       )}
 
-      {/* Fixed tabs section - appears when scrolled (always visible on mobile) */}
+      {/* Fixed tabs section - appears when scrolled (hidden on mobile, using MobileMenu instead) */}
       <Box
         sx={{
+          display: { xs: 'none', sm: 'block' }, // Hide on mobile - using MobileMenu instead
           position: 'fixed',
-          top: { xs: '182px', sm: '80px' }, // Mobile actual rendered height (includes status bar/browser UI), desktop is 80px
+          top: '80px',
           left: 0,
           right: 0,
           zIndex: 1200,
           width: '100%',
-          height: { xs: '56px', sm: 'auto' }, // Fixed height on mobile
-          // Mobile: solid background, Desktop: network image only on sides
-          backgroundImage: { 
-            xs: 'none', // No image on mobile
-            sm: network?.background_image_url 
-              ? `url(${network.background_image_url})` 
-              : 'linear-gradient(135deg, #4568dc 0%, #b06ab3 100%)'
-          },
-          backgroundColor: {
-            xs: darkMode ? '#121212' : '#ffffff', // Better dark mode color on mobile
-            sm: 'transparent' // Transparent on desktop to show image
-          },
+          backgroundImage: network?.background_image_url
+            ? `url(${network.background_image_url})`
+            : 'linear-gradient(135deg, #4568dc 0%, #b06ab3 100%)',
+          backgroundColor: 'transparent',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          borderBottom: `1px solid ${darkMode 
-            ? alpha('#ffffff', 0.12) 
+          borderBottom: `1px solid ${darkMode
+            ? alpha('#ffffff', 0.12)
             : alpha('#000000', 0.12)}`,
-          boxShadow: darkMode 
-            ? `0 4px 12px ${alpha('#000000', 0.4)}` 
+          boxShadow: darkMode
+            ? `0 4px 12px ${alpha('#000000', 0.4)}`
             : `0 4px 12px ${alpha('#000000', 0.15)}`,
-          // Improved transition handling
-          transform: { 
-            xs: 'none', // No transform on mobile
-            sm: tabsTransition === 'unfixing' 
-              ? `translateY(-100%) scale(0.95)` 
-              : tabsTransition === 'fixing'
-              ? `translateY(${-10 + (smoothTransitionProgress * 10)}px) scale(${0.95 + (smoothTransitionProgress * 0.05)})`
-              : isTabsFixed 
-              ? 'translateY(0) scale(1)'
-              : `translateY(${smoothTransitionProgress * -10}px) scale(${0.95 + (smoothTransitionProgress * 0.05)})`
-          },
-          opacity: {
-            xs: 1, // Always visible on mobile
-            sm: tabsTransition === 'unfixing' 
-              ? Math.max(1 - smoothTransitionProgress, 0)
-              : tabsTransition === 'fixing'
-              ? Math.min(smoothTransitionProgress + 0.3, 1)
-              : isTabsFixed 
-              ? 1 
-              : Math.max(smoothTransitionProgress, 0)
-          },
-          visibility: {
-            xs: 'visible', // Always visible on mobile
-            sm: (isTabsFixed || tabsTransition !== 'none' || smoothTransitionProgress > 0.05) ? 'visible' : 'hidden'
-          },
-          transition: tabsTransition !== 'none' 
-            ? 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)' 
+          transform: tabsTransition === 'unfixing'
+            ? `translateY(-100%) scale(0.95)`
+            : tabsTransition === 'fixing'
+            ? `translateY(${-10 + (smoothTransitionProgress * 10)}px) scale(${0.95 + (smoothTransitionProgress * 0.05)})`
+            : isTabsFixed
+            ? 'translateY(0) scale(1)'
+            : `translateY(${smoothTransitionProgress * -10}px) scale(${0.95 + (smoothTransitionProgress * 0.05)})`,
+          opacity: tabsTransition === 'unfixing'
+            ? Math.max(1 - smoothTransitionProgress, 0)
+            : tabsTransition === 'fixing'
+            ? Math.min(smoothTransitionProgress + 0.3, 1)
+            : isTabsFixed
+            ? 1
+            : Math.max(smoothTransitionProgress, 0),
+          visibility: (isTabsFixed || tabsTransition !== 'none' || smoothTransitionProgress > 0.05) ? 'visible' : 'hidden',
+          transition: tabsTransition !== 'none'
+            ? 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)'
             : 'opacity 0.2s ease-out, transform 0.2s ease-out',
-          pointerEvents: {
-            xs: 'auto', // Always interactive on mobile
-            sm: isTabsFixed && tabsTransition !== 'unfixing' ? 'auto' : 'none'
-          },
+          pointerEvents: isTabsFixed && tabsTransition !== 'unfixing' ? 'auto' : 'none',
           willChange: 'opacity, transform',
-          display: 'block', // Explicitly set display
         }}
       >
-        <Box sx={{ 
-          maxWidth: { xs: '100%', sm: 'lg' }, // Full width on mobile
-          mx: 'auto', 
-          px: { xs: 0, sm: 3 } // No padding on mobile
+        <Box sx={{
+          maxWidth: 'lg',
+          mx: 'auto',
+          px: 3
         }}>
-            <Paper 
+            <Paper
               ref={contentRef}
               elevation={0}
-              sx={{ 
-                width: '100%', 
-                borderRadius: { xs: 0, sm: '8px' }, // Subtle radius on desktop
+              sx={{
+                width: '100%',
+                borderRadius: '8px',
                 overflow: 'visible',
                 position: 'relative',
                 zIndex: 10,
-                // Desktop: Match original tabs background, Mobile: solid background
-                backgroundColor: {
-                  xs: darkMode ? '#121212' : '#ffffff', // Mobile: solid background for better contrast
-                  sm: darkMode 
-                    ? alpha('#000000', 0.9 + (scrollProgress * 0.05)) 
-                    : alpha('#ffffff', 0.95 + (scrollProgress * 0.03))
-                },
-                backdropFilter: { 
-                  xs: 'none',
-                  sm: `blur(${20 + (scrollProgress * 8)}px) saturate(150%)`
-                },
-                WebkitBackdropFilter: { 
-                  xs: 'none',
-                  sm: `blur(${20 + (scrollProgress * 8)}px) saturate(150%)`
-                },
-                border: {
-                  xs: `1px solid ${darkMode 
-                    ? alpha('#ffffff', 0.08) 
-                    : alpha('#000000', 0.08)}`,
-                  sm: `1px solid ${darkMode 
-                    ? alpha('#ffffff', 0.15) 
-                    : alpha('#000000', 0.08)}`
-                },
-                boxShadow: {
-                  xs: 'none',
-                  sm: darkMode 
-                    ? `0 16px 40px ${alpha('#000000', 0.7)}, 0 0 0 1px ${alpha('#ffffff', 0.05)}, inset 0 1px 0 ${alpha('#ffffff', 0.1)}` 
-                    : `0 16px 40px ${alpha('#000000', 0.12)}, 0 0 0 1px ${alpha('#000000', 0.04)}, inset 0 1px 0 ${alpha('#ffffff', 0.9)}`
-                },
-                minHeight: { xs: '56px', sm: '60px' },
+                backgroundColor: darkMode
+                  ? alpha('#000000', 0.9 + (scrollProgress * 0.05))
+                  : alpha('#ffffff', 0.95 + (scrollProgress * 0.03)),
+                backdropFilter: `blur(${20 + (scrollProgress * 8)}px) saturate(150%)`,
+                WebkitBackdropFilter: `blur(${20 + (scrollProgress * 8)}px) saturate(150%)`,
+                border: `1px solid ${darkMode
+                  ? alpha('#ffffff', 0.15)
+                  : alpha('#000000', 0.08)}`,
+                boxShadow: darkMode
+                  ? `0 16px 40px ${alpha('#000000', 0.7)}, 0 0 0 1px ${alpha('#ffffff', 0.05)}, inset 0 1px 0 ${alpha('#ffffff', 0.1)}`
+                  : `0 16px 40px ${alpha('#000000', 0.12)}, 0 0 0 1px ${alpha('#000000', 0.04)}, inset 0 1px 0 ${alpha('#ffffff', 0.9)}`,
+                minHeight: '60px',
                 display: 'flex',
                 alignItems: 'center',
-                // Add overlay for tabs area to match original design
                 '&::before': {
-                  content: { xs: 'none', sm: '""' },
+                  content: '""',
                   position: 'absolute',
                   top: 0,
                   left: 0,
                   right: 0,
                   bottom: 0,
-                  background: {
-                    sm: darkMode
-                      ? `linear-gradient(135deg, ${alpha('#0a0a0a', 0.3)} 0%, ${alpha('#1a1a1a', 0.2)} 50%, ${alpha('#0a0a0a', 0.1)} 100%)`
-                      : `linear-gradient(135deg, ${alpha('#ffffff', 0.6)} 0%, ${alpha('#f8f9fa', 0.4)} 50%, ${alpha('#ffffff', 0.2)} 100%)`
-                  },
+                  background: darkMode
+                    ? `linear-gradient(135deg, ${alpha('#0a0a0a', 0.3)} 0%, ${alpha('#1a1a1a', 0.2)} 50%, ${alpha('#0a0a0a', 0.1)} 100%)`
+                    : `linear-gradient(135deg, ${alpha('#ffffff', 0.6)} 0%, ${alpha('#f8f9fa', 0.4)} 50%, ${alpha('#ffffff', 0.2)} 100%)`,
                   pointerEvents: 'none',
                   zIndex: 1,
-                  borderRadius: { sm: '8px' },
+                  borderRadius: '8px',
                 },
               }}
             >
@@ -941,83 +899,52 @@ function NetworkLandingPage() {
                   position: 'relative',
                   zIndex: 2,
                   width: '100%',
-                  px: { xs: 1, sm: 2 },
-                  py: { xs: 0.5, sm: 0.5 }, // Consistent padding
-                  minHeight: { xs: 48, sm: 56 },
+                  px: 2,
+                  py: 0.5,
+                  minHeight: 56,
                   '& .MuiTab-root': {
-                    // Responsive colors with proper theme support
-                    color: {
-                      xs: darkMode ? '#ffffff' : '#000000', // Normal colors on mobile
-                      sm: darkMode ? '#ffffff' : '#000000' // Theme-aware colors on desktop
-                    },
+                    color: darkMode ? '#ffffff' : '#000000',
                     fontWeight: 500,
-                    fontSize: { xs: '0.75rem', sm: '0.9rem' },
+                    fontSize: '0.9rem',
                     letterSpacing: '0.02em',
                     textTransform: 'none',
                     transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
                     position: 'relative',
-                    borderRadius: { xs: '8px', sm: '10px' },
-                    mx: { xs: 0.25, sm: 0.5 },
-                    my: { xs: 0.25, sm: 0.5 },
-                    minHeight: { xs: 40, sm: 48 },
+                    borderRadius: '10px',
+                    mx: 0.5,
+                    my: 0.5,
+                    minHeight: 48,
                     minWidth: 'auto',
-                    padding: { xs: '6px 12px', sm: '8px 16px' },
-                    // Layout adjustments
-                    flexDirection: { xs: 'column', sm: 'row' },
-                    gap: { xs: 0, sm: '4px' }, // Add gap between icon and label on desktop
-                    // Clean, minimal style without individual borders
+                    padding: '8px 16px',
                     background: 'transparent',
                     border: 'none',
                     boxShadow: 'none',
-                    // Remove text shadow for cleaner look
                     textShadow: 'none',
-                    // Icon and text styling
                     '& .MuiTab-iconWrapper': {
-                      marginBottom: { xs: '0px', sm: '0px' }, // No bottom margin for horizontal layout
-                      marginRight: { xs: '0px', sm: '8px' }, // Add horizontal gap on desktop
-                      fontSize: { xs: '1rem', sm: '1.1rem' },
+                      marginBottom: '0px',
+                      marginRight: '8px',
+                      fontSize: '1.1rem',
                     },
                     '&:hover': {
-                      color: {
-                        xs: darkMode ? '#ffffff' : '#000000',
-                        sm: darkMode ? '#ffffff' : '#000000'
-                      },
-                      // Subtle hover background
-                      background: {
-                        xs: darkMode ? alpha('#ffffff', 0.08) : alpha('#000000', 0.04),
-                        sm: darkMode ? alpha('#ffffff', 0.15) : alpha('#000000', 0.08)
-                      },
+                      color: darkMode ? '#ffffff' : '#000000',
+                      background: darkMode ? alpha('#ffffff', 0.15) : alpha('#000000', 0.08),
                       transform: 'translateY(-1px)',
-                      // Clean hover shadow
                       boxShadow: `0 4px 12px ${alpha('#000000', 0.3)}`,
                     },
                     '&.Mui-selected': {
-                      color: {
-                        xs: darkMode ? '#ffffff' : '#000000',
-                        sm: darkMode ? '#ffffff' : '#000000'
-                      },
+                      color: darkMode ? '#ffffff' : '#000000',
                       fontWeight: 600,
-                      // Clean selected background with high contrast
-                      background: {
-                        xs: darkMode ? alpha('#ffffff', 0.12) : alpha('#000000', 0.08),
-                        sm: darkMode ? alpha('#ffffff', 0.2) : alpha('#000000', 0.12)
-                      },
-                      // Clean selected shadow
+                      background: darkMode ? alpha('#ffffff', 0.2) : alpha('#000000', 0.12),
                       boxShadow: `0 2px 8px ${alpha('#000000', 0.4)}, inset 0 1px 0 ${alpha('#ffffff', 0.2)}`,
                     },
-                    // Responsive design
                     [muiTheme.breakpoints.up('md')]: {
                       minWidth: 0,
                       flex: 1,
                       fontSize: '0.95rem',
                     },
                   },
-                  // Clean, prominent indicator
                   '& .MuiTabs-indicator': {
-                    backgroundColor: {
-                      xs: darkMode ? '#90caf9' : muiTheme.palette.primary.main, // Normal colors on mobile
-                      sm: darkMode ? '#90caf9' : muiTheme.palette.primary.main // Theme-aware colors on desktop
-                    },
+                    backgroundColor: darkMode ? '#90caf9' : muiTheme.palette.primary.main,
                     height: 4,
                     borderRadius: '4px 4px 0 0',
                     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -1036,8 +963,8 @@ function NetworkLandingPage() {
                     '&::-webkit-scrollbar': {
                       display: 'none',
                     },
-                    '-ms-overflow-style': 'none',
-                    'scrollbar-width': 'none',
+                    msOverflowStyle: 'none',
+                    scrollbarWidth: 'none',
                     // Better responsive handling
                     [muiTheme.breakpoints.up('md')]: {
                       '& .MuiTabs-flexContainer': {

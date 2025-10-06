@@ -1,10 +1,19 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Box, Typography, Skeleton, Badge, Tooltip, alpha, Divider, Paper, Button } from '@mui/material';
-import { 
-  Logout as LogoutIcon, 
+import {
+  Logout as LogoutIcon,
   Person as PersonIcon,
   WbSunny as SunIcon,
-  NightsStay as MoonIcon
+  NightsStay as MoonIcon,
+  Campaign as AnnouncementIcon,
+  Groups as GroupsIcon,
+  Event as EventIcon,
+  Chat as ChatIcon,
+  Attachment as AttachmentIcon,
+  MenuBook as MenuBookIcon,
+  School as SchoolIcon,
+  Timeline as TimelineIcon,
+  Info as InfoIcon
 } from '@mui/icons-material';
 import MailIcon from '@mui/icons-material/Mail';
 import BusinessIcon from '@mui/icons-material/Business'; // Icon for network
@@ -17,6 +26,7 @@ import { logout } from '../api/auth';
 import { useProfile } from '../context/profileContext';
 import { useNetworkRefresh } from '../hooks/useNetworkRefresh';
 import { useNetwork } from '../context/networkContext';
+import MobileMenu from './MobileMenu';
 
 // Simple badge component for unread messages
 const MessageBadge = React.memo(() => {
@@ -181,14 +191,6 @@ const NetworkHeader = () => {
   const displayedLogoUrl = networkInfo?.logo_url;
   const networkId = networkInfo?.id;
   
-  // Show header if user is logged in OR if we have network info OR always show for non-logged-in users
-  if (!user && !networkInfo) {
-    // Always show header for non-logged-in users with default content
-  } else if (!networkInfo && user) {
-    // Hide header only if logged-in user has no network context
-    return null;
-  }
-  
   // Simplified icon button style with consistent transitions
   const iconButtonStyle = {
     display: 'flex',
@@ -221,13 +223,64 @@ const NetworkHeader = () => {
     transition: 'width 0.3s ease-in-out, opacity 0.3s ease-in-out, margin-left 0.3s ease-in-out',
     display: { xs: 'none', sm: 'block' }
   };
-  
+
+  // Get visible tabs from network context for mobile menu
+  const { enabledTabs = [] } = useNetwork() || {};
+
+  // Define all available tabs (matching NetworkLandingPage)
+  const allTabs = [
+    { id: 'news', icon: <AnnouncementIcon />, label: 'News' },
+    { id: 'members', icon: <GroupsIcon />, label: 'Members' },
+    { id: 'events', icon: <EventIcon />, label: 'Events' },
+    { id: 'chat', icon: <ChatIcon />, label: 'Chat' },
+    { id: 'files', icon: <AttachmentIcon />, label: 'Files' },
+    { id: 'wiki', icon: <MenuBookIcon />, label: 'Wiki' },
+    { id: 'courses', icon: <SchoolIcon />, label: 'Courses' },
+    { id: 'social', icon: <TimelineIcon />, label: 'Social' },
+    { id: 'about', icon: <InfoIcon />, label: 'About' }
+  ];
+
+  // Filter tabs based on enabled tabs
+  const visibleTabs = React.useMemo(() => {
+    if (!enabledTabs || enabledTabs.length === 0) {
+      return allTabs;
+    }
+    const orderedTabs = enabledTabs
+      .map(tabId => allTabs.find(tab => tab.id === tabId))
+      .filter(tab => tab);
+
+    const aboutTab = allTabs.find(tab => tab.id === 'about');
+    if (aboutTab && !orderedTabs.some(tab => tab.id === 'about')) {
+      orderedTabs.push(aboutTab);
+    }
+
+    return orderedTabs.length > 0 ? orderedTabs : allTabs;
+  }, [enabledTabs]);
+
+  // Show header if user is logged in OR if we have network info OR always show for non-logged-in users
+  if (!user && !networkInfo) {
+    // Always show header for non-logged-in users with default content
+  } else if (!networkInfo && user) {
+    // Hide header only if logged-in user has no network context
+    return null;
+  }
+
   return (
     <>
+      {/* Mobile Menu - only on xs */}
+      <MobileMenu
+        networkLogo={displayedLogoUrl}
+        networkName={displayedNetworkName}
+        networkId={networkId}
+        user={user}
+        visibleTabs={visibleTabs}
+      />
+
+      {/* Desktop Header - hidden on xs */}
       <Box
         ref={headerRef}
         sx={{
-          display: 'flex',
+          display: { xs: 'none', sm: 'flex' }, // Hide on mobile, show on desktop
           flexWrap: 'wrap',
           alignItems: 'stretch', // Changed from 'center' to 'stretch' to allow full height
           justifyContent: 'space-between',
