@@ -186,7 +186,7 @@ const NotificationSettings = () => {
   const annonceCategoryOptions = [
     {
       key: 'immobilier',
-      label: 'Immobilier',
+      label: 'Logement',
       description: 'Locations, ventes, colocations',
       icon: <ImmobilierIcon />,
       color: '#2196f3'

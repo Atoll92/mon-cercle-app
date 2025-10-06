@@ -87,99 +87,121 @@ const AdminLayout = ({
     }
   }, [network?.features_config]);
 
+  // Special network ID for rezoprospect
+  const REZOPROSPECT_NETWORK_ID = 'b4e51e21-de8f-4f5b-b35d-f98f6df27508';
+  const isRezoprospect = network?.id === REZOPROSPECT_NETWORK_ID;
+
   // Navigation items for the drawer
   const navItems = [
-    { 
-      name: t('admin.tabs.settings'), 
-      icon: <SettingsIcon />, 
-      index: 0 
+    {
+      name: t('admin.tabs.settings'),
+      icon: <SettingsIcon />,
+      index: 0
     },
-    { 
-      name: t('admin.tabs.members'), 
-      icon: <PersonAddIcon />, 
-      index: 1 
+    {
+      name: t('admin.tabs.members'),
+      icon: <PersonAddIcon />,
+      index: 1,
+      excludeNetworks: [REZOPROSPECT_NETWORK_ID] // Hide for rezoprospect
     },
-    { 
-      name: t('admin.tabs.categories'), 
-      icon: <CategoryIcon />, 
-      index: 2 
+    {
+      name: t('admin.tabs.categories'),
+      icon: <CategoryIcon />,
+      index: 2,
+      excludeNetworks: [REZOPROSPECT_NETWORK_ID] // Hide for rezoprospect
     },
-    { 
-      name: t('admin.tabs.news'), 
-      icon: <ArticleIcon />, 
+    {
+      name: t('admin.tabs.news'),
+      icon: <ArticleIcon />,
       index: 3,
-      feature: 'news' // Feature flag
+      feature: 'news', // Feature flag
+      excludeNetworks: [REZOPROSPECT_NETWORK_ID] // Hide for rezoprospect
     },
-    { 
-      name: t('admin.tabs.events'), 
-      icon: <EventIcon />, 
+    {
+      name: t('admin.tabs.events'),
+      icon: <EventIcon />,
       index: 4,
-      feature: 'events' // Feature flag
+      feature: 'events', // Feature flag
+      excludeNetworks: [REZOPROSPECT_NETWORK_ID] // Hide for rezoprospect
     },
-    { 
-      name: t('admin.tabs.polls'), 
-      icon: <PollIcon />, 
-      index: 5 
+    {
+      name: t('admin.tabs.polls'),
+      icon: <PollIcon />,
+      index: 5,
+      excludeNetworks: [REZOPROSPECT_NETWORK_ID] // Hide for rezoprospect
     },
-    { 
-      name: t('admin.tabs.courses'), 
-      icon: <SchoolIcon />, 
+    {
+      name: t('admin.tabs.courses'),
+      icon: <SchoolIcon />,
       index: 6,
-      feature: 'courses' // Feature flag
+      feature: 'courses', // Feature flag
+      excludeNetworks: [REZOPROSPECT_NETWORK_ID] // Hide for rezoprospect
     },
-    { 
-      name: t('admin.tabs.crm'), 
-      icon: <EmailIcon />, 
-      index: 7 
+    {
+      name: t('admin.tabs.crm'),
+      icon: <EmailIcon />,
+      index: 7,
+      excludeNetworks: [REZOPROSPECT_NETWORK_ID] // Hide for rezoprospect
     },
-    { 
-      name: t('admin.tabs.theme'), 
-      icon: <PaletteIcon />, 
-      index: 8 
+    {
+      name: t('admin.tabs.theme'),
+      icon: <PaletteIcon />,
+      index: 8,
+      excludeNetworks: [REZOPROSPECT_NETWORK_ID] // Hide for rezoprospect
     },
     {
       name: t('admin.tabs.moderation'),
       icon: <SecurityIcon />,
-      index: 9
+      index: 9,
+      excludeNetworks: [REZOPROSPECT_NETWORK_ID] // Hide for rezoprospect
     },
     {
       name: 'Modération Annonces',
       icon: <CampaignIcon />,
       index: 10,
-      networkId: 'b4e51e21-de8f-4f5b-b35d-f98f6df27508' // Only for specific network
+      networkId: REZOPROSPECT_NETWORK_ID // Only for rezoprospect network
     },
     {
       name: t('admin.tabs.monetization'),
       icon: <MonetizationIcon />,
-      index: 11
+      index: 11,
+      excludeNetworks: [REZOPROSPECT_NETWORK_ID] // Hide for rezoprospect
     },
     {
       name: t('admin.tabs.billing'),
       icon: <CreditCardIcon />,
-      index: 12
+      index: 12,
+      excludeNetworks: [REZOPROSPECT_NETWORK_ID] // Hide for rezoprospect
     },
     {
       name: t('admin.tabs.badges'),
       icon: <BadgeIcon />,
-      index: 13
+      index: 13,
+      excludeNetworks: [REZOPROSPECT_NETWORK_ID] // Hide for rezoprospect
     },
     {
       name: t('admin.tabs.support'),
       icon: <SupportIcon />,
-      index: 14
+      index: 14,
+      excludeNetworks: [REZOPROSPECT_NETWORK_ID] // Hide for rezoprospect
     },
     {
       name: t('admin.tabs.marketplace'),
       icon: <StoreIcon />,
       index: 15,
-      feature: 'marketplace' // Feature flag
+      feature: 'marketplace', // Feature flag
+      excludeNetworks: [REZOPROSPECT_NETWORK_ID] // Hide for rezoprospect
     }
   ].filter(item => {
     // Filter out items that require a feature that is disabled
     if (item.feature && featuresConfig[item.feature] === false) {
       return false;
     }
-    // Filter out items that are network-specific
+    // Filter out items that are excluded for current network
+    if (item.excludeNetworks && network?.id && item.excludeNetworks.includes(network.id)) {
+      return false;
+    }
+    // Filter out items that are network-specific (only show if on that network)
     if (item.networkId && network?.id !== item.networkId) {
       return false;
     }
