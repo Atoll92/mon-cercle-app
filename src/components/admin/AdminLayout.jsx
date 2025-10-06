@@ -359,9 +359,10 @@ const AdminLayout = ({
       <AppBar
         position="fixed"
         sx={{
+          top: '77px',
           display: { xs: 'block', md: 'none' },
           width: '100%',
-          zIndex: (theme) => theme.zIndex.drawer + 1,
+          zIndex: (theme) => theme.zIndex.drawer - 1,
           backgroundColor: darkMode 
             ? muiTheme.palette.background.default 
             : muiTheme.palette.primary.main,
@@ -401,6 +402,7 @@ const AdminLayout = ({
             keepMounted: true, // Better open performance on mobile
           }}
           sx={{
+            zIndex: (theme) => theme.zIndex.drawer - 2,
             display: { xs: 'block', md: 'none' },
             '& .MuiDrawer-paper': {
               boxSizing: 'border-box',

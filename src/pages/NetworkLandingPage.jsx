@@ -1011,7 +1011,7 @@ function NetworkLandingPage() {
         mb: 4, 
         position: 'relative', 
         zIndex: 1050,
-        mt: { xs: '-60px', sm: '-80px' }, // Pull container up to straddle the border for headers
+        mt: { xs: '-180px', sm: '-80px' }, // Pull container up to straddle the border for headers
       }}>        
         {/* Content area with integrated tab header */}
         <Box

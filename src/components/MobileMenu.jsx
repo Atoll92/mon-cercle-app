@@ -99,6 +99,7 @@ const MobileMenu = ({ networkLogo, networkName, networkId, user, visibleTabs = [
         onClick={handleDrawerToggle}
         sx={{
           color: darkMode ? '#ffffff' : '#000000',
+          padding: '14px',
         }}
       >
         <MenuIcon />
@@ -183,6 +184,7 @@ const MobileMenu = ({ networkLogo, networkName, networkId, user, visibleTabs = [
         PaperProps={{
           sx: {
             width: 280,
+            zIndex: 9991300,
             backgroundColor: darkMode ? '#1e1e1e' : '#ffffff',
             color: darkMode ? '#ffffff' : '#000000',
           }
@@ -350,19 +352,6 @@ const MobileMenu = ({ networkLogo, networkName, networkId, user, visibleTabs = [
           </ListItemIcon>
           <ListItemText>
             Messages
-            {unreadTotal > 0 && (
-              <Typography
-                component="span"
-                variant="caption"
-                sx={{
-                  ml: 1,
-                  color: '#f44336',
-                  fontWeight: 600,
-                }}
-              >
-                ({unreadTotal})
-              </Typography>
-            )}
           </ListItemText>
         </MenuItem>
 
