@@ -141,23 +141,23 @@ const MemberCard = ({
           }}
         />
         
-        <CardContent 
-          sx={{ 
-            flexGrow: 1, 
-            display: 'flex', 
-            flexDirection: 'column', 
-            p: 3,
-            pb: 2
+        <CardContent
+          sx={{
+            flexGrow: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            p: { xs: 2, sm: 2.5, md: 3 },
+            pb: { xs: 1.5, sm: 2 }
           }}
         >
           {/* Profile Picture Section */}
-          <Box sx={{ 
-            display: 'flex', 
-            flexDirection: 'column', 
+          <Box sx={{
+            display: 'flex',
+            flexDirection: 'column',
             alignItems: 'center',
-            mb: 2
+            mb: { xs: 1, sm: 1.5, md: 2 }
           }}>
-            <Box sx={{ position: 'relative', mb: 2 }}>
+            <Box sx={{ position: 'relative', mb: { xs: 1, sm: 1.5, md: 2 } }}>
               {/* Role badge */}
               {member.role === 'admin' && (
                 <Badge
@@ -165,8 +165,8 @@ const MemberCard = ({
                   anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
                   badgeContent={
                     <Box sx={{
-                      width: 28,
-                      height: 28,
+                      width: { xs: 20, sm: 24, md: 28 },
+                      height: { xs: 20, sm: 24, md: 28 },
                       borderRadius: '50%',
                       bgcolor: theme.palette.primary.main,
                       display: 'flex',
@@ -175,24 +175,27 @@ const MemberCard = ({
                       border: `2px solid ${darkMode ? '#1a1a1a' : '#ffffff'}`,
                       boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
                     }}>
-                      <AdminIcon sx={{ fontSize: 16, color: '#ffffff' }} />
+                      <AdminIcon sx={{ fontSize: { xs: 12, sm: 14, md: 16 }, color: '#ffffff' }} />
                     </Box>
                   }
                 >
                   <Avatar
                     className="member-avatar"
                     src={member.profile_picture_url}
-                    sx={{ 
-                      width: 120, 
-                      height: 120,
-                      border: `3px solid ${member.role === 'admin' ? theme.palette.primary.main : customBorder}`,
-                      boxShadow: darkMode 
-                        ? '0 8px 24px rgba(0,0,0,0.5)' 
+                    sx={{
+                      width: { xs: 60, sm: 80, md: 120 },
+                      height: { xs: 60, sm: 80, md: 120 },
+                      border: {
+                        xs: `2px solid ${member.role === 'admin' ? theme.palette.primary.main : customBorder}`,
+                        md: `3px solid ${member.role === 'admin' ? theme.palette.primary.main : customBorder}`
+                      },
+                      boxShadow: darkMode
+                        ? '0 8px 24px rgba(0,0,0,0.5)'
                         : '0 8px 24px rgba(0,0,0,0.1)',
                       transition: 'transform 0.3s ease',
-                      fontSize: '2.5rem',
-                      bgcolor: member.role === 'admin' 
-                        ? alpha(theme.palette.primary.main, 0.1) 
+                      fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem' },
+                      bgcolor: member.role === 'admin'
+                        ? alpha(theme.palette.primary.main, 0.1)
                         : alpha(theme.palette.secondary.main, 0.1)
                     }}
                   >
@@ -205,15 +208,18 @@ const MemberCard = ({
                 <Avatar
                   className="member-avatar"
                   src={member.profile_picture_url}
-                  sx={{ 
-                    width: 120, 
-                    height: 120,
-                    border: `3px solid ${customBorder}`,
-                    boxShadow: darkMode 
-                      ? '0 8px 24px rgba(0,0,0,0.5)' 
+                  sx={{
+                    width: { xs: 60, sm: 80, md: 120 },
+                    height: { xs: 60, sm: 80, md: 120 },
+                    border: {
+                      xs: `2px solid ${customBorder}`,
+                      md: `3px solid ${customBorder}`
+                    },
+                    boxShadow: darkMode
+                      ? '0 8px 24px rgba(0,0,0,0.5)'
                       : '0 8px 24px rgba(0,0,0,0.1)',
                     transition: 'transform 0.3s ease',
-                    fontSize: '2.5rem',
+                    fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem' },
                     bgcolor: alpha(theme.palette.secondary.main, 0.1)
                   }}
                 >
@@ -229,19 +235,19 @@ const MemberCard = ({
                     to={`/messages/${member.id}`}
                     size="small"
                     onClick={(e) => e.stopPropagation()}
-                    sx={{ 
+                    sx={{
                       position: 'absolute',
                       bottom: 0,
-                      right: -8,
+                      right: { xs: -4, sm: -6, md: -8 },
                       bgcolor: darkMode ? theme.palette.primary.dark : theme.palette.primary.main,
                       color: '#ffffff',
-                      '&:hover': { 
+                      '&:hover': {
                         bgcolor: darkMode ? theme.palette.primary.main : theme.palette.primary.dark,
                         transform: 'scale(1.1)'
                       },
                       transition: 'all 0.2s ease',
-                      width: 36,
-                      height: 36,
+                      width: { xs: 28, sm: 32, md: 36 },
+                      height: { xs: 28, sm: 32, md: 36 },
                       boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
                     }}
                   >
@@ -252,15 +258,15 @@ const MemberCard = ({
             </Box>
             
             {/* Name */}
-            <Typography 
-              variant="h6" 
+            <Typography
+              variant="h6"
               component="h3"
-              sx={{ 
+              sx={{
                 fontWeight: 700,
                 color: customLightText,
                 textAlign: 'center',
                 mb: 0.5,
-                fontSize: '1.1rem',
+                fontSize: { xs: '0.95rem', sm: '1rem', md: '1.1rem' },
                 letterSpacing: '-0.02em'
               }}
             >
@@ -307,18 +313,22 @@ const MemberCard = ({
           
           {/* Tagline */}
           {member.tagline && (
-            <Typography 
-              variant="body2" 
-              sx={{ 
+            <Typography
+              variant="body2"
+              sx={{
                 fontWeight: 500,
                 color: theme.palette.primary.main,
                 textAlign: 'center',
                 fontStyle: 'italic',
-                mb: 2,
-                px: 2,
-                fontSize: '0.875rem',
+                mb: { xs: 1, sm: 1.5, md: 2 },
+                px: { xs: 1, sm: 1.5, md: 2 },
+                fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.875rem' },
                 lineHeight: 1.4,
-                minHeight: '1.2em'
+                minHeight: '1.2em',
+                display: { xs: '-webkit-box', sm: 'block' },
+                WebkitLineClamp: { xs: 2, sm: 3 },
+                WebkitBoxOrient: 'vertical',
+                overflow: { xs: 'hidden', sm: 'visible' }
               }}
             >
               "{member.tagline}"
@@ -326,9 +336,9 @@ const MemberCard = ({
           )}
           
           {/* User Badges */}
-          <Box sx={{ mb: 2, display: 'flex', justifyContent: 'center' }}>
-            <UserBadges 
-              userId={member.id} 
+          <Box sx={{ mb: { xs: 1, sm: 1.5, md: 2 }, display: 'flex', justifyContent: 'center' }}>
+            <UserBadges
+              userId={member.id}
               displayMode="icons"
               maxDisplay={3}
               showTotal={true}
@@ -337,13 +347,13 @@ const MemberCard = ({
           
           {/* Skills */}
           {member.skills && member.skills.length > 0 && (
-            <Box sx={{ 
-              mb: 2, 
-              display: 'flex', 
+            <Box sx={{
+              mb: { xs: 1, sm: 1.5, md: 2 },
+              display: 'flex',
               justifyContent: 'center',
               flexWrap: 'wrap',
-              gap: 0.75,
-              minHeight: '32px'
+              gap: { xs: 0.5, sm: 0.6, md: 0.75 },
+              minHeight: { xs: '24px', sm: '28px', md: '32px' }
             }}>
               {member.skills.slice(0, 4).map((skill, index) => (
                 <Chip
@@ -351,15 +361,15 @@ const MemberCard = ({
                   label={skill}
                   size="small"
                   sx={{
-                    fontSize: '0.75rem',
-                    height: 24,
+                    fontSize: { xs: '0.65rem', sm: '0.7rem', md: '0.75rem' },
+                    height: { xs: 20, sm: 22, md: 24 },
                     bgcolor: darkMode 
                       ? alpha('#42a5f5', 0.15) 
                       : alpha('#2196f3', 0.08),
                     color: darkMode ? '#90caf9' : '#1565c0',
                     border: `1px solid ${darkMode ? alpha('#42a5f5', 0.3) : alpha('#2196f3', 0.2)}`,
                     '& .MuiChip-label': {
-                      px: 1.5,
+                      px: { xs: 1, sm: 1.2, md: 1.5 },
                       fontWeight: 500
                     },
                     '&:hover': {
@@ -376,8 +386,8 @@ const MemberCard = ({
                     label={`+${member.skills.length - 4}`}
                     size="small"
                     sx={{
-                      fontSize: '0.75rem',
-                      height: 24,
+                      fontSize: { xs: '0.65rem', sm: '0.7rem', md: '0.75rem' },
+                      height: { xs: 20, sm: 22, md: 24 },
                       bgcolor: darkMode 
                         ? alpha('#ab47bc', 0.15) 
                         : alpha('#9c27b0', 0.08),
@@ -385,7 +395,7 @@ const MemberCard = ({
                       border: `1px solid ${darkMode ? alpha('#ab47bc', 0.3) : alpha('#9c27b0', 0.2)}`,
                       fontWeight: 700,
                       '& .MuiChip-label': {
-                        px: 1.5
+                        px: { xs: 1, sm: 1.2, md: 1.5 }
                       }
                     }}
                   />
@@ -395,27 +405,27 @@ const MemberCard = ({
           )}
           
           {/* Bio */}
-          <Box sx={{ 
+          <Box sx={{
             flexGrow: 1,
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'center',
-            minHeight: '80px',
-            mb: hasSocialMedia ? 1 : 0
+            minHeight: { xs: '10px', sm: '20px', md: '80px' },
+            mb: hasSocialMedia ? { xs: 0.5, sm: 0.75, md: 1 } : 0
           }}>
-            <Typography 
-              variant="body2" 
-              color={customFadedText} 
-              align="center" 
-              sx={{ 
+            <Typography
+              variant="body2"
+              color={customFadedText}
+              align="center"
+              sx={{
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
                 display: '-webkit-box',
-                WebkitLineClamp: 3,
+                WebkitLineClamp: { xs: 2, sm: 2, md: 3 },
                 WebkitBoxOrient: 'vertical',
-                lineHeight: 1.6,
-                fontSize: '0.875rem',
-                px: 1,
+                lineHeight: { xs: 1.4, sm: 1.5, md: 1.6 },
+                fontSize: { xs: '0.7rem', sm: '0.8rem', md: '0.875rem' },
+                px: { xs: 0.5, sm: 0.75, md: 1 },
                 fontStyle: member.bio ? 'normal' : 'italic'
               }}
             >
@@ -425,11 +435,11 @@ const MemberCard = ({
           
           {/* Social Media Links */}
           {hasSocialMedia && (
-            <Box sx={{ 
-              display: 'flex', 
-              justifyContent: 'center', 
-              gap: 1,
-              pt: 2,
+            <Box sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              gap: { xs: 0.5, sm: 0.75, md: 1 },
+              pt: { xs: 1, sm: 1.5, md: 2 },
               borderTop: `1px solid ${customBorder}`,
               mt: 'auto'
             }}>
@@ -512,23 +522,28 @@ const MemberCard = ({
                 
                 return (
                   <Tooltip key={index} title={label}>
-                    <IconButton 
-                      size="small" 
-                      component="a" 
-                      href={link.url} 
+                    <IconButton
+                      size="small"
+                      component="a"
+                      href={link.url}
                       target="_blank"
                       onClick={(e) => e.stopPropagation()}
-                      sx={{ 
+                      sx={{
                         bgcolor: darkMode ? alpha(color, 0.15) : alpha(color, 0.08),
                         color: color,
-                        '&:hover': { 
+                        width: { xs: 28, sm: 32, md: 36 },
+                        height: { xs: 28, sm: 32, md: 36 },
+                        '&:hover': {
                           bgcolor: darkMode ? alpha(color, 0.25) : alpha(color, 0.15),
                           transform: 'translateY(-2px)'
                         },
-                        transition: 'all 0.2s ease'
+                        transition: 'all 0.2s ease',
+                        '& svg': {
+                          fontSize: { xs: '14px', sm: '15px', md: '16px' }
+                        }
                       }}
                     >
-                      <Icon style={{ fontSize: '16px', color: color }} />
+                      <Icon style={{ color: color }} />
                     </IconButton>
                   </Tooltip>
                 );
