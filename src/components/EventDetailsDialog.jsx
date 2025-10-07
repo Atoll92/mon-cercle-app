@@ -13,6 +13,8 @@ import {
   Alert,
   Link as MuiLink,
   Chip,
+  IconButton,
+  Divider,
 } from '@mui/material';
 import {
   Event as EventIcon,
@@ -22,20 +24,24 @@ import {
   Link as LinkIcon,
   OpenInNew as OpenInNewIcon,
   ArrowForward,
+  Close as CloseIcon,
 } from '@mui/icons-material';
 import EventParticipation from './EventParticipation';
 import LinkifiedText from './LinkifiedText';
 import UserContent from './UserContent';
 import { formatEventDate } from '../utils/dateFormatting';
+import { useTranslation } from '../hooks/useTranslation';
 
-const EventDetailsDialog = ({ 
-  open, 
-  onClose, 
-  event, 
+const EventDetailsDialog = ({
+  open,
+  onClose,
+  event,
   user,
   onParticipationChange,
-  showParticipants = true 
+  showParticipants = true
 }) => {
+  const { t } = useTranslation();
+
   if (!event) return null;
 
   return (
@@ -51,11 +57,12 @@ const EventDetailsDialog = ({
         }
       }}
     >
-      <DialogTitle sx={{ 
-        display: 'flex', 
+      <DialogTitle sx={{
+        display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        p: 2,
+        py: 1,
+        px: 2,
         bgcolor: 'primary.main',
         color: 'primary.contrastText',
       }}>
@@ -64,16 +71,14 @@ const EventDetailsDialog = ({
           <Typography variant="h6" component="div">
             {event.title}
           </Typography>
-          {event.event_link && (
-            <LinkIcon fontSize="small" sx={{ ml: 1 }} />
-          )}
         </Box>
-        <Button 
+        <IconButton
           onClick={onClose}
           sx={{ color: 'primary.contrastText' }}
+          size="small"
         >
-          Close
-        </Button>
+          <CloseIcon />
+        </IconButton>
       </DialogTitle>
       
       <DialogContent dividers sx={{ p: 0 }}>
@@ -96,175 +101,124 @@ const EventDetailsDialog = ({
         )}
         
         <Box sx={{ p: 3 }}>
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={4}>
-              <Paper 
-                variant="outlined" 
-                sx={{ 
-                  p: 2, 
-                  borderRadius: 2,
-                  height: '100%'
-                }}
-              >
-                <Typography 
-                  variant="subtitle2" 
-                  color="text.secondary" 
-                  gutterBottom
-                >
-                  Event Details
+          {/* Event Details Section - Full Width */}
+          <Paper
+            elevation={0}
+            sx={{
+              p: 2.5,
+              mb: 3,
+              borderRadius: 2,
+              bgcolor: (theme) => theme.palette.mode === 'dark' ? 'grey.900' : 'grey.50',
+            }}
+          >
+            <Stack spacing={1.5}>
+              {/* Date/Time */}
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <CalendarMonthIcon fontSize="small" color="action" />
+                <Typography variant="body2" color="text.primary">
+                  {event.end_date ? (
+                    <>
+                      {t('eventDetails.from')} <strong>{formatEventDate(event.date, true)}</strong> {t('eventDetails.to')} <strong>{formatEventDate(event.end_date, true)}</strong>
+                    </>
+                  ) : (
+                    <strong>{formatEventDate(event.date, true)}</strong>
+                  )}
                 </Typography>
-                
-                <Stack spacing={2} mt={1}>
-                  <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
-                    <CalendarMonthIcon fontSize="small" color="primary" />
-                    <Box>
-                      <Typography variant="body2" fontWeight="medium">
-                        {event.end_date ? 'Start Date & Time' : 'Date & Time'}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {formatEventDate(event.date, true)}
-                      </Typography>
-                    </Box>
-                  </Box>
-                  
-                  {event.end_date && (
-                    <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
-                      <CalendarMonthIcon fontSize="small" color="primary" />
-                      <Box>
-                        <Typography variant="body2" fontWeight="medium">
-                          End Date & Time
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {formatEventDate(event.end_date, true)}
-                        </Typography>
-                      </Box>
-                    </Box>
-                  )}
-                  
-                  {event.end_date && (() => {
-                    const startDate = new Date(event.date);
-                    const endDate = new Date(event.end_date);
-                    const duration = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
-                    const isMultiDay = startDate.toDateString() !== endDate.toDateString();
-                    
-                    return isMultiDay ? (
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                        <Typography variant="body2" fontWeight="medium" color="info.main">
-                          Duration: {duration} day{duration !== 1 ? 's' : ''}
-                        </Typography>
-                      </Box>
-                    ) : null;
-                  })()}
-                  
-                  {event.category && (
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                      <Typography variant="body2" fontWeight="medium">
-                        Category:
-                      </Typography>
-                      <Chip 
-                        label={event.category.name}
-                        size="small"
-                        sx={{ 
-                          bgcolor: event.category.color || '#666',
-                          color: 'white',
-                          fontSize: '0.75rem'
-                        }}
-                      />
-                    </Box>
-                  )}
-                  
-                  <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
-                    <LocationOnIcon fontSize="small" color="primary" />
-                    <Box>
-                      <Typography variant="body2" fontWeight="medium">
-                        Location
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {event.location}
-                      </Typography>
-                    </Box>
-                  </Box>
-                  
-                  {event.capacity && (
-                    <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
-                      <GroupsIcon fontSize="small" color="primary" />
-                      <Box>
-                        <Typography variant="body2" fontWeight="medium">
-                          Capacity
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {event.capacity} attendees
-                        </Typography>
-                      </Box>
-                    </Box>
-                  )}
-                  
-                  {event.event_link && (
-                    <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
-                      <LinkIcon fontSize="small" color="primary" />
-                      <Box sx={{ overflow: 'hidden' }}>
-                        <Typography variant="body2" fontWeight="medium">
-                          Event Link
-                        </Typography>
-                        <MuiLink
-                          href={event.event_link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          sx={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            fontSize: '0.875rem',
-                            wordBreak: 'break-word'
-                          }}
-                        >
-                          {event.event_link}
-                          <OpenInNewIcon fontSize="inherit" sx={{ ml: 0.5 }} />
-                        </MuiLink>
-                      </Box>
-                    </Box>
-                  )}
-                </Stack>
-                
-                {user && (
-                  <Box sx={{ mt: 3 }}>
-                    <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                      Your RSVP
-                    </Typography>
-                    <EventParticipation 
-                      event={event}
-                      showParticipants={showParticipants}
-                      onStatusChange={onParticipationChange ? 
-                        (status) => onParticipationChange(event.id, status) : 
-                        undefined
-                      }
-                    />
-                  </Box>
-                )}
-              </Paper>
-            </Grid>
-            
-            <Grid item xs={12} md={8}>
-              {event.description ? (
-                <>
-                  <Typography variant="h6" gutterBottom>
-                    About this event
-                  </Typography>
-                  <UserContent 
-                    content={event.description}
-                    html={false}
-                    sx={{ 
-                      fontSize: '1rem',
-                      marginBottom: 2
+              </Box>
+
+              {/* Location */}
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <LocationOnIcon fontSize="small" color="action" />
+                <Typography variant="body2" color="text.primary">
+                  {event.location}
+                </Typography>
+              </Box>
+
+              {/* Category */}
+              {event.category && (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Chip
+                    label={event.category.name}
+                    size="small"
+                    sx={{
+                      bgcolor: event.category.color || '#666',
+                      color: 'white',
+                      fontSize: '0.75rem'
                     }}
                   />
-                </>
-              ) : (
-                <Alert severity="info" variant="outlined">
-                  No description provided for this event.
-                </Alert>
+                </Box>
               )}
-            </Grid>
-          </Grid>
+
+              {/* Capacity */}
+              {event.capacity && (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <GroupsIcon fontSize="small" color="action" />
+                  <Typography variant="body2" color="text.primary">
+                    {event.capacity} {t('eventDetails.attendeesMax')}
+                  </Typography>
+                </Box>
+              )}
+
+              {/* Event Link */}
+              {event.event_link && (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <LinkIcon fontSize="small" color="action" />
+                  <MuiLink
+                    href={event.event_link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    sx={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      fontSize: '0.875rem',
+                      textDecoration: 'none',
+                      '&:hover': {
+                        textDecoration: 'underline'
+                      }
+                    }}
+                  >
+                    {event.event_link}
+                    <OpenInNewIcon fontSize="inherit" sx={{ ml: 0.5 }} />
+                  </MuiLink>
+                </Box>
+              )}
+
+              {/* RSVP Section */}
+              {user && (
+                  <EventParticipation
+                    event={event}
+                    showParticipants={showParticipants}
+                    onStatusChange={onParticipationChange ?
+                      (status) => onParticipationChange(event.id, status) :
+                      undefined
+                    }
+                  />
+              )}
+            </Stack>
+          </Paper>
+
+          
+
+          {/* Description Section */}
+          {event.description ? (
+            <>
+              <Typography variant="h6" gutterBottom sx={{ fontSize: '1.1rem', fontWeight: 600 }}>
+                {t('eventDetails.aboutThisEvent')}
+              </Typography>
+              <UserContent
+                content={event.description}
+                html={false}
+                sx={{
+                  fontSize: '1rem',
+                  lineHeight: 1.7
+                }}
+              />
+            </>
+          ) : (
+            <Alert severity="info" variant="outlined">
+              {t('eventDetails.noDescription')}
+            </Alert>
+          )}
         </Box>
       </DialogContent>
       
@@ -279,7 +233,7 @@ const EventDetailsDialog = ({
               target="_blank"
               rel="noopener noreferrer"
             >
-              Visit Event Link
+              {t('eventDetails.visitEventLink')}
             </Button>
           )}
           {event.network_id && event.id && (
@@ -290,12 +244,12 @@ const EventDetailsDialog = ({
               color="primary"
               endIcon={<ArrowForward />}
             >
-              View Event Page
+              {t('eventDetails.viewEventPage')}
             </Button>
           )}
         </Box>
         <Button onClick={onClose}>
-          Close
+          {t('eventDetails.close')}
         </Button>
       </DialogActions>
     </Dialog>

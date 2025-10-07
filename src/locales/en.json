@@ -1373,5 +1373,37 @@
       "description": "Create a private network for your team, organization, or interest group",
       "button": "Create Your Network →"
     }
+  },
+  "eventDetails": {
+    "from": "From",
+    "to": "to",
+    "attendeesMax": "attendees max",
+    "aboutThisEvent": "About this event",
+    "noDescription": "No description provided for this event.",
+    "visitEventLink": "Visit Event Link",
+    "viewEventPage": "View Event Page",
+    "close": "Close"
+  },
+  "eventParticipation": {
+    "attending": "Attending",
+    "maybe": "Maybe",
+    "notGoing": "Not Going",
+    "declined": "Declined",
+    "going": "going",
+    "interested": "interested",
+    "cantGo": "can't go",
+    "seeAll": "See all",
+    "eventParticipants": "Event Participants",
+    "close": "Close",
+    "tooltips": {
+      "attending": "I'm attending",
+      "maybe": "I might attend",
+      "notGoing": "I can't attend"
+    },
+    "noUsers": {
+      "attending": "No users attending yet",
+      "maybe": "No users tentative yet",
+      "declined": "No users declined yet"
+    }
   }
 }

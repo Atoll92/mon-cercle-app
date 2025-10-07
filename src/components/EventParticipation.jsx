@@ -4,6 +4,7 @@ import { useAuth } from '../context/authcontext';
 import { useProfile } from '../context/profileContext';
 import { supabase } from '../supabaseclient';
 import MemberDetailsModal from './MembersDetailModal';
+import { useTranslation } from '../hooks/useTranslation';
 import {
   Button,
   ButtonGroup,
@@ -48,6 +49,7 @@ const STATUS_LABELS = {
 };
 
 function EventParticipation({ event, showParticipants = false, onStatusChange = null, size = "medium" }) {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { activeProfile } = useProfile();
   const [participationStatus, setParticipationStatus] = useState(null);
@@ -263,13 +265,12 @@ function EventParticipation({ event, showParticipants = false, onStatusChange = 
   // Render participants list by status
   const renderParticipantsList = (status) => {
     const filteredParticipants = participants.filter(p => p.status === status);
-    
+
     if (filteredParticipants.length === 0) {
       return (
         <ListItem>
-          <ListItemText 
-            secondary={`No users ${status === 'attending' ? 'attending' : 
-              status === 'maybe' ? 'tentative' : 'declined'} yet`} 
+          <ListItemText
+            secondary={t(`eventParticipation.noUsers.${status}`)}
           />
         </ListItem>
       );
@@ -305,115 +306,101 @@ function EventParticipation({ event, showParticipants = false, onStatusChange = 
 
   return (
     <>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
         {/* Error message if any */}
         {error && (
           <Typography color="error" variant="caption" sx={{ mb: 1 }}>
             {error}
           </Typography>
         )}
-        
-        {/* RSVP Buttons */}
-        <ButtonGroup size={size} variant="outlined" disabled={isUpdating}>
-          <Tooltip title="I'm attending">
-            <Button 
-              color={participationStatus === 'attending' ? 'success' : 'inherit'}
-              variant={participationStatus === 'attending' ? 'contained' : 'outlined'}
-              onClick={() => updateStatus('attending')}
-              startIcon={<CheckCircleIcon />}
-            >
-              {size === "small" ? '' : 'Attending'}
-            </Button>
-          </Tooltip>
-          
-          <Tooltip title="I might attend">
-            <Button 
-              color={participationStatus === 'maybe' ? 'warning' : 'inherit'}
-              variant={participationStatus === 'maybe' ? 'contained' : 'outlined'}
-              onClick={() => updateStatus('maybe')}
-              startIcon={<MaybeIcon />}
-            >
-              {size === "small" ? '' : 'Maybe'}
-            </Button>
-          </Tooltip>
-          
-          <Tooltip title="I can't attend">
-            <Button 
-              color={participationStatus === 'declined' ? 'error' : 'inherit'}
-              variant={participationStatus === 'declined' ? 'contained' : 'outlined'}
-              onClick={() => updateStatus('declined')}
-              startIcon={<CancelIcon />}
-            >
-              {size === "small" ? '' : 'Decline'}
-            </Button>
-          </Tooltip>
-        </ButtonGroup>
-        
-        {/* Participant stats and list button */}
-        {showParticipants && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px' }}>
-            <Chip 
-              size="small"
-              icon={<CheckCircleIcon fontSize="small" />}
-              label={`${participantCounts.attending} attending`}
-              color="success"
-              variant="outlined"
-            />
-            
-            <Chip 
-              size="small"
-              icon={<MaybeIcon fontSize="small" />}
-              label={`${participantCounts.maybe} maybe`}
-              color="warning"
-              variant="outlined"
-            />
-            
-            <Chip 
-              size="small"
-              icon={<CancelIcon fontSize="small" />}
-              label={`${participantCounts.declined} declined`}
-              color="error"
-              variant="outlined"
-            />
-            
-            <Button 
-              size="small"
-              startIcon={<PeopleIcon />}
-              onClick={handleOpenParticipantsDialog}
-            >
-              View All
-            </Button>
-          </div>
-        )}
+
+        {/* Two-column layout for RSVP and attendee counts */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+          {/* RSVP Buttons */}
+          <ButtonGroup size={size} variant="outlined" disabled={isUpdating}>
+            <Tooltip title={t('eventParticipation.tooltips.attending')}>
+              <Button
+                color={participationStatus === 'attending' ? 'success' : 'inherit'}
+                variant={participationStatus === 'attending' ? 'contained' : 'outlined'}
+                onClick={() => updateStatus('attending')}
+                startIcon={<CheckCircleIcon />}
+              >
+                {size === "small" ? '' : t('eventParticipation.attending')}
+              </Button>
+            </Tooltip>
+
+            <Tooltip title={t('eventParticipation.tooltips.maybe')}>
+              <Button
+                color={participationStatus === 'maybe' ? 'warning' : 'inherit'}
+                variant={participationStatus === 'maybe' ? 'contained' : 'outlined'}
+                onClick={() => updateStatus('maybe')}
+                startIcon={<MaybeIcon />}
+              >
+                {size === "small" ? '' : t('eventParticipation.maybe')}
+              </Button>
+            </Tooltip>
+
+            <Tooltip title={t('eventParticipation.tooltips.notGoing')}>
+              <Button
+                color={participationStatus === 'declined' ? 'error' : 'inherit'}
+                variant={participationStatus === 'declined' ? 'contained' : 'outlined'}
+                onClick={() => updateStatus('declined')}
+                startIcon={<CancelIcon />}
+              >
+                {size === "small" ? '' : t('eventParticipation.notGoing')}
+              </Button>
+            </Tooltip>
+          </ButtonGroup>
+
+          {/* Participant stats - aligned to the right */}
+          {showParticipants && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <Typography variant="body2" color="text.secondary">
+                {participantCounts.attending} {t('eventParticipation.going')}
+                {participantCounts.maybe > 0 && ` · ${participantCounts.maybe} ${t('eventParticipation.interested')}`}
+                {participantCounts.declined > 0 && ` · ${participantCounts.declined} ${t('eventParticipation.cantGo')}`}
+              </Typography>
+
+              <Button
+                size="small"
+                variant="text"
+                onClick={handleOpenParticipantsDialog}
+                sx={{ minWidth: 'auto' }}
+              >
+                {t('eventParticipation.seeAll')}
+              </Button>
+            </div>
+          )}
+        </div>
       </div>
       
       {/* Participants Dialog */}
-      <Dialog 
-        open={showParticipantsDialog} 
+      <Dialog
+        open={showParticipantsDialog}
         onClose={() => setShowParticipantsDialog(false)}
         maxWidth="sm"
         fullWidth
       >
         <DialogTitle>
-          Event Participants
+          {t('eventParticipation.eventParticipants')}
         </DialogTitle>
         <DialogContent dividers>
           <Typography variant="h6" color="success.main" gutterBottom>
-            Attending ({participants.filter(p => p.status === 'attending').length})
+            {t('eventParticipation.attending')} ({participants.filter(p => p.status === 'attending').length})
           </Typography>
           <List dense>
             {renderParticipantsList('attending')}
           </List>
-          
+
           <Typography variant="h6" color="warning.main" gutterBottom>
-            Maybe ({participants.filter(p => p.status === 'maybe').length})
+            {t('eventParticipation.maybe')} ({participants.filter(p => p.status === 'maybe').length})
           </Typography>
           <List dense>
             {renderParticipantsList('maybe')}
           </List>
-          
+
           <Typography variant="h6" color="error.main" gutterBottom>
-            Declined ({participants.filter(p => p.status === 'declined').length})
+            {t('eventParticipation.declined')} ({participants.filter(p => p.status === 'declined').length})
           </Typography>
           <List dense>
             {renderParticipantsList('declined')}
@@ -421,7 +408,7 @@ function EventParticipation({ event, showParticipants = false, onStatusChange = 
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setShowParticipantsDialog(false)}>
-            Close
+            {t('eventParticipation.close')}
           </Button>
         </DialogActions>
       </Dialog>

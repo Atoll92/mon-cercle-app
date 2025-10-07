@@ -1366,5 +1366,37 @@
       "description": "Créez un réseau privé pour votre équipe, organisation ou groupe d'intérêt",
       "button": "Créer votre réseau →"
     }
+  },
+  "eventDetails": {
+    "from": "De",
+    "to": "à",
+    "attendeesMax": "participants max",
+    "aboutThisEvent": "À propos de cet événement",
+    "noDescription": "Aucune description fournie pour cet événement.",
+    "visitEventLink": "Visiter le lien de l'événement",
+    "viewEventPage": "Voir la page de l'événement",
+    "close": "Fermer"
+  },
+  "eventParticipation": {
+    "attending": "Participe",
+    "maybe": "Peut-être",
+    "notGoing": "Ne participe pas",
+    "declined": "Décliné",
+    "going": "participent",
+    "interested": "intéressés",
+    "cantGo": "ne peuvent pas venir",
+    "seeAll": "Voir tout",
+    "eventParticipants": "Participants de l'événement",
+    "close": "Fermer",
+    "tooltips": {
+      "attending": "Je participe",
+      "maybe": "Je participe peut-être",
+      "notGoing": "Je ne peux pas participer"
+    },
+    "noUsers": {
+      "attending": "Aucun participant pour le moment",
+      "maybe": "Aucun participant incertain pour le moment",
+      "declined": "Aucun participant décliné pour le moment"
+    }
   }
 }
