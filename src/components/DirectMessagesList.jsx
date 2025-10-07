@@ -257,9 +257,6 @@ function DirectMessagesList({ onSelectConversation, onConversationDeleted }) {
           >
             Recent
           </Button>
-          <IconButton size="small">
-            <FilterListIcon fontSize="small" />
-          </IconButton>
         </Box>
       </Box>
       

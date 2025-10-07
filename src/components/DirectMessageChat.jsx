@@ -264,8 +264,9 @@ if (refreshConversations) {
   
   // Scroll to bottom when messages change
   useEffect(() => {
-    if (messagesEndRef.current && messageContainerRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    if (messageContainerRef.current) {
+      // Scroll within the container only, not the viewport
+      messageContainerRef.current.scrollTop = messageContainerRef.current.scrollHeight;
     }
   }, [messages]);
   
@@ -996,7 +997,7 @@ if (refreshConversations) {
         display: 'flex', 
         flexDirection: 'column', 
         height: { 
-          xs: 'calc(100dvh - var(--network-header-height, 80px) - var(--footer-height, 100px))',
+          xs: 'calc(100dvh - var(--network-header-height, 80px) - 77px)',
           sm: '100%'
         },
         bgcolor: 'background.default',

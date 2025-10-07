@@ -332,10 +332,7 @@ function DirectMessagesPage() {
         // Conversation list view for mobile
         <Box sx={{ minHeight: 'calc(100dvh - var(--network-header-height, 80px) - var(--footer-height, 100px))', display: 'flex', flexDirection: 'column', bgcolor: 'background.default' }}>
           <Box sx={{ p: 1, borderBottom: 1, borderColor: 'divider', display: 'flex', alignItems: 'center', bgcolor: 'background.paper' }}>
-            <IconButton edge="start" component={Link} to="/dashboard" sx={{ mr: 1 }}>
-              <ArrowBackIcon />
-            </IconButton>
-            <Typography variant="h6" component="div" sx={{ flexGrow: 1, color: 'text.primary' }}>
+            <Typography variant="h6" component="div" sx={{ ml: 1, flexGrow: 1, color: 'text.primary' }}>
               Messages
             </Typography>
             <IconButton edge="end" onClick={handleNewConversation}>
