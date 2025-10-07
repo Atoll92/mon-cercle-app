@@ -150,7 +150,8 @@ function NetworkLandingPage() {
   const [tabsTransition, setTabsTransition] = useState('none'); // 'none', 'fixing', 'unfixing'
   const [smoothTransitionProgress, setSmoothTransitionProgress] = useState(0);
   const [networkDescriptionModalOpen, setNetworkDescriptionModalOpen] = useState(false);
-  
+  const [showDebugPanel, setShowDebugPanel] = useState(false);
+
   // Animation setup - must be at top level, not conditional
   const contentRef = useFadeIn(200);
 
@@ -1306,58 +1307,80 @@ function NetworkLandingPage() {
       {/* Debug button for testing - remove in production */}
       {process.env.NODE_ENV === 'development' && (
         <Box sx={{ position: 'fixed', bottom: 20, right: 20, zIndex: 9999 }}>
+          {/* Toggle button */}
           <Button
             variant="contained"
             size="small"
-            onClick={() => {
-              // Clear welcome shown flag
-              const welcomeShownKey = `welcome_shown_${network?.id}_${user?.id}`;
-              localStorage.removeItem(welcomeShownKey);
-              localStorage.removeItem(`onboarding-dismissed-${network?.id}`);
-              console.log('[Debug] Cleared welcome flags, reloading...');
-              window.location.reload();
-            }}
-            sx={{ mb: 1, display: 'block' }}
-          >
-            {t('dashboard.debug.resetWelcome')}
-          </Button>
-          <Button
-            variant="contained"
-            size="small"
-            color="secondary"
-            onClick={() => {
-              console.log('[Debug] Manually showing welcome message');
-              setShowWelcomeMessage(true);
-            }}
-            sx={{ mb: 1, display: 'block' }}
-          >
-            {t('dashboard.debug.showWelcome')}
-          </Button>
-          <Button
-            variant="contained"
-            size="small"
-            color="info"
-            onClick={() => {
-              console.log('[Debug] Setting profile created flag for testing');
-              localStorage.setItem(`profile_created_${network?.id}_${activeProfile?.id}`, 'true');
-              console.log('[Debug] Flag set, reloading...');
-              window.location.reload();
-            }}
-            sx={{ mb: 1, display: 'block' }}
-          >
-            {t('dashboard.debug.testNewMember')}
-          </Button>
-          <Button
-            variant="contained"
-            size="small"
-            color="warning"
-            onClick={() => {
-              console.log('[Debug] Simulating from_invite URL parameter');
-              window.location.href = window.location.pathname + '?from_invite=true';
+            onClick={() => setShowDebugPanel(!showDebugPanel)}
+            sx={{
+              mb: 1,
+              display: 'block',
+              backgroundColor: showDebugPanel ? 'error.main' : 'primary.main',
+              '&:hover': {
+                backgroundColor: showDebugPanel ? 'error.dark' : 'primary.dark',
+              }
             }}
           >
-            {t('dashboard.debug.testFromInvite')}
+            {showDebugPanel ? 'Hide Debug' : 'Show Debug'}
           </Button>
+
+          {/* Debug panel - only show when toggled */}
+          {showDebugPanel && (
+            <>
+              <Button
+                variant="contained"
+                size="small"
+                onClick={() => {
+                  // Clear welcome shown flag
+                  const welcomeShownKey = `welcome_shown_${network?.id}_${user?.id}`;
+                  localStorage.removeItem(welcomeShownKey);
+                  localStorage.removeItem(`onboarding-dismissed-${network?.id}`);
+                  console.log('[Debug] Cleared welcome flags, reloading...');
+                  window.location.reload();
+                }}
+                sx={{ mb: 1, display: 'block' }}
+              >
+                {t('dashboard.debug.resetWelcome')}
+              </Button>
+              <Button
+                variant="contained"
+                size="small"
+                color="secondary"
+                onClick={() => {
+                  console.log('[Debug] Manually showing welcome message');
+                  setShowWelcomeMessage(true);
+                }}
+                sx={{ mb: 1, display: 'block' }}
+              >
+                {t('dashboard.debug.showWelcome')}
+              </Button>
+              <Button
+                variant="contained"
+                size="small"
+                color="info"
+                onClick={() => {
+                  console.log('[Debug] Setting profile created flag for testing');
+                  localStorage.setItem(`profile_created_${network?.id}_${activeProfile?.id}`, 'true');
+                  console.log('[Debug] Flag set, reloading...');
+                  window.location.reload();
+                }}
+                sx={{ mb: 1, display: 'block' }}
+              >
+                {t('dashboard.debug.testNewMember')}
+              </Button>
+              <Button
+                variant="contained"
+                size="small"
+                color="warning"
+                onClick={() => {
+                  console.log('[Debug] Simulating from_invite URL parameter');
+                  window.location.href = window.location.pathname + '?from_invite=true';
+                }}
+              >
+                {t('dashboard.debug.testFromInvite')}
+              </Button>
+            </>
+          )}
         </Box>
       )}
       </Container>
