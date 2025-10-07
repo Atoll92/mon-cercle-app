@@ -80,7 +80,7 @@ const AppWithProfileContext = ({ children }) => {
     }
 
     setFetchingNetwork(false);
-    
+
     if (activeProfile?.network_id) {
       setUserNetworkId(activeProfile.network_id);
     } else {
@@ -89,9 +89,20 @@ const AppWithProfileContext = ({ children }) => {
   }, [activeProfile, isLoadingProfiles]);
 
   return (
-    <AppProvider userNetworkId={userNetworkId} fetchingNetwork={fetchingNetwork}>
+    <AppProvider userNetworkId={userNetworkId} fetchingNetwork={fetchingNetwork} activeProfile={activeProfile}>
       {children}
     </AppProvider>
+  );
+};
+
+// Component that wraps NetworkHeader with NetworkProvider using the correct network ID
+const NetworkHeaderWithProvider = () => {
+  const { userNetworkId } = useApp();
+
+  return (
+    <NetworkProvider networkId={userNetworkId}>
+      <NetworkHeader/>
+    </NetworkProvider>
   );
 };
 
@@ -154,21 +165,19 @@ function App() {
               <DirectMessagesProvider>
                 <Box className="App" sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
             {/* Pass the network name to the header */}
-            {(window.location.pathname !== "/" || !session) && 
-             window.location.pathname !== "/pricing" && 
-             window.location.pathname !== "/terms" && 
-             window.location.pathname !== "/old" && 
-             window.location.pathname !== "/profiles/select" && 
-             window.location.pathname !== "/login" && 
+            {(window.location.pathname !== "/" || !session) &&
+             window.location.pathname !== "/pricing" &&
+             window.location.pathname !== "/terms" &&
+             window.location.pathname !== "/old" &&
+             window.location.pathname !== "/profiles/select" &&
+             window.location.pathname !== "/login" &&
              !window.location.pathname.startsWith("/micro-conclav/") &&
              window.location.pathname !== "/network" &&
              window.location.pathname !== "/network-floating" &&
              window.location.pathname !== "/network-alt" &&
              !window.location.pathname.match(/^\/network\/[^\/]+$/) &&
              !window.location.pathname.match(/^\/network-alt\/[^\/]+$/) && (
-              <NetworkProvider>
-                <NetworkHeader/>
-              </NetworkProvider>
+              <NetworkHeaderWithProvider/>
             )}
             <Box component="main" sx={{ 
               flex: 1, 

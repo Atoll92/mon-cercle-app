@@ -33,17 +33,20 @@ export const NetworkProvider = ({ networkId, children }) => {
   const [userRole, setUserRole] = useState('member');
   const [enabledTabs, setEnabledTabs] = useState([]);
 
+  // Use provided networkId or fallback to activeProfile's network_id
+  const effectiveNetworkId = networkId || activeProfile?.network_id;
+
   // Fetch network details and related data
   useEffect(() => {
     const fetchNetworkData = async () => {
-      if (!networkId) return;
+      if (!effectiveNetworkId) return;
       
       setLoading(true);
       setError(null);
       
       try {
         // Fetch network details
-        const networkData = await fetchNetworkDetails(networkId);
+        const networkData = await fetchNetworkDetails(effectiveNetworkId);
         if (!networkData) throw new Error('Network not found');
         setNetwork(networkData);
 
@@ -70,9 +73,9 @@ export const NetworkProvider = ({ networkId, children }) => {
           }
         }
         setEnabledTabs(parsedEnabledTabs);
-        
+
         // Fetch network members
-        const membersResponse = await fetchNetworkMembers(networkId);
+        const membersResponse = await fetchNetworkMembers(effectiveNetworkId);
         // Handle both old array format and new paginated format
         const membersData = Array.isArray(membersResponse) ? membersResponse : membersResponse.members || [];
         setMembers(membersData);
@@ -91,22 +94,22 @@ export const NetworkProvider = ({ networkId, children }) => {
         }
         
         // Fetch network events - include non-approved events for admins
-        const eventsData = await fetchNetworkEvents(networkId, {
+        const eventsData = await fetchNetworkEvents(effectiveNetworkId, {
           includeNonApproved: currentUserRole === 'admin'
         });
         setEvents(eventsData);
-        
+
         // Fetch network news
-        const newsResponse = await fetchNetworkNews(networkId);
+        const newsResponse = await fetchNetworkNews(effectiveNetworkId);
         // Handle both old array format and new paginated format
         const newsData = Array.isArray(newsResponse) ? newsResponse : newsResponse.news || [];
         setNews(newsData);
-        
+
         // Fetch network files
         const { data: filesData, error: filesError } = await supabase
           .from('network_files')
           .select('*')
-          .eq('network_id', networkId)
+          .eq('network_id', effectiveNetworkId)
           .order('created_at', { ascending: false });
           
         if (filesError) throw filesError;
@@ -120,7 +123,7 @@ export const NetworkProvider = ({ networkId, children }) => {
     };
     
     fetchNetworkData();
-  }, [networkId, activeProfile]);
+  }, [effectiveNetworkId, activeProfile]);
 
   // Create value object with all network-related data and functions
   const value = {
@@ -137,7 +140,7 @@ export const NetworkProvider = ({ networkId, children }) => {
     // Add utility functions for updating network data
     refreshMembers: async () => {
       try {
-        const membersResponse = await fetchNetworkMembers(networkId);
+        const membersResponse = await fetchNetworkMembers(effectiveNetworkId);
         // Handle both old array format and new paginated format
         const membersData = Array.isArray(membersResponse) ? membersResponse : membersResponse.members || [];
         setMembers(membersData);
@@ -149,7 +152,7 @@ export const NetworkProvider = ({ networkId, children }) => {
     },
     refreshEvents: async () => {
       try {
-        const eventsData = await fetchNetworkEvents(networkId, {
+        const eventsData = await fetchNetworkEvents(effectiveNetworkId, {
           includeNonApproved: userRole === 'admin'
         });
         setEvents(eventsData);
@@ -161,7 +164,7 @@ export const NetworkProvider = ({ networkId, children }) => {
     },
     refreshNews: async () => {
       try {
-        const newsResponse = await fetchNetworkNews(networkId);
+        const newsResponse = await fetchNetworkNews(effectiveNetworkId);
         // Handle both old array format and new paginated format
         const newsData = Array.isArray(newsResponse) ? newsResponse : newsResponse.news || [];
         setNews(newsData);
@@ -176,9 +179,9 @@ export const NetworkProvider = ({ networkId, children }) => {
         const { data, error } = await supabase
           .from('network_files')
           .select('*')
-          .eq('network_id', networkId)
+          .eq('network_id', effectiveNetworkId)
           .order('created_at', { ascending: false });
-          
+
         if (error) throw error;
         setFiles(data || []);
         return { success: true };
@@ -189,7 +192,7 @@ export const NetworkProvider = ({ networkId, children }) => {
     },
     refreshNetwork: async () => {
       try {
-        const networkData = await fetchNetworkDetails(networkId);
+        const networkData = await fetchNetworkDetails(effectiveNetworkId);
         if (!networkData) throw new Error('Network not found');
         setNetwork(networkData);
 

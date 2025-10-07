@@ -14,10 +14,11 @@ export const useApp = () => {
 };
 
 // Provider component
-export const AppProvider = ({ children, userNetworkId, fetchingNetwork }) => {
+export const AppProvider = ({ children, userNetworkId, fetchingNetwork, activeProfile }) => {
   const value = {
     userNetworkId,
-    fetchingNetwork
+    fetchingNetwork,
+    activeProfile
   };
 
   return (
