@@ -92,35 +92,41 @@ export const moderateAnnonceWithSympa = async (annonceId, status, category = nul
     // First, update the annonce in the database
     await moderateAnnonce(annonceId, status, category);
 
-    // Then, invoke the Sympa moderation Edge Function
-    const { data, error } = await supabase.functions.invoke('sympa-moderate-message', {
-      body: {
-        annonceId,
-        action: status
-      }
-    });
-
-    if (error) {
-      console.error('Error invoking Sympa moderation function:', error);
-      console.error('Error details:', JSON.stringify(error, null, 2));
-
-      // Extract error message from the response
-      let errorMessage = 'Failed to sync with Sympa';
-      if (error.context?.body) {
-        try {
-          const errorBody = typeof error.context.body === 'string'
-            ? JSON.parse(error.context.body)
-            : error.context.body;
-          errorMessage = errorBody.error || errorMessage;
-        } catch (e) {
-          console.error('Could not parse error body:', e);
+    // Only sync with Sympa if there's a status change (not just category update)
+    if (status) {
+      // Then, invoke the Sympa moderation Edge Function
+      const { data, error } = await supabase.functions.invoke('sympa-moderate-message', {
+        body: {
+          annonceId,
+          action: status
         }
+      });
+
+      if (error) {
+        console.error('Error invoking Sympa moderation function:', error);
+        console.error('Error details:', JSON.stringify(error, null, 2));
+
+        // Extract error message from the response
+        let errorMessage = 'Failed to sync with Sympa';
+        if (error.context?.body) {
+          try {
+            const errorBody = typeof error.context.body === 'string'
+              ? JSON.parse(error.context.body)
+              : error.context.body;
+            errorMessage = errorBody.error || errorMessage;
+          } catch (e) {
+            console.error('Could not parse error body:', e);
+          }
+        }
+
+        throw new Error(errorMessage);
       }
 
-      throw new Error(errorMessage);
+      return data;
     }
 
-    return data;
+    // If no status change, just return success
+    return { success: true };
   } catch (error) {
     console.error('Error moderating annonce with Sympa:', error);
     throw error;

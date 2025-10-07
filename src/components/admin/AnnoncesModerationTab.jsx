@@ -129,7 +129,7 @@ function AnnoncesModerationTab({ networkId, darkMode }) {
 
   const handleCategoryChange = async (annonceId, category) => {
     try {
-      await moderateAnnonce(annonceId, null, category);
+      await moderateAnnonceWithSympa(annonceId, null, category);
       setAnnonces(prev => prev.map(a =>
         a.id === annonceId ? { ...a, category } : a
       ));
