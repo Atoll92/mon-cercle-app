@@ -148,22 +148,6 @@ const ChatTab = ({ networkId, isUserMember, darkMode = false }) => {
             >
               {t('chatTab.networkChat')}
             </Typography>
-            <IconButton 
-              color="inherit" 
-              onClick={handleFullscreenClose}
-              aria-label={t('chatTab.exitFullscreen')}
-              size="small"
-              sx={{ 
-                transition: 'all 0.2s ease',
-                '&:hover': { 
-                  bgcolor: 'rgba(255,255,255,0.1)',
-                  transform: 'scale(1.05)' 
-                }
-              }}
-              title={t('chatTab.exitFullscreen')}
-            >
-              <FullscreenExitIcon />
-            </IconButton>
           </Toolbar>
         </AppBar>
         

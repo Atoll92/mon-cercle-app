@@ -1955,7 +1955,8 @@ const renderMessageContent = (message) => {
       <Box 
         sx={{ 
           p: 2, 
-          display: 'flex', 
+          display: 'flex',
+          flexWrap: {xs : 'wrap', sm: 'nowrap'},
           gap: 1, 
           bgcolor: darkMode 
             ? 'rgba(0, 0, 0, 0.6)'

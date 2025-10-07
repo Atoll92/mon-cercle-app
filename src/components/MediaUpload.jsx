@@ -535,7 +535,7 @@ function MediaUpload({
               disabled={uploading || storageInfo?.isAtLimit}
               size={compact ? "small" : "medium"}
             >
-              {compact ? "Add Media" : `Add ${allowedTypes.join('/')}`}
+              {compact ? "Add Media" : `Add ${allowedTypes.join(' / ')}`}
             </Button>
           </label>
           

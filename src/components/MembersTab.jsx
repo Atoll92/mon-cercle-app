@@ -393,7 +393,7 @@ const MembersTab = ({
               </FormControl>
             </Grid>
             
-            <Grid item xs={12} sm={6} md={3}>
+            {/* <Grid item xs={12} sm={6} md={3}>
               <FormControl 
                 fullWidth 
                 size="small"
@@ -427,7 +427,7 @@ const MembersTab = ({
                   ))}
                 </Select>
               </FormControl>
-            </Grid>
+            </Grid> */}
             
             <Grid item xs={12} sm={6} md={2}>
               <Button
@@ -493,7 +493,7 @@ const MembersTab = ({
                     {t('membersTab.joinDate')}
                   </Button>
                   
-                  <Button
+                  {/* <Button
                     size="small"
                     color={sortBy === 'skillCount' ? 'primary' : 'inherit'}
                     onClick={() => handleSortChange('skillCount')}
@@ -506,7 +506,7 @@ const MembersTab = ({
                     }}
                   >
                     {t('membersTab.skillsCount')}
-                  </Button>
+                  </Button> */}
                 </Box>
                 
                 <Typography 

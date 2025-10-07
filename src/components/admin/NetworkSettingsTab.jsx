@@ -712,7 +712,8 @@ label={t('admin.networkSettings.fields.networkDescription')}
                     <Box 
                       sx={{ 
                         display: 'grid', 
-                        gridTemplateColumns: '40px 140px 1fr 100px',
+                        gridTemplateColumns: {xs : '1fr', md: '40px 140px 1fr 100px'},
+
                         gap: 2,
                         alignItems: 'start'
                       }}
