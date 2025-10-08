@@ -438,7 +438,7 @@ function DashboardPage() {
 
 
     // Only check if moderation status is pending
-    if (profile.moderation_status !== 'pending') return;
+    if (profile.moderation_status === 'approved') return;
 
     let intervalId;
 
@@ -814,7 +814,7 @@ function DashboardPage() {
   const isAdmin = profile?.role === 'admin';
 
   // Show moderation pending screen for Rezo Pro Spec network with pending status
-  if (profile && profile.network_id === REZOPROSPEC_NETWORK_ID && profile.moderation_status === 'pending' && profile.role !== 'admin') {
+  if (profile && profile.network_id === REZOPROSPEC_NETWORK_ID && profile.moderation_status !== 'approved' && profile.role !== 'admin') {
     return (
       <Box
         sx={{
