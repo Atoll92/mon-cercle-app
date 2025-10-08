@@ -562,6 +562,8 @@ function NetworkAdminPage() {
           /* Users Moderation Component */
           <UsersModerationTab
             networkId={network.id}
+            members={members}
+            onMembersChange={refreshMembers}
             darkMode={darkMode}
           />
         )}

@@ -168,13 +168,13 @@ function App() {
             {(window.location.pathname !== "/" || !session) &&
              window.location.pathname !== "/pricing" &&
              window.location.pathname !== "/terms" &&
-             window.location.pathname !== "/old" &&
              window.location.pathname !== "/profiles/select" &&
              window.location.pathname !== "/login" &&
              !window.location.pathname.startsWith("/micro-conclav/") &&
              window.location.pathname !== "/network" &&
              window.location.pathname !== "/network-floating" &&
              window.location.pathname !== "/network-alt" &&
+             !window.location.pathname.startsWith("/signup/rezoprospec") &&
              !window.location.pathname.match(/^\/network\/[^\/]+$/) &&
              !window.location.pathname.match(/^\/network-alt\/[^\/]+$/) && (
               <NetworkHeaderWithProvider/>

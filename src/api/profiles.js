@@ -497,7 +497,9 @@ export const createProfileForNetwork = async (userId, networkId, profileData) =>
         bio: profileData.bio || '',
         profile_picture_url: profileData.profile_picture_url,
         skills: profileData.skills || [],
-        role: profileData.role || 'member' // Use provided role or default to member
+        role: profileData.role || 'member', // Use provided role or default to member
+        presentation: profileData.presentation,
+        moderation_status: profileData.moderation_status
       })
       .select(`
         *,

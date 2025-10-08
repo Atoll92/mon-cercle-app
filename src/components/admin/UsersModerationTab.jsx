@@ -22,6 +22,11 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  IconButton,
   useTheme as useMuiTheme
 } from '@mui/material';
 import {
@@ -32,10 +37,15 @@ import {
   CalendarToday as DateIcon,
   FilterList as FilterIcon,
   Refresh as RefreshIcon,
-  Email as EmailIcon
+  Email as EmailIcon,
+  CheckCircle as CheckCircleIcon,
+  Cancel as CancelIcon,
+  Close as CloseIcon,
+  Visibility as VisibilityIcon
 } from '@mui/icons-material';
 import { useTranslation } from '../../hooks/useTranslation';
 import Spinner from '../Spinner';
+import { supabase } from '../../supabaseclient';
 
 const STATUS_OPTIONS = {
   pending: { label: 'En attente', color: 'warning', icon: <PendingIcon /> },
@@ -43,55 +53,30 @@ const STATUS_OPTIONS = {
   rejected: { label: 'Refusé', color: 'error', icon: <RejectIcon /> }
 };
 
-// Mock data - will be replaced with real API calls later
-const MOCK_USERS = [
-  {
-    id: '1',
-    email: 'marie.dupont@example.com',
-    name: 'Marie Dupont',
-    status: 'pending',
-    requestDate: '2025-10-05T10:30:00Z',
-    motivation: 'Je suis comédienne et souhaite rejoindre le réseau pour trouver des opportunités'
-  },
-  {
-    id: '2',
-    email: 'jean.martin@example.com',
-    name: 'Jean Martin',
-    status: 'approved',
-    requestDate: '2025-10-03T14:20:00Z',
-    approvedDate: '2025-10-04T09:15:00Z',
-    motivation: 'Producteur de spectacles vivants'
-  },
-  {
-    id: '3',
-    email: 'sophie.bernard@example.com',
-    name: 'Sophie Bernard',
-    status: 'rejected',
-    requestDate: '2025-10-02T16:45:00Z',
-    rejectedDate: '2025-10-03T11:30:00Z',
-    motivation: 'Intéressée par le secteur du spectacle'
-  },
-  {
-    id: '4',
-    email: 'pierre.dubois@example.com',
-    name: 'Pierre Dubois',
-    status: 'pending',
-    requestDate: '2025-10-06T08:15:00Z',
-    motivation: 'Technicien son et lumière avec 10 ans d\'expérience'
-  }
-];
-
-function UsersModerationTab({ networkId, darkMode }) {
+function UsersModerationTab({ networkId, members, onMembersChange, darkMode }) {
   const muiTheme = useMuiTheme();
   const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
-  const [users, setUsers] = useState(MOCK_USERS);
-  const [filteredUsers, setFilteredUsers] = useState(MOCK_USERS);
+  const [filteredUsers, setFilteredUsers] = useState([]);
   const [statusFilter, setStatusFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [actionLoading, setActionLoading] = useState({});
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [motivationDialogOpen, setMotivationDialogOpen] = useState(false);
+
+  // Transform members data to match our UI needs and sort by created_at (latest first)
+  const users = members
+    .map(member => ({
+      id: member.id,
+      email: member.contact_email,
+      name: member.full_name,
+      status: member.moderation_status || 'approved', // Default to approved if no moderation_status
+      requestDate: member.created_at,
+      motivation: member.presentation || ''
+    }))
+    .sort((a, b) => new Date(b.requestDate) - new Date(a.requestDate));
 
   // Filter users based on status and search query
   useEffect(() => {
@@ -117,18 +102,23 @@ function UsersModerationTab({ networkId, darkMode }) {
   const handleApprove = async (userId) => {
     setActionLoading(prev => ({ ...prev, [userId]: 'approving' }));
     try {
-      // TODO: Replace with actual API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Update the profile's moderation_status to 'approved'
+      const { error } = await supabase
+        .from('profiles')
+        .update({ moderation_status: 'approved' })
+        .eq('id', userId);
 
-      setUsers(prev => prev.map(user =>
-        user.id === userId
-          ? { ...user, status: 'approved', approvedDate: new Date().toISOString() }
-          : user
-      ));
+      if (error) throw error;
 
       setSuccessMessage('Utilisateur approuvé avec succès');
       setTimeout(() => setSuccessMessage(''), 3000);
+
+      // Refresh members list to update the UI
+      if (onMembersChange) {
+        onMembersChange();
+      }
     } catch (error) {
+      console.error('Error approving user:', error);
       setErrorMessage('Erreur lors de l\'approbation');
       setTimeout(() => setErrorMessage(''), 3000);
     } finally {
@@ -143,18 +133,23 @@ function UsersModerationTab({ networkId, darkMode }) {
   const handleReject = async (userId) => {
     setActionLoading(prev => ({ ...prev, [userId]: 'rejecting' }));
     try {
-      // TODO: Replace with actual API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Update the profile's moderation_status to 'rejected'
+      const { error } = await supabase
+        .from('profiles')
+        .update({ moderation_status: 'rejected' })
+        .eq('id', userId);
 
-      setUsers(prev => prev.map(user =>
-        user.id === userId
-          ? { ...user, status: 'rejected', rejectedDate: new Date().toISOString() }
-          : user
-      ));
+      if (error) throw error;
 
       setSuccessMessage('Utilisateur rejeté');
       setTimeout(() => setSuccessMessage(''), 3000);
+
+      // Refresh members list to update the UI
+      if (onMembersChange) {
+        onMembersChange();
+      }
     } catch (error) {
+      console.error('Error rejecting user:', error);
       setErrorMessage('Erreur lors du rejet');
       setTimeout(() => setErrorMessage(''), 3000);
     } finally {
@@ -169,9 +164,10 @@ function UsersModerationTab({ networkId, darkMode }) {
   const handleRefresh = async () => {
     setLoading(true);
     try {
-      // TODO: Replace with actual API call
-      await new Promise(resolve => setTimeout(resolve, 500));
-      // For now, just use mock data
+      // Refresh members list from parent component
+      if (onMembersChange) {
+        await onMembersChange();
+      }
     } catch (error) {
       setErrorMessage('Erreur lors du rafraîchissement');
       setTimeout(() => setErrorMessage(''), 3000);
@@ -189,6 +185,16 @@ function UsersModerationTab({ networkId, darkMode }) {
       hour: '2-digit',
       minute: '2-digit'
     });
+  };
+
+  const handleOpenMotivation = (user) => {
+    setSelectedUser(user);
+    setMotivationDialogOpen(true);
+  };
+
+  const handleCloseMotivation = () => {
+    setSelectedUser(null);
+    setMotivationDialogOpen(false);
   };
 
   const getStatusChip = (status) => {
@@ -359,19 +365,31 @@ function UsersModerationTab({ networkId, darkMode }) {
                     </Stack>
                   </TableCell>
                   <TableCell>
-                    <Tooltip title={user.motivation || 'Aucune motivation fournie'}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <Typography
                         variant="body2"
                         sx={{
                           maxWidth: 200,
                           overflow: 'hidden',
                           textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap'
+                          whiteSpace: 'nowrap',
+                          cursor: user.motivation ? 'pointer' : 'default',
+                          '&:hover': user.motivation ? { textDecoration: 'underline' } : {}
                         }}
+                        onClick={() => user.motivation && handleOpenMotivation(user)}
                       >
                         {user.motivation || '-'}
                       </Typography>
-                    </Tooltip>
+                      {user.motivation && (
+                        <IconButton
+                          size="small"
+                          onClick={() => handleOpenMotivation(user)}
+                          sx={{ padding: 0.5 }}
+                        >
+                          <VisibilityIcon fontSize="small" />
+                        </IconButton>
+                      )}
+                    </Box>
                   </TableCell>
                   <TableCell align="right">
                     {user.status === 'pending' && (
@@ -399,14 +417,20 @@ function UsersModerationTab({ networkId, darkMode }) {
                       </Stack>
                     )}
                     {user.status === 'approved' && (
-                      <Typography variant="caption" color="text.secondary">
-                        Approuvé le {formatDate(user.approvedDate)}
-                      </Typography>
+                      <Chip
+                        label="Approuvé"
+                        color="success"
+                        size="small"
+                        icon={<CheckCircleIcon />}
+                      />
                     )}
                     {user.status === 'rejected' && (
-                      <Typography variant="caption" color="text.secondary">
-                        Rejeté le {formatDate(user.rejectedDate)}
-                      </Typography>
+                      <Chip
+                        label="Rejeté"
+                        color="error"
+                        size="small"
+                        icon={<CancelIcon />}
+                      />
                     )}
                   </TableCell>
                 </TableRow>
@@ -415,6 +439,98 @@ function UsersModerationTab({ networkId, darkMode }) {
           </Table>
         </TableContainer>
       )}
+
+      {/* Motivation Dialog */}
+      <Dialog
+        open={motivationDialogOpen}
+        onClose={handleCloseMotivation}
+        maxWidth="sm"
+        fullWidth
+      >
+        {selectedUser && (
+          <>
+            <DialogTitle sx={{ pr: 6 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <Typography variant="h6">Détails de la demande</Typography>
+                <IconButton
+                  onClick={handleCloseMotivation}
+                  sx={{ position: 'absolute', right: 8, top: 8 }}
+                >
+                  <CloseIcon />
+                </IconButton>
+              </Box>
+            </DialogTitle>
+            <DialogContent dividers>
+              <Box sx={{ mb: 3 }}>
+                <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                  Candidat
+                </Typography>
+                <Typography variant="body1" fontWeight="medium">
+                  {selectedUser.name}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {selectedUser.email}
+                </Typography>
+              </Box>
+
+              <Box sx={{ mb: 3 }}>
+                <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                  Date de demande
+                </Typography>
+                <Typography variant="body2">
+                  {formatDate(selectedUser.requestDate)}
+                </Typography>
+              </Box>
+
+              <Box sx={{ mb: 3 }}>
+                <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                  Statut actuel
+                </Typography>
+                {getStatusChip(selectedUser.status)}
+              </Box>
+
+              <Box>
+                <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                  Présentation / Motivation
+                </Typography>
+                <Paper variant="outlined" sx={{ p: 2, bgcolor: 'background.paper' }}>
+                  <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
+                    {selectedUser.motivation || 'Aucune présentation fournie'}
+                  </Typography>
+                </Paper>
+              </Box>
+            </DialogContent>
+            {selectedUser.status === 'pending' && (
+              <DialogActions sx={{ p: 2 }}>
+                <Button
+                  variant="outlined"
+                  color="error"
+                  startIcon={<RejectIcon />}
+                  onClick={() => {
+                    handleReject(selectedUser.id);
+                    handleCloseMotivation();
+                  }}
+                  disabled={!!actionLoading[selectedUser.id]}
+                >
+                  {actionLoading[selectedUser.id] === 'rejecting' ? 'En cours...' : 'Refuser'}
+                </Button>
+                <Button
+                  variant="contained"
+                  color="success"
+                  startIcon={<ApproveIcon />}
+                  onClick={() => {
+                    handleApprove(selectedUser.id);
+                    handleCloseMotivation();
+                  }}
+                  disabled={!!actionLoading[selectedUser.id]}
+                >
+                  {actionLoading[selectedUser.id] === 'approving' ? 'En cours...' : 'Admettre'}
+                </Button>
+              </DialogActions>
+            )}
+          </>
+        )}
+      </Dialog>
     </Box>
   );
 }

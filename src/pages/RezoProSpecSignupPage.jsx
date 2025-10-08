@@ -37,7 +37,7 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import ThreeJSBackground from '../components/ThreeJSBackground';
 import { validatePassword, getPasswordStrength, getPasswordStrengthLabel, getPasswordRequirementsText } from '../utils/passwordValidation';
 
-const REZOPROSPEC_NETWORK_ID = '99a9ee13-fef0-416d-bbb3-dd8c73fd07af'; // Replace with actual network ID
+const REZOPROSPEC_NETWORK_ID = 'b4e51e21-de8f-4f5b-b35d-f98f6df27508';
 
 const theme = createTheme({
   palette: {
@@ -171,6 +171,7 @@ function RezoProSpecSignupPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [presentation, setPresentation] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -207,6 +208,12 @@ function RezoProSpecSignupPage() {
     event.preventDefault();
     setError(null);
     setMessage('');
+
+    // Validate presentation
+    if (!presentation.trim()) {
+      setError("Veuillez fournir une présentation.");
+      return;
+    }
 
     // Validate charter acceptance
     if (!charterAccepted) {
@@ -256,7 +263,9 @@ function RezoProSpecSignupPage() {
         const { createProfileForNetwork: apiCreateProfile } = await import('../api/profiles');
         const profileResult = await apiCreateProfile(data.user.id, REZOPROSPEC_NETWORK_ID, {
           contact_email: email,
-          role: 'member'
+          role: 'member',
+          presentation: presentation,
+          moderation_status: 'pending'
         });
 
         if (profileResult.error) {
@@ -269,22 +278,24 @@ function RezoProSpecSignupPage() {
         const { setActiveProfile: apiSetActiveProfile } = await import('../api/profiles');
         await apiSetActiveProfile(profileResult.data.id);
 
-        // Add user to Sympa subscription queue
-        try {
-          const { subscribeToSympa } = await import('../api/sympaSync');
-          await subscribeToSympa(
-            profileResult.data.id,
-            email,
-            ['immobilier', 'ateliers', 'cours', 'materiel', 'echange', 'casting', 'annonces', 'dons'], // All categories by default
-            '' // No motivation required for signup
-          );
-          console.log('Added to Sympa subscription queue');
-        } catch (sympaError) {
-          console.error('Error adding to Sympa subscription queue:', sympaError);
-          // Don't fail the signup if Sympa queue fails
-        }
+        // // Add user to Sympa subscription queue
+        // try {
+        //   const { subscribeToSympa } = await import('../api/sympaSync');
+        //   await subscribeToSympa(
+        //     profileResult.data.id,
+        //     email,
+        //     ['immobilier', 'ateliers', 'cours', 'materiel', 'echange', 'casting', 'annonces', 'dons'], // All categories by default
+        //     '' // No motivation required for signup
+        //   );
+        //   console.log('Added to Sympa subscription queue');
+        // } catch (sympaError) {
+        //   console.error('Error adding to Sympa subscription queue:', sympaError);
+        //   // Don't fail the signup if Sympa queue fails
+        // }
 
-        setMessage('Inscription réussie ! Vous avez été ajouté à Rezo Pro Spec. Votre demande d\'inscription à la liste de diffusion est en attente d\'approbation par un administrateur. Veuillez vérifier votre email pour confirmer votre compte.');
+        window.location.href = '/dashboard';
+
+        // setMessage('Inscription réussie ! Vous avez été ajouté à Rezo Pro Spec. Votre demande d\'inscription à la liste de diffusion est en attente d\'approbation par un administrateur. Veuillez vérifier votre email pour confirmer votre compte.');
       } catch (profileError) {
         console.error('Erreur lors de la création du profil:', profileError);
         setError(`L'inscription a réussi, mais impossible de rejoindre le réseau : ${profileError.message}. Veuillez contacter le support.`);
@@ -295,6 +306,7 @@ function RezoProSpecSignupPage() {
       setEmail('');
       setPassword('');
       setConfirmPassword('');
+      setPresentation('');
       setCharterAccepted(false);
 
       // Give a moment for the profile to be saved
@@ -487,6 +499,21 @@ function RezoProSpecSignupPage() {
                       label="Confirmer le mot de passe"
                     />
                   </FormControl>
+
+                  {/* Presentation Field */}
+                  <TextField
+                    fullWidth
+                    required
+                    multiline
+                    rows={4}
+                    id="presentation"
+                    label="Présentation"
+                    name="presentation"
+                    placeholder="Présentez vos liens professionnels avec les arts et la culture et votre motivation pour rejoindre le groupe"
+                    value={presentation}
+                    onChange={(e) => setPresentation(e.target.value)}
+                    helperText="Décrivez votre activité professionnelle dans le secteur culturel et vos motivations"
+                  />
 
                   {/* Charter Acceptance */}
                   <Box

@@ -44,13 +44,14 @@ import {
   CheckCircle as CheckCircleIcon,
   Cancel as CancelIcon,
   Help as HelpIcon,
-  Settings as SettingsIcon
+  Settings as SettingsIcon,
+  HourglassTop as HourglassTopIcon
 } from '@mui/icons-material';
-import { 
-  Box, 
-  Typography, 
-  Button, 
-  Alert, 
+import {
+  Box,
+  Typography,
+  Button,
+  Alert,
   Container,
   Paper,
   Divider,
@@ -318,6 +319,9 @@ const EventCard = ({ event, participationStatus, onViewDetails, t }) => {
   );
 };
 
+// Rezo Pro Spec network ID
+const REZOPROSPEC_NETWORK_ID = 'b4e51e21-de8f-4f5b-b35d-f98f6df27508';
+
 function DashboardPage() {
   const { user, session } = useAuth();
   const { activeProfile, userProfiles, isLoadingProfiles } = useProfile();
@@ -343,6 +347,7 @@ function DashboardPage() {
   const [createEventOpen, setCreateEventOpen] = useState(false);
   const [showOnboardingGuide, setShowOnboardingGuide] = useState(false);
   const [showWelcomeMessage, setShowWelcomeMessage] = useState(false);
+  const [checkingModerationStatus, setCheckingModerationStatus] = useState(false);
 
   // Animation setup - must be at top level, not conditional
   const headerRef = useFadeIn(0, ANIMATION_DURATION.normal);
@@ -406,26 +411,64 @@ function DashboardPage() {
   // Show onboarding guide for admin members only
   useEffect(() => {
     if (!profile || !user || loadingProfile) return;
-    
+
     // Check if the user is an admin and hasn't seen the onboarding guide
     if (profile.role === 'admin') {
       // Check if onboarding has been dismissed using the same key as OnboardingGuide component
       const onboardingDismissedKey = `onboarding-dismissed-${profile.network_id}`;
       const isOnboardingDismissed = localStorage.getItem(onboardingDismissedKey);
-      
+
       // Also check the legacy key for backward compatibility
       const hasSeenGuideKey = `onboarding_guide_seen_${profile.network_id}_${user.id}`;
       const hasSeenGuide = localStorage.getItem(hasSeenGuideKey);
-      
+
       if (!isOnboardingDismissed && !hasSeenGuide && !showOnboardingGuide) {
         const timer = setTimeout(() => {
           setShowOnboardingGuide(true);
         }, 1500);
-        
+
         return () => clearTimeout(timer);
       }
     }
   }, [profile, user, loadingProfile, showOnboardingGuide]);
+
+  // Check moderation status for Rezo Pro Spec network
+  useEffect(() => {
+    if (!profile || profile.network_id !== REZOPROSPEC_NETWORK_ID || profile.role === 'admin') return;
+
+
+    // Only check if moderation status is pending
+    if (profile.moderation_status !== 'pending') return;
+
+    let intervalId;
+
+    const checkModerationStatus = async () => {
+      setCheckingModerationStatus(true);
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('moderation_status')
+          .eq('id', profile.id)
+          .single();
+
+        if (!error && data && data.moderation_status !== 'pending') {
+          // Status changed, reload the profile
+          window.location.reload();
+        }
+      } catch (err) {
+        console.error('Error checking moderation status:', err);
+      } finally {
+        setCheckingModerationStatus(false);
+      }
+    };
+
+    // Set up periodic checking every 10 seconds
+    intervalId = setInterval(checkModerationStatus, 10000);
+
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, [profile]);
 
 
 
@@ -769,6 +812,63 @@ function DashboardPage() {
   }
 
   const isAdmin = profile?.role === 'admin';
+
+  // Show moderation pending screen for Rezo Pro Spec network with pending status
+  if (profile && profile.network_id === REZOPROSPEC_NETWORK_ID && profile.moderation_status === 'pending' && profile.role !== 'admin') {
+    return (
+      <Box
+        sx={{
+          minHeight: '100vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          zIndex: 9999
+        }}
+      >
+        <Paper
+          elevation={10}
+          sx={{
+            p: 6,
+            maxWidth: 500,
+            width: '90%',
+            borderRadius: 3,
+            textAlign: 'center',
+            background: 'rgba(255, 255, 255, 0.98)'
+          }}
+        >
+          <Box sx={{ mb: 3 }}>
+            <HourglassTopIcon sx={{ fontSize: 60, color: '#667eea' }} />
+          </Box>
+
+          <Typography variant="h4" gutterBottom sx={{ fontWeight: 600, color: '#333' }}>
+            Demande en cours de validation
+          </Typography>
+
+          <Typography variant="body1" sx={{ mb: 3, color: '#666', lineHeight: 1.6 }}>
+            Votre demande d'adhésion à Rezo Pro Spec est en cours d'examen par un administrateur.
+          </Typography>
+
+          <Box sx={{
+            p: 3,
+            bgcolor: '#f5f5f5',
+            borderRadius: 2,
+            mb: 3,
+            border: '1px solid #e0e0e0'
+          }}>
+            <Typography variant="body2" sx={{ color: '#555' }}>
+              Vous recevrez un email dès que votre demande sera approuvée. La validation est généralement effectuée dans les 24 à 48 heures.
+            </Typography>
+          </Box>
+        </Paper>
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ minHeight: '100vh' }}>
