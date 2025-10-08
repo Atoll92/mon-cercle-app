@@ -7,7 +7,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4'
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')
 const SYMPA_COMMAND_EMAIL = Deno.env.get('SYMPA_COMMAND_EMAIL') || 'sympa@lists.riseup.net'
 const FROM_EMAIL = Deno.env.get('FROM_EMAIL') || 'noreply@your-domain.com'
-const SYMPA_LIST_NAME = 'rezoprospec'
+const REZOPROSPEC_NETWORK_ID = 'b4e51e21-de8f-4f5b-b35d-f98f6df27508'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -65,6 +65,25 @@ Deno.serve(async (req) => {
       throw new Error('Annonce not found')
     }
 
+    // Check if annonce has a category assigned
+    if (!annonce.category) {
+      throw new Error('Annonce must have a category assigned before moderation')
+    }
+
+    // Get the Sympa list for this category
+    const { data: sympaList, error: listError } = await supabase
+      .from('sympa_lists')
+      .select('list_name, list_email, category')
+      .eq('network_id', REZOPROSPEC_NETWORK_ID)
+      .eq('category', annonce.category)
+      .single()
+
+    if (listError || !sympaList) {
+      throw new Error(`Failed to find Sympa list for category "${annonce.category}": ${listError?.message}`)
+    }
+
+    console.log(`📋 Using Sympa list: ${sympaList.list_name} (${sympaList.list_email}) for category: ${annonce.category}`)
+
     // Check if we have the necessary Sympa data
     if (!annonce.sympa_ticket_id || !annonce.sympa_auth_token) {
       console.warn('⚠️ Annonce does not have Sympa ticket ID or auth token. Skipping Sympa sync.')
@@ -89,14 +108,14 @@ Deno.serve(async (req) => {
       )
     }
 
-    // Build Sympa command based on action
+    // Build Sympa command based on action and category-specific list
     // Format: DISTRIBUTE listname message_id OR REJECT listname message_id
     // The sympa_auth_token IS the message_id
     let sympaCommand: string
     if (action === 'approved') {
-      sympaCommand = `DISTRIBUTE ${SYMPA_LIST_NAME} ${annonce.sympa_auth_token}`
+      sympaCommand = `DISTRIBUTE ${sympaList.list_name} ${annonce.sympa_auth_token}`
     } else {
-      sympaCommand = `REJECT ${SYMPA_LIST_NAME} ${annonce.sympa_auth_token}`
+      sympaCommand = `REJECT ${sympaList.list_name} ${annonce.sympa_auth_token}`
     }
 
     console.log(`📧 Sending Sympa command: ${sympaCommand.substring(0, 50)}...`)

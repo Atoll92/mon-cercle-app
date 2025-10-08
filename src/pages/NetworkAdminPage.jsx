@@ -379,7 +379,7 @@ function NetworkAdminPage() {
             {activeTab === 7 && t('admin.tabs.crm')}
             {activeTab === 8 && t('admin.tabs.theme')}
             {activeTab === 9 && t('admin.tabs.moderation')}
-            {activeTab === 10 && 'Modération Annonces'}
+            {activeTab === 10 && 'Modération Messages'}
             {activeTab === 11 && t('admin.tabs.monetization')}
             {activeTab === 12 && t('admin.tabs.billing')}
             {activeTab === 13 && t('admin.tabs.badges')}

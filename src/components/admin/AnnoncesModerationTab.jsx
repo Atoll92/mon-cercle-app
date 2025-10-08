@@ -40,15 +40,11 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { fetchAnnonces, moderateAnnonceWithSympa } from '../../api/annonces';
 import Spinner from '../Spinner';
 
+// RezoProSpec uses 3 categories: general, logement, ateliers
 const CATEGORIES = [
+  { value: 'general', label: 'Général', color: '#00bcd4' },
   { value: 'logement', label: 'Logement', color: '#2196f3' },
-  { value: 'ateliers', label: 'Ateliers', color: '#9c27b0' },
-  { value: 'cours', label: 'Cours', color: '#ff9800' },
-  { value: 'materiel', label: 'Matériel', color: '#4caf50' },
-  { value: 'echange', label: 'Échange', color: '#e91e63' },
-  { value: 'casting', label: 'Casting', color: '#f44336' },
-  { value: 'annonces', label: 'Annonces', color: '#00bcd4' },
-  { value: 'dons', label: 'Dons', color: '#8bc34a' }
+  { value: 'ateliers', label: 'Ateliers', color: '#9c27b0' }
 ];
 
 const STATUS_FILTERS = [
@@ -79,7 +75,7 @@ function AnnoncesModerationTab({ networkId, darkMode }) {
       setAnnonces(data || []);
     } catch (err) {
       console.error('Error loading annonces:', err);
-      setError('Erreur lors du chargement des annonces');
+      setError('Erreur lors du chargement des messages');
     } finally {
       setLoading(false);
     }
@@ -121,7 +117,7 @@ function AnnoncesModerationTab({ networkId, darkMode }) {
       }
     } catch (err) {
       console.error('Error moderating annonce:', err);
-      setError('Erreur lors de la modération de l\'annonce: ' + (err.message || 'Erreur inconnue'));
+      setError('Erreur lors de la modération du message: ' + (err.message || 'Erreur inconnue'));
     } finally {
       setModerating(prev => ({ ...prev, [annonceId]: false }));
     }
@@ -284,10 +280,10 @@ function AnnoncesModerationTab({ networkId, darkMode }) {
           <EmailIcon sx={{ fontSize: 80, color: muiTheme.palette.grey[400], mb: 2 }} />
           <Typography variant="h6" color="text.secondary">
             {searchQuery || categoryFilter !== 'all'
-              ? 'Aucune annonce ne correspond aux filtres'
+              ? 'Aucun message ne correspond aux filtres'
               : filter === 'pending'
-              ? 'Aucune annonce en attente de modération'
-              : 'Aucune annonce'}
+              ? 'Aucun message en attente de modération'
+              : 'Aucun message'}
           </Typography>
         </Paper>
       ) : (

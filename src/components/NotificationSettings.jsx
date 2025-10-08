@@ -53,16 +53,11 @@ const NotificationSettings = () => {
     notify_on_direct_messages: true
   });
 
-  // Demo state for annonces categories (not connected to database)
+  // Annonces categories for RezoProSpec (3 categories)
   const [annonceCategories, setAnnonceCategories] = useState({
+    general: true,
     logement: true,
-    ateliers: true,
-    cours: true,
-    materiel: true,
-    echange: true,
-    casting: true,
-    annonces: true,
-    dons: true
+    ateliers: true
   });
 
   // Load user's current notification preferences
@@ -183,7 +178,16 @@ const NotificationSettings = () => {
     }
   ];
 
+  // RezoProSpec uses 3 categories: general (mandatory), logement, ateliers
   const annonceCategoryOptions = [
+    {
+      key: 'general',
+      label: 'Général',
+      description: 'Tous les messages généraux (obligatoire)',
+      icon: <AnnoncesIcon />,
+      color: '#00bcd4',
+      mandatory: true // Cannot be unsubscribed
+    },
     {
       key: 'logement',
       label: 'Logement',
@@ -194,64 +198,33 @@ const NotificationSettings = () => {
     {
       key: 'ateliers',
       label: 'Ateliers',
-      description: 'Ateliers et formations',
+      description: 'Ateliers et espaces de travail',
       icon: <AteliersIcon />,
       color: '#9c27b0'
-    },
-    {
-      key: 'cours',
-      label: 'Cours',
-      description: 'Cours particuliers et collectifs',
-      icon: <CoursIcon />,
-      color: '#ff9800'
-    },
-    {
-      key: 'materiel',
-      label: 'Matériel',
-      description: 'Vente et location de matériel',
-      icon: <MaterielIcon />,
-      color: '#4caf50'
-    },
-    {
-      key: 'echange',
-      label: 'Échange',
-      description: 'Trocs et échanges de services',
-      icon: <EchangeIcon />,
-      color: '#e91e63'
-    },
-    {
-      key: 'casting',
-      label: 'Casting',
-      description: 'Castings et auditions',
-      icon: <CastingIcon />,
-      color: '#f44336'
-    },
-    {
-      key: 'annonces',
-      label: 'Annonces',
-      description: 'Annonces diverses',
-      icon: <AnnoncesIcon />,
-      color: '#00bcd4'
-    },
-    {
-      key: 'dons',
-      label: 'Dons',
-      description: 'Dons et collectes',
-      icon: <DonsIcon />,
-      color: '#8bc34a'
     }
   ];
 
   const handleAnnonceCategoryToggle = async (category) => {
+    // Prevent toggling 'general' category (it's mandatory)
+    if (category === 'general') {
+      setError('La catégorie "Général" est obligatoire et ne peut pas être désactivée');
+      setTimeout(() => setError(null), 3000);
+      return;
+    }
+
     const newCategories = {
       ...annonceCategories,
       [category]: !annonceCategories[category]
     };
     setAnnonceCategories(newCategories);
 
-    // Save to database
+    // Save to database - always include 'general'
     try {
       const selectedCategories = Object.keys(newCategories).filter(key => newCategories[key]);
+      // Ensure 'general' is always included
+      if (!selectedCategories.includes('general')) {
+        selectedCategories.push('general');
+      }
       await updateSympaCategories(activeProfile.id, selectedCategories);
       console.log('Category preferences updated:', selectedCategories);
     } catch (err) {
@@ -266,13 +239,18 @@ const NotificationSettings = () => {
     const allSelected = Object.values(annonceCategories).every(v => v);
     const newState = {};
     Object.keys(annonceCategories).forEach(key => {
-      newState[key] = !allSelected;
+      // Always keep 'general' as true (mandatory)
+      newState[key] = key === 'general' ? true : !allSelected;
     });
     setAnnonceCategories(newState);
 
     // Save to database
     try {
       const selectedCategories = Object.keys(newState).filter(key => newState[key]);
+      // Ensure 'general' is always included
+      if (!selectedCategories.includes('general')) {
+        selectedCategories.push('general');
+      }
       await updateSympaCategories(activeProfile.id, selectedCategories);
       console.log('All categories toggled:', selectedCategories);
     } catch (err) {
@@ -387,10 +365,10 @@ const NotificationSettings = () => {
               <EmailIcon color="primary" />
               <Box flex={1}>
                 <Typography variant="subtitle1" fontWeight={600}>
-                  Catégories d'Annonces
+                  Catégories de Messages
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Choisissez les types d'annonces pour lesquelles vous souhaitez recevoir des notifications par email
+                  Choisissez les types de messages pour lesquels vous souhaitez recevoir des notifications par email
                 </Typography>
               </Box>
               <Chip
@@ -430,7 +408,7 @@ const NotificationSettings = () => {
                       <Checkbox
                         checked={annonceCategories[category.key] && preferences.email_notifications_enabled}
                         onChange={() => handleAnnonceCategoryToggle(category.key)}
-                        disabled={saving || !preferences.email_notifications_enabled}
+                        disabled={saving || !preferences.email_notifications_enabled || category.mandatory}
                         sx={{
                           color: category.color,
                           '&.Mui-checked': {
