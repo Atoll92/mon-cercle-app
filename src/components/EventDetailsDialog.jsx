@@ -84,8 +84,7 @@ const EventDetailsDialog = ({
       <DialogContent dividers sx={{ p: 0 }}>
         {event.cover_image_url && (
           <Box sx={{ 
-            width: '100%', 
-            height: 300,
+            width: '100%',
             position: 'relative'
           }}>
             <img 
@@ -93,8 +92,6 @@ const EventDetailsDialog = ({
               alt={event.title}
               style={{ 
                 width: '100%', 
-                height: '100%', 
-                objectFit: 'cover' 
               }} 
             />
           </Box>
