@@ -156,7 +156,7 @@ const AdminLayout = ({
       excludeNetworks: [REZOPROSPECT_NETWORK_ID] // Hide for rezoprospect
     },
     {
-      name: 'Modération Annonces',
+      name: 'Modération Messages',
       icon: <CampaignIcon />,
       index: 10,
       networkId: REZOPROSPECT_NETWORK_ID // Only for rezoprospect network
