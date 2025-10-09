@@ -37,7 +37,7 @@ function PrivacyPage() {
             2. Responsable du traitement
           </Typography>
           <Typography variant="body1" paragraph>
-            Le responsable du traitement des données est [Nom de votre société], société [forme juridique] au capital de [montant] euros, immatriculée au RCS de [ville] sous le numéro [numéro], dont le siège social est situé [adresse].
+            Le responsable du traitement des données est Double Geste, société SARL au capital de 500 euros, immatriculée au RCS de Paris sous le numéro 904 884 822, dont le siège social est situé 5 rue Papillon 75009 Paris, France.
           </Typography>
           <Typography variant="body1" paragraph>
             Contact du délégué à la protection des données (DPO) : privacy@conclav.club
@@ -226,7 +226,7 @@ function PrivacyPage() {
           </Typography>
           <Box component="ul" sx={{ pl: 3 }}>
             <Typography component="li" variant="body1">Email : privacy@conclav.club</Typography>
-            <Typography component="li" variant="body1">Courrier : [Adresse postale]</Typography>
+            <Typography component="li" variant="body1">Courrier : 5 rue Papillon 75009 Paris, France</Typography>
             <Typography component="li" variant="body1">DPO : dpo@conclav.club</Typography>
           </Box>
 

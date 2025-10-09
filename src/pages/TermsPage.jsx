@@ -30,7 +30,7 @@ function TermsPage() {
             1. Objet et acceptation des conditions
           </Typography>
           <Typography variant="body1" paragraph>
-            Les présentes conditions générales d'utilisation (ci-après "CGU") régissent l'utilisation de la plateforme Conclav (ci-après "la Plateforme") éditée par [Nom de votre société], société [forme juridique] au capital de [montant] euros, immatriculée au RCS de [ville] sous le numéro [numéro], dont le siège social est situé [adresse].
+            Les présentes conditions générales d'utilisation (ci-après "CGU") régissent l'utilisation de la plateforme Conclav (ci-après "la Plateforme") éditée par Double Geste, société SARL au capital de 500 euros, immatriculée au RCS de Paris sous le numéro 904 884 822, dont le siège social est situé 5 rue Papillon 75009 Paris, France.
           </Typography>
           <Typography variant="body1" paragraph>
             L'utilisation de la Plateforme implique l'acceptation pleine et entière des présentes CGU. Si vous n'acceptez pas ces conditions, vous ne devez pas utiliser la Plateforme.
@@ -163,9 +163,6 @@ function TermsPage() {
             12. Médiation
           </Typography>
           <Typography variant="body1" paragraph>
-            En cas de litige, vous pouvez recourir gratuitement au service de médiation suivant : [Nom et coordonnées du médiateur], conformément aux articles L.616-1 et R.616-1 du Code de la consommation.
-          </Typography>
-          <Typography variant="body1" paragraph>
             Plateforme de règlement en ligne des litiges : <Link href="https://ec.europa.eu/consumers/odr" target="_blank" rel="noopener noreferrer">https://ec.europa.eu/consumers/odr</Link>
           </Typography>
 
@@ -187,8 +184,7 @@ function TermsPage() {
           </Typography>
           <Box component="ul" sx={{ pl: 3 }}>
             <Typography component="li" variant="body1">Par email : legal@moncercle.app</Typography>
-            <Typography component="li" variant="body1">Par courrier : [Adresse postale]</Typography>
-            <Typography component="li" variant="body1">Directeur de la publication : [Nom du directeur]</Typography>
+            <Typography component="li" variant="body1">Par courrier : 5 rue Papillon 75009 Paris, France</Typography>
             <Typography component="li" variant="body1">Hébergeur : Vercel Inc., 340 S Lemon Ave #4133, Walnut, CA 91789, USA</Typography>
           </Box>
 
