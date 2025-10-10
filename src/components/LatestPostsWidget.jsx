@@ -158,6 +158,7 @@ const LatestPostsWidget = ({ networkId, onMemberClick, darkMode = false, onPostU
         icon={<WorkIcon color="primary" />}
         title={t('dashboard.widgets.latestPosts')}
         viewAllLink={`/network/${networkId}?tab=social`}
+        viewAllText={t('dashboard.buttons.viewAll')}
         action={
           <Button
             variant="contained"

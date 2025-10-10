@@ -164,6 +164,7 @@ const LatestAnnouncementsWidget = ({ networkId, onMemberClick, darkMode = false 
         icon={<AnnouncementIcon color="primary" />}
         title={t('dashboard.widgets.latestNews')}
         viewAllLink={`/network/${networkId}?tab=news`}
+        viewAllText={t('dashboard.buttons.viewAll')}
         action={
           isAdmin && (
             <Button

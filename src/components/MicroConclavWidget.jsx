@@ -132,7 +132,7 @@ const MicroConclavWidget = () => {
         icon={<DashboardIcon color="primary" />}
         title={t('dashboard.widgets.myMicroConclav')}
         viewAllLink={microConclavUrl}
-        viewAllText="View Page"
+        viewAllText={t('dashboard.buttons.view')}
         action={
           !editing ? (
             <IconButton 

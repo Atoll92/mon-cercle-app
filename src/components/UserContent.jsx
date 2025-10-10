@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Box, Typography, Link, Button, useTheme, alpha } from '@mui/material';
 import { linkifyText, linkifyHtml } from '../utils/textFormatting';
 import { sanitizeRichText } from '../utils/sanitizeHtml';
+import { useTranslation } from '../hooks/useTranslation';
 
 /**
  * Component for displaying user-generated content with consistent formatting
@@ -25,6 +26,7 @@ const UserContent = ({
   ...otherProps
 }) => {
   const theme = useTheme();
+  const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
   const [isTruncated, setIsTruncated] = useState(false);
   const contentRef = useRef(null);
@@ -151,7 +153,7 @@ const UserContent = ({
             }
           }}
         >
-          {expanded ? 'Show less' : 'Show more'}
+          {expanded ? t('common.actions.showLess') : t('common.actions.showMore')}
         </Button>
       )}
       </>
@@ -186,7 +188,7 @@ const UserContent = ({
               }
             }}
           >
-            {expanded ? 'Show less' : 'Show more'}
+            {expanded ? t('common.actions.showLess') : t('common.actions.showMore')}
           </Button>
         )}
       </>
@@ -237,7 +239,7 @@ const UserContent = ({
             }
           }}
         >
-          {expanded ? 'Show less' : 'Show more'}
+          {expanded ? t('common.actions.showLess') : t('common.actions.showMore')}
         </Button>
       )}
     </>
