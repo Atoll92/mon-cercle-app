@@ -111,11 +111,12 @@ Deno.serve(async (req) => {
     // Build Sympa command based on action and category-specific list
     // Format: DISTRIBUTE listname message_id OR REJECT listname message_id
     // The sympa_auth_token IS the message_id
-    let sympaCommand: string
+    let sympaCommand;
+    let sympaMainList = 'rezoprospec'; // OVERIDE TO MAIN LIST FOR NOW
     if (action === 'approved') {
-      sympaCommand = `DISTRIBUTE ${sympaList.list_name} ${annonce.sympa_auth_token}`
+      sympaCommand = `DISTRIBUTE ${sympaMainList} ${annonce.sympa_auth_token}`;
     } else {
-      sympaCommand = `REJECT ${sympaList.list_name} ${annonce.sympa_auth_token}`
+      sympaCommand = `REJECT ${sympaMainList} ${annonce.sympa_auth_token}`;
     }
 
     console.log(`📧 Sending Sympa command: ${sympaCommand.substring(0, 50)}...`)
