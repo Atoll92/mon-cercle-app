@@ -1,5 +1,5 @@
 // File: src/components/admin/AnnoncesModerationTab.jsx
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Box,
   Paper,
@@ -32,13 +32,12 @@ import {
   FilterList as FilterIcon,
   Refresh as RefreshIcon,
   Sync as SyncIcon,
-  CheckCircleOutline as SyncedIcon,
-  ExpandMore as ExpandMoreIcon,
-  ExpandLess as ExpandLessIcon
+  CheckCircleOutline as SyncedIcon
 } from '@mui/icons-material';
 import { useTranslation } from '../../hooks/useTranslation';
 import { fetchAnnonces, moderateAnnonceWithSympa } from '../../api/annonces';
 import Spinner from '../Spinner';
+import UserContent from '../UserContent';
 
 // RezoProSpec uses 3 categories: general, logement, ateliers
 const CATEGORIES = [
@@ -64,8 +63,6 @@ function AnnoncesModerationTab({ networkId, darkMode }) {
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [moderating, setModerating] = useState({});
-  const [expandedMessages, setExpandedMessages] = useState({});
-  const [truncatedMessages, setTruncatedMessages] = useState({});
 
   const loadAnnonces = async () => {
     try {
@@ -171,12 +168,6 @@ function AnnoncesModerationTab({ networkId, darkMode }) {
     }
   };
 
-  const toggleMessageExpansion = (annonceId) => {
-    setExpandedMessages(prev => ({
-      ...prev,
-      [annonceId]: !prev[annonceId]
-    }));
-  };
 
   if (loading && annonces.length === 0) {
     return (
@@ -365,62 +356,29 @@ function AnnoncesModerationTab({ networkId, darkMode }) {
                   </Stack>
 
                   {/* Subject */}
-                  <Typography variant="h6" sx={{ mb: 1, fontWeight: 'medium' }}>
-                    {annonce.subject || 'Sans sujet'}
-                  </Typography>
+                  <UserContent
+                    content={annonce.subject || 'Sans sujet'}
+                    maxLines={1}
+                    component="h6"
+                    sx={{
+                      mb: 1,
+                      fontWeight: 'medium',
+                      fontSize: '1.25rem',
+                      lineHeight: 1.6
+                    }}
+                  />
 
                   {/* Content */}
-                  <Box>
-                    <Typography
-                      ref={(el) => {
-                        if (el && !expandedMessages[annonce.id]) {
-                          // Check if content is actually truncated
-                          const isTruncated = el.scrollHeight > el.clientHeight;
-                          if (truncatedMessages[annonce.id] !== isTruncated) {
-                            setTruncatedMessages(prev => ({
-                              ...prev,
-                              [annonce.id]: isTruncated
-                            }));
-                          }
-                        }
-                      }}
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{
-                        mb: 2,
-                        ...(!expandedMessages[annonce.id] && {
-                          maxHeight: 120,
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          display: '-webkit-box',
-                          WebkitLineClamp: 5,
-                          WebkitBoxOrient: 'vertical'
-                        })
-                      }}
-                    >
-                      {annonce.content}
-                    </Typography>
-                    {truncatedMessages[annonce.id] && !expandedMessages[annonce.id] && (
-                      <Button
-                        size="small"
-                        onClick={() => toggleMessageExpansion(annonce.id)}
-                        endIcon={<ExpandMoreIcon />}
-                        sx={{ mb: 1 }}
-                      >
-                        Voir plus
-                      </Button>
-                    )}
-                    {expandedMessages[annonce.id] && (
-                      <Button
-                        size="small"
-                        onClick={() => toggleMessageExpansion(annonce.id)}
-                        endIcon={<ExpandLessIcon />}
-                        sx={{ mb: 1 }}
-                      >
-                        Voir moins
-                      </Button>
-                    )}
-                  </Box>
+                  <UserContent
+                    content={annonce.content}
+                    maxLines={10}
+                    component="div"
+                    sx={{
+                      mb: 2,
+                      color: 'text.secondary',
+                      fontSize: '0.875rem'
+                    }}
+                  />
 
                   {annonce.moderated_at && (
                     <Typography variant="caption" color="text.secondary" sx={{ fontStyle: 'italic' }}>
