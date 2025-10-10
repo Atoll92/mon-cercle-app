@@ -93,21 +93,30 @@ function AnnoncesModerationTab({ networkId, darkMode }) {
 
       console.log('Moderation result:', result);
 
-      // Update local state with sync status
-      setAnnonces(prev => prev.map(a =>
-        a.id === annonceId
-          ? {
-              ...a,
-              status,
-              category: category || a.category,
-              moderated_at: new Date().toISOString(),
-              synced_to_sympa: result?.synced || false
-            }
-          : a
-      ));
+      // Hide the message from UI when clicking Valider or Rejeter
+      // (Keep "pending" status to allow "Remettre en attente" to work normally)
+      if (status === 'approved' || status === 'rejected') {
+        setAnnonces(prev => prev.filter(a => a.id !== annonceId));
+      } else {
+        // Update local state with sync status for other status changes
+        setAnnonces(prev => prev.map(a =>
+          a.id === annonceId
+            ? {
+                ...a,
+                status,
+                category: category || a.category,
+                moderated_at: new Date().toISOString(),
+                synced_to_sympa: result?.synced || false
+              }
+            : a
+        ));
+      }
 
       // Show success message
       if (result?.synced) {
+        setError(null);
+      } else if (status === 'approved' || status === 'rejected') {
+        // Don't show error for successful moderation
         setError(null);
       } else {
         setError('Modération réussie (pas de synchronisation Sympa)');
