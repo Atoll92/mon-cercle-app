@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/authcontext';
 import { useProfile } from '../context/profileContext';
+import { useTranslation } from '../hooks/useTranslation';
 import MemberDetailsModal from '../components/MembersDetailModal';
 import Spinner from '../components/Spinner';
 import CommentSection from '../components/CommentSection';
@@ -55,6 +56,7 @@ function EventPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { activeProfile } = useProfile();
+  const { t } = useTranslation();
   const [event, setEvent] = useState(null);
   const [organizer, setOrganizer] = useState(null);
   const [participants, setParticipants] = useState([]);
@@ -130,9 +132,9 @@ function EventPage() {
         .single();
 
       if (eventError) throw eventError;
-      
+
       if (!eventData) {
-        setError('Event not found');
+        setError(t('pages.event.eventNotFound'));
         return;
       }
 
@@ -141,7 +143,7 @@ function EventPage() {
       if (eventData.status !== 'approved' && !userIsAdmin) {
         // Check if the user is the creator
         if (eventData.created_by !== profileId) {
-          setError('Event not found');
+          setError(t('pages.event.eventNotFound'));
           return;
         }
       }
@@ -185,7 +187,7 @@ function EventPage() {
       }
     } catch (err) {
       console.error('Error fetching event:', err);
-      setError('Failed to load event');
+      setError(t('pages.event.failedToLoadEvent'));
     } finally {
       setLoading(false);
     }
@@ -242,7 +244,7 @@ function EventPage() {
   };
 
   const handleDelete = async () => {
-    if (!window.confirm('Are you sure you want to delete this event?')) {
+    if (!window.confirm(t('pages.event.deleteConfirmation'))) {
       return;
     }
 
@@ -333,7 +335,7 @@ function EventPage() {
       }
     } catch (err) {
       console.error('Error updating participation:', err);
-      alert('Failed to update participation: ' + (err.message || 'Unknown error'));
+      alert(t('pages.event.failedToUpdateParticipation') + ': ' + (err.message || 'Unknown error'));
     } finally {
       setUpdatingStatus(false);
     }
@@ -383,10 +385,10 @@ function EventPage() {
                   onClick={() => navigate(`/network/${networkId}`)}
                   sx={{ mb: 2 }}
                 >
-                  Back to Network
+                  {t('pages.event.backToNetwork')}
                 </Button>
                 <Alert severity="error">
-                  {error || 'Event not found'}
+                  {error || t('pages.event.eventNotFound')}
                 </Alert>
               </CardContent>
             </Card>
@@ -396,10 +398,10 @@ function EventPage() {
           <Grid item xs={12} md={8} sx={{ width: '100%' }}>
             <Paper sx={{ p: 4 }}>
               <Typography variant="h4" gutterBottom>
-                Event Not Available
+                {t('pages.event.eventNotAvailable')}
               </Typography>
               <Typography variant="body1" color="text.secondary">
-                The event you're looking for is not available or may have been removed.
+                {t('pages.event.eventNotAvailableDescription')}
               </Typography>
             </Paper>
           </Grid>
@@ -419,7 +421,7 @@ function EventPage() {
           startIcon={<ArrowBackIcon />}
           onClick={() => navigate(`/network/${networkId}`)}
         >
-          Back to Network
+          {t('pages.event.backToNetwork')}
         </Button>
         
         {canModerate && (
@@ -435,13 +437,13 @@ function EventPage() {
               {canModerate && (
                 <MenuItem onClick={handleEdit}>
                   <EditIcon sx={{ mr: 1 }} fontSize="small" />
-                  Edit
+                  {t('pages.event.edit')}
                 </MenuItem>
               )}
               {canModerate && (
                 <MenuItem onClick={handleDelete}>
                   <DeleteIcon sx={{ mr: 1 }} fontSize="small" />
-                  Delete
+                  {t('pages.event.delete')}
                 </MenuItem>
               )}
             </Menu>
@@ -496,14 +498,14 @@ function EventPage() {
               {isMultiDay && (
                 <Chip
                   icon={<ScheduleIcon />}
-                  label={`${Math.ceil((eventEndDate - eventDate) / (1000 * 60 * 60 * 24))} days`}
+                  label={t('pages.event.daysCount', { count: Math.ceil((eventEndDate - eventDate) / (1000 * 60 * 60 * 24)) })}
                   size="small"
                   color="info"
                 />
               )}
               {isPastEvent && (
                 <Chip
-                  label="Past Event"
+                  label={t('pages.event.pastEvent')}
                   color="default"
                   size="small"
                 />
@@ -536,7 +538,7 @@ function EventPage() {
                         target="_blank"
                         sx={{ mt: 0.5 }}
                       >
-                        Open in Google Maps
+                        {t('pages.event.openInGoogleMaps')}
                       </Button>
                     )}
                   </Box>
@@ -568,7 +570,7 @@ function EventPage() {
             {network?.features_config?.monetization && event.price > 0 && (
               <Box sx={{ mb: 3, p: 2, bgcolor: 'background.default', borderRadius: 1 }}>
                 <Typography variant="h6" gutterBottom>
-                  Ticket Price
+                  {t('pages.event.ticketPrice')}
                 </Typography>
                 <Typography variant="h4" color="primary">
                   {new Intl.NumberFormat('en-US', {
@@ -578,7 +580,7 @@ function EventPage() {
                 </Typography>
                 {event.max_tickets && (
                   <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                    {event.tickets_sold || 0} / {event.max_tickets} tickets sold
+                    {t('pages.event.ticketsSold', { sold: event.tickets_sold || 0, total: event.max_tickets })}
                   </Typography>
                 )}
               </Box>
@@ -593,7 +595,7 @@ function EventPage() {
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  Event Link
+                  {t('pages.event.eventLink')}
                 </Button>
               </Box>
             )}
@@ -602,7 +604,7 @@ function EventPage() {
 
             {/* Description */}
             <Typography variant="h5" gutterBottom>
-              About this Event
+              {t('pages.event.aboutThisEvent')}
             </Typography>
             <UserContent 
               content={event.description}
@@ -614,11 +616,11 @@ function EventPage() {
               <>
                 <Divider sx={{ my: 3 }} />
                 <Typography variant="h6" gutterBottom>
-                  Organized by
+                  {t('pages.event.organizedBy')}
                 </Typography>
-                <Box 
-                  sx={{ 
-                    display: 'flex', 
+                <Box
+                  sx={{
+                    display: 'flex',
                     alignItems: 'center',
                     cursor: 'pointer',
                     padding: 1,
@@ -641,7 +643,7 @@ function EventPage() {
                       {organizer.full_name}
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
-                      Event Organizer
+                      {t('pages.event.eventOrganizer')}
                     </Typography>
                   </Box>
                 </Box>
@@ -666,7 +668,7 @@ function EventPage() {
             <Card sx={{ mb: 3 }}>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
-                  Will you attend?
+                  {t('pages.event.willYouAttend')}
                 </Typography>
                 <ToggleButtonGroup
                   value={participation}
@@ -677,15 +679,15 @@ function EventPage() {
                 >
                   <ToggleButton value="attending" color="success">
                     <CheckCircleIcon sx={{ mr: 1 }} />
-                    Yes
+                    {t('pages.event.yes')}
                   </ToggleButton>
                   <ToggleButton value="maybe" color="warning">
                     <HelpIcon sx={{ mr: 1 }} />
-                    Maybe
+                    {t('pages.event.maybe')}
                   </ToggleButton>
                   <ToggleButton value="declined" color="error">
                     <CancelIcon sx={{ mr: 1 }} />
-                    No
+                    {t('pages.event.no')}
                   </ToggleButton>
                 </ToggleButtonGroup>
               </CardContent>
@@ -696,27 +698,27 @@ function EventPage() {
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
-                Attendees
+                {t('pages.event.attendees')}
               </Typography>
-              
+
               <Box sx={{ mb: 2 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                   <CheckCircleIcon color="success" sx={{ mr: 1 }} />
                   <Typography>
-                    {attendingCount} Going
+                    {t('pages.event.goingCount', { count: attendingCount })}
                   </Typography>
                 </Box>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                   <HelpIcon color="warning" sx={{ mr: 1 }} />
                   <Typography>
-                    {maybeCount} Maybe
+                    {t('pages.event.maybeCount', { count: maybeCount })}
                   </Typography>
                 </Box>
                 {event.capacity && (
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
                     <PeopleIcon sx={{ mr: 1, color: 'text.secondary' }} />
                     <Typography color="text.secondary">
-                      Capacity: {event.capacity}
+                      {t('pages.event.capacity', { capacity: event.capacity })}
                     </Typography>
                   </Box>
                 )}
@@ -751,7 +753,7 @@ function EventPage() {
                       <ListItemText
                         primary={participant.profiles?.full_name}
                         secondary={
-                          participant.profile_id === event.created_by ? 'Organizer' : 'Attending'
+                          participant.profile_id === event.created_by ? t('pages.event.organizer') : t('pages.event.attending')
                         }
                       />
                     </ListItemButton>
@@ -766,15 +768,15 @@ function EventPage() {
               <CardContent sx={{ p: 0 }}>
                 <Box sx={{ p: 2, pb: 1 }}>
                   <Typography variant="h6" gutterBottom>
-                    Location
+                    {t('pages.event.location')}
                   </Typography>
                   <Typography variant="body2" color="text.secondary" gutterBottom>
                     {event.location}
                   </Typography>
                 </Box>
                 <Box sx={{ height: 200, position: 'relative' }}>
-                  <EventsMap 
-                    events={[event]} 
+                  <EventsMap
+                    events={[event]}
                     initialCoordinates={event.coordinates}
                     onEventSelect={() => {}}
                   />
@@ -789,7 +791,7 @@ function EventPage() {
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    Get Directions
+                    {t('pages.event.getDirections')}
                   </Button>
                 </Box>
               </CardContent>

@@ -222,22 +222,53 @@ const EventsTab = ({
     setCalendarDate(prev => addMonths(prev, 1));
   };
 
+  // Helper function to categorize events
+  const categorizeEvent = (event) => {
+    const now = new Date();
+    const startDate = new Date(event.date);
+    const endDate = event.end_date ? new Date(event.end_date) : startDate;
+
+    if (startDate > now) {
+      return 'upcoming';
+    } else if (endDate >= now) {
+      return 'ongoing';
+    } else {
+      return 'past';
+    }
+  };
+
   // Filter events by selected category and status (only approved events for non-admins)
   const filteredEvents = useMemo(() => {
     let filtered = events;
-    
+
     // Filter by status - only show approved events to non-admin users
     if (!isUserAdmin) {
       filtered = filtered.filter(event => event.status === 'approved' || !event.status);
     }
-    
+
     // Filter by category if selected
     if (selectedCategory) {
       filtered = filtered.filter(event => event.category_id === selectedCategory);
     }
-    
+
     return filtered;
   }, [events, selectedCategory, isUserAdmin]);
+
+  // Separate events by category
+  const upcomingEvents = useMemo(() =>
+    filteredEvents.filter(event => categorizeEvent(event) === 'upcoming'),
+    [filteredEvents]
+  );
+
+  const ongoingEvents = useMemo(() =>
+    filteredEvents.filter(event => categorizeEvent(event) === 'ongoing'),
+    [filteredEvents]
+  );
+
+  const pastEvents = useMemo(() =>
+    filteredEvents.filter(event => categorizeEvent(event) === 'past'),
+    [filteredEvents]
+  );
 
   return (
     <PageTransition>
@@ -391,12 +422,12 @@ const EventsTab = ({
                 </Typography>
               </Box>
               
-              <Chip label={t('eventsTab.eventsCount', { count: filteredEvents.filter(event => new Date(event.date) > new Date()).length })} 
+              <Chip label={t('eventsTab.eventsCount', { count: upcomingEvents.length })}
                 size="small" color="primary" variant="outlined" />
             </Box>
             
             <Box sx={{ flex: '1 1 auto', overflowY: 'auto', maxHeight: '380px' }}>
-              {filteredEvents.filter(event => new Date(event.date) > new Date()).length === 0 ? (
+              {upcomingEvents.length === 0 ? (
                 <Box sx={{ textAlign: 'center', py: 4, px: 2 }}>
                   <Typography variant="body1" color="text.secondary" gutterBottom>
                     {t('eventsTab.noUpcomingEvents')}
@@ -416,8 +447,7 @@ const EventsTab = ({
                 </Box>
               ) : (
                 <Box sx={{ display: 'grid', gridTemplateColumns: '1fr', gap: 0 }}>
-                  {filteredEvents
-                    .filter(event => new Date(event.date) > new Date())
+                  {upcomingEvents
                     .sort((a, b) => new Date(a.date) - new Date(b.date))
                     .map((event, index) => {
                       // Find user participation for this event
@@ -451,7 +481,7 @@ const EventsTab = ({
                           className="parent-event-row" 
                           sx={{ 
                             display: 'flex',
-                            borderBottom: index < filteredEvents.filter(e => new Date(e.date) > new Date()).length - 1 ? '1px solid' : 'none',
+                            borderBottom: index < upcomingEvents.length - 1 ? '1px solid' : 'none',
                             borderColor: 'divider',
                             position: 'relative',
                             transition: 'all 0.2s ease',
@@ -1269,8 +1299,7 @@ const EventsTab = ({
           {t('eventsTab.upcomingEvents')}
         </Typography>
         <Grid container spacing={2}>
-          {filteredEvents
-            .filter(event => new Date(event.date) > new Date())
+          {upcomingEvents
             .map(event => {
               // Find user participation for this event
               const participation = userParticipations.find(p => p.event_id === event.id);
@@ -1771,12 +1800,186 @@ const EventsTab = ({
           </List>
         </Box>
       </Dialog>
-      
+
+      {/* Ongoing Events Section */}
+      {ongoingEvents.length > 0 && (
+        <Paper
+          elevation={0}
+          variant="outlined"
+          sx={{
+            mt: 3,
+            borderRadius: 2,
+            overflow: 'hidden',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+            border: '1px solid',
+            borderColor: 'divider'
+          }}
+        >
+          <Box sx={{
+            p: 2,
+            bgcolor: 'background.paper',
+            borderBottom: '1px solid',
+            borderColor: 'divider',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center'
+          }}>
+            <Box>
+              <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center' }}>
+                <TimelineIcon sx={{ mr: 1 }} color="primary" />
+                {t('eventsTab.ongoingEvents')}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {t('eventsTab.eventsInProgress')}
+              </Typography>
+            </Box>
+
+            <Chip
+              label={t('eventsTab.eventsCount', { count: ongoingEvents.length })}
+              size="small"
+              color="primary"
+              variant="outlined"
+            />
+          </Box>
+
+          <Box sx={{ p: 2 }}>
+            <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 2 }}>
+              {ongoingEvents
+                .sort((a, b) => new Date(a.date) - new Date(b.date))
+                .map((event) => {
+                  const participation = userParticipations.find(p => p.event_id === event.id);
+                  const eventDate = new Date(event.date);
+                  const endDate = event.end_date ? new Date(event.end_date) : eventDate;
+
+                  return (
+                    <Card
+                      key={event.id}
+                      sx={{
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                        borderRadius: 2,
+                        overflow: 'hidden',
+                        bgcolor: 'background.paper',
+                        borderTop: '4px solid #ff9800',
+                        '&:hover': {
+                          transform: 'translateY(-2px)',
+                          boxShadow: '0 8px 24px rgba(0,0,0,0.1)'
+                        }
+                      }}
+                      onClick={() => {
+                        setSelectedEvent(event);
+                        setShowEventDialog(true);
+                      }}
+                    >
+                      {/* Cover image */}
+                      {event.cover_image_url && (
+                        <Box sx={{
+                          height: 120,
+                          overflow: 'hidden',
+                          position: 'relative'
+                        }}>
+                          <img
+                            src={event.cover_image_url}
+                            alt={event.title}
+                            style={{
+                              width: '100%',
+                              height: '100%',
+                              objectFit: 'cover'
+                            }}
+                          />
+                          {/* Overlay with "EN COURS" badge */}
+                          <Box sx={{
+                            position: 'absolute',
+                            top: 8,
+                            left: 8,
+                            bgcolor: '#ff9800',
+                            color: 'white',
+                            px: 1.5,
+                            py: 0.5,
+                            borderRadius: 1,
+                            fontSize: '0.75rem',
+                            fontWeight: 'bold',
+                            textTransform: 'uppercase'
+                          }}>
+                            {t('eventsTab.inProgress')}
+                          </Box>
+                        </Box>
+                      )}
+
+                      <CardContent sx={{ p: 2 }}>
+                        <Typography
+                          variant="subtitle2"
+                          sx={{
+                            fontWeight: 'medium',
+                            mb: 0.5,
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap'
+                          }}
+                        >
+                          {event.title}
+                        </Typography>
+
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 1 }}>
+                          <EventIcon sx={{ fontSize: 14, color: 'text.secondary' }} />
+                          <Typography variant="caption" color="text.secondary">
+                            {formatDate(event.date, { month: 'short', day: 'numeric' })}
+                            {event.end_date && ` - ${formatDate(event.end_date, { month: 'short', day: 'numeric' })}`}
+                          </Typography>
+                        </Box>
+
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 1 }}>
+                          <LocationOnIcon sx={{ fontSize: 14, color: 'text.secondary' }} />
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            sx={{
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap'
+                            }}
+                          >
+                            {event.location}
+                          </Typography>
+                        </Box>
+
+                        {/* Participation indicator */}
+                        {participation && (
+                          <Chip
+                            label={
+                              participation.status === 'attending' ? t('eventsTab.attending') :
+                              participation.status === 'maybe' ? t('eventsTab.maybe') :
+                              t('eventsTab.notAttending')
+                            }
+                            size="small"
+                            sx={{
+                              height: 20,
+                              fontSize: '0.7rem',
+                              bgcolor: participation.status === 'attending' ? 'rgba(76, 175, 80, 0.1)' :
+                                       participation.status === 'maybe' ? 'rgba(255, 152, 0, 0.1)' :
+                                       'rgba(244, 67, 54, 0.1)',
+                              color: participation.status === 'attending' ? '#4caf50' :
+                                     participation.status === 'maybe' ? '#ff9800' : '#f44336',
+                              border: '1px solid',
+                              borderColor: participation.status === 'attending' ? '#4caf50' :
+                                          participation.status === 'maybe' ? '#ff9800' : '#f44336'
+                            }}
+                          />
+                        )}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+            </Box>
+          </Box>
+        </Paper>
+      )}
+
       {/* Past Events Navigation */}
-      <Paper 
-        elevation={0} 
-        variant="outlined" 
-        sx={{ 
+      <Paper
+        elevation={0}
+        variant="outlined"
+        sx={{
           mt: 3,
           borderRadius: 2,
           overflow: 'hidden',
@@ -1785,13 +1988,13 @@ const EventsTab = ({
           borderColor: 'divider'
         }}
       >
-        <Box sx={{ 
-          p: 2, 
-          bgcolor: 'background.paper', 
-          borderBottom: '1px solid', 
+        <Box sx={{
+          p: 2,
+          bgcolor: 'background.paper',
+          borderBottom: '1px solid',
           borderColor: 'divider',
-          display: 'flex', 
-          justifyContent: 'space-between', 
+          display: 'flex',
+          justifyContent: 'space-between',
           alignItems: 'center'
         }}>
           <Box>
@@ -1803,17 +2006,17 @@ const EventsTab = ({
               {t('eventsTab.browseArchivedEvents')}
             </Typography>
           </Box>
-          
-          <Chip 
-            label={t('eventsTab.eventsCount', { count: filteredEvents.filter(event => new Date(event.date) < new Date()).length })} 
-            size="small" 
-            color="default" 
-            variant="outlined" 
+
+          <Chip
+            label={t('eventsTab.eventsCount', { count: pastEvents.length })}
+            size="small"
+            color="default"
+            variant="outlined"
           />
         </Box>
-        
+
         <Box sx={{ p: 2 }}>
-          {filteredEvents.filter(event => new Date(event.date) < new Date()).length === 0 ? (
+          {pastEvents.length === 0 ? (
             <Box sx={{ textAlign: 'center', py: 4 }}>
               <Typography variant="body1" color="text.secondary">
                 {t('eventsTab.noPastEvents')}
@@ -1823,12 +2026,11 @@ const EventsTab = ({
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               {/* Past events grouped by month */}
               {(() => {
-                const pastEvents = filteredEvents
-                  .filter(event => new Date(event.date) < new Date())
+                const sortedPastEvents = pastEvents
                   .sort((a, b) => new Date(b.date) - new Date(a.date));
-                
+
                 // Group events by month
-                const eventsByMonth = pastEvents.reduce((groups, event) => {
+                const eventsByMonth = sortedPastEvents.reduce((groups, event) => {
                   const date = new Date(event.date);
                   const monthKey = `${date.getFullYear()}-${date.getMonth()}`;
                   const monthLabel = date.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });

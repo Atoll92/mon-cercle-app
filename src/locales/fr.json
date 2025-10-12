@@ -1732,7 +1732,11 @@
     },
     "dialog": {
       "createEvent": "Créer un événement",
-      "editEvent": "Modifier l'événement"
+      "editEvent": "Modifier l'événement",
+      "cancel": "Annuler",
+      "back": "Retour",
+      "next": "Suivant",
+      "save": "Enregistrer l'événement"
     },
     "basicInfo": {
       "title": "Informations de base",
@@ -1744,13 +1748,17 @@
       "endDateTime": "Date et heure de fin",
       "startDate": "Date de début",
       "endDate": "Date de fin",
+      "dateTimeHelper": "Sélectionnez la date et l'heure de votre événement",
+      "endDateHelper": "Optionnel : Sélectionnez une date de fin si c'est un événement de plusieurs jours",
       "allDay": "Événement sur toute la journée",
       "location": "Lieu",
       "locationPlaceholder": "Entrez le lieu de l'événement",
       "onlineEvent": "C'est un événement en ligne",
+      "inPersonEvent": "C'est un événement en présentiel",
       "eventLink": "Lien de l'événement",
       "eventLinkPlaceholder": "https://zoom.us/...",
-      "selectLocation": "Cliquez sur la carte pour sélectionner un lieu"
+      "selectLocation": "Cliquez sur la carte pour sélectionner un lieu",
+      "locationRequired": "Le lieu est requis pour les événements en présentiel"
     },
     "details": {
       "title": "Détails",
@@ -1809,6 +1817,40 @@
     },
     "map": {
       "viewDetails": "Voir les détails"
+    }
+  },
+  "pages": {
+    "event": {
+      "eventNotFound": "Événement introuvable",
+      "failedToLoadEvent": "Échec du chargement de l'événement",
+      "eventNotAvailable": "Événement non disponible",
+      "eventNotAvailableDescription": "L'événement que vous recherchez n'est pas disponible ou a peut-être été supprimé.",
+      "backToNetwork": "Retour au réseau",
+      "edit": "Modifier",
+      "delete": "Supprimer",
+      "deleteConfirmation": "Êtes-vous sûr de vouloir supprimer cet événement ?",
+      "failedToUpdateParticipation": "Échec de la mise à jour de la participation",
+      "daysCount": "{{count}} jours",
+      "pastEvent": "Événement passé",
+      "openInGoogleMaps": "Ouvrir dans Google Maps",
+      "ticketPrice": "Prix du billet",
+      "ticketsSold": "{{sold}} / {{total}} billets vendus",
+      "eventLink": "Lien de l'événement",
+      "aboutThisEvent": "À propos de cet événement",
+      "organizedBy": "Organisé par",
+      "eventOrganizer": "Organisateur de l'événement",
+      "organizer": "Organisateur",
+      "attending": "Participe",
+      "willYouAttend": "Allez-vous participer ?",
+      "yes": "Oui",
+      "maybe": "Peut-être",
+      "no": "Non",
+      "attendees": "Participants",
+      "goingCount": "{{count}} participent",
+      "maybeCount": "{{count}} peut-être",
+      "capacity": "Capacité : {{capacity}}",
+      "location": "Lieu",
+      "getDirections": "Obtenir l'itinéraire"
     }
   }
 }
