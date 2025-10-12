@@ -1545,5 +1545,24 @@
       "action": "Complete Profile",
       "pointer": "Fill in your basic information to join the community"
     }
+  },
+  "login": {
+    "title": "Welcome Back",
+    "subtitle": "Sign in to your account to continue",
+    "joinNetworkNotice": "Please sign in with your existing account to join the network",
+    "errors": {
+      "loginFailed": "Failed to log in"
+    },
+    "form": {
+      "emailAddress": "Email Address",
+      "password": "Password",
+      "signingIn": "Signing in...",
+      "signIn": "Sign In"
+    },
+    "forgotPassword": "Forgot password?",
+    "or": "OR",
+    "tryDemoAccount": "Try Demo Account",
+    "noAccount": "Don't have an account?",
+    "signUpNow": "Sign up now"
   }
 }

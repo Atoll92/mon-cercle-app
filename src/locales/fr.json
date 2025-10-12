@@ -1538,5 +1538,24 @@
       "action": "Compléter le profil",
       "pointer": "Remplissez vos informations de base pour rejoindre la communauté"
     }
+  },
+  "login": {
+    "title": "Bienvenue",
+    "subtitle": "Connectez-vous à votre compte pour continuer",
+    "joinNetworkNotice": "Veuillez vous connecter avec votre compte existant pour rejoindre le réseau",
+    "errors": {
+      "loginFailed": "Échec de la connexion"
+    },
+    "form": {
+      "emailAddress": "Adresse email",
+      "password": "Mot de passe",
+      "signingIn": "Connexion en cours...",
+      "signIn": "Se connecter"
+    },
+    "forgotPassword": "Mot de passe oublié ?",
+    "or": "OU",
+    "tryDemoAccount": "Essayer le compte de démonstration",
+    "noAccount": "Vous n'avez pas de compte ?",
+    "signUpNow": "S'inscrire maintenant"
   }
 }

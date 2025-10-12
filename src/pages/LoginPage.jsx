@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseclient';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useTranslation } from '../hooks/useTranslation';
 import Spinner from '../components/Spinner';
 import {
   Box,
@@ -45,6 +46,7 @@ const theme = createTheme({
 });
 
 function LoginPage() {
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -113,7 +115,7 @@ function LoginPage() {
       console.log('Setting showProfileSelector to true');
       setShowProfileSelector(true);
     } catch (error) {
-      setError(error.message || "Failed to log in");
+      setError(error.message || t('login.errors.loginFailed'));
       console.error("Login error:", error);
     } finally {
       setLoading(false);
@@ -192,21 +194,21 @@ function LoginPage() {
               }}
             >
               <Typography variant="h4" component="h1" align="center">
-                Welcome Back
+                {t('login.title')}
               </Typography>
               <Typography variant="body2" align="center" sx={{ mt: 1 }}>
-                Sign in to your account to continue
+                {t('login.subtitle')}
               </Typography>
             </Box>
             
             <CardContent sx={{ p: 4 }}>
               {/* Show invitation notice if coming from join page */}
               {redirectUrl && redirectUrl.includes('/join/') && (
-                <Alert 
-                  severity="info" 
+                <Alert
+                  severity="info"
                   sx={{ mb: 3 }}
                 >
-                  Please sign in with your existing account to join the network
+                  {t('login.joinNetworkNotice')}
                 </Alert>
               )}
               
@@ -226,7 +228,7 @@ function LoginPage() {
                     fullWidth
                     required
                     id="email"
-                    label="Email Address"
+                    label={t('login.form.emailAddress')}
                     name="email"
                     autoComplete="email"
                     autoFocus
@@ -242,7 +244,7 @@ function LoginPage() {
                   />
                   
                   <FormControl variant="outlined" fullWidth required>
-                    <InputLabel htmlFor="password">Password</InputLabel>
+                    <InputLabel htmlFor="password">{t('login.form.password')}</InputLabel>
                     <OutlinedInput
                       id="password"
                       type={showPassword ? 'text' : 'password'}
@@ -264,22 +266,22 @@ function LoginPage() {
                           </IconButton>
                         </InputAdornment>
                       }
-                      label="Password"
+                      label={t('login.form.password')}
                     />
                     <Box 
                       display="flex" 
                       justifyContent="flex-end" 
                       mt={1}
                     >
-                      <Link 
-                        to="/password-reset" 
-                        style={{ 
+                      <Link
+                        to="/password-reset"
+                        style={{
                           color: theme.palette.primary.main,
                           textDecoration: 'none',
                           fontSize: '0.875rem',
                         }}
                       >
-                        Forgot password?
+                        {t('login.forgotPassword')}
                       </Link>
                     </Box>
                   </FormControl>
@@ -306,46 +308,46 @@ function LoginPage() {
                             marginLeft: '-12px',
                           }}
                         />
-                        <span>Signing in...</span>
+                        <span>{t('login.form.signingIn')}</span>
                       </>
                     ) : (
-                      'Sign In'
+                      t('login.form.signIn')
                     )}
                   </Button>
                 </Stack>
               </form>
               
               <Divider sx={{ my: 3 }}>
-                <Typography 
-                  variant="body2" 
+                <Typography
+                  variant="body2"
                   color="text.secondary"
                   sx={{ px: 1 }}
                 >
-                  OR
+                  {t('login.or')}
                 </Typography>
               </Divider>
-              
+
               <Button
                 fullWidth
                 variant="outlined"
                 onClick={handleDemoLogin}
                 sx={{ mb: 2 }}
               >
-                Try Demo Account
+                {t('login.tryDemoAccount')}
               </Button>
-              
+
               <Box sx={{ textAlign: 'center', mt: 2 }}>
                 <Typography variant="body2" color="text.secondary">
-                  Don't have an account?{' '}
-                  <Link 
-                    to="/signup" 
-                    style={{ 
+                  {t('login.noAccount')}{' '}
+                  <Link
+                    to="/signup"
+                    style={{
                       color: theme.palette.primary.main,
                       textDecoration: 'none',
                       fontWeight: 600,
                     }}
                   >
-                    Sign up now
+                    {t('login.signUpNow')}
                   </Link>
                 </Typography>
               </Box>
