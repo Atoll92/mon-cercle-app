@@ -5,6 +5,7 @@ import { useAuth } from '../context/authcontext';
 import { useProfile } from '../context/profileContext';
 import { fetchNetworkMembers, sendChatMessage, getUserProfile } from '../api/networks';
 import { formatTime, formatDate } from '../utils/dateFormatting';
+import { useTranslation } from '../hooks/useTranslation';
 import {
   Box,
   List,
@@ -55,6 +56,7 @@ import EmojiPicker from 'emoji-picker-react';
 const Chat = ({ networkId, isFullscreen = false, backgroundImageUrl }) => {
   const { user } = useAuth();
   const { activeProfile } = useProfile();
+  const { t } = useTranslation();
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
@@ -441,9 +443,9 @@ const Chat = ({ networkId, isFullscreen = false, backgroundImageUrl }) => {
     yesterday.setDate(yesterday.getDate() - 1);
     
     if (date.toDateString() === today.toDateString()) {
-      return 'Today';
+      return t('chat.today');
     } else if (date.toDateString() === yesterday.toDateString()) {
-      return 'Yesterday';
+      return t('chat.yesterday');
     } else {
       return formatDate(timestamp, { 
         weekday: 'long', 
@@ -483,7 +485,7 @@ const Chat = ({ networkId, isFullscreen = false, backgroundImageUrl }) => {
     return (
       <Box sx={{ p: 2, textAlign: 'center' }}>
         <Typography variant="body2" color="text.secondary">
-          Please select a profile to access chat
+          {t('chat.selectProfile')}
         </Typography>
       </Box>
     );
@@ -1040,14 +1042,14 @@ const renderMedia = (mediaUrl, mediaType, metadata, messageId) => {
                   >
                     {metadata?.fileName || 'Audio File'}
                   </Typography>
-                  <Typography 
-                    variant="caption" 
+                  <Typography
+                    variant="caption"
                     sx={{ color: darkMode ? 'rgba(255,255,255,0.7)' : 'text.secondary' }}
                   >
-                    Click to play
+                    {t('chat.clickToPlay')}
                   </Typography>
                 </Box>
-                
+
                 {/* Play button */}
                 <PlayCircleIcon 
                   sx={{ 
@@ -1322,7 +1324,7 @@ const renderMessageContent = (message) => {
   if (error) {
     return (
       <Typography color="error" sx={{ p: 2 }}>
-        {error}
+        {t('chat.error')}
       </Typography>
     );
   }
@@ -1380,12 +1382,12 @@ const renderMessageContent = (message) => {
       >
         <Typography 
           variant="h6" 
-          sx={{ 
-            color: darkMode ? 'white' : 'text.primary', 
-            fontWeight: 500 
+          sx={{
+            color: darkMode ? 'white' : 'text.primary',
+            fontWeight: 500
           }}
         >
-          Chat ({messages.length} messages)
+          {t('chat.title', { count: messages.length })}
         </Typography>
         
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -1442,12 +1444,12 @@ const renderMessageContent = (message) => {
             alignItems: 'center', 
             height: '100%'
           }}>
-            <Typography sx={{ 
-              color: darkMode ? 'white' : 'text.secondary', 
+            <Typography sx={{
+              color: darkMode ? 'white' : 'text.secondary',
               textShadow: darkMode ? '1px 1px 2px rgba(0,0,0,0.8)' : 'none',
               fontWeight: 500
             }}>
-              No messages yet. Start the conversation!
+              {t('chat.noMessages')}
             </Typography>
           </Box>
         ) : (
@@ -1602,8 +1604,8 @@ const renderMessageContent = (message) => {
                                 }
                               }}
                             >
-                              {message.profiles?.full_name || 'Anonymous'}
-                              {message.user_id === activeProfile.id && ' (You)'}
+                              {message.profiles?.full_name || t('chat.anonymous')}
+                              {message.user_id === activeProfile.id && ` (${t('chat.you')})`}
                             </Typography>
                           </Link>
                         ) : (
@@ -1617,8 +1619,8 @@ const renderMessageContent = (message) => {
                               fontSize: '0.8rem' // Smaller text for compactness
                             }}
                           >
-                            {message.profiles?.full_name || 'Anonymous'}
-                            {message.user_id === activeProfile.id && ' (You)'}
+                            {message.profiles?.full_name || t('chat.anonymous')}
+                            {message.user_id === activeProfile.id && ` (${t('chat.you')})`}
                           </Typography>
                         )}
                       </Box>
@@ -1635,7 +1637,7 @@ const renderMessageContent = (message) => {
                         }}
                       >
                         {formatTime(message.created_at)}
-                        {message.pending && ' (sending...)'}
+                        {message.pending && ` (${t('chat.sending')})`}
                       </Typography>
                     </Box>
                   }
@@ -1661,14 +1663,14 @@ const renderMessageContent = (message) => {
                           <Typography
                             variant="caption"
                             sx={{
-                              color: darkMode 
-                                ? 'rgba(255, 255, 255, 0.6)' 
+                              color: darkMode
+                                ? 'rgba(255, 255, 255, 0.6)'
                                 : 'rgba(0, 0, 0, 0.5)',
                               fontSize: '0.65rem',
                               fontWeight: 500
                             }}
                           >
-                            Replying to {message.reply_to_profile?.full_name || 'Unknown'}
+                            {t('chat.replyingTo', { name: message.reply_to_profile?.full_name || t('chat.unknown') })}
                           </Typography>
                           <Typography
                             variant="caption"
@@ -1778,7 +1780,7 @@ const renderMessageContent = (message) => {
                   fontSize: '0.75rem'
                 }}
               >
-                Replying to {replyingTo.profiles?.full_name}
+                {t('chat.replyingTo', { name: replyingTo.profiles?.full_name })}
               </Typography>
               <Typography
                 variant="caption"
@@ -1937,10 +1939,10 @@ const renderMessageContent = (message) => {
           {/* Media Info */}
           <Box sx={{ flex: 1, minWidth: 0 }}>
             <Typography variant="body2" noWrap>
-              {pendingMedia.metadata?.fileName || pendingMedia.fileName || 'Untitled'}
+              {pendingMedia.metadata?.fileName || pendingMedia.fileName || t('chat.untitled')}
             </Typography>
             <Typography variant="caption" color="text.secondary">
-              {pendingMedia.type?.toUpperCase() || 'FILE'} • Ready to send
+              {pendingMedia.type?.toUpperCase() || 'FILE'} • {t('chat.readyToSend')}
             </Typography>
             {pendingMedia.metadata?.fileSize && (
               <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
@@ -1993,7 +1995,7 @@ const renderMessageContent = (message) => {
           ref={textFieldRef}
           fullWidth
           variant="outlined"
-          placeholder="Type a message..."
+          placeholder={t('chat.placeholder')}
           value={newMessage}
           onChange={handleMessageChange}
           onKeyDown={(e) => {
@@ -2082,7 +2084,7 @@ const renderMessageContent = (message) => {
             py: 1.5,
             borderBottom: '1px solid rgba(255,255,255,0.1)'
           }}>
-            <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>Choose Emoji</Typography>
+            <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>{t('chat.chooseEmoji')}</Typography>
             <IconButton 
               size="small" 
               onClick={() => setShowEmojiPicker(false)}
@@ -2132,10 +2134,10 @@ const renderMessageContent = (message) => {
           <Box sx={{ 
             display: 'flex', 
             justifyContent: 'space-between', 
-            alignItems: 'center', 
+            alignItems: 'center',
             mb: 2.5
           }}>
-            <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>Upload Media</Typography>
+            <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>{t('chat.uploadMedia')}</Typography>
             <IconButton 
               size="small" 
               onClick={() => setShowMediaUpload(false)}
@@ -2213,7 +2215,7 @@ const renderMessageContent = (message) => {
           ) : (
             <MenuItem disabled>
               <Typography variant="body2" color="text.secondary">
-                No members found
+                {t('chat.noMembersFound')}
               </Typography>
             </MenuItem>
           )}
@@ -2236,12 +2238,12 @@ const renderMessageContent = (message) => {
       >
         <MenuItem onClick={handleReplyToMessage}>
           <ReplyIcon fontSize="small" sx={{ mr: 1 }} />
-          Reply
+          {t('chat.reply')}
         </MenuItem>
         {messages.find(msg => msg.id === selectedMessageId)?.user_id === activeProfile.id && (
           <MenuItem onClick={handleDeleteMessage}>
             <DeleteIcon fontSize="small" sx={{ mr: 1 }} />
-            Delete Message
+            {t('chat.deleteMessage')}
           </MenuItem>
         )}
       </Menu>

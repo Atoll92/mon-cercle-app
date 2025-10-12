@@ -1330,7 +1330,76 @@
       "online": "Online Event",
       "free": "Free",
       "register": "Register"
+    },
+    "profile": {
+      "loading": "Loading profile...",
+      "error": {
+        "title": "Profile Load Error",
+        "description": "Failed to load profile. Please try again."
+      },
+      "backToDashboard": "Back to Dashboard",
+      "notFound": {
+        "title": "Profile Not Found",
+        "description": "The profile you're looking for doesn't exist or you don't have permission to view it.",
+        "hint": "Please check the URL or contact support if you believe this is an error."
+      },
+      "yourProfile": "Your Profile",
+      "userProfile": "{{name}}'s Profile",
+      "unnamedUser": "Unnamed User",
+      "editProfile": "Edit Profile",
+      "message": "Message",
+      "tabs": {
+        "overview": "Overview",
+        "posts": "Posts",
+        "events": "Events"
+      },
+      "networkAdmin": "Network Admin",
+      "contactInformation": "Contact Information",
+      "upcomingEventsCount": "{{count}} upcoming events",
+      "seeAll": "See All",
+      "about": "About",
+      "noBio": "No bio yet",
+      "skills": "Skills",
+      "noSkills": "No skills listed",
+      "moodboards": "Moodboards",
+      "recentPosts": "Recent Posts",
+      "seeAllCount": "See All {{count}} Posts",
+      "yourPosts": "Your Posts",
+      "userPosts": "{{name}}'s Posts",
+      "postsCount": "{{count}} Posts",
+      "noPostsOwn": "You haven't created any posts yet.",
+      "noPostsOther": "{{name}} hasn't created any posts yet.",
+      "upcomingEvents": "Upcoming Events",
+      "attending": "Attending"
     }
+  },
+  "chat": {
+    "selectProfile": "Please select a profile to chat",
+    "error": "Error loading chat",
+    "title": "Group Chat",
+    "noMessages": "No messages yet. Start the conversation!",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "you": "You",
+    "anonymous": "Anonymous",
+    "sending": "Sending...",
+    "replyingTo": "Replying to {{name}}",
+    "unknown": "Unknown",
+    "reply": "Reply",
+    "deleteMessage": "Delete Message",
+    "noMembersFound": "No members found",
+    "chooseEmoji": "Choose an emoji",
+    "uploadMedia": "Upload media",
+    "placeholder": "Type a message...",
+    "clickToPlay": "Click to play",
+    "untitled": "Untitled",
+    "readyToSend": "Ready to send",
+    "selectConversation": "Select a conversation to start chatting",
+    "unknownUser": "Unknown User",
+    "onlineNow": "Online now",
+    "offline": "Offline",
+    "conversationStart": "This is the beginning of your conversation with {{name}}",
+    "placeholderWithLink": "Type a message... (Add links with https://)"
   },
   "common": {
     "status": {
@@ -1903,40 +1972,6 @@
       "you": "(You)",
       "admin": "Admin",
       "member": "Member"
-    }
-  },
-  "pages": {
-    "event": {
-      "eventNotFound": "Event not found",
-      "failedToLoadEvent": "Failed to load event",
-      "eventNotAvailable": "Event Not Available",
-      "eventNotAvailableDescription": "The event you're looking for is not available or may have been removed.",
-      "backToNetwork": "Back to Network",
-      "edit": "Edit",
-      "delete": "Delete",
-      "deleteConfirmation": "Are you sure you want to delete this event?",
-      "failedToUpdateParticipation": "Failed to update participation",
-      "daysCount": "{{count}} days",
-      "pastEvent": "Past Event",
-      "openInGoogleMaps": "Open in Google Maps",
-      "ticketPrice": "Ticket Price",
-      "ticketsSold": "{{sold}} / {{total}} tickets sold",
-      "eventLink": "Event Link",
-      "aboutThisEvent": "About this Event",
-      "organizedBy": "Organized by",
-      "eventOrganizer": "Event Organizer",
-      "organizer": "Organizer",
-      "attending": "Attending",
-      "willYouAttend": "Will you attend?",
-      "yes": "Yes",
-      "maybe": "Maybe",
-      "no": "No",
-      "attendees": "Attendees",
-      "goingCount": "{{count}} Going",
-      "maybeCount": "{{count}} Maybe",
-      "capacity": "Capacity: {{capacity}}",
-      "location": "Location",
-      "getDirections": "Get Directions"
     }
   }
 }

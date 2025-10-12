@@ -15,6 +15,7 @@ import PostsGrid from '../components/PostsGrid';
 import PostCard from '../components/PostCard';
 import Spinner from '../components/Spinner';
 import LinkifiedText from '../components/LinkifiedText';
+import { useTranslation } from '../hooks/useTranslation';
 import {
   Button,
   Typography,
@@ -98,6 +99,7 @@ function ProfilePage() {
   const { user } = useAuth();
   const { activeProfile } = useProfile();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -246,18 +248,18 @@ function ProfilePage() {
 
   if (loading) {
     return (
-      <Box 
-        sx={{ 
-          display: 'flex', 
+      <Box
+        sx={{
+          display: 'flex',
           flexDirection: 'column',
-          alignItems: 'center', 
-          justifyContent: 'center', 
-          height: '50vh' 
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: '50vh'
         }}
       >
         <Spinner size={120} color="primary" />
         <Typography variant="body1" sx={{ mt: 2 }}>
-          Loading profile...
+          {t('pages.profile.loading')}
         </Typography>
       </Box>
     );
@@ -268,20 +270,20 @@ function ProfilePage() {
       <Container maxWidth="md" sx={{ py: 4 }}>
         <Paper elevation={3} sx={{ p: 4, borderRadius: 2, textAlign: 'center' }}>
           <Typography variant="h5" color="error" gutterBottom>
-            Oops! Something went wrong
+            {t('pages.profile.error.title')}
           </Typography>
           <Typography variant="body1" paragraph>
             {error}
           </Typography>
           <Typography variant="body2" sx={{ mb: 2 }}>
-            The user may not exist or you may not have permission to view their profile.
+            {t('pages.profile.error.description')}
           </Typography>
-          <Button 
-            variant="contained" 
+          <Button
+            variant="contained"
             startIcon={<ArrowBackIcon />}
             onClick={() => navigate('/dashboard')}
           >
-            Back to Dashboard
+            {t('pages.profile.backToDashboard')}
           </Button>
         </Paper>
       </Container>
@@ -293,20 +295,20 @@ function ProfilePage() {
       <Container maxWidth="md" sx={{ py: 4 }}>
         <Paper elevation={3} sx={{ p: 4, borderRadius: 2, textAlign: 'center' }}>
           <Typography variant="h5" gutterBottom>
-            Profile Not Found
+            {t('pages.profile.notFound.title')}
           </Typography>
           <Typography variant="body1" paragraph>
-            The user you're looking for doesn't exist or you don't have permission to view their profile.
+            {t('pages.profile.notFound.description')}
           </Typography>
           <Typography variant="body2" sx={{ mb: 2 }}>
-            Please check the URL or try searching for the user.
+            {t('pages.profile.notFound.hint')}
           </Typography>
-          <Button 
-            variant="contained" 
+          <Button
+            variant="contained"
             startIcon={<ArrowBackIcon />}
             onClick={() => navigate('/dashboard')}
           >
-            Back to Dashboard
+            {t('pages.profile.backToDashboard')}
           </Button>
         </Paper>
       </Container>
@@ -364,7 +366,7 @@ function ProfilePage() {
             <ArrowBackIcon />
           </IconButton>
           <Typography variant="h4" component="h1" fontWeight="500" sx={{ position: 'relative', zIndex: 1 }}>
-            {isOwnProfile ? 'Your Profile' : `${profile.full_name || 'User'}'s Profile`}
+            {isOwnProfile ? t('pages.profile.yourProfile') : t('pages.profile.userProfile', { name: profile.full_name || t('pages.profile.unnamedUser') })}
           </Typography>
           
           <Box sx={{ ml: 'auto', display: 'flex', gap: 1 }}>
@@ -374,15 +376,15 @@ function ProfilePage() {
                 to="/profile/edit"
                 variant="contained"
                 startIcon={<EditIcon />}
-                sx={{ 
-                  bgcolor: 'white', 
+                sx={{
+                  bgcolor: 'white',
                   color: 'primary.main',
                   '&:hover': {
                     bgcolor: 'rgba(255,255,255,0.9)'
                   }
                 }}
               >
-                Edit Profile
+                {t('pages.profile.editProfile')}
               </Button>
             )}
             
@@ -392,15 +394,15 @@ function ProfilePage() {
                 to={`/messages/${profile.id}`}
                 variant="contained"
                 startIcon={<MailIcon />}
-                sx={{ 
-                  bgcolor: 'white', 
+                sx={{
+                  bgcolor: 'white',
                   color: 'primary.main',
                   '&:hover': {
                     bgcolor: 'rgba(255,255,255,0.9)'
                   }
                 }}
               >
-                Message
+                {t('pages.profile.message')}
               </Button>
             )}
           </Box>
@@ -416,22 +418,22 @@ function ProfilePage() {
             borderColor: 'divider'
           }}
         >
-          <Tab 
-            label="Overview" 
-            icon={<PersonOutlineIcon />} 
+          <Tab
+            label={t('pages.profile.tabs.overview')}
+            icon={<PersonOutlineIcon />}
             iconPosition="start"
             sx={{ fontWeight: activeTab === TAB_OVERVIEW ? 600 : 400 }}
           />
-          <Tab 
-            label={`Posts ${posts.length > 0 ? `(${posts.length})` : ''}`}
-            icon={<LanguageIcon />} 
+          <Tab
+            label={`${t('pages.profile.tabs.posts')} ${posts.length > 0 ? `(${posts.length})` : ''}`}
+            icon={<LanguageIcon />}
             iconPosition="start"
             sx={{ fontWeight: activeTab === TAB_POSTS ? 600 : 400 }}
           />
           {upcomingEvents.length > 0 && (
-            <Tab 
-              label="Events" 
-              icon={<EventIcon />} 
+            <Tab
+              label={t('pages.profile.tabs.events')}
+              icon={<EventIcon />}
               iconPosition="start"
             />
           )}
@@ -477,7 +479,7 @@ function ProfilePage() {
                   </Avatar>
                   
                   <Typography variant="h5" align="center" gutterBottom fontWeight="500">
-                    {profile.full_name || 'Unnamed User'}
+                    {profile.full_name || t('pages.profile.unnamedUser')}
                   </Typography>
                   
                   {profile.tagline && (
@@ -493,9 +495,9 @@ function ProfilePage() {
                   
                   <Stack direction="row" spacing={1} mb={2}>
                     {profile.role === 'admin' && (
-                      <Chip 
-                        label="Network Admin" 
-                        color="primary" 
+                      <Chip
+                        label={t('pages.profile.networkAdmin')}
+                        color="primary"
                         size="small"
                       />
                     )}
@@ -530,7 +532,7 @@ function ProfilePage() {
                     }}
                   >
                     <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                      Contact Information
+                      {t('pages.profile.contactInformation')}
                     </Typography>
                     
                     <Stack spacing={2} mt={1}>
@@ -716,16 +718,16 @@ function ProfilePage() {
                         mb: 1.5
                       }}>
                         <Typography variant="subtitle2" color="text.secondary">
-                          Upcoming Events ({upcomingEvents.length})
+                          {t('pages.profile.upcomingEventsCount', { count: upcomingEvents.length })}
                         </Typography>
-                        
+
                         {upcomingEvents.length > 2 && (
-                          <Button 
-                            size="small" 
-                            endIcon={<MoreHorizIcon />} 
+                          <Button
+                            size="small"
+                            endIcon={<MoreHorizIcon />}
                             onClick={() => setActiveTab(TAB_EVENTS)}
                           >
-                            See All
+                            {t('pages.profile.seeAll')}
                           </Button>
                         )}
                       </Box>
@@ -828,7 +830,7 @@ function ProfilePage() {
                       }}
                     >
                       <DescriptionIcon fontSize="small" color="primary" />
-                      About
+                      {t('pages.profile.about')}
                     </Typography>
                     
                     {profile.bio ? (
@@ -844,7 +846,7 @@ function ProfilePage() {
                       />
                     ) : (
                       <Alert severity="info" variant="outlined" sx={{ mt: 1 }}>
-                        No bio provided.
+                        {t('pages.profile.noBio')}
                       </Alert>
                     )}
                   </Box>
@@ -864,7 +866,7 @@ function ProfilePage() {
                       }}
                     >
                       <Badge fontSize="small" color="primary" />
-                      Skills & Expertise
+                      {t('pages.profile.skills')}
                     </Typography>
                     
                     {profile.skills && profile.skills.length > 0 ? (
@@ -882,7 +884,7 @@ function ProfilePage() {
                       </Box>
                     ) : (
                       <Alert severity="info" variant="outlined" sx={{ mt: 1 }}>
-                        No skills listed.
+                        {t('pages.profile.noSkills')}
                       </Alert>
                     )}
                   </Box>
@@ -910,7 +912,7 @@ function ProfilePage() {
                         }}
                       >
                         <DashboardIcon fontSize="small" color="primary" />
-                        Moodboards
+                        {t('pages.profile.moodboards')}
                       </Typography>
                     </Box>
                     
@@ -942,15 +944,15 @@ function ProfilePage() {
                           }}
                         >
                           <LanguageIcon fontSize="small" color="primary" />
-                          Recent Posts
+                          {t('pages.profile.recentPosts')}
                         </Typography>
-                        
-                        <Button 
-                          size="small" 
-                          endIcon={<MoreHorizIcon />} 
+
+                        <Button
+                          size="small"
+                          endIcon={<MoreHorizIcon />}
                           onClick={() => setActiveTab(TAB_POSTS)}
                         >
-                          See All ({posts.length})
+                          {t('pages.profile.seeAllCount', { count: posts.length })}
                         </Button>
                       </Box>
                       
@@ -993,11 +995,11 @@ function ProfilePage() {
                   }}
                 >
                   <LanguageIcon color="primary" />
-                  {isOwnProfile ? 'Your Posts' : `${profile.full_name}'s Posts`}
+                  {isOwnProfile ? t('pages.profile.yourPosts') : t('pages.profile.userPosts', { name: profile.full_name })}
                 </Typography>
-                
+
                 <Typography variant="body2" color="text.secondary">
-                  {posts.length} posts
+                  {t('pages.profile.postsCount', { count: posts.length })}
                 </Typography>
               </Box>
               
@@ -1013,7 +1015,7 @@ function ProfilePage() {
                   }}
                 >
                   <Typography variant="body1" color="text.secondary">
-                    {isOwnProfile ? "You haven't created any posts yet." : "No posts to display."}
+                    {isOwnProfile ? t('pages.profile.noPostsOwn') : t('pages.profile.noPostsOther')}
                   </Typography>
                 </Paper>
               ) : (
@@ -1051,7 +1053,7 @@ function ProfilePage() {
           {activeTab === TAB_EVENTS && upcomingEvents.length > 0 && (
             <Box sx={{ p: 3 }}>
               <Typography variant="h5" gutterBottom>
-                Upcoming Events
+                {t('pages.profile.upcomingEvents')}
               </Typography>
               
               <Grid container spacing={3}>
@@ -1136,9 +1138,9 @@ function ProfilePage() {
                       </CardContent>
                       
                       <CardActions>
-                        <Chip 
-                          label="Attending" 
-                          color="success" 
+                        <Chip
+                          label={t('pages.profile.attending')}
+                          color="success"
                           size="small"
                           variant="outlined"
                           icon={<EventIcon fontSize="small" />}
@@ -1168,21 +1170,22 @@ function ProfilePage() {
 // Wrapper component that provides NetworkProvider
 const ProfilePageWrapper = () => {
   const { userNetworkId, fetchingNetwork } = useApp();
+  const { t } = useTranslation();
 
   if (fetchingNetwork) {
     return (
-      <Box 
-        sx={{ 
-          display: 'flex', 
+      <Box
+        sx={{
+          display: 'flex',
           flexDirection: 'column',
-          alignItems: 'center', 
-          justifyContent: 'center', 
-          height: '50vh' 
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: '50vh'
         }}
       >
         <Spinner size={120} color="primary" />
         <Typography variant="body1" sx={{ mt: 2 }}>
-          Loading profile...
+          {t('pages.profile.loading')}
         </Typography>
       </Box>
     );

@@ -6,6 +6,7 @@ import { getConversationMessages, sendDirectMessage, markMessagesAsRead } from '
 import { supabase } from '../supabaseclient';
 import { formatTime, formatDate } from '../utils/dateFormatting';
 import Spinner from './Spinner';
+import { useTranslation } from '../hooks/useTranslation';
 import {
   Box,
   Typography,
@@ -42,6 +43,7 @@ function DirectMessageChat({ conversationId, partner, onBack }) {
   const { user } = useAuth();
   const { activeProfile } = useProfile();
   const { updateConversationWithMessage, markConversationAsRead, refreshConversations } = useDirectMessages();
+  const { t } = useTranslation();
 
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
@@ -445,9 +447,9 @@ if (refreshConversations) {
     yesterday.setDate(yesterday.getDate() - 1);
     
     if (date.toDateString() === today.toDateString()) {
-      return 'Today';
+      return t('chat.today');
     } else if (date.toDateString() === yesterday.toDateString()) {
-      return 'Yesterday';
+      return t('chat.yesterday');
     } else {
       return formatDate(timestamp, { 
         weekday: 'long', 
@@ -835,11 +837,11 @@ if (refreshConversations) {
                     >
                       {metadata?.fileName || 'Audio File'}
                     </Typography>
-                    <Typography 
-                      variant="caption" 
+                    <Typography
+                      variant="caption"
                       sx={{ color: 'rgba(255,255,255,0.7)' }}
                     >
-                      Click to play
+                      {t('chat.clickToPlay')}
                     </Typography>
                   </Box>
                   
@@ -973,19 +975,19 @@ if (refreshConversations) {
   
   if (!conversationId || !partner) {
     return (
-      <Box 
-        sx={{ 
-          display: 'flex', 
+      <Box
+        sx={{
+          display: 'flex',
           flexDirection: 'column',
-          alignItems: 'center', 
-          justifyContent: 'center', 
+          alignItems: 'center',
+          justifyContent: 'center',
           height: '100%',
           p: 3,
           bgcolor: 'background.default'
         }}
       >
         <Typography variant="body1" color="text.secondary">
-          Select a conversation to start messaging
+          {t('chat.selectConversation')}
         </Typography>
       </Box>
     );
@@ -1066,10 +1068,10 @@ if (refreshConversations) {
               }
             }}
           >
-            {partner.full_name || 'Unknown User'}
+            {partner.full_name || t('chat.unknownUser')}
           </Typography>
           <Typography variant="caption" color="text.secondary">
-            {partnerStatus === 'online' ? 'Online now' : 'Offline'}
+            {partnerStatus === 'online' ? t('chat.onlineNow') : t('chat.offline')}
           </Typography>
         </Box>
       </Paper>
@@ -1092,7 +1094,7 @@ if (refreshConversations) {
           </Box>
         ) : error ? (
           <Box sx={{ p: 2, color: 'error.main' }}>
-            <Typography variant="body2">{error}</Typography>
+            <Typography variant="body2">{t('chat.error')}</Typography>
           </Box>
         ) : messages.length === 0 ? (
           <Box 
@@ -1131,11 +1133,10 @@ if (refreshConversations) {
                 }
               }}
             >
-              {partner.full_name || 'Unknown User'}
+              {partner.full_name || t('chat.unknownUser')}
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 3, textAlign: 'center' }}>
-              This is the beginning of your conversation with {partner.full_name}.
-              <br />Send a message to get started.
+              {t('chat.conversationStart', { name: partner.full_name })}
             </Typography>
           </Box>
         ) : (
@@ -1220,7 +1221,7 @@ if (refreshConversations) {
                               color: isUser ? 'rgba(255,255,255,0.7)' : 'text.secondary',
                             }}
                           >
-                            Sending...
+                            {t('chat.sending')}
                           </Typography>
                         )}
                         <Typography 
@@ -1364,10 +1365,10 @@ if (refreshConversations) {
           {/* Media Info */}
           <Box sx={{ flex: 1, minWidth: 0 }}>
             <Typography variant="body2" noWrap>
-              {pendingMedia.metadata?.fileName || pendingMedia.fileName || 'Untitled'}
+              {pendingMedia.metadata?.fileName || pendingMedia.fileName || t('chat.untitled')}
             </Typography>
             <Typography variant="caption" color="text.secondary">
-              {pendingMedia.type?.toUpperCase() || 'FILE'} • Ready to send
+              {pendingMedia.type?.toUpperCase() || 'FILE'} • {t('chat.readyToSend')}
             </Typography>
           </Box>
         </Box>
@@ -1407,7 +1408,7 @@ if (refreshConversations) {
           <TextField
             inputRef={textFieldRef}
             fullWidth
-            placeholder="Type a message or paste a link..."
+            placeholder={t('chat.placeholderWithLink')}
             variant="outlined"
             size="small"
             value={newMessage}
@@ -1456,7 +1457,7 @@ if (refreshConversations) {
           }}
         >
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-            <Typography variant="subtitle2">Upload Media</Typography>
+            <Typography variant="subtitle2">{t('chat.uploadMedia')}</Typography>
             <IconButton size="small" onClick={() => setShowMediaUpload(false)}>
               <CancelIcon />
             </IconButton>
@@ -1497,7 +1498,7 @@ if (refreshConversations) {
           }}
         >
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1, px: 1 }}>
-            <Typography variant="subtitle2">Choose Emoji</Typography>
+            <Typography variant="subtitle2">{t('chat.chooseEmoji')}</Typography>
             <IconButton size="small" onClick={() => setShowEmojiPicker(false)}>
               <CancelIcon />
             </IconButton>

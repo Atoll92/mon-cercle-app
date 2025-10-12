@@ -1930,6 +1930,75 @@
       "capacity": "Capacité : {{capacity}}",
       "location": "Lieu",
       "getDirections": "Obtenir l'itinéraire"
+    },
+    "profile": {
+      "loading": "Chargement du profil...",
+      "error": {
+        "title": "Erreur de chargement du profil",
+        "description": "Échec du chargement du profil. Veuillez réessayer."
+      },
+      "backToDashboard": "Retour au tableau de bord",
+      "notFound": {
+        "title": "Profil introuvable",
+        "description": "Le profil que vous recherchez n'existe pas ou vous n'avez pas la permission de le consulter.",
+        "hint": "Veuillez vérifier l'URL ou contacter le support si vous pensez qu'il s'agit d'une erreur."
+      },
+      "yourProfile": "Votre profil",
+      "userProfile": "Profil de {{name}}",
+      "unnamedUser": "Utilisateur sans nom",
+      "editProfile": "Modifier le profil",
+      "message": "Message",
+      "tabs": {
+        "overview": "Aperçu",
+        "posts": "Publications",
+        "events": "Événements"
+      },
+      "networkAdmin": "Administrateur du réseau",
+      "contactInformation": "Coordonnées",
+      "upcomingEventsCount": "{{count}} événements à venir",
+      "seeAll": "Voir tout",
+      "about": "À propos",
+      "noBio": "Aucune biographie",
+      "skills": "Compétences",
+      "noSkills": "Aucune compétence listée",
+      "moodboards": "Tableaux d'inspiration",
+      "recentPosts": "Publications récentes",
+      "seeAllCount": "Voir les {{count}} publications",
+      "yourPosts": "Vos publications",
+      "userPosts": "Publications de {{name}}",
+      "postsCount": "{{count}} publications",
+      "noPostsOwn": "Vous n'avez pas encore créé de publication.",
+      "noPostsOther": "{{name}} n'a pas encore créé de publication.",
+      "upcomingEvents": "Événements à venir",
+      "attending": "Participe"
     }
+  },
+  "chat": {
+    "selectProfile": "Veuillez sélectionner un profil pour discuter",
+    "error": "Erreur lors du chargement du chat",
+    "title": "Chat de groupe",
+    "noMessages": "Aucun message pour le moment. Commencez la conversation !",
+    "today": "Aujourd'hui",
+    "yesterday": "Hier",
+    "you": "Vous",
+    "anonymous": "Anonyme",
+    "sending": "Envoi en cours...",
+    "replyingTo": "Répondre à {{name}}",
+    "unknown": "Inconnu",
+    "reply": "Répondre",
+    "deleteMessage": "Supprimer le message",
+    "noMembersFound": "Aucun membre trouvé",
+    "chooseEmoji": "Choisir un emoji",
+    "uploadMedia": "Télécharger un média",
+    "placeholder": "Tapez un message...",
+    "clickToPlay": "Cliquez pour lire",
+    "untitled": "Sans titre",
+    "readyToSend": "Prêt à envoyer",
+    "selectConversation": "Sélectionnez une conversation pour commencer à discuter",
+    "unknownUser": "Utilisateur inconnu",
+    "onlineNow": "En ligne maintenant",
+    "offline": "Hors ligne",
+    "conversationStart": "C'est le début de votre conversation avec {{name}}",
+    "placeholderWithLink": "Tapez un message... (Ajoutez des liens avec https://)"
   }
 }
