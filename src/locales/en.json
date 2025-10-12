@@ -779,12 +779,19 @@
       "linkedinUrlPlaceholder": "https://linkedin.com/in/your-profile",
       "skills": "Skills",
       "skillsPlaceholder": "Add a skill",
-      "skillsHelper": "Enter your skills and press Enter"
+      "skillsHelper": "Enter your skills and press Enter",
+      "socialLinks": "Social Links ({{count}}/5)",
+      "addLink": "Add Link",
+      "socialLinksInfo": "Add social links - just paste URLs and we'll detect the platform!"
     },
     "posts": {
       "title": "Previously Published Posts",
       "createPost": "Create Post",
-      "noPosts": "You haven't created any posts yet."
+      "noPosts": "No posts yet",
+      "noPostsDescription": "Share your work, thoughts, or achievements with your network",
+      "createFirstPost": "Create Your First Post",
+      "postsPublished": "{{count}} post published",
+      "postsPublished_other": "{{count}} posts published"
     },
     "settings": {
       "notifications": "Notification System Diagnostics",

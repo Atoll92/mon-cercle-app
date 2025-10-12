@@ -971,11 +971,11 @@ function EditProfilePage() {
                   </Box>
                   
                   <Typography variant="body2" color="text.secondary" textAlign="center">
-                    Drag & drop an image or click the edit icon
+                    {t('editProfile.avatar.dragDrop')}
                   </Typography>
-                  
+
                   <Typography variant="caption" color="text.secondary" textAlign="center" sx={{ mt: 1 }}>
-                    Recommended: Square image, at least 200x200px
+                    {t('editProfile.avatar.recommended')}
                   </Typography>
                   
                   <Paper 
@@ -990,7 +990,7 @@ function EditProfilePage() {
                     }}
                   >
                     <Typography variant="subtitle2" gutterBottom color="text.secondary">
-                      Profile Preview
+                      {t('editProfile.preview.title')}
                     </Typography>
                     
                     <Box sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
@@ -1003,17 +1003,17 @@ function EditProfilePage() {
                       
                       <Box>
                         <Typography variant="body1" fontWeight="500">
-                          {fullName || 'Your Name'}
+                          {fullName || t('editProfile.preview.yourName')}
                         </Typography>
-                        
+
                         {tagline && (
                           <Typography variant="caption" color="text.secondary" sx={{ fontStyle: 'italic' }}>
                             "{tagline}"
                           </Typography>
                         )}
-                        
+
                         <Typography variant="body2" color="text.secondary" noWrap>
-                          {bio ? (bio.length > 50 ? bio.substring(0, 50) + '...' : bio) : 'Your bio will appear here'}
+                          {bio ? (bio.length > 50 ? bio.substring(0, 50) + '...' : bio) : t('editProfile.preview.yourBio')}
                         </Typography>
                       </Box>
                     </Box>
@@ -1037,13 +1037,13 @@ function EditProfilePage() {
                   <Stack spacing={3}>
                     <TextField
                       fullWidth
-                      label="Full Name"
+                      label={t('editProfile.form.fullName')}
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
-                      placeholder="Your full name"
+                      placeholder={t('editProfile.form.fullNamePlaceholder')}
                       InputLabelProps={{ shrink: true }}
                       required={isNewProfile}
-                      helperText={isNewProfile ? "Please enter your name" : ""}
+                      helperText={isNewProfile ? t('editProfile.form.fullNameHelper') : ""}
                       InputProps={{
                         startAdornment: <PersonIcon color="action" sx={{ mr: 1 }} />
                       }}
@@ -1052,14 +1052,14 @@ function EditProfilePage() {
                     
                     <TextField
                       fullWidth
-                      label="Contact Email"
+                      label={t('editProfile.form.contactEmail')}
                       type="email"
                       value={contactEmail}
                       onChange={(e) => setContactEmail(e.target.value)}
-                      placeholder="Email address visible to network members"
+                      placeholder={t('editProfile.form.contactEmailPlaceholder')}
                       InputLabelProps={{ shrink: true }}
                       required
-                      helperText="This email will be visible to other network members"
+                      helperText={t('editProfile.form.contactEmailHelper')}
                       InputProps={{
                         startAdornment: <MailIcon color="action" sx={{ mr: 1 }} />
                       }}
@@ -1067,34 +1067,34 @@ function EditProfilePage() {
                     
                     <TextField
                       fullWidth
-                      label="Bio"
+                      label={t('editProfile.form.bio')}
                       value={bio}
                       onChange={(e) => setBio(e.target.value)}
-                      placeholder="Tell others about yourself"
+                      placeholder={t('editProfile.form.bioPlaceholder')}
                       multiline
                       rows={4}
                       InputLabelProps={{ shrink: true }}
                       variant="outlined"
                     />
-                    
+
                     <TextField
                       fullWidth
-                      label="Tagline"
+                      label={t('editProfile.form.tagline')}
                       value={tagline}
                       onChange={(e) => setTagline(e.target.value)}
-                      placeholder="Your motto or catchphrase (max 60 characters)"
+                      placeholder={t('editProfile.form.taglinePlaceholder')}
                       inputProps={{ maxLength: 60 }}
-                      helperText={`${tagline.length}/60 characters - A short, memorable phrase that represents you`}
+                      helperText={t('editProfile.form.taglineHelper', { count: tagline.length })}
                       InputLabelProps={{ shrink: true }}
                       variant="outlined"
                     />
-                    
+
                     <TextField
                       fullWidth
-                      label="Portfolio URL"
+                      label={t('editProfile.form.portfolioUrl')}
                       value={portfolioUrl}
                       onChange={(e) => setPortfolioUrl(e.target.value)}
-                      placeholder="https://your-portfolio.com"
+                      placeholder={t('editProfile.form.portfolioUrlPlaceholder')}
                       InputLabelProps={{ shrink: true }}
                       InputProps={{
                         startAdornment: <LanguageIcon color="action" sx={{ mr: 1 }} />
@@ -1110,9 +1110,9 @@ function EditProfilePage() {
                         mb: 2
                       }}>
                         <Typography variant="subtitle1" fontWeight="500">
-                          Social Links ({socialLinks.length}/5)
+                          {t('editProfile.form.socialLinks', { count: socialLinks.length })}
                         </Typography>
-                        
+
                         <Button
                           size="small"
                           startIcon={<AddIcon />}
@@ -1120,13 +1120,13 @@ function EditProfilePage() {
                           disabled={socialLinks.length >= 5}
                           variant="outlined"
                         >
-                          Add Link
+                          {t('editProfile.form.addLink')}
                         </Button>
                       </Box>
                       
                       {socialLinks.length === 0 ? (
                         <Alert severity="info" variant="outlined" sx={{ mb: 2 }}>
-                          Add social links - just paste URLs and we'll detect the platform!
+                          {t('editProfile.form.socialLinksInfo')}
                         </Alert>
                       ) : (
                         <Stack spacing={1.5}>
@@ -1216,9 +1216,9 @@ function EditProfilePage() {
                         <TextField
                           {...params}
                           variant="outlined"
-                          label="Skills"
-                          placeholder="Add a skill"
-                          helperText="Enter your skills and press Enter"
+                          label={t('editProfile.form.skills')}
+                          placeholder={t('editProfile.form.skillsPlaceholder')}
+                          helperText={t('editProfile.form.skillsHelper')}
                           InputProps={{
                             ...params.InputProps,
                             startAdornment: (
@@ -1254,9 +1254,9 @@ function EditProfilePage() {
                     }}
                   >
                     <Typography variant="h5" fontWeight="600" color="primary.main">
-                      Previously Published Posts
+                      {t('editProfile.posts.title')}
                     </Typography>
-                    
+
                     <Button
                       variant="contained"
                       color="primary"
@@ -1276,7 +1276,7 @@ function EditProfilePage() {
                         }
                       }}
                     >
-                      Create Post
+                      {t('editProfile.posts.createPost')}
                     </Button>
                   </Box>
                   
@@ -1300,10 +1300,10 @@ function EditProfilePage() {
                         <LanguageIcon sx={{ fontSize: 48, color: 'text.secondary', opacity: 0.5 }} />
                       </Box>
                       <Typography variant="h6" color="text.secondary" gutterBottom>
-                        No posts yet
+                        {t('editProfile.posts.noPosts')}
                       </Typography>
                       <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                        Share your work, thoughts, or achievements with your network
+                        {t('editProfile.posts.noPostsDescription')}
                       </Typography>
                       <Button
                         variant="outlined"
@@ -1316,13 +1316,13 @@ function EditProfilePage() {
                           fontWeight: 500
                         }}
                       >
-                        Create Your First Post
+                        {t('editProfile.posts.createFirstPost')}
                       </Button>
                     </Paper>
                   ) : (
                     <Box>
                       <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                        {postItems.length} {postItems.length === 1 ? 'post' : 'posts'} published
+                        {t('editProfile.posts.postsPublished', { count: postItems.length })}
                       </Typography>
                       
                       <Grid container spacing={3}>

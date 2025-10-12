@@ -780,12 +780,19 @@
       "linkedinUrlPlaceholder": "https://linkedin.com/in/votre-profil",
       "skills": "Compétences",
       "skillsPlaceholder": "Ajouter une compétence",
-      "skillsHelper": "Entrez vos compétences et appuyez sur Entrée"
+      "skillsHelper": "Entrez vos compétences et appuyez sur Entrée",
+      "socialLinks": "Liens sociaux ({{count}}/5)",
+      "addLink": "Ajouter un lien",
+      "socialLinksInfo": "Ajoutez des liens sociaux - collez simplement les URL et nous détecterons la plateforme !"
     },
     "posts": {
       "title": "Publications précédemment publiées",
       "createPost": "Créer une publication",
-      "noPosts": "Vous n'avez encore créé aucune publication."
+      "noPosts": "Aucune publication pour le moment",
+      "noPostsDescription": "Partagez votre travail, vos réflexions ou vos réalisations avec votre réseau",
+      "createFirstPost": "Créer votre première publication",
+      "postsPublished": "{{count}} publication publiée",
+      "postsPublished_other": "{{count}} publications publiées"
     },
     "settings": {
       "notifications": "Diagnostics du système de notifications",
