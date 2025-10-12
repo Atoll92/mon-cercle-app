@@ -636,7 +636,8 @@
       "networkInfoText": "This is the main description for {{networkName}}. Network members can access various features including news, events, chat, files, and more depending on the network's configuration.",
       "gotIt": "Got it",
       "viewFullDescription": "View full network description",
-      "informationAboutTab": "Information about the {{tabName}} tab"
+      "informationAboutTab": "Information about the {{tabName}} tab",
+      "aboutNetwork": "About Network"
     },
     "subscription": {
       "badge": {
@@ -1400,6 +1401,31 @@
     "offline": "Offline",
     "conversationStart": "This is the beginning of your conversation with {{name}}",
     "placeholderWithLink": "Type a message... (Add links with https://)"
+  },
+  "directMessages": {
+    "retry": "Retry",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "deleting": "Deleting...",
+    "search": "Search messages",
+    "filters": {
+      "all": "All",
+      "unread": "Unread",
+      "recent": "Recent"
+    },
+    "clearFilters": "Clear filters",
+    "noMatches": "No conversations match your filters",
+    "noConversations": "No conversations yet",
+    "startConversation": "Start a conversation",
+    "unknownUser": "Unknown User",
+    "yesterday": "Yesterday",
+    "you": "You: {{message}}",
+    "deleteConversationTitle": "Delete Conversation",
+    "deleteConfirmation": "Are you sure you want to delete your conversation with {{name}}? This action cannot be undone and will permanently delete all messages in this conversation.",
+    "thisUser": "this user",
+    "conversationDeleted": "Conversation with {{name}} has been deleted.",
+    "deleteFailed": "Failed to delete conversation",
+    "deleteUnexpectedError": "An unexpected error occurred while deleting the conversation"
   },
   "common": {
     "status": {

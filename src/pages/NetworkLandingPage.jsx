@@ -1116,7 +1116,7 @@ function NetworkLandingPage() {
                       }}
                       startIcon={<InfoIcon sx={{ fontSize: '0.9rem' }} />}
                     >
-                      About Network
+                      {t('dashboard.network.aboutNetwork')}
                     </Button>
                   </Tooltip>
                 )}

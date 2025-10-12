@@ -4,6 +4,7 @@ import { useAuth } from '../context/authcontext';
 import { useProfile } from '../context/profileContext';
 import { deleteConversation } from '../api/directMessages';
 import { formatTime as formatTimeUtil, formatDate } from '../utils/dateFormatting';
+import { useTranslation } from '../hooks/useTranslation';
 import {
   List,
   ListItem,
@@ -47,6 +48,7 @@ function DirectMessagesList({ onSelectConversation, onConversationDeleted }) {
   const { conversations, loading, error, refreshConversations } = useDirectMessages();
   const { user } = useAuth();
   const { activeProfile } = useProfile();
+  const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedConversation, setSelectedConversation] = useState(null);
@@ -108,7 +110,7 @@ function DirectMessagesList({ onSelectConversation, onConversationDeleted }) {
       
       if (result.success) {
         console.log('✅ Delete successful!');
-        setMessage(`Conversation with ${selectedConversation.partner?.full_name || 'Unknown User'} has been deleted.`);
+        setMessage(t('directMessages.conversationDeleted', { name: selectedConversation.partner?.full_name || t('directMessages.unknownUser') }));
         // Notify parent component about the deletion
         if (onConversationDeleted) {
           onConversationDeleted(selectedConversation.id);
@@ -120,11 +122,11 @@ function DirectMessagesList({ onSelectConversation, onConversationDeleted }) {
         setSelectedConversation(null);
       } else {
         console.error('❌ Delete failed:', result.error);
-        setAlertError(result.error?.message || 'Failed to delete conversation');
+        setAlertError(result.error?.message || t('directMessages.deleteFailed'));
       }
     } catch (error) {
       console.error('❌ Exception during delete:', error);
-      setAlertError('An unexpected error occurred while deleting the conversation');
+      setAlertError(t('directMessages.deleteUnexpectedError'));
     } finally {
       setDeleting(false);
     }
@@ -145,7 +147,7 @@ function DirectMessagesList({ onSelectConversation, onConversationDeleted }) {
     if (isToday) {
       return formatTimeUtil(timestamp);
     } else if (isYesterday) {
-      return 'Yesterday';
+      return t('directMessages.yesterday');
     } else if (now.getFullYear() === date.getFullYear()) {
       return formatDate(timestamp, { month: 'short', day: 'numeric' });
     } else {
@@ -197,13 +199,13 @@ function DirectMessagesList({ onSelectConversation, onConversationDeleted }) {
     return (
       <Box sx={{ p: 2, color: 'error.main' }}>
         <Typography variant="body2">{error}</Typography>
-        <Button 
-          variant="outlined" 
-          size="small" 
+        <Button
+          variant="outlined"
+          size="small"
           onClick={refreshConversations}
           sx={{ mt: 1 }}
         >
-          Retry
+          {t('directMessages.retry')}
         </Button>
       </Box>
     );
@@ -215,7 +217,7 @@ function DirectMessagesList({ onSelectConversation, onConversationDeleted }) {
       <Box sx={{ p: 2, pb: 1 }}>
         <TextField
           fullWidth
-          placeholder="Search messages"
+          placeholder={t('directMessages.search')}
           variant="outlined"
           size="small"
           value={searchTerm}
@@ -230,32 +232,32 @@ function DirectMessagesList({ onSelectConversation, onConversationDeleted }) {
           sx={{ mb: 1 }}
         />
         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-          <Button 
-            variant={quickFilter === 'all' ? "contained" : "text"} 
+          <Button
+            variant={quickFilter === 'all' ? "contained" : "text"}
             size="small"
             onClick={() => handleFilterChange('all')}
             sx={{ minWidth: 0, px: 1 }}
             color={quickFilter === 'all' ? "primary" : "inherit"}
           >
-            All
+            {t('directMessages.filters.all')}
           </Button>
-          <Button 
-            variant={quickFilter === 'unread' ? "contained" : "text"} 
+          <Button
+            variant={quickFilter === 'unread' ? "contained" : "text"}
             size="small"
             onClick={() => handleFilterChange('unread')}
             sx={{ minWidth: 0, px: 1 }}
             color={quickFilter === 'unread' ? "primary" : "inherit"}
           >
-            Unread
+            {t('directMessages.filters.unread')}
           </Button>
-          <Button 
+          <Button
             variant={quickFilter === 'recent' ? "contained" : "text"}
             size="small"
             onClick={() => handleFilterChange('recent')}
             sx={{ minWidth: 0, px: 1 }}
             color={quickFilter === 'recent' ? "primary" : "inherit"}
           >
-            Recent
+            {t('directMessages.filters.recent')}
           </Button>
         </Box>
       </Box>
@@ -268,21 +270,21 @@ function DirectMessagesList({ onSelectConversation, onConversationDeleted }) {
           <Box sx={{ p: 3, textAlign: 'center' }}>
             <MessageIcon sx={{ fontSize: 40, color: 'text.secondary', mb: 1 }} />
             <Typography variant="body2" color="text.secondary">
-              {searchTerm || quickFilter !== 'all' ? 
-                'No conversations match your filters' : 
-                'No conversations yet'}
+              {searchTerm || quickFilter !== 'all' ?
+                t('directMessages.noMatches') :
+                t('directMessages.noConversations')}
             </Typography>
             {(searchTerm || quickFilter !== 'all') && (
-              <Button 
-                variant="text" 
-                size="small" 
+              <Button
+                variant="text"
+                size="small"
                 onClick={() => {
                   setSearchTerm('');
                   setQuickFilter('all');
                 }}
                 sx={{ mt: 1 }}
               >
-                Clear filters
+                {t('directMessages.clearFilters')}
               </Button>
             )}
           </Box>
@@ -342,7 +344,7 @@ function DirectMessagesList({ onSelectConversation, onConversationDeleted }) {
                             noWrap
                             sx={{ maxWidth: 'calc(100% - 40px)' }}
                           >
-                            {partner.full_name || 'Unknown User'}
+                            {partner.full_name || t('directMessages.unknownUser')}
                           </Typography>
                           <Box sx={{ display: 'flex', alignItems: 'center' }}>
                             {lastMessage && (
@@ -378,12 +380,12 @@ function DirectMessagesList({ onSelectConversation, onConversationDeleted }) {
                         >
                           {lastMessage ? (
                             lastMessage.sender_id === user?.id ? (
-                                  `You: ${lastMessage.content}`
+                              t('directMessages.you', { message: lastMessage.content })
                             ) : (
                               lastMessage.content
                             )
                           ) : (
-                            <span>Start a conversation</span>
+                            <span>{t('directMessages.startConversation')}</span>
                           )}
                         </Typography>
                       }
@@ -415,17 +417,16 @@ function DirectMessagesList({ onSelectConversation, onConversationDeleted }) {
           <ListItemIcon>
             <DeleteIcon fontSize="small" />
           </ListItemIcon>
-          <ListItemText>Delete</ListItemText>
+          <ListItemText>{t('directMessages.delete')}</ListItemText>
         </MenuItem>
       </Menu>
       
       {/* Confirmation Dialog */}
       <Dialog open={openDialog} onClose={handleDialogClose}>
-        <DialogTitle>Delete Conversation</DialogTitle>
+        <DialogTitle>{t('directMessages.deleteConversationTitle')}</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Are you sure you want to delete your conversation with {selectedConversation?.partner?.full_name || 'this user'}? 
-            This action cannot be undone and will permanently delete all messages in this conversation.
+            {t('directMessages.deleteConfirmation', { name: selectedConversation?.partner?.full_name || t('directMessages.thisUser') })}
           </DialogContentText>
           {alertError && (
             <Alert severity="error" sx={{ mt: 2 }}>
@@ -435,15 +436,15 @@ function DirectMessagesList({ onSelectConversation, onConversationDeleted }) {
         </DialogContent>
         <DialogActions>
           <Button onClick={handleDialogClose} disabled={deleting}>
-            Cancel
+            {t('directMessages.cancel')}
           </Button>
-          <Button 
-            onClick={handleConfirmedDelete} 
-            color="error" 
+          <Button
+            onClick={handleConfirmedDelete}
+            color="error"
             disabled={deleting}
             startIcon={deleting ? <Spinner size={32} /> : null}
           >
-            {deleting ? 'Deleting...' : 'Delete'}
+            {deleting ? t('directMessages.deleting') : t('directMessages.delete')}
           </Button>
         </DialogActions>
       </Dialog>

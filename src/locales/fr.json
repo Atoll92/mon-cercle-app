@@ -636,7 +636,8 @@
       "networkInfoText": "Ceci est la description principale de {{networkName}}. Les membres du réseau peuvent accéder à diverses fonctionnalités incluant les actualités, événements, chat, fichiers, et plus selon la configuration du réseau.",
       "gotIt": "Compris",
       "viewFullDescription": "Voir la description complète du réseau",
-      "informationAboutTab": "Informations sur l'onglet {{tabName}}"
+      "informationAboutTab": "Informations sur l'onglet {{tabName}}",
+      "aboutNetwork": "À propos du réseau"
     },
     "subscription": {
       "badge": {
@@ -2000,5 +2001,30 @@
     "offline": "Hors ligne",
     "conversationStart": "C'est le début de votre conversation avec {{name}}",
     "placeholderWithLink": "Tapez un message... (Ajoutez des liens avec https://)"
+  },
+  "directMessages": {
+    "retry": "Réessayer",
+    "delete": "Supprimer",
+    "cancel": "Annuler",
+    "deleting": "Suppression...",
+    "search": "Rechercher des messages",
+    "filters": {
+      "all": "Tous",
+      "unread": "Non lus",
+      "recent": "Récents"
+    },
+    "clearFilters": "Effacer les filtres",
+    "noMatches": "Aucune conversation ne correspond à vos filtres",
+    "noConversations": "Aucune conversation pour le moment",
+    "startConversation": "Commencer une conversation",
+    "unknownUser": "Utilisateur inconnu",
+    "yesterday": "Hier",
+    "you": "Vous : {{message}}",
+    "deleteConversationTitle": "Supprimer la conversation",
+    "deleteConfirmation": "Êtes-vous sûr de vouloir supprimer votre conversation avec {{name}} ? Cette action est irréversible et supprimera définitivement tous les messages de cette conversation.",
+    "thisUser": "cet utilisateur",
+    "conversationDeleted": "La conversation avec {{name}} a été supprimée.",
+    "deleteFailed": "Échec de la suppression de la conversation",
+    "deleteUnexpectedError": "Une erreur inattendue s'est produite lors de la suppression de la conversation"
   }
 }
