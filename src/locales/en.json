@@ -1372,6 +1372,25 @@
       "noPostsOther": "{{name}} hasn't created any posts yet.",
       "upcomingEvents": "Upcoming Events",
       "attending": "Attending"
+    },
+    "directMessages": {
+      "title": "Messages",
+      "dashboard": "Dashboard",
+      "conversations": "Conversations",
+      "selectConversation": "Select a conversation to start messaging",
+      "selectOrStart": "Select a conversation or start a new one",
+      "newConversation": "New Conversation",
+      "startNewConversation": "Start New Conversation",
+      "searchPlaceholder": "Search for network members...",
+      "searchHelperText": "Start typing a name to search for members in your network",
+      "cancel": "Cancel",
+      "startChat": "Start Chat",
+      "errors": {
+        "userNotFoundMessage": "Could not find the user you want to message",
+        "userNotFound": "User not found",
+        "failedToStart": "Failed to start conversation",
+        "couldNotCreate": "Could not create conversation"
+      }
     }
   },
   "chat": {

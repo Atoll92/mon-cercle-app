@@ -34,8 +34,10 @@ import {
   Close as CloseIcon,
   PersonAdd as PersonAddIcon
 } from '@mui/icons-material';
+import { useTranslation } from '../hooks/useTranslation';
 
 function DirectMessagesPage() {
+  const { t } = useTranslation();
   const { userId } = useParams(); // Optional param if starting a conversation with someone
   const { user } = useAuth();
   const { activeProfile } = useProfile();
@@ -101,11 +103,11 @@ function DirectMessagesPage() {
         
         if (userError) {
           console.error('Error fetching partner info:', userError);
-          throw new Error('Could not find the user you want to message');
+          throw new Error(t('pages.directMessages.errors.userNotFoundMessage'));
         }
-        
+
         if (!partnerData) {
-          throw new Error('User not found');
+          throw new Error(t('pages.directMessages.errors.userNotFound'));
         }
         
         setPartner(partnerData);
@@ -130,11 +132,11 @@ function DirectMessagesPage() {
         
         if (error) {
           console.error('Error getting/creating conversation:', error);
-          throw new Error('Failed to start conversation');
+          throw new Error(t('pages.directMessages.errors.failedToStart'));
         }
-        
+
         if (!conversation) {
-          throw new Error('Could not create conversation');
+          throw new Error(t('pages.directMessages.errors.couldNotCreate'));
         }
         
         console.log('Conversation retrieved/created:', conversation);
@@ -156,7 +158,7 @@ function DirectMessagesPage() {
         
       } catch (error) {
         console.error('Error initializing conversation:', error);
-        setInitError(error.message || 'Failed to start conversation');
+        setInitError(error.message || t('pages.directMessages.errors.failedToStart'));
         // Reset initialization flags on error so we can try again
         initAttemptedRef.current = false;
         lastUserIdRef.current = null;
@@ -295,7 +297,7 @@ function DirectMessagesPage() {
           ) : (
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '50vh', bgcolor: 'background.default' }}>
               <Typography variant="body1" color="text.secondary">
-                Select a conversation to start messaging
+                {t('pages.directMessages.selectConversation')}
               </Typography>
             </Box>
           )}
@@ -314,7 +316,7 @@ function DirectMessagesPage() {
           >
             <Box sx={{ display: 'flex', alignItems: 'center', p: 2, borderBottom: 1, borderColor: 'divider' }}>
               <Typography variant="h6" sx={{ flexGrow: 1 }}>
-                Conversations
+                {t('pages.directMessages.conversations')}
               </Typography>
               <IconButton onClick={() => setDrawerOpen(false)}>
                 <CloseIcon />
@@ -333,7 +335,7 @@ function DirectMessagesPage() {
         <Box sx={{ minHeight: 'calc(100dvh - var(--network-header-height, 80px) - var(--footer-height, 100px))', display: 'flex', flexDirection: 'column', bgcolor: 'background.default' }}>
           <Box sx={{ p: 1, borderBottom: 1, borderColor: 'divider', display: 'flex', alignItems: 'center', bgcolor: 'background.paper' }}>
             <Typography variant="h6" component="div" sx={{ ml: 1, flexGrow: 1, color: 'text.primary' }}>
-              Messages
+              {t('pages.directMessages.title')}
             </Typography>
             <IconButton edge="end" onClick={handleNewConversation}>
               <AddIcon />
@@ -372,15 +374,15 @@ function DirectMessagesPage() {
           flexDirection: 'column'
         }}
       >
-        <Box sx={{ 
-          p: 2, 
-          borderBottom: 1, 
-          borderColor: 'divider', 
-          display: 'flex', 
-          alignItems: 'center' 
+        <Box sx={{
+          p: 2,
+          borderBottom: 1,
+          borderColor: 'divider',
+          display: 'flex',
+          alignItems: 'center'
         }}>
           <Typography variant="h6" sx={{ flexGrow: 1 }}>
-            Conversations
+            {t('pages.directMessages.conversations')}
           </Typography>
           <IconButton size="small" onClick={handleNewConversation}>
             <AddIcon />
@@ -409,26 +411,26 @@ function DirectMessagesPage() {
             onBack={handleBackToList}
           />
         ) : (
-          <Box 
-            sx={{ 
-              display: 'flex', 
-              flexDirection: 'column', 
-              alignItems: 'center', 
-              justifyContent: 'center', 
-              height: '100%', 
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              height: '100%',
               p: 3,
               bgcolor: 'background.default'
             }}
           >
             <Typography variant="h6" sx={{ mb: 2 }}>
-              Select a conversation or start a new one
+              {t('pages.directMessages.selectOrStart')}
             </Typography>
             <Button
               variant="contained"
               startIcon={<PersonAddIcon />}
               onClick={handleNewConversation}
             >
-              New Conversation
+              {t('pages.directMessages.newConversation')}
             </Button>
           </Box>
         )}
@@ -453,10 +455,10 @@ function DirectMessagesPage() {
               sx={{ mr: 2 }}
               variant="text"
             >
-              Dashboard
+              {t('pages.directMessages.dashboard')}
             </Button>
             <Typography variant="h5" component="h1">
-              Messages
+              {t('pages.directMessages.title')}
             </Typography>
           </Box>
           
@@ -503,29 +505,29 @@ function DirectMessagesPage() {
           }
         }}
       >
-        <DialogTitle>Start New Conversation</DialogTitle>
+        <DialogTitle>{t('pages.directMessages.startNewConversation')}</DialogTitle>
         <DialogContent sx={{ pt: 2 }}>
           <UserSearchAutocomplete
             onUserSelect={(userId) => setSelectedNewUser(userId)}
             excludeUserIds={conversations.map(c => c.partner?.id).filter(Boolean)}
-            placeholder="Search for network members..."
+            placeholder={t('pages.directMessages.searchPlaceholder')}
           />
           <Typography variant="caption" color="text.secondary" sx={{ mt: 2, display: 'block' }}>
-            Start typing a name to search for members in your network
+            {t('pages.directMessages.searchHelperText')}
           </Typography>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => {
             setNewChatDialogOpen(false);
             setSelectedNewUser(null);
-          }}>Cancel</Button>
-          <Button 
-            onClick={handleStartNewChat} 
-            variant="contained" 
+          }}>{t('pages.directMessages.cancel')}</Button>
+          <Button
+            onClick={handleStartNewChat}
+            variant="contained"
             color="primary"
             disabled={!selectedNewUser}
           >
-            Start Chat
+            {t('pages.directMessages.startChat')}
           </Button>
         </DialogActions>
       </Dialog>

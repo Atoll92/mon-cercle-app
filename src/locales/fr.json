@@ -1972,6 +1972,25 @@
       "noPostsOther": "{{name}} n'a pas encore créé de publication.",
       "upcomingEvents": "Événements à venir",
       "attending": "Participe"
+    },
+    "directMessages": {
+      "title": "Messages",
+      "dashboard": "Tableau de bord",
+      "conversations": "Conversations",
+      "selectConversation": "Sélectionnez une conversation pour commencer à envoyer des messages",
+      "selectOrStart": "Sélectionnez une conversation ou démarrez-en une nouvelle",
+      "newConversation": "Nouvelle conversation",
+      "startNewConversation": "Démarrer une nouvelle conversation",
+      "searchPlaceholder": "Rechercher des membres du réseau...",
+      "searchHelperText": "Commencez à taper un nom pour rechercher des membres de votre réseau",
+      "cancel": "Annuler",
+      "startChat": "Démarrer le chat",
+      "errors": {
+        "userNotFoundMessage": "Impossible de trouver l'utilisateur avec qui vous souhaitez discuter",
+        "userNotFound": "Utilisateur introuvable",
+        "failedToStart": "Échec du démarrage de la conversation",
+        "couldNotCreate": "Impossible de créer la conversation"
+      }
     }
   },
   "chat": {
