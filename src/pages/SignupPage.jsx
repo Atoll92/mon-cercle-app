@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseclient'; // Adjust path if needed
 import { Link as RouterLink, useNavigate, useLocation } from 'react-router-dom'; // Added useLocation
+import { useTranslation } from '../hooks/useTranslation';
 import Spinner from '../components/Spinner';
 import {
   Alert,
@@ -46,6 +47,7 @@ const theme = createTheme({
 });
 
 function SignupPage() {
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState(''); // Added confirm password
@@ -109,11 +111,11 @@ function SignupPage() {
         setInvitationData(invitation);
         setNetworkName(invitation.networks?.name || '');
       } else {
-        setInvitationError('Invalid or expired invitation');
+        setInvitationError(t('signup.errors.invalidInvitation'));
       }
     } catch (error) {
       console.error('Error processing invitation:', error);
-      setInvitationError(error.message || 'Invalid or expired invitation');
+      setInvitationError(error.message || t('signup.errors.invalidInvitation'));
     } finally {
       setInvitationLoading(false);
     }
@@ -141,7 +143,7 @@ function SignupPage() {
 
     // Password Confirmation Check
     if (password !== confirmPassword) {
-      setError("Passwords do not match.");
+      setError(t('signup.errors.passwordsDoNotMatch'));
       return;
     }
   
@@ -197,17 +199,17 @@ function SignupPage() {
           // Increment invitation link usage count
           await supabase.rpc('increment_invitation_link_uses', { link_code: inviteCode });
           
-          setMessage(`Signup successful! You have been added to ${networkName}. Please check your email to confirm your account.`);
+          setMessage(t('signup.success.withInvitation', { networkName }));
         } catch (inviteError) {
           console.error('Error processing invitation:', inviteError);
           // More specific error message for debugging
-          setError(`Signup was successful, but failed to join the network: ${inviteError.message}. Please contact support.`);
+          setError(t('signup.errors.joinNetworkFailed', { error: inviteError.message }));
           return; // Don't proceed with redirect if invitation failed
         }
       } else {
         // Regular signup without invitation - no profile created
         // Profile will be created when user creates or joins a network
-        setMessage('Signup successful! Please check your email to confirm your account. You will be redirected to create your own network.');
+        setMessage(t('signup.success.withoutInvitation'));
       }
   
       // Clear form on success
@@ -230,7 +232,7 @@ function SignupPage() {
       }
   
     } catch (error) {
-      setError(error.message || "Failed to sign up");
+      setError(error.message || t('signup.errors.signupFailed'));
       console.error("Signup error:", error);
     } finally {
       setLoading(false);
@@ -268,10 +270,10 @@ function SignupPage() {
               }}
             >
               <Typography variant="h4" component="h1" align="center">
-                Create Your Account
+                {t('signup.title')}
               </Typography>
               <Typography variant="body2" align="center" sx={{ mt: 1 }}>
-                Join the community today!
+                {t('signup.subtitle')}
               </Typography>
             </Box>
 
@@ -281,11 +283,10 @@ function SignupPage() {
               {!inviteCode && !invitationLoading && (
                 <Alert severity="info" sx={{ mb: 3 }}>
                   <Typography variant="body2" sx={{ mb: 1 }}>
-                    <strong>Want to join an existing network?</strong>
+                    <strong>{t('signup.joinExistingNetwork.title')}</strong>
                   </Typography>
                   <Typography variant="body2">
-                    If you have an invitation link from a network, please use that link to sign up instead. 
-                    Otherwise, you'll be able to create your own network after signing up.
+                    {t('signup.joinExistingNetwork.description')}
                   </Typography>
                 </Alert>
               )}
@@ -295,7 +296,7 @@ function SignupPage() {
                 <Box sx={{ display: 'flex', justifyContent: 'center', my: 2 }}>
                   <Spinner size={48} />
                   <Typography variant="body2" sx={{ ml: 2 }}>
-                    Loading invitation details...
+                    {t('signup.loadingInvitation')}
                   </Typography>
                 </Box>
               ) : invitationError ? (
@@ -315,7 +316,7 @@ function SignupPage() {
                   <Stack direction="row" alignItems="center" spacing={1}>
                     <GroupAddIcon color="primary" />
                     <Typography variant="body1">
-                      You're invited to join <strong>{networkName}</strong>
+                      {t('signup.invitedToJoinPrefix')} <strong>{networkName}</strong>
                     </Typography>
                   </Stack>
                   {invitationData?.description && (
@@ -352,7 +353,7 @@ function SignupPage() {
                     fullWidth
                     required
                     id="email"
-                    label="Email Address"
+                    label={t('signup.form.emailAddress')}
                     name="email"
                     type="email"
                     autoComplete="email"
@@ -370,7 +371,7 @@ function SignupPage() {
 
                   {/* --- Password Field --- */}
                   <FormControl variant="outlined" fullWidth required error={!!error && error.includes('password')}>
-                    <InputLabel htmlFor="password">Password</InputLabel>
+                    <InputLabel htmlFor="password">{t('signup.form.password')}</InputLabel>
                     <OutlinedInput
                       id="password"
                       type={showPassword ? 'text' : 'password'}
@@ -378,11 +379,11 @@ function SignupPage() {
                       onChange={(e) => {
                         const newPassword = e.target.value;
                         setPassword(newPassword);
-                        
+
                         // Validate password
                         const validation = validatePassword(newPassword);
                         setPasswordErrors(validation.errors);
-                        
+
                         // Get password strength
                         const strength = getPasswordStrength(newPassword);
                         setPasswordStrength(strength);
@@ -404,36 +405,36 @@ function SignupPage() {
                           </IconButton>
                         </InputAdornment>
                       }
-                      label="Password"
+                      label={t('signup.form.password')}
                     />
                      {/* Password strength indicator */}
                      {password && (
                        <Box sx={{ mt: 1 }}>
-                         <LinearProgress 
-                           variant="determinate" 
+                         <LinearProgress
+                           variant="determinate"
                            value={(passwordStrength / 5) * 100}
-                           sx={{ 
-                             height: 8, 
+                           sx={{
+                             height: 8,
                              borderRadius: 1,
                              backgroundColor: '#e0e0e0',
                              '& .MuiLinearProgress-bar': {
-                               backgroundColor: getPasswordStrengthLabel(passwordStrength).color
+                               backgroundColor: getPasswordStrengthLabel(passwordStrength, t).color
                              }
                            }}
                          />
-                         <Typography variant="caption" sx={{ color: getPasswordStrengthLabel(passwordStrength).color, mt: 0.5 }}>
-                           {getPasswordStrengthLabel(passwordStrength).label}
+                         <Typography variant="caption" sx={{ color: getPasswordStrengthLabel(passwordStrength, t).color, mt: 0.5 }}>
+                           {getPasswordStrengthLabel(passwordStrength, t).label}
                          </Typography>
                        </Box>
                      )}
                      <FormHelperText>
-                       {passwordErrors.length > 0 ? passwordErrors[0] : getPasswordRequirementsText()}
+                       {passwordErrors.length > 0 ? passwordErrors[0] : getPasswordRequirementsText(t)}
                      </FormHelperText>
                   </FormControl>
 
                   {/* --- Confirm Password Field --- */}
                   <FormControl variant="outlined" fullWidth required error={!!error && error.includes('Passwords do not match')}>
-                    <InputLabel htmlFor="confirm-password">Confirm Password</InputLabel>
+                    <InputLabel htmlFor="confirm-password">{t('signup.form.confirmPassword')}</InputLabel>
                     <OutlinedInput
                       id="confirm-password"
                       type={showConfirmPassword ? 'text' : 'password'}
@@ -456,7 +457,7 @@ function SignupPage() {
                           </IconButton>
                         </InputAdornment>
                       }
-                      label="Confirm Password"
+                      label={t('signup.form.confirmPassword')}
                     />
                   </FormControl>
 
@@ -484,10 +485,10 @@ function SignupPage() {
                             marginLeft: '-12px', // Center spinner
                           }}
                         />
-                        <span>Creating Account...</span>
+                        <span>{t('signup.form.creatingAccount')}</span>
                       </>
                     ) : (
-                      'Create Account'
+                      t('signup.form.createAccount')
                     )}
                   </Button>
                 </Stack>
@@ -496,7 +497,7 @@ function SignupPage() {
               {/* --- Link to Login Page --- */}
               <Box sx={{ textAlign: 'center', mt: 4 }}> {/* Increased margin top */}
                 <Typography variant="body2" color="text.secondary">
-                  Already have an account?{' '}
+                  {t('signup.alreadyHaveAccount')}{' '}
                   <RouterLink // Use RouterLink for client-side nav
                     to={intent === 'create-network' ? "/login?intent=create-network" : "/login"}
                     style={{
@@ -505,7 +506,7 @@ function SignupPage() {
                       fontWeight: 600,
                     }}
                   >
-                    Log In
+                    {t('signup.logIn')}
                   </RouterLink>
                 </Typography>
               </Box>

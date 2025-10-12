@@ -239,7 +239,7 @@ const VirtualizedMemberList = ({ members, user, darkMode, onMemberSelect, networ
               <Divider sx={{ my: 2 }} />
               
               <Box sx={{ mt: 1 }}>
-                {member.bio ? (
+                {member.bio && 
                   <Typography 
                     variant="body2" 
                     color={darkMode ? alpha('white', 0.7) : "text.secondary"}
@@ -247,15 +247,7 @@ const VirtualizedMemberList = ({ members, user, darkMode, onMemberSelect, networ
                   >
                     {member.bio}
                   </Typography>
-                ) : (
-                  <Typography 
-                    variant="body2" 
-                    color={darkMode ? alpha('white', 0.5) : "text.disabled"}
-                    fontStyle="italic"
-                  >
-                    No bio available
-                  </Typography>
-                )}
+                }
                 
                 {member.skills && member.skills.length > 0 && (
                   <Box sx={{ mt: 2 }}>

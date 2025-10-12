@@ -775,7 +775,7 @@ function EditProfilePage() {
             }}
           >
             <Typography variant="h4" component="h1" fontWeight="500">
-              Welcome! Complete Your Profile
+              {t('editProfile.welcome.title')}
             </Typography>
           </Box>
           

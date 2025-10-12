@@ -1405,5 +1405,145 @@
       "maybe": "No users tentative yet",
       "declined": "No users declined yet"
     }
+  },
+  "joinNetwork": {
+    "errors": {
+      "invalidInvitation": "Invalid or expired invitation link",
+      "networkNotFound": "Network not found",
+      "alreadyMember": "You are already a member of this network",
+      "loadFailed": "Failed to load invitation details",
+      "joinFailed": "Failed to join network"
+    },
+    "goToHome": "Go to Home",
+    "alreadyMember": "Already a Member!",
+    "successfullyJoined": "Successfully Joined!",
+    "alreadyPartOf": "You're already part of {{networkName}}",
+    "welcomeTo": "Welcome to {{networkName}}!",
+    "goToNetwork": "Go to Network",
+    "joinNetwork": "Join {{networkName}}",
+    "membersCount": "{{count}} members",
+    "createdOn": "Created {{date}}",
+    "invitation": "Invitation",
+    "uses": "Uses: {{used}} / {{max}}",
+    "invitationExpired": "This invitation has expired",
+    "expires": "Expires: {{date}}",
+    "joining": "Joining...",
+    "switchNetwork": "Switch Network",
+    "joinNetworkButton": "Join Network",
+    "signUpToJoin": "Sign Up to Join",
+    "alreadyHaveAccount": "Already have an account? Sign In",
+    "cancel": "Cancel",
+    "switchNetworkWarning": "Note: Joining this network will switch you from your current network."
+  },
+  "signup": {
+    "title": "Create Your Account",
+    "subtitle": "Join the community today!",
+    "errors": {
+      "invalidInvitation": "Invalid or expired invitation",
+      "passwordsDoNotMatch": "Passwords do not match.",
+      "joinNetworkFailed": "Signup was successful, but failed to join the network: {{error}}. Please contact support.",
+      "signupFailed": "Failed to sign up"
+    },
+    "success": {
+      "withInvitation": "Signup successful! You have been added to {{networkName}}. Please check your email to confirm your account.",
+      "withoutInvitation": "Signup successful! Please check your email to confirm your account. You will be redirected to create your own network."
+    },
+    "joinExistingNetwork": {
+      "title": "Want to join an existing network?",
+      "description": "If you have an invitation link from a network, please use that link to sign up instead. Otherwise, you'll be able to create your own network after signing up."
+    },
+    "loadingInvitation": "Loading invitation details...",
+    "invitedToJoinPrefix": "You're invited to join",
+    "form": {
+      "emailAddress": "Email Address",
+      "password": "Password",
+      "confirmPassword": "Confirm Password",
+      "creatingAccount": "Creating Account...",
+      "createAccount": "Create Account"
+    },
+    "alreadyHaveAccount": "Already have an account?",
+    "logIn": "Log In"
+  },
+  "passwordStrength": {
+    "veryWeak": "Very Weak",
+    "weak": "Weak",
+    "fair": "Fair",
+    "good": "Good",
+    "strong": "Strong",
+    "veryStrong": "Very Strong"
+  },
+  "passwordRequirements": {
+    "minLength": "At least {{count}} characters",
+    "uppercase": "One uppercase letter",
+    "lowercase": "One lowercase letter",
+    "number": "One number",
+    "specialChar": "One special character (!@#$%^&*...)"
+  },
+  "welcomeMessage": {
+    "title": "Welcome to {{networkName}}!",
+    "greeting": "Hi {{userName}}, we're thrilled to have you here!",
+    "successMessage": "You've successfully joined the network! Here's what you can explore:",
+    "keyFeatures": "Key Features",
+    "features": {
+      "socialWall": {
+        "title": "Social Wall",
+        "description": "See all network activity in one place"
+      },
+      "membersDirectory": {
+        "title": "Members Directory",
+        "description": "Connect with other network members"
+      },
+      "eventsCalendar": {
+        "title": "Events Calendar",
+        "description": "Discover and join network events"
+      },
+      "newsUpdates": {
+        "title": "News & Updates",
+        "description": "Stay informed with network news"
+      },
+      "realtimeChat": {
+        "title": "Real-time Chat",
+        "description": "Engage in conversations with members"
+      },
+      "sharedFiles": {
+        "title": "Shared Files",
+        "description": "Access and share network resources"
+      }
+    },
+    "needHelp": "Need help getting started?",
+    "takeQuickTour": "Take a Quick Tour",
+    "startExploring": "Start Exploring"
+  },
+  "onboardingGuide": {
+    "stepIndicator": "Step {{current}} of {{total}}",
+    "skipTour": "Skip tour",
+    "networkLanding": {
+      "title": "Welcome to your network!",
+      "description": "Let's get your community started by inviting some members.",
+      "action": "Go to Admin Panel",
+      "pointer": "Click the button below to visit the admin panel",
+      "titleDashboard": "Welcome to your network!",
+      "descriptionDashboard": "You've successfully joined the network. Let's explore what you can do here.",
+      "actionDashboard": "Go to Network",
+      "pointerDashboard": "Click the button below to visit your network page"
+    },
+    "adminPanel": {
+      "title": "Almost there!",
+      "description": "Now let's manage your network members.",
+      "action": "Go to Members Tab",
+      "pointer": "Click on the 'Members' tab"
+    },
+    "membersTab": {
+      "title": "Perfect!",
+      "description": "Now you can invite people to join your network.",
+      "action": "Got it!",
+      "pointer": "Invite by email address or create an invitation link"
+    },
+    "memberSetup": {
+      "title": "Welcome to the network!",
+      "description": "Complete your profile to get started and connect with other members.",
+      "action": "Complete Profile",
+      "pointer": "Fill in your basic information to join the community"
+    }
   }
 }

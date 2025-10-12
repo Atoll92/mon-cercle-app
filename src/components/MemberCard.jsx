@@ -429,7 +429,7 @@ const MemberCard = ({
                 fontStyle: member.bio ? 'normal' : 'italic'
               }}
             >
-              {member.bio || 'No bio available'}
+              {member.bio}
             </Typography>
           </Box>
           

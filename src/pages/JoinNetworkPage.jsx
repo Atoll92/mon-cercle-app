@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/authcontext';
+import { useTranslation } from '../hooks/useTranslation';
 import Spinner from '../components/Spinner';
 import {
   Box,
@@ -24,12 +25,14 @@ import {
 } from '@mui/icons-material';
 import { getInvitationByCode, joinNetworkViaInvitation } from '../api/invitations';
 import { fetchNetworkDetails, getUserProfile } from '../api/networks';
+import UserContent from '../components/UserContent';
 
 function JoinNetworkPage() {
   const { code } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [joining, setJoining] = useState(false);
   const [invitation, setInvitation] = useState(null);
@@ -51,7 +54,7 @@ function JoinNetworkPage() {
         // Fetch invitation details
         const invitationData = await getInvitationByCode(code);
         if (!invitationData) {
-          setError('Invalid or expired invitation link');
+          setError(t('joinNetwork.errors.invalidInvitation'));
           return;
         }
 
@@ -60,7 +63,7 @@ function JoinNetworkPage() {
         // Fetch network details
         const networkData = await fetchNetworkDetails(invitationData.network_id);
         if (!networkData) {
-          setError('Network not found');
+          setError(t('joinNetwork.errors.networkNotFound'));
           return;
         }
 
@@ -73,14 +76,14 @@ function JoinNetworkPage() {
           if (profile) {
             setUserProfile(profile);
             if (profile.network_id === invitationData.network_id) {
-              setError('You are already a member of this network');
+              setError(t('joinNetwork.errors.alreadyMember'));
               setSuccess(true);
             }
           }
         }
       } catch (err) {
         console.error('Error fetching invitation:', err);
-        setError('Failed to load invitation details');
+        setError(t('joinNetwork.errors.loadFailed'));
       } finally {
         setLoading(false);
       }
@@ -112,7 +115,7 @@ function JoinNetworkPage() {
       }, 2000);
     } catch (err) {
       console.error('Error joining network:', err);
-      setError(err.message || 'Failed to join network');
+      setError(err.message || t('joinNetwork.errors.joinFailed'));
     } finally {
       setJoining(false);
     }
@@ -142,7 +145,7 @@ function JoinNetworkPage() {
             to="/"
             sx={{ mt: 3 }}
           >
-            Go to Home
+            {t('joinNetwork.goToHome')}
           </Button>
         </Paper>
       </Container>
@@ -155,17 +158,17 @@ function JoinNetworkPage() {
         <Paper sx={{ p: 4, textAlign: 'center' }}>
           <CheckCircleIcon color="success" sx={{ fontSize: 60, mb: 2 }} />
           <Typography variant="h5" gutterBottom>
-            {error ? 'Already a Member!' : 'Successfully Joined!'}
+            {error ? t('joinNetwork.alreadyMember') : t('joinNetwork.successfullyJoined')}
           </Typography>
           <Typography color="text.secondary" sx={{ mb: 3 }}>
-            {error ? `You're already part of ${network?.name}` : `Welcome to ${network?.name}!`}
+            {error ? t('joinNetwork.alreadyPartOf', { networkName: network?.name }) : t('joinNetwork.welcomeTo', { networkName: network?.name })}
           </Typography>
           <Button
             variant="contained"
             component={Link}
             to="/network?from_invite=true"
           >
-            Go to Network
+            {t('joinNetwork.goToNetwork')}
           </Button>
         </Paper>
       </Container>
@@ -222,7 +225,7 @@ function JoinNetworkPage() {
         )}
         
         {/* Network Info */}
-        <Box sx={{ p: 4, textAlign: 'center', mb: 0 }}>
+        <Box sx={{ p: 4, mb: 0 }}>
           {/* Show avatar here if no background image */}
           {!network?.background_image_url && (
             <Avatar
@@ -243,24 +246,24 @@ function JoinNetworkPage() {
           )}
           
           <Typography variant="h4" gutterBottom sx={{ mt: network?.background_image_url ? 2 : 0 }}>
-            Join {network?.name}
+            {t('joinNetwork.joinNetwork', { networkName: network?.name })}
           </Typography>
           
           {network?.description && (
-            <Typography color="text.secondary" sx={{ mb: 2 }}>
-              {network.description}
-            </Typography>
+              <UserContent
+                content={network.description}
+              />
           )}
 
-          <Stack direction="row" spacing={2} justifyContent="center" sx={{ mb: 4 }}>
+          <Stack direction="row" spacing={2} justifyContent="center" sx={{ mt: 2,mb: 4 }}>
             <Chip
               icon={<PeopleIcon />}
-              label={`${network?.member_count || 0} members`}
+              label={t('joinNetwork.membersCount', { count: network?.member_count || 0 })}
               size="small"
             />
             <Chip
               icon={<CalendarIcon />}
-              label={`Created ${new Date(network?.created_at).toLocaleDateString()}`}
+              label={t('joinNetwork.createdOn', { date: new Date(network?.created_at).toLocaleDateString() })}
               size="small"
             />
           </Stack>
@@ -273,7 +276,7 @@ function JoinNetworkPage() {
           {invitation?.name && (
             <Box sx={{ mb: 3 }}>
               <Typography variant="subtitle1" gutterBottom>
-                Invitation: <strong>{invitation.name}</strong>
+                {t('joinNetwork.invitation')}: <strong>{invitation.name}</strong>
               </Typography>
               {invitation?.description && (
                 <Typography variant="body2" color="text.secondary">
@@ -287,17 +290,17 @@ function JoinNetworkPage() {
           <Stack spacing={1} sx={{ mb: 3 }}>
             {invitation?.max_uses && (
               <Alert severity="info" icon={false}>
-                Uses: {invitation.uses_count} / {invitation.max_uses}
+                {t('joinNetwork.uses', { used: invitation.uses_count, max: invitation.max_uses })}
               </Alert>
             )}
             {invitation?.expires_at && (
-              <Alert 
-                severity={new Date(invitation.expires_at) < new Date() ? "error" : "info"} 
+              <Alert
+                severity={new Date(invitation.expires_at) < new Date() ? "error" : "info"}
                 icon={false}
               >
-                {new Date(invitation.expires_at) < new Date() 
-                  ? "This invitation has expired"
-                  : `Expires: ${new Date(invitation.expires_at).toLocaleDateString()}`
+                {new Date(invitation.expires_at) < new Date()
+                  ? t('joinNetwork.invitationExpired')
+                  : t('joinNetwork.expires', { date: new Date(invitation.expires_at).toLocaleDateString() })
                 }
               </Alert>
             )}
@@ -314,7 +317,7 @@ function JoinNetworkPage() {
                 disabled={joining || userProfile?.network_id}
                 startIcon={joining ? <Spinner size={40} /> : <CheckCircleIcon />}
               >
-                {joining ? 'Joining...' : userProfile?.network_id ? 'Switch Network' : 'Join Network'}
+                {joining ? t('joinNetwork.joining') : userProfile?.network_id ? t('joinNetwork.switchNetwork') : t('joinNetwork.joinNetworkButton')}
               </Button>
             ) : (
               <>
@@ -325,35 +328,35 @@ function JoinNetworkPage() {
                   onClick={handleJoin}
                   startIcon={<LoginIcon />}
                 >
-                  Sign Up to Join
+                  {t('joinNetwork.signUpToJoin')}
                 </Button>
                 <Button
                   variant="outlined"
                   size="large"
                   fullWidth
                   component={Link}
-                  to={inviteeEmail 
+                  to={inviteeEmail
                     ? `/login?redirect=/join/${code}&email=${encodeURIComponent(inviteeEmail)}`
                     : `/login?redirect=/join/${code}`}
                 >
-                  Already have an account? Sign In
+                  {t('joinNetwork.alreadyHaveAccount')}
                 </Button>
               </>
             )}
-            
+
             <Button
               variant="outlined"
               fullWidth
               component={Link}
               to="/"
             >
-              Cancel
+              {t('joinNetwork.cancel')}
             </Button>
           </Box>
 
           {userProfile?.network_id && userProfile.network_id !== network?.id && (
             <Alert severity="warning" sx={{ mt: 2 }}>
-              Note: Joining this network will switch you from your current network.
+              {t('joinNetwork.switchNetworkWarning')}
             </Alert>
           )}
         </Box>

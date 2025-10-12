@@ -60,6 +60,7 @@ import {
   PictureAsPdf as PdfIcon
 } from '@mui/icons-material';
 import MediaUpload from './MediaUpload';
+import UserContent from './UserContent';
 
 const MemberOnboardingWizard = ({ profile, network }) => {
   const { user } = useAuth();
@@ -474,11 +475,12 @@ const WelcomeStep = ({ network }) => {
           <Typography variant="body1" paragraph color="text.secondary">
             {t('memberOnboarding.welcome.subtitle')}
           </Typography>
+        </Box>
           
           {network?.description && (
-            <Typography variant="body2" paragraph color="text.secondary" sx={{ fontStyle: 'italic' }}>
-              "{network.description}"
-            </Typography>
+            <UserContent
+              content={network.description}
+            />
           )}
           
           <Paper 
@@ -505,7 +507,6 @@ const WelcomeStep = ({ network }) => {
           <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 3 }}>
             {t('memberOnboarding.welcome.timeEstimate')}
           </Typography>
-        </Box>
       </CardContent>
     </Card>
   );
@@ -777,7 +778,7 @@ const ProfessionalStep = ({ profileData, setProfileData, commonSkills }) => {
         }}
       />
       
-      <Autocomplete
+      {/* <Autocomplete
         multiple
         freeSolo
         options={commonSkills}
@@ -810,7 +811,7 @@ const ProfessionalStep = ({ profileData, setProfileData, commonSkills }) => {
             }}
           />
         )}
-      />
+      /> */}
       
       <Alert severity="info">
         {t('memberOnboarding.professionalDetails.infoMessage')}

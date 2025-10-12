@@ -23,6 +23,7 @@ import {
   Close as CloseIcon,
   Groups as GroupsIcon
 } from '@mui/icons-material';
+import { useTranslation } from '../hooks/useTranslation';
 
 // Gentle pulse animation for highlighting
 const gentlePulse = keyframes`
@@ -68,16 +69,17 @@ const ONBOARDING_STEPS = {
   COMPLETED: 4
 };
 
-const OnboardingGuide = ({ 
-  networkId, 
-  isNetworkAdmin, 
-  memberCount, 
+const OnboardingGuide = ({
+  networkId,
+  isNetworkAdmin,
+  memberCount,
   currentPage = 'network', // 'network', 'admin', 'members', 'dashboard'
   currentAdminTab = null,   // admin tab index
   onGuideComplete,
   forceShow = false,      // Force show the guide
   onComplete             // Callback when guide is completed or dismissed
 }) => {
+  const { t } = useTranslation();
   const theme = useTheme();
   const navigate = useNavigate();
   const [showGuide, setShowGuide] = useState(false);
@@ -189,52 +191,52 @@ const OnboardingGuide = ({
         if (currentPage === 'dashboard') {
           return {
             icon: <GroupsIcon sx={{ color: 'primary.main' }} />,
-            title: "Welcome to your network!",
-            description: "You've successfully joined the network. Let's explore what you can do here.",
-            action: "Go to Network",
+            title: t('onboardingGuide.networkLanding.titleDashboard'),
+            description: t('onboardingGuide.networkLanding.descriptionDashboard'),
+            action: t('onboardingGuide.networkLanding.actionDashboard'),
             actionIcon: <NextIcon />,
-            pointer: "Click the button below to visit your network page"
+            pointer: t('onboardingGuide.networkLanding.pointerDashboard')
           };
         }
         return {
           icon: <AdminIcon sx={{ color: 'primary.main' }} />,
-          title: "Welcome to your network!",
-          description: "Let's get your community started by inviting some members.",
-          action: "Go to Admin Panel",
+          title: t('onboardingGuide.networkLanding.title'),
+          description: t('onboardingGuide.networkLanding.description'),
+          action: t('onboardingGuide.networkLanding.action'),
           actionIcon: <NextIcon />,
-          pointer: "Click the button below to visit the admin panel"
+          pointer: t('onboardingGuide.networkLanding.pointer')
         };
-      
+
       case ONBOARDING_STEPS.ADMIN_PANEL:
         return {
           icon: <MembersIcon sx={{ color: 'primary.main' }} />,
-          title: "Almost there!",
-          description: "Now let's manage your network members.",
-          action: "Go to Members Tab",
+          title: t('onboardingGuide.adminPanel.title'),
+          description: t('onboardingGuide.adminPanel.description'),
+          action: t('onboardingGuide.adminPanel.action'),
           actionIcon: <NextIcon />,
-          pointer: "Click on the 'Members' tab"
+          pointer: t('onboardingGuide.adminPanel.pointer')
         };
-      
+
       case ONBOARDING_STEPS.MEMBERS_TAB:
         return {
           icon: <GroupAddIcon sx={{ color: 'primary.main' }} />,
-          title: "Perfect!",
-          description: "Now you can invite people to join your network.",
-          action: "Got it!",
+          title: t('onboardingGuide.membersTab.title'),
+          description: t('onboardingGuide.membersTab.description'),
+          action: t('onboardingGuide.membersTab.action'),
           actionIcon: <GroupAddIcon />,
-          pointer: "Invite by email adress or create an invitation link"
+          pointer: t('onboardingGuide.membersTab.pointer')
         };
-      
+
       case ONBOARDING_STEPS.MEMBER_SETUP:
         return {
           icon: <GroupsIcon sx={{ color: 'primary.main' }} />,
-          title: "Welcome to the network!",
-          description: "Complete your profile to get started and connect with other members.",
-          action: "Complete Profile",
+          title: t('onboardingGuide.memberSetup.title'),
+          description: t('onboardingGuide.memberSetup.description'),
+          action: t('onboardingGuide.memberSetup.action'),
           actionIcon: <NextIcon />,
-          pointer: "Fill in your basic information to join the community"
+          pointer: t('onboardingGuide.memberSetup.pointer')
         };
-      
+
       default:
         return null;
     }
@@ -289,10 +291,10 @@ const OnboardingGuide = ({
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               {stepContent.icon}
-              <Chip 
-                label={`Step ${currentStep + 1} of 3`}
-                size="small" 
-                color="primary" 
+              <Chip
+                label={t('onboardingGuide.stepIndicator', { current: currentStep + 1, total: 3 })}
+                size="small"
+                color="primary"
                 variant="outlined"
                 sx={{ ml: 1 }}
               />
@@ -338,7 +340,7 @@ const OnboardingGuide = ({
               onClick={handleDismissGuide}
               sx={{ color: theme.palette.text.secondary }}
             >
-              Skip tour
+              {t('onboardingGuide.skipTour')}
             </Button>
             <Button
               variant="contained"

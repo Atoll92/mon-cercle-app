@@ -30,9 +30,11 @@ import {
   ArrowForward as ArrowForwardIcon,
   AutoAwesome as AutoAwesomeIcon
 } from '@mui/icons-material';
+import { useTranslation } from '../hooks/useTranslation';
 import confetti from 'canvas-confetti';
 
 function WelcomeMessage({ open, onClose, network, user, onStartTour }) {
+  const { t } = useTranslation();
   const [showConfetti, setShowConfetti] = useState(false);
 
   useEffect(() => {
@@ -52,33 +54,33 @@ function WelcomeMessage({ open, onClose, network, user, onStartTour }) {
   const features = [
     {
       icon: <DashboardIcon />,
-      title: 'Social Wall',
-      description: 'See all network activity in one place'
+      title: t('welcomeMessage.features.socialWall.title'),
+      description: t('welcomeMessage.features.socialWall.description')
     },
     {
       icon: <GroupsIcon />,
-      title: 'Members Directory',
-      description: 'Connect with other network members'
+      title: t('welcomeMessage.features.membersDirectory.title'),
+      description: t('welcomeMessage.features.membersDirectory.description')
     },
     {
       icon: <EventIcon />,
-      title: 'Events Calendar',
-      description: 'Discover and join network events'
+      title: t('welcomeMessage.features.eventsCalendar.title'),
+      description: t('welcomeMessage.features.eventsCalendar.description')
     },
     {
       icon: <ArticleIcon />,
-      title: 'News & Updates',
-      description: 'Stay informed with network news'
+      title: t('welcomeMessage.features.newsUpdates.title'),
+      description: t('welcomeMessage.features.newsUpdates.description')
     },
     {
       icon: <ChatIcon />,
-      title: 'Real-time Chat',
-      description: 'Engage in conversations with members'
+      title: t('welcomeMessage.features.realtimeChat.title'),
+      description: t('welcomeMessage.features.realtimeChat.description')
     },
     {
       icon: <FolderIcon />,
-      title: 'Shared Files',
-      description: 'Access and share network resources'
+      title: t('welcomeMessage.features.sharedFiles.title'),
+      description: t('welcomeMessage.features.sharedFiles.description')
     }
   ];
 
@@ -130,26 +132,26 @@ function WelcomeMessage({ open, onClose, network, user, onStartTour }) {
             </Avatar>
             <Box>
               <Typography variant="h4" component="h2" gutterBottom>
-                Welcome to {network?.name}!
+                {t('welcomeMessage.title', { networkName: network?.name })}
               </Typography>
               <Typography variant="subtitle1" sx={{ opacity: 0.9 }}>
-                Hi {user?.full_name || user?.email?.split('@')[0]}, we're thrilled to have you here!
+                {t('welcomeMessage.greeting', { userName: user?.full_name || user?.email?.split('@')[0] })}
               </Typography>
             </Box>
           </Stack>
         </DialogTitle>
 
         <DialogContent sx={{ backgroundColor: 'background.paper', pt: 3 }}>
-          <Alert 
-            severity="success" 
+          <Alert
+            severity="success"
             icon={<AutoAwesomeIcon />}
             sx={{ mb: 3 }}
           >
-            You've successfully joined the network! Here's what you can explore:
+            {t('welcomeMessage.successMessage')}
           </Alert>
 
           <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
-            Key Features
+            {t('welcomeMessage.keyFeatures')}
           </Typography>
           
           <List sx={{ py: 0 }}>
@@ -178,14 +180,14 @@ function WelcomeMessage({ open, onClose, network, user, onStartTour }) {
 
           <Divider sx={{ my: 2 }} />
 
-          <Box sx={{ 
-            p: 2, 
-            backgroundColor: 'background.paper', 
+          {/* <Box sx={{
+            p: 2,
+            backgroundColor: 'background.paper',
             borderRadius: 1,
             textAlign: 'center'
           }}>
             <Typography variant="body2" color="text.secondary" gutterBottom>
-              Need help getting started?
+              {t('welcomeMessage.needHelp')}
             </Typography>
             <Button
               variant="contained"
@@ -195,27 +197,27 @@ function WelcomeMessage({ open, onClose, network, user, onStartTour }) {
                 onClose();
                 onStartTour();
               }}
-              sx={{ 
+              sx={{
                 mt: 1,
                 background: 'linear-gradient(45deg, #667eea 30%, #764ba2 90%)',
                 boxShadow: '0 3px 5px 2px rgba(102, 126, 234, .3)',
               }}
             >
-              Take a Quick Tour
+              {t('welcomeMessage.takeQuickTour')}
             </Button>
-          </Box>
+          </Box> */}
         </DialogContent>
 
-        <DialogActions sx={{ 
-          backgroundColor: 'background.default', 
+        <DialogActions sx={{
+          backgroundColor: 'background.default',
           justifyContent: 'center',
           py: 3
         }}>
-          <Button 
-            onClick={onClose} 
+          <Button
+            onClick={onClose}
             variant="outlined"
             size="large"
-            sx={{ 
+            sx={{
               borderColor: '#667eea',
               color: '#667eea',
               '&:hover': {
@@ -224,7 +226,7 @@ function WelcomeMessage({ open, onClose, network, user, onStartTour }) {
               }
             }}
           >
-            Start Exploring
+            {t('welcomeMessage.startExploring')}
           </Button>
         </DialogActions>
       </Box>
