@@ -208,7 +208,7 @@ const NetworkHeader = () => {
     '&:hover': {
       backgroundColor: darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.04)',
       '& .buttonText': {
-        width: { xs: '0px', sm: '120px' },
+        maxWidth: { xs: '0px', sm: '200px' },
         opacity: { xs: 0, sm: 1 },
         marginLeft: { xs: '0px', sm: '8px' },
       }
@@ -217,12 +217,12 @@ const NetworkHeader = () => {
 
   // Simplified text style with consistent transitions
   const buttonTextStyle = {
-    width: '0px',
+    maxWidth: '0px',
     overflow: 'hidden',
     whiteSpace: 'nowrap',
     opacity: 0,
     marginLeft: '0px',
-    transition: 'width 0.3s ease-in-out, opacity 0.3s ease-in-out, margin-left 0.3s ease-in-out',
+    transition: 'max-width 0.3s ease-in-out, opacity 0.3s ease-in-out, margin-left 0.3s ease-in-out',
     display: { xs: 'none', sm: 'block' }
   };
 
