@@ -1664,6 +1664,9 @@
   "notificationSettings": {
     "title": "Notification Settings",
     "description": "Manage your notification preferences",
+    "masterToggle": "Enable All Notifications",
+    "masterToggleDescription": "Receive all types of notifications from this network",
+    "typesTitle": "Notification Types",
     "enableAll": "Enable All Notifications",
     "disableAll": "Disable All Notifications",
     "types": {
@@ -1678,6 +1681,10 @@
       "chat": {
         "label": "Chat Messages",
         "description": "Get notified about new chat messages"
+      },
+      "messages": {
+        "label": "Direct Messages",
+        "description": "Get notified about new direct messages"
       },
       "files": {
         "label": "File Updates",
@@ -1704,6 +1711,24 @@
     },
     "success": {
       "saved": "Notification settings saved successfully!"
+    }
+  },
+  "mediaUpload": {
+    "addMedia": "Add Media",
+    "addMediaTypes": "Add {{types}}",
+    "uploading": "Uploading...",
+    "uploadFiles": "Upload {{count}} file(s)",
+    "pages": "{{count}} pages",
+    "upgradePlan": "Upgrade Plan",
+    "storageRemaining": "{{mb}}MB remaining",
+    "storageLimitReachedWarning": "Storage limit reached! Upgrade your plan to continue uploading.",
+    "storageWarning": "You're using {{percentage}}% of your storage. Consider upgrading soon.",
+    "errors": {
+      "storageLimitReached": "Storage limit reached. Please upgrade your plan to upload more files.",
+      "notEnoughStorage": "Not enough storage space. You have {{remaining}}MB remaining.",
+      "maxFilesExceeded": "Maximum {{max}} file(s) allowed",
+      "uploadFileFailed": "Failed to upload {{name}}: {{error}}",
+      "uploadFailed": "Upload failed"
     }
   },
   "events": {

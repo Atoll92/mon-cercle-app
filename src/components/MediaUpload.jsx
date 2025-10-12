@@ -39,6 +39,7 @@ import { useAuth } from '../context/authcontext';
 import { useProfile } from '../context/profileContext';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseclient';
+import { useTranslation } from '../hooks/useTranslation';
 
 function MediaUpload({ 
   onUpload, 
@@ -58,7 +59,8 @@ function MediaUpload({
   const navigate = useNavigate();
   const { user } = useAuth();
   const { activeProfile } = useProfile();
-  
+  const { t } = useTranslation();
+
   // Try to use network context, but don't fail if not available
   let currentNetwork = null;
   try {
@@ -126,7 +128,7 @@ function MediaUpload({
     
     // Check if storage limit is reached
     if (storageInfo?.isAtLimit) {
-      setError('Storage limit reached. Please upgrade your plan to upload more files.');
+      setError(t('mediaUpload.errors.storageLimitReached'));
       return;
     }
 
@@ -151,14 +153,14 @@ function MediaUpload({
       const remainingMB = storageInfo.limitMB - storageInfo.usageMB;
       
       if (totalSizeInMB > remainingMB) {
-        setError(`Not enough storage space. You have ${remainingMB.toFixed(1)}MB remaining.`);
+        setError(t('mediaUpload.errors.notEnoughStorage', { remaining: remainingMB.toFixed(1) }));
         return;
       }
     }
 
     // Check max files
     if (files.length + validFiles.length > maxFiles) {
-      setError(`Maximum ${maxFiles} file(s) allowed`);
+      setError(t('mediaUpload.errors.maxFilesExceeded', { max: maxFiles }));
       return;
     }
 
@@ -314,7 +316,7 @@ function MediaUpload({
           console.log('MediaUpload: Added file to uploadedFiles:', uploadedFile);
         } catch (fileError) {
           console.error('MediaUpload: Failed to upload file:', file.name, fileError);
-          throw new Error(`Failed to upload ${file.name}: ${fileError.message}`);
+          throw new Error(t('mediaUpload.errors.uploadFileFailed', { name: file.name, error: fileError.message }));
         }
       }
 
@@ -328,17 +330,17 @@ function MediaUpload({
 
       setFiles([]);
       setPreviews([]);
-      
+
       // Show success feedback
       console.log('MediaUpload: Upload completed successfully');
-      
+
       if (onUpload) {
         const result = maxFiles === 1 ? uploadedFiles[0] : uploadedFiles;
         console.log('MediaUpload: Calling onUpload with:', result);
         onUpload(result);
       }
     } catch (err) {
-      setError(err.message || 'Upload failed');
+      setError(err.message || t('mediaUpload.errors.uploadFailed'));
     } finally {
       setUploading(false);
     }
@@ -456,7 +458,7 @@ function MediaUpload({
             )}
             {numPages && (
               <Chip
-                label={`${numPages} pages`}
+                label={t('mediaUpload.pages', { count: numPages })}
                 size="small"
                 sx={{ fontSize: '0.7rem' }}
               />
@@ -499,19 +501,19 @@ function MediaUpload({
           sx={{ mb: 2 }}
           icon={<WarningIcon />}
           action={
-            <Button 
-              color="inherit" 
+            <Button
+              color="inherit"
               size="small"
               onClick={() => navigate('/pricing')}
             >
-              Upgrade Plan
+              {t('mediaUpload.upgradePlan')}
             </Button>
           }
         >
           {storageInfo.isAtLimit ? (
-            <>Storage limit reached! Upgrade your plan to continue uploading.</>
+            <>{t('mediaUpload.storageLimitReachedWarning')}</>
           ) : (
-            <>You're using {storageInfo.percentageUsed}% of your storage. Consider upgrading soon.</>
+            <>{t('mediaUpload.storageWarning', { percentage: storageInfo.percentageUsed })}</>
           )}
         </Alert>
       )}
@@ -535,14 +537,14 @@ function MediaUpload({
               disabled={uploading || storageInfo?.isAtLimit}
               size={compact ? "small" : "medium"}
             >
-              {compact ? "Add Media" : `Add ${allowedTypes.join(' / ')}`}
+              {compact ? t('mediaUpload.addMedia') : t('mediaUpload.addMediaTypes', { types: allowedTypes.join(' / ') })}
             </Button>
           </label>
-          
+
           {/* Show remaining storage */}
           {storageInfo && !storageInfo.isUnlimited && !compact && (
             <Typography variant="caption" color="text.secondary" sx={{ ml: 2 }}>
-              {storageInfo.limitMB - storageInfo.usageMB}MB remaining
+              {t('mediaUpload.storageRemaining', { mb: (storageInfo.limitMB - storageInfo.usageMB).toFixed(1) })}
             </Typography>
           )}
         </Box>
@@ -569,7 +571,7 @@ function MediaUpload({
           disabled={uploading}
           startIcon={uploading ? <Spinner size={40} /> : <UploadIcon />}
         >
-          {uploading ? 'Uploading...' : `Upload ${files.length} file(s)`}
+          {uploading ? t('mediaUpload.uploading') : t('mediaUpload.uploadFiles', { count: files.length })}
         </Button>
       )}
     </Box>

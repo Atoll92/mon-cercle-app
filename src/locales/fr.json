@@ -1657,6 +1657,9 @@
   "notificationSettings": {
     "title": "Paramètres de notifications",
     "description": "Gérez vos préférences de notifications",
+    "masterToggle": "Activer toutes les notifications",
+    "masterToggleDescription": "Recevoir tous les types de notifications de ce réseau",
+    "typesTitle": "Types de notifications",
     "enableAll": "Activer toutes les notifications",
     "disableAll": "Désactiver toutes les notifications",
     "types": {
@@ -1671,6 +1674,10 @@
       "chat": {
         "label": "Messages de chat",
         "description": "Recevoir des notifications pour les nouveaux messages de chat"
+      },
+      "messages": {
+        "label": "Messages directs",
+        "description": "Recevoir des notifications pour les nouveaux messages directs"
       },
       "files": {
         "label": "Mises à jour de fichiers",
@@ -1697,6 +1704,24 @@
     },
     "success": {
       "saved": "Paramètres de notifications enregistrés avec succès !"
+    }
+  },
+  "mediaUpload": {
+    "addMedia": "Ajouter un média",
+    "addMediaTypes": "Ajouter {{types}}",
+    "uploading": "Téléchargement...",
+    "uploadFiles": "Télécharger {{count}} fichier(s)",
+    "pages": "{{count}} pages",
+    "upgradePlan": "Mettre à niveau le plan",
+    "storageRemaining": "{{mb}}Mo restants",
+    "storageLimitReachedWarning": "Limite de stockage atteinte ! Mettez à niveau votre plan pour continuer à télécharger.",
+    "storageWarning": "Vous utilisez {{percentage}}% de votre stockage. Envisagez de passer à un niveau supérieur bientôt.",
+    "errors": {
+      "storageLimitReached": "Limite de stockage atteinte. Veuillez mettre à niveau votre plan pour télécharger plus de fichiers.",
+      "notEnoughStorage": "Espace de stockage insuffisant. Il vous reste {{remaining}}Mo.",
+      "maxFilesExceeded": "Maximum {{max}} fichier(s) autorisé(s)",
+      "uploadFileFailed": "Échec du téléchargement de {{name}} : {{error}}",
+      "uploadFailed": "Échec du téléchargement"
     }
   },
   "events": {
