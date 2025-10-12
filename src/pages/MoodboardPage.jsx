@@ -15,6 +15,7 @@ import { updateMoodboard } from '../api/moodboards';
 import { useMoodboardCanvas } from '../hooks/useMoodboardCanvas';
 import Spinner from '../components/Spinner';
 import UserContent from '../components/UserContent';
+import { useTranslation } from '../hooks/useTranslation';
 import {
   Box,
   Paper,
@@ -56,6 +57,7 @@ import {
 
 // Main Moodboard Component
 function MoodboardPage() {
+  const { t } = useTranslation();
   const { moodboardId } = useParams();
   const { user } = useAuth();
   const { activeProfile } = useProfile();
@@ -829,7 +831,7 @@ function MoodboardPage() {
       >
         <Spinner size={120} color="primary" />
         <Typography variant="body1" sx={{ mt: 2 }}>
-          Loading moodboard...
+          {t('moodboard.loading')}
         </Typography>
       </Box>
     );
@@ -865,17 +867,17 @@ function MoodboardPage() {
       }}>
         <Paper sx={{ p: 3, textAlign: 'center' }}>
           <Typography variant="h5" component="h1" gutterBottom>
-            Moodboard Not Found
+            {t('moodboard.notFound')}
           </Typography>
           <Typography variant="body1" paragraph>
-            The moodboard you're looking for doesn't exist or you don't have permission to view it.
+            {t('moodboard.notFoundDescription')}
           </Typography>
-          <Button 
-            variant="contained" 
+          <Button
+            variant="contained"
             startIcon={<ArrowBackIcon />}
             onClick={() => navigate('/dashboard')}
           >
-            Back to Dashboard
+            {t('moodboard.backToDashboard')}
           </Button>
         </Paper>
       </Container>
@@ -908,7 +910,7 @@ function MoodboardPage() {
             onClick={() => navigate('/dashboard/')}
             size="small"
           >
-            Back
+            {t('moodboard.back')}
           </Button>
           
           <Typography 
@@ -943,13 +945,13 @@ function MoodboardPage() {
             <ZoomInIcon />
           </IconButton>
           
-          <Button 
-            size="small" 
-            variant="outlined" 
+          <Button
+            size="small"
+            variant="outlined"
             onClick={handleZoomReset}
             sx={{ ml: 1, display: { xs: 'none', sm: 'inline-flex' } }}
           >
-            Reset View
+            {t('moodboard.resetView')}
           </Button>
         </Box>
         
@@ -963,7 +965,7 @@ function MoodboardPage() {
                 color="primary"
                 size="small"
               >
-                Add Item
+                {t('moodboard.addItem')}
               </Button>
               
               {/* Auto-save status indicator */}
@@ -972,7 +974,7 @@ function MoodboardPage() {
                   <>
                     <Spinner size={32} />
                     <Typography variant="caption" color="text.secondary">
-                      Saving...
+                      {t('moodboard.saving')}
                     </Typography>
                   </>
                 )}
@@ -980,7 +982,7 @@ function MoodboardPage() {
                   <>
                     <CloudDoneIcon fontSize="small" color="success" />
                     <Typography variant="caption" color="success.main">
-                      All changes saved
+                      {t('moodboard.allChangesSaved')}
                     </Typography>
                   </>
                 )}
@@ -988,7 +990,7 @@ function MoodboardPage() {
                   <>
                     <CloudOffIcon fontSize="small" color="error" />
                     <Typography variant="caption" color="error">
-                      Save failed
+                      {t('moodboard.saveFailed')}
                     </Typography>
                   </>
                 )}
@@ -1002,7 +1004,7 @@ function MoodboardPage() {
                   onClick={handleCancelEdit}
                   size="small"
                 >
-                  Cancel Edit
+                  {t('moodboard.cancelEdit')}
                 </Button>
               )}
               
@@ -1012,7 +1014,7 @@ function MoodboardPage() {
                 onClick={() => setSettingsDialogOpen(true)}
                 size="small"
               >
-                Settings
+                {t('moodboard.settings')}
               </Button>
             </>
           )}
@@ -1023,7 +1025,7 @@ function MoodboardPage() {
             startIcon={<ShareIcon />}
             size="small"
           >
-            Share
+            {t('moodboard.share')}
           </Button>
         </Box>
       </Box>
@@ -1091,14 +1093,14 @@ function MoodboardPage() {
           <>
             <LockOpenIcon fontSize="small" />
             <Typography variant="caption" fontWeight="medium">
-              Editing Enabled
+              {t('moodboard.editingEnabled')}
             </Typography>
           </>
         ) : (
           <>
             <LockIcon fontSize="small" />
             <Typography variant="caption" fontWeight="medium">
-              View Only
+              {t('moodboard.viewOnly')}
             </Typography>
           </>
         )}
@@ -1155,31 +1157,31 @@ function MoodboardPage() {
             setUploadDialogOpen(true);
           }}
         >
-          <ImageIcon sx={{ mr: 1 }} /> Add Media
+          <ImageIcon sx={{ mr: 1 }} /> {t('moodboard.addMedia')}
         </MenuItem>
-        <MenuItem 
+        <MenuItem
           onClick={() => {
             handleAddMenuClose();
             setTextDialogOpen(true);
           }}
         >
-          <TextFieldsIcon sx={{ mr: 1 }} /> Add Text
+          <TextFieldsIcon sx={{ mr: 1 }} /> {t('moodboard.addText')}
         </MenuItem>
-        <MenuItem 
+        <MenuItem
           onClick={() => {
             handleAddMenuClose();
             setLinkDialogOpen(true);
           }}
         >
-          <LinkIcon sx={{ mr: 1 }} /> Add Link
+          <LinkIcon sx={{ mr: 1 }} /> {t('moodboard.addLink')}
         </MenuItem>
-        <MenuItem 
+        <MenuItem
           onClick={() => {
             handleAddMenuClose();
             setPdfDialogOpen(true);
           }}
         >
-          <PdfIcon sx={{ mr: 1 }} /> Add PDF
+          <PdfIcon sx={{ mr: 1 }} /> {t('moodboard.addPdf')}
         </MenuItem>
       </Menu>
       
@@ -1190,7 +1192,7 @@ function MoodboardPage() {
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle>Upload Media</DialogTitle>
+        <DialogTitle>{t('moodboard.uploadMedia')}</DialogTitle>
         <DialogContent>
           <Box sx={{ mt: 1, mb: 2 }}>
             <MediaUpload
@@ -1288,7 +1290,7 @@ function MoodboardPage() {
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setUploadDialogOpen(false)}>Cancel</Button>
+          <Button onClick={() => setUploadDialogOpen(false)}>{t('moodboard.cancel')}</Button>
         </DialogActions>
       </Dialog>
       
@@ -1299,10 +1301,10 @@ function MoodboardPage() {
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle>Add Text</DialogTitle>
+        <DialogTitle>{t('moodboard.addText')}</DialogTitle>
         <DialogContent>
           <TextField
-            label="Text Content"
+            label={t('moodboard.textContent')}
             multiline
             rows={4}
             value={newText}
@@ -1314,7 +1316,7 @@ function MoodboardPage() {
           
           <Box sx={{ display: 'flex', mt: 2, gap: 2 }}>
             <TextField
-              label="Text Color"
+              label={t('moodboard.textColor')}
               type="color"
               value={newTextColor}
               onChange={(e) => setNewTextColor(e.target.value)}
@@ -1322,9 +1324,9 @@ function MoodboardPage() {
               margin="normal"
               InputProps={{ sx: { height: '56px' } }}
             />
-            
+
             <TextField
-              label="Background Color"
+              label={t('moodboard.backgroundColor')}
               type="color"
               value={newTextBgColor === 'transparent' ? '#ffffff' : newTextBgColor}
               onChange={(e) => setNewTextBgColor(e.target.value)}
@@ -1344,7 +1346,7 @@ function MoodboardPage() {
             overflow: 'hidden' // No scrollbars
           }}>
             <UserContent
-              content={newText || 'Preview of your text will appear here'}
+              content={newText || t('moodboard.previewText')}
               html={false}
               component="div"
               sx={{
@@ -1356,14 +1358,14 @@ function MoodboardPage() {
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setTextDialogOpen(false)}>Cancel</Button>
-          <Button 
-            onClick={handleAddText} 
-            variant="contained" 
+          <Button onClick={() => setTextDialogOpen(false)}>{t('moodboard.cancel')}</Button>
+          <Button
+            onClick={handleAddText}
+            variant="contained"
             disabled={!newText.trim() || saving}
             startIcon={saving ? <Spinner size={40} /> : <TextFieldsIcon />}
           >
-            {saving ? 'Adding...' : 'Add Text'}
+            {saving ? t('moodboard.adding') : t('moodboard.addTextButton')}
           </Button>
         </DialogActions>
       </Dialog>
@@ -1375,10 +1377,10 @@ function MoodboardPage() {
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle>Add Link</DialogTitle>
+        <DialogTitle>{t('moodboard.addLink')}</DialogTitle>
         <DialogContent>
           <TextField
-            label="URL"
+            label={t('moodboard.url')}
             value={newLink}
             onChange={(e) => setNewLink(e.target.value)}
             fullWidth
@@ -1386,15 +1388,15 @@ function MoodboardPage() {
             variant="outlined"
             placeholder="https://example.com"
           />
-          
+
           <TextField
-            label="Title (Optional)"
+            label={t('moodboard.titleOptional')}
             value={newLinkTitle}
             onChange={(e) => setNewLinkTitle(e.target.value)}
             fullWidth
             margin="normal"
             variant="outlined"
-            placeholder="Enter a descriptive title for the link"
+            placeholder={t('moodboard.titlePlaceholder')}
           />
           
           <Box sx={{ 
@@ -1420,19 +1422,19 @@ function MoodboardPage() {
                 wordBreak: 'break-word'
               }}
             >
-              {newLinkTitle || newLink || 'Link preview'}
+              {newLinkTitle || newLink || t('moodboard.linkPreview')}
             </Typography>
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setLinkDialogOpen(false)}>Cancel</Button>
-          <Button 
-            onClick={handleAddLink} 
-            variant="contained" 
+          <Button onClick={() => setLinkDialogOpen(false)}>{t('moodboard.cancel')}</Button>
+          <Button
+            onClick={handleAddLink}
+            variant="contained"
             disabled={!newLink.trim() || saving}
             startIcon={saving ? <Spinner size={40} /> : <LinkIcon />}
           >
-            {saving ? 'Adding...' : 'Add Link'}
+            {saving ? t('moodboard.adding') : t('moodboard.addLinkButton')}
           </Button>
         </DialogActions>
       </Dialog>
@@ -1458,7 +1460,7 @@ function MoodboardPage() {
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle>Add PDF Document</DialogTitle>
+        <DialogTitle>{t('moodboard.addPdfDocument')}</DialogTitle>
         <DialogContent>
           <Box sx={{ mt: 1, mb: 2 }}>
             <input
@@ -1497,7 +1499,7 @@ function MoodboardPage() {
                 fullWidth
                 sx={{ py: 5, border: '1px dashed' }}
               >
-                {newPdfUrl ? 'Change PDF Document' : 'Select a PDF to upload'}
+                {newPdfUrl ? t('moodboard.changePdfDocument') : t('moodboard.selectPdfToUpload')}
               </Button>
             </label>
             
@@ -1515,7 +1517,7 @@ function MoodboardPage() {
               }}>
                 <PdfIcon sx={{ fontSize: 48, color: 'primary.main', mb: 1 }} />
                 <Typography variant="body1" gutterBottom noWrap sx={{ maxWidth: '100%' }}>
-                  {newPdf?.name || 'Selected PDF'}
+                  {newPdf?.name || t('moodboard.selectedPdf')}
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
                   {newPdf ? `${(newPdf.size / (1024 * 1024)).toFixed(2)} MB` : ''}
@@ -1524,26 +1526,26 @@ function MoodboardPage() {
             )}
             
             <TextField
-              label="PDF Title (Optional)"
+              label={t('moodboard.pdfTitleOptional')}
               value={newPdfTitle}
               onChange={(e) => setNewPdfTitle(e.target.value)}
               fullWidth
               margin="normal"
               variant="outlined"
-              placeholder="Enter a title for this PDF"
-              helperText="If left empty, the filename will be used"
+              placeholder={t('moodboard.pdfTitlePlaceholder')}
+              helperText={t('moodboard.pdfTitleHelper')}
             />
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setPdfDialogOpen(false)}>Cancel</Button>
-          <Button 
-            onClick={handleAddPdf} 
-            variant="contained" 
+          <Button onClick={() => setPdfDialogOpen(false)}>{t('moodboard.cancel')}</Button>
+          <Button
+            onClick={handleAddPdf}
+            variant="contained"
             disabled={!newPdf || saving}
             startIcon={saving ? <Spinner size={40} /> : <PdfIcon />}
           >
-            {saving ? 'Uploading...' : 'Add PDF'}
+            {saving ? t('moodboard.uploading') : t('moodboard.addPdfButton')}
           </Button>
         </DialogActions>
       </Dialog>

@@ -27,8 +27,10 @@ import LinkPreview from '../components/LinkPreview';
 import MoodboardItemDisplay from '../components/Moodboard/MoodboardItemDisplay';
 import MoodboardItemGrid from '../components/Moodboard/MoodboardItemGrid';
 import { useProfile } from '../context/profileContext';
+import { useTranslation } from '../hooks/useTranslation';
 
 const MicroConclavPage = () => {
+  const { t } = useTranslation();
   const { profileId, username } = useParams();
   const navigate = useNavigate();
   const theme = useTheme();
@@ -259,7 +261,7 @@ const MicroConclavPage = () => {
         alignItems: "center", 
         height: "100vh",
       }}>
-        <Typography>Profile not found</Typography>
+        <Typography>{t('profileNotFound')}</Typography>
       </Box>
     );
   }
@@ -291,17 +293,17 @@ const MicroConclavPage = () => {
             onClick={() => navigate('/dashboard')}
             size="small"
           >
-            Back to Dashboard
+            {t('microConclav.backToDashboard')}
           </Button>
-          
-          <Typography 
-            variant="h6" 
-            sx={{ 
+
+          <Typography
+            variant="h6"
+            sx={{
               ml: 1,
               display: { xs: 'none', sm: 'block' }
             }}
           >
-            {profile?.full_name}'s Micro Conclav
+            {t('microConclav.title', { name: profile?.full_name })}
           </Typography>
         </Box>
 
@@ -316,11 +318,11 @@ const MicroConclavPage = () => {
           >
             <ToggleButton value="grid" aria-label="grid view">
               <GridViewIcon sx={{ mr: 0.5 }} />
-              Grid
+              {t('microConclav.grid')}
             </ToggleButton>
             <ToggleButton value="moodboard" aria-label="moodboard view">
               <DashboardIcon sx={{ mr: 0.5 }} />
-              Moodboard
+              {t('microConclav.moodboard')}
             </ToggleButton>
           </ToggleButtonGroup>
           
@@ -332,7 +334,7 @@ const MicroConclavPage = () => {
               onClick={() => navigate(`/moodboard/${primaryMoodboardId}`)}
               size="small"
             >
-              Edit
+              {t('microConclav.edit')}
             </Button>
           )}
         </Box>

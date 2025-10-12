@@ -27,6 +27,7 @@ import { useProfile } from '../context/profileContext';
 import { useNetworkRefresh } from '../hooks/useNetworkRefresh';
 import { useNetwork } from '../context/networkContext';
 import MobileMenu from './MobileMenu';
+import { useTranslation } from '../hooks/useTranslation';
 
 // Simple badge component for unread messages
 const MessageBadge = React.memo(() => {
@@ -63,6 +64,7 @@ const MessageBadge = React.memo(() => {
 });
 
 const NetworkHeader = () => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { darkMode, toggleDarkMode } = useTheme(); // Get theme context
   const location = useLocation();
@@ -206,7 +208,7 @@ const NetworkHeader = () => {
     '&:hover': {
       backgroundColor: darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.04)',
       '& .buttonText': {
-        width: { xs: '0px', sm: '80px' },
+        width: { xs: '0px', sm: '120px' },
         opacity: { xs: 0, sm: 1 },
         marginLeft: { xs: '0px', sm: '8px' },
       }
@@ -229,15 +231,15 @@ const NetworkHeader = () => {
 
   // Define all available tabs (matching NetworkLandingPage)
   const allTabs = [
-    { id: 'news', icon: <AnnouncementIcon />, label: 'News' },
-    { id: 'members', icon: <GroupsIcon />, label: 'Members' },
-    { id: 'events', icon: <EventIcon />, label: 'Events' },
-    { id: 'chat', icon: <ChatIcon />, label: 'Chat' },
-    { id: 'files', icon: <AttachmentIcon />, label: 'Files' },
-    { id: 'wiki', icon: <MenuBookIcon />, label: 'Wiki' },
-    { id: 'courses', icon: <SchoolIcon />, label: 'Courses' },
-    { id: 'social', icon: <TimelineIcon />, label: 'Social' },
-    { id: 'about', icon: <InfoIcon />, label: 'About' }
+    { id: 'news', icon: <AnnouncementIcon />, label: t('dashboard.tabs.news') },
+    { id: 'members', icon: <GroupsIcon />, label: t('dashboard.tabs.members') },
+    { id: 'events', icon: <EventIcon />, label: t('dashboard.tabs.events') },
+    { id: 'chat', icon: <ChatIcon />, label: t('dashboard.tabs.chat') },
+    { id: 'files', icon: <AttachmentIcon />, label: t('dashboard.tabs.files') },
+    { id: 'wiki', icon: <MenuBookIcon />, label: t('dashboard.tabs.wiki') },
+    { id: 'courses', icon: <SchoolIcon />, label: t('dashboard.tabs.courses') },
+    { id: 'social', icon: <TimelineIcon />, label: t('dashboard.tabs.social') },
+    { id: 'about', icon: <InfoIcon />, label: t('dashboard.tabs.about') }
   ];
 
   // Filter tabs based on enabled tabs
@@ -425,13 +427,13 @@ const NetworkHeader = () => {
                 className="buttonText"
                 sx={buttonTextStyle}
               >
-                Dashboard
+                {t('networkHeader.dashboard')}
               </Typography>
             </Box>
-            
+
             {/* Network */}
-            <Box 
-              component={Link} 
+            <Box
+              component={Link}
               to={user && networkId ? '/network' : (networkId ? `/network/${networkId}` : '/dashboard')}
               sx={iconButtonStyle}
             >
@@ -440,7 +442,7 @@ const NetworkHeader = () => {
                 className="buttonText"
                 sx={buttonTextStyle}
               >
-                Network
+                {t('networkHeader.network')}
               </Typography>
             </Box>
             
@@ -479,7 +481,7 @@ const NetworkHeader = () => {
                 className="buttonText"
                 sx={buttonTextStyle}
               >
-                Logout
+                {t('networkHeader.logout')}
               </Typography>
             </Box>
             
@@ -492,7 +494,7 @@ const NetworkHeader = () => {
             }} />
             
             {/* Dark Mode Toggle - Small Sun/Moon Toggle */}
-            <Tooltip title={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}>
+            <Tooltip title={darkMode ? t('networkHeader.switchToLightMode') : t('networkHeader.switchToDarkMode')}>
               <Box
                 sx={{
                   display: 'flex',
@@ -562,7 +564,7 @@ const NetworkHeader = () => {
                 transition: 'all 0.2s ease-in-out',
               }}
             >
-              Login
+              {t('networkHeader.login')}
             </Button>
             <Button
               variant="contained"
@@ -581,7 +583,7 @@ const NetworkHeader = () => {
                 transition: 'all 0.2s ease-in-out',
               }}
             >
-              Sign Up
+              {t('networkHeader.signUp')}
             </Button>
           </>
         )}
