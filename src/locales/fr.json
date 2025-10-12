@@ -876,7 +876,10 @@
     "attending": "Participe",
     "maybe": "Peut-être",
     "notAttending": "Ne participe pas",
-    "online": "En ligne"
+    "online": "En ligne",
+    "ongoingEvents": "Événements en cours",
+    "eventsInProgress": "Événements actuellement en cours",
+    "inProgress": "En cours"
   },
   "newsTab": {
     "fillRequiredFields": "Veuillez remplir au moins le titre et le contenu",
@@ -1624,5 +1627,163 @@
     "switchToDarkMode": "Passer au mode sombre",
     "login": "Connexion",
     "signUp": "S'inscrire"
+  },
+  "createPost": {
+    "createNewPost": "Créer une nouvelle publication",
+    "editPost": "Modifier la publication",
+    "postTitle": "Titre de la publication",
+    "postTitlePlaceholder": "Donnez un titre accrocheur à votre publication...",
+    "postContent": "Contenu de la publication",
+    "postContentPlaceholder": "Partagez vos pensées, expérience ou histoire...",
+    "linkOptional": "Lien (Optionnel)",
+    "linkPlaceholder": "https://exemple.com",
+    "categoryOptional": "Catégorie (Optionnel)",
+    "noCategory": "Aucune catégorie",
+    "addMediaMultiple": "Ajouter des médias (Optionnel)",
+    "addMoreMedia": "Ajouter plus de médias ({{count}}/10)",
+    "cancel": "Annuler",
+    "createPostButton": "Créer la publication",
+    "updatePost": "Mettre à jour la publication",
+    "creating": "Création...",
+    "updating": "Mise à jour...",
+    "errors": {
+      "titleRequired": "Le titre de la publication est requis",
+      "saveFailed": "Échec de l'enregistrement de la publication"
+    },
+    "success": "Publication {{action}} avec succès !",
+    "created": "créée",
+    "updated": "mise à jour"
+  },
+  "notificationSettings": {
+    "title": "Paramètres de notifications",
+    "description": "Gérez vos préférences de notifications",
+    "enableAll": "Activer toutes les notifications",
+    "disableAll": "Désactiver toutes les notifications",
+    "types": {
+      "news": {
+        "label": "Annonces",
+        "description": "Recevoir des notifications pour les nouvelles annonces"
+      },
+      "events": {
+        "label": "Événements",
+        "description": "Recevoir des notifications pour les nouveaux événements et événements à venir"
+      },
+      "chat": {
+        "label": "Messages de chat",
+        "description": "Recevoir des notifications pour les nouveaux messages de chat"
+      },
+      "files": {
+        "label": "Mises à jour de fichiers",
+        "description": "Recevoir des notifications lorsque des fichiers sont partagés"
+      },
+      "wiki": {
+        "label": "Mises à jour du wiki",
+        "description": "Recevoir des notifications pour les modifications de pages wiki"
+      },
+      "comments": {
+        "label": "Commentaires",
+        "description": "Recevoir des notifications pour les commentaires sur vos publications"
+      },
+      "mentions": {
+        "label": "Mentions",
+        "description": "Recevoir des notifications lorsque quelqu'un vous mentionne"
+      }
+    },
+    "save": "Enregistrer les paramètres",
+    "saving": "Enregistrement...",
+    "errors": {
+      "loadFailed": "Échec du chargement des paramètres de notifications",
+      "saveFailed": "Échec de l'enregistrement des paramètres de notifications"
+    },
+    "success": {
+      "saved": "Paramètres de notifications enregistrés avec succès !"
+    }
+  },
+  "events": {
+    "steps": {
+      "basicInfo": "Informations de base",
+      "detailsMedia": "Détails et médias",
+      "settings": "Paramètres"
+    },
+    "dialog": {
+      "createEvent": "Créer un événement",
+      "editEvent": "Modifier l'événement"
+    },
+    "basicInfo": {
+      "title": "Informations de base",
+      "eventTitle": "Titre de l'événement",
+      "eventTitlePlaceholder": "Entrez le titre de l'événement",
+      "eventDescription": "Description de l'événement",
+      "eventDescriptionPlaceholder": "Décrivez votre événement...",
+      "startDateTime": "Date et heure de début",
+      "endDateTime": "Date et heure de fin",
+      "startDate": "Date de début",
+      "endDate": "Date de fin",
+      "allDay": "Événement sur toute la journée",
+      "location": "Lieu",
+      "locationPlaceholder": "Entrez le lieu de l'événement",
+      "onlineEvent": "C'est un événement en ligne",
+      "eventLink": "Lien de l'événement",
+      "eventLinkPlaceholder": "https://zoom.us/...",
+      "selectLocation": "Cliquez sur la carte pour sélectionner un lieu"
+    },
+    "details": {
+      "title": "Détails",
+      "category": "Catégorie",
+      "selectCategory": "Sélectionnez une catégorie",
+      "maxAttendees": "Nombre maximum de participants",
+      "maxAttendeesPlaceholder": "Laisser vide pour illimité",
+      "requiresApproval": "Nécessite l'approbation d'un administrateur pour participer",
+      "eventImage": "Image de l'événement",
+      "uploadImage": "Télécharger une image",
+      "changeImage": "Changer l'image",
+      "removeImage": "Supprimer l'image"
+    },
+    "settings": {
+      "title": "Paramètres",
+      "visibility": "Visibilité de l'événement",
+      "public": "Public - Visible par tous les membres du réseau",
+      "private": "Privé - Visible uniquement par les membres invités",
+      "allowComments": "Autoriser les commentaires sur cet événement",
+      "sendNotifications": "Envoyer des notifications aux membres du réseau",
+      "featured": "Mettre en avant cet événement"
+    },
+    "category": {
+      "meeting": "Réunion",
+      "workshop": "Atelier",
+      "social": "Social",
+      "training": "Formation",
+      "conference": "Conférence",
+      "webinar": "Webinaire",
+      "other": "Autre"
+    },
+    "buttons": {
+      "cancel": "Annuler",
+      "back": "Retour",
+      "next": "Suivant",
+      "createEvent": "Créer l'événement",
+      "updateEvent": "Mettre à jour l'événement",
+      "creating": "Création...",
+      "updating": "Mise à jour..."
+    },
+    "errors": {
+      "titleRequired": "Le titre de l'événement est requis",
+      "descriptionRequired": "La description de l'événement est requise",
+      "startDateRequired": "La date de début est requise",
+      "endDateBeforeStart": "La date de fin doit être après la date de début",
+      "locationRequired": "Le lieu est requis pour les événements en présentiel",
+      "eventLinkRequired": "Le lien de l'événement est requis pour les événements en ligne",
+      "createFailed": "Échec de la création de l'événement",
+      "updateFailed": "Échec de la mise à jour de l'événement",
+      "imageSizeTooLarge": "La taille de l'image doit être inférieure à 5 Mo",
+      "mapLoadFailed": "Échec du chargement de la carte. Veuillez réessayer plus tard."
+    },
+    "success": {
+      "created": "Événement créé avec succès !",
+      "updated": "Événement mis à jour avec succès !"
+    },
+    "map": {
+      "viewDetails": "Voir les détails"
+    }
   }
 }

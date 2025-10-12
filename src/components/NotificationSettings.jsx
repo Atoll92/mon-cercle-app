@@ -34,8 +34,10 @@ import { supabase } from '../supabaseclient';
 import { useAuth } from '../context/authcontext';
 import { useProfile } from '../context/profileContext';
 import { getCategoryPreferences, updateSympaCategories } from '../api/sympaSync';
+import { useTranslation } from '../hooks/useTranslation';
 
 const NotificationSettings = () => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { activeProfile } = useProfile();
 
@@ -96,7 +98,7 @@ const NotificationSettings = () => {
         }
       } catch (err) {
         console.error('Error loading notification preferences:', err);
-        setError('Failed to load notification preferences');
+        setError(t('notificationSettings.errors.loadFailed'));
       } finally {
         setLoading(false);
       }
@@ -131,13 +133,13 @@ const NotificationSettings = () => {
       if (error) throw error;
 
       setPreferences(prev => ({ ...prev, ...updates }));
-      setSuccessMessage('Notification preferences updated successfully');
-      
+      setSuccessMessage(t('notificationSettings.success'));
+
       // Clear success message after 3 seconds
       setTimeout(() => setSuccessMessage(''), 3000);
     } catch (err) {
       console.error('Error updating notification preferences:', err);
-      setError('Failed to update notification preferences');
+      setError(t('notificationSettings.errors.updateFailed'));
     } finally {
       setSaving(false);
     }
@@ -154,26 +156,26 @@ const NotificationSettings = () => {
   const notificationTypes = [
     {
       key: 'notify_on_news',
-      label: 'Network News',
-      description: 'Get notified when new posts are shared in your network',
+      label: t('notificationSettings.types.news.label'),
+      description: t('notificationSettings.types.news.description'),
       icon: <NewsIcon />
     },
     {
       key: 'notify_on_events',
-      label: 'Events',
-      description: 'Get notified about new events and event updates',
+      label: t('notificationSettings.types.events.label'),
+      description: t('notificationSettings.types.events.description'),
       icon: <EventIcon />
     },
     {
       key: 'notify_on_mentions',
-      label: 'Mentions',
-      description: 'Get notified when someone mentions you in posts or comments',
+      label: t('notificationSettings.types.mentions.label'),
+      description: t('notificationSettings.types.mentions.description'),
       icon: <MentionIcon />
     },
     {
       key: 'notify_on_direct_messages',
-      label: 'Direct Messages',
-      description: 'Get notified about new direct messages',
+      label: t('notificationSettings.types.messages.label'),
+      description: t('notificationSettings.types.messages.description'),
       icon: <MessageIcon />
     }
   ];
@@ -207,7 +209,7 @@ const NotificationSettings = () => {
   const handleAnnonceCategoryToggle = async (category) => {
     // Prevent toggling 'general' category (it's mandatory)
     if (category === 'general') {
-      setError('La catégorie "Général" est obligatoire et ne peut pas être désactivée');
+      setError(t('notificationSettings.errors.generalMandatory'));
       setTimeout(() => setError(null), 3000);
       return;
     }
@@ -231,7 +233,7 @@ const NotificationSettings = () => {
       console.error('Error updating category preferences:', err);
       // Revert on error
       setAnnonceCategories(annonceCategories);
-      setError('Failed to update category preferences');
+      setError(t('notificationSettings.errors.categoryUpdateFailed'));
     }
   };
 
@@ -257,7 +259,7 @@ const NotificationSettings = () => {
       console.error('Error updating category preferences:', err);
       // Revert on error
       setAnnonceCategories(annonceCategories);
-      setError('Failed to update category preferences');
+      setError(t('notificationSettings.errors.categoryUpdateFailed'));
     }
   };
 
@@ -270,7 +272,7 @@ const NotificationSettings = () => {
         <Box display="flex" alignItems="center" gap={2} mb={3}>
           <NotificationsIcon color="primary" />
           <Typography variant="h6" fontWeight={600}>
-            Email Notifications
+            {t('notificationSettings.title')}
           </Typography>
         </Box>
 
@@ -300,10 +302,10 @@ const NotificationSettings = () => {
               label={
                 <Box>
                   <Typography variant="subtitle1" fontWeight={600}>
-                    Enable Email Notifications
+                    {t('notificationSettings.masterToggle')}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Master switch for all email notifications
+                    {t('notificationSettings.masterToggleDescription')}
                   </Typography>
                 </Box>
               }
@@ -316,7 +318,7 @@ const NotificationSettings = () => {
           {!showAnnoncesSection && (
             <Box>
               <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                Notification Types
+                {t('notificationSettings.typesTitle')}
               </Typography>
               <Stack spacing={2}>
                 {notificationTypes.map((type) => (
@@ -365,10 +367,10 @@ const NotificationSettings = () => {
               <EmailIcon color="primary" />
               <Box flex={1}>
                 <Typography variant="subtitle1" fontWeight={600}>
-                  Catégories de Messages
+                  {t('notificationSettings.categoriesTitle')}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Choisissez les types de messages pour lesquels vous souhaitez recevoir des notifications par email
+                  {t('notificationSettings.categoriesDescription')}
                 </Typography>
               </Box>
               <Chip
@@ -391,7 +393,7 @@ const NotificationSettings = () => {
                 }
                 label={
                   <Typography variant="body2" fontWeight={500}>
-                    Toutes les catégories
+                    {t('notificationSettings.allCategories')}
                   </Typography>
                 }
                 sx={{ opacity: preferences.email_notifications_enabled ? 1 : 0.5 }}

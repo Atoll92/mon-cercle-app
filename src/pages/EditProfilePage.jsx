@@ -1292,7 +1292,7 @@ function EditProfilePage() {
                         borderStyle: 'dashed',
                         borderWidth: 2,
                         borderColor: 'grey.300',
-                        bgcolor: 'grey.50',
+                        bgcolor: (theme) => theme.palette.mode === 'dark' ? 'grey.900' : 'grey.50',
                         transition: 'all 0.2s ease'
                       }}
                     >

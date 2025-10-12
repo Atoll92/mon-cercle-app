@@ -875,7 +875,10 @@
     "attending": "Attending",
     "maybe": "Maybe",
     "notAttending": "Not Attending",
-    "online": "Online"
+    "online": "Online",
+    "ongoingEvents": "Ongoing Events",
+    "eventsInProgress": "Events currently taking place",
+    "inProgress": "In Progress"
   },
   "newsTab": {
     "fillRequiredFields": "Please fill in at least the title and content",
@@ -1631,5 +1634,163 @@
     "switchToDarkMode": "Switch to Dark Mode",
     "login": "Login",
     "signUp": "Sign Up"
+  },
+  "createPost": {
+    "createNewPost": "Create New Post",
+    "editPost": "Edit Post",
+    "postTitle": "Post Title",
+    "postTitlePlaceholder": "Give your post a catchy title...",
+    "postContent": "Post Content",
+    "postContentPlaceholder": "Share your thoughts, experience, or story...",
+    "linkOptional": "Link (Optional)",
+    "linkPlaceholder": "https://example.com",
+    "categoryOptional": "Category (Optional)",
+    "noCategory": "No Category",
+    "addMediaMultiple": "Add Media (Optional)",
+    "addMoreMedia": "Add More Media ({{count}}/10)",
+    "cancel": "Cancel",
+    "createPostButton": "Create Post",
+    "updatePost": "Update Post",
+    "creating": "Creating...",
+    "updating": "Updating...",
+    "errors": {
+      "titleRequired": "Post title is required",
+      "saveFailed": "Failed to save post"
+    },
+    "success": "Post {{action}} successfully!",
+    "created": "created",
+    "updated": "updated"
+  },
+  "notificationSettings": {
+    "title": "Notification Settings",
+    "description": "Manage your notification preferences",
+    "enableAll": "Enable All Notifications",
+    "disableAll": "Disable All Notifications",
+    "types": {
+      "news": {
+        "label": "Announcements",
+        "description": "Get notified about new announcements"
+      },
+      "events": {
+        "label": "Events",
+        "description": "Get notified about new and upcoming events"
+      },
+      "chat": {
+        "label": "Chat Messages",
+        "description": "Get notified about new chat messages"
+      },
+      "files": {
+        "label": "File Updates",
+        "description": "Get notified when files are shared"
+      },
+      "wiki": {
+        "label": "Wiki Updates",
+        "description": "Get notified about wiki page changes"
+      },
+      "comments": {
+        "label": "Comments",
+        "description": "Get notified about comments on your posts"
+      },
+      "mentions": {
+        "label": "Mentions",
+        "description": "Get notified when someone mentions you"
+      }
+    },
+    "save": "Save Settings",
+    "saving": "Saving...",
+    "errors": {
+      "loadFailed": "Failed to load notification settings",
+      "saveFailed": "Failed to save notification settings"
+    },
+    "success": {
+      "saved": "Notification settings saved successfully!"
+    }
+  },
+  "events": {
+    "steps": {
+      "basicInfo": "Basic Info",
+      "detailsMedia": "Details & Media",
+      "settings": "Settings"
+    },
+    "dialog": {
+      "createEvent": "Create Event",
+      "editEvent": "Edit Event"
+    },
+    "basicInfo": {
+      "title": "Basic Information",
+      "eventTitle": "Event Title",
+      "eventTitlePlaceholder": "Enter event title",
+      "eventDescription": "Event Description",
+      "eventDescriptionPlaceholder": "Describe your event...",
+      "startDateTime": "Start Date & Time",
+      "endDateTime": "End Date & Time",
+      "startDate": "Start Date",
+      "endDate": "End Date",
+      "allDay": "All-day event",
+      "location": "Location",
+      "locationPlaceholder": "Enter event location",
+      "onlineEvent": "This is an online event",
+      "eventLink": "Event Link",
+      "eventLinkPlaceholder": "https://zoom.us/...",
+      "selectLocation": "Click map to select location"
+    },
+    "details": {
+      "title": "Details",
+      "category": "Category",
+      "selectCategory": "Select a category",
+      "maxAttendees": "Maximum Attendees",
+      "maxAttendeesPlaceholder": "Leave empty for unlimited",
+      "requiresApproval": "Requires admin approval to attend",
+      "eventImage": "Event Image",
+      "uploadImage": "Upload Image",
+      "changeImage": "Change Image",
+      "removeImage": "Remove Image"
+    },
+    "settings": {
+      "title": "Settings",
+      "visibility": "Event Visibility",
+      "public": "Public - Visible to all network members",
+      "private": "Private - Only visible to invited members",
+      "allowComments": "Allow comments on this event",
+      "sendNotifications": "Send notifications to network members",
+      "featured": "Feature this event"
+    },
+    "category": {
+      "meeting": "Meeting",
+      "workshop": "Workshop",
+      "social": "Social",
+      "training": "Training",
+      "conference": "Conference",
+      "webinar": "Webinar",
+      "other": "Other"
+    },
+    "buttons": {
+      "cancel": "Cancel",
+      "back": "Back",
+      "next": "Next",
+      "createEvent": "Create Event",
+      "updateEvent": "Update Event",
+      "creating": "Creating...",
+      "updating": "Updating..."
+    },
+    "errors": {
+      "titleRequired": "Event title is required",
+      "descriptionRequired": "Event description is required",
+      "startDateRequired": "Start date is required",
+      "endDateBeforeStart": "End date must be after start date",
+      "locationRequired": "Location is required for in-person events",
+      "eventLinkRequired": "Event link is required for online events",
+      "createFailed": "Failed to create event",
+      "updateFailed": "Failed to update event",
+      "imageSizeTooLarge": "Image size must be less than 5MB",
+      "mapLoadFailed": "Failed to load map. Please try again later."
+    },
+    "success": {
+      "created": "Event created successfully!",
+      "updated": "Event updated successfully!"
+    },
+    "map": {
+      "viewDetails": "View Details"
+    }
   }
 }

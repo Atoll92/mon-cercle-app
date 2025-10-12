@@ -203,9 +203,9 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
       setError(t('events.errors.imageSizeTooLarge'));
       return;
     }
-    
+
     if (!file.type.startsWith('image/')) {
-      setError('Please select a valid image file');
+      setError(t('events.errors.invalidImageType'));
       return;
     }
 
@@ -270,24 +270,24 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
     // Validate required fields FIRST, before setting updating
     if (!eventForm.title || !eventForm.date) {
       console.error('🎯 [EVENT DIALOG] Validation failed: Missing title or date');
-      setError('Please fill in all required fields (Title, Start Date)');
+      setError(t('events.errors.requiredFields'));
       return;
     }
-    
+
     // If not online event, location is required
     if (!eventForm.online && !eventForm.location) {
       console.error('🎯 [EVENT DIALOG] Validation failed: Missing location for in-person event');
-      setError('Please provide a location for in-person events');
+      setError(t('events.errors.locationRequired'));
       return;
     }
-    
+
     // Validate that end date is after start date if provided
     if (eventForm.end_date && eventForm.date) {
       const startDate = new Date(eventForm.date);
       const endDate = new Date(eventForm.end_date);
       if (endDate <= startDate) {
         console.error('🎯 [EVENT DIALOG] Validation failed: End date must be after start date');
-        setError('End date must be after the start date');
+        setError(t('events.errors.endDateInvalid'));
         return;
       }
     }
@@ -338,7 +338,7 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
         result = await updateEvent(editingEvent.id, eventData, eventImageFile);
         console.log('🎯 [EVENT DIALOG] updateEvent result:', result);
         if (!result.success) {
-          throw new Error(result.message || 'Failed to update event');
+          throw new Error(result.message || t('events.errors.updateFailed'));
         }
         // Success
         if (onEventUpdated) {
@@ -350,7 +350,7 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
         result = await createEvent(networkId, profileId, eventData, eventImageFile, isAdmin);
         console.log('🎯 [EVENT DIALOG] createEvent result:', result);
         if (!result.success) {
-          throw new Error(result.message || 'Failed to create event');
+          throw new Error(result.message || t('events.errors.createFailed'));
         }
         // Success
         if (onEventCreated) {
@@ -362,7 +362,7 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
     } catch (err) {
       console.error('🎯 [EVENT DIALOG] Error during event operation:', err);
       console.error('🎯 [EVENT DIALOG] Error stack:', err.stack);
-      setError(err.message || (editingEvent ? 'Failed to update event' : 'Failed to create event'));
+      setError(err.message || t('events.errors.saveFailed'));
     } finally {
       setUpdating(false);
       console.log('🎯 [EVENT DIALOG] Event operation completed');
@@ -375,7 +375,7 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
 
     try {
       if (!newCategory.name.trim()) {
-        setCategoryError('Category name is required');
+        setCategoryError(t('events.errors.categoryNameRequired'));
         return;
       }
 
@@ -407,7 +407,7 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
         color: '#6366f1'
       });
     } catch (err) {
-      setCategoryError(err.message || 'Failed to create category');
+      setCategoryError(err.message || t('events.errors.createCategoryFailed'));
     } finally {
       setCategoryCreating(false);
     }
@@ -444,19 +444,19 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
                 <CardContent>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                     <EventIcon sx={{ mr: 1, color: 'primary.main' }} />
-                    <Typography variant="h6">Basic Event Information</Typography>
+                    <Typography variant="h6">{t('events.basicInfo.title')}</Typography>
                   </Box>
-                  
+
                   <TextField
                     autoFocus
-                    label="Event Title"
+                    label={t('events.basicInfo.eventTitle')}
                     fullWidth
                     required
                     value={eventForm.title}
                     onChange={(e) => setEventForm({ ...eventForm, title: e.target.value })}
                     sx={{ mb: 3 }}
                     variant="outlined"
-                    placeholder="Enter a descriptive title for your event"
+                    placeholder={t('events.basicInfo.titlePlaceholder')}
                   />
                   
                   <FormControlLabel
@@ -475,16 +475,16 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
                         }}
                       />
                     }
-                    label="All-day event"
+                    label={t('events.basicInfo.allDay')}
                     sx={{ mb: 2 }}
                   />
                   
                   <TextField
-                    label={eventForm.all_day ? "Start Date" : "Start Date & Time"}
+                    label={eventForm.all_day ? t('events.basicInfo.startDate') : t('events.basicInfo.startDateTime')}
                     type={eventForm.all_day ? "date" : "datetime-local"}
                     fullWidth
                     required
-                    slotProps={{ 
+                    slotProps={{
                       inputLabel: { shrink: true },
                       input: {
                         startAdornment: (
@@ -497,14 +497,14 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
                     value={eventForm.date}
                     onChange={(e) => setEventForm({ ...eventForm, date: e.target.value })}
                     sx={{ mb: 3 }}
-                    helperText={eventForm.all_day ? "Date for the all-day event" : "Select date and time for your event"}
+                    helperText={eventForm.all_day ? t('events.basicInfo.dateHelper') : t('events.basicInfo.dateTimeHelper')}
                   />
-                  
+
                   <TextField
-                    label={eventForm.all_day ? "End Date (Optional)" : "End Date & Time (Optional)"}
+                    label={eventForm.all_day ? t('events.basicInfo.endDate') : t('events.basicInfo.endDateTime')}
                     type={eventForm.all_day ? "date" : "datetime-local"}
                     fullWidth
-                    slotProps={{ 
+                    slotProps={{
                       inputLabel: { shrink: true },
                       input: {
                         startAdornment: (
@@ -517,7 +517,7 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
                     value={eventForm.end_date}
                     onChange={(e) => setEventForm({ ...eventForm, end_date: e.target.value })}
                     sx={{ mb: 3 }}
-                    helperText="Leave empty for single-day events"
+                    helperText={t('events.basicInfo.endDateHelper')}
                   />
                   
                   {eventForm.end_date && eventForm.date && (() => {
@@ -539,9 +539,9 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
                           <Box sx={{ display: 'flex', alignItems: 'center' }}>
                             <EventIcon sx={{ mr: 1, color: isValid ? 'success.main' : 'error.main' }} />
                             <Typography variant="body2" color={isValid ? 'success.dark' : 'error.dark'}>
-                              {isValid 
-                                ? `Multi-day event: ${duration} day${duration !== 1 ? 's' : ''}`
-                                : 'End date must be after start date'
+                              {isValid
+                                ? t('events.basicInfo.multiDay', { count: duration })
+                                : t('events.basicInfo.endDateError')
                               }
                             </Typography>
                           </Box>
@@ -573,32 +573,32 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
                     label={
                       <Box sx={{ display: 'flex', alignItems: 'center' }}>
                         <Typography variant="body1">
-                          {eventForm.online ? 'Online Event' : 'In-Person Event'}
+                          {eventForm.online ? t('events.basicInfo.onlineEvent') : t('events.basicInfo.inPersonEvent')}
                         </Typography>
                         <Typography variant="caption" sx={{ ml: 1, color: 'text.secondary' }}>
-                          {eventForm.online ? '(no location required)' : '(location required)'}
+                          {eventForm.online ? t('events.basicInfo.noLocationRequired') : t('events.basicInfo.locationRequired')}
                         </Typography>
                       </Box>
                     }
                     sx={{ mb: 3 }}
                   />
-                  
+
                   {!eventForm.online && (
                     <AddressSuggestions
                       value={locationSuggestion}
                       onChange={handleLocationChange}
-                      label="Location"
-                      placeholder="Start typing an address..."
+                      label={t('events.basicInfo.location')}
+                      placeholder={t('events.basicInfo.locationPlaceholder')}
                       required
                       fullWidth
                     />
                   )}
-                  
+
                   {eventForm.online && (
                     <Fade in={true}>
-                      <Paper sx={{ 
+                      <Paper sx={{
                         mt: 2,
-                        p: 2, 
+                        p: 2,
                         backgroundColor: 'info.50',
                         border: '1px solid',
                         borderColor: 'info.200'
@@ -606,7 +606,7 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
                         <Box sx={{ display: 'flex', alignItems: 'center' }}>
                           <ComputerIcon sx={{ mr: 1, color: 'info.main' }} />
                           <Typography variant="body2" color="info.dark">
-                            This is an online event. Consider adding a meeting link in the Event Link field.
+                            {t('events.basicInfo.onlineEventInfo')}
                           </Typography>
                         </Box>
                       </Paper>
@@ -647,22 +647,22 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
                 <CardContent>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                     <DescriptionIcon sx={{ mr: 1, color: 'primary.main' }} />
-                    <Typography variant="h6">Event Details</Typography>
+                    <Typography variant="h6">{t('events.details.title')}</Typography>
                   </Box>
-                  
+
                   <TextField
-                    label="Description"
+                    label={t('events.details.description')}
                     multiline
                     rows={8}
                     fullWidth
                     value={eventForm.description}
                     onChange={(e) => setEventForm({ ...eventForm, description: e.target.value })}
-                    placeholder="Describe your event in detail. What can attendees expect?"
+                    placeholder={t('events.details.descriptionPlaceholder')}
                     sx={{ mb: 3 }}
                   />
-                  
+
                   <TextField
-                    label={eventForm.online ? "Event Link (recommended)" : "Event Link (optional)"}
+                    label={eventForm.online ? t('events.details.eventLinkRecommended') : t('events.details.eventLinkOptional')}
                     fullWidth
                     placeholder={eventForm.online ? "https://zoom.us/j/123456789" : "https://example.com/your-event"}
                     value={eventForm.event_link}
@@ -676,9 +676,9 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
                         ),
                       }
                     }}
-                    helperText={eventForm.online 
-                      ? "Add the meeting link (Zoom, Teams, etc.) for attendees to join"
-                      : "Registration page, Zoom meeting, or external resource"
+                    helperText={eventForm.online
+                      ? t('events.details.eventLinkHelperOnline')
+                      : t('events.details.eventLinkHelperOffline')
                     }
                   />
                 </CardContent>
@@ -690,7 +690,7 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
                 <CardContent>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                     <ImageIcon sx={{ mr: 1, color: 'primary.main' }} />
-                    <Typography variant="h6">Event Cover Image</Typography>
+                    <Typography variant="h6">{t('events.details.coverImage')}</Typography>
                   </Box>
                   
                   <Paper
@@ -751,10 +751,10 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
                       <Box sx={{ textAlign: 'center', p: 3 }}>
                         <CloudUploadIcon sx={{ fontSize: 48, color: 'primary.main', mb: 1 }} />
                         <Typography variant="h6" color="primary.main" gutterBottom>
-                          Drop image here or click to upload
+                          {t('events.details.dropImage')}
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
-                          Supports JPG, PNG, GIF up to 5MB
+                          {t('events.details.imageFormats')}
                         </Typography>
                       </Box>
                     )}
@@ -781,28 +781,28 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
                 <CardContent>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                     <PeopleIcon sx={{ mr: 1, color: 'primary.main' }} />
-                    <Typography variant="h6">Capacity & Tickets</Typography>
+                    <Typography variant="h6">{t('events.settings.capacityTickets')}</Typography>
                   </Box>
-                  
+
                   <TextField
-                    label="Event Capacity (optional)"
+                    label={t('events.settings.capacity')}
                     type="number"
                     fullWidth
                     value={eventForm.capacity}
                     onChange={(e) => setEventForm({ ...eventForm, capacity: e.target.value })}
                     sx={{ mb: 3 }}
-                    placeholder="Maximum number of attendees"
-                    helperText="Leave empty for unlimited capacity"
+                    placeholder={t('events.settings.capacityPlaceholder')}
+                    helperText={t('events.settings.capacityHelper')}
                   />
-                  
+
                   <TextField
-                    label="Max Tickets per Person (optional)"
+                    label={t('events.settings.maxTickets')}
                     type="number"
                     fullWidth
                     value={eventForm.max_tickets}
                     onChange={(e) => setEventForm({ ...eventForm, max_tickets: e.target.value })}
-                    placeholder="e.g., 2"
-                    helperText="Limit tickets per attendee"
+                    placeholder={t('events.settings.maxTicketsPlaceholder')}
+                    helperText={t('events.settings.maxTicketsHelper')}
                   />
                 </CardContent>
               </Card>
@@ -813,13 +813,13 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
                 <CardContent>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                     <EuroIcon sx={{ mr: 1, color: 'primary.main' }} />
-                    <Typography variant="h6">Pricing</Typography>
+                    <Typography variant="h6">{t('events.settings.pricing')}</Typography>
                   </Box>
-                  
+
                   <Grid container spacing={2}>
                     <Grid item xs={8}>
                       <TextField
-                        label="Price"
+                        label={t('events.settings.price')}
                         type="number"
                         fullWidth
                         value={eventForm.price}
@@ -830,11 +830,11 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
                     </Grid>
                     <Grid item xs={4}>
                       <FormControl fullWidth>
-                        <InputLabel>Currency</InputLabel>
+                        <InputLabel>{t('events.settings.currency')}</InputLabel>
                         <Select
                           value={eventForm.currency}
                           onChange={(e) => setEventForm({ ...eventForm, currency: e.target.value })}
-                          label="Currency"
+                          label={t('events.settings.currency')}
                         >
                           {currencies.map((currency) => (
                             <MenuItem key={currency.code} value={currency.code}>
@@ -845,13 +845,13 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
                       </FormControl>
                     </Grid>
                   </Grid>
-                  
+
                   {eventForm.price === 0 && (
-                    <Chip 
-                      label="Free Event" 
-                      color="success" 
-                      size="small" 
-                      sx={{ mt: 1 }} 
+                    <Chip
+                      label={t('events.settings.freeEvent')}
+                      color="success"
+                      size="small"
+                      sx={{ mt: 1 }}
                     />
                   )}
                 </CardContent>
@@ -862,11 +862,11 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
                   <CardContent>
                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                       <CategoryIcon sx={{ mr: 1, color: 'primary.main' }} />
-                      <Typography variant="h6">Category</Typography>
+                      <Typography variant="h6">{t('events.settings.category')}</Typography>
                     </Box>
-                    
+
                     <FormControl fullWidth>
-                      <InputLabel>Event Category (optional)</InputLabel>
+                      <InputLabel>{t('events.settings.categoryLabel')}</InputLabel>
                       <Select
                         value={eventForm.category_id}
                         onChange={(e) => {
@@ -876,10 +876,10 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
                             setEventForm({ ...eventForm, category_id: e.target.value });
                           }
                         }}
-                        label="Event Category (optional)"
+                        label={t('events.settings.categoryLabel')}
                       >
                         <MenuItem value="">
-                          <em>No Category</em>
+                          <em>{t('events.settings.noCategory')}</em>
                         </MenuItem>
                         {categories.map((category) => (
                           <MenuItem key={category.id} value={category.id}>
@@ -889,7 +889,7 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
                         {isAdmin && <Divider />}
                         {isAdmin && (
                           <MenuItem value="ADD_NEW" sx={{ color: 'primary.main', fontWeight: 'medium' }}>
-                            + Add New Category
+                            {t('events.settings.addNewCategory')}
                           </MenuItem>
                         )}
                       </Select>
@@ -925,14 +925,14 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Typography variant="h5" component="div">
-              {editingEvent ? 'Edit Event' : 'Create New Event'}
+              {editingEvent ? t('events.dialog.editEvent') : t('events.dialog.createEvent')}
             </Typography>
             {eventForm.online && (
-              <Chip 
-                icon={<ComputerIcon />} 
-                label="Online" 
-                size="small" 
-                color="info" 
+              <Chip
+                icon={<ComputerIcon />}
+                label={t('events.dialog.online')}
+                size="small"
+                color="info"
                 variant="outlined"
               />
             )}
@@ -983,43 +983,43 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
       <Divider />
       
       <DialogActions sx={{ p: 3 }}>
-        <Button 
-          onClick={onClose} 
+        <Button
+          onClick={onClose}
           disabled={updating}
           variant="outlined"
         >
-          Cancel
+          {t('events.dialog.cancel')}
         </Button>
-        
+
         <Box sx={{ flex: 1 }} />
-        
+
         {currentStep > 0 && (
-          <Button 
+          <Button
             onClick={prevStep}
             disabled={updating}
             variant="outlined"
             sx={{ mr: 1 }}
           >
-            Back
+            {t('events.dialog.back')}
           </Button>
         )}
-        
+
         {currentStep < steps.length - 1 ? (
-          <Button 
+          <Button
             onClick={nextStep}
             disabled={!canProceedToNext() || updating}
             variant="contained"
           >
-            Next
+            {t('events.dialog.next')}
           </Button>
         ) : (
-          <Button 
-            onClick={handleSubmit} 
+          <Button
+            onClick={handleSubmit}
             variant="contained"
             disabled={updating || !canProceedToNext()}
             sx={{ minWidth: 140 }}
           >
-            {updating ? (editingEvent ? 'Updating...' : 'Creating...') : (editingEvent ? 'Update Event' : 'Create Event')}
+            {updating ? (editingEvent ? t('events.dialog.updating') : t('events.dialog.creating')) : (editingEvent ? t('events.dialog.updateEvent') : t('events.dialog.createEvent'))}
           </Button>
         )}
       </DialogActions>
@@ -1033,9 +1033,9 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
       >
         <DialogTitle>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Typography variant="h6">Create New Event Category</Typography>
-            <IconButton 
-              onClick={() => setCategoryDialogOpen(false)} 
+            <Typography variant="h6">{t('events.category.createNew')}</Typography>
+            <IconButton
+              onClick={() => setCategoryDialogOpen(false)}
               disabled={categoryCreating}
               size="small"
             >
@@ -1043,21 +1043,21 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
             </IconButton>
           </Box>
         </DialogTitle>
-        
+
         <DialogContent>
           {categoryError && (
-            <Alert 
-              severity="error" 
+            <Alert
+              severity="error"
               sx={{ mb: 2 }}
               onClose={() => setCategoryError(null)}
             >
               {categoryError}
             </Alert>
           )}
-          
+
           <TextField
             autoFocus
-            label="Category Name"
+            label={t('events.category.name')}
             fullWidth
             required
             name="name"
@@ -1066,20 +1066,20 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
             margin="normal"
             disabled={categoryCreating}
           />
-          
+
           <TextField
-            label="Slug (URL-friendly identifier)"
+            label={t('events.category.slug')}
             fullWidth
             name="slug"
             value={newCategory.slug}
             onChange={handleCategoryInputChange}
             margin="normal"
-            helperText="Auto-generated from name. Only lowercase letters, numbers, and hyphens."
+            helperText={t('events.category.slugHelper')}
             disabled={categoryCreating}
           />
-          
+
           <TextField
-            label="Description (optional)"
+            label={t('events.category.description')}
             fullWidth
             name="description"
             value={newCategory.description}
@@ -1089,10 +1089,10 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
             rows={2}
             disabled={categoryCreating}
           />
-          
+
           <Box sx={{ mt: 2 }}>
             <Typography variant="body2" gutterBottom>
-              Category Color
+              {t('events.category.color')}
             </Typography>
             <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
               {['#6366f1', '#8b5cf6', '#ec4899', '#f43f5e', '#f97316', '#22c55e', '#06b6d4', '#3b82f6'].map((color) => (
@@ -1118,18 +1118,18 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
         </DialogContent>
         
         <DialogActions>
-          <Button 
-            onClick={() => setCategoryDialogOpen(false)} 
+          <Button
+            onClick={() => setCategoryDialogOpen(false)}
             disabled={categoryCreating}
           >
-            Cancel
+            {t('events.category.cancel')}
           </Button>
-          <Button 
+          <Button
             onClick={handleCreateCategory}
             variant="contained"
             disabled={categoryCreating || !newCategory.name.trim()}
           >
-            {categoryCreating ? 'Creating...' : 'Create Category'}
+            {categoryCreating ? t('events.category.creating') : t('events.category.createButton')}
           </Button>
         </DialogActions>
       </Dialog>

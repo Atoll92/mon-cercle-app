@@ -36,6 +36,7 @@ import MediaCarousel from './MediaCarousel';
 import UserContent from './UserContent';
 import { fetchNetworkCategories } from '../api/categories';
 import { createPost, updatePost } from '../api/posts';
+import { useTranslation } from '../hooks/useTranslation';
 
 const CreatePostModal = ({ 
   open, 
@@ -45,6 +46,7 @@ const CreatePostModal = ({
   mode = 'create', // 'create' or 'edit'
   editPost = null // Post data for editing
 }) => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { activeProfile } = useProfile();
   
@@ -226,7 +228,7 @@ const CreatePostModal = ({
   const handleSubmit = async () => {
     // Validate the form
     if (!title.trim()) {
-      setError('Post title is required');
+      setError(t('createPost.errors.titleRequired'));
       return;
     }
     
@@ -275,7 +277,7 @@ const CreatePostModal = ({
       
     } catch (err) {
       console.error('Error saving post:', err);
-      setError(`Failed to ${mode === 'edit' ? 'update' : 'create'} post. Please try again.`);
+      setError(t('createPost.errors.saveFailed'));
     } finally {
       setCreating(false);
     }
@@ -313,7 +315,7 @@ const CreatePostModal = ({
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <AddIcon color="primary" />
           <Typography variant="h6" fontWeight={600}>
-            {mode === 'edit' ? 'Edit Post' : 'Create New Post'}
+            {mode === 'edit' ? t('createPost.editPost') : t('createPost.createNewPost')}
           </Typography>
         </Box>
         <IconButton 
@@ -333,7 +335,7 @@ const CreatePostModal = ({
       <DialogContent sx={{ pt: 3 }}>
         {success && (
           <Alert severity="success" sx={{ mb: 2 }}>
-            Post {mode === 'edit' ? 'updated' : 'created'} successfully!
+            {t('createPost.success', { action: mode === 'edit' ? t('createPost.updated') : t('createPost.created') })}
           </Alert>
         )}
 
@@ -346,19 +348,19 @@ const CreatePostModal = ({
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, mt: 2 }}>
           {/* Title Field */}
           <TextField
-            label="Post Title"
+            label={t('createPost.postTitle')}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             fullWidth
             required
             disabled={creating}
             variant="outlined"
-            placeholder="Give your post a catchy title..."
+            placeholder={t('createPost.postTitlePlaceholder')}
           />
 
           {/* Content Field */}
           <TextField
-            label="Post Content"
+            label={t('createPost.postContent')}
             value={content}
             onChange={(e) => setContent(e.target.value)}
             fullWidth
@@ -367,18 +369,18 @@ const CreatePostModal = ({
             rows={3}
             disabled={creating}
             variant="outlined"
-            placeholder="Share your thoughts, experience, or story..."
+            placeholder={t('createPost.postContentPlaceholder')}
           />
 
           {/* URL Field */}
           <TextField
-            label="Link (Optional)"
+            label={t('createPost.linkOptional')}
             value={url}
             onChange={(e) => setUrl(e.target.value)}
             fullWidth
             disabled={creating}
             variant="outlined"
-            placeholder="Add a relevant link..."
+            placeholder={t('createPost.linkPlaceholder')}
             InputProps={{
               startAdornment: <LanguageIcon sx={{ color: 'text.secondary', mr: 1 }} />
             }}
@@ -387,15 +389,15 @@ const CreatePostModal = ({
           {/* Category Selection */}
           {categories.length > 0 && (
             <FormControl fullWidth>
-              <InputLabel>Category (Optional)</InputLabel>
+              <InputLabel>{t('createPost.categoryOptional')}</InputLabel>
               <Select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                label="Category (Optional)"
+                label={t('createPost.categoryOptional')}
                 disabled={creating}
               >
                 <MenuItem value="">
-                  <em>No Category</em>
+                  <em>{t('createPost.noCategory')}</em>
                 </MenuItem>
                 {categories.map((category) => (
                   <MenuItem key={category.id} value={category.id}>
@@ -420,7 +422,7 @@ const CreatePostModal = ({
           {/* Media Upload */}
           <Box>
             <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
-              Add Media (Optional) - You can add multiple files
+              {t('createPost.addMediaMultiple')}
             </Typography>
             
             {mediaItems.length > 0 ? (
@@ -455,7 +457,7 @@ const CreatePostModal = ({
                         disabled={creating || mediaItems.length >= 10}
                         size="small"
                       >
-                        Add More Media ({mediaItems.length}/10)
+                        {t('createPost.addMoreMedia', { count: mediaItems.length })}
                       </Button>
                     }
                   />
@@ -483,26 +485,26 @@ const CreatePostModal = ({
         pt: 2,
         borderTop: `1px solid ${darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`
       }}>
-        <Button 
-          onClick={handleClose} 
+        <Button
+          onClick={handleClose}
           disabled={creating}
-          sx={{ 
-            color: darkMode ? 'rgba(255,255,255,0.7)' : 'text.secondary' 
+          sx={{
+            color: darkMode ? 'rgba(255,255,255,0.7)' : 'text.secondary'
           }}
         >
-          Cancel
+          {t('createPost.cancel')}
         </Button>
-        <Button 
-          onClick={handleSubmit} 
-          variant="contained" 
+        <Button
+          onClick={handleSubmit}
+          variant="contained"
           disabled={creating || !title.trim() || !content.trim()}
-          sx={{ 
+          sx={{
             borderRadius: 2,
             px: 3,
             fontWeight: 600
           }}
         >
-          {creating ? (mode === 'edit' ? 'Updating...' : 'Creating...') : (mode === 'edit' ? 'Update Post' : 'Create Post')}
+          {creating ? (mode === 'edit' ? t('createPost.updating') : t('createPost.creating')) : (mode === 'edit' ? t('createPost.updatePost') : t('createPost.createPostButton'))}
         </Button>
       </DialogActions>
     </Dialog>
