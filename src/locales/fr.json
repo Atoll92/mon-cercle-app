@@ -1868,6 +1868,36 @@
       "viewDetails": "Voir les détails"
     }
   },
+  "components": {
+    "memberDetails": {
+      "title": "Profil du membre",
+      "failedLoadPosts": "Échec du chargement des publications",
+      "failedLoadMoodboard": "Échec du chargement du moodboard",
+      "noPublicMoodboards": "Aucun moodboard public",
+      "unnamedUser": "Utilisateur sans nom",
+      "you": " (Vous)",
+      "admin": "Administrateur",
+      "member": "Membre",
+      "message": "Message",
+      "fullProfile": "Profil complet",
+      "viewMoodboard": "Voir le moodboard",
+      "contactLinks": "Contact et liens",
+      "portfolioWebsite": "Site web portfolio",
+      "linkedinProfile": "Profil LinkedIn",
+      "skillsExpertise": "Compétences et expertise",
+      "posts": "Publications",
+      "postsWithCount": "Publications ({{count}})",
+      "viewAllPosts": "Voir les {{count}} publications",
+      "noPostsYet": "Aucune publication pour le moment"
+    },
+    "memberCard": {
+      "sendMessage": "Envoyer un message",
+      "unnamedUser": "Utilisateur sans nom",
+      "you": "(Vous)",
+      "admin": "Administrateur",
+      "member": "Membre"
+    }
+  },
   "pages": {
     "event": {
       "eventNotFound": "Événement introuvable",

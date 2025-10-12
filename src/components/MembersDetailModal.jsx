@@ -4,6 +4,7 @@ import { supabase } from '../supabaseclient';
 import { useProfile } from '../context/profileContext';
 import { useFadeIn } from '../hooks/useAnimation';
 import { formatJoinedTime } from '../utils/dateFormatting';
+import { useTranslation } from '../hooks/useTranslation';
 import PostsGrid from './PostsGrid';
 import Spinner from './Spinner';
 import MoodboardItemSimple from './Moodboard/MoodboardItemSimple';
@@ -44,13 +45,14 @@ import {
   ZoomOut as ZoomOutIcon
 } from '@mui/icons-material';
 
-const MemberDetailsModal = ({ 
-  open, 
-  onClose, 
-  member, 
+const MemberDetailsModal = ({
+  open,
+  onClose,
+  member,
   posts: initialPosts = [], // Changed from portfolioItems to posts
   darkMode = false
 }) => {
+  const { t } = useTranslation();
   const muiTheme = useTheme(); // Get the MUI theme
   const { activeProfile } = useProfile(); // Get active profile to determine if current user
   
@@ -109,7 +111,7 @@ const MemberDetailsModal = ({
           setMemberPosts(data || []);
         } catch (err) {
           console.error('Error fetching posts:', err);
-          setError('Failed to load posts');
+          setError(t('components.memberDetails.failedLoadPosts'));
         } finally {
           setLoading(false);
         }
@@ -145,7 +147,7 @@ const MemberDetailsModal = ({
         }
       } catch (err) {
         console.error('Error fetching member moodboard:', err);
-        setMoodboardError('Failed to load moodboard');
+        setMoodboardError(t('components.memberDetails.failedLoadMoodboard'));
       } finally {
         setLoadingMoodboard(false);
       }
@@ -323,8 +325,8 @@ const MemberDetailsModal = ({
         }
       }}
     >
-      <DialogTitle sx={{ 
-        display: 'flex', 
+      <DialogTitle sx={{
+        display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
         p: 1.5,
@@ -335,7 +337,7 @@ const MemberDetailsModal = ({
         borderColor: customBorder
       }}>
         <Typography variant="h6" component="div">
-          Member Profile
+          {t('components.memberDetails.title')}
         </Typography>
         <IconButton 
           edge="end" 
@@ -390,11 +392,11 @@ const MemberDetailsModal = ({
                       color: customFadedText
                     }} 
                   />
-                  <Typography 
-                    variant="body2" 
+                  <Typography
+                    variant="body2"
                     color={customFadedText}
                   >
-                    No public moodboards
+                    {t('components.memberDetails.noPublicMoodboards')}
                   </Typography>
                 </>
               )}
@@ -571,9 +573,9 @@ const MemberDetailsModal = ({
 
             <Grid item xs={12} sm>
               <Box>
-                <Typography 
-                  variant="h5" 
-                  component="h2" 
+                <Typography
+                  variant="h5"
+                  component="h2"
                   gutterBottom
                   sx={{
                     backgroundColor: darkMode ? alpha('#000000', 0.7) : alpha('#ffffff', 0.9),
@@ -584,13 +586,13 @@ const MemberDetailsModal = ({
                     boxShadow: darkMode ? '0 2px 8px rgba(0,0,0,0.3)' : '0 2px 8px rgba(0,0,0,0.1)'
                   }}
                 >
-                  {member.full_name || 'Unnamed User'}
-                  {isCurrentUser && ' (You)'}
+                  {member.full_name || t('components.memberDetails.unnamedUser')}
+                  {isCurrentUser && t('components.memberDetails.you')}
                 </Typography>
                 
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
-                  <Chip 
-                    label={member.role === 'admin' ? 'Admin' : 'Member'} 
+                  <Chip
+                    label={member.role === 'admin' ? t('components.memberDetails.admin') : t('components.memberDetails.member')}
                     color={member.role === 'admin' ? 'primary' : 'default'}
                     size="small"
                     sx={{ 
@@ -640,7 +642,7 @@ const MemberDetailsModal = ({
                     to={`/messages/${member.id}`}
                     fullWidth
                   >
-                    Message
+                    {t('components.memberDetails.message')}
                   </Button>
                 )}
 
@@ -650,7 +652,7 @@ const MemberDetailsModal = ({
                   component={Link}
                   to={`/profile/${member.id}`}
                   fullWidth
-                  sx={{ 
+                  sx={{
                     color: darkMode ? '#ffffff' : undefined,
                     borderColor: darkMode ? alpha('#ffffff', 0.3) : undefined,
                     '&:hover': {
@@ -658,7 +660,7 @@ const MemberDetailsModal = ({
                     }
                   }}
                 >
-                  Full Profile
+                  {t('components.memberDetails.fullProfile')}
                 </Button>
                 
                 {featuredMoodboard && (
@@ -673,7 +675,7 @@ const MemberDetailsModal = ({
                       mt: 1
                     }}
                   >
-                    View Moodboard
+                    {t('components.memberDetails.viewMoodboard')}
                   </Button>
                 )}
               </Stack>
@@ -685,9 +687,9 @@ const MemberDetailsModal = ({
         {(member.contact_email || member.portfolio_url || member.linkedin_url) && (
           <Box sx={{ px: 3, pb: 2 }}>
             <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
-              <Box component="span" sx={{ 
-                display: 'inline-flex', 
-                mr: 1, 
+              <Box component="span" sx={{
+                display: 'inline-flex',
+                mr: 1,
                 bgcolor: darkMode ? alpha('#1976d2', 0.2) : alpha('#1976d2', 0.1),
                 color: darkMode ? '#90caf9' : '#1976d2',
                 p: 0.5,
@@ -695,7 +697,7 @@ const MemberDetailsModal = ({
               }}>
                 <MailIcon fontSize="small" />
               </Box>
-              Contact & Links
+              {t('components.memberDetails.contactLinks')}
             </Typography>
             
             <Grid container spacing={2} sx={{ ml: 1 }}>
@@ -751,19 +753,19 @@ const MemberDetailsModal = ({
                     }}
                   >
                     <LanguageIcon sx={{ mr: 1, color: darkMode ? '#90caf9' : '#1976d2' }} />
-                    <Typography 
-                      variant="body2" 
-                      component="a" 
+                    <Typography
+                      variant="body2"
+                      component="a"
                       href={member.portfolio_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      sx={{ 
+                      sx={{
                         textDecoration: 'none',
                         color: customLightText,
                         wordBreak: 'break-all'
                       }}
                     >
-                      Portfolio Website
+                      {t('components.memberDetails.portfolioWebsite')}
                     </Typography>
                   </Paper>
                 </Grid>
@@ -787,19 +789,19 @@ const MemberDetailsModal = ({
                     }}
                   >
                     <LinkedInIcon sx={{ mr: 1, color: darkMode ? '#90caf9' : '#1976d2' }} />
-                    <Typography 
-                      variant="body2" 
-                      component="a" 
+                    <Typography
+                      variant="body2"
+                      component="a"
                       href={member.linkedin_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      sx={{ 
+                      sx={{
                         textDecoration: 'none',
                         color: customLightText,
                         wordBreak: 'break-all'
                       }}
                     >
-                      LinkedIn Profile
+                      {t('components.memberDetails.linkedinProfile')}
                     </Typography>
                   </Paper>
                 </Grid>
@@ -814,9 +816,9 @@ const MemberDetailsModal = ({
         {member.skills && member.skills.length > 0 && (
           <Box sx={{ p: 3, pt: 2 }}>
             <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
-              <Box component="span" sx={{ 
-                display: 'inline-flex', 
-                mr: 1, 
+              <Box component="span" sx={{
+                display: 'inline-flex',
+                mr: 1,
                 bgcolor: darkMode ? alpha('#9c27b0', 0.2) : alpha('#9c27b0', 0.1),
                 color: darkMode ? '#ce93d8' : '#9c27b0',
                 p: 0.5,
@@ -824,7 +826,7 @@ const MemberDetailsModal = ({
               }}>
                 <LabelIcon fontSize="small" />
               </Box>
-              Skills & Expertise
+              {t('components.memberDetails.skillsExpertise')}
             </Typography>
             
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, ml: 1 }}>
@@ -850,9 +852,9 @@ const MemberDetailsModal = ({
         <Divider sx={{ mx: 3 }} />
         <Box sx={{ p: 3 }}>
           <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
-            <Box component="span" sx={{ 
-              display: 'inline-flex', 
-              mr: 1, 
+            <Box component="span" sx={{
+              display: 'inline-flex',
+              mr: 1,
               bgcolor: darkMode ? alpha('#ff9800', 0.2) : alpha('#ff9800', 0.1),
               color: darkMode ? '#ffb74d' : '#ff9800',
               p: 0.5,
@@ -860,7 +862,7 @@ const MemberDetailsModal = ({
             }}>
               <WorkIcon fontSize="small" />
             </Box>
-            Posts {memberPosts.length > 0 && `(${memberPosts.length})`}
+            {t('components.memberDetails.posts', { count: memberPosts.length })}
           </Typography>
           
           {loading ? (
@@ -886,22 +888,22 @@ const MemberDetailsModal = ({
                     component={Link}
                     to={`/profile/${member.id}`}
                     color={darkMode ? "inherit" : "primary"}
-                    sx={{ 
-                      color: darkMode ? '#90caf9' : undefined 
+                    sx={{
+                      color: darkMode ? '#90caf9' : undefined
                     }}
                   >
-                    View All {memberPosts.length} Posts
+                    {t('components.memberDetails.viewAllPosts', { count: memberPosts.length })}
                   </Button>
                 </Box>
               )}
             </>
           ) : (
-            <Typography 
-              variant="body2" 
+            <Typography
+              variant="body2"
               color={customFadedText}
               sx={{ p: 1, fontStyle: 'italic' }}
             >
-              No posts yet
+              {t('components.memberDetails.noPostsYet')}
             </Typography>
           )}
         </Box>

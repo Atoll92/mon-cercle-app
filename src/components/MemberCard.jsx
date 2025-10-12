@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from '../hooks/useTranslation';
 import UserBadges from './UserBadges';
 import {
   Box,
@@ -60,14 +61,15 @@ import {
 } from 'react-icons/fa';
 import { SiBluesky } from 'react-icons/si';
 
-const MemberCard = ({ 
-  member, 
-  activeProfile, 
-  darkMode = false, 
+const MemberCard = ({
+  member,
+  activeProfile,
+  darkMode = false,
   onMemberSelect,
   isLastMember,
-  lastMemberRef 
+  lastMemberRef
 }) => {
+  const { t } = useTranslation();
   const theme = useTheme();
   
   // Theme colors
@@ -229,7 +231,7 @@ const MemberCard = ({
               
               {/* Message button */}
               {member.id !== activeProfile?.id && (
-                <Tooltip title="Send Message" placement="bottom">
+                <Tooltip title={t('components.memberCard.sendMessage')} placement="bottom">
                   <IconButton
                     component={Link}
                     to={`/messages/${member.id}`}
@@ -270,18 +272,18 @@ const MemberCard = ({
                 letterSpacing: '-0.02em'
               }}
             >
-              {member.full_name || 'Unnamed User'}
+              {member.full_name || t('components.memberCard.unnamedUser')}
               {member.id === activeProfile?.id && (
-                <Typography 
-                  component="span" 
-                  sx={{ 
-                    ml: 1, 
-                    fontSize: '0.75rem', 
+                <Typography
+                  component="span"
+                  sx={{
+                    ml: 1,
+                    fontSize: '0.75rem',
                     color: theme.palette.primary.main,
                     fontWeight: 500
                   }}
                 >
-                  (You)
+                  {t('components.memberCard.you')}
                 </Typography>
               )}
             </Typography>
@@ -289,7 +291,7 @@ const MemberCard = ({
             {/* Role Chip */}
             <Chip
               icon={member.role === 'admin' ? <AdminIcon /> : <PersonIcon />}
-              label={member.role === 'admin' ? 'Admin' : 'Member'}
+              label={member.role === 'admin' ? t('components.memberCard.admin') : t('components.memberCard.member')}
               size="small"
               sx={{
                 mb: 1,

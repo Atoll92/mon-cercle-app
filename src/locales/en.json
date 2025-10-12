@@ -1875,6 +1875,36 @@
       "viewDetails": "View Details"
     }
   },
+  "components": {
+    "memberDetails": {
+      "title": "Member Profile",
+      "failedLoadPosts": "Failed to load posts",
+      "failedLoadMoodboard": "Failed to load moodboard",
+      "noPublicMoodboards": "No public moodboards",
+      "unnamedUser": "Unnamed User",
+      "you": " (You)",
+      "admin": "Admin",
+      "member": "Member",
+      "message": "Message",
+      "fullProfile": "Full Profile",
+      "viewMoodboard": "View Moodboard",
+      "contactLinks": "Contact & Links",
+      "portfolioWebsite": "Portfolio Website",
+      "linkedinProfile": "LinkedIn Profile",
+      "skillsExpertise": "Skills & Expertise",
+      "posts": "Posts",
+      "postsWithCount": "Posts ({{count}})",
+      "viewAllPosts": "View All {{count}} Posts",
+      "noPostsYet": "No posts yet"
+    },
+    "memberCard": {
+      "sendMessage": "Send Message",
+      "unnamedUser": "Unnamed User",
+      "you": "(You)",
+      "admin": "Admin",
+      "member": "Member"
+    }
+  },
   "pages": {
     "event": {
       "eventNotFound": "Event not found",
