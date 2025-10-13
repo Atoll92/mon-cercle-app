@@ -80,53 +80,61 @@ export const moderateAnnonce = async (annonceId, status = null, category = null)
 };
 
 /**
- * Moderate an annonce with Sympa sync (approve/reject)
- * This triggers the Edge Function to send the command to Sympa
+ * Moderate an annonce with batched Sympa sync (approve/reject)
+ * This schedules the moderation command to be sent at 18h daily
  * @param {string} annonceId - Annonce ID
  * @param {string} status - New status: 'approved' or 'rejected'
  * @param {string|null} category - Category to assign (optional)
- * @returns {Promise<Object>} Result with success status and sync info
+ * @returns {Promise<Object>} Result with success status
  */
 export const moderateAnnonceWithSympa = async (annonceId, status, category = null) => {
   try {
-    // First, update the annonce in the database
-    await moderateAnnonce(annonceId, status, category);
+    // Calculate next 18h send time (today at 18:00 or tomorrow at 18:00)
+    const now = new Date();
+    const today18h = new Date(now);
+    today18h.setHours(18, 0, 0, 0);
 
-    // Only sync with Sympa if there's a status change (not just category update)
+    // If it's already past 18h today, schedule for tomorrow at 18h
+    const scheduledSendAt = now > today18h
+      ? new Date(today18h.getTime() + 24 * 60 * 60 * 1000)
+      : today18h;
+
+    const updates = {
+      updated_at: new Date().toISOString()
+    };
+
+    // Update status if provided
     if (status) {
-      // Then, invoke the Sympa moderation Edge Function
-      const { data, error } = await supabase.functions.invoke('sympa-moderate-message', {
-        body: {
-          annonceId,
-          action: status
-        }
-      });
-
-      if (error) {
-        console.error('Error invoking Sympa moderation function:', error);
-        console.error('Error details:', JSON.stringify(error, null, 2));
-
-        // Extract error message from the response
-        let errorMessage = 'Failed to sync with Sympa';
-        if (error.context?.body) {
-          try {
-            const errorBody = typeof error.context.body === 'string'
-              ? JSON.parse(error.context.body)
-              : error.context.body;
-            errorMessage = errorBody.error || errorMessage;
-          } catch (e) {
-            console.error('Could not parse error body:', e);
-          }
-        }
-
-        throw new Error(errorMessage);
-      }
-
-      return data;
+      updates.status = status;
+      updates.moderated_at = new Date().toISOString();
+      updates.scheduled_send_at = scheduledSendAt.toISOString();
+      updates.synced_to_sympa = false; // Reset sync flag
+      updates.sent_at = null; // Clear previous sent_at if any
     }
 
-    // If no status change, just return success
-    return { success: true };
+    // Update category if provided
+    if (category !== null) {
+      updates.category = category;
+    }
+
+    const { data, error } = await supabase
+      .from('annonces_moderation')
+      .update(updates)
+      .eq('id', annonceId)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error moderating annonce:', error);
+      throw error;
+    }
+
+    return {
+      success: true,
+      data,
+      scheduledSendAt: scheduledSendAt.toISOString(),
+      message: `Moderation scheduled for ${scheduledSendAt.toLocaleString()}`
+    };
   } catch (error) {
     console.error('Error moderating annonce with Sympa:', error);
     throw error;

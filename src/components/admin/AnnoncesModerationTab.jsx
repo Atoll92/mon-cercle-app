@@ -32,7 +32,8 @@ import {
   FilterList as FilterIcon,
   Refresh as RefreshIcon,
   Sync as SyncIcon,
-  CheckCircleOutline as SyncedIcon
+  CheckCircleOutline as SyncedIcon,
+  Schedule as ScheduleIcon
 } from '@mui/icons-material';
 import { useTranslation } from '../../hooks/useTranslation';
 import { fetchAnnonces, moderateAnnonceWithSympa } from '../../api/annonces';
@@ -112,14 +113,21 @@ function AnnoncesModerationTab({ networkId, darkMode }) {
         ));
       }
 
-      // Show success message
-      if (result?.synced) {
-        setError(null);
-      } else if (status === 'approved' || status === 'rejected') {
-        // Don't show error for successful moderation
-        setError(null);
+      // Show success message with scheduling info
+      if (status === 'approved' || status === 'rejected') {
+        if (result?.scheduledSendAt) {
+          const scheduledTime = new Date(result.scheduledSendAt).toLocaleString('fr-FR', {
+            hour: '2-digit',
+            minute: '2-digit'
+          });
+          setError(null); // Clear any previous errors
+          // You could show a success message here if needed
+          console.log(`✅ Modération programmée pour ${scheduledTime}`);
+        } else {
+          setError(null);
+        }
       } else {
-        setError('Modération réussie (pas de synchronisation Sympa)');
+        setError('Modération réussie');
       }
     } catch (err) {
       console.error('Error moderating annonce:', err);
@@ -321,8 +329,20 @@ function AnnoncesModerationTab({ networkId, darkMode }) {
                           }}
                         />
                       )}
+                      {/* Scheduled send indicator */}
+                      {annonce.scheduled_send_at && !annonce.sent_at && (
+                        <Tooltip title={`Envoi programmé le ${new Date(annonce.scheduled_send_at).toLocaleString('fr-FR')}`}>
+                          <Chip
+                            icon={<ScheduleIcon />}
+                            label={`Envoi à ${new Date(annonce.scheduled_send_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`}
+                            size="small"
+                            variant="outlined"
+                            color="info"
+                          />
+                        </Tooltip>
+                      )}
                       {/* Sympa sync status indicator */}
-                      {annonce.status !== 'pending' && (
+                      {annonce.status !== 'pending' && annonce.sent_at && (
                         <Tooltip title={annonce.synced_to_sympa ? 'Synchronisé avec Sympa' : 'Non synchronisé avec Sympa'}>
                           <Chip
                             icon={annonce.synced_to_sympa ? <SyncedIcon /> : <SyncIcon />}
