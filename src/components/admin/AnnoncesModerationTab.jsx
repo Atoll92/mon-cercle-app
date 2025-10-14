@@ -20,6 +20,8 @@ import {
   Stack,
   Tooltip,
   Grid,
+  Tabs,
+  Tab,
   useTheme as useMuiTheme
 } from '@mui/material';
 import {
@@ -46,20 +48,13 @@ const CATEGORIES = [
   { value: 'ateliers', label: 'Ateliers', color: '#9c27b0' }
 ];
 
-const STATUS_FILTERS = [
-  { value: 'all', label: 'Toutes' },
-  { value: 'pending', label: 'En attente' },
-  { value: 'approved', label: 'Validées' },
-  { value: 'rejected', label: 'Rejetées' }
-];
-
 function AnnoncesModerationTab({ networkId, darkMode }) {
   const { t } = useTranslation();
   const muiTheme = useMuiTheme();
   const [annonces, setAnnonces] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [filter, setFilter] = useState('pending');
+  const [activeTab, setActiveTab] = useState(0); // 0=Pending, 1=Batch Today, 2=All
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [moderating, setModerating] = useState({});
@@ -68,8 +63,52 @@ function AnnoncesModerationTab({ networkId, darkMode }) {
     try {
       setLoading(true);
       setError(null);
-      const data = await fetchAnnonces(networkId, filter === 'all' ? null : filter);
-      setAnnonces(data || []);
+
+      // Tab 0: Pending messages
+      // Tab 1: Batch today (approved + rejected from today)
+      // Tab 2: Recent (all messages from last 7 days)
+
+      if (activeTab === 1) {
+        // Batch today: Show moderated messages from today
+        const data = await fetchAnnonces(networkId, null);
+        console.log('📦 Batch view - All messages:', data);
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        console.log('📦 Today start:', today.toISOString());
+
+        const todayMessages = (data || []).filter(a => {
+          if (!a.moderated_at) {
+            return false;
+          }
+          if (a.status !== 'approved' && a.status !== 'rejected') {
+            return false;
+          }
+          const moderatedDate = new Date(a.moderated_at);
+          const isToday = moderatedDate >= today;
+          console.log(`📦 Message ${a.id}: status=${a.status}, moderated_at=${a.moderated_at}, isToday=${isToday}`);
+          return isToday;
+        });
+
+        console.log('📦 Filtered today messages:', todayMessages.length, todayMessages);
+        setAnnonces(todayMessages);
+      } else if (activeTab === 2) {
+        // Recent: Show all messages from last 7 days
+        const data = await fetchAnnonces(networkId, null);
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+        const recentMessages = (data || []).filter(a => {
+          const createdDate = new Date(a.created_at);
+          return createdDate >= sevenDaysAgo;
+        });
+
+        setAnnonces(recentMessages);
+      } else {
+        // Tab 0: Pending messages
+        const data = await fetchAnnonces(networkId, 'pending');
+        setAnnonces(data || []);
+      }
     } catch (err) {
       console.error('Error loading annonces:', err);
       setError('Erreur lors du chargement des messages');
@@ -82,7 +121,7 @@ function AnnoncesModerationTab({ networkId, darkMode }) {
     if (networkId) {
       loadAnnonces();
     }
-  }, [networkId, filter]);
+  }, [networkId, activeTab]);
 
   const handleModerate = async (annonceId, status, category = null) => {
     try {
@@ -188,6 +227,31 @@ function AnnoncesModerationTab({ networkId, darkMode }) {
 
   return (
     <Box>
+      {/* Tabs Navigation */}
+      <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
+        <Tabs
+          value={activeTab}
+          onChange={(e, newValue) => setActiveTab(newValue)}
+          aria-label="annonces moderation tabs"
+        >
+          <Tab
+            label="En attente"
+            icon={<Chip label={annonces.filter(a => a.status === 'pending').length} size="small" color="warning" />}
+            iconPosition="end"
+          />
+          <Tab
+            label="Batch du jour (7pm)"
+            icon={<Chip label={activeTab === 1 ? annonces.length : '•'} size="small" color="info" />}
+            iconPosition="end"
+          />
+          <Tab
+            label="Récents (7 jours)"
+            icon={<Chip label={activeTab === 2 ? annonces.length : '•'} size="small" />}
+            iconPosition="end"
+          />
+        </Tabs>
+      </Box>
+
       {/* Header with filters */}
       <Box sx={{ mb: 3 }}>
         <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap" sx={{ mb: 2 }}>
@@ -198,21 +262,6 @@ function AnnoncesModerationTab({ networkId, darkMode }) {
             onChange={(e) => setSearchQuery(e.target.value)}
             sx={{ flexGrow: 1, minWidth: 250 }}
           />
-
-          <FormControl size="small" sx={{ minWidth: 150 }}>
-            <InputLabel>Statut</InputLabel>
-            <Select
-              value={filter}
-              onChange={(e) => setFilter(e.target.value)}
-              label="Statut"
-            >
-              {STATUS_FILTERS.map(status => (
-                <MenuItem key={status.value} value={status.value}>
-                  {status.label}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
 
           <FormControl size="small" sx={{ minWidth: 150 }}>
             <InputLabel>Catégorie</InputLabel>
@@ -238,7 +287,7 @@ function AnnoncesModerationTab({ networkId, darkMode }) {
         </Stack>
 
         {/* Stats */}
-        <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
+        <Stack direction="row" spacing={2} sx={{ mb: 2 }} flexWrap="wrap">
           <Chip
             label={`Total: ${annonces.length}`}
             variant="outlined"
@@ -259,6 +308,41 @@ function AnnoncesModerationTab({ networkId, darkMode }) {
             variant="outlined"
           />
         </Stack>
+
+        {/* Tab-specific info banners */}
+        {activeTab === 0 && (
+          <Alert severity="warning" sx={{ mb: 2 }}>
+            <Typography variant="body2" sx={{ fontWeight: 'medium', mb: 0.5 }}>
+              ⏳ Messages en attente de modération
+            </Typography>
+            <Typography variant="caption">
+              Assignez une catégorie et validez ou rejetez chaque message.
+            </Typography>
+          </Alert>
+        )}
+
+        {activeTab === 1 && (
+          <Alert severity="info" sx={{ mb: 2 }}>
+            <Typography variant="body2" sx={{ fontWeight: 'medium', mb: 0.5 }}>
+              📦 Batch du jour - Envoi à 19h00 (7pm)
+            </Typography>
+            <Typography variant="caption">
+              Affiche tous les messages approuvés et rejetés aujourd'hui. Les messages approuvés ({annonces.filter(a => a.status === 'approved').length}) seront envoyés automatiquement par Sympa à 19h00.
+              {annonces.length === 0 && ' Aucun message modéré aujourd\'hui.'}
+            </Typography>
+          </Alert>
+        )}
+
+        {activeTab === 2 && (
+          <Alert severity="default" sx={{ mb: 2 }}>
+            <Typography variant="body2" sx={{ fontWeight: 'medium', mb: 0.5 }}>
+              📋 Messages récents (7 derniers jours)
+            </Typography>
+            <Typography variant="caption">
+              Historique complet des messages reçus ces 7 derniers jours.
+            </Typography>
+          </Alert>
+        )}
       </Box>
 
       {error && (
@@ -281,10 +365,24 @@ function AnnoncesModerationTab({ networkId, darkMode }) {
           <Typography variant="h6" color="text.secondary">
             {searchQuery || categoryFilter !== 'all'
               ? 'Aucun message ne correspond aux filtres'
-              : filter === 'pending'
+              : activeTab === 0
               ? 'Aucun message en attente de modération'
-              : 'Aucun message'}
+              : activeTab === 1
+              ? 'Aucun message modéré aujourd\'hui'
+              : 'Aucun message récent'}
           </Typography>
+          {activeTab === 1 && (
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+              Les messages approuvés ou rejetés aujourd'hui apparaîtront ici.
+              <br />
+              Les messages approuvés seront envoyés automatiquement à 19h00.
+            </Typography>
+          )}
+          {activeTab === 2 && (
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+              Aucun message reçu ces 7 derniers jours.
+            </Typography>
+          )}
         </Paper>
       ) : (
         <Stack spacing={2}>
@@ -330,6 +428,17 @@ function AnnoncesModerationTab({ networkId, darkMode }) {
                             size="small"
                             variant="outlined"
                             color={annonce.synced_to_sympa ? 'success' : 'default'}
+                          />
+                        </Tooltip>
+                      )}
+                      {/* Batch mode indicator */}
+                      {activeTab === 1 && annonce.moderated_at && (
+                        <Tooltip title={`Modérée à ${new Date(annonce.moderated_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`}>
+                          <Chip
+                            label={`${annonce.status === 'approved' ? 'Validée' : 'Rejetée'} à ${new Date(annonce.moderated_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`}
+                            size="small"
+                            variant="outlined"
+                            color={annonce.status === 'approved' ? 'success' : 'error'}
                           />
                         </Tooltip>
                       )}
