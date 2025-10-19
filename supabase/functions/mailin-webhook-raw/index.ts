@@ -460,29 +460,6 @@ serve(async (req) => {
       const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
       const supabase = createClient(supabaseUrl, supabaseKey)
 
-      // Check if this email already exists to prevent duplicates (using sender email + subject)
-      const { data: existing } = await supabase
-        .from('annonces_moderation')
-        .select('id')
-        .eq('sender_email', originalSender.email)
-        .eq('subject', subject)
-        .single()
-
-      if (existing) {
-        console.log(`⚠️ Message from ${originalSender.email} with subject "${subject}" already exists, skipping`)
-        return new Response(
-          JSON.stringify({
-            success: true,
-            message: 'Message already exists',
-            annonceId: existing.id,
-            duplicate: true
-          }),
-          {
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-          }
-        )
-      }
-
       // Insert into database
       const { data, error } = await supabase
         .from('annonces_moderation')
