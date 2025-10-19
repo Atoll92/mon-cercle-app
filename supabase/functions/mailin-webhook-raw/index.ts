@@ -8,8 +8,8 @@ const corsHeaders = {
 
 const REZOPROSPEC_NETWORK_ID = 'b4e51e21-de8f-4f5b-b35d-f98f6df27508'
 
-// Decode quoted-printable content (e.g., =C3=A9 → é)
-function decodeQuotedPrintable(str: string): string {
+// Decode quoted-printable content with charset support
+function decodeQuotedPrintable(str: string, charset: string = 'utf-8'): string {
   try {
     // First handle soft line breaks (=\r?\n)
     let decoded = str.replace(/=\r?\n/g, '')
@@ -20,14 +20,27 @@ function decodeQuotedPrintable(str: string): string {
     })
 
     // Now we have a string where each character represents a byte
-    // Convert it to a proper UTF-8 string
+    // Convert it to a proper string based on charset
     const bytes = new Uint8Array(decoded.length)
     for (let i = 0; i < decoded.length; i++) {
       bytes[i] = decoded.charCodeAt(i)
     }
 
-    // Decode as UTF-8
-    const decoder = new TextDecoder('utf-8', { fatal: false })
+    // Normalize charset name
+    const normalizedCharset = charset.toLowerCase().replace(/[^a-z0-9]/g, '')
+
+    // Map common charset names to TextDecoder names
+    let decoderCharset = 'utf-8'
+    if (normalizedCharset === 'windows1252' || normalizedCharset === 'cp1252' || normalizedCharset === 'iso88591') {
+      decoderCharset = 'windows-1252'
+    } else if (normalizedCharset === 'utf8' || normalizedCharset === 'utf-8') {
+      decoderCharset = 'utf-8'
+    } else if (normalizedCharset === 'iso88592') {
+      decoderCharset = 'iso-8859-2'
+    }
+
+    // Decode with appropriate charset
+    const decoder = new TextDecoder(decoderCharset, { fatal: false })
     return decoder.decode(bytes)
   } catch (e) {
     return str
@@ -118,6 +131,12 @@ function parseFromHeader(from: string): { name?: string, email: string } {
     return { name: match[1].replace(/^["']|["']$/g, '').trim(), email: match[2] }
   }
   return { email: from.trim() }
+}
+
+// Extract charset from Content-Type header
+function extractCharset(contentType: string): string {
+  const match = contentType.match(/charset=["']?([^"';\s]+)["']?/i)
+  return match ? match[1] : 'utf-8'
 }
 
 /**
@@ -308,9 +327,11 @@ serve(async (req) => {
                       const partHeaderMap = parseEmailHeaders(embPartHeaders)
                       const contentType = partHeaderMap.get('content-type') || ''
                       const transferEncoding = partHeaderMap.get('content-transfer-encoding') || ''
+                      const charset = extractCharset(contentType)
 
                       // Debug logging
                       console.log(`Part content-type: ${contentType}`)
+                      console.log(`Part charset: ${charset}`)
                       console.log(`Part transfer-encoding: ${transferEncoding}`)
                       console.log(`Raw body first 200 chars: ${embPartBody.substring(0, 200)}`)
 
@@ -324,46 +345,75 @@ serve(async (req) => {
                         try {
                           const cleanBase64 = embPartBody.replace(/\s/g, '')
                           const binaryString = atob(cleanBase64)
-                          // Convert binary string to UTF-8
+                          // Convert binary string using the declared charset
                           const bytes = new Uint8Array(binaryString.length)
                           for (let i = 0; i < binaryString.length; i++) {
                             bytes[i] = binaryString.charCodeAt(i)
                           }
-                          const decoder = new TextDecoder('utf-8', { fatal: false })
+
+                          // Use appropriate decoder based on charset
+                          const normalizedCharset = charset.toLowerCase().replace(/[^a-z0-9]/g, '')
+                          let decoderCharset = 'utf-8'
+                          if (normalizedCharset === 'windows1252' || normalizedCharset === 'cp1252' || normalizedCharset === 'iso88591') {
+                            decoderCharset = 'windows-1252'
+                          }
+
+                          const decoder = new TextDecoder(decoderCharset, { fatal: false })
                           embPartBody = decoder.decode(bytes)
                         } catch (e) {
                           console.error('Failed to decode as base64, falling back to original decoding:', e)
                           // Fall back to the declared encoding
                           if (transferEncoding.toLowerCase().includes('quoted-printable')) {
-                            embPartBody = decodeQuotedPrintable(embPartBody)
+                            embPartBody = decodeQuotedPrintable(embPartBody, charset)
                           }
                         }
                       } else if (transferEncoding.toLowerCase().includes('quoted-printable')) {
-                        embPartBody = decodeQuotedPrintable(embPartBody)
+                        embPartBody = decodeQuotedPrintable(embPartBody, charset)
                       } else if (transferEncoding.toLowerCase().includes('base64')) {
                         try {
-                          embPartBody = atob(embPartBody.replace(/\s/g, ''))
+                          const cleanBase64 = embPartBody.replace(/\s/g, '')
+                          const binaryString = atob(cleanBase64)
+                          // Convert binary string using the declared charset
+                          const bytes = new Uint8Array(binaryString.length)
+                          for (let i = 0; i < binaryString.length; i++) {
+                            bytes[i] = binaryString.charCodeAt(i)
+                          }
+
+                          // Use appropriate decoder based on charset
+                          const normalizedCharset = charset.toLowerCase().replace(/[^a-z0-9]/g, '')
+                          let decoderCharset = 'utf-8'
+                          if (normalizedCharset === 'windows1252' || normalizedCharset === 'cp1252' || normalizedCharset === 'iso88591') {
+                            decoderCharset = 'windows-1252'
+                          }
+
+                          const decoder = new TextDecoder(decoderCharset, { fatal: false })
+                          embPartBody = decoder.decode(bytes)
                         } catch (e) {
                           console.error('Failed to decode base64 content')
                         }
                       } else if (transferEncoding.toLowerCase() === '8bit' || transferEncoding.toLowerCase() === '7bit' || !transferEncoding) {
-                        // For 8bit, 7bit, or no encoding, the content might already be UTF-8 but incorrectly interpreted
-                        // Try to fix double-encoded UTF-8
-                        try {
-                          // Check if content appears to be double-encoded UTF-8
-                          if (/Ã©|Ã¨|Ã§|Ã |Â§/.test(embPartBody)) {
-                            console.log('Detected possible double-encoded UTF-8, attempting to fix...')
-                            // Convert the incorrectly interpreted string back to bytes
+                        // For 8bit, 7bit, or no encoding, the content might need charset conversion
+                        // If charset is Windows-1252, we need to convert it
+                        if (charset.toLowerCase().includes('windows-1252') || charset.toLowerCase().includes('iso-8859')) {
+                          try {
+                            // The string is likely already in the wrong encoding
+                            // Convert each character code to a byte and decode with proper charset
                             const bytes = new Uint8Array(embPartBody.length)
                             for (let i = 0; i < embPartBody.length; i++) {
-                              bytes[i] = embPartBody.charCodeAt(i)
+                              bytes[i] = embPartBody.charCodeAt(i) & 0xFF
                             }
-                            // Decode as UTF-8
-                            const decoder = new TextDecoder('utf-8', { fatal: false })
+
+                            const normalizedCharset = charset.toLowerCase().replace(/[^a-z0-9]/g, '')
+                            let decoderCharset = 'utf-8'
+                            if (normalizedCharset === 'windows1252' || normalizedCharset === 'cp1252' || normalizedCharset === 'iso88591') {
+                              decoderCharset = 'windows-1252'
+                            }
+
+                            const decoder = new TextDecoder(decoderCharset, { fatal: false })
                             embPartBody = decoder.decode(bytes)
+                          } catch (e) {
+                            console.error('Failed to convert charset:', e)
                           }
-                        } catch (e) {
-                          console.error('Failed to fix double-encoded UTF-8:', e)
                         }
                       }
 
@@ -381,34 +431,61 @@ serve(async (req) => {
                   // Check if there's a Content-Transfer-Encoding header in the embedded message headers
                   const transferEncoding = headerMap.get('content-transfer-encoding') || ''
                   const contentType = headerMap.get('content-type') || ''
+                  const charset = extractCharset(contentType)
                   let decodedBody = embeddedBody
 
                   console.log(`Single-part content-type: ${contentType}`)
+                  console.log(`Single-part charset: ${charset}`)
                   console.log(`Single-part transfer-encoding: ${transferEncoding}`)
                   console.log(`Single-part raw body first 200 chars: ${embeddedBody.substring(0, 200)}`)
 
                   if (transferEncoding.toLowerCase().includes('quoted-printable')) {
-                    decodedBody = decodeQuotedPrintable(embeddedBody)
+                    decodedBody = decodeQuotedPrintable(embeddedBody, charset)
                   } else if (transferEncoding.toLowerCase().includes('base64')) {
                     try {
-                      decodedBody = atob(embeddedBody.replace(/\s/g, ''))
+                      const cleanBase64 = embeddedBody.replace(/\s/g, '')
+                      const binaryString = atob(cleanBase64)
+                      // Convert binary string using the declared charset
+                      const bytes = new Uint8Array(binaryString.length)
+                      for (let i = 0; i < binaryString.length; i++) {
+                        bytes[i] = binaryString.charCodeAt(i)
+                      }
+
+                      // Use appropriate decoder based on charset
+                      const normalizedCharset = charset.toLowerCase().replace(/[^a-z0-9]/g, '')
+                      let decoderCharset = 'utf-8'
+                      if (normalizedCharset === 'windows1252' || normalizedCharset === 'cp1252' || normalizedCharset === 'iso88591') {
+                        decoderCharset = 'windows-1252'
+                      }
+
+                      const decoder = new TextDecoder(decoderCharset, { fatal: false })
+                      decodedBody = decoder.decode(bytes)
                     } catch (e) {
                       console.error('Failed to decode base64 content')
                     }
                   } else if (transferEncoding.toLowerCase() === '8bit' || transferEncoding.toLowerCase() === '7bit' || !transferEncoding) {
-                    // Try to fix double-encoded UTF-8
-                    try {
-                      if (/Ã©|Ã¨|Ã§|Ã |Â§/.test(decodedBody)) {
-                        console.log('Detected possible double-encoded UTF-8 in single-part message, attempting to fix...')
+                    // For 8bit, 7bit, or no encoding, the content might need charset conversion
+                    // If charset is Windows-1252, we need to convert it
+                    if (charset.toLowerCase().includes('windows-1252') || charset.toLowerCase().includes('iso-8859')) {
+                      try {
+                        // The string is likely already in the wrong encoding
+                        // Convert each character code to a byte and decode with proper charset
                         const bytes = new Uint8Array(decodedBody.length)
                         for (let i = 0; i < decodedBody.length; i++) {
-                          bytes[i] = decodedBody.charCodeAt(i)
+                          bytes[i] = decodedBody.charCodeAt(i) & 0xFF
                         }
-                        const decoder = new TextDecoder('utf-8', { fatal: false })
+
+                        const normalizedCharset = charset.toLowerCase().replace(/[^a-z0-9]/g, '')
+                        let decoderCharset = 'utf-8'
+                        if (normalizedCharset === 'windows1252' || normalizedCharset === 'cp1252' || normalizedCharset === 'iso88591') {
+                          decoderCharset = 'windows-1252'
+                        }
+
+                        const decoder = new TextDecoder(decoderCharset, { fatal: false })
                         decodedBody = decoder.decode(bytes)
+                      } catch (e) {
+                        console.error('Failed to convert charset:', e)
                       }
-                    } catch (e) {
-                      console.error('Failed to fix double-encoded UTF-8:', e)
                     }
                   }
 
