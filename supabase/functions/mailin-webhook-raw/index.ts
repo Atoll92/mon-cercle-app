@@ -121,6 +121,44 @@ function parseFromHeader(from: string): { name?: string, email: string } {
 }
 
 /**
+ * Convert HTML to plain text
+ */
+function htmlToText(html: string): string {
+  // Remove script and style elements
+  let text = html.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+  text = text.replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
+
+  // Replace <br> and <p> tags with newlines
+  text = text.replace(/<br\s*\/?>/gi, '\n')
+  text = text.replace(/<\/p>/gi, '\n\n')
+  text = text.replace(/<p[^>]*>/gi, '')
+
+  // Replace <div> and <li> tags with newlines
+  text = text.replace(/<\/div>/gi, '\n')
+  text = text.replace(/<div[^>]*>/gi, '')
+  text = text.replace(/<\/li>/gi, '\n')
+  text = text.replace(/<li[^>]*>/gi, '• ')
+
+  // Remove all other HTML tags
+  text = text.replace(/<[^>]+>/g, '')
+
+  // Decode HTML entities
+  text = text.replace(/&nbsp;/g, ' ')
+  text = text.replace(/&amp;/g, '&')
+  text = text.replace(/&lt;/g, '<')
+  text = text.replace(/&gt;/g, '>')
+  text = text.replace(/&quot;/g, '"')
+  text = text.replace(/&#39;/g, "'")
+  text = text.replace(/&([a-z]+);/gi, '') // Remove other entities
+
+  // Clean up multiple newlines and spaces
+  text = text.replace(/\n\s*\n\s*\n/g, '\n\n')
+  text = text.replace(/[ \t]+/g, ' ')
+
+  return text.trim()
+}
+
+/**
  * Auto-categorize annonce based on keywords
  * For Rezoprospec network (b4e51e21-de8f-4f5b-b35d-f98f6df27508),
  * only 'general', 'logement', and 'ateliers' are valid categories
@@ -402,8 +440,14 @@ serve(async (req) => {
         )
       }
 
-      // Use plain text content, fall back to subject if no content
-      const content = originalPlainContent || originalSubject || 'Contenu du message à modérer'
+      // Use plain text content, or convert HTML to text, fall back to subject if no content
+      let content = originalPlainContent
+      if (!content && originalHtmlContent) {
+        content = htmlToText(originalHtmlContent)
+      }
+      if (!content) {
+        content = originalSubject || 'Contenu du message à modéré'
+      }
 
       // Use subject, fall back to first line of content if no subject
       const subject = originalSubject || content.split('\n')[0].substring(0, 150) || 'Message sans objet'
