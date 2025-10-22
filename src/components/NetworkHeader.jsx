@@ -276,6 +276,7 @@ const NetworkHeader = () => {
         networkId={networkId}
         user={user}
         visibleTabs={visibleTabs}
+        showDefaultHeader={showDefaultHeader}
       />
 
       {/* Desktop Header - hidden on xs */}

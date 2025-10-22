@@ -34,7 +34,7 @@ import { useDirectMessages } from '../context/directMessagesContext';
 import { logout } from '../api/auth';
 import { useProfile } from '../context/profileContext';
 
-const MobileMenu = ({ networkLogo, networkName, networkId, user, visibleTabs = [] }) => {
+const MobileMenu = ({ networkLogo, networkName, networkId, user, visibleTabs = [], showDefaultHeader = false }) => {
   const { darkMode, toggleDarkMode } = useTheme();
   const { unreadTotal } = useDirectMessages();
   const { activeProfile } = useProfile();
@@ -76,6 +76,102 @@ const MobileMenu = ({ networkLogo, networkName, networkId, user, visibleTabs = [
     }
     return 'U';
   };
+
+  // Default header layout for non-logged-in users
+  if (showDefaultHeader) {
+    return (
+      <Box
+        sx={{
+          display: { xs: 'flex', sm: 'none' },
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          width: '100%',
+          px: 2,
+          py: 1.5,
+          minHeight: '64px',
+          backgroundColor: darkMode ? '#1e1e1e' : '#ffffff',
+          borderBottom: `1px solid ${darkMode ? '#333333' : '#eeeeee'}`,
+          position: 'sticky',
+          top: 0,
+          zIndex: 1300,
+        }}
+      >
+        {/* Left: Conclav Logo + Name */}
+        <Link to="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="32"
+            height="32"
+            viewBox="-125 -125 250 250"
+          >
+            <defs>
+              <linearGradient id="mobile-logo-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#667eea" stopOpacity="1" />
+                <stop offset="100%" stopColor="#764ba2" stopOpacity="1" />
+              </linearGradient>
+            </defs>
+
+            {/* Central big disk */}
+            <circle cx="0" cy="0" r="35" fill="url(#mobile-logo-gradient)" />
+
+            {/* Medium disks */}
+            <g fill="url(#mobile-logo-gradient)" opacity="0.8">
+              <circle cx="70.00" cy="0.00" r="20" />
+              <circle cx="43.64" cy="54.72" r="20" />
+              <circle cx="-15.57" cy="68.24" r="20" />
+              <circle cx="-63.06" cy="30.37" r="20" />
+              <circle cx="-63.06" cy="-30.37" r="20" />
+              <circle cx="-15.57" cy="-68.24" r="20" />
+              <circle cx="43.64" cy="-54.72" r="20" />
+            </g>
+
+            {/* Small disks */}
+            <g fill="#667eea" opacity="0.6">
+              <circle cx="85.59" cy="41.21" r="10" />
+              <circle cx="21.13" cy="92.61" r="10" />
+              <circle cx="-59.23" cy="74.27" r="10" />
+              <circle cx="-95.00" cy="0" r="10" />
+              <circle cx="-59.23" cy="-74.27" r="10" />
+              <circle cx="21.13" cy="-92.61" r="10" />
+              <circle cx="85.59" cy="-41.21" r="10" />
+            </g>
+          </svg>
+          <Typography
+            variant="h6"
+            sx={{
+              fontWeight: 700,
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+              fontSize: '1.1rem',
+            }}
+          >
+            Conclav
+          </Typography>
+        </Link>
+
+        {/* Right: Login Icon Button */}
+        <IconButton
+          onClick={() => navigate('/login')}
+          sx={{
+            color: darkMode ? '#ffffff' : '#667eea',
+            border: `1px solid ${darkMode ? '#ffffff' : '#667eea'}`,
+            borderRadius: '8px',
+            padding: '8px',
+            '&:hover': {
+              borderColor: darkMode ? '#ffffff' : '#5a6fd8',
+              backgroundColor: darkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(102, 126, 234, 0.05)',
+              transform: 'translateY(-1px)',
+            },
+            transition: 'all 0.2s ease-in-out',
+          }}
+        >
+          <PersonIcon sx={{ fontSize: '1.4rem' }} />
+        </IconButton>
+      </Box>
+    );
+  }
 
   return (
     <Box
