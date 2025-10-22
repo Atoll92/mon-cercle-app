@@ -2,10 +2,17 @@ import React, { forwardRef } from 'react';
 import { Box, Card, Paper, Button, IconButton } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
-// Animated Box component with fade-in effect
+// Animated Box component with fade-in effect (disabled on mobile)
 export const AnimatedBox = styled(Box)(({ theme, delay = 0 }) => ({
-  animation: `fadeInUp 0.4s ${theme.transitions.easing.easeInOut} ${delay}ms forwards`,
-  opacity: 0,
+  // Disable animation on mobile to prevent content vanishing
+  [theme.breakpoints.down('sm')]: {
+    animation: 'none',
+    opacity: 1,
+  },
+  [theme.breakpoints.up('sm')]: {
+    animation: `fadeInUp 0.4s ${theme.transitions.easing.easeInOut} ${delay}ms forwards`,
+    opacity: 0,
+  },
   '@keyframes fadeInUp': {
     from: {
       opacity: 0,
@@ -29,10 +36,17 @@ export const AnimatedCard = styled(Card)(({ theme }) => ({
   },
 }));
 
-// Animated Paper with scale effect
+// Animated Paper with scale effect (disabled on mobile)
 export const AnimatedPaper = styled(Paper)(({ theme, delay = 0 }) => ({
-  animation: `scaleIn 0.3s ${theme.transitions.easing.easeInOut} ${delay}ms forwards`,
-  opacity: 0,
+  // Disable animation on mobile to prevent content vanishing
+  [theme.breakpoints.down('sm')]: {
+    animation: 'none',
+    opacity: 1,
+  },
+  [theme.breakpoints.up('sm')]: {
+    animation: `scaleIn 0.3s ${theme.transitions.easing.easeInOut} ${delay}ms forwards`,
+    opacity: 0,
+  },
   '@keyframes scaleIn': {
     from: {
       opacity: 0,
@@ -72,16 +86,20 @@ export const AnimatedIconButton = styled(IconButton)(({ theme }) => ({
   },
 }));
 
-// List item with stagger animation
+// List item with stagger animation (disabled on mobile)
 export const StaggeredListItem = forwardRef(({ index = 0, children, ...props }, ref) => {
   const delay = index * 50; // 50ms delay between items
-  
+
   return (
     <Box
       ref={ref}
       sx={{
-        animation: `fadeInLeft 0.4s ease-out ${delay}ms forwards`,
-        opacity: 0,
+        // Disable animation on mobile to prevent content vanishing
+        animation: {
+          xs: 'none',
+          sm: `fadeInLeft 0.4s ease-out ${delay}ms forwards`
+        },
+        opacity: { xs: 1, sm: 0 },
         '@keyframes fadeInLeft': {
           from: {
             opacity: 0,
@@ -128,13 +146,18 @@ export const SkeletonPulse = styled(Box)(({ theme }) => ({
   },
 }));
 
-// Page transition wrapper
+// Page transition wrapper (disabled on mobile)
 export const PageTransition = forwardRef(({ children, ...props }, ref) => {
   return (
     <Box
       ref={ref}
       sx={{
-        animation: 'pageEnter 0.3s ease-out forwards',
+        // Disable animation on mobile to prevent content vanishing
+        animation: {
+          xs: 'none',
+          sm: 'pageEnter 0.3s ease-out forwards'
+        },
+        opacity: { xs: 1, sm: undefined },
         '@keyframes pageEnter': {
           from: {
             opacity: 0,
