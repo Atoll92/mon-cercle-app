@@ -996,12 +996,13 @@ function NetworkLandingPage() {
         <Box
           sx={{
             p: { xs: 2, sm: 3 },
-            pt: { 
+            pt: {
               xs: '30px', // Mobile: normal padding with sticky header
               sm: isTabsFixed ? '30px' : '30px' // Desktop: consistent padding
             },
             minHeight: '600px', // Ensure enough content to scroll and test sticky behavior
-            animation: 'fadeInContent 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.1s both',
+            // Only apply animation on desktop (sm and up)
+            animation: { xs: 'none', sm: 'fadeInContent 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.1s both' },
             '@keyframes fadeInContent': {
               '0%': {
                 opacity: 0,
