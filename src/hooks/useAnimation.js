@@ -24,6 +24,16 @@ export const useFadeIn = (delay = 0, duration = ANIMATION_DURATION.normal) => {
     const element = elementRef.current;
     if (!element) return;
 
+    // Check if mobile (under 600px)
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 600;
+
+    // Skip animation on mobile to prevent content vanishing during scroll
+    if (isMobile) {
+      element.style.opacity = '1';
+      element.style.transform = 'translateY(0)';
+      return;
+    }
+
     // Set initial state
     element.style.opacity = '0';
     element.style.transform = 'translateY(20px)';
