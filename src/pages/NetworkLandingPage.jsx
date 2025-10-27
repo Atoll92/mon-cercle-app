@@ -993,11 +993,12 @@ function NetworkLandingPage() {
         position: 'relative', 
         zIndex: 1050,
         mt: { xs: '-180px', sm: '-80px' }, // Pull container up to straddle the border for headers
+        px: { xs: 0, sm: 2}
       }}>        
         {/* Content area with integrated tab header */}
         <Box
           sx={{
-            p: { xs: 2, sm: 3 },
+            p: { xs: '2 0', sm: 3 },
             pt: {
               xs: '30px', // Mobile: normal padding with sticky header
               sm: isTabsFixed ? '30px' : '30px' // Desktop: consistent padding
