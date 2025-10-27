@@ -41,11 +41,11 @@ import { fetchAnnonces, moderateAnnonceWithSympa } from '../../api/annonces';
 import Spinner from '../Spinner';
 import UserContent from '../UserContent';
 
-// RezoProSpec uses 3 categories: general, logement, ateliers
+// RezoProSpec uses 3 categories: general, logement, espaces_de_travail
 const CATEGORIES = [
   { value: 'general', label: 'Général', color: '#00bcd4' },
   { value: 'logement', label: 'Logement', color: '#2196f3' },
-  { value: 'ateliers', label: 'Ateliers', color: '#9c27b0' }
+  { value: 'espaces_de_travail', label: 'Espaces de travail', color: '#9c27b0' }
 ];
 
 function AnnoncesModerationTab({ networkId, darkMode }) {

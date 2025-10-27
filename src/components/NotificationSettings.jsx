@@ -59,7 +59,7 @@ const NotificationSettings = () => {
   const [annonceCategories, setAnnonceCategories] = useState({
     general: true,
     logement: true,
-    ateliers: true
+    espaces_de_travail: true
   });
 
   // Load user's current notification preferences
@@ -198,9 +198,9 @@ const NotificationSettings = () => {
       color: '#2196f3'
     },
     {
-      key: 'ateliers',
-      label: 'Ateliers',
-      description: 'Ateliers et espaces de travail',
+      key: 'espaces_de_travail',
+      label: 'Espaces de travail',
+      description: 'Bureaux, ateliers, locaux, coworking',
       icon: <AteliersIcon />,
       color: '#9c27b0'
     }

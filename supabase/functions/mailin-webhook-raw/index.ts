@@ -182,7 +182,7 @@ function htmlToText(html: string): string {
 /**
  * Auto-categorize annonce based on keywords
  * For Rezoprospec network (b4e51e21-de8f-4f5b-b35d-f98f6df27508),
- * only 'general', 'logement', and 'ateliers' are valid categories
+ * only 'general', 'logement', and 'espaces_de_travail' are valid categories
  */
 function autoCategorize(text: string): string | null {
   const lowerText = text.toLowerCase()
@@ -192,9 +192,9 @@ function autoCategorize(text: string): string | null {
     return 'logement'
   }
 
-  // Ateliers (workshops/training)
-  if (/\b(atelier|workshop|formation|stage|training|cours|leçon|professeur|enseignement|prof|particulier|soutien|masterclass)\b/i.test(lowerText)) {
-    return 'ateliers'
+  // Espaces de travail (workspaces/offices/workshops - physical places to work)
+  if (/\b(atelier|workshop|bureau|office|espace de travail|coworking|co-working|local|locaux|showroom|salle|espace|studio|lieu de travail|open space|openspace)\b/i.test(lowerText)) {
+    return 'espaces_de_travail'
   }
 
   // Default to 'general' for everything else
