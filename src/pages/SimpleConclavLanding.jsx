@@ -125,7 +125,7 @@ const translations = {
   everythingYouNeed: "Tout ce dont vous avez besoin — rien de superflu.",
   simpleSecure: "Simple et sécurisé",
   simpleSecureDesc: "Créez vos réseaux en quelques secondes. Partagez, organisez, discutez en toute sécurité, sans surveillance.",
-  europeanAlternative: "Conçu pour l’Europe",
+  europeanAlternative: "Conçu en Europe",
   europeanAlternativeDesc: "Développé et hébergé en Europe — une véritable alternative aux plateformes de la Silicon Valley.",
 
   readyToOwn: "Prêt à développer votre espace numérique ?",
