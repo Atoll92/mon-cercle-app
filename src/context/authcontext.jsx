@@ -63,6 +63,21 @@ export const AuthProvider = ({ children }) => {
         // console.log(`AuthProvider: Auth state changed - ${event}`, { hasNewSession: !!newSession });
         setSession(newSession);
         setUser(newSession?.user ?? null);
+
+        // Track user login events (fire and forget - don't block auth)
+        if (event === 'SIGNED_IN' && newSession?.user) {
+          // Fire and forget - don't await
+          supabase.from('analytics_events').insert({
+            event_type: 'user_login',
+            user_id: newSession.user.id,
+            metadata: { email: newSession.user.email }
+          }).then(() => {
+            // Success - do nothing
+          }).catch((error) => {
+            console.error('Analytics tracking error:', error);
+            // Fail silently
+          });
+        }
       }
     );
 

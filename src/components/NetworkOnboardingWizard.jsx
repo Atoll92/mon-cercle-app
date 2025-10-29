@@ -299,12 +299,29 @@ const NetworkOnboardingWizard = ({ profile }) => {
 
       // Reload user profiles to pick up the new network
       await loadUserProfiles();
-      
+
       // The newProfile returned from createProfileForNetwork should be set as active
       if (newProfile) {
         console.log('Setting newly created profile as active:', newProfile);
         await setActiveProfile(newProfile);
       }
+
+      // Track network creation event (fire and forget - don't block)
+      supabase.from('analytics_events').insert({
+        event_type: 'network_created',
+        user_id: user.id,
+        network_id: network.id,
+        profile_id: newProfile?.id,
+        metadata: {
+          network_name: network.name,
+          privacy_level: networkData.privacyLevel,
+          purpose: networkData.purpose,
+          features_enabled: Object.keys(networkData.features).filter(k => networkData.features[k])
+        }
+      }).catch((analyticsError) => {
+        console.error('Analytics tracking error:', analyticsError);
+        // Fail silently
+      });
 
       setSuccess(true);
       

@@ -76,6 +76,7 @@ import {
 import { PageTransition } from '../components/AnimatedComponents';
 import NetworkDetailsModal from '../components/NetworkDetailsModal';
 import TicketsManagement from '../components/superadmin/TicketsManagement';
+import AnalyticsDashboard from '../components/superadmin/AnalyticsDashboard';
 import { logout } from '../api/auth';
 
 const SuperAdminDashboard = () => {
@@ -292,6 +293,7 @@ const SuperAdminDashboard = () => {
         <Paper sx={{ mb: 3 }}>
           <Tabs value={activeTab} onChange={(e, v) => setActiveTab(v)} variant="fullWidth">
             <Tab icon={<DashboardIcon />} label="Networks" />
+            <Tab icon={<AssessmentIcon />} label="User Analytics" />
             <Tab icon={<SupportIcon />} label="Support Tickets" />
             <Tab icon={<DatabaseIcon />} label="System Health" />
           </Tabs>
@@ -717,10 +719,14 @@ const SuperAdminDashboard = () => {
         )}
         
         {activeTab === 1 && (
-          <TicketsManagement />
+          <AnalyticsDashboard />
         )}
 
         {activeTab === 2 && (
+          <TicketsManagement />
+        )}
+
+        {activeTab === 3 && (
           <>
             {/* System Health Dashboard */}
             <Grid container spacing={3} sx={{ mb: 4 }}>

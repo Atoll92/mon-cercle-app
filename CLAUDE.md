@@ -23,7 +23,17 @@ npm run test:watch   # Run tests in watch mode
 - **[Application Status](./status.md)** - Current state and production readiness
 - **[Pre-Launch Tasks](./tasks.md)** - Remaining tasks before production launch
 
-### Recent Changes (2025-08-29)
+### Recent Changes
+
+#### 2025-10-29: Analytics System
+- **User Analytics Dashboard**: Comprehensive monitoring for soft launch
+  - Migration: `20251029000000_analytics_system.sql`
+  - Track: logins, network creation, invites, profile completion, first posts, feature usage, errors
+  - Views: network health, onboarding funnel, user engagement, recent errors
+  - Super Admin Dashboard → "User Analytics" tab
+  - **[Analytics Integration Guide](./docs/ANALYTICS_INTEGRATION.md)** - Full documentation
+
+#### 2025-08-29: Unified Comments Table
 - **Unified Comments Table**: Consolidated 3 separate comment tables into single `comments` table
   - Migration: `20250829162551_unified_comments_table.sql`
   - Simplified API: `src/api/comments.js` now uses single table
@@ -36,6 +46,7 @@ npm run test:watch   # Run tests in watch mode
 - **[RLS Policies](./docs/RLS_POLICIES.md)** - Row-Level Security
 - **[API Documentation](./docs/API_DOCUMENTATION.md)** - API functions
 - **[Components Guide](./docs/COMPONENTS_GUIDE.md)** - React components
+- **[Analytics Integration](./docs/ANALYTICS_INTEGRATION.md)** - User analytics and tracking
 - **[Recent Changes](./docs/RECENT_CHANGES.md)** - Latest updates
 - **[File Listings](./docs/FILE_LISTINGS.md)** - Complete file directory
 - **[Component Listings](./docs/COMPONENT_LISTINGS.md)** - All components by category
