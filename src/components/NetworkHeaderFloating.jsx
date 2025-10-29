@@ -123,11 +123,11 @@ const NetworkHeaderFloating = () => {
     return null;
   }
   
-  // Simplified icon button style with consistent transitions
+  // Icon-only button style with tooltip
   const iconButtonStyle = {
     display: 'flex',
     alignItems: 'center',
-    position: 'relative',
+    justifyContent: 'center',
     minWidth: { xs: '36px', sm: '40px' },
     height: { xs: '36px', sm: '40px' },
     borderRadius: '4px',
@@ -137,23 +137,7 @@ const NetworkHeaderFloating = () => {
     transition: 'background-color 0.3s ease-in-out',
     '&:hover': {
       backgroundColor: darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.04)',
-      '& .buttonText': {
-        width: { xs: '0px', sm: '80px' },
-        opacity: { xs: 0, sm: 1 },
-        marginLeft: { xs: '0px', sm: '8px' },
-      }
     }
-  };
-
-  // Simplified text style with consistent transitions
-  const buttonTextStyle = {
-    width: '0px',
-    overflow: 'hidden',
-    whiteSpace: 'nowrap',
-    opacity: 0,
-    marginLeft: '0px',
-    transition: 'width 0.3s ease-in-out, opacity 0.3s ease-in-out, margin-left 0.3s ease-in-out',
-    display: { xs: 'none', sm: 'block' }
   };
   
   return (
@@ -295,74 +279,58 @@ const NetworkHeaderFloating = () => {
         }}>
           {user ? (
             <>
-              {/* Profile */}
-              <Box 
-                component={Link} 
-                to={`/dashboard`}
-                sx={iconButtonStyle}
-              >
-                <PersonIcon />
-                <Typography
-                  className="buttonText"
-                  sx={buttonTextStyle}
+              {/* Dashboard */}
+              <Tooltip title="Dashboard" arrow>
+                <Box
+                  component={Link}
+                  to={`/dashboard`}
+                  sx={iconButtonStyle}
                 >
-                  Dashboard
-                </Typography>
-              </Box>
-              
+                  <PersonIcon />
+                </Box>
+              </Tooltip>
+
               {/* Network */}
-              <Box 
-                component={Link} 
-                to={user && networkId ? '/network-floating' : (networkId ? `/network-floating/${networkId}` : '/dashboard')}
-                sx={iconButtonStyle}
-              >
-                <BusinessIcon />
-                <Typography
-                  className="buttonText"
-                  sx={buttonTextStyle}
+              <Tooltip title="Network" arrow>
+                <Box
+                  component={Link}
+                  to={user && networkId ? '/network-floating' : (networkId ? `/network-floating/${networkId}` : '/dashboard')}
+                  sx={iconButtonStyle}
                 >
-                  Network
-                </Typography>
-              </Box>
-              
+                  <BusinessIcon />
+                </Box>
+              </Tooltip>
+
               {/* Messages */}
-              <Box 
-                component={Link} 
-                to="/messages"
-                sx={iconButtonStyle}
-              >
-                <MessageBadge />
-                <Typography
-                  className="buttonText"
-                  sx={buttonTextStyle}
+              <Tooltip title="Messages" arrow>
+                <Box
+                  component={Link}
+                  to="/messages"
+                  sx={iconButtonStyle}
                 >
-                  Messages
-                </Typography>
-              </Box>
-              
+                  <MessageBadge />
+                </Box>
+              </Tooltip>
+
               {/* Profile Switcher - only show if user has multiple profiles */}
               {hasMultipleProfiles && (
                 <>
                 </>
               )}
-              
+
               {/* Logout */}
-              <Box 
-                component="div"
-                onClick={logout}
-                sx={{
-                  ...iconButtonStyle,
-                  cursor: 'pointer',
-                }}
-              >
-                <LogoutIcon />
-                <Typography
-                  className="buttonText"
-                  sx={buttonTextStyle}
+              <Tooltip title="Logout" arrow>
+                <Box
+                  component="div"
+                  onClick={logout}
+                  sx={{
+                    ...iconButtonStyle,
+                    cursor: 'pointer',
+                  }}
                 >
-                  Logout
-                </Typography>
-              </Box>
+                  <LogoutIcon />
+                </Box>
+              </Tooltip>
               
               {/* Small vertical divider */}
               <Divider orientation="vertical" flexItem sx={{ 
