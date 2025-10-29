@@ -34,6 +34,7 @@ import {
 import { supabase } from '../supabaseclient';
 import { formatDate } from '../utils/dateFormatting';
 import MediaPlayer from '../components/MediaPlayer';
+import MediaCarousel from '../components/MediaCarousel';
 import LinkPreview from '../components/LinkPreview';
 import LazyImage from '../components/LazyImage';
 import ImageViewerModal from '../components/ImageViewerModal';
@@ -306,101 +307,176 @@ function PostPage() {
         </Box>
 
         {/* Media Display */}
-        {post.file_type === 'pdf' && post.file_url ? (
-          <Box sx={{ mb: 3 }}>
-            <MediaPlayer
-              src={post.file_url}
-              type="pdf"
-              title={post.title || "PDF Document"}
-              fileName={post.title || "PDF Document"}
-            />
-          </Box>
-        ) : post.media_url ? (
-          <Box sx={{ mb: 3 }}>
-            {(() => {
-              // Determine media type from URL if media_type is missing
-              let mediaType = post.media_type;
-              if (!mediaType && post.media_url) {
-                const url = post.media_url.toLowerCase();
-                if (url.includes('.mp4') || url.includes('.webm') || url.includes('.mov')) {
-                  mediaType = 'video';
-                } else if (url.includes('.mp3') || url.includes('.wav') || url.includes('.m4a')) {
-                  mediaType = 'audio';
-                } else if (url.includes('.pdf')) {
-                  mediaType = 'pdf';
-                } else {
-                  mediaType = 'image';
-                }
-              }
-              
+        {(() => {
+          // Check for multiple media items - first check direct field, then check media_metadata
+          let mediaItemsArray = null;
+
+          if (post.media_items && Array.isArray(post.media_items) && post.media_items.length > 0) {
+            mediaItemsArray = post.media_items;
+          } else if (post.media_metadata?.media_items && Array.isArray(post.media_metadata.media_items) && post.media_metadata.media_items.length > 0) {
+            mediaItemsArray = post.media_metadata.media_items;
+          }
+
+          if (mediaItemsArray) {
+            // For single media items, use appropriate component based on type
+            if (mediaItemsArray.length === 1) {
+              const mediaItem = mediaItemsArray[0];
+              const mediaType = mediaItem.type?.toLowerCase();
+
+              // For images, use img element directly
               if (mediaType === 'image') {
                 return (
-                  <Box 
-                    sx={{ 
-                      cursor: 'pointer',
-                      '&:hover': { opacity: 0.9 }
-                    }}
-                    onClick={() => handleImageClick(post.media_url, post.title)}
-                  >
-                    <LazyImage
-                      src={post.media_url}
-                      alt={post.title}
-                      style={{
+                  <Box sx={{ mb: 3 }}>
+                    <Box
+                      sx={{
+                        position: 'relative',
                         width: '100%',
-                        maxHeight: '600px',
-                        objectFit: 'contain',
-                        borderRadius: '8px'
+                        cursor: 'pointer',
+                        transition: 'opacity 0.3s ease',
+                        '&:hover': {
+                          opacity: 0.95
+                        }
                       }}
-                    />
+                      onClick={() => handleImageClick(mediaItem.url, mediaItem.metadata?.fileName || post.title)}
+                    >
+                      <LazyImage
+                        src={mediaItem.url}
+                        alt={mediaItem.metadata?.fileName || post.title}
+                        style={{
+                          width: '100%',
+                          height: 'auto',
+                          display: 'block',
+                          borderRadius: '8px'
+                        }}
+                      />
+                    </Box>
                   </Box>
                 );
-              } else if (mediaType === 'audio') {
-                const audioThumbnail = post.media_metadata?.thumbnail || post.image_url;
-                
-                return (
-                  <MediaPlayer
-                    src={post.media_url}
-                    type="audio"
-                    title={post.media_metadata?.title || post.title}
-                    thumbnail={audioThumbnail}
-                    metadata={post.media_metadata}
-                  />
-                );
-              } else {
-                // Video or PDF
-                return (
-                  <MediaPlayer
-                    src={post.media_url}
-                    type={mediaType}
-                    title={post.media_metadata?.fileName || post.title}
-                    thumbnail={post.media_metadata?.thumbnail || post.image_url}
-                    metadata={post.media_metadata}
-                  />
-                );
               }
-            })()}
-          </Box>
-        ) : post.image_url && (
-          <Box 
-            sx={{ 
-              mb: 3,
-              cursor: 'pointer',
-              '&:hover': { opacity: 0.9 }
-            }}
-            onClick={() => handleImageClick(post.image_url, post.title)}
-          >
-            <LazyImage
-              src={post.image_url}
-              alt={post.title}
-              style={{
-                width: '100%',
-                maxHeight: '600px',
-                objectFit: 'contain',
-                borderRadius: '8px'
-              }}
-            />
-          </Box>
-        )}
+
+              // For video, audio, pdf use MediaPlayer
+              return (
+                <Box sx={{ mb: 3 }}>
+                  <MediaPlayer
+                    src={mediaItem.url}
+                    type={mediaItem.type}
+                    title={mediaItem.metadata?.fileName || post.title}
+                    thumbnail={mediaItem.metadata?.thumbnail}
+                  />
+                </Box>
+              );
+            }
+
+            // For multiple media items, use MediaCarousel
+            return (
+              <Box sx={{ mb: 3 }}>
+                <MediaCarousel
+                  media={mediaItemsArray.map(item => ({
+                    url: item.url,
+                    type: item.type,
+                    metadata: item.metadata || {}
+                  }))}
+                  height={600}
+                  autoplay={false}
+                  showThumbnails={true}
+                  compact={false}
+                />
+              </Box>
+            );
+          }
+
+          // Single media item fallback (legacy support)
+          const mediaUrl = post.media_url || post.image_url || post.file_url;
+          if (!mediaUrl) return null;
+
+          // Handle legacy file_url for PDFs
+          if (post.file_type === 'pdf' && post.file_url) {
+            return (
+              <Box sx={{ mb: 3 }}>
+                <MediaPlayer
+                  src={post.file_url}
+                  type="pdf"
+                  title={post.title || "PDF Document"}
+                  fileName={post.title || "PDF Document"}
+                />
+              </Box>
+            );
+          }
+
+          // Determine media type from URL if media_type is missing
+          let mediaType = post.media_type;
+          if (!mediaType && mediaUrl) {
+            const url = mediaUrl.toLowerCase();
+            if (url.includes('.mp4') || url.includes('.webm') || url.includes('.mov') || url.includes('.ogg')) {
+              mediaType = 'video';
+            } else if (url.includes('.mp3') || url.includes('.wav') || url.includes('.m4a') || url.includes('.aac')) {
+              mediaType = 'audio';
+            } else if (url.includes('.pdf')) {
+              mediaType = 'pdf';
+            } else if (url.includes('.jpg') || url.includes('.jpeg') || url.includes('.png') || url.includes('.gif') || url.includes('.webp')) {
+              mediaType = 'image';
+            }
+          }
+
+          if (mediaType === 'image') {
+            return (
+              <Box sx={{ mb: 3 }}>
+                <Box
+                  sx={{
+                    cursor: 'pointer',
+                    transition: 'opacity 0.3s ease',
+                    '&:hover': { opacity: 0.95 }
+                  }}
+                  onClick={() => handleImageClick(mediaUrl, post.title)}
+                >
+                  <LazyImage
+                    src={mediaUrl}
+                    alt={post.title}
+                    style={{
+                      width: '100%',
+                      height: 'auto',
+                      display: 'block',
+                      borderRadius: '8px'
+                    }}
+                  />
+                </Box>
+              </Box>
+            );
+          }
+
+          if (mediaType === 'audio') {
+            const audioThumbnail = post.media_metadata?.thumbnail || post.image_url;
+
+            return (
+              <Box sx={{ mb: 3 }}>
+                <MediaPlayer
+                  src={mediaUrl}
+                  type="audio"
+                  title={post.media_metadata?.title || post.title}
+                  thumbnail={audioThumbnail}
+                  metadata={post.media_metadata}
+                />
+              </Box>
+            );
+          }
+
+          // Video or PDF
+          if (mediaType) {
+            return (
+              <Box sx={{ mb: 3 }}>
+                <MediaPlayer
+                  src={mediaUrl}
+                  type={mediaType}
+                  title={post.media_metadata?.fileName || post.title}
+                  thumbnail={post.media_metadata?.thumbnail || post.image_url}
+                  metadata={post.media_metadata}
+                />
+              </Box>
+            );
+          }
+
+          return null;
+        })()}
 
         {/* Description */}
         {post.description && (
