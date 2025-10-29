@@ -550,9 +550,13 @@ const Chat = ({ networkId, isFullscreen = false, backgroundImageUrl }) => {
     if (messageToReply) {
       setReplyingTo(messageToReply);
       handleMessageMenuClose();
-      // Focus on input field
+      // Focus on input field and select the text area
       setTimeout(() => {
-        textFieldRef.current?.focus();
+        const input = textFieldRef.current?.querySelector('textarea') || textFieldRef.current?.querySelector('input');
+        if (input) {
+          input.focus();
+          input.select();
+        }
       }, 100);
     } else {
       console.error('Message not found:', selectedMessageId);
