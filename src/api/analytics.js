@@ -80,6 +80,7 @@ export const getNetworkHealthMetrics = async (supabase) => {
     const { data, error } = await supabase
       .from('network_health_metrics')
       .select('*')
+      .limit(50) // Limit for performance
       .order('network_created', { ascending: false });
 
     if (error) throw error;
@@ -103,7 +104,8 @@ export const getOnboardingFunnelMetrics = async (supabase, options = {}) => {
 
     let query = supabase
       .from('onboarding_funnel_metrics')
-      .select('*');
+      .select('*')
+      .limit(100); // Limit for performance
 
     if (daysRange) {
       query = query.gte('days_since_signup', 0).lte('days_since_signup', daysRange);
@@ -151,13 +153,14 @@ export const getUserEngagementMetrics = async (supabase, options = {}) => {
   try {
     let query = supabase
       .from('user_engagement_metrics')
-      .select('*');
+      .select('*')
+      .limit(100); // Limit for performance
 
     if (options.minLogins) {
       query = query.gte('total_logins', options.minLogins);
     }
 
-    const { data, error } = await query.order('signup_date', { ascending: false });
+    const { data, error} = await query.order('signup_date', { ascending: false });
 
     if (error) throw error;
     return handleArrayError(data);
