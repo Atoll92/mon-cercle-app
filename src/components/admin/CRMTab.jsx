@@ -88,7 +88,7 @@ function CRMTab({ networkId, members = [], darkMode, activeProfile }) {
     event: { label: 'Event', color: 'secondary' },
     mention: { label: 'Mention', color: 'info' },
     direct_message: { label: 'Direct Message', color: 'warning' },
-    post: { label: 'Portfolio Post', color: 'success' },
+    post: { label: 'Post', color: 'success' },
     event_proposal: { label: 'Event Proposal', color: 'secondary' },
     event_status: { label: 'Event Status', color: 'secondary' },
     event_reminder: { label: 'Event Reminder', color: 'secondary' },

@@ -765,7 +765,7 @@ const MemberDetailsModal = ({
                         wordBreak: 'break-all'
                       }}
                     >
-                      {t('components.memberDetails.portfolioWebsite')}
+                      {t('components.memberDetails.website')}
                     </Typography>
                   </Paper>
                 </Grid>

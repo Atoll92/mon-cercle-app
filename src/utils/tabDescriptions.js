@@ -6,7 +6,7 @@ export const defaultTabDescriptions = {
   chat: 'Engage in real-time conversations with network members through group discussions and direct messages',
   files: 'Share and access important documents, resources, and files within your network',
   wiki: 'Collaborate on building a knowledge base with guides, documentation, and shared resources',
-  social: 'Share updates, portfolio items, and engage with your community through posts and interactions',
+  social: 'Share updates, posts, and engage with your community through content and interactions',
   courses: 'Access and manage educational courses, learning materials, and track your progress',
   marketplace: 'Browse and trade products, services, and resources within your network community'
 };

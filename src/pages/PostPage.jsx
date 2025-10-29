@@ -225,11 +225,11 @@ function PostPage() {
             >
               <MenuItem onClick={handleEdit}>
                 <EditIcon sx={{ mr: 1 }} fontSize="small" />
-                Edit Post
+                {t('pages.post.editPost')}
               </MenuItem>
               <MenuItem onClick={handleDelete}>
                 <DeleteIcon sx={{ mr: 1 }} fontSize="small" />
-                Delete Post
+                {t('pages.post.deletePost')}
               </MenuItem>
             </Menu>
           </>
@@ -436,7 +436,7 @@ function PostPage() {
               target="_blank"
               rel="noopener noreferrer"
             >
-              Open PDF in New Tab
+              {t('pages.post.openPdfInNewTab')}
             </Button>
           </Box>
         )}

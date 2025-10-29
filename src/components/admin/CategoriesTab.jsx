@@ -430,7 +430,7 @@ const CategoriesTab = ({ networkId }) => {
         <Tab label="All Categories" value="all" />
         <Tab label="Event Categories" value="event" />
         <Tab label="News Categories" value="news" />
-        <Tab label="Portfolio Categories" value="portfolio" />
+        <Tab label="Post Categories" value="portfolio" />
         <Tab label="General Categories" value="general" />
       </Tabs>
 
@@ -521,7 +521,7 @@ const CategoriesTab = ({ networkId }) => {
                 <MenuItem value="general">General (All content types)</MenuItem>
                 <MenuItem value="event">Event Categories</MenuItem>
                 <MenuItem value="news">News Categories</MenuItem>
-                <MenuItem value="portfolio">Portfolio Categories</MenuItem>
+                <MenuItem value="portfolio">Post Categories</MenuItem>
               </Select>
             </FormControl>
             

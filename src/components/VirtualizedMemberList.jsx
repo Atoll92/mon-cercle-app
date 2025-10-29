@@ -303,7 +303,7 @@ const VirtualizedMemberList = ({ members, user, darkMode, onMemberSelect, networ
                           onClick={(e) => e.stopPropagation()}
                           style={{ color: darkMode ? '#90caf9' : '#1976d2' }}
                         >
-                          Posts
+                          Website
                         </a>
                       </Typography>
                     )}

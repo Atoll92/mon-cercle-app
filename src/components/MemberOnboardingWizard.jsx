@@ -751,13 +751,13 @@ const ProfessionalStep = ({ profileData, setProfileData, commonSkills }) => {
   return (
     <Stack spacing={3}>
       <TextField
-        label={t('memberOnboarding.professionalDetails.portfolioUrl')}
+        label={t('memberOnboarding.professionalDetails.websiteUrl')}
         name="portfolioUrl"
         value={profileData.portfolioUrl}
         onChange={handleChange}
         fullWidth
-        placeholder={t('memberOnboarding.professionalDetails.portfolioUrlPlaceholder')}
-        helperText={t('memberOnboarding.professionalDetails.portfolioUrlHelper')}
+        placeholder={t('memberOnboarding.professionalDetails.websiteUrlPlaceholder')}
+        helperText={t('memberOnboarding.professionalDetails.websiteUrlHelper')}
         variant="outlined"
         InputProps={{
           startAdornment: <LanguageIcon color="action" sx={{ mr: 1 }} />
@@ -1076,7 +1076,7 @@ const ReviewStep = ({ profileData, network, createIntroPost, introPostTitle, int
             <Stack spacing={2}>
               {profileData.portfolioUrl && (
                 <Box>
-                  <Typography variant="subtitle2" color="text.secondary">{t('memberOnboarding.review.portfolio')}</Typography>
+                  <Typography variant="subtitle2" color="text.secondary">{t('memberOnboarding.review.website')}</Typography>
                   <Typography variant="body2">{profileData.portfolioUrl}</Typography>
                 </Box>
               )}

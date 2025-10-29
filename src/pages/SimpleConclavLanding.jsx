@@ -71,7 +71,7 @@ const translations = {
   step2Title: "Invite Your People",
   step2Description: "Invite members by email or link. You decide who joins and what’s shared — nothing goes public unless you choose.",
   step3Title: "Share & Connect",
-  step3Description: "Publish posts, organize meetups, or showcase portfolios — all inside a safe, ad-free environment.",
+  step3Description: "Publish posts, organize meetups, or share your work — all inside a safe, ad-free environment.",
 
   breakFree: "Break Free from Big Tech",
   noTracking: "No Google. No Meta. No Amazon. No Apple. No Microsoft — ever watching you.",

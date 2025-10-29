@@ -1091,10 +1091,10 @@ function EditProfilePage() {
 
                     <TextField
                       fullWidth
-                      label={t('editProfile.form.portfolioUrl')}
+                      label={t('editProfile.form.websiteUrl')}
                       value={portfolioUrl}
                       onChange={(e) => setPortfolioUrl(e.target.value)}
-                      placeholder={t('editProfile.form.portfolioUrlPlaceholder')}
+                      placeholder={t('editProfile.form.websiteUrlPlaceholder')}
                       InputLabelProps={{ shrink: true }}
                       InputProps={{
                         startAdornment: <LanguageIcon color="action" sx={{ mr: 1 }} />
