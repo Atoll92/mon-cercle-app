@@ -205,41 +205,54 @@ const PostCard = ({
       if (mediaItemsArray.length === 1) {
         const mediaItem = mediaItemsArray[0];
         const mediaType = mediaItem.type?.toLowerCase();
-        
+
         // For images, use img element directly since MediaPlayer doesn't handle images
         if (mediaType === 'image') {
           return (
-            <Box sx={{ bgcolor: darkMode ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.05)', p: 2 }}>
-              <Box 
-                sx={{ 
-                  position: 'relative', 
+            <Box
+              sx={{
+                bgcolor: darkMode ? 'rgba(0,0,0,0.1)' : 'rgba(0,0,0,0.03)',
+                overflow: 'hidden'
+              }}
+            >
+              <Box
+                sx={{
+                  position: 'relative',
                   width: '100%',
                   cursor: 'pointer',
-                  borderRadius: 1,
-                  overflow: 'hidden',
-                  '&:hover': { opacity: 0.9 }
+                  transition: 'transform 0.3s ease',
+                  '&:hover': {
+                    transform: 'scale(1.02)',
+                    '& img': {
+                      filter: 'brightness(0.95)'
+                    }
+                  }
                 }}
                 onClick={() => handleImageClick(mediaItem.url, mediaItem.metadata?.fileName || post.title)}
               >
                 <LazyImage
                   src={mediaItem.url}
                   alt={mediaItem.metadata?.fileName || post.title}
-                  style={{ 
+                  style={{
                     width: '100%',
                     height: 'auto',
                     display: 'block',
-                    maxHeight: '400px',
-                    objectFit: 'contain'
+                    maxHeight: '600px',
+                    objectFit: 'cover',
+                    transition: 'filter 0.3s ease'
                   }}
                 />
               </Box>
             </Box>
           );
         }
-        
+
         // For video, audio, pdf use MediaPlayer
         return (
-          <Box sx={{ bgcolor: darkMode ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.05)', p: 2 }}>
+          <Box sx={{
+            bgcolor: darkMode ? 'rgba(0,0,0,0.1)' : 'rgba(0,0,0,0.03)',
+            overflow: 'hidden'
+          }}>
             <MediaPlayer
               src={mediaItem.url}
               type={mediaItem.type}
@@ -256,7 +269,10 @@ const PostCard = ({
       
       // For multiple media items, use MediaCarousel
       return (
-        <Box sx={{ bgcolor: darkMode ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.05)', p: 2 }}>
+        <Box sx={{
+          bgcolor: darkMode ? 'rgba(0,0,0,0.1)' : 'rgba(0,0,0,0.03)',
+          overflow: 'hidden'
+        }}>
           <MediaCarousel
             media={mediaItemsArray.map(item => ({
               url: item.url,
@@ -264,7 +280,7 @@ const PostCard = ({
               metadata: item.metadata || {}
             }))}
             darkMode={darkMode}
-            height={400}
+            height={500}
             autoplay={false}
             showThumbnails={true}
             compact={false}
@@ -272,14 +288,17 @@ const PostCard = ({
         </Box>
       );
     }
-    
+
     // Single media item fallback
     if (!mediaUrl) return null;
 
     // Handle legacy file_url for PDFs
     if (post.file_url && !post.media_url && !post.image_url) {
       return (
-        <Box sx={{ bgcolor: darkMode ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.05)', p: 2 }}>
+        <Box sx={{
+          bgcolor: darkMode ? 'rgba(0,0,0,0.1)' : 'rgba(0,0,0,0.03)',
+          overflow: 'hidden'
+        }}>
           <MediaPlayer
             src={post.file_url}
             type="pdf"
@@ -293,27 +312,37 @@ const PostCard = ({
 
     if (mediaType === 'image') {
       return (
-        <Box sx={{ bgcolor: darkMode ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.05)', p: 2 }}>
-          <Box 
-            sx={{ 
-              position: 'relative', 
+        <Box
+          sx={{
+            bgcolor: darkMode ? 'rgba(0,0,0,0.1)' : 'rgba(0,0,0,0.03)',
+            overflow: 'hidden'
+          }}
+        >
+          <Box
+            sx={{
+              position: 'relative',
               width: '100%',
               cursor: 'pointer',
-              borderRadius: 1,
-              overflow: 'hidden',
-              '&:hover': { opacity: 0.9 }
+              transition: 'transform 0.3s ease',
+              '&:hover': {
+                transform: 'scale(1.02)',
+                '& img': {
+                  filter: 'brightness(0.95)'
+                }
+              }
             }}
             onClick={() => handleImageClick(mediaUrl, post.title)}
           >
             <LazyImage
               src={mediaUrl}
               alt={post.title}
-              style={{ 
+              style={{
                 width: '100%',
                 height: 'auto',
                 display: 'block',
                 maxHeight: '600px',
-                objectFit: 'contain'
+                objectFit: 'cover',
+                transition: 'filter 0.3s ease'
               }}
             />
           </Box>
@@ -324,7 +353,10 @@ const PostCard = ({
     // For video, audio, PDF - use MediaPlayer
     if (mediaType && mediaType !== 'image') {
       return (
-        <Box sx={{ bgcolor: darkMode ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.05)', p: 2 }}>
+        <Box sx={{
+          bgcolor: darkMode ? 'rgba(0,0,0,0.1)' : 'rgba(0,0,0,0.03)',
+          overflow: 'hidden'
+        }}>
           <MediaPlayer
             src={mediaUrl}
             type={mediaType}
@@ -530,17 +562,25 @@ const PostCard = ({
           />
         )}
 
-        {/* Link Preview - matches SocialWallTab */}
+        {/* Link Preview - Enhanced for better visibility */}
         {post.url && (
-          <Box sx={{ 
-            mb: 2, 
-            bgcolor: darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)', 
-            borderRadius: 1, 
-            overflow: 'hidden'
+          <Box sx={{
+            mb: 2,
+            bgcolor: darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)',
+            borderRadius: 2,
+            overflow: 'hidden',
+            border: `1px solid ${darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)'}`,
+            transition: 'all 0.3s ease',
+            '&:hover': {
+              bgcolor: darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)',
+              borderColor: darkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.12)',
+              transform: 'translateY(-2px)',
+              boxShadow: darkMode ? '0 4px 12px rgba(0,0,0,0.3)' : '0 4px 12px rgba(0,0,0,0.1)'
+            }
           }}>
-            <LinkPreview 
-              url={post.url} 
-              compact={true}
+            <LinkPreview
+              url={post.url}
+              compact={false}
               darkMode={darkMode}
             />
           </Box>
@@ -552,15 +592,18 @@ const PostCard = ({
           itemId={post.id}
           onMemberClick={(onAuthorClick ? onAuthorClick : handleAuthorClick)}
           TopRightElement={
-            <Button
-              component={Link}
+            <Link
               to={`/post/${post.id}`}
-              size="small"
-              endIcon={<ArrowForwardIcon />}
-              sx={{ alignSelf: 'flex-start' }}
+              style={{ textDecoration: 'none' }}
             >
-              {t('postcard.readFullPost')}
-            </Button>
+              <Button
+                size="small"
+                endIcon={<ArrowForwardIcon />}
+                sx={{ alignSelf: 'flex-start' }}
+              >
+                {t('postcard.readFullPost')}
+              </Button>
+            </Link>
           }
         />
       </CardContent>

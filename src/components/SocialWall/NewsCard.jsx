@@ -82,7 +82,10 @@ const NewsCard = React.memo(({
     // PDF Preview
     if (item.file_type === 'pdf' && item.file_url) {
       return (
-        <Box sx={{ bgcolor: darkMode ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.05)', p: 2 }}>
+        <Box sx={{
+          bgcolor: darkMode ? 'rgba(0,0,0,0.1)' : 'rgba(0,0,0,0.03)',
+          overflow: 'hidden'
+        }}>
           <MediaPlayer
             src={item.file_url}
             type="pdf"
@@ -109,24 +112,49 @@ const NewsCard = React.memo(({
 
         if (mediaType === 'image') {
           return (
-            <Box sx={{ bgcolor: darkMode ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.05)', p: 2 }}>
-              <img
-                src={mediaItem.url}
-                alt={mediaItem.metadata?.fileName || item.title}
-                style={{
+            <Box
+              sx={{
+                bgcolor: darkMode ? 'rgba(0,0,0,0.1)' : 'rgba(0,0,0,0.03)',
+                overflow: 'hidden'
+              }}
+            >
+              <Box
+                sx={{
+                  position: 'relative',
                   width: '100%',
-                  height: 'auto',
-                  maxHeight: '400px',
-                  objectFit: 'contain',
-                  borderRadius: '8px'
+                  cursor: 'pointer',
+                  transition: 'transform 0.3s ease',
+                  '&:hover': {
+                    transform: 'scale(1.02)',
+                    '& img': {
+                      filter: 'brightness(0.95)'
+                    }
+                  }
                 }}
-              />
+                onClick={() => onImageClick(mediaItem.url, mediaItem.metadata?.fileName || item.title)}
+              >
+                <img
+                  src={mediaItem.url}
+                  alt={mediaItem.metadata?.fileName || item.title}
+                  style={{
+                    width: '100%',
+                    height: 'auto',
+                    maxHeight: '600px',
+                    objectFit: 'cover',
+                    display: 'block',
+                    transition: 'filter 0.3s ease'
+                  }}
+                />
+              </Box>
             </Box>
           );
         }
 
         return (
-          <Box sx={{ bgcolor: darkMode ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.05)', p: 2 }}>
+          <Box sx={{
+            bgcolor: darkMode ? 'rgba(0,0,0,0.1)' : 'rgba(0,0,0,0.03)',
+            overflow: 'hidden'
+          }}>
             <MediaPlayer
               src={mediaItem.url}
               type={mediaType}
@@ -142,7 +170,10 @@ const NewsCard = React.memo(({
       }
 
       return (
-        <Box sx={{ bgcolor: darkMode ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.05)', p: 2 }}>
+        <Box sx={{
+          bgcolor: darkMode ? 'rgba(0,0,0,0.1)' : 'rgba(0,0,0,0.03)',
+          overflow: 'hidden'
+        }}>
           <MediaCarousel
             media={mediaItemsArray.map(mediaItem => ({
               url: mediaItem.url,
@@ -150,7 +181,7 @@ const NewsCard = React.memo(({
               metadata: mediaItem.metadata || {}
             }))}
             darkMode={darkMode}
-            height={400}
+            height={500}
             autoplay={false}
             showThumbnails={true}
             compact={false}
@@ -179,35 +210,46 @@ const NewsCard = React.memo(({
         return (
           <Box
             sx={{
-              position: 'relative',
-              width: '100%',
-              pt: '56.25%',
-              cursor: 'pointer',
-              '&:hover': {
-                opacity: 0.9
-              }
+              bgcolor: darkMode ? 'rgba(0,0,0,0.1)' : 'rgba(0,0,0,0.03)',
+              overflow: 'hidden'
             }}
-            onClick={() => onImageClick(item.media_url, item.title)}
           >
-            <LazyImage
-              src={item.media_url}
-              alt={item.title}
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
+            <Box
+              sx={{
+                position: 'relative',
                 width: '100%',
-                height: '100%',
-                backgroundColor: darkMode ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.05)',
-                padding: '8px'
+                cursor: 'pointer',
+                transition: 'transform 0.3s ease',
+                '&:hover': {
+                  transform: 'scale(1.02)',
+                  '& img': {
+                    filter: 'brightness(0.95)'
+                  }
+                }
               }}
-              objectFit="contain"
-            />
+              onClick={() => onImageClick(item.media_url, item.title)}
+            >
+              <LazyImage
+                src={item.media_url}
+                alt={item.title}
+                style={{
+                  width: '100%',
+                  height: 'auto',
+                  display: 'block',
+                  maxHeight: '600px',
+                  objectFit: 'cover',
+                  transition: 'filter 0.3s ease'
+                }}
+              />
+            </Box>
           </Box>
         );
       } else if (mediaType === 'audio' || mediaType === 'video' || mediaType === 'pdf') {
         return (
-          <Box sx={{ bgcolor: darkMode ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.05)', p: 2 }}>
+          <Box sx={{
+            bgcolor: darkMode ? 'rgba(0,0,0,0.1)' : 'rgba(0,0,0,0.03)',
+            overflow: 'hidden'
+          }}>
             <MediaPlayer
               src={item.media_url}
               type={mediaType}
@@ -228,30 +270,38 @@ const NewsCard = React.memo(({
       return (
         <Box
           sx={{
-            position: 'relative',
-            width: '100%',
-            pt: '56.25%',
-            cursor: 'pointer',
-            '&:hover': {
-              opacity: 0.9
-            }
+            bgcolor: darkMode ? 'rgba(0,0,0,0.1)' : 'rgba(0,0,0,0.03)',
+            overflow: 'hidden'
           }}
-          onClick={() => onImageClick(item.image_url, item.title)}
         >
-          <LazyImage
-            src={item.image_url}
-            alt={item.title}
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
+          <Box
+            sx={{
+              position: 'relative',
               width: '100%',
-              height: '100%',
-              backgroundColor: darkMode ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.05)',
-              padding: '8px'
+              cursor: 'pointer',
+              transition: 'transform 0.3s ease',
+              '&:hover': {
+                transform: 'scale(1.02)',
+                '& img': {
+                  filter: 'brightness(0.95)'
+                }
+              }
             }}
-            objectFit="contain"
-          />
+            onClick={() => onImageClick(item.image_url, item.title)}
+          >
+            <LazyImage
+              src={item.image_url}
+              alt={item.title}
+              style={{
+                width: '100%',
+                height: 'auto',
+                display: 'block',
+                maxHeight: '600px',
+                objectFit: 'cover',
+                transition: 'filter 0.3s ease'
+              }}
+            />
+          </Box>
         </Box>
       );
     }

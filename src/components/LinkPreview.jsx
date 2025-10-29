@@ -222,9 +222,9 @@ const LinkPreview = ({ url, compact = false, onDataLoaded = null, height = 'auto
     setIsPlaying(!isPlaying);
   };
 
-  // Auto-play media in chat when the component mounts
+  // Auto-embed media in non-compact views when component mounts
   useEffect(() => {
-    // If this is not in a compact view and it's a media URL, auto-play it
+    // If this is not in a compact view and it's a media URL, auto-embed it
     if (!compact && mediaInfo) {
       setIsPlaying(true);
     }
@@ -785,18 +785,6 @@ const LinkPreview = ({ url, compact = false, onDataLoaded = null, height = 'auto
             {getHostname(formattedUrl)}
           </Typography>
         </Box>
-        
-        <IconButton 
-          size="small" 
-          color="primary"
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-          }}
-          sx={{ ml: 1 }}
-        >
-          <OpenInNewIcon fontSize="small" />
-        </IconButton>
       </Paper>
     );
   }
@@ -820,74 +808,12 @@ const LinkPreview = ({ url, compact = false, onDataLoaded = null, height = 'auto
           }
         }}
       >
-        {/* Media Header */}
-        <Box
-          sx={{
-            p: 1.5,
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            borderBottom: '1px solid rgba(0,0,0,0.1)'
-          }}
-        >
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            {ogData.favicon && !faviconError ? (
-              <Box
-                component="img"
-                src={ogData.favicon}
-                alt="Site favicon"
-                onLoad={handleFaviconLoad}
-                onError={handleFaviconError}
-                sx={{
-                  width: 20,
-                  height: 20,
-                  mr: 1,
-                  display: faviconLoaded ? 'block' : 'none'
-                }}
-              />
-            ) : (
-              mediaInfo.service === 'spotify' ? (
-                <MusicNoteIcon color="success" sx={{ fontSize: 20, mr: 1 }} />
-              ) : (
-                <PlayCircleOutlineIcon color="error" sx={{ fontSize: 20, mr: 1 }} />
-              )
-            )}
-            <Typography
-              variant="subtitle2"
-              sx={{
-                fontWeight: 'medium',
-                color: 'text.primary'
-              }}
-            >
-              {ogData.title || getHostname(formattedUrl)}
-            </Typography>
-          </Box>
-          
-          <Box sx={{ display: 'flex', gap: 0.5 }}>
-            {mediaInfo.service !== 'spotify' && (
-              <IconButton size="small" onClick={toggleMediaPlayer}>
-                {isPlaying ? <OpenInNewIcon fontSize="small" /> : <PlayCircleOutlineIcon fontSize="small" />}
-              </IconButton>
-            )}
-            
-            <MuiLink
-              href={formattedUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <IconButton size="small">
-                <OpenInNewIcon fontSize="small" />
-              </IconButton>
-            </MuiLink>
-          </Box>
-        </Box>
-        
         {/* Embedded Media Player */}
         <Box
           sx={{
+            position: 'relative',
             width: '100%',
-            height: mediaInfo.height,
+            paddingTop: mediaInfo.service === 'spotify' ? '80px' : '56.25%', // 16:9 for videos, fixed for Spotify
             bgcolor: '#000',
             overflow: 'hidden'
           }}
@@ -900,11 +826,86 @@ const LinkPreview = ({ url, compact = false, onDataLoaded = null, height = 'auto
             allowFullScreen
             allow="autoplay; encrypted-media; accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             sx={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
               width: '100%',
               height: '100%',
               border: 'none'
             }}
           />
+        </Box>
+
+        {/* Media Info Below */}
+        <Box sx={{ p: 2 }}>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between'
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1, minWidth: 0 }}>
+              {ogData.favicon && !faviconError ? (
+                <Box
+                  component="img"
+                  src={ogData.favicon}
+                  alt="Site favicon"
+                  onLoad={handleFaviconLoad}
+                  onError={handleFaviconError}
+                  sx={{
+                    width: 16,
+                    height: 16,
+                    mr: 0.5,
+                    flexShrink: 0,
+                    display: faviconLoaded || ogData.favicon.startsWith('data:') ? 'block' : 'none'
+                  }}
+                />
+              ) : (
+                mediaInfo.service === 'spotify' ? (
+                  <MusicNoteIcon color="success" sx={{ fontSize: 16, mr: 0.5, flexShrink: 0 }} />
+                ) : (
+                  <PlayCircleOutlineIcon color="error" sx={{ fontSize: 16, mr: 0.5, flexShrink: 0 }} />
+                )
+              )}
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap'
+                }}
+              >
+                {getHostname(formattedUrl)}
+              </Typography>
+            </Box>
+
+            <IconButton
+              size="small"
+              component="a"
+              href={formattedUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              sx={{ ml: 1, flexShrink: 0 }}
+            >
+              <OpenInNewIcon fontSize="small" />
+            </IconButton>
+          </Box>
+
+          {ogData.title && (
+            <Typography
+              variant="subtitle2"
+              sx={{
+                fontWeight: 600,
+                mt: 1,
+                lineHeight: 1.3
+              }}
+            >
+              {ogData.title}
+            </Typography>
+          )}
         </Box>
       </Paper>
     );
