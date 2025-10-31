@@ -49,6 +49,8 @@ import ImageViewerModal from './ImageViewerModal';
 import MemberDetailsModal from './MembersDetailModal';
 import { uploadMediaFile } from '../utils/mediaUpload';
 import EmojiPicker from 'emoji-picker-react';
+import GifPicker from './GifPicker';
+import GifIcon from '@mui/icons-material/Gif';
 
 // URL regex pattern to detect links in messages
 // const URL_REGEX = /(https?:\/\/[^\s]+)/g;
@@ -69,6 +71,7 @@ const Chat = ({ networkId, isFullscreen = false, backgroundImageUrl }) => {
   const [expandedMedia, setExpandedMedia] = useState({});
   const [pendingMedia, setPendingMedia] = useState(null);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [showGifPicker, setShowGifPicker] = useState(false);
   
   // Image viewer modal state
   const [imageViewerOpen, setImageViewerOpen] = useState(false);
@@ -421,15 +424,43 @@ const Chat = ({ networkId, isFullscreen = false, backgroundImageUrl }) => {
     const textBefore = newMessage.substring(0, cursorPos);
     const textAfter = newMessage.substring(cursorPos);
     const newText = textBefore + emoji + textAfter;
-    
+
     setNewMessage(newText);
     setShowEmojiPicker(false);
-    
+
     // Focus back to text field and set cursor position after emoji
     setTimeout(() => {
       textFieldRef.current?.focus();
       const newCursorPos = cursorPos + emoji.length;
       textFieldRef.current?.setSelectionRange(newCursorPos, newCursorPos);
+    }, 0);
+  };
+
+  // Handle GIF selection
+  const handleGifSelect = (gifData) => {
+    console.log('GIF selected:', gifData);
+
+    // Create media data object for the GIF
+    const gifMediaData = {
+      url: gifData.url,
+      type: 'image', // GIFs are treated as images
+      mediaType: 'image',
+      fileName: gifData.title || 'giphy.gif',
+      metadata: {
+        fileName: gifData.title || 'giphy.gif',
+        width: gifData.width,
+        height: gifData.height,
+        gifId: gifData.id
+      }
+    };
+
+    // Set as pending media and close picker
+    setPendingMedia(gifMediaData);
+    setShowGifPicker(false);
+
+    // Focus on text field
+    setTimeout(() => {
+      textFieldRef.current?.focus();
     }, 0);
   };
   
@@ -465,11 +496,14 @@ const Chat = ({ networkId, isFullscreen = false, backgroundImageUrl }) => {
     return prevMessageDate !== currentMessageDate;
   };
 
-  // Close emoji picker when clicking outside
+  // Close emoji/gif picker when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (showEmojiPicker && !event.target.closest('[data-emoji-picker]')) {
         setShowEmojiPicker(false);
+      }
+      if (showGifPicker && !event.target.closest('[data-gif-picker]')) {
+        setShowGifPicker(false);
       }
       if (showMediaUpload && !event.target.closest('[data-media-upload]')) {
         setShowMediaUpload(false);
@@ -478,7 +512,7 @@ const Chat = ({ networkId, isFullscreen = false, backgroundImageUrl }) => {
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [showEmojiPicker, showMediaUpload]);
+  }, [showEmojiPicker, showGifPicker, showMediaUpload]);
 
   // Early return if no active profile - after all hooks
   if (!activeProfile) {
@@ -1980,17 +2014,30 @@ const renderMessageContent = (message) => {
           color="primary"
           onClick={() => setShowMediaUpload(!showMediaUpload)}
           disabled={false}
-          sx={{ mr: 1 }}
+          sx={{ mr: 0.5 }}
+          title={t('chat.attachFile', 'Attach file')}
         >
           <AttachFileIcon />
         </IconButton>
-        
+
+        {/* GIF picker button */}
+        <IconButton
+          color="primary"
+          onClick={() => setShowGifPicker(!showGifPicker)}
+          disabled={false}
+          sx={{ mr: 0.5 }}
+          title={t('chat.addGif', 'Add GIF')}
+        >
+          <GifIcon />
+        </IconButton>
+
         {/* Emoji picker button */}
         <IconButton
           color="primary"
           onClick={() => setShowEmojiPicker(!showEmojiPicker)}
           disabled={false}
           sx={{ mr: 1 }}
+          title={t('chat.addEmoji', 'Add emoji')}
         >
           <EmojiEmotionsIcon />
         </IconButton>
@@ -2063,14 +2110,16 @@ const renderMessageContent = (message) => {
         </IconButton>
       </Box>
       
-      {/* Emoji picker dialog */}
-      {showEmojiPicker && (
-        <Paper 
-          data-emoji-picker
-          sx={{ 
-            position: 'absolute', 
-            bottom: 90, 
-            right: 24, 
+      {/* GIF picker dialog */}
+      {showGifPicker && (
+        <Paper
+          data-gif-picker
+          sx={{
+            position: 'absolute',
+            bottom: 90,
+            right: 24,
+            width: 340,
+            height: 500,
             bgcolor: 'rgba(30, 30, 40, 0.98)',
             boxShadow: '0 10px 40px rgba(0,0,0,0.15)',
             borderRadius: 3,
@@ -2079,20 +2128,44 @@ const renderMessageContent = (message) => {
             overflow: 'hidden'
           }}
         >
-          <Box sx={{ 
-            display: 'flex', 
-            justifyContent: 'space-between', 
-            alignItems: 'center', 
-            mb: 1.5, 
-            px: 2, 
+          <GifPicker
+            onGifSelect={handleGifSelect}
+            onClose={() => setShowGifPicker(false)}
+            darkMode={darkMode}
+          />
+        </Paper>
+      )}
+
+      {/* Emoji picker dialog */}
+      {showEmojiPicker && (
+        <Paper
+          data-emoji-picker
+          sx={{
+            position: 'absolute',
+            bottom: 90,
+            right: showGifPicker ? 384 : 24,
+            bgcolor: 'rgba(30, 30, 40, 0.98)',
+            boxShadow: '0 10px 40px rgba(0,0,0,0.15)',
+            borderRadius: 3,
+            zIndex: 10,
+            border: '1px solid rgba(255,255,255,0.1)',
+            overflow: 'hidden'
+          }}
+        >
+          <Box sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            mb: 1.5,
+            px: 2,
             py: 1.5,
             borderBottom: '1px solid rgba(255,255,255,0.1)'
           }}>
             <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>{t('chat.chooseEmoji')}</Typography>
-            <IconButton 
-              size="small" 
+            <IconButton
+              size="small"
               onClick={() => setShowEmojiPicker(false)}
-              sx={{ 
+              sx={{
                 color: 'rgba(255,255,255,0.6)',
                 '&:hover': {
                   backgroundColor: 'rgba(255,255,255,0.1)'
@@ -2110,7 +2183,7 @@ const renderMessageContent = (message) => {
             searchDisabled={false}
             skinTonesDisabled={false}
             previewConfig={{
-              showPreview: false
+              showPreview: true
             }}
             emojiStyle='apple'
             lazyLoadEmojis={true}

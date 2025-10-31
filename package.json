@@ -23,6 +23,8 @@
     "@dnd-kit/utilities": "^3.2.2",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
+    "@giphy/js-fetch-api": "^5.7.0",
+    "@giphy/react-components": "^10.1.0",
     "@modelcontextprotocol/sdk": "^1.13.1",
     "@mui/icons-material": "^7.0.2",
     "@mui/material": "^7.0.2",
