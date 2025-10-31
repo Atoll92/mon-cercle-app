@@ -1588,8 +1588,8 @@ const renderMessageContent = (message) => {
                   }
                 }}
               >
-                <ListItemAvatar sx={{ minWidth: 40 }}>
-                  <Avatar 
+                <ListItemAvatar sx={{ minWidth: 40, alignSelf: 'flex-start', mt: 0.5 }}>
+                  <Avatar
                     src={message.profiles?.profile_picture_url}
                     alt={message.profiles?.full_name}
                     onClick={message.profiles?.id ? (e) => {
@@ -1597,7 +1597,7 @@ const renderMessageContent = (message) => {
                       handleAvatarClick(message.profiles.id);
                     } : undefined}
                     sx={{
-                      cursor: message.profiles?.id ? 'pointer' : 'default', 
+                      cursor: message.profiles?.id ? 'pointer' : 'default',
                       width: 36,
                       height: 36,
                       border: darkMode
@@ -1631,10 +1631,10 @@ const renderMessageContent = (message) => {
                                 : (message.user_id === activeProfile.id ? '#1565c0' : '#424242')
                             }}
                           >
-                            <Typography 
-                              variant="subtitle2" 
+                            <Typography
+                              variant="subtitle2"
                               component="span"
-                              sx={{ 
+                              sx={{
                                 fontWeight: 500,
                                 fontSize: '0.8rem', // Smaller text for compactness
                                 '&:hover': {
@@ -1643,22 +1643,20 @@ const renderMessageContent = (message) => {
                               }}
                             >
                               {message.profiles?.full_name || t('chat.anonymous')}
-                              {message.user_id === activeProfile.id && ` (${t('chat.you')})`}
                             </Typography>
                           </Link>
                         ) : (
-                          <Typography 
-                            variant="subtitle2" 
-                            sx={{ 
-                              color: darkMode 
-                                ? 'white' 
+                          <Typography
+                            variant="subtitle2"
+                            sx={{
+                              color: darkMode
+                                ? 'white'
                                 : (message.user_id === activeProfile.id ? '#1565c0' : '#424242'),
                               fontWeight: 500,
                               fontSize: '0.8rem' // Smaller text for compactness
                             }}
                           >
                             {message.profiles?.full_name || t('chat.anonymous')}
-                            {message.user_id === activeProfile.id && ` (${t('chat.you')})`}
                           </Typography>
                         )}
                       </Box>
