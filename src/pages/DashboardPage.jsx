@@ -1,5 +1,5 @@
 // src/pages/DashboardPage.jsx
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useLayoutEffect } from 'react';
 import { useAuth } from '../context/authcontext';
 import { useProfile } from '../context/profileContext';
 import { useApp } from '../context/appContext';
@@ -352,6 +352,13 @@ function DashboardPage() {
   // Animation setup - must be at top level, not conditional
   const headerRef = useFadeIn(0, ANIMATION_DURATION.normal);
   const getItemRef = useStaggeredAnimation(10, 100, 50);
+
+  // Scroll to top when component mounts - using useLayoutEffect for immediate scroll before paint
+  useLayoutEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  }, []);
 
   // Redirect to create-network if user has no profiles
   useEffect(() => {
