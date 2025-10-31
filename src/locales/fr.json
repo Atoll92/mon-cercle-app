@@ -1736,6 +1736,8 @@
     "updatePost": "Mettre à jour la publication",
     "creating": "Création...",
     "updating": "Mise à jour...",
+    "optionalField": "Optionnel",
+    "titleAutoFilled": "Titre auto-rempli depuis le lien",
     "errors": {
       "titleRequired": "Le titre de la publication est requis",
       "saveFailed": "Échec de l'enregistrement de la publication"

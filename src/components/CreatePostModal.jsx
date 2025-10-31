@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -17,7 +17,8 @@ import {
   Card,
   CardMedia,
   alpha,
-  Chip
+  Chip,
+  CircularProgress
 } from '@mui/material';
 import {
   Close as CloseIcon,
@@ -37,6 +38,7 @@ import UserContent from './UserContent';
 import { fetchNetworkCategories } from '../api/categories';
 import { createPost, updatePost } from '../api/posts';
 import { useTranslation } from '../hooks/useTranslation';
+import { fetchUrlMetadata, isValidUrl } from '../utils/urlMetadata';
 
 const CreatePostModal = ({ 
   open, 
@@ -68,6 +70,8 @@ const CreatePostModal = ({
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [fetchingMetadata, setFetchingMetadata] = useState(false);
+  const [metadataFetched, setMetadataFetched] = useState(false);
 
   // Load categories on mount
   useEffect(() => {
@@ -82,6 +86,35 @@ const CreatePostModal = ({
       loadCategories();
     }
   }, [activeProfile, open]);
+
+  // Handle URL change and fetch metadata
+  const handleUrlChange = useCallback(async (newUrl) => {
+    setUrl(newUrl);
+    setMetadataFetched(false);
+
+    // If URL is valid and title is empty, fetch metadata
+    if (isValidUrl(newUrl) && !title.trim() && mode === 'create') {
+      setFetchingMetadata(true);
+      setError('');
+
+      try {
+        const metadata = await fetchUrlMetadata(newUrl);
+
+        if (metadata.success && metadata.title) {
+          // Auto-fill title if it's empty
+          if (!title.trim()) {
+            setTitle(metadata.title);
+            setMetadataFetched(true);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch URL metadata:', err);
+        // Don't show error to user - it's a nice-to-have feature
+      } finally {
+        setFetchingMetadata(false);
+      }
+    }
+  }, [title, mode]);
 
   // Initialize form with edit data
   useEffect(() => {
@@ -205,24 +238,24 @@ const CreatePostModal = ({
     }
   };
 
-  // Handle media deletion (clear all)
-  const handleDeleteMedia = () => {
-    setMediaUrl(null);
-    setMediaType(null);
-    setMediaMetadata({});
-    setMediaItems([]);
-  };
+  // Handle media deletion (clear all) - currently unused but keeping for potential future use
+  // const handleDeleteMedia = () => {
+  //   setMediaUrl(null);
+  //   setMediaType(null);
+  //   setMediaMetadata({});
+  //   setMediaItems([]);
+  // };
 
-  // Get media icon
-  const getMediaIcon = (type) => {
-    switch (type?.toLowerCase()) {
-      case 'image': return <ImageIcon fontSize="small" />;
-      case 'video': return <VideoIcon fontSize="small" />;
-      case 'audio': return <AudioIcon fontSize="small" />;
-      case 'pdf': return <PdfIcon fontSize="small" />;
-      default: return <AddIcon fontSize="small" />;
-    }
-  };
+  // Get media icon - currently unused but keeping for potential future use
+  // const getMediaIcon = (type) => {
+  //   switch (type?.toLowerCase()) {
+  //     case 'image': return <ImageIcon fontSize="small" />;
+  //     case 'video': return <VideoIcon fontSize="small" />;
+  //     case 'audio': return <AudioIcon fontSize="small" />;
+  //     case 'pdf': return <PdfIcon fontSize="small" />;
+  //     default: return <AddIcon fontSize="small" />;
+  //   }
+  // };
 
   // Handle form submission
   const handleSubmit = async () => {
@@ -364,26 +397,36 @@ const CreatePostModal = ({
             value={content}
             onChange={(e) => setContent(e.target.value)}
             fullWidth
-            required
             multiline
             rows={3}
             disabled={creating}
             variant="outlined"
             placeholder={t('createPost.postContentPlaceholder')}
+            helperText={t('createPost.optionalField')}
           />
 
           {/* URL Field */}
           <TextField
             label={t('createPost.linkOptional')}
             value={url}
-            onChange={(e) => setUrl(e.target.value)}
+            onChange={(e) => handleUrlChange(e.target.value)}
             fullWidth
             disabled={creating}
             variant="outlined"
             placeholder={t('createPost.linkPlaceholder')}
-            InputProps={{
-              startAdornment: <LanguageIcon sx={{ color: 'text.secondary', mr: 1 }} />
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <Box sx={{ display: 'flex', alignItems: 'center', mr: 1 }}>
+                    <LanguageIcon sx={{ color: 'text.secondary' }} />
+                    {fetchingMetadata && (
+                      <CircularProgress size={16} sx={{ ml: 1 }} />
+                    )}
+                  </Box>
+                )
+              }
             }}
+            helperText={metadataFetched ? t('createPost.titleAutoFilled') : ''}
           />
 
           {/* Category Selection */}
@@ -497,7 +540,7 @@ const CreatePostModal = ({
         <Button
           onClick={handleSubmit}
           variant="contained"
-          disabled={creating || !title.trim() || !content.trim()}
+          disabled={creating || !title.trim()}
           sx={{
             borderRadius: 2,
             px: 3,

@@ -1770,6 +1770,8 @@
     "updatePost": "Update Post",
     "creating": "Creating...",
     "updating": "Updating...",
+    "optionalField": "Optional",
+    "titleAutoFilled": "Title auto-filled from link",
     "errors": {
       "titleRequired": "Post title is required",
       "saveFailed": "Failed to save post"
