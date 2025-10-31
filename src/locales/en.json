@@ -1822,13 +1822,23 @@
     },
     "save": "Save Settings",
     "saving": "Saving...",
+    "soundTitle": "Sound Notifications",
+    "soundDescription": "Play subtle sounds when you receive messages",
+    "soundChat": "Network Chat Sounds",
+    "soundChatDescription": "Play a sound for new messages in network chat",
+    "soundDm": "Direct Message Sounds",
+    "soundDmDescription": "Play a sound for new direct messages",
+    "categoriesTitle": "Annonces Categories",
+    "categoriesDescription": "Choose which categories of annonces you want to receive",
+    "allCategories": "All Categories",
     "errors": {
       "loadFailed": "Failed to load notification settings",
-      "saveFailed": "Failed to save notification settings"
+      "saveFailed": "Failed to save notification settings",
+      "updateFailed": "Failed to update settings",
+      "categoryUpdateFailed": "Failed to update category preferences",
+      "generalMandatory": "The General category cannot be disabled"
     },
-    "success": {
-      "saved": "Notification settings saved successfully!"
-    }
+    "success": "Settings saved successfully!"
   },
   "mediaUpload": {
     "addMedia": "Add Media",

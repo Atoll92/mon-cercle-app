@@ -38,6 +38,7 @@ import LinkPreview from './LinkPreview';
 import MediaUpload from './MediaUpload';
 import MemberDetailsModal from './MembersDetailModal';
 import EmojiPicker from 'emoji-picker-react';
+import { playNotificationIfEnabled, initializeAudioContext } from '../utils/notificationSounds';
 
 function DirectMessageChat({ conversationId, partner, onBack }) {
   const { user } = useAuth();
@@ -155,6 +156,9 @@ function DirectMessageChat({ conversationId, partner, onBack }) {
             // Mark as read if we're currently viewing this conversation
             if (activeProfile) markMessagesAsRead(conversationId, activeProfile.id);
             markConversationAsRead(conversationId);
+
+            // Play notification sound for incoming direct message
+            playNotificationIfEnabled(activeProfile, 'dm');
           } else {
             // Update the conversation with our sent message
             updateConversationWithMessage(conversationId, messageWithSender);
@@ -1415,6 +1419,10 @@ if (refreshConversations) {
             onChange={(e) => setNewMessage(e.target.value)}
             autoComplete="off"
             autoFocus
+            onFocus={() => {
+              // Initialize audio context on first user interaction
+              initializeAudioContext();
+            }}
             onKeyDown={(e) => {
               if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();

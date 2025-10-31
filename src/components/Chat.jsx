@@ -51,6 +51,7 @@ import { uploadMediaFile } from '../utils/mediaUpload';
 import EmojiPicker from 'emoji-picker-react';
 import GifPicker from './GifPicker';
 import GifIcon from '@mui/icons-material/Gif';
+import { playNotificationIfEnabled, initializeAudioContext } from '../utils/notificationSounds';
 
 // URL regex pattern to detect links in messages
 // const URL_REGEX = /(https?:\/\/[^\s]+)/g;
@@ -223,14 +224,19 @@ const Chat = ({ networkId, isFullscreen = false, backgroundImageUrl }) => {
               if (prev.some(msg => msg.id === data.id)) {
                 return prev;
               }
-              
+
               // Remove any pending version of this message if it's from the current user
-              const filteredMessages = prev.filter(msg => 
+              const filteredMessages = prev.filter(msg =>
                 !(msg.pending && msg.user_id === activeProfile.id && msg.content === data.content)
               );
-              
+
               return [...filteredMessages, data];
             });
+
+            // Play notification sound if message is from another user
+            if (data.user_id !== activeProfile?.id) {
+              playNotificationIfEnabled(activeProfile, 'chat');
+            }
           }
         } catch (error) {
           console.error('Error fetching new message details:', error);
@@ -1448,7 +1454,7 @@ const renderMessageContent = (message) => {
           </Badge>
         </Box>
       </Box>
-      
+
       {/* Messages List */}
       <List 
         sx={{ 
@@ -2047,6 +2053,10 @@ const renderMessageContent = (message) => {
           placeholder={t('chat.placeholder')}
           value={newMessage}
           onChange={handleMessageChange}
+          onFocus={() => {
+            // Initialize audio context on first user interaction
+            initializeAudioContext();
+          }}
           onKeyDown={(e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
               e.preventDefault();

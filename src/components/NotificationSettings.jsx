@@ -28,13 +28,16 @@ import {
   Email as EmailIcon,
   Mic as CastingIcon,
   Campaign as AnnoncesIcon,
-  VolunteerActivism as DonsIcon
+  VolunteerActivism as DonsIcon,
+  VolumeUp as VolumeUpIcon,
+  Chat as ChatIcon
 } from '@mui/icons-material';
 import { supabase } from '../supabaseclient';
 import { useAuth } from '../context/authcontext';
 import { useProfile } from '../context/profileContext';
 import { getCategoryPreferences, updateSympaCategories } from '../api/sympaSync';
 import { useTranslation } from '../hooks/useTranslation';
+import { playNotificationSound } from '../utils/notificationSounds';
 
 const NotificationSettings = () => {
   const { t } = useTranslation();
@@ -52,7 +55,9 @@ const NotificationSettings = () => {
     notify_on_news: true,
     notify_on_events: true,
     notify_on_mentions: true,
-    notify_on_direct_messages: true
+    notify_on_direct_messages: true,
+    sound_notifications_chat: true,
+    sound_notifications_dm: true
   });
 
   // Annonces categories for RezoProSpec (3 categories)
@@ -71,7 +76,7 @@ const NotificationSettings = () => {
         setLoading(true);
         const { data, error } = await supabase
           .from('profiles')
-          .select('email_notifications_enabled, notify_on_news, notify_on_events, notify_on_mentions, notify_on_direct_messages, annonces_categories')
+          .select('email_notifications_enabled, notify_on_news, notify_on_events, notify_on_mentions, notify_on_direct_messages, sound_notifications_chat, sound_notifications_dm, annonces_categories')
           .eq('id', activeProfile.id)
           .single();
 
@@ -83,7 +88,9 @@ const NotificationSettings = () => {
             notify_on_news: data.notify_on_news ?? true,
             notify_on_events: data.notify_on_events ?? true,
             notify_on_mentions: data.notify_on_mentions ?? true,
-            notify_on_direct_messages: data.notify_on_direct_messages ?? true
+            notify_on_direct_messages: data.notify_on_direct_messages ?? true,
+            sound_notifications_chat: data.sound_notifications_chat ?? true,
+            sound_notifications_dm: data.sound_notifications_dm ?? true
           });
 
           // Load annonces category preferences if this is the RezoProSpec network
@@ -134,6 +141,12 @@ const NotificationSettings = () => {
 
       setPreferences(prev => ({ ...prev, ...updates }));
       setSuccessMessage(t('notificationSettings.success'));
+
+      // Play preview sound if enabling sound notifications
+      if (value && (field === 'sound_notifications_chat' || field === 'sound_notifications_dm')) {
+        const soundType = field === 'sound_notifications_chat' ? 'chat' : 'dm';
+        playNotificationSound(soundType);
+      }
 
       // Clear success message after 3 seconds
       setTimeout(() => setSuccessMessage(''), 3000);
@@ -359,6 +372,86 @@ const NotificationSettings = () => {
               </Stack>
             </Box>
           )}
+
+          {/* Sound Notifications Section */}
+          <Box>
+            <Divider sx={{ mb: 2 }} />
+            <Box display="flex" alignItems="center" gap={2} mb={2}>
+              <VolumeUpIcon color="primary" />
+              <Typography variant="subtitle2" fontWeight={600}>
+                {t('notificationSettings.soundTitle')}
+              </Typography>
+            </Box>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+              {t('notificationSettings.soundDescription')}
+            </Typography>
+            <Stack spacing={2}>
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={preferences.sound_notifications_chat}
+                    onChange={(e) => handlePreferenceChange('sound_notifications_chat', e.target.checked)}
+                    disabled={saving}
+                  />
+                }
+                label={
+                  <Box display="flex" alignItems="flex-start" gap={2}>
+                    <Box color="primary.main" mt={0.5}>
+                      <ChatIcon />
+                    </Box>
+                    <Box>
+                      <Typography variant="body1" fontWeight={500}>
+                        {t('notificationSettings.soundChat')}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {t('notificationSettings.soundChatDescription')}
+                      </Typography>
+                    </Box>
+                  </Box>
+                }
+                sx={{
+                  alignItems: 'flex-start',
+                  ml: 0,
+                  '& .MuiFormControlLabel-label': {
+                    flex: 1,
+                    mt: 1
+                  }
+                }}
+              />
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={preferences.sound_notifications_dm}
+                    onChange={(e) => handlePreferenceChange('sound_notifications_dm', e.target.checked)}
+                    disabled={saving}
+                  />
+                }
+                label={
+                  <Box display="flex" alignItems="flex-start" gap={2}>
+                    <Box color="primary.main" mt={0.5}>
+                      <MessageIcon />
+                    </Box>
+                    <Box>
+                      <Typography variant="body1" fontWeight={500}>
+                        {t('notificationSettings.soundDm')}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {t('notificationSettings.soundDmDescription')}
+                      </Typography>
+                    </Box>
+                  </Box>
+                }
+                sx={{
+                  alignItems: 'flex-start',
+                  ml: 0,
+                  '& .MuiFormControlLabel-label': {
+                    flex: 1,
+                    mt: 1
+                  }
+                }}
+              />
+            </Stack>
+          </Box>
 
           {/* Annonces Categories Section - only show for specific network */}
           {showAnnoncesSection && (

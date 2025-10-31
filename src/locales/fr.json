@@ -1788,13 +1788,23 @@
     },
     "save": "Enregistrer les paramètres",
     "saving": "Enregistrement...",
+    "soundTitle": "Notifications sonores",
+    "soundDescription": "Émettre des sons subtils lors de la réception de messages",
+    "soundChat": "Sons du chat réseau",
+    "soundChatDescription": "Émettre un son pour les nouveaux messages dans le chat réseau",
+    "soundDm": "Sons des messages directs",
+    "soundDmDescription": "Émettre un son pour les nouveaux messages directs",
+    "categoriesTitle": "Catégories d'annonces",
+    "categoriesDescription": "Choisissez les catégories d'annonces que vous souhaitez recevoir",
+    "allCategories": "Toutes les catégories",
     "errors": {
       "loadFailed": "Échec du chargement des paramètres de notifications",
-      "saveFailed": "Échec de l'enregistrement des paramètres de notifications"
+      "saveFailed": "Échec de l'enregistrement des paramètres de notifications",
+      "updateFailed": "Échec de la mise à jour des paramètres",
+      "categoryUpdateFailed": "Échec de la mise à jour des préférences de catégorie",
+      "generalMandatory": "La catégorie Général ne peut pas être désactivée"
     },
-    "success": {
-      "saved": "Paramètres de notifications enregistrés avec succès !"
-    }
+    "success": "Paramètres enregistrés avec succès !"
   },
   "mediaUpload": {
     "addMedia": "Ajouter un média",
