@@ -66,7 +66,7 @@ import {
 } from '@mui/icons-material';
 import { updateNetworkDetails } from '../../api/networks';
 import { triggerNetworkRefresh } from '../../hooks/useNetworkRefresh';
-import { defaultTabDescriptions } from '../../utils/tabDescriptions';
+import { getDefaultTabDescriptions } from '../../utils/tabDescriptions';
 
 // Sortable Chip Component
 const SortableTabChip = ({ tab, isSelected, onToggle, darkMode }) => {
@@ -124,8 +124,11 @@ const SortableTabChip = ({ tab, isSelected, onToggle, darkMode }) => {
 };
 
 const NetworkSettingsTab = ({ network, onNetworkUpdate, darkMode }) => {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const muiTheme = useMuiTheme();
+
+  // Get default tab descriptions based on current language
+  const defaultTabDescriptions = getDefaultTabDescriptions(language);
   
   // Drag and drop sensors
   const sensors = useSensors(

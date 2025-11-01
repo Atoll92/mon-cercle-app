@@ -107,7 +107,7 @@ const NetworkLandingPageWrapper = () => {
 };
 
 function NetworkLandingPage() {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const { user } = useAuth();
   const { activeProfile } = useProfile();
   const { darkMode } = useTheme();
@@ -1154,7 +1154,7 @@ function NetworkLandingPage() {
                 <Typography
                   variant="body2"
                   sx={{
-                    color: darkMode 
+                    color: darkMode
                       ? alpha('#ffffff', 0.9)
                       : alpha('#000000', 0.8),
                     fontSize: { xs: '0.875rem', lg: '1rem' },
@@ -1163,7 +1163,7 @@ function NetworkLandingPage() {
                     flex: 1, // Take remaining space
                   }}
                 >
-                  {getTabDescription(currentTabId, network?.tab_descriptions)}
+                  {getTabDescription(currentTabId, network?.tab_descriptions, language)}
                 </Typography>
               </Box>
             </Paper>
