@@ -7,9 +7,13 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 import { formatEventDate } from '../utils/dateFormatting';
 import { useTranslation } from '../hooks/useTranslation';
 
-// Use the provided token and custom style
-const MAPBOX_TOKEN = 'pk.eyJ1IjoiZGdjb2Jvc3MiLCJhIjoiY2xzY2JkNTdqMGJzbDJrbzF2Zm84aWxwZCJ9.b9GP9FrGHsVquJf7ubWfKQ';
+// Get Mapbox token from environment variable
+const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 const MAPBOX_STYLE = 'mapbox://styles/dgcoboss/cm5k9ztpe003g01s76e7v8owz';
+
+if (!MAPBOX_TOKEN) {
+  console.error('VITE_MAPBOX_TOKEN is not defined in environment variables');
+}
 
 export default function EventsMap({ events = [], onEventSelect, initialCoordinates = null }) {
   const { t } = useTranslation();

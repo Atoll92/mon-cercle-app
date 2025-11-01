@@ -13,7 +13,12 @@ import LocationOnIcon from '@mui/icons-material/LocationOn';
 import debounce from 'lodash/debounce';
 import EventsMap from './EventsMap'; // Import the fixed EventsMap component
 
-const MAPBOX_TOKEN = 'pk.eyJ1IjoiZGdjb2Jvc3MiLCJhIjoiY2xzY2JkNTdqMGJzbDJrbzF2Zm84aWxwZCJ9.b9GP9FrGHsVquJf7ubWfKQ';
+// Get Mapbox token from environment variable
+const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
+
+if (!MAPBOX_TOKEN) {
+  console.error('VITE_MAPBOX_TOKEN is not defined in environment variables');
+}
 
 export default function AddressSuggestions({ value, onChange, label = "Location", placeholder = "Enter an address", required = false, fullWidth = true, autoFocus = false }) {
   const [inputValue, setInputValue] = useState('');

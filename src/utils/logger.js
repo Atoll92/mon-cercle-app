@@ -1,8 +1,17 @@
 /**
- * Logger utility that disables console logs in production
+ * Environment-aware logger utility for Conclav
+ * Disables debug/info logs in production, keeps errors and warnings
+ *
+ * Usage:
+ *   import { logger } from '../utils/logger';
+ *   logger.debug('Debug info', data);
+ *   logger.info('Info message');
+ *   logger.warn('Warning message');
+ *   logger.error('Error message', error);
  */
 
-const isDevelopment = process.env.NODE_ENV !== 'production';
+const isDevelopment = import.meta.env.MODE === 'development';
+const isProduction = import.meta.env.MODE === 'production';
 
 // Store original console methods
 const originalConsole = {
@@ -82,9 +91,36 @@ export const logError = (error, context = {}) => {
   originalConsole.error('Application Error:', errorInfo);
   
   // In production, send to error tracking service
-  if (!isDevelopment) {
+  if (isProduction) {
     // TODO: Send to Sentry or similar service
     // Example: Sentry.captureException(error, { extra: context });
+  }
+};
+
+/**
+ * Performance logging helper
+ * Measures execution time of async operations (development only)
+ * @param {string} label - Label for the operation
+ * @param {Function} asyncFn - Async function to measure
+ * @returns {Promise} Result of the async function
+ */
+export const logPerformance = async (label, asyncFn) => {
+  if (!isDevelopment) {
+    return await asyncFn();
+  }
+
+  const startTime = performance.now();
+  try {
+    const result = await asyncFn();
+    const endTime = performance.now();
+    const duration = (endTime - startTime).toFixed(2);
+    logger.debug(`⏱️ ${label}: ${duration}ms`);
+    return result;
+  } catch (error) {
+    const endTime = performance.now();
+    const duration = (endTime - startTime).toFixed(2);
+    logger.error(`⏱️ ${label} (failed): ${duration}ms`, error);
+    throw error;
   }
 };
 
