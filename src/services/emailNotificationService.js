@@ -1,6 +1,7 @@
 // Email notification service for sending notifications to network members
 import { supabase } from '../supabaseclient';
 import { createICSAttachment } from '../utils/icsGenerator';
+import { logger } from '../utils/logger';
 
 /**
  * Queue a news notification for all network members who want to receive them
@@ -12,14 +13,8 @@ import { createICSAttachment } from '../utils/icsGenerator';
  */
 export const queueNewsNotifications = async (networkId, newsId, authorId, newsTitle, newsContent, mediaUrl = null, mediaType = null) => {
   try {
-    console.log('🔔 [EMAIL DEBUG] Starting to queue news notifications');
-    console.log('🔔 [EMAIL DEBUG] Network ID:', networkId);
-    console.log('🔔 [EMAIL DEBUG] News ID:', newsId);
-    console.log('🔔 [EMAIL DEBUG] Author ID:', authorId);
-    console.log('🔔 [EMAIL DEBUG] News Title:', newsTitle);
 
     // Get all network members who want news notifications (excluding the author)
-    console.log('🔔 [EMAIL DEBUG] Fetching potential recipients...');
     const { data: recipients, error: recipientsError } = await supabase
       .from('profiles')
       .select('id, full_name, contact_email, email_notifications_enabled, notify_on_news')
@@ -28,56 +23,44 @@ export const queueNewsNotifications = async (networkId, newsId, authorId, newsTi
       .eq('email_notifications_enabled', true)
       .eq('notify_on_news', true);
 
-    console.log('🔔 [EMAIL DEBUG] Recipients query result:', { recipients, recipientsError });
 
     if (recipientsError) {
-      console.error('🔔 [EMAIL DEBUG] Error fetching notification recipients:', recipientsError);
+      logger.error('Error fetching notification recipients:', recipientsError);
       return { success: false, error: recipientsError.message };
     }
 
     if (!recipients || recipients.length === 0) {
-      console.log('🔔 [EMAIL DEBUG] No recipients found for news notifications');
-      console.log('🔔 [EMAIL DEBUG] This could mean:');
-      console.log('  - No other members in the network');
-      console.log('  - All members have email notifications disabled');
-      console.log('  - All members have news notifications disabled');
       return { success: true, message: 'No recipients found' };
     }
 
-    console.log(`🔔 [EMAIL DEBUG] Found ${recipients.length} potential recipients:`, recipients);
 
     // Get network name for the notification
-    console.log('🔔 [EMAIL DEBUG] Fetching network details...');
     const { data: network, error: networkError } = await supabase
       .from('networks')
       .select('name')
       .eq('id', networkId)
       .single();
 
-    console.log('🔔 [EMAIL DEBUG] Network query result:', { network, networkError });
 
     if (networkError) {
-      console.error('🔔 [EMAIL DEBUG] Error fetching network name:', networkError);
+      logger.error('Error fetching network name:', networkError);
       return { success: false, error: networkError.message };
     }
 
     // Get author name for the notification
-    console.log('🔔 [EMAIL DEBUG] Fetching author details...');
     const { data: author, error: authorError } = await supabase
       .from('profiles')
       .select('full_name')
       .eq('id', authorId)
       .single();
 
-    console.log('🔔 [EMAIL DEBUG] Author query result:', { author, authorError });
 
     if (authorError) {
-      console.error('🔔 [EMAIL DEBUG] Error fetching author name:', authorError);
+      logger.error('Error fetching author name:', authorError);
       return { success: false, error: authorError.message };
     }
 
     // Create notification queue entries
-    console.log('🔔 [EMAIL DEBUG] Creating notification queue entries...');
     const notifications = recipients.map(recipient => ({
       recipient_id: recipient.id,
       network_id: networkId,
@@ -90,22 +73,18 @@ export const queueNewsNotifications = async (networkId, newsId, authorId, newsTi
       })
     }));
 
-    console.log('🔔 [EMAIL DEBUG] Notification entries to insert:', notifications);
 
     // Insert all notifications at once
-    console.log('🔔 [EMAIL DEBUG] Inserting notifications into queue...');
     const { error: insertError } = await supabase
       .from('notification_queue')
       .insert(notifications);
 
-    console.log('🔔 [EMAIL DEBUG] Insert result:', { insertError });
 
     if (insertError) {
-      console.error('🔔 [EMAIL DEBUG] Error queueing notifications:', insertError);
+      logger.error('Error queueing notifications:', insertError);
       return { success: false, error: insertError.message };
     }
 
-    console.log(`🔔 [EMAIL DEBUG] Successfully queued ${notifications.length} news notifications`);
     return { 
       success: true, 
       message: `Queued notifications for ${notifications.length} recipients`,
@@ -113,7 +92,7 @@ export const queueNewsNotifications = async (networkId, newsId, authorId, newsTi
     };
 
   } catch (error) {
-    console.error('🔔 [EMAIL DEBUG] Error in queueNewsNotifications:', error);
+    logger.error('Error in queueNewsNotifications:', error);
     return { success: false, error: error.message };
   }
 };
@@ -171,10 +150,6 @@ export const getNotificationStats = async (profileId) => {
  */
 export const queueMentionNotification = async (mentionedUserId, networkId, mentionerName, messageContent, messageId) => {
   try {
-    console.log('🔔 [MENTION DEBUG] Queueing mention notification');
-    console.log('🔔 [MENTION DEBUG] Mentioned user ID:', mentionedUserId);
-    console.log('🔔 [MENTION DEBUG] Network ID:', networkId);
-    console.log('🔔 [MENTION DEBUG] Mentioner:', mentionerName);
     
     // Check if the user wants mention notifications
     const { data: userProfile, error: profileError } = await supabase
@@ -184,18 +159,17 @@ export const queueMentionNotification = async (mentionedUserId, networkId, menti
       .single();
       
     if (profileError) {
-      console.error('🔔 [MENTION DEBUG] Error fetching user profile:', profileError);
+      logger.error('Error fetching user profile:', profileError);
       return { success: false, error: profileError.message };
     }
     
     if (!userProfile.email_notifications_enabled || !userProfile.notify_on_mentions) {
-      console.log('🔔 [MENTION DEBUG] User has mention notifications disabled');
       return { success: true, message: 'User has mention notifications disabled' };
     }
     
     // Check if user has email configured
     if (!userProfile.contact_email) {
-      console.error('🔔 [MENTION DEBUG] No contact_email found for mentioned user');
+      logger.error('No contact_email found for mentioned user');
       return { success: false, error: 'Mentioned user has no email address configured' };
     }
     
@@ -207,7 +181,7 @@ export const queueMentionNotification = async (mentionedUserId, networkId, menti
       .single();
       
     if (networkError) {
-      console.error('🔔 [MENTION DEBUG] Error fetching network:', networkError);
+      logger.error('Error fetching network:', networkError);
       return { success: false, error: networkError.message };
     }
     
@@ -224,22 +198,20 @@ export const queueMentionNotification = async (mentionedUserId, networkId, menti
       })
     };
     
-    console.log('🔔 [MENTION DEBUG] Creating notification:', notification);
     
     const { error: insertError } = await supabase
       .from('notification_queue')
       .insert([notification]);
       
     if (insertError) {
-      console.error('🔔 [MENTION DEBUG] Error inserting notification:', insertError);
+      logger.error('Error inserting notification:', insertError);
       return { success: false, error: insertError.message };
     }
     
-    console.log('🔔 [MENTION DEBUG] Successfully queued mention notification');
     return { success: true, message: 'Mention notification queued' };
     
   } catch (error) {
-    console.error('🔔 [MENTION DEBUG] Error in queueMentionNotification:', error);
+    logger.error('Error in queueMentionNotification:', error);
     return { success: false, error: error.message };
   }
 };
@@ -255,14 +227,8 @@ export const queueMentionNotification = async (mentionedUserId, networkId, menti
  */
 export const queueEventNotifications = async (networkId, eventId, authorId, eventTitle, eventDescription, eventDate, eventLocation = null, coverImageUrl = null) => {
   try {
-    console.log('📅 [EVENT DEBUG] Starting to queue event notifications');
-    console.log('📅 [EVENT DEBUG] Network ID:', networkId);
-    console.log('📅 [EVENT DEBUG] Event ID:', eventId);
-    console.log('📅 [EVENT DEBUG] Author ID:', authorId);
-    console.log('📅 [EVENT DEBUG] Event Title:', eventTitle);
 
     // Get all network members who want event notifications (excluding the author)
-    console.log('📅 [EVENT DEBUG] Fetching potential recipients...');
     const { data: recipients, error: recipientsError } = await supabase
       .from('profiles')
       .select('id, full_name, contact_email, email_notifications_enabled, notify_on_events')
@@ -271,51 +237,40 @@ export const queueEventNotifications = async (networkId, eventId, authorId, even
       .eq('email_notifications_enabled', true)
       .eq('notify_on_events', true);
 
-    console.log('📅 [EVENT DEBUG] Recipients query result:', { recipients, recipientsError });
 
     if (recipientsError) {
-      console.error('📅 [EVENT DEBUG] Error fetching notification recipients:', recipientsError);
+      logger.error('Error fetching notification recipients:', recipientsError);
       return { success: false, error: recipientsError.message };
     }
 
     if (!recipients || recipients.length === 0) {
-      console.log('📅 [EVENT DEBUG] No recipients found for event notifications');
-      console.log('📅 [EVENT DEBUG] This could mean:');
-      console.log('  - No other members in the network');
-      console.log('  - All members have email notifications disabled');
-      console.log('  - All members have event notifications disabled');
       return { success: true, message: 'No recipients found' };
     }
 
-    console.log(`📅 [EVENT DEBUG] Found ${recipients.length} potential recipients:`, recipients);
 
     // Get network name for the notification
-    console.log('📅 [EVENT DEBUG] Fetching network details...');
     const { data: network, error: networkError } = await supabase
       .from('networks')
       .select('name')
       .eq('id', networkId)
       .single();
 
-    console.log('📅 [EVENT DEBUG] Network query result:', { network, networkError });
 
     if (networkError) {
-      console.error('📅 [EVENT DEBUG] Error fetching network name:', networkError);
+      logger.error('Error fetching network name:', networkError);
       return { success: false, error: networkError.message };
     }
 
     // Get author name for the notification
-    console.log('📅 [EVENT DEBUG] Fetching author details...');
     const { data: author, error: authorError } = await supabase
       .from('profiles')
       .select('full_name')
       .eq('id', authorId)
       .single();
 
-    console.log('📅 [EVENT DEBUG] Author query result:', { author, authorError });
 
     if (authorError) {
-      console.error('📅 [EVENT DEBUG] Error fetching author name:', authorError);
+      logger.error('Error fetching author name:', authorError);
       return { success: false, error: authorError.message };
     }
 
@@ -330,7 +285,6 @@ export const queueEventNotifications = async (networkId, eventId, authorId, even
     });
 
     // Generate ICS attachment data for the event
-    console.log('📅 [EVENT DEBUG] Generating ICS attachment data...');
     let icsAttachmentData = null;
     try {
       // Create event data for ICS generation
@@ -347,14 +301,12 @@ export const queueEventNotifications = async (networkId, eventId, authorId, even
       
       const icsAttachment = createICSAttachment(eventForICS);
       icsAttachmentData = JSON.stringify(icsAttachment);
-      console.log('📅 [EVENT DEBUG] ICS attachment generated successfully');
     } catch (icsError) {
-      console.error('📅 [EVENT DEBUG] Error generating ICS attachment:', icsError);
+      logger.error('Error generating ICS attachment:', icsError);
       // Continue without ICS if generation fails
     }
 
     // Create notification queue entries
-    console.log('📅 [EVENT DEBUG] Creating notification queue entries...');
     const notifications = recipients.map(recipient => ({
       recipient_id: recipient.id,
       network_id: networkId,
@@ -379,22 +331,18 @@ export const queueEventNotifications = async (networkId, eventId, authorId, even
       })
     }));
 
-    console.log('📅 [EVENT DEBUG] Notification entries to insert:', notifications);
 
     // Insert all notifications at once
-    console.log('📅 [EVENT DEBUG] Inserting notifications into queue...');
     const { error: insertError } = await supabase
       .from('notification_queue')
       .insert(notifications);
 
-    console.log('📅 [EVENT DEBUG] Insert result:', { insertError });
 
     if (insertError) {
-      console.error('📅 [EVENT DEBUG] Error queueing notifications:', insertError);
+      logger.error('Error queueing notifications:', insertError);
       return { success: false, error: insertError.message };
     }
 
-    console.log(`📅 [EVENT DEBUG] Successfully queued ${notifications.length} event notifications`);
     return { 
       success: true, 
       message: `Queued notifications for ${notifications.length} recipients`,
@@ -402,7 +350,7 @@ export const queueEventNotifications = async (networkId, eventId, authorId, even
     };
 
   } catch (error) {
-    console.error('📅 [EVENT DEBUG] Error in queueEventNotifications:', error);
+    logger.error('Error in queueEventNotifications:', error);
     return { success: false, error: error.message };
   }
 };
@@ -426,7 +374,6 @@ export const queueCommentNotification = async (params) => {
   } = params;
 
   try {
-    console.log('🔔 [COMMENT] Queueing comment notification', params);
     
     const notificationsToQueue = [];
     
@@ -509,11 +456,10 @@ export const queueCommentNotification = async (params) => {
         .insert(notificationsToQueue);
       
       if (insertError) {
-        console.error('🔔 [COMMENT] Error queueing notifications:', insertError);
+        logger.error('Error queueing notifications:', insertError);
         return { success: false, error: insertError.message };
       }
       
-      console.log(`🔔 [COMMENT] Successfully queued ${notificationsToQueue.length} comment notifications`);
     }
     
     return { 
@@ -523,7 +469,7 @@ export const queueCommentNotification = async (params) => {
     };
     
   } catch (error) {
-    console.error('🔔 [COMMENT] Error in queueCommentNotification:', error);
+    logger.error('Error in queueCommentNotification:', error);
     return { success: false, error: error.message };
   }
 };
@@ -540,7 +486,6 @@ export const queueCommentNotification = async (params) => {
  */
 export const queuePortfolioNotifications = async (networkId, postId, authorId, postTitle, postDescription, mediaUrl = null, mediaType = null) => {
   try {
-    console.log('🔔 [PORTFOLIO] Queueing notifications for portfolio post:', postTitle);
 
     // Get all network members who want news notifications (excluding the author)
     // Using news notification preference since portfolio posts are like news/updates
@@ -562,37 +507,32 @@ export const queuePortfolioNotifications = async (networkId, postId, authorId, p
     }
 
     // Get network name for the notification
-    console.log('🔔 [PORTFOLIO] Fetching network details...');
     const { data: network, error: networkError } = await supabase
       .from('networks')
       .select('name')
       .eq('id', networkId)
       .single();
 
-    console.log('🔔 [PORTFOLIO] Network query result:', { network, networkError });
 
     if (networkError) {
-      console.error('🔔 [PORTFOLIO] Error fetching network name:', networkError);
+      logger.error('Error fetching network name:', networkError);
       return { success: false, error: networkError.message };
     }
 
     // Get author name for the notification
-    console.log('🔔 [PORTFOLIO] Fetching author details...');
     const { data: author, error: authorError } = await supabase
       .from('profiles')
       .select('full_name')
       .eq('id', authorId)
       .single();
 
-    console.log('🔔 [PORTFOLIO] Author query result:', { author, authorError });
 
     if (authorError) {
-      console.error('🔔 [PORTFOLIO] Error fetching author name:', authorError);
+      logger.error('Error fetching author name:', authorError);
       return { success: false, error: authorError.message };
     }
 
     // Create notification queue entries
-    console.log('🔔 [PORTFOLIO] Creating notification queue entries...');
     const notifications = recipients.map(recipient => ({
       recipient_id: recipient.id,
       network_id: networkId,
@@ -605,22 +545,18 @@ export const queuePortfolioNotifications = async (networkId, postId, authorId, p
       })
     }));
 
-    console.log('🔔 [PORTFOLIO] Notification entries to insert:', notifications);
 
     // Insert all notifications at once
-    console.log('🔔 [PORTFOLIO] Inserting notifications into queue...');
     const { error: insertError } = await supabase
       .from('notification_queue')
       .insert(notifications);
 
-    console.log('🔔 [PORTFOLIO] Insert result:', { insertError });
 
     if (insertError) {
-      console.error('🔔 [PORTFOLIO] Error queueing notifications:', insertError);
+      logger.error('Error queueing notifications:', insertError);
       return { success: false, error: insertError.message };
     }
 
-    console.log(`💼 [PORTFOLIO DEBUG] Successfully queued ${notifications.length} portfolio notifications`);
     return { 
       success: true, 
       message: `Queued notifications for ${notifications.length} recipients`,
@@ -628,7 +564,7 @@ export const queuePortfolioNotifications = async (networkId, postId, authorId, p
     };
 
   } catch (error) {
-    console.error('💼 [PORTFOLIO DEBUG] Error in queuePortfolioNotifications:', error);
+    logger.error('Error in queuePortfolioNotifications:', error);
     return { success: false, error: error.message };
   }
 };
@@ -639,7 +575,6 @@ export const queuePortfolioNotifications = async (networkId, postId, authorId, p
  */
 export const cleanupOldNotifications = async () => {
   try {
-    console.log('🧹 [CLEANUP DEBUG] Starting notification cleanup...');
     
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
@@ -651,15 +586,14 @@ export const cleanupOldNotifications = async () => {
       .eq('is_sent', true);
       
     if (error) {
-      console.error('🧹 [CLEANUP DEBUG] Error cleaning up notifications:', error);
+      logger.error('Error cleaning up notifications:', error);
       return { success: false, error: error.message };
     }
     
-    console.log('🧹 [CLEANUP DEBUG] Successfully cleaned up old notifications');
     return { success: true, message: 'Old notifications cleaned up' };
     
   } catch (error) {
-    console.error('🧹 [CLEANUP DEBUG] Error in cleanupOldNotifications:', error);
+    logger.error('Error in cleanupOldNotifications:', error);
     return { success: false, error: error.message };
   }
 };
@@ -673,13 +607,9 @@ export const cleanupOldNotifications = async () => {
  */
 export const queueDirectMessageNotification = async (recipientId, senderId, messageContent, messageId) => {
   try {
-    console.log('💬 [DM DEBUG] Queueing direct message notification');
-    console.log('💬 [DM DEBUG] Recipient ID:', recipientId);
-    console.log('💬 [DM DEBUG] Sender ID:', senderId);
     
     // Don't send notification to self
     if (recipientId === senderId) {
-      console.log('💬 [DM DEBUG] Skipping notification - same user');
       return { success: true, message: 'No notification needed for self-messaging' };
     }
     
@@ -691,19 +621,18 @@ export const queueDirectMessageNotification = async (recipientId, senderId, mess
       .single();
       
     if (profileError) {
-      console.error('💬 [DM DEBUG] Error fetching recipient profile:', profileError);
+      logger.error('Error fetching recipient profile:', profileError);
       return { success: false, error: profileError.message };
     }
     
     if (!recipientProfile.email_notifications_enabled || !recipientProfile.notify_on_direct_messages) {
-      console.log('💬 [DM DEBUG] Recipient has direct message notifications disabled');
       return { success: true, message: 'Recipient has direct message notifications disabled' };
     }
     
     // Use contact_email as the notification email (should be populated during profile creation)
     const recipientEmail = recipientProfile.contact_email;
     if (!recipientEmail) {
-      console.error('💬 [DM DEBUG] No contact_email found for recipient');
+      logger.error('No contact_email found for recipient');
       return { success: false, error: 'Recipient has no email address configured' };
     }
     
@@ -715,7 +644,7 @@ export const queueDirectMessageNotification = async (recipientId, senderId, mess
       .single();
       
     if (senderError) {
-      console.error('💬 [DM DEBUG] Error fetching sender profile:', senderError);
+      logger.error('Error fetching sender profile:', senderError);
       return { success: false, error: senderError.message };
     }
     
@@ -732,22 +661,20 @@ export const queueDirectMessageNotification = async (recipientId, senderId, mess
       })
     };
     
-    console.log('💬 [DM DEBUG] Creating notification:', notification);
     
     const { error: insertError } = await supabase
       .from('notification_queue')
       .insert([notification]);
       
     if (insertError) {
-      console.error('💬 [DM DEBUG] Error inserting notification:', insertError);
+      logger.error('Error inserting notification:', insertError);
       return { success: false, error: insertError.message };
     }
     
-    console.log('💬 [DM DEBUG] Successfully queued direct message notification');
     return { success: true, message: 'Direct message notification queued' };
     
   } catch (error) {
-    console.error('💬 [DM DEBUG] Error in queueDirectMessageNotification:', error);
+    logger.error('Error in queueDirectMessageNotification:', error);
     return { success: false, error: error.message };
   }
 };
@@ -763,14 +690,8 @@ export const queueDirectMessageNotification = async (recipientId, senderId, mess
  */
 export const queueEventProposalNotificationForAdmins = async (networkId, eventId, proposerId, eventTitle, eventDescription, eventDate) => {
   try {
-    console.log('🔔 [EVENT PROPOSAL] Starting to queue admin notifications for event proposal');
-    console.log('🔔 [EVENT PROPOSAL] Network ID:', networkId);
-    console.log('🔔 [EVENT PROPOSAL] Event ID:', eventId);
-    console.log('🔔 [EVENT PROPOSAL] Proposer ID:', proposerId);
-    console.log('🔔 [EVENT PROPOSAL] Event Title:', eventTitle);
 
     // Get all network admins
-    console.log('🔔 [EVENT PROPOSAL] Fetching network admins...');
     const { data: admins, error: adminsError } = await supabase
       .from('profiles')
       .select('id, full_name, contact_email, email_notifications_enabled')
@@ -778,19 +699,16 @@ export const queueEventProposalNotificationForAdmins = async (networkId, eventId
       .eq('role', 'admin')
       .eq('email_notifications_enabled', true);
 
-    console.log('🔔 [EVENT PROPOSAL] Admins query result:', { admins, adminsError });
 
     if (adminsError) {
-      console.error('🔔 [EVENT PROPOSAL] Error fetching network admins:', adminsError);
+      logger.error('Error fetching network admins:', adminsError);
       return { success: false, error: adminsError.message };
     }
 
     if (!admins || admins.length === 0) {
-      console.log('🔔 [EVENT PROPOSAL] No admins found for event proposal notifications');
       return { success: true, message: 'No admins found' };
     }
 
-    console.log(`🔔 [EVENT PROPOSAL] Found ${admins.length} admins:`, admins);
 
     // Get network name
     const { data: network, error: networkError } = await supabase
@@ -800,7 +718,7 @@ export const queueEventProposalNotificationForAdmins = async (networkId, eventId
       .single();
 
     if (networkError) {
-      console.error('🔔 [EVENT PROPOSAL] Error fetching network name:', networkError);
+      logger.error('Error fetching network name:', networkError);
       return { success: false, error: networkError.message };
     }
 
@@ -812,7 +730,7 @@ export const queueEventProposalNotificationForAdmins = async (networkId, eventId
       .single();
 
     if (proposerError) {
-      console.error('🔔 [EVENT PROPOSAL] Error fetching proposer name:', proposerError);
+      logger.error('Error fetching proposer name:', proposerError);
       return { success: false, error: proposerError.message };
     }
 
@@ -839,7 +757,6 @@ export const queueEventProposalNotificationForAdmins = async (networkId, eventId
       })
     }));
 
-    console.log('🔔 [EVENT PROPOSAL] Creating notifications for admins:', notifications);
 
     // Insert all notifications at once
     const { error: insertError } = await supabase
@@ -847,11 +764,10 @@ export const queueEventProposalNotificationForAdmins = async (networkId, eventId
       .insert(notifications);
 
     if (insertError) {
-      console.error('🔔 [EVENT PROPOSAL] Error queueing notifications:', insertError);
+      logger.error('Error queueing notifications:', insertError);
       return { success: false, error: insertError.message };
     }
 
-    console.log(`🔔 [EVENT PROPOSAL] Successfully queued ${notifications.length} admin notifications`);
     return { 
       success: true, 
       message: `Queued notifications for ${notifications.length} admins`,
@@ -859,7 +775,7 @@ export const queueEventProposalNotificationForAdmins = async (networkId, eventId
     };
 
   } catch (error) {
-    console.error('🔔 [EVENT PROPOSAL] Error in queueEventProposalNotificationForAdmins:', error);
+    logger.error('Error in queueEventProposalNotificationForAdmins:', error);
     return { success: false, error: error.message };
   }
 };
@@ -875,10 +791,6 @@ export const queueEventProposalNotificationForAdmins = async (networkId, eventId
  */
 export const queueEventStatusNotification = async (eventId, eventCreatorId, eventTitle, status, rejectionReason = '', networkId) => {
   try {
-    console.log('🔔 [EVENT STATUS] Queueing event status notification');
-    console.log('🔔 [EVENT STATUS] Event ID:', eventId);
-    console.log('🔔 [EVENT STATUS] Creator ID:', eventCreatorId);
-    console.log('🔔 [EVENT STATUS] Status:', status);
 
     // Get event creator profile
     const { data: creator, error: creatorError } = await supabase
@@ -888,17 +800,16 @@ export const queueEventStatusNotification = async (eventId, eventCreatorId, even
       .single();
 
     if (creatorError) {
-      console.error('🔔 [EVENT STATUS] Error fetching creator profile:', creatorError);
+      logger.error('Error fetching creator profile:', creatorError);
       return { success: false, error: creatorError.message };
     }
 
     if (!creator.email_notifications_enabled) {
-      console.log('🔔 [EVENT STATUS] Creator has email notifications disabled');
       return { success: true, message: 'Creator has notifications disabled' };
     }
 
     if (!creator.contact_email) {
-      console.error('🔔 [EVENT STATUS] No contact_email found for event creator');
+      logger.error('No contact_email found for event creator');
       return { success: false, error: 'Event creator has no email address configured' };
     }
 
@@ -910,7 +821,7 @@ export const queueEventStatusNotification = async (eventId, eventCreatorId, even
       .single();
 
     if (networkError) {
-      console.error('🔔 [EVENT STATUS] Error fetching network:', networkError);
+      logger.error('Error fetching network:', networkError);
       return { success: false, error: networkError.message };
     }
 
@@ -928,22 +839,20 @@ export const queueEventStatusNotification = async (eventId, eventCreatorId, even
       metadata: JSON.stringify({ status, rejectionReason })
     };
 
-    console.log('🔔 [EVENT STATUS] Creating notification:', notification);
 
     const { error: insertError } = await supabase
       .from('notification_queue')
       .insert([notification]);
 
     if (insertError) {
-      console.error('🔔 [EVENT STATUS] Error inserting notification:', insertError);
+      logger.error('Error inserting notification:', insertError);
       return { success: false, error: insertError.message };
     }
 
-    console.log('🔔 [EVENT STATUS] Successfully queued event status notification');
     return { success: true, message: 'Event status notification queued' };
 
   } catch (error) {
-    console.error('🔔 [EVENT STATUS] Error in queueEventStatusNotification:', error);
+    logger.error('Error in queueEventStatusNotification:', error);
     return { success: false, error: error.message };
   }
 };
