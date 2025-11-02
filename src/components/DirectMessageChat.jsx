@@ -30,7 +30,8 @@ import {
   Videocam as VideocamIcon,
   Audiotrack as AudiotrackIcon,
   PictureAsPdf as PictureAsPdfIcon,
-  EmojiEmotions as EmojiEmotionsIcon
+  EmojiEmotions as EmojiEmotionsIcon,
+  Gif as GifIcon
 } from '@mui/icons-material';
 import MediaPlayer from './MediaPlayer';
 import ImageViewerModal from './ImageViewerModal';
@@ -38,6 +39,7 @@ import LinkPreview from './LinkPreview';
 import MediaUpload from './MediaUpload';
 import MemberDetailsModal from './MembersDetailModal';
 import EmojiPicker from 'emoji-picker-react';
+import GifPicker from './GifPicker';
 import { playNotificationIfEnabled, initializeAudioContext } from '../utils/notificationSounds';
 
 function DirectMessageChat({ conversationId, partner, onBack }) {
@@ -59,6 +61,7 @@ function DirectMessageChat({ conversationId, partner, onBack }) {
   const [expandedMedia, setExpandedMedia] = useState({});
   const [pendingMedia, setPendingMedia] = useState(null);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [showGifPicker, setShowGifPicker] = useState(false);
   const messagesEndRef = useRef(null);
   const messageContainerRef = useRef(null);
   const channelRef = useRef(null);
@@ -288,11 +291,14 @@ if (refreshConversations) {
     }
   }, [conversationId, loading, messages.length]);
 
-  // Close emoji picker and media upload when clicking outside
+  // Close emoji picker, gif picker, and media upload when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (showEmojiPicker && !event.target.closest('[data-emoji-picker]')) {
         setShowEmojiPicker(false);
+      }
+      if (showGifPicker && !event.target.closest('[data-gif-picker]')) {
+        setShowGifPicker(false);
       }
       if (showMediaUpload && !event.target.closest('[data-media-upload]')) {
         setShowMediaUpload(false);
@@ -301,7 +307,7 @@ if (refreshConversations) {
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [showEmojiPicker, showMediaUpload]);
+  }, [showEmojiPicker, showGifPicker, showMediaUpload]);
   
   
   // Handle emoji selection
@@ -311,15 +317,43 @@ if (refreshConversations) {
     const textBefore = newMessage.substring(0, cursorPos);
     const textAfter = newMessage.substring(cursorPos);
     const newText = textBefore + emoji + textAfter;
-    
+
     setNewMessage(newText);
     setShowEmojiPicker(false);
-    
+
     // Focus back to text field and set cursor position after emoji
     setTimeout(() => {
       textFieldRef.current?.focus();
       const newCursorPos = cursorPos + emoji.length;
       textFieldRef.current?.setSelectionRange(newCursorPos, newCursorPos);
+    }, 0);
+  };
+
+  // Handle GIF selection
+  const handleGifSelect = (gifData) => {
+    console.log('GIF selected:', gifData);
+
+    // Create media data object for the GIF
+    const gifMediaData = {
+      url: gifData.url,
+      type: 'image', // GIFs are treated as images
+      mediaType: 'image',
+      fileName: gifData.title || 'giphy.gif',
+      metadata: {
+        fileName: gifData.title || 'giphy.gif',
+        width: gifData.width,
+        height: gifData.height,
+        gifId: gifData.id
+      }
+    };
+
+    // Set as pending media and close picker
+    setPendingMedia(gifMediaData);
+    setShowGifPicker(false);
+
+    // Focus on text field
+    setTimeout(() => {
+      textFieldRef.current?.focus();
     }, 0);
   };
 
@@ -1396,19 +1430,31 @@ if (refreshConversations) {
             color="primary"
             onClick={() => setShowMediaUpload(!showMediaUpload)}
             sx={{ mr: 1 }}
+            title={t('chat.attachFile', 'Attach file')}
           >
             <AttachFileIcon />
           </IconButton>
-          
+
+          {/* GIF picker button */}
+          <IconButton
+            color="primary"
+            onClick={() => setShowGifPicker(!showGifPicker)}
+            sx={{ mr: 1 }}
+            title={t('chat.addGif', 'Add GIF')}
+          >
+            <GifIcon />
+          </IconButton>
+
           {/* Emoji picker button */}
           <IconButton
             color="primary"
             onClick={() => setShowEmojiPicker(!showEmojiPicker)}
             sx={{ mr: 1 }}
+            title={t('chat.addEmoji', 'Add emoji')}
           >
             <EmojiEmotionsIcon />
           </IconButton>
-          
+
           <TextField
             inputRef={textFieldRef}
             fullWidth
@@ -1490,14 +1536,39 @@ if (refreshConversations) {
         title={selectedImage.title}
       />
 
+      {/* GIF picker dialog */}
+      {showGifPicker && (
+        <Paper
+          data-gif-picker
+          sx={{
+            position: 'absolute',
+            bottom: 80,
+            right: showEmojiPicker ? 328 : 16,
+            width: 340,
+            height: 500,
+            bgcolor: (theme) => theme.palette.mode === 'dark' ? 'rgba(30, 30, 40, 0.98)' : 'background.paper',
+            boxShadow: 3,
+            borderRadius: 2,
+            zIndex: 10,
+            overflow: 'hidden'
+          }}
+        >
+          <GifPicker
+            onGifSelect={handleGifSelect}
+            onClose={() => setShowGifPicker(false)}
+            darkMode={true}
+          />
+        </Paper>
+      )}
+
       {/* Emoji picker dialog */}
       {showEmojiPicker && (
-        <Paper 
+        <Paper
           data-emoji-picker
-          sx={{ 
-            position: 'absolute', 
-            bottom: 80, 
-            right: 16, 
+          sx={{
+            position: 'absolute',
+            bottom: 80,
+            right: 16,
             p: 1,
             bgcolor: 'background.paper',
             boxShadow: 3,
