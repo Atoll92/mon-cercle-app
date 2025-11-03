@@ -1,56 +1,70 @@
 // Utility functions for formatting dates and times
 
 /**
+ * Get the current user's locale from localStorage
+ * @returns {string} Locale string (e.g., 'en', 'fr')
+ */
+const getUserLocale = () => {
+  return localStorage.getItem('language') || 'en';
+};
+
+/**
  * Format a date string to show both date and time
  * @param {string} dateString - ISO date string
  * @param {Object} options - Formatting options
+ * @param {string} locale - Optional locale override (defaults to user's language)
  * @returns {string} Formatted date and time string
  */
-export const formatDateTime = (dateString, options = {}) => {
+export const formatDateTime = (dateString, options = {}, locale = null) => {
   if (!dateString) return '';
-  
+
   const date = new Date(dateString);
-  
+  const userLocale = locale || getUserLocale();
+
   // Default options
   const defaultOptions = {
     dateStyle: 'medium',
     timeStyle: 'short'
   };
-  
-  return date.toLocaleString(undefined, { ...defaultOptions, ...options });
+
+  return date.toLocaleString(userLocale, { ...defaultOptions, ...options });
 };
 
 /**
  * Format a date string to show only the date
  * @param {string} dateString - ISO date string
  * @param {Object} options - Formatting options
+ * @param {string} locale - Optional locale override (defaults to user's language)
  * @returns {string} Formatted date string
  */
-export const formatDate = (dateString, options = {}) => {
+export const formatDate = (dateString, options = {}, locale = null) => {
   if (!dateString) return '';
-  
+
   const date = new Date(dateString);
-  
-  return date.toLocaleDateString(undefined, options);
+  const userLocale = locale || getUserLocale();
+
+  return date.toLocaleDateString(userLocale, options);
 };
 
 /**
  * Format a date string to show only the time
  * @param {string} dateString - ISO date string
  * @param {Object} options - Formatting options
+ * @param {string} locale - Optional locale override (defaults to user's language)
  * @returns {string} Formatted time string
  */
-export const formatTime = (dateString, options = {}) => {
+export const formatTime = (dateString, options = {}, locale = null) => {
   if (!dateString) return '';
-  
+
   const date = new Date(dateString);
-  
+  const userLocale = locale || getUserLocale();
+
   const defaultOptions = {
     hour: '2-digit',
     minute: '2-digit'
   };
-  
-  return date.toLocaleTimeString(undefined, { ...defaultOptions, ...options });
+
+  return date.toLocaleTimeString(userLocale, { ...defaultOptions, ...options });
 };
 
 /**
@@ -69,32 +83,34 @@ export const hasTimeComponent = (dateString) => {
  * Format event date intelligently - show time if it's set
  * @param {string} dateString - ISO date string
  * @param {boolean} detailed - If true, show weekday and full month names
+ * @param {string} locale - Optional locale override (defaults to user's language)
  * @returns {string} Formatted date/datetime string
  */
-export const formatEventDate = (dateString, detailed = false) => {
+export const formatEventDate = (dateString, detailed = false, locale = null) => {
   if (!dateString) return '';
-  
+
   const date = new Date(dateString);
-  
+  const userLocale = locale || getUserLocale();
+
   // If the date has a time component, show both date and time
   if (hasTimeComponent(dateString)) {
     if (detailed) {
       // Detailed format: "Monday, January 15, 2025 at 2:30 PM"
       const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
       const timeOptions = { hour: 'numeric', minute: '2-digit' };
-      const dateStr = date.toLocaleDateString(undefined, dateOptions);
-      const timeStr = date.toLocaleTimeString(undefined, timeOptions);
+      const dateStr = date.toLocaleDateString(userLocale, dateOptions);
+      const timeStr = date.toLocaleTimeString(userLocale, timeOptions);
       return `${dateStr} at ${timeStr}`;
     }
-    return formatDateTime(dateString);
+    return formatDateTime(dateString, {}, locale);
   }
-  
+
   // Otherwise just show the date
   if (detailed) {
     const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-    return date.toLocaleDateString(undefined, options);
+    return date.toLocaleDateString(userLocale, options);
   }
-  return formatDate(dateString);
+  return formatDate(dateString, {}, locale);
 };
 
 // Import translations directly
