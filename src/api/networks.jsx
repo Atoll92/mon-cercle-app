@@ -482,18 +482,18 @@ export const getUserProfile = async (userIdOrProfileId) => {
   }
 };
 
-export const getUserProfileByUsername = async (username) => {
+export const getUserProfileByMoodboardSlug = async (moodboardSlug) => {
   try {
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
-      .eq('username', username)
+      .eq('moodboard_slug', moodboardSlug)
       .single();
-      
+
     if (error) throw error;
     return data;
   } catch (error) {
-    console.error('Error fetching user profile by username:', error);
+    console.error('Error fetching user profile by moodboard slug:', error);
     return null;
   }
 };

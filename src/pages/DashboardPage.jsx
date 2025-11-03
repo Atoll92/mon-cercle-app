@@ -1122,10 +1122,10 @@ function DashboardPage() {
                         </Tooltip>
                         
                         <Tooltip title={t('dashboard.buttons.myMicroConclav')} placement="top">
-                          <Button 
-                            size="small" 
-                            component={Link} 
-                            to={activeProfile?.username ? `/micro/${activeProfile.username}` : `/micro-conclav/${activeProfile.id}`}
+                          <Button
+                            size="small"
+                            component={Link}
+                            to={activeProfile?.moodboard_slug ? `/micro/${activeProfile.moodboard_slug}` : `/micro-conclav/${activeProfile.id}`}
                             target="_blank"
                             variant="outlined"
                             color="primary"

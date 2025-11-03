@@ -70,8 +70,8 @@ const MicroConclavWidget = () => {
   }
 
   const userProfile = activeProfile || userProfiles?.[0];
-  const microConclavUrl = userProfile?.username 
-    ? `/micro/${userProfile.username}`
+  const microConclavUrl = userProfile?.moodboard_slug
+    ? `/micro/${userProfile.moodboard_slug}`
     : `/micro-conclav/${profileId}`;
 
   return (

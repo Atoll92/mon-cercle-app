@@ -453,36 +453,36 @@ export const createProfileForNetwork = async (userId, networkId, profileData) =>
       }
     }
     
-    // Generate username from full name (matching the SQL migration logic)
-    let baseUsername = (fullName || 'user')
+    // Generate moodboard slug from full name (matching the SQL migration logic)
+    let baseSlug = (fullName || 'user')
       .toLowerCase()
       .replace(/[^a-z0-9]/g, '') // Remove all non-alphanumeric characters
       || 'user'; // Fallback if empty after cleaning
-    
-    // Check for existing usernames and make it unique if needed
-    let username = baseUsername;
+
+    // Check for existing slugs and make it unique if needed
+    let moodboardSlug = baseSlug;
     let counter = 1;
     let isUnique = false;
-    
+
     while (!isUnique) {
       const { data: existingProfile, error: checkError } = await supabase
         .from('profiles')
         .select('id')
-        .eq('username', username)
+        .eq('moodboard_slug', moodboardSlug)
         .maybeSingle();
-      
+
       if (checkError && checkError.code !== 'PGRST116') {
-        console.error('Error checking username uniqueness:', checkError);
+        console.error('Error checking moodboard_slug uniqueness:', checkError);
         // If we can't check, add a timestamp to make it likely unique
-        username = `${baseUsername}${Date.now()}`;
+        moodboardSlug = `${baseSlug}${Date.now()}`;
         break;
       }
-      
+
       if (!existingProfile) {
         isUnique = true;
       } else {
         counter++;
-        username = `${baseUsername}${counter}`;
+        moodboardSlug = `${baseSlug}${counter}`;
       }
     }
     
@@ -491,7 +491,7 @@ export const createProfileForNetwork = async (userId, networkId, profileData) =>
       .insert({
         user_id: userId,
         network_id: networkId,
-        username: username, // Add the generated unique username
+        moodboard_slug: moodboardSlug, // Add the generated unique moodboard slug
         full_name: fullName || 'New User', // Fallback if email parsing fails
         contact_email: profileData.contact_email,
         bio: profileData.bio || '',

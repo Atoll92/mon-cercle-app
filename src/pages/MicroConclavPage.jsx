@@ -34,7 +34,7 @@ import { useTranslation } from '../hooks/useTranslation';
 
 const MicroConclavPage = () => {
   const { t } = useTranslation();
-  const { profileId, username } = useParams();
+  const { profileId, moodboardSlug } = useParams();
   const navigate = useNavigate();
   const theme = useTheme();
   const { activeProfile } = useProfile();
@@ -68,14 +68,14 @@ const MicroConclavPage = () => {
 
   const fetchProfile = async () => {
     try {
-      // If we have a username, first resolve it to a profileId
-      if (username && !profileId) {
+      // If we have a moodboard slug, first resolve it to a profileId
+      if (moodboardSlug && !profileId) {
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('*')
-          .eq('username', username)
+          .eq('moodboard_slug', moodboardSlug)
           .single();
-          
+
         if (profileError) throw profileError;
         if (profileData) {
           setProfile(profileData);
@@ -83,7 +83,7 @@ const MicroConclavPage = () => {
           return;
         }
       }
-      
+
       // Otherwise use the profileId directly
       const userProfile = await getUserProfile(profileId);
       setProfile(userProfile);
@@ -144,9 +144,9 @@ const MicroConclavPage = () => {
       await fetchProfile();
       setLoading(false);
     };
-    
+
     init();
-  }, [profileId, username]);
+  }, [profileId, moodboardSlug]);
 
   // Fetch moodboard after we have resolved profileId
   useEffect(() => {
