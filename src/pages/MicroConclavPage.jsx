@@ -347,7 +347,7 @@ const MicroConclavPage = () => {
                       endIcon={bioExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
                       sx={{ mt: 0.5, minWidth: 'auto', p: 0, textTransform: 'none' }}
                     >
-                      {bioExpanded ? t('common.showLess') : t('common.showMore')}
+                      {bioExpanded ? t('common.actions.showLess') : t('common.actions.showMore')}
                     </Button>
                   )}
                 </>
