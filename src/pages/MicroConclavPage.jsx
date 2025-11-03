@@ -1,14 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Spinner from '../components/Spinner';
-import { 
-  Box, 
-  Paper, 
-  Avatar, 
-  Typography, 
-  ToggleButton, 
-  ToggleButtonGroup, 
+import {
+  Box,
+  Paper,
+  Avatar,
+  Typography,
+  ToggleButton,
+  ToggleButtonGroup,
   Button,
+  IconButton,
+  Tooltip,
+  Collapse,
   alpha
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
@@ -22,6 +25,8 @@ import GridViewIcon from '@mui/icons-material/GridView';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import EditIcon from '@mui/icons-material/Edit';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import MoodboardItemDisplay from '../components/Moodboard/MoodboardItemDisplay';
 import MoodboardItemGrid from '../components/Moodboard/MoodboardItemGrid';
 import { useProfile } from '../context/profileContext';
@@ -40,6 +45,7 @@ const MicroConclavPage = () => {
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'moodboard'
   const [resolvedProfileId, setResolvedProfileId] = useState(null);
+  const [bioExpanded, setBioExpanded] = useState(false);
   
   const containerRef = useRef(null);
   
@@ -308,30 +314,43 @@ const MicroConclavPage = () => {
             maxWidth: 300,
           }}
         >
-          <Box display="flex" alignItems="center" gap={2}>
+          <Box display="flex" alignItems="flex-start" gap={2}>
             <Avatar
               src={profile.profile_picture_url}
               alt={profile.full_name}
-              sx={{ width: 60, height: 60 }}
+              sx={{ width: 60, height: 60, flexShrink: 0 }}
             />
-            <Box>
+            <Box sx={{ flex: 1, minWidth: 0 }}>
               <Typography variant="h6" sx={{ fontWeight: 600 }}>
                 {profile.full_name}
               </Typography>
               {profile.bio && (
-                <Typography
-                  variant="body2"
-                  color="text.secondary"
-                  sx={{
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    display: '-webkit-box',
-                    WebkitLineClamp: 2,
-                    WebkitBoxOrient: 'vertical',
-                  }}
-                >
-                  {profile.bio}
-                </Typography>
+                <>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      display: '-webkit-box',
+                      WebkitLineClamp: bioExpanded ? 'unset' : 2,
+                      WebkitBoxOrient: 'vertical',
+                      whiteSpace: bioExpanded ? 'normal' : undefined,
+                    }}
+                  >
+                    {profile.bio}
+                  </Typography>
+                  {profile.bio.length > 100 && (
+                    <Button
+                      size="small"
+                      onClick={() => setBioExpanded(!bioExpanded)}
+                      endIcon={bioExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                      sx={{ mt: 0.5, minWidth: 'auto', p: 0, textTransform: 'none' }}
+                    >
+                      {bioExpanded ? t('common.showLess') : t('common.showMore')}
+                    </Button>
+                  )}
+                </>
               )}
             </Box>
           </Box>
