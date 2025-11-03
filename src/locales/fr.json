@@ -860,6 +860,7 @@
     "allCategories": "Toutes les catégories",
     "manageEvents": "Gérer les événements",
     "eventsMap": "Carte des événements",
+    "eventsOnMap": "{{shown}} / {{total}} événements sur la carte",
     "geographicView": "Vue géographique des événements à venir",
     "upcomingEvents": "Événements à venir",
     "eventsHappeningSoon": "Événements à venir bientôt",

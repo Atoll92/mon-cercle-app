@@ -47,6 +47,7 @@ import startOfWeek from 'date-fns/startOfWeek';
 import getDay from 'date-fns/getDay';
 import { addMonths, subMonths } from 'date-fns';
 import enUS from 'date-fns/locale/en-US';
+import fr from 'date-fns/locale/fr';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 
 import EventParticipation from './EventParticipation';
@@ -55,16 +56,20 @@ import CreateEventDialog from './CreateEventDialog';
 import { Add as AddIcon } from '@mui/icons-material';
 
 const locales = {
-  'en-US': enUS,
+  'en': enUS,
+  'fr': fr,
 };
 
-const localizer = dateFnsLocalizer({
-  format,
-  parse,
-  startOfWeek,
-  getDay,
-  locales,
-});
+// Helper function to get locale-aware localizer
+const getLocalizer = (language = 'en') => {
+  return dateFnsLocalizer({
+    format: (date, formatStr, options) => format(date, formatStr, { ...options, locale: locales[language] }),
+    parse: (dateStr, formatStr, options) => parse(dateStr, formatStr, new Date(), { ...options, locale: locales[language] }),
+    startOfWeek: (date, options) => startOfWeek(date, { ...options, locale: locales[language] }),
+    getDay,
+    locales,
+  });
+};
 
 const EventsTab = ({
   events = [],
@@ -75,7 +80,8 @@ const EventsTab = ({
   activeProfile,
   setEvents
 }) => {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
+  const localizer = useMemo(() => getLocalizer(language), [language]);
   const [showEventDialog, setShowEventDialog] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [calendarDate, setCalendarDate] = useState(new Date());
@@ -457,7 +463,7 @@ const EventsTab = ({
                       const isTomorrow = new Date(new Date().setDate(new Date().getDate() + 1)).toDateString() === eventDate.toDateString();
                       
                       
-                      let dateLabel = eventDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+                      let dateLabel = eventDate.toLocaleDateString(language, { month: 'short', day: 'numeric' });
                       if (isToday) dateLabel = t('eventsTab.today');
                       if (isTomorrow) dateLabel = t('eventsTab.tomorrow');
                       
@@ -2033,7 +2039,7 @@ const EventsTab = ({
                 const eventsByMonth = sortedPastEvents.reduce((groups, event) => {
                   const date = new Date(event.date);
                   const monthKey = `${date.getFullYear()}-${date.getMonth()}`;
-                  const monthLabel = date.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+                  const monthLabel = date.toLocaleDateString(language, { month: 'long', year: 'numeric' });
                   
                   if (!groups[monthKey]) {
                     groups[monthKey] = {

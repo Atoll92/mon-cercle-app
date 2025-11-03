@@ -859,6 +859,7 @@
     "allCategories": "All Categories",
     "manageEvents": "Manage Events",
     "eventsMap": "Events Map",
+    "eventsOnMap": "{{shown}} / {{total}} events on map",
     "geographicView": "Geographic view of upcoming events",
     "upcomingEvents": "Upcoming Events",
     "eventsHappeningSoon": "Events happening soon",

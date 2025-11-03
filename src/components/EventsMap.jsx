@@ -269,7 +269,10 @@ export default function EventsMap({ events = [], onEventSelect, initialCoordinat
           color: 'text.secondary',
           zIndex: 5
         }}>
-          {events.filter(event => event?.coordinates && event.coordinates.longitude).length} / {events.length} events on map
+          {t('eventsTab.eventsOnMap', {
+            shown: events.filter(event => event?.coordinates && event.coordinates.longitude).length,
+            total: events.length
+          })}
         </Box>
       )}
     </Box>
