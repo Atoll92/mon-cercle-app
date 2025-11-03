@@ -890,7 +890,8 @@
     "online": "En ligne",
     "ongoingEvents": "Événements en cours",
     "eventsInProgress": "Événements actuellement en cours",
-    "inProgress": "En cours"
+    "inProgress": "En cours",
+    "directPublishNotice": "Votre événement sera publié immédiatement et visible par tous les membres du réseau."
   },
   "newsTab": {
     "fillRequiredFields": "Veuillez remplir au moins le titre et le contenu",

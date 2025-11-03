@@ -48,6 +48,7 @@ import AddressSuggestions from './AddressSuggestions';
 import { createEvent, updateEvent } from '../api/networks';
 import { fetchNetworkCategories, createCategory, generateSlug } from '../api/categories';
 import { useTranslation } from '../hooks/useTranslation';
+import { supabase } from '../supabaseclient';
 
 const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated, editingEvent = null, onEventUpdated, isAdmin = false }) => {
   const { t } = useTranslation();
@@ -84,6 +85,7 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
   });
   const [categoryCreating, setCategoryCreating] = useState(false);
   const [categoryError, setCategoryError] = useState(null);
+  const [allowMemberPublishing, setAllowMemberPublishing] = useState(false);
 
   const steps = [t('events.steps.basicInfo'), t('events.steps.detailsMedia'), t('events.steps.settings')];
 
@@ -94,12 +96,29 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
     { code: 'CHF', symbol: 'Fr' }
   ];
 
-  // Load categories on mount
+  // Load categories and network settings on mount
   useEffect(() => {
     if (networkId) {
       loadCategories();
+      loadNetworkSettings();
     }
   }, [networkId]);
+
+  const loadNetworkSettings = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('networks')
+        .select('features_config')
+        .eq('id', networkId)
+        .single();
+
+      if (data && !error) {
+        setAllowMemberPublishing(data.features_config?.allow_member_event_publishing || false);
+      }
+    } catch (err) {
+      console.error('Error loading network settings:', err);
+    }
+  };
 
   // Reset form when dialog opens/closes or populate with editing data
   useEffect(() => {
@@ -963,13 +982,23 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
           </Alert>
         )}
         
-        {!isAdmin && !editingEvent && (
-          <Alert 
-            severity="info" 
+        {!isAdmin && !editingEvent && !allowMemberPublishing && (
+          <Alert
+            severity="info"
             sx={{ my: 3 }}
             icon={<InfoIcon />}
           >
             {t('eventsTab.approvalNotice')}
+          </Alert>
+        )}
+
+        {!isAdmin && !editingEvent && allowMemberPublishing && (
+          <Alert
+            severity="success"
+            sx={{ my: 3 }}
+            icon={<InfoIcon />}
+          >
+            {t('eventsTab.directPublishNotice')}
           </Alert>
         )}
         
