@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import Spinner from '../components/Spinner';
 import {
   Box,
@@ -315,15 +315,45 @@ const MicroConclavPage = () => {
           }}
         >
           <Box display="flex" alignItems="flex-start" gap={2}>
-            <Avatar
-              src={profile.profile_picture_url}
-              alt={profile.full_name}
-              sx={{ width: 60, height: 60, flexShrink: 0 }}
-            />
+            <Link
+              to={`/profile/${profile.id}`}
+              style={{ textDecoration: 'none' }}
+            >
+              <Avatar
+                src={profile.profile_picture_url}
+                alt={profile.full_name}
+                sx={{
+                  width: 60,
+                  height: 60,
+                  flexShrink: 0,
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  '&:hover': {
+                    transform: 'scale(1.05)',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+                  }
+                }}
+              />
+            </Link>
             <Box sx={{ flex: 1, minWidth: 0 }}>
-              <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                {profile.full_name}
-              </Typography>
+              <Link
+                to={`/profile/${profile.id}`}
+                style={{ textDecoration: 'none', color: 'inherit' }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    '&:hover': {
+                      textDecoration: 'underline',
+                      color: theme.palette.primary.main
+                    }
+                  }}
+                >
+                  {profile.full_name}
+                </Typography>
+              </Link>
               {profile.bio && (
                 <>
                   <Typography
