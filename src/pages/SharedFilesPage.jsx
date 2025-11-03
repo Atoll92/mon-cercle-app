@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/authcontext';
 import { useProfile } from '../context/profileContext';
+import { useTranslation } from '../hooks/useTranslation';
 import { supabase } from '../supabaseclient';
 import {
   Container,
@@ -87,6 +88,7 @@ function SharedFilesPage() {
   const { networkId } = useParams();
   const { user } = useAuth();
   const { activeProfile } = useProfile();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   
   // State variables
@@ -142,7 +144,7 @@ function SharedFilesPage() {
         
         // Verify user belongs to this network
         if (profileData.network_id !== networkId) {
-          setError('You do not have access to this network.');
+          setError(t('sharedFilesPage.noAccess'));
           setLoading(false);
           return;
         }
@@ -152,7 +154,7 @@ function SharedFilesPage() {
         
       } catch (error) {
         console.error('Error fetching data:', error);
-        setError('Failed to load network information.');
+        setError(t('sharedFilesPage.loadingError'));
       } finally {
         setLoading(false);
       }
@@ -190,7 +192,7 @@ function SharedFilesPage() {
       setFiles(filesWithUploaders);
     } catch (error) {
       console.error('Error fetching files:', error);
-      setError('Failed to load network files.');
+      setError(t('sharedFilesPage.loadFilesError'));
     }
   };
   
@@ -205,7 +207,7 @@ function SharedFilesPage() {
     
     // Check file size (20MB max)
     if (file.size > 20 * 1024 * 1024) {
-      setError('File size must be less than 20MB.');
+      setError(t('sharedFilesPage.errors.fileTooLarge'));
       setSelectedFile(null);
       return;
     }
@@ -266,7 +268,7 @@ function SharedFilesPage() {
       setUploadDialogOpen(false);
       setSelectedFile(null);
       setFileDescription('');
-      setMessage('File uploaded successfully!');
+      setMessage(t('sharedFilesPage.success.uploaded'));
       
       // Add the new file to the file list with uploader info
       const { data: uploaderData } = await supabase
@@ -281,10 +283,10 @@ function SharedFilesPage() {
       };
       
       setFiles([newFile, ...files]);
-      
+
     } catch (error) {
       console.error('Error uploading file:', error);
-      setError('Failed to upload file. Please try again.');
+      setError(t('sharedFilesPage.errors.uploadFailed'));
     } finally {
       setUploading(false);
     }
@@ -312,14 +314,14 @@ function SharedFilesPage() {
       window.open(file.file_url, '_blank');
     } catch (error) {
       console.error('Error downloading file:', error);
-      setError('Failed to download file.');
+      setError(t('sharedFilesPage.errors.downloadFailed'));
     }
   };
   
   // Handle file deletion
   const handleDeleteFile = async (file) => {
     if (file.uploaded_by !== activeProfile.id && userProfile.role !== 'admin') {
-      setError('You can only delete files that you uploaded.');
+      setError(t('sharedFilesPage.errors.deletePermission'));
       return;
     }
     
@@ -341,12 +343,12 @@ function SharedFilesPage() {
       
       // Update the file list
       setFiles(files.filter(f => f.id !== file.id));
-      setMessage('File deleted successfully!');
+      setMessage(t('sharedFilesPage.success.deleted'));
       setFileMenuAnchorEl(null);
-      
+
     } catch (error) {
       console.error('Error deleting file:', error);
-      setError('Failed to delete file. Please try again.');
+      setError(t('sharedFilesPage.errors.deleteFailed'));
     }
   };
   
@@ -452,7 +454,7 @@ function SharedFilesPage() {
       >
         <Spinner size={120} />
         <Typography variant="body1" sx={{ mt: 2 }}>
-          Loading files...
+          {t('sharedFilesPage.loading')}
         </Typography>
       </Box>
     );
@@ -464,14 +466,14 @@ function SharedFilesPage() {
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
           <Button
             component={Link}
-            to={`/network/${networkId}`}
+            to={`/network/${networkId}?tab=files`}
             startIcon={<ArrowBackIcon />}
             sx={{ mr: 2 }}
           >
-            Back to Network
+            {t('sharedFilesPage.backToNetwork')}
           </Button>
           <Typography variant="h4" component="h1">
-            Shared Files
+            {t('sharedFilesPage.title')}
           </Typography>
         </Box>
         
@@ -507,14 +509,14 @@ function SharedFilesPage() {
             width: { xs: '100%', sm: 'auto' }
           }}>
             <TextField
-              placeholder="Search files..."
+              placeholder={t('sharedFilesPage.searchPlaceholder')}
               size="small"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               InputProps={{
                 startAdornment: <SearchIcon fontSize="small" sx={{ mr: 1, color: 'text.secondary' }} />
               }}
-              sx={{ 
+              sx={{
                 minWidth: { xs: '100%', sm: 200 },
                 flexGrow: { xs: 1, sm: 0 }
               }}
@@ -525,13 +527,12 @@ function SharedFilesPage() {
               startIcon={<FilterListIcon />}
               onClick={(e) => setFilterMenuOpen(true)}
               size="small"
-              sx={{ 
+              sx={{
                 minWidth: { xs: 'auto', sm: 'auto' },
                 flex: { xs: '1 1 auto', sm: '0 0 auto' }
               }}
             >
-              {filterOption === 'all' ? 'All Files' : 
-                filterOption.charAt(0).toUpperCase() + filterOption.slice(1)}
+              {t(`sharedFilesPage.filters.${filterOption}`)}
             </Button>
             
             <Menu
@@ -540,22 +541,22 @@ function SharedFilesPage() {
               onClose={() => setFilterMenuOpen(false)}
             >
               <MenuItem onClick={() => { setFilterOption('all'); setFilterMenuOpen(false); }}>
-                All Files
+                {t('sharedFilesPage.filters.all')}
               </MenuItem>
               <MenuItem onClick={() => { setFilterOption('images'); setFilterMenuOpen(false); }}>
-                Images
+                {t('sharedFilesPage.filters.images')}
               </MenuItem>
               <MenuItem onClick={() => { setFilterOption('documents'); setFilterMenuOpen(false); }}>
-                Documents
+                {t('sharedFilesPage.filters.documents')}
               </MenuItem>
               <MenuItem onClick={() => { setFilterOption('audio'); setFilterMenuOpen(false); }}>
-                Audio
+                {t('sharedFilesPage.filters.audio')}
               </MenuItem>
               <MenuItem onClick={() => { setFilterOption('video'); setFilterMenuOpen(false); }}>
-                Video
+                {t('sharedFilesPage.filters.video')}
               </MenuItem>
               <MenuItem onClick={() => { setFilterOption('archives'); setFilterMenuOpen(false); }}>
-                Archives
+                {t('sharedFilesPage.filters.archives')}
               </MenuItem>
             </Menu>
             
@@ -564,18 +565,12 @@ function SharedFilesPage() {
               startIcon={<SortIcon />}
               onClick={(e) => setSortMenuOpen(true)}
               size="small"
-              sx={{ 
+              sx={{
                 minWidth: { xs: 'auto', sm: 'auto' },
                 flex: { xs: '1 1 auto', sm: '0 0 auto' }
               }}
             >
-              Sort: {sortOption === 'newest' ? 'Newest' : 
-                     sortOption === 'oldest' ? 'Oldest' : 
-                     sortOption === 'largest' ? 'Largest' : 
-                     sortOption === 'smallest' ? 'Smallest' : 
-                     sortOption === 'name_asc' ? 'Name (A-Z)' : 
-                     sortOption === 'name_desc' ? 'Name (Z-A)' : 
-                     sortOption === 'most_downloaded' ? 'Most Downloaded' : 'Newest'}
+              {t('sharedFilesPage.sort.label')}: {t(`sharedFilesPage.sort.${sortOption === 'name_asc' ? 'nameAsc' : sortOption === 'name_desc' ? 'nameDesc' : sortOption === 'most_downloaded' ? 'mostDownloaded' : sortOption}`)}
             </Button>
             
             <Menu
@@ -584,25 +579,25 @@ function SharedFilesPage() {
               onClose={() => setSortMenuOpen(false)}
             >
               <MenuItem onClick={() => { setSortOption('newest'); setSortMenuOpen(false); }}>
-                Newest
+                {t('sharedFilesPage.sort.newest')}
               </MenuItem>
               <MenuItem onClick={() => { setSortOption('oldest'); setSortMenuOpen(false); }}>
-                Oldest
+                {t('sharedFilesPage.sort.oldest')}
               </MenuItem>
               <MenuItem onClick={() => { setSortOption('largest'); setSortMenuOpen(false); }}>
-                Largest
+                {t('sharedFilesPage.sort.largest')}
               </MenuItem>
               <MenuItem onClick={() => { setSortOption('smallest'); setSortMenuOpen(false); }}>
-                Smallest
+                {t('sharedFilesPage.sort.smallest')}
               </MenuItem>
               <MenuItem onClick={() => { setSortOption('name_asc'); setSortMenuOpen(false); }}>
-                Name (A-Z)
+                {t('sharedFilesPage.sort.nameAsc')}
               </MenuItem>
               <MenuItem onClick={() => { setSortOption('name_desc'); setSortMenuOpen(false); }}>
-                Name (Z-A)
+                {t('sharedFilesPage.sort.nameDesc')}
               </MenuItem>
               <MenuItem onClick={() => { setSortOption('most_downloaded'); setSortMenuOpen(false); }}>
-                Most Downloaded
+                {t('sharedFilesPage.sort.mostDownloaded')}
               </MenuItem>
             </Menu>
           </Box>
@@ -612,24 +607,24 @@ function SharedFilesPage() {
             color="primary"
             startIcon={<CloudUploadIcon />}
             onClick={() => setUploadDialogOpen(true)}
-            sx={{ 
+            sx={{
               width: { xs: '100%', sm: 'auto' },
               mt: { xs: 1, sm: 0 }
             }}
           >
-            Upload File
+            {t('sharedFilesPage.uploadButton')}
           </Button>
         </Box>
         
         {filteredFiles.length === 0 ? (
           <Paper sx={{ p: 4, textAlign: 'center', backgroundColor: '#f5f5f5' }}>
             <Typography variant="h6" gutterBottom>
-              No files found
+              {t('sharedFilesPage.noFiles.title')}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              {files.length === 0 
-                ? 'Be the first to upload a file to this network!' 
-                : 'No files match your current filters.'}
+              {files.length === 0
+                ? t('sharedFilesPage.noFiles.empty')
+                : t('sharedFilesPage.noFiles.filtered')}
             </Typography>
           </Paper>
         ) : (
@@ -645,9 +640,9 @@ function SharedFilesPage() {
                       backgroundColor: 'rgba(0, 0, 0, 0.04)'
                     }
                   }}
-                  secondaryAction={<><Tooltip title="Download">
-                      <IconButton 
-                        edge="end" 
+                  secondaryAction={<><Tooltip title={t('sharedFilesPage.fileActions.download')}>
+                      <IconButton
+                        edge="end"
                         aria-label="download"
                         onClick={() => handleDownloadFile(file)}
                         sx={{ mr: 1 }}
@@ -655,10 +650,10 @@ function SharedFilesPage() {
                         <DownloadIcon />
                       </IconButton>
                     </Tooltip>
-                    
-                    <IconButton 
-                      edge="end" 
-                      aria-label="file options"
+
+                    <IconButton
+                      edge="end"
+                      aria-label={t('sharedFilesPage.fileActions.options')}
                       onClick={(e) => handleFileMenuOpen(e, file)}
                     >
                       <MoreVertIcon />
@@ -684,27 +679,27 @@ function SharedFilesPage() {
                           mt: 0.5,
                           maxWidth: { xs: 'calc(100vw - 120px)', sm: 'none' }
                         }}>
-                          <Chip 
-                            label={formatFileSize(file.file_size)} 
-                            size="small" 
+                          <Chip
+                            label={formatFileSize(file.file_size)}
+                            size="small"
                             variant="outlined"
                             sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
                           />
-                          <Chip 
-                            label={`Uploaded ${formatTimeAgo(file.created_at)}`} 
-                            size="small" 
+                          <Chip
+                            label={t('sharedFilesPage.fileInfo.uploaded', { time: formatTimeAgo(file.created_at) })}
+                            size="small"
                             variant="outlined"
                             sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
                           />
-                          <Chip 
-                            label={`Downloads: ${file.download_count || 0}`} 
-                            size="small" 
+                          <Chip
+                            label={t('sharedFilesPage.fileInfo.downloads', { count: file.download_count || 0 })}
+                            size="small"
                             variant="outlined"
                             sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
                           />
-                          <Chip 
-                            label={`By: ${file.uploader.full_name}`} 
-                            size="small" 
+                          <Chip
+                            label={t('sharedFilesPage.fileInfo.by', { name: file.uploader.full_name })}
+                            size="small"
                             variant="outlined"
                             sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
                           />
@@ -729,7 +724,7 @@ function SharedFilesPage() {
       
       {/* Upload Dialog */}
       <Dialog open={uploadDialogOpen} onClose={() => setUploadDialogOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Upload File</DialogTitle>
+        <DialogTitle>{t('sharedFilesPage.uploadDialog.title')}</DialogTitle>
         <DialogContent>
           <Box sx={{ mb: 3, mt: 1 }}>
             <input
@@ -747,42 +742,42 @@ function SharedFilesPage() {
                 fullWidth
                 sx={{ py: 5, border: '1px dashed', borderColor: 'divider' }}
               >
-                {selectedFile ? selectedFile.name : 'Select a file to upload'}
+                {selectedFile ? selectedFile.name : t('sharedFilesPage.uploadDialog.selectFile')}
               </Button>
             </label>
             
             {selectedFile && (
               <Box sx={{ mt: 2 }}>
                 <Typography variant="body2" gutterBottom>
-                  File size: {formatFileSize(selectedFile.size)}
+                  {t('sharedFilesPage.uploadDialog.fileSize', { size: formatFileSize(selectedFile.size) })}
                 </Typography>
                 <Typography variant="body2" gutterBottom>
-                  File type: {selectedFile.type || 'Unknown'}
+                  {t('sharedFilesPage.uploadDialog.fileType', { type: selectedFile.type || t('sharedFilesPage.uploadDialog.unknown') })}
                 </Typography>
               </Box>
             )}
           </Box>
           
           <TextField
-            label="File Description (optional)"
+            label={t('sharedFilesPage.uploadDialog.description')}
             fullWidth
             multiline
             rows={3}
             value={fileDescription}
             onChange={(e) => setFileDescription(e.target.value)}
-            placeholder="Add a description for this file..."
+            placeholder={t('sharedFilesPage.uploadDialog.descriptionPlaceholder')}
             variant="outlined"
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setUploadDialogOpen(false)}>Cancel</Button>
-          <Button 
-            onClick={handleUploadFile} 
-            variant="contained" 
+          <Button onClick={() => setUploadDialogOpen(false)}>{t('sharedFilesPage.uploadDialog.cancel')}</Button>
+          <Button
+            onClick={handleUploadFile}
+            variant="contained"
             disabled={!selectedFile || uploading}
             startIcon={uploading ? <Spinner size={40} /> : <CloudUploadIcon />}
           >
-            {uploading ? 'Uploading...' : 'Upload'}
+            {uploading ? t('sharedFilesPage.uploadDialog.uploading') : t('sharedFilesPage.uploadDialog.upload')}
           </Button>
         </DialogActions>
       </Dialog>
@@ -800,7 +795,7 @@ function SharedFilesPage() {
           <ListItemIcon>
             <DownloadIcon fontSize="small" />
           </ListItemIcon>
-          <ListItemText>Download</ListItemText>
+          <ListItemText>{t('sharedFilesPage.fileActions.download')}</ListItemText>
         </MenuItem>
         
         {(selectedFileMenu && (selectedFileMenu.uploaded_by === user?.id || userProfile?.role === 'admin')) && (
@@ -810,7 +805,7 @@ function SharedFilesPage() {
             <ListItemIcon>
               <DeleteIcon fontSize="small" color="error" />
             </ListItemIcon>
-            <ListItemText>Delete</ListItemText>
+            <ListItemText>{t('sharedFilesPage.fileActions.delete')}</ListItemText>
           </MenuItem>
         )}
       </Menu>

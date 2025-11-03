@@ -959,6 +959,72 @@
     "createNewMoodboard": "Create New Moodboard",
     "viewAllFiles": "View All Files"
   },
+  "sharedFilesPage": {
+    "title": "Shared Files",
+    "backToNetwork": "Back to Network",
+    "loading": "Loading files...",
+    "noAccess": "You do not have access to this network.",
+    "loadingError": "Failed to load network information.",
+    "loadFilesError": "Failed to load network files.",
+    "uploadButton": "Upload File",
+    "searchPlaceholder": "Search files...",
+    "filters": {
+      "all": "All Files",
+      "images": "Images",
+      "documents": "Documents",
+      "audio": "Audio",
+      "video": "Video",
+      "archives": "Archives"
+    },
+    "sort": {
+      "label": "Sort",
+      "newest": "Newest",
+      "oldest": "Oldest",
+      "largest": "Largest",
+      "smallest": "Smallest",
+      "nameAsc": "Name (A-Z)",
+      "nameDesc": "Name (Z-A)",
+      "mostDownloaded": "Most Downloaded"
+    },
+    "noFiles": {
+      "title": "No files found",
+      "empty": "Be the first to upload a file to this network!",
+      "filtered": "No files match your current filters."
+    },
+    "fileInfo": {
+      "downloads": "Downloads: {{count}}",
+      "uploaded": "Uploaded {{time}}",
+      "by": "By: {{name}}"
+    },
+    "fileActions": {
+      "download": "Download",
+      "delete": "Delete",
+      "options": "File options"
+    },
+    "uploadDialog": {
+      "title": "Upload File",
+      "selectFile": "Select a file to upload",
+      "fileSize": "File size: {{size}}",
+      "fileType": "File type: {{type}}",
+      "unknown": "Unknown",
+      "description": "File Description (optional)",
+      "descriptionPlaceholder": "Add a description for this file...",
+      "cancel": "Cancel",
+      "upload": "Upload",
+      "uploading": "Uploading..."
+    },
+    "errors": {
+      "fileTooLarge": "File size must be less than 20MB.",
+      "uploadFailed": "Failed to upload file. Please try again.",
+      "deleteFailed": "Failed to delete file. Please try again.",
+      "deletePermission": "You can only delete files that you uploaded.",
+      "downloadFailed": "Failed to download file."
+    },
+    "success": {
+      "uploaded": "File uploaded successfully!",
+      "deleted": "File deleted successfully!"
+    }
+  },
   "wikiTab": {
     "loadPagesFailed": "Failed to load wiki pages. Please try again later.",
     "deletePageFailed": "Failed to delete the page. Please try again.",

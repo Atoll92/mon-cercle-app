@@ -952,6 +952,72 @@
     "createNewMoodboard": "Créer un nouveau tableau d'humeur",
     "viewAllFiles": "Voir tous les fichiers"
   },
+  "sharedFilesPage": {
+    "title": "Fichiers partagés",
+    "backToNetwork": "Retour au réseau",
+    "loading": "Chargement des fichiers...",
+    "noAccess": "Vous n'avez pas accès à ce réseau.",
+    "loadingError": "Échec du chargement des informations du réseau.",
+    "loadFilesError": "Échec du chargement des fichiers du réseau.",
+    "uploadButton": "Télécharger un fichier",
+    "searchPlaceholder": "Rechercher des fichiers...",
+    "filters": {
+      "all": "Tous les fichiers",
+      "images": "Images",
+      "documents": "Documents",
+      "audio": "Audio",
+      "video": "Vidéo",
+      "archives": "Archives"
+    },
+    "sort": {
+      "label": "Trier",
+      "newest": "Plus récents",
+      "oldest": "Plus anciens",
+      "largest": "Plus volumineux",
+      "smallest": "Plus petits",
+      "nameAsc": "Nom (A-Z)",
+      "nameDesc": "Nom (Z-A)",
+      "mostDownloaded": "Plus téléchargés"
+    },
+    "noFiles": {
+      "title": "Aucun fichier trouvé",
+      "empty": "Soyez le premier à télécharger un fichier dans ce réseau !",
+      "filtered": "Aucun fichier ne correspond à vos filtres actuels."
+    },
+    "fileInfo": {
+      "downloads": "Téléchargements : {{count}}",
+      "uploaded": "Téléchargé {{time}}",
+      "by": "Par : {{name}}"
+    },
+    "fileActions": {
+      "download": "Télécharger",
+      "delete": "Supprimer",
+      "options": "Options du fichier"
+    },
+    "uploadDialog": {
+      "title": "Télécharger un fichier",
+      "selectFile": "Sélectionner un fichier à télécharger",
+      "fileSize": "Taille du fichier : {{size}}",
+      "fileType": "Type de fichier : {{type}}",
+      "unknown": "Inconnu",
+      "description": "Description du fichier (facultatif)",
+      "descriptionPlaceholder": "Ajouter une description pour ce fichier...",
+      "cancel": "Annuler",
+      "upload": "Télécharger",
+      "uploading": "Téléchargement..."
+    },
+    "errors": {
+      "fileTooLarge": "La taille du fichier doit être inférieure à 20 Mo.",
+      "uploadFailed": "Échec du téléchargement du fichier. Veuillez réessayer.",
+      "deleteFailed": "Échec de la suppression du fichier. Veuillez réessayer.",
+      "deletePermission": "Vous ne pouvez supprimer que les fichiers que vous avez téléchargés.",
+      "downloadFailed": "Échec du téléchargement du fichier."
+    },
+    "success": {
+      "uploaded": "Fichier téléchargé avec succès !",
+      "deleted": "Fichier supprimé avec succès !"
+    }
+  },
   "wikiTab": {
     "loadPagesFailed": "Échec du chargement des pages wiki. Veuillez réessayer plus tard.",
     "deletePageFailed": "Échec de la suppression de la page. Veuillez réessayer.",
