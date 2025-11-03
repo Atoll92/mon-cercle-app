@@ -808,14 +808,15 @@ const LinkPreview = ({ url, compact = false, onDataLoaded = null, height = 'auto
           }
         }}
       >
-        {/* Embedded Media Player */}
+        {/* Embedded Media Player with consistent sizing */}
         <Box
           sx={{
             position: 'relative',
             width: '100%',
-            paddingTop: mediaInfo.service === 'spotify' ? '80px' : '56.25%', // 16:9 for videos, fixed for Spotify
+            paddingTop: mediaInfo.service === 'spotify' ? '80px' : '56.25%', // 16:9 aspect ratio for videos, fixed height for Spotify
             bgcolor: '#000',
-            overflow: 'hidden'
+            overflow: 'hidden',
+            flexShrink: 0 // Prevent compression
           }}
         >
           <Box
@@ -836,13 +837,14 @@ const LinkPreview = ({ url, compact = false, onDataLoaded = null, height = 'auto
           />
         </Box>
 
-        {/* Media Info Below */}
-        <Box sx={{ p: 2 }}>
+        {/* Media Info Below - compact and consistent */}
+        <Box sx={{ p: 1.5, flexShrink: 0 }}>
           <Box
             sx={{
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'space-between'
+              justifyContent: 'space-between',
+              gap: 1
             }}
           >
             <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1, minWidth: 0 }}>
@@ -871,11 +873,8 @@ const LinkPreview = ({ url, compact = false, onDataLoaded = null, height = 'auto
               <Typography
                 variant="caption"
                 color="text.secondary"
-                sx={{
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap'
-                }}
+                noWrap
+                sx={{ flexGrow: 1 }}
               >
                 {getHostname(formattedUrl)}
               </Typography>
@@ -888,7 +887,7 @@ const LinkPreview = ({ url, compact = false, onDataLoaded = null, height = 'auto
               target="_blank"
               rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
-              sx={{ ml: 1, flexShrink: 0 }}
+              sx={{ flexShrink: 0 }}
             >
               <OpenInNewIcon fontSize="small" />
             </IconButton>
@@ -896,11 +895,16 @@ const LinkPreview = ({ url, compact = false, onDataLoaded = null, height = 'auto
 
           {ogData.title && (
             <Typography
-              variant="subtitle2"
+              variant="body2"
               sx={{
-                fontWeight: 600,
-                mt: 1,
-                lineHeight: 1.3
+                fontWeight: 500,
+                mt: 0.5,
+                lineHeight: 1.3,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                display: '-webkit-box',
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: 'vertical'
               }}
             >
               {ogData.title}

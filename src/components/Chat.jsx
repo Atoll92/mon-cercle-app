@@ -1315,19 +1315,19 @@ const renderMessageContent = (message) => {
           </Box>
         )}
         
-        <Box sx={{ 
-          my: isOnlyUrl ? 0 : 0.5, 
-          bgcolor: 'background.paper', 
-          borderRadius: 1, 
+        <Box sx={{
+          my: isOnlyUrl ? 0 : 0.5,
+          bgcolor: 'background.paper',
+          borderRadius: 1,
           overflow: 'hidden',
-          transform: 'scale(0.97)',  // Slightly smaller scale for link previews
-          transformOrigin: 'top left'
+          width: '100%',
+          maxWidth: '100%'
         }}>
-          <LinkPreview 
-            url={url} 
-            compact={false} 
-            isEditable={true} 
-            height={isMediaUrl ? (url.match(/spotify/i) ? 80 : 315) : 'auto'} 
+          <LinkPreview
+            url={url}
+            compact={false}
+            isEditable={true}
+            height="auto"
           />
         </Box>
       </>
@@ -1560,7 +1560,7 @@ const renderMessageContent = (message) => {
                   maxWidth: containsLink ? '85%' : '70%',
                   marginLeft: message.user_id === activeProfile.id ? 'auto' : '0',
                   marginRight: message.user_id === activeProfile.id ? '0' : 'auto',
-                  width: 'fit-content',
+                  width: containsLink ? '85%' : 'fit-content',
                   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                   border: darkMode 
                     ? 'none' 

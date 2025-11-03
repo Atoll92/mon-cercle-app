@@ -977,19 +977,19 @@ if (refreshConversations) {
             </Typography>
           )}
           
-          <Box sx={{ 
-            my: isOnlyUrl ? 0 : 0.5, 
-            bgcolor: 'background.paper', 
-            borderRadius: 1, 
+          <Box sx={{
+            my: isOnlyUrl ? 0 : 0.5,
+            bgcolor: 'background.paper',
+            borderRadius: 1,
             overflow: 'hidden',
-            transform: 'scale(0.97)',
-            transformOrigin: 'top left'
+            width: '100%',
+            maxWidth: '100%'
           }}>
-            <LinkPreview 
-              url={url} 
-              compact={false} 
-              isEditable={true} 
-              height={isMediaUrl ? (url.match(/spotify/i) ? 80 : 315) : 'auto'} 
+            <LinkPreview
+              url={url}
+              compact={false}
+              isEditable={true}
+              height="auto"
             />
           </Box>
         </>
@@ -1183,7 +1183,11 @@ if (refreshConversations) {
               const isUser = message.sender_id === activeProfile?.id;
               const showAvatar = !isUser && (index === 0 || messages[index - 1].sender_id !== message.sender_id);
               const showDateHeader = shouldShowDateHeader(message.created_at, index);
-              
+
+              // Check if message contains a link
+              URL_REGEX.lastIndex = 0;
+              const containsLink = message.content && URL_REGEX.test(message.content);
+
               return (
                 <Fragment key={message.id}>
                   {showDateHeader && (
@@ -1197,8 +1201,8 @@ if (refreshConversations) {
                       <Chip
                         label={formatMessageDate(message.created_at)}
                         size="small"
-                        sx={{ 
-                          bgcolor: (theme) => theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)', 
+                        sx={{
+                          bgcolor: (theme) => theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)',
                           color: 'text.secondary',
                           fontWeight: 500,
                           fontSize: '0.7rem'
@@ -1216,8 +1220,8 @@ if (refreshConversations) {
                     }}
                   >
                     {!isUser && showAvatar ? (
-                      <Avatar 
-                        src={partner.profile_picture_url} 
+                      <Avatar
+                        src={partner.profile_picture_url}
                         alt={partner.full_name}
                         sx={{ width: 28, height: 28, mr: 1 }}
                       >
@@ -1226,7 +1230,7 @@ if (refreshConversations) {
                     ) : !isUser ? (
                       <Box sx={{ width: 28, mr: 1 }} />
                     ) : null}
-                    
+
                     <Box
                       sx={{
                         bgcolor: isUser ? 'primary.main' : (theme) => theme.palette.mode === 'dark' ? 'grey.800' : 'background.paper',
@@ -1234,7 +1238,8 @@ if (refreshConversations) {
                         borderRadius: 2,
                         px: 2,
                         py: 1,
-                        maxWidth: '70%',
+                        maxWidth: containsLink ? '85%' : '70%',
+                        width: containsLink ? '85%' : 'auto',
                         boxShadow: (theme) => theme.palette.mode === 'dark' ? '0 1px 2px rgba(0,0,0,0.3)' : '0 1px 2px rgba(0,0,0,0.1)',
                         borderTopLeftRadius: !isUser && !showAvatar ? 1 : undefined,
                         borderTopRightRadius: isUser && index > 0 && messages[index - 1].sender_id === activeProfile?.id ? 1 : undefined,
