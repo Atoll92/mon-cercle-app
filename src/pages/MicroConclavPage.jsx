@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Spinner from '../components/Spinner';
 import { 
@@ -13,7 +13,6 @@ import {
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { getUserProfile } from '../api/networks';
-import { getUserMoodboardItems } from '../api/moodboards';
 import { supabase } from '../supabaseclient';
 import { useMoodboardCanvas } from '../hooks/useMoodboardCanvas';
 import useWheelHandler from '../hooks/useWheelHandler';
@@ -23,7 +22,6 @@ import GridViewIcon from '@mui/icons-material/GridView';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import EditIcon from '@mui/icons-material/Edit';
-import LinkPreview from '../components/LinkPreview';
 import MoodboardItemDisplay from '../components/Moodboard/MoodboardItemDisplay';
 import MoodboardItemGrid from '../components/Moodboard/MoodboardItemGrid';
 import { useProfile } from '../context/profileContext';
@@ -36,14 +34,10 @@ const MicroConclavPage = () => {
   const theme = useTheme();
   const { activeProfile } = useProfile();
   const [profile, setProfile] = useState(null);
-  const [moodboardItems, setMoodboardItems] = useState([]);
   const [primaryMoodboardItems, setPrimaryMoodboardItems] = useState([]);
   const [moodboardBackgroundColor, setMoodboardBackgroundColor] = useState(null);
   const [primaryMoodboardId, setPrimaryMoodboardId] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [page, setPage] = useState(0);
-  const [hasMore, setHasMore] = useState(true);
   const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'moodboard'
   const [resolvedProfileId, setResolvedProfileId] = useState(null);
   
@@ -137,35 +131,6 @@ const MicroConclavPage = () => {
     }
   };
 
-  const fetchMoodboardItems = async (pageNum = 0) => {
-    if (!hasMore && pageNum > 0) return;
-    
-    const profileIdToUse = resolvedProfileId || profileId;
-    if (!profileIdToUse) {
-      console.log('No profile ID available for fetching moodboard items');
-      return;
-    }
-    
-    try {
-      setLoadingMore(pageNum > 0);
-      const result = await getUserMoodboardItems(profileIdToUse, pageNum * 20, 20);
-      
-      if (result.items.length < 20) {
-        setHasMore(false);
-      }
-      
-      if (pageNum === 0) {
-        setMoodboardItems(result.items);
-        // Don't override background color here anymore, let fetchUserMoodboard handle it
-      } else {
-        setMoodboardItems(prev => [...prev, ...result.items]);
-      }
-    } catch (error) {
-      console.error('Error fetching moodboard items:', error);
-    } finally {
-      setLoadingMore(false);
-    }
-  };
 
   useEffect(() => {
     const init = async () => {
@@ -177,14 +142,10 @@ const MicroConclavPage = () => {
     init();
   }, [profileId, username]);
 
-  // Fetch moodboard and items after we have resolved profileId
+  // Fetch moodboard after we have resolved profileId
   useEffect(() => {
     if (resolvedProfileId) {
-      const fetchData = async () => {
-        await fetchUserMoodboard();
-        await fetchMoodboardItems(0);
-      };
-      fetchData();
+      fetchUserMoodboard();
     }
   }, [resolvedProfileId]);
 
@@ -195,41 +156,11 @@ const MicroConclavPage = () => {
     }
   }, [primaryMoodboardId]);
 
-  const handleScroll = useCallback(() => {
-    if (viewMode !== 'grid') return; // Only handle scroll in grid mode
-    
-    if (containerRef.current) {
-      const container = containerRef.current;
-      const scrollTop = container.scrollTop;
-      const scrollHeight = container.scrollHeight;
-      const clientHeight = container.clientHeight;
-      
-      // Load more items when near bottom
-      if (scrollTop + clientHeight >= scrollHeight - 100 && !loadingMore && hasMore) {
-        setPage(prev => prev + 1);
-      }
-    }
-  }, [loadingMore, hasMore, viewMode]);
 
   const handleCanvasClick = () => {
     // Clear any selections or interactions when clicking on empty canvas
   };
 
-  useEffect(() => {
-    if (page > 0) {
-      fetchMoodboardItems(page);
-    }
-  }, [page]);
-
-  useEffect(() => {
-    const container = containerRef.current;
-    if (container) {
-      container.addEventListener('scroll', handleScroll);
-      return () => {
-        container.removeEventListener('scroll', handleScroll);
-      };
-    }
-  }, [handleScroll]);
 
   // Use the wheel handler hook for moodboard view
   useWheelHandler(canvasRef, viewMode === 'moodboard' ? handleWheel : null, [viewMode]);
@@ -425,7 +356,7 @@ const MicroConclavPage = () => {
                 pt: '50px', // Additional padding to prevent content overlap
               }}
             >
-            {moodboardItems.map((item, index) => (
+            {primaryMoodboardItems.map((item, index) => (
               <MoodboardItemGrid
                 key={`${item.id}-${index}`}
                 item={item}
@@ -474,11 +405,6 @@ const MicroConclavPage = () => {
           </MoodboardCanvas>
         )}
 
-        {loadingMore && viewMode === 'grid' && (
-          <Box display="flex" justifyContent="center" py={4}>
-            <Spinner size={48} />
-          </Box>
-        )}
       </Box>
     </Box>
   );

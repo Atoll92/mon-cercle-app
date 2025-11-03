@@ -644,11 +644,11 @@ const MoodboardGallery = ({ userId, isOwnProfile, limit, showFeatured = false })
               />
             </Box>
           </Box>
-          <Button 
-            variant="contained" 
+          <Button
+            variant="contained"
             color="primary"
             component={Link}
-            to={`/moodboard/${featuredBoard.id}`}
+            to={`/micro-conclav/${userId}`}
             endIcon={<OpenInNewIcon />}
           >
             Open Moodboard
@@ -718,9 +718,9 @@ const MoodboardGallery = ({ userId, isOwnProfile, limit, showFeatured = false })
                         }
                       }}
                     >
-                      <CardActionArea 
-                        component={Link} 
-                        to={`/moodboard/${moodboard.id}`}
+                      <CardActionArea
+                        component={Link}
+                        to={`/micro-conclav/${userId}`}
                         sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', alignItems: 'stretch' }}
                       >
                         {/* Preview/Thumbnail Area */}

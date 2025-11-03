@@ -668,7 +668,7 @@ const MemberDetailsModal = ({
                     variant="outlined"
                     startIcon={<DashboardIcon />}
                     component={Link}
-                    to={`/moodboard/${featuredMoodboard.id}`}
+                    to={`/micro-conclav/${member.id}`}
                     fullWidth
                     color={darkMode ? "secondary" : "secondary"}
                     sx={{
