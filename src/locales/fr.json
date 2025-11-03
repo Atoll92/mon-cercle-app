@@ -1708,6 +1708,7 @@
     }
   },
   "joinNetwork": {
+    "invitationHeader": "Vous avez été invité à rejoindre ce réseau privé",
     "errors": {
       "invalidInvitation": "Lien d'invitation invalide ou expiré",
       "networkNotFound": "Réseau introuvable",
@@ -1721,7 +1722,7 @@
     "alreadyPartOf": "Vous faites déjà partie de {{networkName}}",
     "welcomeTo": "Bienvenue sur {{networkName}} !",
     "goToNetwork": "Aller au réseau",
-    "joinNetwork": "Rejoindre {{networkName}}",
+    "networkName": "{{networkName}}",
     "membersCount": "{{count}} membres",
     "createdOn": "Créé le {{date}}",
     "invitation": "Invitation",

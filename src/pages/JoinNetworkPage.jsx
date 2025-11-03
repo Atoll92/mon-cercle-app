@@ -13,7 +13,11 @@ import {
   Avatar,
   Stack,
   Divider,
-  Chip
+  Chip,
+  Fade,
+  Grow,
+  useTheme,
+  useMediaQuery
 } from '@mui/material';
 import {
   Group as GroupIcon,
@@ -21,7 +25,8 @@ import {
   CheckCircle as CheckCircleIcon,
   Error as ErrorIcon,
   CalendarMonth as CalendarIcon,
-  People as PeopleIcon
+  People as PeopleIcon,
+  ArrowForward as ArrowForwardIcon
 } from '@mui/icons-material';
 import { getInvitationByCode, joinNetworkViaInvitation } from '../api/invitations';
 import { fetchNetworkDetails, getUserProfile } from '../api/networks';
@@ -33,6 +38,9 @@ function JoinNetworkPage() {
   const location = useLocation();
   const { user } = useAuth();
   const { t } = useTranslation();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isTablet = useMediaQuery(theme.breakpoints.down('md'));
   const [loading, setLoading] = useState(true);
   const [joining, setJoining] = useState(false);
   const [invitation, setInvitation] = useState(null);
@@ -40,7 +48,7 @@ function JoinNetworkPage() {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
   const [userProfile, setUserProfile] = useState(null);
-  
+
   // Extract email from query params if present
   const searchParams = new URLSearchParams(location.search);
   const inviteeEmail = searchParams.get('email');
@@ -123,245 +131,541 @@ function JoinNetworkPage() {
 
   if (loading) {
     return (
-      <Container maxWidth="sm" sx={{ mt: 8 }}>
-        <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
-          <Spinner size={120} />
-        </Box>
-      </Container>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          minHeight: '100vh',
+          background: theme.palette.mode === 'dark'
+            ? 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)'
+            : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+        }}
+      >
+        <Spinner size={120} />
+      </Box>
     );
   }
 
   if (error && !success) {
     return (
-      <Container maxWidth="sm" sx={{ mt: 8 }}>
-        <Paper sx={{ p: 4, textAlign: 'center' }}>
-          <ErrorIcon color="error" sx={{ fontSize: 60, mb: 2 }} />
-          <Typography variant="h5" gutterBottom>
-            {error}
-          </Typography>
-          <Button
-            variant="contained"
-            component={Link}
-            to="/"
-            sx={{ mt: 3 }}
-          >
-            {t('joinNetwork.goToHome')}
-          </Button>
-        </Paper>
-      </Container>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          minHeight: '100vh',
+          background: theme.palette.mode === 'dark'
+            ? 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)'
+            : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          px: 2
+        }}
+      >
+        <Fade in={true} timeout={600}>
+          <Container maxWidth="sm">
+            <Paper
+              elevation={12}
+              sx={{
+                p: { xs: 3, sm: 5 },
+                textAlign: 'center',
+                borderRadius: 4,
+                background: theme.palette.mode === 'dark'
+                  ? 'rgba(30, 30, 30, 0.95)'
+                  : 'rgba(255, 255, 255, 0.95)',
+                backdropFilter: 'blur(10px)'
+              }}
+            >
+              <ErrorIcon
+                color="error"
+                sx={{
+                  fontSize: { xs: 60, sm: 80 },
+                  mb: 2,
+                  animation: 'pulse 2s ease-in-out infinite',
+                  '@keyframes pulse': {
+                    '0%, 100%': { opacity: 1 },
+                    '50%': { opacity: 0.5 }
+                  }
+                }}
+              />
+              <Typography variant={isMobile ? 'h5' : 'h4'} gutterBottom fontWeight={600}>
+                {error}
+              </Typography>
+              <Button
+                variant="contained"
+                component={Link}
+                to="/"
+                size="large"
+                sx={{
+                  mt: 3,
+                  px: 4,
+                  py: 1.5,
+                  borderRadius: 2,
+                  textTransform: 'none',
+                  fontSize: '1rem',
+                  fontWeight: 600
+                }}
+              >
+                {t('joinNetwork.goToHome')}
+              </Button>
+            </Paper>
+          </Container>
+        </Fade>
+      </Box>
     );
   }
 
   if (success) {
     return (
-      <Container maxWidth="sm" sx={{ mt: 8 }}>
-        <Paper sx={{ p: 4, textAlign: 'center' }}>
-          <CheckCircleIcon color="success" sx={{ fontSize: 60, mb: 2 }} />
-          <Typography variant="h5" gutterBottom>
-            {error ? t('joinNetwork.alreadyMember') : t('joinNetwork.successfullyJoined')}
-          </Typography>
-          <Typography color="text.secondary" sx={{ mb: 3 }}>
-            {error ? t('joinNetwork.alreadyPartOf', { networkName: network?.name }) : t('joinNetwork.welcomeTo', { networkName: network?.name })}
-          </Typography>
-          <Button
-            variant="contained"
-            component={Link}
-            to="/network?from_invite=true"
-          >
-            {t('joinNetwork.goToNetwork')}
-          </Button>
-        </Paper>
-      </Container>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          minHeight: '100vh',
+          background: theme.palette.mode === 'dark'
+            ? 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)'
+            : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          px: 2
+        }}
+      >
+        <Fade in={true} timeout={600}>
+          <Container maxWidth="sm">
+            <Paper
+              elevation={12}
+              sx={{
+                p: { xs: 3, sm: 5 },
+                textAlign: 'center',
+                borderRadius: 4,
+                background: theme.palette.mode === 'dark'
+                  ? 'rgba(30, 30, 30, 0.95)'
+                  : 'rgba(255, 255, 255, 0.95)',
+                backdropFilter: 'blur(10px)'
+              }}
+            >
+              <Grow in={true} timeout={800}>
+                <CheckCircleIcon
+                  color="success"
+                  sx={{
+                    fontSize: { xs: 60, sm: 80 },
+                    mb: 2,
+                    animation: 'bounce 1s ease-in-out',
+                    '@keyframes bounce': {
+                      '0%, 100%': { transform: 'scale(1)' },
+                      '50%': { transform: 'scale(1.1)' }
+                    }
+                  }}
+                />
+              </Grow>
+              <Typography variant={isMobile ? 'h5' : 'h4'} gutterBottom fontWeight={600}>
+                {error ? t('joinNetwork.alreadyMember') : t('joinNetwork.successfullyJoined')}
+              </Typography>
+              <Typography
+                color="text.secondary"
+                sx={{
+                  mb: 3,
+                  fontSize: { xs: '0.95rem', sm: '1.1rem' }
+                }}
+              >
+                {error ? t('joinNetwork.alreadyPartOf', { networkName: network?.name }) : t('joinNetwork.welcomeTo', { networkName: network?.name })}
+              </Typography>
+              <Button
+                variant="contained"
+                component={Link}
+                to="/network?from_invite=true"
+                size="large"
+                endIcon={<ArrowForwardIcon />}
+                sx={{
+                  px: 4,
+                  py: 1.5,
+                  borderRadius: 2,
+                  textTransform: 'none',
+                  fontSize: '1rem',
+                  fontWeight: 600
+                }}
+              >
+                {t('joinNetwork.goToNetwork')}
+              </Button>
+            </Paper>
+          </Container>
+        </Fade>
+      </Box>
     );
   }
 
   return (
-    <Container maxWidth="sm" sx={{ mt: 8 }}>
-      <Paper sx={{ p: 0, overflow: 'hidden' }}>
-        {/* Network Background Image */}
-        {network?.background_image_url && (
+    <Box
+      sx={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        minHeight: '100vh',
+        background: theme.palette.mode === 'dark'
+          ? 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)'
+          : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        py: { xs: 3, sm: 4 },
+        px: 2
+      }}
+    >
+      <Fade in={true} timeout={600}>
+        <Container maxWidth="sm">
+          {/* Invitation Header with Logo */}
           <Box
             sx={{
-              height: 200,
-              backgroundImage: `url(${network.background_image_url})`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              backgroundRepeat: 'no-repeat',
-              position: 'relative',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center'
+              justifyContent: 'center',
+              gap: 2,
+              mb: 3,
+              px: 2
             }}
           >
-            {/* Optional overlay for better text readability */}
-            <Box
-              sx={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                background: 'linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.6))',
-                zIndex: 1
-              }}
-            />
-            <Avatar
-              sx={{
-                width: 80,
-                height: 80,
-                zIndex: 2,
-                bgcolor: 'primary.main',
-                border: '3px solid white',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
-              }}
-            >
-              {network?.logo_url ? (
-                <img src={network.logo_url} alt={network.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              ) : (
-                <GroupIcon sx={{ fontSize: 40 }} />
-              )}
-            </Avatar>
-          </Box>
-        )}
-        
-        {/* Network Info */}
-        <Box sx={{ p: 4, mb: 0 }}>
-          {/* Show avatar here if no background image */}
-          {!network?.background_image_url && (
-            <Avatar
-              sx={{
-                width: 80,
-                height: 80,
-                mx: 'auto',
-                mb: 2,
-                bgcolor: 'primary.main'
-              }}
-            >
-              {network?.logo_url ? (
-                <img src={network.logo_url} alt={network.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              ) : (
-                <GroupIcon sx={{ fontSize: 40 }} />
-              )}
-            </Avatar>
-          )}
-          
-          <Typography variant="h4" gutterBottom sx={{ mt: network?.background_image_url ? 2 : 0 }}>
-            {t('joinNetwork.joinNetwork', { networkName: network?.name })}
-          </Typography>
-          
-          {network?.description && (
-              <UserContent
-                content={network.description}
-              />
-          )}
+            <Box>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width={isMobile ? "32" : "40"}
+                height={isMobile ? "32" : "40"}
+                viewBox="-125 -125 250 250"
+                style={{
+                  filter: 'drop-shadow(0 2px 8px rgba(255, 255, 255, 0.3))'
+                }}
+              >
+                <defs>
+                  <linearGradient id="invite-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#ffffff" stopOpacity="1" />
+                    <stop offset="100%" stopColor="#e0e0e0" stopOpacity="0.9" />
+                  </linearGradient>
+                </defs>
 
-          <Stack direction="row" spacing={2} justifyContent="center" sx={{ mt: 2,mb: 4 }}>
-            <Chip
-              icon={<PeopleIcon />}
-              label={t('joinNetwork.membersCount', { count: network?.member_count || 0 })}
-              size="small"
-            />
-            <Chip
-              icon={<CalendarIcon />}
-              label={t('joinNetwork.createdOn', { date: new Date(network?.created_at).toLocaleDateString() })}
-              size="small"
-            />
-          </Stack>
-        </Box>
+                {/* Central big disk */}
+                <circle cx="0" cy="0" r="35" fill="url(#invite-gradient)" />
 
-        <Box sx={{ px: 4, pb: 4 }}>
-          <Divider sx={{ mb: 3 }} />
+                {/* Medium disks */}
+                <g fill="url(#invite-gradient)">
+                  <circle cx="70.00" cy="0.00" r="25" opacity="0.9" />
+                  <circle cx="43.64" cy="54.72" r="25" opacity="0.9" />
+                  <circle cx="-15.57" cy="68.24" r="25" opacity="0.9" />
+                  <circle cx="-63.06" cy="30.37" r="25" opacity="0.9" />
+                  <circle cx="-63.06" cy="-30.37" r="25" opacity="0.9" />
+                  <circle cx="-15.57" cy="-68.24" r="25" opacity="0.9" />
+                  <circle cx="43.64" cy="-54.72" r="25" opacity="0.9" />
+                </g>
 
-          {/* Invitation Details */}
-          {invitation?.name && (
-            <Box sx={{ mb: 3 }}>
-              <Typography variant="subtitle1" gutterBottom>
-                {t('joinNetwork.invitation')}: <strong>{invitation.name}</strong>
-              </Typography>
-              {invitation?.description && (
-                <Typography variant="body2" color="text.secondary">
-                  {invitation.description}
-                </Typography>
-              )}
+                {/* Small disks */}
+                <g fill="#ffffff">
+                  <circle cx="85.59" cy="41.21" r="12" opacity="0.7" />
+                  <circle cx="21.13" cy="92.61" r="12" opacity="0.7" />
+                  <circle cx="-59.23" cy="74.27" r="12" opacity="0.7" />
+                  <circle cx="-95.00" cy="0" r="12" opacity="0.7" />
+                  <circle cx="-59.23" cy="-74.27" r="12" opacity="0.7" />
+                  <circle cx="21.13" cy="-92.61" r="12" opacity="0.7" />
+                  <circle cx="85.59" cy="-41.21" r="12" opacity="0.7" />
+                </g>
+              </svg>
             </Box>
-          )}
+            <Typography
+              variant={isMobile ? 'body1' : 'h6'}
+              sx={{
+                color: 'white',
+                fontWeight: 500,
+                textAlign: 'center',
+                textShadow: '0 2px 4px rgba(0,0,0,0.2)'
+              }}
+            >
+              {t('joinNetwork.invitationHeader')}
+            </Typography>
+          </Box>
 
-          {/* Usage/Expiration Info */}
-          <Stack spacing={1} sx={{ mb: 3 }}>
-            {invitation?.max_uses && (
-              <Alert severity="info" icon={false}>
-                {t('joinNetwork.uses', { used: invitation.uses_count, max: invitation.max_uses })}
-              </Alert>
-            )}
-            {invitation?.expires_at && (
-              <Alert
-                severity={new Date(invitation.expires_at) < new Date() ? "error" : "info"}
-                icon={false}
+          <Paper
+            elevation={12}
+            sx={{
+              overflow: 'hidden',
+              borderRadius: 4,
+              background: theme.palette.mode === 'dark'
+                ? 'rgba(30, 30, 30, 0.95)'
+                : 'rgba(255, 255, 255, 0.95)',
+              backdropFilter: 'blur(10px)'
+            }}
+          >
+            {/* Network Background Image */}
+            {network?.background_image_url && (
+              <Box
+                sx={{
+                  height: { xs: 180, sm: 220, md: 260 },
+                  backgroundImage: `url(${network.background_image_url})`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                  backgroundRepeat: 'no-repeat',
+                  position: 'relative',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
               >
-                {new Date(invitation.expires_at) < new Date()
-                  ? t('joinNetwork.invitationExpired')
-                  : t('joinNetwork.expires', { date: new Date(invitation.expires_at).toLocaleDateString() })
-                }
-              </Alert>
+                {/* Optional overlay for better text readability */}
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: 'linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.5))',
+                    zIndex: 1
+                  }}
+                />
+                <Grow in={true} timeout={800}>
+                  <Avatar
+                    sx={{
+                      width: { xs: 80, sm: 100 },
+                      height: { xs: 80, sm: 100 },
+                      zIndex: 2,
+                      bgcolor: 'primary.main',
+                      border: '4px solid white',
+                      boxShadow: '0 8px 24px rgba(0,0,0,0.4)'
+                    }}
+                  >
+                    {network?.logo_url ? (
+                      <img src={network.logo_url} alt={network.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ) : (
+                      <GroupIcon sx={{ fontSize: { xs: 40, sm: 50 } }} />
+                    )}
+                  </Avatar>
+                </Grow>
+              </Box>
             )}
-          </Stack>
 
-          {/* Action Buttons */}
-          <Box sx={{ display: 'flex', gap: 2, flexDirection: 'column' }}>
-            {user ? (
-              <Button
-                variant="contained"
-                size="large"
-                fullWidth
-                onClick={handleJoin}
-                disabled={joining || userProfile?.network_id}
-                startIcon={joining ? <Spinner size={40} /> : <CheckCircleIcon />}
+            {/* Network Info */}
+            <Box sx={{ p: { xs: 3, sm: 4 }, textAlign: 'center' }}>
+              {/* Show avatar here if no background image */}
+              {!network?.background_image_url && (
+                <Grow in={true} timeout={800}>
+                  <Avatar
+                    sx={{
+                      width: { xs: 80, sm: 100 },
+                      height: { xs: 80, sm: 100 },
+                      mx: 'auto',
+                      mb: 2,
+                      bgcolor: 'primary.main',
+                      border: '4px solid',
+                      borderColor: 'primary.light',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
+                    }}
+                  >
+                    {network?.logo_url ? (
+                      <img src={network.logo_url} alt={network.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ) : (
+                      <GroupIcon sx={{ fontSize: { xs: 40, sm: 50 } }} />
+                    )}
+                  </Avatar>
+                </Grow>
+              )}
+
+              <Typography
+                variant={isMobile ? 'h5' : 'h4'}
+                gutterBottom
+                sx={{
+                  mt: network?.background_image_url ? 2 : 0,
+                  fontWeight: 700,
+                  background: theme.palette.mode === 'dark'
+                    ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                    : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text'
+                }}
               >
-                {joining ? t('joinNetwork.joining') : userProfile?.network_id ? t('joinNetwork.switchNetwork') : t('joinNetwork.joinNetworkButton')}
-              </Button>
-            ) : (
-              <>
+                {network?.name}
+              </Typography>
+
+              {network?.description && (
+                <Box sx={{ my: 3, textAlign: 'left' }}>
+                  <UserContent
+                    content={network.description}
+                    maxLines={isMobile ? 4 : 5}
+                    sx={{
+                      fontSize: { xs: '0.95rem', sm: '1rem' },
+                      color: 'text.secondary'
+                    }}
+                  />
+                </Box>
+              )}
+
+              <Stack
+                direction={isMobile ? 'column' : 'row'}
+                spacing={2}
+                justifyContent="center"
+                alignItems="center"
+                sx={{ mt: 3, mb: 3 }}
+              >
+                <Chip
+                  icon={<PeopleIcon />}
+                  label={t('joinNetwork.membersCount', { count: network?.member_count || 0 })}
+                  size={isMobile ? 'medium' : 'small'}
+                  sx={{
+                    fontWeight: 600,
+                    px: 1,
+                    minWidth: isMobile ? '200px' : 'auto'
+                  }}
+                />
+                <Chip
+                  icon={<CalendarIcon />}
+                  label={t('joinNetwork.createdOn', { date: new Date(network?.created_at).toLocaleDateString() })}
+                  size={isMobile ? 'medium' : 'small'}
+                  sx={{
+                    fontWeight: 600,
+                    px: 1,
+                    minWidth: isMobile ? '200px' : 'auto'
+                  }}
+                />
+              </Stack>
+            </Box>
+
+            <Box sx={{ px: { xs: 3, sm: 4 }, pb: { xs: 3, sm: 4 } }}>
+              <Divider sx={{ mb: 3 }} />
+
+              {/* Invitation Details */}
+              {invitation?.name && (
+                <Box sx={{ mb: 3, textAlign: 'left' }}>
+                  <Typography variant="subtitle1" gutterBottom fontWeight={600}>
+                    {t('joinNetwork.invitation')}: <strong>{invitation.name}</strong>
+                  </Typography>
+                  {invitation?.description && (
+                    <Typography variant="body2" color="text.secondary">
+                      {invitation.description}
+                    </Typography>
+                  )}
+                </Box>
+              )}
+
+              {/* Usage/Expiration Info */}
+              <Stack spacing={2} sx={{ mb: 3 }}>
+                {invitation?.max_uses && (
+                  <Alert
+                    severity="info"
+                    icon={false}
+                    sx={{ borderRadius: 2, fontWeight: 500 }}
+                  >
+                    {t('joinNetwork.uses', { used: invitation.uses_count, max: invitation.max_uses })}
+                  </Alert>
+                )}
+                {invitation?.expires_at && (
+                  <Alert
+                    severity={new Date(invitation.expires_at) < new Date() ? "error" : "info"}
+                    icon={false}
+                    sx={{ borderRadius: 2, fontWeight: 500 }}
+                  >
+                    {new Date(invitation.expires_at) < new Date()
+                      ? t('joinNetwork.invitationExpired')
+                      : t('joinNetwork.expires', { date: new Date(invitation.expires_at).toLocaleDateString() })
+                    }
+                  </Alert>
+                )}
+              </Stack>
+
+              {/* Action Buttons */}
+              <Stack spacing={2}>
+                {user ? (
+                  <Button
+                    variant="contained"
+                    size="large"
+                    fullWidth
+                    onClick={handleJoin}
+                    disabled={joining || userProfile?.network_id}
+                    startIcon={joining ? <Spinner size={20} /> : <CheckCircleIcon />}
+                    sx={{
+                      py: 1.5,
+                      borderRadius: 2,
+                      textTransform: 'none',
+                      fontSize: '1rem',
+                      fontWeight: 600,
+                      boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)',
+                      '&:hover': {
+                        boxShadow: '0 6px 16px rgba(102, 126, 234, 0.4)'
+                      }
+                    }}
+                  >
+                    {joining ? t('joinNetwork.joining') : userProfile?.network_id ? t('joinNetwork.switchNetwork') : t('joinNetwork.joinNetworkButton')}
+                  </Button>
+                ) : (
+                  <>
+                    <Button
+                      variant="contained"
+                      size="large"
+                      fullWidth
+                      onClick={handleJoin}
+                      endIcon={<ArrowForwardIcon />}
+                      sx={{
+                        py: 1.5,
+                        borderRadius: 2,
+                        textTransform: 'none',
+                        fontSize: '1rem',
+                        fontWeight: 600,
+                        boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)',
+                        '&:hover': {
+                          boxShadow: '0 6px 16px rgba(102, 126, 234, 0.4)'
+                        }
+                      }}
+                    >
+                      {t('joinNetwork.signUpToJoin')}
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      size="large"
+                      fullWidth
+                      component={Link}
+                      to={inviteeEmail
+                        ? `/login?redirect=/join/${code}&email=${encodeURIComponent(inviteeEmail)}`
+                        : `/login?redirect=/join/${code}`}
+                      startIcon={<LoginIcon />}
+                      sx={{
+                        py: 1.5,
+                        borderRadius: 2,
+                        textTransform: 'none',
+                        fontSize: '1rem',
+                        fontWeight: 600,
+                        borderWidth: 2,
+                        '&:hover': {
+                          borderWidth: 2
+                        }
+                      }}
+                    >
+                      {t('joinNetwork.alreadyHaveAccount')}
+                    </Button>
+                  </>
+                )}
+
                 <Button
-                  variant="contained"
-                  size="large"
-                  fullWidth
-                  onClick={handleJoin}
-                  startIcon={<LoginIcon />}
-                >
-                  {t('joinNetwork.signUpToJoin')}
-                </Button>
-                <Button
-                  variant="outlined"
-                  size="large"
+                  variant="text"
                   fullWidth
                   component={Link}
-                  to={inviteeEmail
-                    ? `/login?redirect=/join/${code}&email=${encodeURIComponent(inviteeEmail)}`
-                    : `/login?redirect=/join/${code}`}
+                  to="/"
+                  sx={{
+                    textTransform: 'none',
+                    fontSize: '0.95rem',
+                    color: 'text.secondary'
+                  }}
                 >
-                  {t('joinNetwork.alreadyHaveAccount')}
+                  {t('joinNetwork.cancel')}
                 </Button>
-              </>
-            )}
+              </Stack>
 
-            <Button
-              variant="outlined"
-              fullWidth
-              component={Link}
-              to="/"
-            >
-              {t('joinNetwork.cancel')}
-            </Button>
-          </Box>
-
-          {userProfile?.network_id && userProfile.network_id !== network?.id && (
-            <Alert severity="warning" sx={{ mt: 2 }}>
-              {t('joinNetwork.switchNetworkWarning')}
-            </Alert>
-          )}
-        </Box>
-      </Paper>
-    </Container>
+              {userProfile?.network_id && userProfile.network_id !== network?.id && (
+                <Alert
+                  severity="warning"
+                  sx={{
+                    mt: 3,
+                    borderRadius: 2,
+                    fontWeight: 500
+                  }}
+                >
+                  {t('joinNetwork.switchNetworkWarning')}
+                </Alert>
+              )}
+            </Box>
+          </Paper>
+        </Container>
+      </Fade>
+    </Box>
   );
 }
 
