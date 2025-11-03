@@ -589,7 +589,7 @@ const EventsTab = ({
                                   }}
                                 >
                                   <Typography variant="caption" sx={{ fontWeight: 'bold', lineHeight: 1 }}>
-                                    {eventDate.toLocaleString('default', { month: 'short' })}
+                                    {eventDate.toLocaleString(language, { month: 'short' })}
                                   </Typography>
                                   <Typography variant="h6" sx={{ fontWeight: 'bold', lineHeight: 1 }}>
                                     {eventDate.getDate()}
@@ -607,7 +607,7 @@ const EventsTab = ({
                                     borderRadius: 1
                                   }}
                                 >
-                                  {isToday ? t('eventsTab.today') : isTomorrow ? t('eventsTab.tomorrow') : eventDate.toLocaleString('default', { weekday: 'short' })}
+                                  {isToday ? t('eventsTab.today') : isTomorrow ? t('eventsTab.tomorrow') : eventDate.toLocaleString(language, { weekday: 'short' })}
                                 </Typography>
                               </Box>
                             </Box>
@@ -1391,13 +1391,13 @@ const EventsTab = ({
                               }
                             }}>
                             <Typography variant="caption" sx={{ fontWeight: 'bold' }}>
-                              {eventDate.toLocaleString('default', { month: 'short' })}
+                              {eventDate.toLocaleString(language, { month: 'short' })}
                             </Typography>
                             <Typography variant="h6" sx={{ fontWeight: 'bold', lineHeight: 1 }}>
                               {eventDate.getDate()}
                             </Typography>
                             <Typography variant="caption" sx={{ fontWeight: 'medium' }}>
-                              {isToday ? t('eventsTab.today') : isTomorrow ? t('eventsTab.tomorrow') : eventDate.toLocaleString('default', { weekday: 'short' })}
+                              {isToday ? t('eventsTab.today') : isTomorrow ? t('eventsTab.tomorrow') : eventDate.toLocaleString(language, { weekday: 'short' })}
                             </Typography>
                           </Box>
                         </Box>
