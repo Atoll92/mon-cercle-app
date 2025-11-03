@@ -36,7 +36,7 @@ const MoodboardSettingsDialog = ({
   processing = false,
   mode = 'edit' // 'create' or 'edit'
 }) => {
-  const { activeProfile, refreshProfiles } = useProfile();
+  const { activeProfile, refreshActiveProfile } = useProfile();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [backgroundColor, setBackgroundColor] = useState('#f0f7ff');
@@ -199,9 +199,14 @@ const MoodboardSettingsDialog = ({
           throw new Error(error);
         }
 
-        // Refresh profiles to get updated data
-        if (refreshProfiles) {
-          await refreshProfiles();
+        // Refresh active profile to get updated data
+        // This will update all components using the profile context,
+        // including links with /micro/:moodboard_slug
+        const { success, error: refreshError } = await refreshActiveProfile();
+
+        if (!success) {
+          console.error('Failed to refresh profile after slug update:', refreshError);
+          // Don't throw - the update succeeded, just the refresh failed
         }
       }
     } catch (err) {
