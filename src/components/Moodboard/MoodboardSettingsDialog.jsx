@@ -9,16 +9,23 @@ import {
   Box,
   Typography,
   Alert,
-  Stack
+  Stack,
+  InputAdornment,
+  Chip
 } from '@mui/material';
 import Spinner from '../Spinner';
 import {
-  Public as PublicIcon
+  Public as PublicIcon,
+  Link as LinkIcon,
+  Check as CheckIcon
 } from '@mui/icons-material';
+import { supabase } from '../../supabaseclient';
+import { useProfile } from '../../context/profileContext';
+import { updateProfile } from '../../api/profiles';
 
 /**
  * Dialog component for creating or editing moodboard settings
- * Allows setting/updating name, description, and background color
+ * Allows setting/updating name, description, background color, and moodboard slug
  * Note: All micro conclav pages are public by default
  */
 const MoodboardSettingsDialog = ({
@@ -29,11 +36,16 @@ const MoodboardSettingsDialog = ({
   processing = false,
   mode = 'edit' // 'create' or 'edit'
 }) => {
+  const { activeProfile, refreshProfiles } = useProfile();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [backgroundColor, setBackgroundColor] = useState('#f0f7ff');
+  const [moodboardSlug, setMoodboardSlug] = useState('');
   const [error, setError] = useState('');
   const [titleError, setTitleError] = useState('');
+  const [slugError, setSlugError] = useState('');
+  const [slugChecking, setSlugChecking] = useState(false);
+  const [slugAvailable, setSlugAvailable] = useState(false);
 
   // Reset form when dialog opens or moodboard changes
   useEffect(() => {
@@ -42,33 +54,124 @@ const MoodboardSettingsDialog = ({
       setTitle('');
       setDescription('');
       setBackgroundColor('#f0f7ff');
+      setMoodboardSlug('');
       setError('');
       setTitleError('');
-    } else if (mode === 'edit' && moodboard) {
+      setSlugError('');
+      setSlugAvailable(false);
+    } else if (mode === 'edit' && moodboard && open) {
       // Load existing values for edit mode
       setTitle(moodboard.title || '');
       setDescription(moodboard.description || '');
       setBackgroundColor(moodboard.background_color || '#f0f7ff');
+      setMoodboardSlug(activeProfile?.moodboard_slug || '');
       setError('');
       setTitleError('');
+      setSlugError('');
+      setSlugAvailable(false);
     }
-  }, [moodboard, open, mode]);
+  }, [moodboard, activeProfile, open, mode]);
+
+  // Validate slug format and check availability
+  const validateSlug = (slug) => {
+    if (!slug.trim()) {
+      return 'URL slug is required';
+    }
+    if (slug.trim().length < 3) {
+      return 'URL slug must be at least 3 characters';
+    }
+    if (slug.trim().length > 50) {
+      return 'URL slug must be less than 50 characters';
+    }
+    // Only allow lowercase letters, numbers, hyphens, and underscores
+    if (!/^[a-z0-9-_]+$/.test(slug)) {
+      return 'URL slug can only contain lowercase letters, numbers, hyphens, and underscores';
+    }
+    return null;
+  };
+
+  // Check slug availability with debouncing
+  useEffect(() => {
+    const checkSlugAvailability = async () => {
+      const validationError = validateSlug(moodboardSlug);
+      if (validationError) {
+        setSlugError(validationError);
+        setSlugAvailable(false);
+        return;
+      }
+
+      // If slug hasn't changed from original, skip checking
+      if (moodboardSlug === activeProfile?.moodboard_slug) {
+        setSlugError('');
+        setSlugAvailable(true);
+        return;
+      }
+
+      setSlugChecking(true);
+      setSlugError('');
+
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('moodboard_slug', moodboardSlug)
+          .maybeSingle();
+
+        if (error && error.code !== 'PGRST116') {
+          throw error;
+        }
+
+        if (data) {
+          setSlugError('This URL slug is already taken');
+          setSlugAvailable(false);
+        } else {
+          setSlugError('');
+          setSlugAvailable(true);
+        }
+      } catch (err) {
+        console.error('Error checking slug availability:', err);
+        setSlugError('Unable to check availability');
+        setSlugAvailable(false);
+      } finally {
+        setSlugChecking(false);
+      }
+    };
+
+    const timeoutId = setTimeout(() => {
+      if (moodboardSlug && open) {
+        checkSlugAvailability();
+      }
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  }, [moodboardSlug, activeProfile, open]);
 
   const validateForm = () => {
+    let isValid = true;
+
     if (!title.trim()) {
       setTitleError('Title is required');
-      return false;
-    }
-    if (title.trim().length < 2) {
+      isValid = false;
+    } else if (title.trim().length < 2) {
       setTitleError('Title must be at least 2 characters');
-      return false;
-    }
-    if (title.trim().length > 100) {
+      isValid = false;
+    } else if (title.trim().length > 100) {
       setTitleError('Title must be less than 100 characters');
-      return false;
+      isValid = false;
+    } else {
+      setTitleError('');
     }
-    setTitleError('');
-    return true;
+
+    const slugValidationError = validateSlug(moodboardSlug);
+    if (slugValidationError) {
+      setSlugError(slugValidationError);
+      isValid = false;
+    } else if (!slugAvailable && moodboardSlug !== activeProfile?.moodboard_slug) {
+      setSlugError('This URL slug is already taken');
+      isValid = false;
+    }
+
+    return isValid;
   };
 
   const handleSave = async () => {
@@ -76,14 +179,31 @@ const MoodboardSettingsDialog = ({
 
     try {
       setError('');
-      
-      const updates = {
+
+      const moodboardUpdates = {
         title: title.trim(),
         description: description.trim(),
         background_color: backgroundColor
       };
 
-      await onSave(updates);
+      // Save moodboard settings
+      await onSave(moodboardUpdates);
+
+      // If slug has changed, update the profile
+      if (moodboardSlug !== activeProfile?.moodboard_slug) {
+        const { data, error } = await updateProfile(activeProfile.id, {
+          moodboard_slug: moodboardSlug.trim().toLowerCase()
+        });
+
+        if (error) {
+          throw new Error(error);
+        }
+
+        // Refresh profiles to get updated data
+        if (refreshProfiles) {
+          await refreshProfiles();
+        }
+      }
     } catch (err) {
       console.error('Error updating moodboard:', err);
       setError(err.message || 'Failed to update moodboard settings');
@@ -138,7 +258,42 @@ const MoodboardSettingsDialog = ({
           rows={3}
           disabled={processing}
         />
-        
+
+        <TextField
+          label="URL Slug"
+          value={moodboardSlug}
+          onChange={(e) => setMoodboardSlug(e.target.value.toLowerCase())}
+          fullWidth
+          margin="normal"
+          required
+          error={!!slugError}
+          helperText={
+            slugError ||
+            `Your moodboard will be accessible at: conclav.club/micro/${moodboardSlug || 'your-slug'}`
+          }
+          disabled={processing}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <LinkIcon fontSize="small" />
+              </InputAdornment>
+            ),
+            endAdornment: (
+              <InputAdornment position="end">
+                {slugChecking && <Spinner size={20} />}
+                {!slugChecking && slugAvailable && moodboardSlug && (
+                  <Chip
+                    icon={<CheckIcon />}
+                    label="Available"
+                    color="success"
+                    size="small"
+                  />
+                )}
+              </InputAdornment>
+            )
+          }}
+        />
+
         {/* Show info about public visibility for micro conclav */}
         <Alert severity="info" sx={{ mt: 2 }}>
           <Stack direction="row" alignItems="center" spacing={1}>
@@ -198,7 +353,13 @@ const MoodboardSettingsDialog = ({
         <Button
           onClick={handleSave}
           variant="contained"
-          disabled={processing || !title.trim()}
+          disabled={
+            processing ||
+            !title.trim() ||
+            !moodboardSlug.trim() ||
+            !!slugError ||
+            (!slugAvailable && moodboardSlug !== activeProfile?.moodboard_slug)
+          }
           startIcon={processing && <Spinner size={40} />}
         >
           {processing ? (mode === 'create' ? 'Creating...' : 'Saving...') : (mode === 'create' ? 'Create' : 'Save Changes')}
