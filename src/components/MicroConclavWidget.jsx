@@ -1,23 +1,18 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from '../hooks/useTranslation';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Typography,
   Button,
-  TextField,
-  Alert,
   IconButton
 } from '@mui/material';
 import Spinner from './Spinner';
 import WidgetHeader from './shared/WidgetHeader';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import EditIcon from '@mui/icons-material/Edit';
-import SaveIcon from '@mui/icons-material/Save';
-import CancelIcon from '@mui/icons-material/Cancel';
 import PublicIcon from '@mui/icons-material/Public';
-import ColorLensIcon from '@mui/icons-material/ColorLens';
-import { getUserMoodboard, updateMoodboard, getUserMoodboardItems } from '../api/moodboards';
+import { getUserMoodboard, getUserMoodboardItems } from '../api/moodboards';
 import { useProfile } from '../context/profileContext';
 import MoodboardItemSimple from './Moodboard/MoodboardItemSimple';
 
@@ -28,14 +23,7 @@ const MicroConclavWidget = () => {
   const [moodboard, setMoodboard] = useState(null);
   const [moodboardItems, setMoodboardItems] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [editing, setEditing] = useState(false);
-  const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
-  const [editForm, setEditForm] = useState({
-    title: '',
-    description: '',
-    background_color: ''
-  });
 
   // For micro conclav, we need a profile ID, not a user ID
   // If no active profile, use the first profile
@@ -55,11 +43,6 @@ const MicroConclavWidget = () => {
       setLoading(true);
       const data = await getUserMoodboard(profileId);
       setMoodboard(data);
-      setEditForm({
-        title: data.title || t('dashboard.widgets.myMicroConclav'),
-        description: data.description || 'Welcome to my personal space',
-        background_color: data.background_color || '#f5f5f5'
-      });
 
       // Fetch moodboard items for the carousel
       const { items } = await getUserMoodboardItems(profileId, 0, 10);
@@ -70,32 +53,6 @@ const MicroConclavWidget = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleSave = async () => {
-    try {
-      setSaving(true);
-      setError(null);
-      
-      const updated = await updateMoodboard(moodboard.id, editForm);
-      setMoodboard(updated);
-      setEditing(false);
-    } catch (error) {
-      console.error('Error updating moodboard:', error);
-      setError('Failed to update micro conclav settings');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleCancel = () => {
-    setEditForm({
-      title: moodboard.title || t('dashboard.widgets.myMicroConclav'),
-      description: moodboard.description || 'Welcome to my personal space',
-      background_color: moodboard.background_color || '#f5f5f5'
-    });
-    setEditing(false);
-    setError(null);
   };
 
   if (loading || isLoadingProfiles) {
@@ -134,97 +91,27 @@ const MicroConclavWidget = () => {
         viewAllLink={microConclavUrl}
         viewAllText={t('dashboard.buttons.view')}
         action={
-          !editing ? (
-            <IconButton 
-              size="small" 
-              onClick={() => setEditing(true)}
-              disabled={!moodboard}
-            >
-              <EditIcon />
-            </IconButton>
-          ) : (
-            <Box sx={{ display: 'flex', gap: 0.5 }}>
-              <IconButton 
-                size="small" 
-                onClick={handleSave}
-                disabled={saving}
-                color="primary"
-              >
-                <SaveIcon />
-              </IconButton>
-              <IconButton 
-                size="small" 
-                onClick={handleCancel}
-                disabled={saving}
-              >
-                <CancelIcon />
-              </IconButton>
-            </Box>
-          )
+          <IconButton
+            size="small"
+            onClick={() => navigate(`/moodboard/${moodboard?.id}`)}
+            disabled={!moodboard}
+          >
+            <EditIcon />
+          </IconButton>
         }
       />
 
       {/* Full-Screen Content Area */}
       <Box sx={{ flexGrow: 1, position: 'relative', overflow: 'hidden' }}>
         {loading || isLoadingProfiles ? (
-          <Box sx={{ 
-            display: 'flex', 
-            justifyContent: 'center', 
-            alignItems: 'center', 
+          <Box sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
             height: '100%',
             bgcolor: moodboard?.background_color || '#f5f5f5'
           }}>
             <Spinner size={60} />
-          </Box>
-        ) : editing ? (
-          /* Edit Mode - Full Height */
-          <Box sx={{ 
-            p: 2, 
-            height: '100%', 
-            display: 'flex', 
-            flexDirection: 'column',
-            justifyContent: 'center',
-            bgcolor: 'background.paper'
-          }}>
-            {error && (
-              <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
-                {error}
-              </Alert>
-            )}
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, maxWidth: 400, mx: 'auto' }}>
-              <TextField
-                label="Title"
-                value={editForm.title}
-                onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
-                fullWidth
-                size="small"
-              />
-              <TextField
-                label="Description"
-                value={editForm.description}
-                onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
-                fullWidth
-                multiline
-                rows={2}
-                size="small"
-              />
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <ColorLensIcon color="action" />
-                <TextField
-                  label="Background Color"
-                  value={editForm.background_color}
-                  onChange={(e) => setEditForm({ ...editForm, background_color: e.target.value })}
-                  fullWidth
-                  size="small"
-                  type="color"
-                  slotProps={{
-                    input: {
-                      sx: { cursor: 'pointer' }
-                    }
-                  }}
-                />
-              </Box>
-            </Box>
           </Box>
         ) : moodboardItems.length > 0 ? (
           /* Infinite Sliding Carousel with CSS Animation */

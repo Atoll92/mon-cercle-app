@@ -124,9 +124,11 @@ function MoodboardPage() {
   const [isEditable, setIsEditable] = useState(false);
   
   useEffect(() => {
+    window.scrollTo(0, 0);
+
     const fetchMoodboard = async () => {
       if (!moodboardId) return;
-      
+
       try {
         setLoading(true);
         setError(null);
