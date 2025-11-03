@@ -39,7 +39,7 @@
       "networkMembers": "Network Members ({{count}})",
       "table": {
         "name": "Name",
-        "role": "Role", 
+        "role": "Role",
         "actions": "Actions",
         "email": "Email",
         "invitedBy": "Invited By",
@@ -259,7 +259,7 @@
           "description": "Built-in video hosting"
         },
         "fileStorage": {
-          "title": "File Storage", 
+          "title": "File Storage",
           "description": "Secure file management"
         },
         "quizzes": {
@@ -291,7 +291,7 @@
       },
       "fields": {
         "courseTitle": "Course Title",
-        "description": "Description", 
+        "description": "Description",
         "category": "Category",
         "difficulty": "Difficulty",
         "estimatedHours": "Estimated Hours",
@@ -299,7 +299,7 @@
       },
       "difficulty": {
         "beginner": "Beginner",
-        "intermediate": "Intermediate", 
+        "intermediate": "Intermediate",
         "advanced": "Advanced"
       },
       "stats": {
@@ -307,11 +307,21 @@
         "completion": "completion",
         "completionRate": "Completion Rate",
         "videos": "videos",
-        "quizzes": "quizzes", 
+        "quizzes": "quizzes",
         "files": "files"
       },
       "coursesList": {
         "title": "Your Courses ({{count}})"
+      }
+    },
+    "events": {
+      "settings": {
+        "title": "Event Publishing Settings",
+        "allowMemberPublishing": "Allow members to publish events without moderation",
+        "descriptionEnabled": "Members can create events that are immediately visible to all. Admins can still moderate published events.",
+        "descriptionDisabled": "Member event proposals require admin approval before they are published and visible to other members.",
+        "memberPublishingEnabled": "Members can now publish events without moderation",
+        "memberPublishingDisabled": "Member events now require admin approval"
       }
     }
   },
@@ -1032,7 +1042,7 @@
     "filters": {
       "category": "Category",
       "allCategories": "All Categories",
-      "difficulty": "Difficulty", 
+      "difficulty": "Difficulty",
       "allLevels": "All Levels",
       "beginner": "Beginner",
       "intermediate": "Intermediate",
@@ -1211,9 +1221,139 @@
       "detailsMedia": "Details & Media",
       "settings": "Settings"
     },
+    "dialog": {
+      "createEvent": "Create Event",
+      "editEvent": "Edit Event",
+      "updateEvent": "Update Event",
+      "cancel": "Cancel",
+      "back": "Back",
+      "next": "Next",
+      "save": "Save Event",
+      "online": "Online Event",
+      "creating": "Creating...",
+      "updating": "Updating..."
+    },
+    "basicInfo": {
+      "title": "Basic Information",
+      "eventTitle": "Event Title",
+      "eventTitlePlaceholder": "Enter event title",
+      "titlePlaceholder": "e.g., Annual Summer Conference 2025",
+      "eventDescription": "Event Description",
+      "eventDescriptionPlaceholder": "Describe your event...",
+      "startDateTime": "Start Date & Time",
+      "endDateTime": "End Date & Time",
+      "startDate": "Start Date",
+      "endDate": "End Date",
+      "dateHelper": "Select the start date for your event",
+      "dateTimeHelper": "Select the date and time for your event",
+      "endDateHelper": "Optional: Select an end date if this is a multi-day event",
+      "endDateError": "End date must be after start date",
+      "multiDay": "{{count}} day event",
+      "allDay": "All-day event",
+      "location": "Location",
+      "locationPlaceholder": "Enter event location",
+      "onlineEvent": "This is an online event",
+      "inPersonEvent": "This is an in-person event",
+      "noLocationRequired": "No physical location required",
+      "locationRequired": "Location is required for in-person events",
+      "onlineEventInfo": "For online events, add a meeting link below (Zoom, Teams, etc.)",
+      "eventLink": "Event Link",
+      "eventLinkPlaceholder": "https://zoom.us/...",
+      "selectLocation": "Click map to select location"
+    },
+    "details": {
+      "title": "Details",
+      "description": "Event Description",
+      "descriptionPlaceholder": "Provide a detailed description of your event...",
+      "eventLinkRecommended": "Event Link (Recommended)",
+      "eventLinkOptional": "Event Link (Optional)",
+      "eventLinkHelperOnline": "Add your online meeting link (Zoom, Teams, Google Meet, etc.)",
+      "eventLinkHelperOffline": "Add a link for more information or registration",
+      "coverImage": "Cover Image",
+      "dropImage": "Drop image here or click to select",
+      "imageFormats": "Supported formats: JPG, PNG, GIF (max 5MB)",
+      "category": "Category",
+      "selectCategory": "Select a category",
+      "maxAttendees": "Maximum Attendees",
+      "maxAttendeesPlaceholder": "Leave empty for unlimited",
+      "requiresApproval": "Requires admin approval to attend",
+      "eventImage": "Event Image",
+      "uploadImage": "Upload Image",
+      "changeImage": "Change Image",
+      "removeImage": "Remove Image"
+    },
+    "settings": {
+      "title": "Settings",
+      "capacityTickets": "Capacity & Tickets",
+      "capacity": "Maximum Capacity",
+      "capacityPlaceholder": "e.g., 100",
+      "capacityHelper": "Leave empty for unlimited capacity",
+      "maxTickets": "Maximum Tickets per Person",
+      "maxTicketsPlaceholder": "e.g., 2",
+      "maxTicketsHelper": "Maximum number of tickets one person can reserve",
+      "pricing": "Pricing",
+      "price": "Ticket Price",
+      "currency": "Currency",
+      "freeEvent": "This is a free event",
+      "category": "Category",
+      "categoryLabel": "Event Category",
+      "noCategory": "No category",
+      "addNewCategory": "Add new category",
+      "visibility": "Event Visibility",
+      "public": "Public - Visible to all network members",
+      "private": "Private - Only visible to invited members",
+      "allowComments": "Allow comments on this event",
+      "sendNotifications": "Send notifications to network members",
+      "featured": "Feature this event"
+    },
+    "category": {
+      "meeting": "Meeting",
+      "workshop": "Workshop",
+      "social": "Social",
+      "training": "Training",
+      "conference": "Conference",
+      "webinar": "Webinar",
+      "other": "Other",
+      "createNew": "Create New Category",
+      "name": "Category Name",
+      "slug": "URL Slug",
+      "slugHelper": "Auto-generated from name. Used in URLs.",
+      "description": "Description",
+      "color": "Color",
+      "cancel": "Cancel",
+      "creating": "Creating...",
+      "createButton": "Create Category"
+    },
+    "buttons": {
+      "cancel": "Cancel",
+      "back": "Back",
+      "next": "Next",
+      "createEvent": "Create Event",
+      "updateEvent": "Update Event",
+      "creating": "Creating...",
+      "updating": "Updating..."
+    },
     "errors": {
+      "titleRequired": "Event title is required",
+      "descriptionRequired": "Event description is required",
+      "startDateRequired": "Start date is required",
+      "endDateBeforeStart": "End date must be after start date",
+      "endDateInvalid": "End date must be after start date",
+      "requiredFields": "Please fill in all required fields",
+      "locationRequired": "Location is required for in-person events",
+      "eventLinkRequired": "Event link is required for online events",
+      "createFailed": "Failed to create event",
+      "updateFailed": "Failed to update event",
+      "saveFailed": "Failed to save event",
       "imageSizeTooLarge": "Image size must be less than 5MB",
-      "mapLoadFailed": "Failed to load map. Please try again later."
+      "invalidImageType": "Invalid image type. Please upload JPG, PNG, or GIF",
+      "mapLoadFailed": "Failed to load map. Please try again later.",
+      "categoryNameRequired": "Category name is required",
+      "createCategoryFailed": "Failed to create category"
+    },
+    "success": {
+      "created": "Event created successfully!",
+      "updated": "Event updated successfully!"
     },
     "map": {
       "viewDetails": "View Details"
@@ -1858,150 +1998,6 @@
       "maxFilesExceeded": "Maximum {{max}} file(s) allowed",
       "uploadFileFailed": "Failed to upload {{name}}: {{error}}",
       "uploadFailed": "Upload failed"
-    }
-  },
-  "events": {
-    "steps": {
-      "basicInfo": "Basic Info",
-      "detailsMedia": "Details & Media",
-      "settings": "Settings"
-    },
-    "dialog": {
-      "createEvent": "Create Event",
-      "editEvent": "Edit Event",
-      "updateEvent": "Update Event",
-      "cancel": "Cancel",
-      "back": "Back",
-      "next": "Next",
-      "save": "Save Event",
-      "online": "Online Event",
-      "creating": "Creating...",
-      "updating": "Updating..."
-    },
-    "basicInfo": {
-      "title": "Basic Information",
-      "eventTitle": "Event Title",
-      "eventTitlePlaceholder": "Enter event title",
-      "titlePlaceholder": "e.g., Annual Summer Conference 2025",
-      "eventDescription": "Event Description",
-      "eventDescriptionPlaceholder": "Describe your event...",
-      "startDateTime": "Start Date & Time",
-      "endDateTime": "End Date & Time",
-      "startDate": "Start Date",
-      "endDate": "End Date",
-      "dateHelper": "Select the start date for your event",
-      "dateTimeHelper": "Select the date and time for your event",
-      "endDateHelper": "Optional: Select an end date if this is a multi-day event",
-      "endDateError": "End date must be after start date",
-      "multiDay": "{{count}} day event",
-      "allDay": "All-day event",
-      "location": "Location",
-      "locationPlaceholder": "Enter event location",
-      "onlineEvent": "This is an online event",
-      "inPersonEvent": "This is an in-person event",
-      "noLocationRequired": "No physical location required",
-      "locationRequired": "Location is required for in-person events",
-      "onlineEventInfo": "For online events, add a meeting link below (Zoom, Teams, etc.)",
-      "eventLink": "Event Link",
-      "eventLinkPlaceholder": "https://zoom.us/...",
-      "selectLocation": "Click map to select location"
-    },
-    "details": {
-      "title": "Details",
-      "description": "Event Description",
-      "descriptionPlaceholder": "Provide a detailed description of your event...",
-      "eventLinkRecommended": "Event Link (Recommended)",
-      "eventLinkOptional": "Event Link (Optional)",
-      "eventLinkHelperOnline": "Add your online meeting link (Zoom, Teams, Google Meet, etc.)",
-      "eventLinkHelperOffline": "Add a link for more information or registration",
-      "coverImage": "Cover Image",
-      "dropImage": "Drop image here or click to select",
-      "imageFormats": "Supported formats: JPG, PNG, GIF (max 5MB)",
-      "category": "Category",
-      "selectCategory": "Select a category",
-      "maxAttendees": "Maximum Attendees",
-      "maxAttendeesPlaceholder": "Leave empty for unlimited",
-      "requiresApproval": "Requires admin approval to attend",
-      "eventImage": "Event Image",
-      "uploadImage": "Upload Image",
-      "changeImage": "Change Image",
-      "removeImage": "Remove Image"
-    },
-    "settings": {
-      "title": "Settings",
-      "capacityTickets": "Capacity & Tickets",
-      "capacity": "Maximum Capacity",
-      "capacityPlaceholder": "e.g., 100",
-      "capacityHelper": "Leave empty for unlimited capacity",
-      "maxTickets": "Maximum Tickets per Person",
-      "maxTicketsPlaceholder": "e.g., 2",
-      "maxTicketsHelper": "Maximum number of tickets one person can reserve",
-      "pricing": "Pricing",
-      "price": "Ticket Price",
-      "currency": "Currency",
-      "freeEvent": "This is a free event",
-      "category": "Category",
-      "categoryLabel": "Event Category",
-      "noCategory": "No category",
-      "addNewCategory": "Add new category",
-      "visibility": "Event Visibility",
-      "public": "Public - Visible to all network members",
-      "private": "Private - Only visible to invited members",
-      "allowComments": "Allow comments on this event",
-      "sendNotifications": "Send notifications to network members",
-      "featured": "Feature this event"
-    },
-    "category": {
-      "meeting": "Meeting",
-      "workshop": "Workshop",
-      "social": "Social",
-      "training": "Training",
-      "conference": "Conference",
-      "webinar": "Webinar",
-      "other": "Other",
-      "createNew": "Create New Category",
-      "name": "Category Name",
-      "slug": "URL Slug",
-      "slugHelper": "Auto-generated from name. Used in URLs.",
-      "description": "Description",
-      "color": "Color",
-      "cancel": "Cancel",
-      "creating": "Creating...",
-      "createButton": "Create Category"
-    },
-    "buttons": {
-      "cancel": "Cancel",
-      "back": "Back",
-      "next": "Next",
-      "createEvent": "Create Event",
-      "updateEvent": "Update Event",
-      "creating": "Creating...",
-      "updating": "Updating..."
-    },
-    "errors": {
-      "titleRequired": "Event title is required",
-      "descriptionRequired": "Event description is required",
-      "startDateRequired": "Start date is required",
-      "endDateBeforeStart": "End date must be after start date",
-      "endDateInvalid": "End date must be after start date",
-      "requiredFields": "Please fill in all required fields",
-      "locationRequired": "Location is required for in-person events",
-      "eventLinkRequired": "Event link is required for online events",
-      "createFailed": "Failed to create event",
-      "updateFailed": "Failed to update event",
-      "saveFailed": "Failed to save event",
-      "imageSizeTooLarge": "Image size must be less than 5MB",
-      "invalidImageType": "Invalid image type. Please upload JPG, PNG, or GIF",
-      "mapLoadFailed": "Failed to load map. Please try again later.",
-      "categoryNameRequired": "Category name is required",
-      "createCategoryFailed": "Failed to create category"
-    },
-    "success": {
-      "created": "Event created successfully!",
-      "updated": "Event updated successfully!"
-    },
-    "map": {
-      "viewDetails": "View Details"
     }
   },
   "components": {

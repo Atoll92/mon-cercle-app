@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import { useTranslation } from '../../hooks/useTranslation.jsx';
 import Spinner from '../Spinner';
 import {
   Box,
@@ -27,7 +28,12 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
-  Chip
+  Chip,
+  Switch,
+  FormControlLabel,
+  Card,
+  CardContent,
+  Divider
 } from '@mui/material';
 import {
   Edit as EditIcon,
@@ -40,7 +46,8 @@ import {
   Visibility as VisibilityIcon,
   Check as CheckIcon,
   Close as CloseIcon,
-  FilterList as FilterListIcon
+  FilterList as FilterListIcon,
+  Settings as SettingsIcon
 } from '@mui/icons-material';
 import AddressSuggestions from '../AddressSuggestions';
 import EventParticipationStatsCompact from '../EventParticipationStatsCompact';
@@ -49,8 +56,10 @@ import CreateEventDialog from '../CreateEventDialog';
 import { deleteEvent, exportEventParticipantsList, approveEvent, rejectEvent } from '../../api/networks';
 import { fetchNetworkCategories } from '../../api/categories';
 import { formatEventDate } from '../../utils/dateFormatting';
+import { supabase } from '../../supabaseclient';
 
 const EventsTab = ({ events, setEvents, user, activeProfile, networkId, network, darkMode = false }) => {
+  const { t } = useTranslation();
   const [openDialog, setOpenDialog] = useState(false);
   const [dialogMode, setDialogMode] = useState('create');
   const [selectedEvent, setSelectedEvent] = useState(null);
@@ -67,8 +76,10 @@ const EventsTab = ({ events, setEvents, user, activeProfile, networkId, network,
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const [rejectingEventId, setRejectingEventId] = useState(null);
   const [rejectionReason, setRejectionReason] = useState('');
+  const [allowMemberPublishing, setAllowMemberPublishing] = useState(false);
+  const [savingSettings, setSavingSettings] = useState(false);
 
-  // Load categories on mount
+  // Load categories and network settings on mount
   useEffect(() => {
     const loadCategories = async () => {
       const { data, error } = await fetchNetworkCategories(networkId, true); // Only active categories
@@ -76,8 +87,64 @@ const EventsTab = ({ events, setEvents, user, activeProfile, networkId, network,
         setCategories(data);
       }
     };
+
+    const loadNetworkSettings = async () => {
+      const { data, error } = await supabase
+        .from('networks')
+        .select('features_config')
+        .eq('id', networkId)
+        .single();
+
+      if (data && !error) {
+        setAllowMemberPublishing(data.features_config?.allow_member_event_publishing || false);
+      }
+    };
+
     loadCategories();
+    loadNetworkSettings();
   }, [networkId]);
+
+  const handleToggleMemberPublishing = async (event) => {
+    const newValue = event.target.checked;
+    setSavingSettings(true);
+
+    try {
+      // Fetch current features_config
+      const { data: currentData, error: fetchError } = await supabase
+        .from('networks')
+        .select('features_config')
+        .eq('id', networkId)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      // Update features_config with new value
+      const updatedConfig = {
+        ...(currentData.features_config || {}),
+        allow_member_event_publishing: newValue
+      };
+
+      const { error: updateError } = await supabase
+        .from('networks')
+        .update({ features_config: updatedConfig })
+        .eq('id', networkId);
+
+      if (updateError) throw updateError;
+
+      setAllowMemberPublishing(newValue);
+      setMessage(
+        newValue
+          ? t('admin.events.settings.memberPublishingEnabled')
+          : t('admin.events.settings.memberPublishingDisabled')
+      );
+    } catch (err) {
+      setError(`Failed to update setting: ${err.message}`);
+      // Revert the toggle
+      setAllowMemberPublishing(!newValue);
+    } finally {
+      setSavingSettings(false);
+    }
+  };
 
   const formatEventDateTime = (dateString) => {
     const date = new Date(dateString);
@@ -251,7 +318,7 @@ const EventsTab = ({ events, setEvents, user, activeProfile, networkId, network,
           {error}
         </Alert>
       )}
-      
+
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}>
         <Typography variant="h5">Network Events</Typography>
         <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
@@ -278,6 +345,53 @@ const EventsTab = ({ events, setEvents, user, activeProfile, networkId, network,
           </Button>
         </Box>
       </Box>
+
+      {/* Event Publishing Settings */}
+      <Card
+        sx={{
+          mb: 3,
+          background: darkMode
+            ? 'linear-gradient(135deg, rgba(25, 118, 210, 0.1) 0%, rgba(21, 101, 192, 0.05) 100%)'
+            : 'linear-gradient(135deg, rgba(25, 118, 210, 0.05) 0%, rgba(21, 101, 192, 0.02) 100%)',
+          border: darkMode ? '1px solid rgba(25, 118, 210, 0.3)' : '1px solid rgba(25, 118, 210, 0.2)',
+        }}
+      >
+        <CardContent>
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+            <SettingsIcon sx={{ mr: 1, color: 'primary.main' }} />
+            <Typography variant="h6" sx={{ fontWeight: 600 }}>
+              {t('admin.events.settings.title')}
+            </Typography>
+          </Box>
+          <Divider sx={{ mb: 2 }} />
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={allowMemberPublishing}
+                  onChange={handleToggleMemberPublishing}
+                  disabled={savingSettings}
+                  color="primary"
+                />
+              }
+              label={
+                <Box>
+                  <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                    {t('admin.events.settings.allowMemberPublishing')}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                    {allowMemberPublishing
+                      ? t('admin.events.settings.descriptionEnabled')
+                      : t('admin.events.settings.descriptionDisabled')
+                    }
+                  </Typography>
+                </Box>
+              }
+              sx={{ m: 0, alignItems: 'flex-start' }}
+            />
+          </Box>
+        </CardContent>
+      </Card>
 
       <TableContainer component={Paper} sx={{ mt: 2, overflowX: 'auto' }}>
         <Table size="small" aria-label="events table" sx={{ minWidth: 650 }}>

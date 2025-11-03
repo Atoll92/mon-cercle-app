@@ -259,7 +259,7 @@
           "description": "Hébergement vidéo intégré"
         },
         "fileStorage": {
-          "title": "Stockage de fichiers", 
+          "title": "Stockage de fichiers",
           "description": "Gestion sécurisée des fichiers"
         },
         "quizzes": {
@@ -291,7 +291,7 @@
       },
       "fields": {
         "courseTitle": "Titre du cours",
-        "description": "Description", 
+        "description": "Description",
         "category": "Catégorie",
         "difficulty": "Difficulté",
         "estimatedHours": "Heures estimées",
@@ -299,7 +299,7 @@
       },
       "difficulty": {
         "beginner": "Débutant",
-        "intermediate": "Intermédiaire", 
+        "intermediate": "Intermédiaire",
         "advanced": "Avancé"
       },
       "stats": {
@@ -307,11 +307,21 @@
         "completion": "achèvement",
         "completionRate": "Taux d'achèvement",
         "videos": "vidéos",
-        "quizzes": "quiz", 
+        "quizzes": "quiz",
         "files": "fichiers"
       },
       "coursesList": {
         "title": "Vos cours ({{count}})"
+      }
+    },
+    "events": {
+      "settings": {
+        "title": "Paramètres de publication d'événements",
+        "allowMemberPublishing": "Permettre aux membres de publier des événements sans modération",
+        "descriptionEnabled": "Les membres peuvent créer des événements immédiatement visibles par tous. Les administrateurs peuvent toujours modérer les événements publiés.",
+        "descriptionDisabled": "Les propositions d'événements des membres nécessitent l'approbation d'un administrateur avant d'être publiées et visibles par les autres membres.",
+        "memberPublishingEnabled": "Les membres peuvent maintenant publier des événements sans modération",
+        "memberPublishingDisabled": "Les événements des membres nécessitent maintenant l'approbation d'un administrateur"
       }
     }
   },
@@ -1025,7 +1035,7 @@
     "filters": {
       "category": "Catégorie",
       "allCategories": "Toutes les catégories",
-      "difficulty": "Difficulté", 
+      "difficulty": "Difficulté",
       "allLevels": "Tous les niveaux",
       "beginner": "Débutant",
       "intermediate": "Intermédiaire",
@@ -1204,9 +1214,139 @@
       "detailsMedia": "Détails et médias",
       "settings": "Paramètres"
     },
+    "dialog": {
+      "createEvent": "Créer un événement",
+      "editEvent": "Modifier l'événement",
+      "updateEvent": "Mettre à jour l'événement",
+      "cancel": "Annuler",
+      "back": "Retour",
+      "next": "Suivant",
+      "save": "Enregistrer l'événement",
+      "online": "Événement en ligne",
+      "creating": "Création...",
+      "updating": "Mise à jour..."
+    },
+    "basicInfo": {
+      "title": "Informations de base",
+      "eventTitle": "Titre de l'événement",
+      "eventTitlePlaceholder": "Entrez le titre de l'événement",
+      "titlePlaceholder": "ex. : Conférence annuelle d'été 2025",
+      "eventDescription": "Description de l'événement",
+      "eventDescriptionPlaceholder": "Décrivez votre événement...",
+      "startDateTime": "Date et heure de début",
+      "endDateTime": "Date et heure de fin",
+      "startDate": "Date de début",
+      "endDate": "Date de fin",
+      "dateHelper": "Sélectionnez la date de début de votre événement",
+      "dateTimeHelper": "Sélectionnez la date et l'heure de votre événement",
+      "endDateHelper": "Optionnel : Sélectionnez une date de fin si c'est un événement de plusieurs jours",
+      "endDateError": "La date de fin doit être après la date de début",
+      "multiDay": "Événement de {{count}} jours",
+      "allDay": "Événement sur toute la journée",
+      "location": "Lieu",
+      "locationPlaceholder": "Entrez le lieu de l'événement",
+      "onlineEvent": "C'est un événement en ligne",
+      "inPersonEvent": "C'est un événement en présentiel",
+      "noLocationRequired": "Aucun lieu physique requis",
+      "locationRequired": "Le lieu est requis pour les événements en présentiel",
+      "onlineEventInfo": "Pour les événements en ligne, ajoutez un lien de réunion ci-dessous (Zoom, Teams, etc.)",
+      "eventLink": "Lien de l'événement",
+      "eventLinkPlaceholder": "https://zoom.us/...",
+      "selectLocation": "Cliquez sur la carte pour sélectionner un lieu"
+    },
+    "details": {
+      "title": "Détails",
+      "description": "Description de l'événement",
+      "descriptionPlaceholder": "Fournissez une description détaillée de votre événement...",
+      "eventLinkRecommended": "Lien de l'événement (Recommandé)",
+      "eventLinkOptional": "Lien de l'événement (Optionnel)",
+      "eventLinkHelperOnline": "Ajoutez votre lien de réunion en ligne (Zoom, Teams, Google Meet, etc.)",
+      "eventLinkHelperOffline": "Ajoutez un lien pour plus d'informations ou l'inscription",
+      "coverImage": "Image de couverture",
+      "dropImage": "Déposez l'image ici ou cliquez pour sélectionner",
+      "imageFormats": "Formats supportés : JPG, PNG, GIF (max 5 Mo)",
+      "category": "Catégorie",
+      "selectCategory": "Sélectionnez une catégorie",
+      "maxAttendees": "Nombre maximum de participants",
+      "maxAttendeesPlaceholder": "Laisser vide pour illimité",
+      "requiresApproval": "Nécessite l'approbation d'un administrateur pour participer",
+      "eventImage": "Image de l'événement",
+      "uploadImage": "Télécharger une image",
+      "changeImage": "Changer l'image",
+      "removeImage": "Supprimer l'image"
+    },
+    "settings": {
+      "title": "Paramètres",
+      "capacityTickets": "Capacité et billets",
+      "capacity": "Capacité maximale",
+      "capacityPlaceholder": "ex. : 100",
+      "capacityHelper": "Laisser vide pour une capacité illimitée",
+      "maxTickets": "Nombre maximum de billets par personne",
+      "maxTicketsPlaceholder": "ex. : 2",
+      "maxTicketsHelper": "Nombre maximum de billets qu'une personne peut réserver",
+      "pricing": "Tarification",
+      "price": "Prix du billet",
+      "currency": "Devise",
+      "freeEvent": "C'est un événement gratuit",
+      "category": "Catégorie",
+      "categoryLabel": "Catégorie de l'événement",
+      "noCategory": "Aucune catégorie",
+      "addNewCategory": "Ajouter une nouvelle catégorie",
+      "visibility": "Visibilité de l'événement",
+      "public": "Public - Visible par tous les membres du réseau",
+      "private": "Privé - Visible uniquement par les membres invités",
+      "allowComments": "Autoriser les commentaires sur cet événement",
+      "sendNotifications": "Envoyer des notifications aux membres du réseau",
+      "featured": "Mettre en avant cet événement"
+    },
+    "category": {
+      "meeting": "Réunion",
+      "workshop": "Atelier",
+      "social": "Social",
+      "training": "Formation",
+      "conference": "Conférence",
+      "webinar": "Webinaire",
+      "other": "Autre",
+      "createNew": "Créer une nouvelle catégorie",
+      "name": "Nom de la catégorie",
+      "slug": "Slug URL",
+      "slugHelper": "Généré automatiquement à partir du nom. Utilisé dans les URLs.",
+      "description": "Description",
+      "color": "Couleur",
+      "cancel": "Annuler",
+      "creating": "Création...",
+      "createButton": "Créer la catégorie"
+    },
+    "buttons": {
+      "cancel": "Annuler",
+      "back": "Retour",
+      "next": "Suivant",
+      "createEvent": "Créer l'événement",
+      "updateEvent": "Mettre à jour l'événement",
+      "creating": "Création...",
+      "updating": "Mise à jour..."
+    },
     "errors": {
+      "titleRequired": "Le titre de l'événement est requis",
+      "descriptionRequired": "La description de l'événement est requise",
+      "startDateRequired": "La date de début est requise",
+      "endDateBeforeStart": "La date de fin doit être après la date de début",
+      "endDateInvalid": "La date de fin doit être après la date de début",
+      "requiredFields": "Veuillez remplir tous les champs requis",
+      "locationRequired": "Le lieu est requis pour les événements en présentiel",
+      "eventLinkRequired": "Le lien de l'événement est requis pour les événements en ligne",
+      "createFailed": "Échec de la création de l'événement",
+      "updateFailed": "Échec de la mise à jour de l'événement",
+      "saveFailed": "Échec de l'enregistrement de l'événement",
       "imageSizeTooLarge": "La taille de l'image doit être inférieure à 5 Mo",
-      "mapLoadFailed": "Échec du chargement de la carte. Veuillez réessayer plus tard."
+      "invalidImageType": "Type d'image invalide. Veuillez télécharger JPG, PNG ou GIF",
+      "mapLoadFailed": "Échec du chargement de la carte. Veuillez réessayer plus tard.",
+      "categoryNameRequired": "Le nom de la catégorie est requis",
+      "createCategoryFailed": "Échec de la création de la catégorie"
+    },
+    "success": {
+      "created": "Événement créé avec succès !",
+      "updated": "Événement mis à jour avec succès !"
     },
     "map": {
       "viewDetails": "Voir les détails"
@@ -1824,150 +1964,6 @@
       "maxFilesExceeded": "Maximum {{max}} fichier(s) autorisé(s)",
       "uploadFileFailed": "Échec du téléchargement de {{name}} : {{error}}",
       "uploadFailed": "Échec du téléchargement"
-    }
-  },
-  "events": {
-    "steps": {
-      "basicInfo": "Informations de base",
-      "detailsMedia": "Détails et médias",
-      "settings": "Paramètres"
-    },
-    "dialog": {
-      "createEvent": "Créer un événement",
-      "editEvent": "Modifier l'événement",
-      "updateEvent": "Mettre à jour l'événement",
-      "cancel": "Annuler",
-      "back": "Retour",
-      "next": "Suivant",
-      "save": "Enregistrer l'événement",
-      "online": "Événement en ligne",
-      "creating": "Création...",
-      "updating": "Mise à jour..."
-    },
-    "basicInfo": {
-      "title": "Informations de base",
-      "eventTitle": "Titre de l'événement",
-      "eventTitlePlaceholder": "Entrez le titre de l'événement",
-      "titlePlaceholder": "ex. : Conférence annuelle d'été 2025",
-      "eventDescription": "Description de l'événement",
-      "eventDescriptionPlaceholder": "Décrivez votre événement...",
-      "startDateTime": "Date et heure de début",
-      "endDateTime": "Date et heure de fin",
-      "startDate": "Date de début",
-      "endDate": "Date de fin",
-      "dateHelper": "Sélectionnez la date de début de votre événement",
-      "dateTimeHelper": "Sélectionnez la date et l'heure de votre événement",
-      "endDateHelper": "Optionnel : Sélectionnez une date de fin si c'est un événement de plusieurs jours",
-      "endDateError": "La date de fin doit être après la date de début",
-      "multiDay": "Événement de {{count}} jours",
-      "allDay": "Événement sur toute la journée",
-      "location": "Lieu",
-      "locationPlaceholder": "Entrez le lieu de l'événement",
-      "onlineEvent": "C'est un événement en ligne",
-      "inPersonEvent": "C'est un événement en présentiel",
-      "noLocationRequired": "Aucun lieu physique requis",
-      "locationRequired": "Le lieu est requis pour les événements en présentiel",
-      "onlineEventInfo": "Pour les événements en ligne, ajoutez un lien de réunion ci-dessous (Zoom, Teams, etc.)",
-      "eventLink": "Lien de l'événement",
-      "eventLinkPlaceholder": "https://zoom.us/...",
-      "selectLocation": "Cliquez sur la carte pour sélectionner un lieu"
-    },
-    "details": {
-      "title": "Détails",
-      "description": "Description de l'événement",
-      "descriptionPlaceholder": "Fournissez une description détaillée de votre événement...",
-      "eventLinkRecommended": "Lien de l'événement (Recommandé)",
-      "eventLinkOptional": "Lien de l'événement (Optionnel)",
-      "eventLinkHelperOnline": "Ajoutez votre lien de réunion en ligne (Zoom, Teams, Google Meet, etc.)",
-      "eventLinkHelperOffline": "Ajoutez un lien pour plus d'informations ou l'inscription",
-      "coverImage": "Image de couverture",
-      "dropImage": "Déposez l'image ici ou cliquez pour sélectionner",
-      "imageFormats": "Formats supportés : JPG, PNG, GIF (max 5 Mo)",
-      "category": "Catégorie",
-      "selectCategory": "Sélectionnez une catégorie",
-      "maxAttendees": "Nombre maximum de participants",
-      "maxAttendeesPlaceholder": "Laisser vide pour illimité",
-      "requiresApproval": "Nécessite l'approbation d'un administrateur pour participer",
-      "eventImage": "Image de l'événement",
-      "uploadImage": "Télécharger une image",
-      "changeImage": "Changer l'image",
-      "removeImage": "Supprimer l'image"
-    },
-    "settings": {
-      "title": "Paramètres",
-      "capacityTickets": "Capacité et billets",
-      "capacity": "Capacité maximale",
-      "capacityPlaceholder": "ex. : 100",
-      "capacityHelper": "Laisser vide pour une capacité illimitée",
-      "maxTickets": "Nombre maximum de billets par personne",
-      "maxTicketsPlaceholder": "ex. : 2",
-      "maxTicketsHelper": "Nombre maximum de billets qu'une personne peut réserver",
-      "pricing": "Tarification",
-      "price": "Prix du billet",
-      "currency": "Devise",
-      "freeEvent": "C'est un événement gratuit",
-      "category": "Catégorie",
-      "categoryLabel": "Catégorie de l'événement",
-      "noCategory": "Aucune catégorie",
-      "addNewCategory": "Ajouter une nouvelle catégorie",
-      "visibility": "Visibilité de l'événement",
-      "public": "Public - Visible par tous les membres du réseau",
-      "private": "Privé - Visible uniquement par les membres invités",
-      "allowComments": "Autoriser les commentaires sur cet événement",
-      "sendNotifications": "Envoyer des notifications aux membres du réseau",
-      "featured": "Mettre en avant cet événement"
-    },
-    "category": {
-      "meeting": "Réunion",
-      "workshop": "Atelier",
-      "social": "Social",
-      "training": "Formation",
-      "conference": "Conférence",
-      "webinar": "Webinaire",
-      "other": "Autre",
-      "createNew": "Créer une nouvelle catégorie",
-      "name": "Nom de la catégorie",
-      "slug": "Slug URL",
-      "slugHelper": "Généré automatiquement à partir du nom. Utilisé dans les URLs.",
-      "description": "Description",
-      "color": "Couleur",
-      "cancel": "Annuler",
-      "creating": "Création...",
-      "createButton": "Créer la catégorie"
-    },
-    "buttons": {
-      "cancel": "Annuler",
-      "back": "Retour",
-      "next": "Suivant",
-      "createEvent": "Créer l'événement",
-      "updateEvent": "Mettre à jour l'événement",
-      "creating": "Création...",
-      "updating": "Mise à jour..."
-    },
-    "errors": {
-      "titleRequired": "Le titre de l'événement est requis",
-      "descriptionRequired": "La description de l'événement est requise",
-      "startDateRequired": "La date de début est requise",
-      "endDateBeforeStart": "La date de fin doit être après la date de début",
-      "endDateInvalid": "La date de fin doit être après la date de début",
-      "requiredFields": "Veuillez remplir tous les champs requis",
-      "locationRequired": "Le lieu est requis pour les événements en présentiel",
-      "eventLinkRequired": "Le lien de l'événement est requis pour les événements en ligne",
-      "createFailed": "Échec de la création de l'événement",
-      "updateFailed": "Échec de la mise à jour de l'événement",
-      "saveFailed": "Échec de l'enregistrement de l'événement",
-      "imageSizeTooLarge": "La taille de l'image doit être inférieure à 5 Mo",
-      "invalidImageType": "Type d'image invalide. Veuillez télécharger JPG, PNG ou GIF",
-      "mapLoadFailed": "Échec du chargement de la carte. Veuillez réessayer plus tard.",
-      "categoryNameRequired": "Le nom de la catégorie est requis",
-      "createCategoryFailed": "Échec de la création de la catégorie"
-    },
-    "success": {
-      "created": "Événement créé avec succès !",
-      "updated": "Événement mis à jour avec succès !"
-    },
-    "map": {
-      "viewDetails": "Voir les détails"
     }
   },
   "components": {

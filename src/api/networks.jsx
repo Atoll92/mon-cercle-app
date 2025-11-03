@@ -815,12 +815,38 @@ export const createEvent = async (networkId, profileId, eventData, imageFile, is
       isAdmin
     });
 
-    // Create event with status based on user role
+    // Fetch network settings to check if member publishing is allowed
+    const { data: networkData, error: networkError } = await supabase
+      .from('networks')
+      .select('features_config')
+      .eq('id', networkId)
+      .single();
+
+    if (networkError) {
+      console.error('📅 [CREATE EVENT] Error fetching network settings:', networkError);
+      throw networkError;
+    }
+
+    const allowMemberPublishing = networkData?.features_config?.allow_member_event_publishing || false;
+    console.log('📅 [CREATE EVENT] Network allows member publishing:', allowMemberPublishing);
+
+    // Determine event status based on user role and network settings
+    // - Admins always create approved events
+    // - Members create approved events if allow_member_event_publishing is true
+    // - Otherwise, members create pending events that need approval
+    let eventStatus = 'approved'; // Default for admins
+    if (!isAdmin) {
+      eventStatus = allowMemberPublishing ? 'approved' : 'pending';
+    }
+
+    console.log('📅 [CREATE EVENT] Event will be created with status:', eventStatus);
+
+    // Create event with determined status
     const eventRecord = {
       ...eventData,
       network_id: networkId,
       created_by: profileId,
-      status: isAdmin ? 'approved' : 'pending'
+      status: eventStatus
     };
 
     console.log('📅 [CREATE EVENT] Event record to insert:', eventRecord);
@@ -869,12 +895,12 @@ export const createEvent = async (networkId, profileId, eventData, imageFile, is
     }
     
     // Queue email notifications based on event status
-    if (isAdmin) {
-      // If admin created, event is approved - notify all members
+    if (eventStatus === 'approved') {
+      // Event is approved - notify all members
       try {
-        console.log('📅 [EVENT DEBUG] Starting to queue email notifications for event...');
+        console.log('📅 [EVENT DEBUG] Starting to queue email notifications for approved event...');
         console.log('📅 [EVENT DEBUG] Event created:', data[0]);
-        
+
         const notificationResult = await queueEventNotifications(
           networkId,
           data[0].id,
@@ -885,9 +911,9 @@ export const createEvent = async (networkId, profileId, eventData, imageFile, is
           eventData.location,
           data[0].cover_image_url
         );
-        
+
         console.log('📅 [EVENT DEBUG] Notification queueing result:', notificationResult);
-        
+
         if (notificationResult.success) {
           console.log(`📅 [EVENT DEBUG] Email notifications queued successfully: ${notificationResult.message}`);
         } else {
@@ -898,11 +924,11 @@ export const createEvent = async (networkId, profileId, eventData, imageFile, is
         console.error('📅 [EVENT DEBUG] Error queueing email notifications:', notificationError);
         // Don't fail the event creation if notification queueing fails
       }
-    } else {
-      // If non-admin created, event is pending - notify admins
+    } else if (eventStatus === 'pending') {
+      // Event is pending - notify admins for approval
       try {
         console.log('📅 [EVENT PROPOSAL] Queueing admin notifications for event proposal...');
-        
+
         const notificationResult = await queueEventProposalNotificationForAdmins(
           networkId,
           data[0].id,
@@ -911,9 +937,9 @@ export const createEvent = async (networkId, profileId, eventData, imageFile, is
           eventData.description,
           eventData.date
         );
-        
+
         console.log('📅 [EVENT PROPOSAL] Admin notification result:', notificationResult);
-        
+
         if (notificationResult.success) {
           console.log(`📅 [EVENT PROPOSAL] Admin notifications queued successfully: ${notificationResult.message}`);
         } else {
