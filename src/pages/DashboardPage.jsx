@@ -880,9 +880,9 @@ function DashboardPage() {
 
   return (
     <Box sx={{ minHeight: '100vh' }}>
-      <Container maxWidth="lg" sx={{ py: 3, display: 'flex', flexDirection: 'column' }}>
+      <Container maxWidth="lg" sx={{ py: 3, display: 'flex', flexDirection: 'column', px: { xs: 1, md: 2 } }}>
         {/* Dashboard Title */}
-        <Box sx={{ mb: 3 }}>
+        <Box sx={{ mb: 3, px: { xs: 2, md: 0 } }}>
           <Typography 
             variant="h4" 
             component="h1" 
