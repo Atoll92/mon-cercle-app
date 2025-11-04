@@ -892,8 +892,10 @@ function ProfilePage() {
 
                   
                   {/* Moodboard Widget Section */}
-                  <Box sx={{ mt: 4 }}>
-                    <MicroConclavWidget />
+                  <Box sx={{ mt: 4, mb: 4 }}>
+                    <MicroConclavWidget
+                      profileId={profile.id}
+                    />
                   </Box>
                   
                   {/* Posts Preview Section */}

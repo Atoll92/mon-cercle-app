@@ -15,8 +15,9 @@ import PublicIcon from '@mui/icons-material/Public';
 import { getUserMoodboard, getUserMoodboardItems } from '../api/moodboards';
 import { useProfile } from '../context/profileContext';
 import MoodboardItemSimple from './Moodboard/MoodboardItemSimple';
+import { getProfileById } from '../api/profiles';
 
-const MicroConclavWidget = () => {
+const MicroConclavWidget = ({ profileId: propProfileId }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { activeProfile, userProfiles, isLoadingProfiles } = useProfile();
@@ -24,10 +25,14 @@ const MicroConclavWidget = () => {
   const [moodboardItems, setMoodboardItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [profile, setProfile] = useState(null);
 
   // For micro conclav, we need a profile ID, not a user ID
-  // If no active profile, use the first profile
-  const profileId = activeProfile?.id || userProfiles?.[0]?.id;
+  // Use prop if provided, otherwise use active profile or first profile
+  const profileId = propProfileId || activeProfile?.id || userProfiles?.[0]?.id;
+
+  // Check if viewing own moodboard
+  const isOwnMoodboard = !propProfileId || propProfileId === activeProfile?.id;
 
   useEffect(() => {
     if (profileId && !isLoadingProfiles) {
@@ -41,6 +46,13 @@ const MicroConclavWidget = () => {
   const fetchMoodboard = async () => {
     try {
       setLoading(true);
+
+      // Fetch profile data if viewing someone else's moodboard
+      if (!isOwnMoodboard) {
+        const { data: profileData } = await getProfileById(profileId);
+        setProfile(profileData);
+      }
+
       const data = await getUserMoodboard(profileId);
       setMoodboard(data);
 
@@ -49,7 +61,7 @@ const MicroConclavWidget = () => {
       setMoodboardItems(items || []);
     } catch (error) {
       console.error('Error fetching moodboard:', error);
-      setError('Failed to load your micro conclav');
+      setError('Failed to load micro conclav');
     } finally {
       setLoading(false);
     }
@@ -69,9 +81,9 @@ const MicroConclavWidget = () => {
     );
   }
 
-  const userProfile = activeProfile || userProfiles?.[0];
-  const microConclavUrl = userProfile?.moodboard_slug
-    ? `/micro/${userProfile.moodboard_slug}`
+  const displayProfile = isOwnMoodboard ? (activeProfile || userProfiles?.[0]) : profile;
+  const microConclavUrl = displayProfile?.moodboard_slug
+    ? `/micro/${displayProfile.moodboard_slug}`
     : `/micro-conclav/${profileId}`;
 
   return (
@@ -87,17 +99,23 @@ const MicroConclavWidget = () => {
     }}>
       <WidgetHeader
         icon={<DashboardIcon color="primary" />}
-        title={t('dashboard.widgets.myMicroConclav')}
+        title={
+          isOwnMoodboard
+            ? t('dashboard.widgets.myMicroConclav')
+            : `${displayProfile?.full_name || 'User'}'s Micro Conclav`
+        }
         viewAllLink={microConclavUrl}
         viewAllText={t('dashboard.buttons.view')}
         action={
-          <IconButton
-            size="small"
-            onClick={() => navigate(`/moodboard/${moodboard?.id}`)}
-            disabled={!moodboard}
-          >
-            <EditIcon />
-          </IconButton>
+          isOwnMoodboard && (
+            <IconButton
+              size="small"
+              onClick={() => navigate(`/moodboard/${moodboard?.id}`)}
+              disabled={!moodboard}
+            >
+              <EditIcon />
+            </IconButton>
+          )
         }
       />
 
