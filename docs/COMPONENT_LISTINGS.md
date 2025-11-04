@@ -97,8 +97,6 @@ This document contains detailed component listings for the Conclav codebase, org
 - `EventDetailsDialog.jsx` - Reusable event details dialog with RSVP functionality
 
 ## Moodboard System
-- `moodboardGallery.jsx` - Moodboard gallery display
-- `MoodboardItem.jsx` - Individual moodboard item component
 
 ### Moodboard Folder Components (`src/components/Moodboard/`)
 - `MoodboardCanvas.jsx` - Canvas-based moodboard interface
