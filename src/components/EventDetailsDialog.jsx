@@ -81,7 +81,7 @@ const EventDetailsDialog = ({
         </IconButton>
       </DialogTitle>
       
-      <DialogContent dividers sx={{ p: 0 }}>
+      <DialogContent dividers sx={{ p: 0, borderTopWidth: '0px' }}>
         {event.cover_image_url && (
           <Box sx={{ 
             width: '100%',
@@ -171,7 +171,8 @@ const EventDetailsDialog = ({
                       textDecoration: 'none',
                       '&:hover': {
                         textDecoration: 'underline'
-                      }
+                      },
+                      wordBreak: 'break-all'
                     }}
                   >
                     {event.event_link}
@@ -219,8 +220,8 @@ const EventDetailsDialog = ({
         </Box>
       </DialogContent>
       
-      <DialogActions sx={{ p: 2, display: 'flex', justifyContent: 'space-between' }}>
-        <Box sx={{ display: 'flex', gap: 1 }}>
+      <DialogActions sx={{ p: { xs: 1, sm: 2 }, display: 'flex', justifyContent: 'space-between' }}>
+        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
           {event.event_link && (
             <Button
               variant="contained"
@@ -229,6 +230,7 @@ const EventDetailsDialog = ({
               href={event.event_link}
               target="_blank"
               rel="noopener noreferrer"
+              sx={{ px: { xs: 1, sm: 2 }, py: { xs: 0.5, sm: 1 } }}
             >
               {t('eventDetails.visitEventLink')}
             </Button>
@@ -240,14 +242,12 @@ const EventDetailsDialog = ({
               variant="contained"
               color="primary"
               endIcon={<ArrowForward />}
+              sx={{ px: { xs: 1, sm: 2 }, py: { xs: 0.5, sm: 1 } }}
             >
               {t('eventDetails.viewEventPage')}
             </Button>
           )}
         </Box>
-        <Button onClick={onClose}>
-          {t('eventDetails.close')}
-        </Button>
       </DialogActions>
     </Dialog>
   );

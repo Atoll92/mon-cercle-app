@@ -323,8 +323,16 @@ function EventParticipation({ event, showParticipants = false, onStatusChange = 
                 color={participationStatus === 'attending' ? 'success' : 'inherit'}
                 variant={participationStatus === 'attending' ? 'contained' : 'outlined'}
                 onClick={() => updateStatus('attending')}
-                startIcon={<CheckCircleIcon />}
+                startIcon={<CheckCircleIcon sx={{ display: { xs: 'none', sm: 'inline-block' } }} />}
+                sx={{
+                  px: { xs: 0.5, sm: 2 },
+                  py: { xs: 0.5, sm: 1 },
+                  flexDirection: { xs: 'column', sm: 'row' },
+                  gap: { xs: 0.25, sm: 0.5 },
+                  fontSize: { xs: '0.6rem', sm: '0.875rem' }
+                }}
               >
+                <CheckCircleIcon sx={{ display: { xs: 'inline-block', sm: 'none' }, fontSize: '1rem' }} />
                 {size === "small" ? '' : t('eventParticipation.attending')}
               </Button>
             </Tooltip>
@@ -334,8 +342,16 @@ function EventParticipation({ event, showParticipants = false, onStatusChange = 
                 color={participationStatus === 'maybe' ? 'warning' : 'inherit'}
                 variant={participationStatus === 'maybe' ? 'contained' : 'outlined'}
                 onClick={() => updateStatus('maybe')}
-                startIcon={<MaybeIcon />}
+                startIcon={<MaybeIcon sx={{ display: { xs: 'none', sm: 'inline-block' } }} />}
+                sx={{
+                  px: { xs: 0.5, sm: 2 },
+                  py: { xs: 0.5, sm: 1 },
+                  flexDirection: { xs: 'column', sm: 'row' },
+                  gap: { xs: 0.25, sm: 0.5 },
+                  fontSize: { xs: '0.6rem', sm: '0.875rem' }
+                }}
               >
+                <MaybeIcon sx={{ display: { xs: 'inline-block', sm: 'none' }, fontSize: '1rem' }} />
                 {size === "small" ? '' : t('eventParticipation.maybe')}
               </Button>
             </Tooltip>
@@ -345,8 +361,16 @@ function EventParticipation({ event, showParticipants = false, onStatusChange = 
                 color={participationStatus === 'declined' ? 'error' : 'inherit'}
                 variant={participationStatus === 'declined' ? 'contained' : 'outlined'}
                 onClick={() => updateStatus('declined')}
-                startIcon={<CancelIcon />}
+                startIcon={<CancelIcon sx={{ display: { xs: 'none', sm: 'inline-block' } }} />}
+                sx={{
+                  px: { xs: 0.5, sm: 2 },
+                  py: { xs: 0.5, sm: 1 },
+                  flexDirection: { xs: 'column', sm: 'row' },
+                  gap: { xs: 0.25, sm: 0.5 },
+                  fontSize: { xs: '0.6rem', sm: '0.875rem' }
+                }}
               >
+                <CancelIcon sx={{ display: { xs: 'inline-block', sm: 'none' }, fontSize: '1rem' }} />
                 {size === "small" ? '' : t('eventParticipation.notGoing')}
               </Button>
             </Tooltip>
