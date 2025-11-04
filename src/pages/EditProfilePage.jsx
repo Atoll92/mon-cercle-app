@@ -754,33 +754,40 @@ function EditProfilePage() {
   // Show onboarding wizard for invited members
   if (showOnboardingWizard && profile) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
-        <Paper 
-          elevation={3} 
-          sx={{ 
+      <Container maxWidth="lg" sx={{ py: { xs: 2, sm: 3, md: 4 }, px: { xs: 1, sm: 2 } }}>
+        <Paper
+          elevation={3}
+          sx={{
             borderRadius: 2,
             overflow: 'hidden',
             boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
           }}
         >
           {/* Header */}
-          <Box 
-            sx={{ 
-              p: 3, 
-              background: 'linear-gradient(120deg, #2196f3, #3f51b5)', 
+          <Box
+            sx={{
+              p: { xs: 2, sm: 3 },
+              background: 'linear-gradient(120deg, #2196f3, #3f51b5)',
               color: 'white',
               display: 'flex',
               alignItems: 'center',
-              gap: 2
+              gap: { xs: 1, sm: 2 }
             }}
           >
-            <Typography variant="h4" component="h1" fontWeight="500">
+            <Typography
+              variant="h4"
+              component="h1"
+              fontWeight="500"
+              sx={{
+                fontSize: { xs: '1.25rem', sm: '1.75rem', md: '2.125rem' }
+              }}
+            >
               {t('editProfile.welcome.title')}
             </Typography>
           </Box>
-          
-          <Box sx={{ p: 3 }}>
-            <MemberOnboardingWizard 
+
+          <Box sx={{ p: { xs: 2, sm: 3 } }}>
+            <MemberOnboardingWizard
               profile={profile}
               network={networkDetails}
             />
@@ -791,7 +798,7 @@ function EditProfilePage() {
   }
   
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container maxWidth="lg" sx={{ py: { xs: 2, sm: 3, md: 4 }, px: { xs: 1, sm: 2 } }}>
       <Paper 
         elevation={3} 
         sx={{ 
@@ -801,31 +808,40 @@ function EditProfilePage() {
         }}
       >
         {/* Header */}
-        <Box 
-          sx={{ 
-            p: 3, 
-            background: 'linear-gradient(120deg, #2196f3, #3f51b5)', 
+        <Box
+          sx={{
+            p: { xs: 2, sm: 3 },
+            background: 'linear-gradient(120deg, #2196f3, #3f51b5)',
             color: 'white',
             display: 'flex',
             alignItems: 'center',
-            gap: 2
+            gap: { xs: 1, sm: 2 }
           }}
         >
-          <IconButton 
-            sx={{ 
-              mr: 1,
+          <IconButton
+            sx={{
+              mr: { xs: 0.5, sm: 1 },
               color: 'white',
               bgcolor: 'rgba(255,255,255,0.15)',
               '&:hover': {
                 bgcolor: 'rgba(255,255,255,0.25)'
-              }
-            }} 
+              },
+              width: { xs: 36, sm: 40 },
+              height: { xs: 36, sm: 40 }
+            }}
             onClick={() => navigate('/dashboard')}
             aria-label="Back to dashboard"
           >
-            <ArrowBackIcon />
+            <ArrowBackIcon fontSize="small" />
           </IconButton>
-          <Typography variant="h4" component="h1" fontWeight="500">
+          <Typography
+            variant="h4"
+            component="h1"
+            fontWeight="500"
+            sx={{
+              fontSize: { xs: '1.25rem', sm: '1.75rem', md: '2.125rem' }
+            }}
+          >
             {isNewProfile ? t('editProfile.completeProfile') : t('editProfile.title')}
           </Typography>
         </Box>
@@ -835,59 +851,80 @@ function EditProfilePage() {
           value={activeTab}
           onChange={handleTabChange}
           variant="fullWidth"
-          sx={{ 
-            borderBottom: 1, 
+          sx={{
+            borderBottom: 1,
             borderColor: 'divider',
-            mb: 3 
+            mb: { xs: 2, sm: 3 },
+            '& .MuiTab-root': {
+              minHeight: { xs: 56, sm: 64 },
+              fontSize: { xs: '0.75rem', sm: '0.875rem' },
+              px: { xs: 1, sm: 2 }
+            }
           }}
         >
-          <Tab 
-            label={t('editProfile.tabs.basicInfo')} 
-            icon={<PersonIcon />} 
+          <Tab
+            label={t('editProfile.tabs.basicInfo')}
+            icon={<PersonIcon fontSize="small" />}
             iconPosition="start"
+            sx={{
+              '& .MuiTab-iconWrapper': {
+                display: { xs: 'none', sm: 'inline-flex' }
+              }
+            }}
           />
-          <Tab 
-            label={t('editProfile.tabs.posts')} 
-            icon={<LanguageIcon />} 
+          <Tab
+            label={t('editProfile.tabs.posts')}
+            icon={<LanguageIcon fontSize="small" />}
             iconPosition="start"
+            sx={{
+              '& .MuiTab-iconWrapper': {
+                display: { xs: 'none', sm: 'inline-flex' }
+              }
+            }}
           />
-          <Tab 
-            label={t('editProfile.tabs.settings')} 
-            icon={<SettingsIcon />} 
+          <Tab
+            label={t('editProfile.tabs.settings')}
+            icon={<SettingsIcon fontSize="small" />}
             iconPosition="start"
+            sx={{
+              '& .MuiTab-iconWrapper': {
+                display: { xs: 'none', sm: 'inline-flex' }
+              }
+            }}
           />
         </Tabs>
-        
+
+
         {(isNewProfile || location.state?.isFirstTime) && (
-          <Alert severity="info" sx={{ mx: 3, mb: 3 }}>
+          <Alert severity="info" sx={{ mx: { xs: 2, sm: 3 }, mb: { xs: 2, sm: 3 } }}>
             {location.state?.message || "Welcome! Please take a moment to set up your profile information."}
           </Alert>
         )}
-        
+
         {error && (
-          <Alert severity="error" sx={{ mx: 3, mb: 3 }} onClose={() => setError(null)}>
+          <Alert severity="error" sx={{ mx: { xs: 2, sm: 3 }, mb: { xs: 2, sm: 3 } }} onClose={() => setError(null)}>
             {error}
           </Alert>
         )}
-        
+
         {message && (
-          <Alert severity="success" sx={{ mx: 3, mb: 3 }} onClose={() => setMessage(null)}>
+          <Alert severity="success" sx={{ mx: { xs: 2, sm: 3 }, mb: { xs: 2, sm: 3 } }} onClose={() => setMessage(null)}>
             {message}
           </Alert>
         )}
-        
-        <Box sx={{ p: 3 }}>
+
+        <Box sx={{ p: { xs: 2, sm: 3 } }}>
           <form onSubmit={handleSubmit}>
             {/* Basic Information Tab */}
             {activeTab === 0 && (
-              <Grid container spacing={4}>
+              <Grid container spacing={{ xs: 2, sm: 3, md: 4 }}>
                 <Grid item xs={12} md={4} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                   <Box
                     sx={{
                       position: 'relative',
-                      mb: 3,
-                      width: 180,
-                      height: 180
+                      mb: { xs: 2, sm: 3 },
+                      width: { xs: 120, sm: 150, md: 180 },
+                      height: { xs: 120, sm: 150, md: 180 }
                     }}
                     onDragOver={(e) => {
                       e.preventDefault();
@@ -899,10 +936,10 @@ function EditProfilePage() {
                     <Avatar
                       src={avatarUrl}
                       sx={{
-                        width: 180,
-                        height: 180,
-                        border: isDraggingAvatar 
-                          ? '3px dashed #2196f3' 
+                        width: { xs: 120, sm: 150, md: 180 },
+                        height: { xs: 120, sm: 150, md: 180 },
+                        border: isDraggingAvatar
+                          ? '3px dashed #2196f3'
                           : '3px solid #e0e0e0',
                         boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
                         transition: 'all 0.2s ease',
@@ -969,24 +1006,40 @@ function EditProfilePage() {
                       </IconButton>
                     </Tooltip>
                   </Box>
-                  
-                  <Typography variant="body2" color="text.secondary" textAlign="center">
+
+
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    textAlign="center"
+                    sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' }, px: { xs: 1, sm: 0 } }}
+                  >
                     {t('editProfile.avatar.dragDrop')}
                   </Typography>
 
-                  <Typography variant="caption" color="text.secondary" textAlign="center" sx={{ mt: 1 }}>
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    textAlign="center"
+                    sx={{
+                      mt: 1,
+                      fontSize: { xs: '0.7rem', sm: '0.75rem' },
+                      px: { xs: 1, sm: 0 }
+                    }}
+                  >
                     {t('editProfile.avatar.recommended')}
                   </Typography>
-                  
-                  <Paper 
-                    elevation={0} 
-                    variant="outlined" 
-                    sx={{ 
-                      mt: 4, 
-                      p: 2, 
+
+                  <Paper
+                    elevation={0}
+                    variant="outlined"
+                    sx={{
+                      mt: { xs: 2, sm: 3, md: 4 },
+                      p: { xs: 1.5, sm: 2 },
                       borderRadius: 2,
                       bgcolor: (theme) => theme.palette.mode === 'dark' ? 'grey.900' : 'grey.50',
-                      width: '100%'
+                      width: '100%',
+                      display: { xs: 'none', md: 'block' }
                     }}
                   >
                     <Typography variant="subtitle2" gutterBottom color="text.secondary">
@@ -1032,9 +1085,10 @@ function EditProfilePage() {
                     </Box>
                   </Paper>
                 </Grid>
-                
+
+
                 <Grid item xs={12} md={8}>
-                  <Stack spacing={3}>
+                  <Stack spacing={{ xs: 2, sm: 2.5, md: 3 }}>
                     <TextField
                       fullWidth
                       label={t('editProfile.form.fullName')}
@@ -1321,13 +1375,13 @@ function EditProfilePage() {
                     </Paper>
                   ) : (
                     <Box>
-                      <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                      <Typography variant="body2" color="text.secondary" sx={{ mb: { xs: 2, sm: 3 } }}>
                         {t('editProfile.posts.postsPublished', { count: postItems.length })}
                       </Typography>
-                      
-                      <Grid container spacing={3}>
+
+                      <Grid container spacing={{ xs: 2, sm: 2.5, lg: 3 }}>
                         {postItems.map((post) => (
-                          <Grid item xs={12} lg={6} key={post.id}>
+                          <Grid item xs={12} sm={6} lg={6} key={post.id}>
                             <PostCard
                               post={post}
                               author={profile}
@@ -1355,12 +1409,12 @@ function EditProfilePage() {
             {/* Settings Tab */}
             {activeTab === 2 && (
               <Box>
-                <Stack spacing={3}>
+                <Stack spacing={{ xs: 2, sm: 2.5, md: 3 }}>
                   {/* Language Preference Section */}
-                  <Paper 
-                    variant="outlined" 
-                    sx={{ 
-                      p: 3, 
+                  <Paper
+                    variant="outlined"
+                    sx={{
+                      p: { xs: 2, sm: 2.5, md: 3 },
                       borderRadius: 2,
                       bgcolor: (theme) => theme.palette.mode === 'dark' ? 'grey.900' : 'grey.50'
                     }}
@@ -1407,10 +1461,10 @@ function EditProfilePage() {
                     <Typography variant="h6" gutterBottom color="error">
                       {t('editProfile.settings.dangerZone')}
                     </Typography>
-                    <Paper 
-                      variant="outlined" 
-                      sx={{ 
-                        p: 3, 
+                    <Paper
+                      variant="outlined"
+                      sx={{
+                        p: { xs: 2, sm: 2.5, md: 3 },
                         border: '1px solid',
                         borderColor: 'error.main',
                         borderRadius: 2
@@ -1433,27 +1487,39 @@ function EditProfilePage() {
                 </Stack>
               </Box>
             )}
-            
-            <Divider sx={{ my: 4 }} />
-            
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
+
+
+            <Divider sx={{ my: { xs: 3, sm: 4 } }} />
+
+            <Box sx={{
+              display: 'flex',
+              flexDirection: { xs: 'column', sm: 'row' },
+              justifyContent: 'flex-end',
+              gap: { xs: 1.5, sm: 2 }
+            }}>
               <Button
                 variant="outlined"
                 color="inherit"
                 onClick={() => navigate('/dashboard')}
                 disabled={saving}
                 startIcon={<CancelIcon />}
+                fullWidth={{ xs: true, sm: false }}
+                sx={{ order: { xs: 2, sm: 1 } }}
               >
                 {t('editProfile.buttons.cancel')}
               </Button>
-              
+
               <Button
                 type="submit"
                 variant="contained"
                 color="primary"
                 disabled={saving}
                 startIcon={saving ? <Spinner size={40} color="inherit" /> : <SaveIcon />}
-                sx={{ px: 4 }}
+                fullWidth={{ xs: true, sm: false }}
+                sx={{
+                  px: { xs: 3, sm: 4 },
+                  order: { xs: 1, sm: 2 }
+                }}
               >
                 {saving ? t('editProfile.buttons.saving') : (isNewProfile ? t('editProfile.buttons.create') : t('editProfile.buttons.save'))}
               </Button>

@@ -315,7 +315,7 @@ function ProfilePage() {
   }
   
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container maxWidth="lg" sx={{ py: { xs: 2, sm: 3, md: 4 }, px: { xs: 1, sm: 2 } }}>
       {/* Header Card */}
       <Paper 
         elevation={3} 
@@ -327,14 +327,14 @@ function ProfilePage() {
         }}
       >
         {/* Blue header banner */}
-        <Box 
-          sx={{ 
-            p: 3, 
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 
+        <Box
+          sx={{
+            p: { xs: 2, sm: 3 },
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
             color: 'white',
             display: 'flex',
             alignItems: 'center',
-            gap: 2,
+            gap: { xs: 1, sm: 2 },
             position: 'relative',
             overflow: 'hidden',
             zIndex: 0,
@@ -350,34 +350,52 @@ function ProfilePage() {
             }
           }}
         >
-          <IconButton 
-            component={Link} 
+          <IconButton
+            component={Link}
             to="/dashboard"
-            sx={{ 
-              mr: 1,
+            sx={{
+              mr: { xs: 0.5, sm: 1 },
               color: 'white',
               bgcolor: 'rgba(255,255,255,0.15)',
               '&:hover': {
                 bgcolor: 'rgba(255,255,255,0.25)'
-              }
+              },
+              width: { xs: 36, sm: 40 },
+              height: { xs: 36, sm: 40 }
             }}
           >
-            <ArrowBackIcon />
+            <ArrowBackIcon fontSize="small" />
           </IconButton>
-          <Typography variant="h4" component="h1" fontWeight="500" sx={{ position: 'relative', zIndex: 1 }}>
+          <Typography
+            variant="h4"
+            component="h1"
+            fontWeight="500"
+            sx={{
+              position: 'relative',
+              zIndex: 1,
+              fontSize: { xs: '1.25rem', sm: '1.75rem', md: '2.125rem' },
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: { xs: 'nowrap', sm: 'normal' }
+            }}
+          >
             {isOwnProfile ? t('pages.profile.yourProfile') : t('pages.profile.userProfile', { name: profile.full_name || t('pages.profile.unnamedUser') })}
           </Typography>
-          
-          <Box sx={{ ml: 'auto', display: 'flex', gap: 1 }}>
+
+          <Box sx={{ ml: 'auto', display: 'flex', gap: { xs: 0.5, sm: 1 } }}>
             {isOwnProfile && (
               <Button
                 component={Link}
                 to="/profile/edit"
                 variant="contained"
-                startIcon={<EditIcon />}
+                startIcon={<EditIcon sx={{ display: { xs: 'none', sm: 'inline-flex' } }} />}
                 sx={{
                   bgcolor: 'white',
                   color: 'primary.main',
+                  fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                  px: { xs: 1.5, sm: 2 },
+                  py: { xs: 0.5, sm: 1 },
+                  minWidth: { xs: 'auto', sm: '64px' },
                   '&:hover': {
                     bgcolor: 'rgba(255,255,255,0.9)'
                   }
@@ -386,16 +404,20 @@ function ProfilePage() {
                 {t('pages.profile.editProfile')}
               </Button>
             )}
-            
+
             {!isOwnProfile && (
               <Button
                 component={Link}
                 to={`/messages/${profile.id}`}
                 variant="contained"
-                startIcon={<MailIcon />}
+                startIcon={<MailIcon sx={{ display: { xs: 'none', sm: 'inline-flex' } }} />}
                 sx={{
                   bgcolor: 'white',
                   color: 'primary.main',
+                  fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                  px: { xs: 1.5, sm: 2 },
+                  py: { xs: 0.5, sm: 1 },
+                  minWidth: { xs: 'auto', sm: '64px' },
                   '&:hover': {
                     bgcolor: 'rgba(255,255,255,0.9)'
                   }
@@ -412,28 +434,48 @@ function ProfilePage() {
           value={activeTab}
           onChange={handleTabChange}
           variant="fullWidth"
-          sx={{ 
-            borderBottom: 1, 
-            borderColor: 'divider'
+          sx={{
+            borderBottom: 1,
+            borderColor: 'divider',
+            '& .MuiTab-root': {
+              minHeight: { xs: 56, sm: 64 },
+              fontSize: { xs: '0.75rem', sm: '0.875rem' },
+              px: { xs: 0.5, sm: 2 }
+            }
           }}
         >
           <Tab
             label={t('pages.profile.tabs.overview')}
-            icon={<PersonOutlineIcon />}
+            icon={<PersonOutlineIcon fontSize="small" />}
             iconPosition="start"
-            sx={{ fontWeight: activeTab === TAB_OVERVIEW ? 600 : 400 }}
+            sx={{
+              fontWeight: activeTab === TAB_OVERVIEW ? 600 : 400,
+              '& .MuiTab-iconWrapper': {
+                display: { xs: 'none', sm: 'inline-flex' }
+              }
+            }}
           />
           <Tab
             label={`${t('pages.profile.tabs.posts')} ${posts.length > 0 ? `(${posts.length})` : ''}`}
-            icon={<LanguageIcon />}
+            icon={<LanguageIcon fontSize="small" />}
             iconPosition="start"
-            sx={{ fontWeight: activeTab === TAB_POSTS ? 600 : 400 }}
+            sx={{
+              fontWeight: activeTab === TAB_POSTS ? 600 : 400,
+              '& .MuiTab-iconWrapper': {
+                display: { xs: 'none', sm: 'inline-flex' }
+              }
+            }}
           />
           {upcomingEvents.length > 0 && (
             <Tab
               label={t('pages.profile.tabs.events')}
-              icon={<EventIcon />}
+              icon={<EventIcon fontSize="small" />}
               iconPosition="start"
+              sx={{
+                '& .MuiTab-iconWrapper': {
+                  display: { xs: 'none', sm: 'inline-flex' }
+                }
+              }}
             />
           )}
         </Tabs>
@@ -443,29 +485,33 @@ function ProfilePage() {
 
           {/* Overview Tab */}
           {activeTab === TAB_OVERVIEW && (
-            <Grid container wrap="nowrap" sx={{ 
-              flexWrap: { xs: 'wrap', sm: 'nowrap' },
-              '@media (max-width: 900px)': {
-                flexWrap: 'wrap'
-              }
+            <Grid container sx={{
+              flexDirection: { xs: 'column', md: 'row' },
+              flexWrap: 'nowrap'
             }}>
               {/* Left Sidebar */}
-              <Grid item sx={{ 
-                width: { xs: '100%', sm: '300px' },
-                minWidth: '300px',
+              <Grid item xs={12} md="auto" sx={{
+                width: { xs: '100%', md: '300px' },
+                minWidth: { xs: 'auto', md: '300px' },
                 flexShrink: 0,
-                borderRight: { sm: 1 }, 
-                borderColor: 'divider' 
+                borderRight: { xs: 0, md: 1 },
+                borderBottom: { xs: 1, md: 0 },
+                borderColor: 'divider'
               }}>
-                <Box sx={{ p: 3, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <Box sx={{
+                  p: { xs: 2, sm: 3 },
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center'
+                }}>
                   <Avatar
                     src={profile.profile_picture_url}
                     sx={{
-                      width: 180,
-                      height: 180,
+                      width: { xs: 120, sm: 150, md: 180 },
+                      height: { xs: 120, sm: 150, md: 180 },
                       border: '3px solid #e0e0e0',
                       boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                      mb: 3
+                      mb: { xs: 2, sm: 3 }
                     }}
                   >
                     {profile.full_name ? (
@@ -476,23 +522,40 @@ function ProfilePage() {
                       <PersonOutlineIcon sx={{ fontSize: 80 }} />
                     )}
                   </Avatar>
-                  
-                  <Typography variant="h5" align="center" gutterBottom fontWeight="500">
+
+                  <Typography
+                    variant="h5"
+                    align="center"
+                    gutterBottom
+                    fontWeight="500"
+                    sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' } }}
+                  >
                     {profile.full_name || t('pages.profile.unnamedUser')}
                   </Typography>
-                  
+
                   {profile.tagline && (
-                    <Typography 
-                      variant="body2" 
-                      align="center" 
-                      color="text.secondary" 
-                      sx={{ mb: 2, fontStyle: 'italic' }}
+                    <Typography
+                      variant="body2"
+                      align="center"
+                      color="text.secondary"
+                      sx={{
+                        mb: 2,
+                        fontStyle: 'italic',
+                        px: { xs: 2, sm: 0 }
+                      }}
                     >
                       "{profile.tagline}"
                     </Typography>
                   )}
-                  
-                  <Stack direction="row" spacing={1} mb={2}>
+
+                  <Stack
+                    direction="row"
+                    spacing={1}
+                    mb={2}
+                    flexWrap="wrap"
+                    justifyContent="center"
+                    sx={{ gap: 1 }}
+                  >
                     {profile.role === 'admin' && (
                       <Chip
                         label={t('pages.profile.networkAdmin')}
@@ -509,25 +572,26 @@ function ProfilePage() {
                       />
                     )}
                   </Stack>
-                  
+
+
                   {/* User Badges */}
-                  <Box sx={{ mb: 2 }}>
-                    <UserBadges 
-                      userId={userId} 
+                  <Box sx={{ mb: 2, width: '100%', display: 'flex', justifyContent: 'center' }}>
+                    <UserBadges
+                      userId={userId}
                       displayMode="chips"
                       maxDisplay={3}
                       showTotal={true}
                     />
                   </Box>
-                  
+
                   <Paper
                     elevation={0}
                     variant="outlined"
                     sx={{
-                      p: 2,
+                      p: { xs: 1.5, sm: 2 },
                       borderRadius: 2,
                       width: '100%',
-                      mb: 3
+                      mb: { xs: 2, sm: 3 }
                     }}
                   >
                     <Typography variant="subtitle2" color="text.secondary" gutterBottom>
@@ -537,36 +601,41 @@ function ProfilePage() {
                     <Stack spacing={2} mt={1}>
                       {profile.contact_email && (
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <MailIcon fontSize="small" color="action" />
-                          <Typography 
-                            variant="body2" 
-                            component="a" 
+                          <MailIcon fontSize="small" color="action" sx={{ flexShrink: 0 }} />
+                          <Typography
+                            variant="body2"
+                            component="a"
                             href={`mailto:${profile.contact_email}`}
-                            sx={{ textDecoration: 'none', color: 'primary.main' }}
+                            sx={{
+                              textDecoration: 'none',
+                              color: 'primary.main',
+                              wordBreak: 'break-word',
+                              fontSize: { xs: '0.8rem', sm: '0.875rem' }
+                            }}
                           >
                             {profile.contact_email}
                           </Typography>
                         </Box>
                       )}
-                      
+
                       {profile.portfolio_url && (
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <LanguageIcon fontSize="small" color="action" />
+                          <LanguageIcon fontSize="small" color="action" sx={{ flexShrink: 0 }} />
                           <Tooltip title={profile.portfolio_url}>
-                            <Typography 
-                              variant="body2" 
-                              component="a" 
-                              href={profile.portfolio_url} 
-                              target="_blank" 
+                            <Typography
+                              variant="body2"
+                              component="a"
+                              href={profile.portfolio_url}
+                              target="_blank"
                               rel="noopener noreferrer"
-                              sx={{ 
-                                textDecoration: 'none', 
+                              sx={{
+                                textDecoration: 'none',
                                 color: 'primary.main',
-                                maxWidth: '200px',
                                 overflow: 'hidden',
                                 textOverflow: 'ellipsis',
                                 whiteSpace: 'nowrap',
-                                display: 'block'
+                                display: 'block',
+                                fontSize: { xs: '0.8rem', sm: '0.875rem' }
                               }}
                             >
                               {profile.portfolio_url.replace(/^https?:\/\/(www\.)?/, '')}
@@ -578,14 +647,18 @@ function ProfilePage() {
                       {/* Legacy LinkedIn URL support */}
                       {profile.linkedin_url && (
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <LinkedInIcon fontSize="small" color="action" />
-                          <Typography 
-                            variant="body2" 
-                            component="a" 
-                            href={profile.linkedin_url} 
-                            target="_blank" 
+                          <LinkedInIcon fontSize="small" color="action" sx={{ flexShrink: 0 }} />
+                          <Typography
+                            variant="body2"
+                            component="a"
+                            href={profile.linkedin_url}
+                            target="_blank"
                             rel="noopener noreferrer"
-                            sx={{ textDecoration: 'none', color: 'primary.main' }}
+                            sx={{
+                              textDecoration: 'none',
+                              color: 'primary.main',
+                              fontSize: { xs: '0.8rem', sm: '0.875rem' }
+                            }}
                           >
                             LinkedIn
                           </Typography>
@@ -672,17 +745,18 @@ function ProfilePage() {
                             
                             return (
                               <Box key={index} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                <Icon style={{ fontSize: '16px', color: color }} />
+                                <Icon style={{ fontSize: '16px', color: color, flexShrink: 0 }} />
                                 <Tooltip title={link.url}>
-                                  <Typography 
-                                    variant="body2" 
-                                    component="a" 
-                                    href={link.url} 
-                                    target="_blank" 
+                                  <Typography
+                                    variant="body2"
+                                    component="a"
+                                    href={link.url}
+                                    target="_blank"
                                     rel="noopener noreferrer"
-                                    sx={{ 
-                                      textDecoration: 'none', 
+                                    sx={{
+                                      textDecoration: 'none',
                                       color: 'primary.main',
+                                      fontSize: { xs: '0.8rem', sm: '0.875rem' },
                                       '&:hover': {
                                         textDecoration: 'underline'
                                       }
@@ -705,7 +779,7 @@ function ProfilePage() {
                       elevation={0}
                       variant="outlined"
                       sx={{
-                        p: 2,
+                        p: { xs: 1.5, sm: 2 },
                         borderRadius: 2,
                         width: '100%'
                       }}
@@ -810,10 +884,11 @@ function ProfilePage() {
                   )}
                 </Box>
               </Grid>
-              
+
+
               {/* Right Main Content */}
               <Grid item xs={12} md={8}>
-                <Box sx={{ p: 3 }}>
+                <Box sx={{ p: { xs: 2, sm: 3 } }}>
                   {/* About Section */}
                   <Box sx={{ mb: 4 }}>
                     <Typography 
@@ -934,7 +1009,7 @@ function ProfilePage() {
                       <Box sx={{
                         display: 'flex',
                         flexWrap: 'wrap',
-                        gap: 2,
+                        gap: { xs: 1.5, sm: 2 },
                         alignContent: 'flex-start'
                       }}>
                         {posts.slice(0, 4).map((post) => (
@@ -966,7 +1041,7 @@ function ProfilePage() {
           
           {/* Posts Tab */}
           {activeTab === TAB_POSTS && (
-            <Box sx={{ p: 3 }}>
+            <Box sx={{ p: { xs: 2, sm: 3 } }}>
               <Box sx={{ 
                 display: 'flex', 
                 justifyContent: 'space-between', 
@@ -1007,10 +1082,10 @@ function ProfilePage() {
                   </Typography>
                 </Paper>
               ) : (
-                <Box sx={{ 
+                <Box sx={{
                   display: 'flex',
                   flexWrap: 'wrap',
-                  gap: 2,
+                  gap: { xs: 1.5, sm: 2 },
                   alignContent: 'flex-start'
                 }}>
                   {posts.map((post) => (
@@ -1039,12 +1114,13 @@ function ProfilePage() {
           
           {/* Events Tab */}
           {activeTab === TAB_EVENTS && upcomingEvents.length > 0 && (
-            <Box sx={{ p: 3 }}>
+            <Box sx={{ p: { xs: 2, sm: 3 } }}>
               <Typography variant="h5" gutterBottom>
                 {t('pages.profile.upcomingEvents')}
               </Typography>
-              
-              <Grid container spacing={3}>
+
+
+              <Grid container spacing={{ xs: 2, sm: 3 }}>
                 {upcomingEvents.map(event => (
                   <Grid item xs={12} sm={6} md={4} key={event.id}>
                     <Card 
