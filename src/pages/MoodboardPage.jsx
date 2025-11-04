@@ -1,5 +1,5 @@
 // src/pages/MoodboardPage.jsx
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/authcontext';
 import { useProfile } from '../context/profileContext';
@@ -122,10 +122,15 @@ function MoodboardPage() {
   
   // State for permissions
   const [isEditable, setIsEditable] = useState(false);
-  
-  useEffect(() => {
-    window.scrollTo(0, 0);
 
+  // Reset scroll to top when component mounts or moodboardId changes
+  useLayoutEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  }, [moodboardId]);
+
+  useEffect(() => {
     const fetchMoodboard = async () => {
       if (!moodboardId) return;
 

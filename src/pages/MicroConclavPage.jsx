@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import Spinner from '../components/Spinner';
 import {
@@ -137,6 +137,13 @@ const MicroConclavPage = () => {
     }
   };
 
+
+  // Reset scroll to top when component mounts or route params change
+  useLayoutEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  }, [profileId, moodboardSlug]);
 
   useEffect(() => {
     const init = async () => {
