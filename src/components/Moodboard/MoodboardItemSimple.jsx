@@ -15,6 +15,7 @@ import {
 } from '@mui/icons-material';
 import LinkPreview from '../LinkPreview';
 import PDFPreviewEnhanced from '../PDFPreviewEnhanced';
+import UserContent from '../UserContent';
 
 /**
  * Simple display component for moodboard items without editing capabilities
@@ -73,6 +74,7 @@ const MoodboardItemSimple = ({ item, style = {}, mediaOnly = false }) => {
             sx={{
               width: '100%',
               height: '100%',
+              maxWidth: '300px', // Prevent overly wide text boxes
               p: 2,
               overflow: 'hidden',
               bgcolor: item.backgroundColor || 'transparent',
@@ -93,24 +95,23 @@ const MoodboardItemSimple = ({ item, style = {}, mediaOnly = false }) => {
                 {item.title}
               </Typography>
             )}
-            <Typography
-              variant="body2"
-              sx={{
-                color: item.textColor || 'text.primary',
+            <UserContent
+              content={item.content || ''}
+              html={false}
+              component="div"
+              sx={{ 
+                width: '100%',
+                color: item.textColor || '#000000',
                 fontFamily: item.font_family || 'inherit',
-                fontSize: item.font_size || '0.875rem',
+                fontSize: item.font_size || 'inherit',
                 fontWeight: item.font_weight || 'normal',
-                lineHeight: item.line_height || 1.5,
+                lineHeight: item.line_height || 'normal',
                 textAlign: item.text_align || 'left',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                display: '-webkit-box',
-                WebkitLineClamp: 6,
-                WebkitBoxOrient: 'vertical',
+                pointerEvents: 'none',
+                wordBreak: 'break-word',
+                overflowWrap: 'break-word'
               }}
-            >
-              {item.content}
-            </Typography>
+            />
           </Box>
         );
 
