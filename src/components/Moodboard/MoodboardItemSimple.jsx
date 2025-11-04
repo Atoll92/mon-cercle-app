@@ -20,7 +20,7 @@ import PDFPreviewEnhanced from '../PDFPreviewEnhanced';
  * Simple display component for moodboard items without editing capabilities
  * Used for grid and read-only views
  */
-const MoodboardItemSimple = ({ item, style = {} }) => {
+const MoodboardItemSimple = ({ item, style = {}, mediaOnly = false }) => {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [mediaError, setMediaError] = useState(false);
 
@@ -117,10 +117,11 @@ const MoodboardItemSimple = ({ item, style = {} }) => {
       case 'link':
         return (
           <Box sx={{ width: '100%', height: '100%', overflow: 'hidden' }}>
-            <LinkPreview 
-              url={item.content} 
-              compact={true}
+            <LinkPreview
+              url={item.content}
+              compact={!mediaOnly}
               customTitle={item.title}
+              mediaOnly={mediaOnly}
             />
           </Box>
         );

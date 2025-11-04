@@ -7,7 +7,7 @@ import { useApp } from '../context/appContext';
 import { NetworkProvider } from '../context/networkContext';
 import { supabase } from '../supabaseclient';
 import { getUserProfile } from '../api/networks';
-import MoodboardGallery from '../components/moodboardGallery';
+import MicroConclavWidget from '../components/MicroConclavWidget';
 import EventParticipation from '../components/EventParticipation';
 import UserBadges from '../components/UserBadges';
 import EventDetailsDialog from '../components/EventDetailsDialog';
@@ -51,7 +51,6 @@ import {
   CalendarMonth as CalendarMonthIcon,
   MoreHoriz as MoreHorizIcon,
   Description as DescriptionIcon,
-  Dashboard as DashboardIcon,
   Badge as Badge,
   Facebook as FacebookIcon,
   Twitter as TwitterIcon,
@@ -892,35 +891,9 @@ function ProfilePage() {
 
 
                   
-                  {/* Moodboards Preview Section */}
+                  {/* Moodboard Widget Section */}
                   <Box sx={{ mt: 4 }}>
-                    <Box sx={{ 
-                      display: 'flex', 
-                      justifyContent: 'space-between', 
-                      alignItems: 'center',
-                      pb: 1,
-                      borderBottom: '1px solid',
-                      borderColor: 'divider',
-                      mb: 2
-                    }}>
-                      <Typography 
-                        variant="h6" 
-                        sx={{ 
-                          display: 'flex', 
-                          alignItems: 'center',
-                          gap: 1
-                        }}
-                      >
-                        <DashboardIcon fontSize="small" color="primary" />
-                        {t('pages.profile.moodboards')}
-                      </Typography>
-                    </Box>
-                    
-                    <MoodboardGallery
-                      userId={userId}
-                      isOwnProfile={isOwnProfile}
-                      limit={2}
-                    />
+                    <MicroConclavWidget />
                   </Box>
                   
                   {/* Posts Preview Section */}
@@ -955,20 +928,33 @@ function ProfilePage() {
                           {t('pages.profile.seeAllCount', { count: posts.length })}
                         </Button>
                       </Box>
-                      
-                      <Grid container spacing={2}>
-                        {posts.slice(0, 2).map((post) => (
-                          <Grid item xs={12} key={post.id}>
+
+                      <Box sx={{
+                        display: 'flex',
+                        flexWrap: 'wrap',
+                        gap: 2,
+                        alignContent: 'flex-start'
+                      }}>
+                        {posts.slice(0, 4).map((post) => (
+                          <Box
+                            key={post.id}
+                            sx={{
+                              width: { xs: '100%', sm: 'calc(50% - 8px)' },
+                              maxWidth: { xs: '100%', sm: 'calc(50% - 8px)' },
+                              flexShrink: 0
+                            }}
+                          >
                             <PostCard
                               post={post}
                               author={profile}
                               isOwner={isOwnProfile}
                               onPostUpdated={handlePostUpdated}
                               onPostDeleted={handlePostDeleted}
+                              sx={{ height: '100%' }}
                             />
-                          </Grid>
+                          </Box>
                         ))}
-                      </Grid>
+                      </Box>
                     </Box>
                   )}
                 </Box>

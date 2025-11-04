@@ -175,8 +175,9 @@ const MicroConclavWidget = () => {
                       }
                     }}
                   >
-                    <MoodboardItemSimple 
+                    <MoodboardItemSimple
                       item={item}
+                      mediaOnly={true}
                       style={{
                         height: '100%',
                         borderRadius: 0,
@@ -230,8 +231,9 @@ const MicroConclavWidget = () => {
                       }
                     }}
                   >
-                    <MoodboardItemSimple 
+                    <MoodboardItemSimple
                       item={item}
+                      mediaOnly={true}
                       style={{
                         height: '100%',
                         borderRadius: 0,

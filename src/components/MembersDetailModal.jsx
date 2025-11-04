@@ -5,7 +5,7 @@ import { useProfile } from '../context/profileContext';
 import { useFadeIn } from '../hooks/useAnimation';
 import { formatJoinedTime } from '../utils/dateFormatting';
 import { useTranslation } from '../hooks/useTranslation';
-import PostsGrid from './PostsGrid';
+import PostCard from './PostCard';
 import Spinner from './Spinner';
 import MoodboardItemSimple from './Moodboard/MoodboardItemSimple';
 import LinkifiedText from './LinkifiedText';
@@ -68,71 +68,84 @@ const MemberDetailsModal = ({
   const [memberPosts, setMemberPosts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  
+  const [lastFetchedMemberId, setLastFetchedMemberId] = useState(null);
+
   // State for member's moodboards
   const [featuredMoodboard, setFeaturedMoodboard] = useState(null);
   const [moodboardItems, setMoodboardItems] = useState([]);
   const [loadingMoodboard, setLoadingMoodboard] = useState(false);
   const [moodboardError, setMoodboardError] = useState(null);
-  
-  
+  const [lastFetchedMoodboardId, setLastFetchedMoodboardId] = useState(null);
+
+
   // Fetch posts only if not provided through props
   useEffect(() => {
-    // Skip if modal is not open
+    // Skip if modal is not open or no member
     if (!open || !member) {
       return;
     }
 
     // Initialize with provided items if available
     if (initialPosts && initialPosts.length > 0) {
-      console.log("Using provided posts:", initialPosts);
       setMemberPosts(initialPosts);
       setLoading(false);
+      setLastFetchedMemberId(member.id);
       return;
     }
 
-    // Only fetch if we don't have posts already or if member changed
-    if (memberPosts.length === 0 || memberPosts[0]?.profile_id !== member.id) {
-      const fetchPosts = async () => {
-        try {
-          setLoading(true);
-          setError(null);
-          
-          console.log("Fetching posts for member:", member.id);
-          const { data, error } = await supabase
-            .from('portfolio_items')
-            .select('*')
-            .eq('profile_id', member.id)
-            .order('created_at', { ascending: false });
-            
-          if (error) throw error;
-          
-          console.log("Fetched posts:", data);
-          setMemberPosts(data || []);
-        } catch (err) {
-          console.error('Error fetching posts:', err);
-          setError(t('components.memberDetails.failedLoadPosts'));
-        } finally {
-          setLoading(false);
-        }
-      };
-      
-      fetchPosts();
+    // Only fetch if we haven't fetched for this member yet
+    if (lastFetchedMemberId === member.id) {
+      return;
     }
-  }, [member?.id, open]); // Only depend on member.id and open
+
+    // Fetch posts when modal opens or member changes
+    const fetchPosts = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const { data, error } = await supabase
+          .from('portfolio_items')
+          .select('*')
+          .eq('profile_id', member.id)
+          .order('created_at', { ascending: false });
+
+        if (error) {
+          console.error('Error fetching posts:', error);
+          throw error;
+        }
+
+        setMemberPosts(data || []);
+        setLastFetchedMemberId(member.id);
+      } catch (err) {
+        console.error('Error fetching posts:', err);
+        setError(t('components.memberDetails.failedLoadPosts'));
+        setMemberPosts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPosts();
+  }, [member?.id, open, initialPosts, lastFetchedMemberId, t]);
 
   // Fetch member's moodboard items using same API as MicroConclavWidget
   useEffect(() => {
     const fetchMemberMoodboard = async () => {
       if (!member || !open) return;
-      
+
+      // Only fetch if we haven't fetched for this member yet
+      if (lastFetchedMoodboardId === member.id) {
+        return;
+      }
+
       try {
         setLoadingMoodboard(true);
         setMoodboardError(null);
-        
+
         // Get the member's moodboard and items
         const { items, backgroundColor, moodboardId } = await getUserMoodboardItems(member.id, 0, 10);
-        
+
         if (items && items.length > 0) {
           setMoodboardItems(items);
           // Create a mock moodboard object for compatibility
@@ -145,6 +158,7 @@ const MemberDetailsModal = ({
           setMoodboardItems([]);
           setFeaturedMoodboard(null);
         }
+        setLastFetchedMoodboardId(member.id);
       } catch (err) {
         console.error('Error fetching member moodboard:', err);
         setMoodboardError(t('components.memberDetails.failedLoadMoodboard'));
@@ -152,9 +166,9 @@ const MemberDetailsModal = ({
         setLoadingMoodboard(false);
       }
     };
-    
+
     fetchMemberMoodboard();
-  }, [member, open]);
+  }, [member?.id, open, lastFetchedMoodboardId, t]);
   
   
   // MoodboardItem component - a simplified version
@@ -463,8 +477,9 @@ const MemberDetailsModal = ({
                         }
                       }}
                     >
-                      <MoodboardItemSimple 
+                      <MoodboardItemSimple
                         item={item}
+                        mediaOnly={true}
                         style={{
                           height: '100%',
                           borderRadius: 0,
@@ -518,8 +533,9 @@ const MemberDetailsModal = ({
                         }
                       }}
                     >
-                      <MoodboardItemSimple 
+                      <MoodboardItemSimple
                         item={item}
+                        mediaOnly={true}
                         style={{
                           height: '100%',
                           borderRadius: 0,
@@ -875,13 +891,32 @@ const MemberDetailsModal = ({
             </Typography>
           ) : memberPosts.length > 0 ? (
             <>
-              <PostsGrid 
-                posts={memberPosts.slice(0, 6)} 
-                author={member}
-                isOwnProfile={isCurrentUser}
-                loading={false}
-              />
-              
+              <Box sx={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                gap: 2,
+                alignContent: 'flex-start'
+              }}>
+                {memberPosts.slice(0, 6).map((post) => (
+                  <Box
+                    key={post.id}
+                    sx={{
+                      width: { xs: '100%', sm: 'calc(50% - 8px)' },
+                      maxWidth: { xs: '100%', sm: 'calc(50% - 8px)' },
+                      flexShrink: 0
+                    }}
+                  >
+                    <PostCard
+                      post={post}
+                      author={member}
+                      isOwner={isCurrentUser}
+                      darkMode={darkMode}
+                      sx={{ height: '100%' }}
+                    />
+                  </Box>
+                ))}
+              </Box>
+
               {memberPosts.length > 6 && (
                 <Box sx={{ mt: 2, textAlign: 'center' }}>
                   <Button

@@ -2,7 +2,7 @@ import React from 'react';
 import { Box } from '@mui/material';
 import MoodboardItemSimple from './MoodboardItemSimple';
 
-const MoodboardItemGrid = ({ item }) => {
+const MoodboardItemGrid = ({ item, mediaOnly = true }) => {
   return (
     <Box
       sx={{
@@ -11,8 +11,9 @@ const MoodboardItemGrid = ({ item }) => {
         position: 'relative',
       }}
     >
-      <MoodboardItemSimple 
-        item={item} 
+      <MoodboardItemSimple
+        item={item}
+        mediaOnly={mediaOnly}
         style={{
           height: '100%',
           '&:hover': {

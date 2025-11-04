@@ -26,6 +26,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import LazyImage from './LazyImage';
 import PDFPreviewEnhanced from './PDFPreviewEnhanced';
+import LinkPreview from './LinkPreview';
 
 const PostsGrid = ({ posts, author, isOwnProfile, loading = false }) => {
   const theme = useTheme();
@@ -48,7 +49,7 @@ const PostsGrid = ({ posts, author, isOwnProfile, loading = false }) => {
   };
 
   const renderMediaPreview = (post) => {
-    // PDF files
+    // PDF files (legacy file_url field)
     if (post.file_type === 'pdf' && post.file_url) {
       return (
         <Box sx={{ width: '100%', height: '100%', position: 'relative' }}>
@@ -64,26 +65,51 @@ const PostsGrid = ({ posts, author, isOwnProfile, loading = false }) => {
       );
     }
 
+    // PDF files (new media_url field)
+    if (post.media_type === 'pdf' && post.media_url) {
+      return (
+        <Box sx={{ width: '100%', height: '100%', position: 'relative' }}>
+          <PDFPreviewEnhanced
+            url={post.media_url}
+            fileName={post.title || 'PDF Document'}
+            title={post.title || 'PDF Document'}
+            height="100%"
+            showFileName={false}
+            borderRadius={0}
+          />
+        </Box>
+      );
+    }
+
     // Media files
     if (post.media_url) {
       if (post.media_type === 'image' || !post.media_type) {
         return (
-          <LazyImage
-            src={post.media_url}
-            alt={post.title}
-            style={{
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover'
-            }}
-          />
+          <Box sx={{
+            width: '100%',
+            height: '100%',
+            bgcolor: theme.palette.grey[100],
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+            <LazyImage
+              src={post.media_url}
+              alt={post.title}
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'contain'
+              }}
+            />
+          </Box>
         );
       }
       if (post.media_type === 'video') {
         return (
-          <Box sx={{ 
-            width: '100%', 
-            height: '100%', 
+          <Box sx={{
+            width: '100%',
+            height: '100%',
             position: 'relative',
             bgcolor: '#000',
             display: 'flex',
@@ -95,7 +121,7 @@ const PostsGrid = ({ posts, author, isOwnProfile, loading = false }) => {
               style={{
                 width: '100%',
                 height: '100%',
-                objectFit: 'cover'
+                objectFit: 'contain'
               }}
               muted
               playsInline
@@ -120,15 +146,47 @@ const PostsGrid = ({ posts, author, isOwnProfile, loading = false }) => {
     // Legacy image_url
     if (post.image_url) {
       return (
-        <LazyImage
-          src={post.image_url}
-          alt={post.title}
-          style={{
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover'
-          }}
-        />
+        <Box sx={{
+          width: '100%',
+          height: '100%',
+          bgcolor: theme.palette.grey[100],
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}>
+          <LazyImage
+            src={post.image_url}
+            alt={post.title}
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'contain'
+            }}
+          />
+        </Box>
+      );
+    }
+
+    // URL-based posts (links, embedded media)
+    if (post.url) {
+      return (
+        <Box sx={{
+          width: '100%',
+          height: '100%',
+          overflow: 'hidden',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          bgcolor: theme.palette.grey[100]
+        }}>
+          <LinkPreview
+            url={post.url}
+            compact={false}
+            mediaOnly={false}
+            hideInfo={true}
+            height="100%"
+          />
+        </Box>
       );
     }
 

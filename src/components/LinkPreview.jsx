@@ -103,7 +103,7 @@ const hasYouTubeData = (ogData) => {
   return ogData && ogData.videoId && ogData.siteName === 'YouTube';
 };
 
-const LinkPreview = ({ url, compact = false, onDataLoaded = null, height = 'auto', isEditable = true }) => {
+const LinkPreview = ({ url, compact = false, onDataLoaded = null, height = 'auto', isEditable = true, mediaOnly = false, hideInfo = false }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [ogData, setOgData] = useState(null);
@@ -222,22 +222,85 @@ const LinkPreview = ({ url, compact = false, onDataLoaded = null, height = 'auto
     setIsPlaying(!isPlaying);
   };
 
-  // Auto-embed media in non-compact views when component mounts
+  // Auto-embed media in non-compact views or mediaOnly mode when component mounts
   useEffect(() => {
     // If this is not in a compact view and it's a media URL, auto-embed it
-    if (!compact && mediaInfo) {
+    // Or if mediaOnly mode is enabled, auto-embed media
+    if ((!compact && mediaInfo) || (mediaOnly && mediaInfo)) {
       setIsPlaying(true);
     }
-  }, [compact, mediaInfo]);
+  }, [compact, mediaInfo, mediaOnly]);
 
   // Determine if we should auto-embed media (Spotify is auto-embedded, YouTube requires a click)
   const shouldAutoEmbed = mediaInfo && (mediaInfo.service === 'spotify' || isPlaying);
 
   // Check if this is a Facebook event
   const isFacebookEvent = ogData?.isFacebookEvent || (isFacebookEventUrl(formattedUrl));
-  
+
   // Check if this is a Facebook link
   const isFacebook = ogData?.isFacebook || (isFacebookUrl(formattedUrl));
+
+  // Media-only mode: Show only embedded media at full height without text
+  if (mediaOnly && !loading && mediaInfo && isPlaying) {
+    return (
+      <Box
+        sx={{
+          width: '100%',
+          height: '100%',
+          bgcolor: '#000',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          overflow: 'hidden'
+        }}
+      >
+        <Box
+          component="iframe"
+          src={mediaInfo.embedUrl}
+          title={ogData?.title || "Media content"}
+          style={{ border: 'none' }}
+          allowFullScreen
+          allow="autoplay; encrypted-media; accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          sx={{
+            width: '100%',
+            height: '100%',
+            border: 'none'
+          }}
+        />
+      </Box>
+    );
+  }
+
+  // Media-only mode: Show image preview at full height if no media embed
+  if (mediaOnly && !loading && ogData?.image && !mediaInfo) {
+    return (
+      <Box
+        sx={{
+          width: '100%',
+          height: '100%',
+          bgcolor: '#000',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          overflow: 'hidden'
+        }}
+      >
+        <Box
+          component="img"
+          src={ogData.image}
+          alt={ogData.title || "Preview"}
+          onLoad={handleImageLoad}
+          onError={handleImageError}
+          sx={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'contain',
+            display: 'block'
+          }}
+        />
+      </Box>
+    );
+  }
 
   // Loading state
   if (loading) {
@@ -838,79 +901,81 @@ const LinkPreview = ({ url, compact = false, onDataLoaded = null, height = 'auto
         </Box>
 
         {/* Media Info Below - compact and consistent */}
-        <Box sx={{ p: 1.5, flexShrink: 0 }}>
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: 1
-            }}
-          >
-            <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1, minWidth: 0 }}>
-              {ogData.favicon && !faviconError ? (
-                <Box
-                  component="img"
-                  src={ogData.favicon}
-                  alt="Site favicon"
-                  onLoad={handleFaviconLoad}
-                  onError={handleFaviconError}
-                  sx={{
-                    width: 16,
-                    height: 16,
-                    mr: 0.5,
-                    flexShrink: 0,
-                    display: faviconLoaded || ogData.favicon.startsWith('data:') ? 'block' : 'none'
-                  }}
-                />
-              ) : (
-                mediaInfo.service === 'spotify' ? (
-                  <MusicNoteIcon color="success" sx={{ fontSize: 16, mr: 0.5, flexShrink: 0 }} />
-                ) : (
-                  <PlayCircleOutlineIcon color="error" sx={{ fontSize: 16, mr: 0.5, flexShrink: 0 }} />
-                )
-              )}
-              <Typography
-                variant="caption"
-                color="text.secondary"
-                noWrap
-                sx={{ flexGrow: 1 }}
-              >
-                {getHostname(formattedUrl)}
-              </Typography>
-            </Box>
-
-            <IconButton
-              size="small"
-              component="a"
-              href={formattedUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={(e) => e.stopPropagation()}
-              sx={{ flexShrink: 0 }}
-            >
-              <OpenInNewIcon fontSize="small" />
-            </IconButton>
-          </Box>
-
-          {ogData.title && (
-            <Typography
-              variant="body2"
+        {!hideInfo && (
+          <Box sx={{ p: 1.5, flexShrink: 0 }}>
+            <Box
               sx={{
-                fontWeight: 500,
-                mt: 0.5,
-                lineHeight: 1.3,
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                display: '-webkit-box',
-                WebkitLineClamp: 2,
-                WebkitBoxOrient: 'vertical'
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: 1
               }}
             >
-              {ogData.title}
-            </Typography>
-          )}
-        </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1, minWidth: 0 }}>
+                {ogData?.favicon && !faviconError ? (
+                  <Box
+                    component="img"
+                    src={ogData.favicon}
+                    alt="Site favicon"
+                    onLoad={handleFaviconLoad}
+                    onError={handleFaviconError}
+                    sx={{
+                      width: 16,
+                      height: 16,
+                      mr: 0.5,
+                      flexShrink: 0,
+                      display: faviconLoaded || ogData.favicon.startsWith('data:') ? 'block' : 'none'
+                    }}
+                  />
+                ) : (
+                  mediaInfo.service === 'spotify' ? (
+                    <MusicNoteIcon color="success" sx={{ fontSize: 16, mr: 0.5, flexShrink: 0 }} />
+                  ) : (
+                    <PlayCircleOutlineIcon color="error" sx={{ fontSize: 16, mr: 0.5, flexShrink: 0 }} />
+                  )
+                )}
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  noWrap
+                  sx={{ flexGrow: 1 }}
+                >
+                  {getHostname(formattedUrl)}
+                </Typography>
+              </Box>
+
+              <IconButton
+                size="small"
+                component="a"
+                href={formattedUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                sx={{ flexShrink: 0 }}
+              >
+                <OpenInNewIcon fontSize="small" />
+              </IconButton>
+            </Box>
+
+            {ogData?.title && (
+              <Typography
+                variant="body2"
+                sx={{
+                  fontWeight: 500,
+                  mt: 0.5,
+                  lineHeight: 1.3,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  display: '-webkit-box',
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: 'vertical'
+                }}
+              >
+                {ogData.title}
+              </Typography>
+            )}
+          </Box>
+        )}
       </Paper>
     );
   }
