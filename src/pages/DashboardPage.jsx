@@ -13,6 +13,7 @@ import LatestNewsWidget from '../components/LatestNewsWidget';
 import LatestPostsWidget from '../components/LatestPostsWidget';
 import EventDetailsDialog from '../components/EventDetailsDialog';
 import CreateEventDialog from '../components/CreateEventDialog';
+import UpcomingEventsWidget from '../components/UpcomingEventsWidget';
 import { useFadeIn, useStaggeredAnimation, ANIMATION_DURATION } from '../hooks/useAnimation';
 import { ProfileSkeleton, GridSkeleton } from '../components/LoadingSkeleton';
 import OnboardingGuide from '../components/OnboardingGuide';
@@ -1326,205 +1327,42 @@ function DashboardPage() {
                         </Card>
                     </Box>
                   ) : profile.network_id && profile.role !== 'admin' && (
-                    <Box sx={{ 
+                    <Box sx={{
                       flex: { xs: '1 1 100%', md: '1 1 auto' },
                       width: { xs: '100%', md: 'auto' },
                       minWidth: 0,
                       maxWidth: '100%'
                     }}>
-                      <Card 
-                        ref={getItemRef(1)}
-                        sx={{ 
-                          borderRadius: 2, 
-                          boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-                          height: { xs: 'auto', md : 400},
-                          minHeight: { xs: 'auto', md : 400},
-                          width: '100%',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+                      <UpcomingEventsWidget
+                        events={recentEvents}
+                        loading={loadingEvents}
+                        eventParticipation={eventParticipation}
+                        onViewDetails={(event) => {
+                          setSelectedEvent(event);
+                          setShowEventDialog(true);
                         }}
-                      >
-                        <CardHeader
-                          title={<Typography variant="subtitle1">{t('dashboard.network.upcomingEvents')}</Typography>}
-                          avatar={<EventIcon color="primary" />}
-                          action={
-                            recentEvents.length > 0 && (
-                              <Button 
-                                component={Link}
-                                to="/network?tab=events"
-                                endIcon={<ArrowForwardIcon />}
-                                size="small"
-                              >
-                                {t('dashboard.buttons.viewAll')}
-                              </Button>
-                            )
-                          }
-                          sx={{ 
-                            bgcolor: 'rgba(25, 118, 210, 0.05)',
-                            py: 1
-                          }}
-                        />
-                        
-                        {loadingEvents ? (
-                          <Box sx={{ 
-                            p: 2, 
-                            textAlign: 'center',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            flexGrow: 1,
-                            minHeight: 200
-                          }}>
-                            <Spinner size={120} />
-                          </Box>
-                        ) : recentEvents.length > 0 ? (
-                          <CardContent sx={{ py: 0.5, flexGrow: 1, overflow: 'auto' }}>
-                            <Stack spacing={1}>
-                              {recentEvents.map(event => (
-                                <EventCard 
-                                  key={event.id}
-                                  event={event}
-                                  participationStatus={eventParticipation[event.id]}
-                                  onViewDetails={() => {
-                                    setSelectedEvent(event);
-                                    setShowEventDialog(true);
-                                  }}
-                                  t={t}
-                                />
-                              ))}
-                            </Stack>
-                          </CardContent>
-                        ) : (
-                          <CardContent sx={{ 
-                            py: 1, 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            justifyContent: 'center', 
-                            flexGrow: 1,
-                            minHeight: 200
-                          }}>
-                            <Box sx={{ textAlign: 'center', py: 2 }}>
-                              <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                                {t('dashboard.events.noUpcoming')}
-                              </Typography>
-                            </Box>
-                          </CardContent>
-                        )}
-                      </Card>
+                        isAdmin={false}
+                        wrapperRef={getItemRef(1)}
+                      />
                     </Box>
                   )}
               </Box>
               
               {/* Second Row: Upcoming Events (admin only) */}
               {profile?.role === 'admin' && profile.network_id && (
-                <Grid container spacing={2} sx={{ width: '100%', maxWidth: '100%', mt: 2 }}>
-                  <Grid item xs={12} sx={{ width: '100%' }}>
-                    {recentEvents.length > 0 ? (
-                      <Card sx={{ 
-                        borderRadius: 2, 
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-                        height: '100%',
-                        width: '100%',
-                        maxWidth: '100%',
-                        display: 'flex',
-                        flexDirection: 'column'
-                      }}>
-                        <CardHeader
-                          title={<Typography variant="subtitle1">{t('dashboard.network.upcomingEvents')}</Typography>}
-                          avatar={<EventIcon color="primary" />}
-                          action={
-                            <Box sx={{ display: 'flex', gap: 1 }}>
-                              <Button
-                                variant="contained"
-                                size="small"
-                                startIcon={<AddIcon />}
-                                onClick={() => setCreateEventOpen(true)}
-                              >
-                                {t('dashboard.buttons.createEvent')}
-                              </Button>
-                              <Button 
-                                component={Link}
-                                to="/network?tab=events"
-                                endIcon={<ArrowForwardIcon />}
-                                size="small"
-                              >
-                                {t('dashboard.buttons.viewAll')}
-                              </Button>
-                            </Box>
-                          }
-                          sx={{ 
-                            bgcolor: 'rgba(25, 118, 210, 0.05)',
-                            py: 1,
-                            gap: 1,
-                            flexWrap: 'wrap',
-                            '& .MuiCardHeader-action': { maxWidth: '100%' }
-                          }}
-                        />
-                      
-                      {loadingEvents ? (
-                        <Box sx={{ p: 2, textAlign: 'center' }}>
-                          <Spinner size={120} />
-                        </Box>
-                      ) : (
-                        <CardContent sx={{ py: 0.5, flexGrow: 1, overflow: 'auto' }}>
-                          <Stack spacing={1}>
-                            {recentEvents.map(event => (
-                              <EventCard 
-                                key={event.id}
-                                event={event}
-                                participationStatus={eventParticipation[event.id]}
-                                onViewDetails={() => {
-                                  setSelectedEvent(event);
-                                  setShowEventDialog(true);
-                                }}
-                                t={t}
-                              />
-                            ))}
-                          </Stack>
-                          </CardContent>
-                        )}
-                      </Card>
-                    ) : (
-                      // No events, show empty state
-                      <Card sx={{ 
-                        borderRadius: 2, 
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-                        height: '100%',
-                        width: '100%',
-                        maxWidth: '100%',
-                        display: 'flex',
-                        flexDirection: 'column'
-                      }}>
-                        <CardHeader
-                          title={<Typography variant="subtitle1">{t('dashboard.network.upcomingEvents')}</Typography>}
-                          avatar={<EventIcon color="primary" />}
-                          sx={{ 
-                            bgcolor: 'rgba(25, 118, 210, 0.05)',
-                            py: 1
-                          }}
-                        />
-                        <CardContent sx={{ py: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexGrow: 1 }}>
-                          <Box sx={{ textAlign: 'center', py: 2 }}>
-                            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                              {t('dashboard.events.noUpcoming')}
-                            </Typography>
-                            
-                            <Button 
-                              variant="outlined" 
-                              component={Link} 
-                              to="/admin?tab=events"
-                              startIcon={<AddIcon />}
-                              size="small"
-                            >
-                              {t('dashboard.buttons.createEvent')}
-                            </Button>
-                          </Box>
-                        </CardContent>
-                      </Card>
-                    )}
-                  </Grid>
-                </Grid>
+                <Box sx={{ width: '100%', mt: 2 }}>
+                  <UpcomingEventsWidget
+                    events={recentEvents}
+                    loading={loadingEvents}
+                    eventParticipation={eventParticipation}
+                    onViewDetails={(event) => {
+                      setSelectedEvent(event);
+                      setShowEventDialog(true);
+                    }}
+                    onCreateEvent={() => setCreateEventOpen(true)}
+                    isAdmin={true}
+                  />
+                </Box>
               )}
               
               {/* Third Row: Latest News and Latest Posts - Full width for all users */}
