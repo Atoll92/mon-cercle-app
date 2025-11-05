@@ -69,16 +69,14 @@ const EventCard = ({ event, participationStatus, onViewDetails, t }) => {
 
       <Box sx={{ flexGrow: 1, minWidth: 0 }}>
         <Typography variant="subtitle2" noWrap sx={{ mb: 0.5 }}>{event.title}</Typography>
-        <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1, mb: 0.5 }}>
-          <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center' }}>
-            <EventIcon fontSize="inherit" sx={{ mr: 0.5 }} />
-            {formatEventDate(event.date)}
-          </Typography>
-          <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center' }}>
-            <LocationOnIcon fontSize="inherit" sx={{ mr: 0.5 }} />
-            {event.location}
-          </Typography>
-        </Box>
+        <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center' }}>
+          <EventIcon fontSize="inherit" sx={{ mr: 0.5 }} />
+          {formatEventDate(event.date)}
+        </Typography>
+        <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center' }}>
+          <LocationOnIcon fontSize="inherit" sx={{ mr: 0.5 }} />
+          {event.location}
+        </Typography>
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
           {participationStatus ? (
