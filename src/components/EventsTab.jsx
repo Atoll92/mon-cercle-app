@@ -761,14 +761,14 @@ const EventsTab = ({
             </Box>
             
             
-<Box sx={{ 
-  p: 2, 
+<Box sx={{
   flex: '1 1 auto', 
   display: 'flex', 
   flexDirection: 'column',
   width: '100%',
   '& .rbc-calendar': {
-    width: '100%'
+    width: '100%',
+    borderRadius: 0,
   },
   // Dark mode compatible header
   '& .rbc-header': {
@@ -782,7 +782,7 @@ const EventsTab = ({
   '& .rbc-month-view': {
     border: 'none',
     boxShadow: (theme) => theme.palette.mode === 'dark' ? '0 1px 3px rgba(0, 0, 0, 0.3)' : '0 1px 3px rgba(0, 0, 0, 0.1)',
-    borderRadius: 1,
+    borderRadius: 0,
     backgroundColor: 'background.paper' // Using MUI's background paper color which adapts to dark mode
   },
   '& .rbc-day-bg': {
