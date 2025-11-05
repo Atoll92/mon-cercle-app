@@ -484,8 +484,12 @@ const EventsTab = ({
                         <StaggeredListItem
                           key={event.id}
                           index={index}
-                          className="parent-event-row" 
-                          sx={{ 
+                          className="parent-event-row"
+                          onClick={() => {
+                            setSelectedEvent(event);
+                            setShowEventDialog(true);
+                          }}
+                          sx={{
                             display: 'flex',
                             borderBottom: index < upcomingEvents.length - 1 ? '1px solid' : 'none',
                             borderColor: 'divider',
@@ -493,6 +497,7 @@ const EventsTab = ({
                             transition: 'all 0.2s ease',
                             bgcolor: isToday ? 'rgba(33, 150, 243, 0.05)' : 'transparent',
                             overflow: 'hidden', // Prevent content from spilling out
+                            cursor: 'pointer',
                             '&:hover': {
                               bgcolor: 'rgba(0, 0, 0, 0.02)',
                             }
@@ -508,15 +513,13 @@ const EventsTab = ({
                           }}>
                             {/* Event image with overlaid date badge - with animation on hover */}
                             <Box sx={{ 
-                              width: '200px', // Fixed width instead of percentage
-                              minWidth: '200px',
+                              width: { xs: '100px', sm: '150px', md: '200px' },
                               position: 'relative',
                               overflow: 'hidden',
                               transition: 'all 0.3s ease',
                               flexShrink: 0, // Prevent shrinking
                               '.parent-event-row:hover &': {
-                                width: '150px', // Slight shrink on hover
-                                minWidth: '150px',
+                                width: { xs: '100px', sm: '120px', md: '150px' }
                               }
                             }}>
                               {event.cover_image_url ? (
@@ -631,16 +634,6 @@ const EventsTab = ({
                                 alignItems: 'center'
                               }}>
                                 {event.title}
-                                {/* Add link icon if event has a link */}
-                                {event.event_link && (
-                                  <LinkIcon 
-                                    fontSize="small" 
-                                    sx={{ 
-                                      ml: 0.5, 
-                                      color: 'primary.main'
-                                    }}
-                                  />
-                                )}
                               </Typography>
                               
                               {/* Display category if exists */}
@@ -683,54 +676,26 @@ const EventsTab = ({
                               )}
                               
                               {/* Interactive buttons */}
-                              <Box sx={{ 
-                                display: 'flex', 
-                                mt: 'auto', 
+                              <Box sx={{
+                                display: 'flex',
+                                mt: 'auto',
                                 pt: 1,
-                                justifyContent: 'space-between', 
+                                justifyContent: 'flex-start',
                                 alignItems: 'center',
                                 flexWrap: 'wrap',
                                 gap: 1
                               }}>
                                 {/* RSVP buttons */}
                                 {user && (
-                                  <EventParticipation 
-                                    event={event} 
-                                    size="small"
-                                    compact={true}
-                                    onStatusChange={(status) => handleParticipationChange(event.id, status)}
-                                  />
-                                )}
-                                
-                                <Box sx={{ display: 'flex', gap: 1, ml: 'auto' }}>
-                                  {/* Event link button if available
-                                  {event.event_link && (
-                                    <Button
+                                  <Box onClick={(e) => e.stopPropagation()}>
+                                    <EventParticipation
+                                      event={event}
                                       size="small"
-                                      variant="outlined"
-                                      color="primary"
-                                      startIcon={<LinkIcon fontSize="small" />}
-                                      href={event.event_link}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                    >
-                                      Join
-                                    </Button>
-                                  )} */}
-                                  
-                                  <Button 
-                                    size="small" 
-                                    variant={event.event_link ? "text" : "outlined"}
-                                    color="primary"
-                                    endIcon={<ArrowForwardIcon fontSize="small" />}
-                                    onClick={() => {
-                                      setSelectedEvent(event);
-                                      setShowEventDialog(true);
-                                    }}
-                                  >
-                                    {t('eventsTab.details')}
-                                  </Button>
-                                </Box>
+                                      compact={true}
+                                      onStatusChange={(status) => handleParticipationChange(event.id, status)}
+                                    />
+                                  </Box>
+                                )}
                               </Box>
                             </Box>
                           </Box>
