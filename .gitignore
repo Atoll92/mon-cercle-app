@@ -24,6 +24,10 @@ dist-ssr
 *.sw?
 .env
 
+# Scripts with sensitive keys (should use env vars instead)
+fix_event_trigger.js
+*_secret*.js
+
 # Testing
 coverage
 .vitest-cache
