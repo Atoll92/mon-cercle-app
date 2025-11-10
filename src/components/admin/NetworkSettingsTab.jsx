@@ -62,7 +62,9 @@ import {
   Edit as EditIcon,
   Description as DescriptionIcon,
   School as CoursesIcon,
-  Store as MarketplaceIcon
+  Store as MarketplaceIcon,
+  AddReactionOutlined as ReactionsIcon,
+  Feed as ActivityFeedIcon
 } from '@mui/icons-material';
 import { updateNetworkDetails } from '../../api/networks';
 import { triggerNetworkRefresh } from '../../hooks/useNetworkRefresh';
@@ -163,7 +165,9 @@ const NetworkSettingsTab = ({ network, onNetworkUpdate, darkMode }) => {
           location: config.location_sharing || false,
           notifications: config.notifications !== false,
           courses: config.courses || false,
-          marketplace: config.marketplace || false
+          marketplace: config.marketplace || false,
+          reactions: config.reactions !== false,
+          activity_feed: config.activity_feed || false
         };
       } catch (e) {
         console.error('Error parsing features config:', e);
@@ -179,7 +183,9 @@ const NetworkSettingsTab = ({ network, onNetworkUpdate, darkMode }) => {
       location: false,
       notifications: true,
       courses: false,
-      marketplace: false
+      marketplace: false,
+      reactions: true,
+      activity_feed: false
     };
   });
   
@@ -238,7 +244,7 @@ const NetworkSettingsTab = ({ network, onNetworkUpdate, darkMode }) => {
     setError(null);
     setMessage('');
     
-    const updates = { 
+    const updates = {
       name: networkName,
       description: networkDescription,
       privacy_level: privacyLevel,
@@ -253,7 +259,9 @@ const NetworkSettingsTab = ({ network, onNetworkUpdate, darkMode }) => {
         location_sharing: features.location,
         notifications: features.notifications,
         courses: features.courses,
-        marketplace: features.marketplace
+        marketplace: features.marketplace,
+        reactions: features.reactions,
+        activity_feed: features.activity_feed
       }),
       enabled_tabs: enabledTabs,
       tab_descriptions: tabDescriptions
@@ -375,6 +383,8 @@ const NetworkSettingsTab = ({ network, onNetworkUpdate, darkMode }) => {
     { key: 'chat', label: t('admin.networkSettings.features.chat.label'), icon: <ForumIcon />, description: t('admin.networkSettings.features.chat.description') },
     { key: 'wiki', label: t('admin.networkSettings.features.wiki.label'), icon: <WikiIcon />, description: t('admin.networkSettings.features.wiki.description') },
     { key: 'moodboards', label: t('admin.networkSettings.features.moodboards.label'), icon: <ImageIcon />, description: t('admin.networkSettings.features.moodboards.description') },
+    { key: 'reactions', label: t('admin.networkSettings.features.reactions.label'), icon: <ReactionsIcon />, description: t('admin.networkSettings.features.reactions.description') },
+    { key: 'activity_feed', label: t('admin.networkSettings.features.activityFeed.label'), icon: <ActivityFeedIcon />, description: t('admin.networkSettings.features.activityFeed.description') },
     { key: 'courses', label: t('admin.networkSettings.features.courses.label'), icon: <CoursesIcon />, description: t('admin.networkSettings.features.courses.description') },
     { key: 'marketplace', label: t('admin.networkSettings.features.marketplace.label'), icon: <MarketplaceIcon />, description: t('admin.networkSettings.features.marketplace.description') },
     { key: 'location', label: t('admin.networkSettings.features.location.label'), icon: <LocationIcon />, description: t('admin.networkSettings.features.location.description') },

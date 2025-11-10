@@ -1,5 +1,5 @@
 // src/pages/DashboardPage.jsx
-import { useState, useEffect, useLayoutEffect } from 'react';
+import React, { useState, useEffect, useLayoutEffect } from 'react';
 import { useAuth } from '../context/authcontext';
 import { useProfile } from '../context/profileContext';
 import { useApp } from '../context/appContext';
@@ -14,6 +14,7 @@ import LatestPostsWidget from '../components/LatestPostsWidget';
 import EventDetailsDialog from '../components/EventDetailsDialog';
 import CreateEventDialog from '../components/CreateEventDialog';
 import UpcomingEventsWidget from '../components/UpcomingEventsWidget';
+import ActivityFeedWidget from '../components/ActivityFeedWidget';
 import { useFadeIn, useStaggeredAnimation, ANIMATION_DURATION } from '../hooks/useAnimation';
 import { ProfileSkeleton, GridSkeleton } from '../components/LoadingSkeleton';
 import OnboardingGuide from '../components/OnboardingGuide';
@@ -339,6 +340,21 @@ function DashboardPage() {
   const [retryCount, setRetryCount] = useState(0);
   const [recentEvents, setRecentEvents] = useState([]);
   const [eventParticipation, setEventParticipation] = useState({});
+
+  // Check if activity feed feature is enabled
+  const isActivityFeedEnabled = React.useMemo(() => {
+    if (!networkDetails?.features_config) return false;
+
+    try {
+      const config = typeof networkDetails.features_config === 'string'
+        ? JSON.parse(networkDetails.features_config)
+        : networkDetails.features_config;
+      return config.activity_feed === true;
+    } catch (e) {
+      console.error('Error parsing features config:', e);
+      return false;
+    }
+  }, [networkDetails?.features_config]);
   
   // Modal states
   const [selectedMember, setSelectedMember] = useState(null);
@@ -1367,27 +1383,54 @@ function DashboardPage() {
               
               {/* Third Row: Latest News and Latest Posts - Full width for all users */}
               {profile.network_id && (
-                <Box sx={{ 
+                <Box sx={{
                   display: 'flex',
                   flexDirection: { xs: 'column', md: 'row' },
                   gap: 2,
                   width: '100%',
                   mt: 2
                 }}>
-                  <Box sx={{ 
+                  <Box sx={{
                     flex: 1,
                     minWidth: 0,
                     display: 'flex'
                   }}>
                     <LatestNewsWidget networkId={profile.network_id} onMemberClick={handleMemberClick} />
                   </Box>
-                  <Box sx={{ 
+                  <Box sx={{
                     flex: 1,
                     minWidth: 0,
                     display: 'flex'
                   }}>
                     <LatestPostsWidget networkId={profile.network_id} onMemberClick={handleMemberClick} />
                   </Box>
+                </Box>
+              )}
+
+              {/* Activity Feed Widget - Full width row */}
+              {profile.network_id && isActivityFeedEnabled && (
+                <Box sx={{
+                  mt: 2,
+                  width: '100%'
+                }}>
+                  <Card sx={{
+                    borderRadius: 2,
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                    overflow: 'hidden'
+                  }}>
+                    <CardHeader
+                      title={<Typography variant="h6">{t('dashboard.activityFeed.title') || 'Network Activity'}</Typography>}
+                      avatar={<EventIcon color="primary" />}
+                      sx={{
+                        bgcolor: 'rgba(25, 118, 210, 0.05)',
+                        borderBottom: '1px solid',
+                        borderColor: 'divider'
+                      }}
+                    />
+                    <CardContent sx={{ p: 2 }}>
+                      <ActivityFeedWidget />
+                    </CardContent>
+                  </Card>
                 </Box>
               )}
               

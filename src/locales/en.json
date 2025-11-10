@@ -163,6 +163,14 @@
           "label": "Moodboards",
           "description": "Visual collaboration boards"
         },
+        "reactions": {
+          "label": "Emoji Reactions",
+          "description": "Allow members to react to posts, news, and comments with emojis"
+        },
+        "activityFeed": {
+          "label": "Activity Feed",
+          "description": "Show recent network activity and member engagement"
+        },
         "location": {
           "label": "Location Sharing",
           "description": "Member location sharing"
@@ -577,6 +585,9 @@
   "dashboard": {
     "title": "Dashboard",
     "welcome": "Welcome back, {{name}}",
+    "activityFeed": {
+      "title": "Network Activity"
+    },
     "profileSetup": {
       "required": "Profile Setup Required",
       "inProgress": "Profile Setup in Progress",

@@ -163,6 +163,14 @@
           "label": "Tableaux d'humeur",
           "description": "Tableaux de collaboration visuelle"
         },
+        "reactions": {
+          "label": "Réactions émoji",
+          "description": "Permettre aux membres de réagir aux publications, actualités et commentaires avec des émojis"
+        },
+        "activityFeed": {
+          "label": "Fil d'activité",
+          "description": "Afficher l'activité récente du réseau et l'engagement des membres"
+        },
         "location": {
           "label": "Partage de localisation",
           "description": "Partage de localisation des membres"
@@ -577,6 +585,9 @@
   "dashboard": {
     "title": "Tableau de bord",
     "welcome": "Bienvenue, {{name}}",
+    "activityFeed": {
+      "title": "Activité du réseau"
+    },
     "profileSetup": {
       "required": "Configuration du profil requise",
       "inProgress": "Configuration du profil en cours",
