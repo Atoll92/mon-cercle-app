@@ -3,6 +3,7 @@ import { useAuth } from '../context/authcontext';
 import { useProfile } from '../context/profileContext';
 import { useTranslation } from '../hooks/useTranslation';
 import UserContent from './UserContent';
+import ReactionBar from './ReactionBar';
 import {
   Box,
   Typography,
@@ -464,7 +465,7 @@ const CommentSection = ({ itemType, itemId, onMemberClick, defaultExpanded = fal
                 }}
               />
             )}
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5, flexWrap: 'wrap' }}>
               <Button
                 size="small"
                 startIcon={<ReplyIcon sx={{ fontSize: 14 }} />}
@@ -483,7 +484,17 @@ const CommentSection = ({ itemType, itemId, onMemberClick, defaultExpanded = fal
               >
                 Reply
               </Button>
-              
+
+              {/* Reactions for this comment */}
+              <Box sx={{ ml: 'auto' }}>
+                <ReactionBar
+                  contentType="comment"
+                  contentId={comment.id}
+                  initialCount={comment.reaction_count || 0}
+                  size="small"
+                />
+              </Box>
+
               {comment.replies && comment.replies.length > 0 && (
                 <Button
                   size="small"

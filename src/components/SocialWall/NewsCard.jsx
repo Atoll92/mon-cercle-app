@@ -21,6 +21,7 @@ import MediaCarousel from '../MediaCarousel';
 import LazyImage from '../LazyImage';
 import UserContent from '../UserContent';
 import CommentSection from '../CommentSection';
+import ReactionBar from '../ReactionBar';
 import Spinner from '../Spinner';
 import { formatTimeAgo } from '../../utils/dateFormatting';
 
@@ -514,6 +515,16 @@ const NewsCard = React.memo(({
               color: customFadedText,
               fontSize: '0.875rem'
             }}
+          />
+        </Box>
+
+        {/* Reactions */}
+        <Box sx={{ mb: 2, pt: 1, borderTop: `1px solid ${alpha(muiTheme.palette.divider, 0.1)}` }}>
+          <ReactionBar
+            contentType="news"
+            contentId={item.id}
+            initialCount={item.reaction_count || 0}
+            size="medium"
           />
         </Box>
 

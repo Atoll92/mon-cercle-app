@@ -27,6 +27,7 @@ import UserContent from './UserContent';
 import ImageViewerModal from './ImageViewerModal';
 import CreatePostModal from './CreatePostModal';
 import MembersDetailModal from './MembersDetailModal';
+import ReactionBar from './ReactionBar';
 import { formatTimeAgo } from '../utils/dateFormatting';
 import { Link, useNavigate } from 'react-router-dom';
 import { deletePost } from '../api/posts';
@@ -585,7 +586,17 @@ const PostCard = ({
             />
           </Box>
         )}
-        
+
+        {/* Reactions */}
+        <Box sx={{ mb: 2, pt: 1, borderTop: `1px solid ${alpha(theme.palette.divider, 0.1)}` }}>
+          <ReactionBar
+            contentType="post"
+            contentId={post.id}
+            initialCount={post.reaction_count || 0}
+            size="medium"
+          />
+        </Box>
+
         {/* Comments Section and view post button */}
         <CommentSection
           itemType={'post'}

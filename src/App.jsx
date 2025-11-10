@@ -58,6 +58,7 @@ const DocumentationPage = lazyWithRetry(() => import('./pages/DocumentationPage'
 const SimpleConclavLanding = lazyWithRetry(() => import('./pages/SimpleConclavLanding'));
 const CoursesPage = lazyWithRetry(() => import('./components/courses/CoursesPage'));
 const CourseDetailPage = lazyWithRetry(() => import('./components/courses/CourseDetailPage'));
+const EngagementDemoPage = lazyWithRetry(() => import('./pages/EngagementDemoPage'));
 
 // Loading component for lazy loaded routes
 const PageLoader = () => (
@@ -275,6 +276,7 @@ function App() {
             
             {/* Public network routes with ID */}
             <Route path="/network/:networkId" element={<NetworkLandingPage />} />
+            <Route path="/network/:networkId/engagement-demo" element={<EngagementDemoPage />} />
             <Route path="/network/:networkId/news/:newsId" element={<NewsPostPage />} />
             <Route path="/network/:networkId/event/:eventId" element={<EventPage />} />
             
