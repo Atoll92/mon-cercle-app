@@ -1,10 +1,9 @@
 // src/components/EventsMap.jsx
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Box, Typography, Paper } from '@mui/material';
 import Spinner from './Spinner';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
-import { formatEventDate } from '../utils/dateFormatting';
 import { useTranslation } from '../hooks/useTranslation';
 
 // Get Mapbox token from environment variable
@@ -116,8 +115,6 @@ export default function EventsMap({ events = [], onEventSelect, initialCoordinat
       // If there are no events or events is undefined, we'll skip this part
       if (!mapRef.current || !events || events.length === 0) return;
 
-      const viewDetailsText = t('events.map.viewDetails');
-
       try {
         // Remove existing markers
         markersRef.current.forEach(marker => marker.remove());
@@ -137,7 +134,7 @@ export default function EventsMap({ events = [], onEventSelect, initialCoordinat
         // Add markers for each event with coordinates
         eventsWithCoordinates.forEach(event => {
           const { longitude, latitude } = event.coordinates;
-          
+
           // Create marker element
           const el = document.createElement('div');
           el.className = 'event-marker';
@@ -147,59 +144,30 @@ export default function EventsMap({ events = [], onEventSelect, initialCoordinat
           el.style.borderRadius = '50%';
           el.style.border = '3px solid white';
           el.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
-          
+          el.style.cursor = 'pointer';
+
           // Use event cover image if available, otherwise use colored marker
           if (event.cover_image_url) {
             el.style.backgroundImage = `url(${event.cover_image_url})`;
           } else {
             el.style.backgroundColor = '#1976d2';
           }
-          
-          // Create popup
-          const popup = new mapboxgl.Popup({ offset: 25 })
-            .setHTML(`
-              <div style="padding: 8px; max-width: 200px;">
-                <h4 style="margin: 0 0 8px 0;">${event.title}</h4>
-                <p style="margin: 4px 0; font-size: 12px; color: #555;">
-                  ${formatEventDate(event.date)}
-                </p>
-                <p style="margin: 4px 0; font-size: 12px; color: #555;">
-                  ${event.location}
-                </p>
-                ${event.description ? 
-                  `<p style="margin: 8px 0 0 0; font-size: 12px; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">
-                    ${event.description}
-                  </p>` : ''
-                }
-                <button style="margin-top: 8px; padding: 4px 8px; background: #1976d2; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">
-                  ${viewDetailsText}
-                </button>
-              </div>
-            `);
-          
-          // Add click event to popup button
-          popup.on('open', () => {
-            setTimeout(() => {
-              const button = document.querySelector('.mapboxgl-popup-content button');
-              if (button) {
-                button.addEventListener('click', () => {
-                  if (onEventSelect) {
-                    onEventSelect(event);
-                  }
-                });
-              }
-            }, 100);
+
+          // Add click event directly to marker element
+          el.addEventListener('click', () => {
+            if (onEventSelect) {
+              onEventSelect(event);
+            }
           });
-          
-          // Create and add marker
+
+          // Create and add marker without popup
           const marker = new mapboxgl.Marker(el)
             .setLngLat([longitude, latitude])
-            .setPopup(popup)
             .addTo(mapRef.current);
-          
+
           // Store reference to marker for later removal
           markersRef.current.push(marker);
-          
+
           // Add coordinates to bounds
           bounds.extend([longitude, latitude]);
         });
