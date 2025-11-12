@@ -521,7 +521,7 @@ Deno.serve(async (req) => {
                 categoryColor,
                 networkName
               })
-              emailSubject = subject || `New post in ${networkName}`
+              emailSubject = `New post in ${networkName}${categoryName ? ` [${categoryName}]` : ''}${postTitle ? `: ${postTitle}` : ''}`
               emailHtml = `
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; line-height: 1.6;">
                   <div style="background-color: #2196f3; padding: 20px; border-radius: 8px 8px 0 0;">
@@ -629,7 +629,7 @@ Deno.serve(async (req) => {
                 categoryColor,
                 networkName
               })
-              emailSubject = subject || `New post in ${networkName}`
+              emailSubject = `New post in ${networkName}${categoryName ? ` [${categoryName}]` : ''}${postTitle ? `: ${postTitle}` : ''}`
               emailHtml = `
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; line-height: 1.6;">
                   <div style="background-color: #673ab7; padding: 20px; border-radius: 8px 8px 0 0;">
@@ -759,7 +759,7 @@ Deno.serve(async (req) => {
                 eventLocation,
                 networkName
               })
-              emailSubject = subject || `New event in ${networkName}`
+              emailSubject = `New event in ${networkName}${categoryName ? ` [${categoryName}]` : ''}: ${eventTitle}`
               emailHtml = `
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; line-height: 1.6;">
                   <div style="background-color: #ff9800; padding: 20px; border-radius: 8px 8px 0 0;">
