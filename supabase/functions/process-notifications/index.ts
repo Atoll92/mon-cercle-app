@@ -12,6 +12,102 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }
 
+// ICS Generation Functions
+const formatICSDate = (date: Date | string): string => {
+  const d = new Date(date)
+  return d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')
+}
+
+const escapeICSText = (text: string): string => {
+  if (!text) return ''
+  return text
+    .replace(/\\/g, '\\\\')
+    .replace(/,/g, '\\,')
+    .replace(/;/g, '\\;')
+    .replace(/\n/g, '\\n')
+    .replace(/\r/g, '')
+    .trim()
+}
+
+const generateICSContent = (eventData: any): string => {
+  const {
+    id,
+    title,
+    description = '',
+    startDate,
+    location = '',
+    organizer = '',
+    url = ''
+  } = eventData
+
+  const now = new Date()
+  const start = new Date(startDate)
+  const end = new Date(start.getTime() + (60 * 60 * 1000)) // 1 hour duration
+
+  const icsLines = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//Conclav//Event Calendar//EN',
+    'CALSCALE:GREGORIAN',
+    'METHOD:PUBLISH',
+    'BEGIN:VEVENT',
+    `UID:event-${id}@conclav.network`,
+    `DTSTAMP:${formatICSDate(now)}`,
+    `DTSTART:${formatICSDate(start)}`,
+    `DTEND:${formatICSDate(end)}`,
+    `SUMMARY:${escapeICSText(title)}`,
+    `DESCRIPTION:${escapeICSText(description)}`,
+  ]
+
+  if (location) {
+    icsLines.push(`LOCATION:${escapeICSText(location)}`)
+  }
+
+  if (organizer) {
+    icsLines.push(`ORGANIZER;CN=${escapeICSText(organizer)}:noreply@conclav.network`)
+  }
+
+  if (url) {
+    icsLines.push(`URL:${url}`)
+  }
+
+  icsLines.push(
+    'STATUS:CONFIRMED',
+    'SEQUENCE:0',
+    'TRANSP:OPAQUE',
+    'BEGIN:VALARM',
+    'ACTION:DISPLAY',
+    'DESCRIPTION:Event Reminder',
+    'TRIGGER:-PT15M',
+    'END:VALARM',
+    'END:VEVENT',
+    'END:VCALENDAR'
+  )
+
+  return icsLines.join('\r\n')
+}
+
+const createICSAttachment = (eventData: any) => {
+  const icsContent = generateICSContent(eventData)
+  const base64Content = btoa(icsContent)
+
+  const date = new Date(eventData.startDate)
+  const dateStr = date.toISOString().split('T')[0]
+  const titleSlug = eventData.title
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
+    .substring(0, 30)
+
+  return {
+    filename: `${titleSlug}-${dateStr}.ics`,
+    content: base64Content,
+    type: 'text/calendar',
+    disposition: 'attachment'
+  }
+}
+
 Deno.serve(async (req) => {
   // Handle CORS
   if (req.method === 'OPTIONS') {
@@ -1156,13 +1252,26 @@ Deno.serve(async (req) => {
             }
             
             // Add ICS attachment for event notifications
-            if (notification.notification_type === 'event' && metadata.icsAttachment) {
-              emailPayload.attachments = [metadata.icsAttachment]
-              console.log('📨 Adding ICS attachment:', {
-                filename: metadata.icsAttachment.filename,
-                type: metadata.icsAttachment.type,
-                contentLength: metadata.icsAttachment.content.length
-              })
+            if (notification.notification_type === 'event' && eventData) {
+              try {
+                const icsAttachment = createICSAttachment({
+                  id: eventData.id,
+                  title: eventData.title,
+                  description: eventData.description || '',
+                  startDate: eventData.date,
+                  location: eventData.location || '',
+                  organizer: eventData.profiles?.full_name || 'Event Organizer',
+                  url: `${Deno.env.get('APP_URL') || 'https://conclav.network'}/network/${notification.network_id}/event/${notification.related_item_id}`
+                })
+                emailPayload.attachments = [icsAttachment]
+                console.log('📨 Adding ICS attachment:', {
+                  filename: icsAttachment.filename,
+                  type: icsAttachment.type
+                })
+              } catch (icsError) {
+                console.error('📨 Error generating ICS attachment:', icsError)
+                // Continue without ICS if generation fails
+              }
             }
             
             const resendResponse = await fetch('https://api.resend.com/emails', {

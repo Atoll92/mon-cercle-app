@@ -108,16 +108,7 @@ export const createPost = async (postData) => {
         .single();
       
       if (profile?.network_id) {
-        await queuePortfolioNotifications(
-          profile.network_id,  // networkId
-          data.id,             // postId
-          profile_id,          // authorId
-          title,               // postTitle
-          description,         // postDescription
-          data.media_url || data.image_url,  // mediaUrl
-          data.media_type,     // mediaType
-          data.category_id     // categoryId
-        );
+        await queuePortfolioNotifications(data.id);
       }
     } catch (notificationError) {
       console.error('Failed to queue post notifications:', notificationError);

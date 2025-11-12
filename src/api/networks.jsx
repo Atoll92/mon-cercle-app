@@ -901,17 +901,7 @@ export const createEvent = async (networkId, profileId, eventData, imageFile, is
         console.log('📅 [EVENT DEBUG] Starting to queue email notifications for approved event...');
         console.log('📅 [EVENT DEBUG] Event created:', data[0]);
 
-        const notificationResult = await queueEventNotifications(
-          networkId,
-          data[0].id,
-          profileId,
-          eventData.title,
-          eventData.description,
-          eventData.date,
-          eventData.location,
-          data[0].cover_image_url,
-          data[0].category_id
-        );
+        const notificationResult = await queueEventNotifications(data[0].id);
 
         console.log('📅 [EVENT DEBUG] Notification queueing result:', notificationResult);
 
@@ -1257,16 +1247,7 @@ export const createNewsPost = async (networkId, profileId, title, content, image
       console.log('📰 [NEWS DEBUG] Starting to queue email notifications for news post...');
       console.log('📰 [NEWS DEBUG] News post created:', data[0]);
       
-      const notificationResult = await queueNewsNotifications(
-        networkId,
-        data[0].id,
-        profileId,
-        title,
-        content,
-        mediaUrl || imageUrl,
-        mediaType || (imageUrl ? 'image' : null),
-        data[0].category_id
-      );
+      const notificationResult = await queueNewsNotifications(data[0].id);
       
       console.log('📰 [NEWS DEBUG] Notification queueing result:', notificationResult);
       
