@@ -2135,5 +2135,49 @@
       "admin": "Admin",
       "member": "Member"
     }
+  },
+  "activityFeed": {
+    "title": "Network Activity",
+    "recentActivity": "Recent Activity",
+    "whatsHappening": "What's Happening",
+    "noActivity": "No recent activity in this network yet",
+    "lastUpdated": "Last updated {{time}}",
+    "activityTypes": {
+      "member_joined": "member joined",
+      "post_created": "post created",
+      "news_created": "news created",
+      "event_created": "event created",
+      "event_rsvp": "event rsvp",
+      "comment_added": "comment added",
+      "file_shared": "file shared",
+      "wiki_page_created": "wiki page created",
+      "badge_earned": "badge earned",
+      "milestone_reached": "milestone reached"
+    },
+    "templates": {
+      "member_joined": "{{name}} joined the network",
+      "post_created": "{{name}} created a new post: {{title}}",
+      "news_created": "{{name}} posted an announcement: {{title}}",
+      "event_created": "{{name}} created an event: {{title}}",
+      "event_rsvp": "{{name}} is attending {{title}}",
+      "comment_added": "{{name}} commented on {{entityType}}: {{title}}",
+      "file_shared": "{{name}} shared a file: {{filename}}",
+      "wiki_page_created": "{{name}} created a wiki page: {{title}}",
+      "badge_earned": "{{name}} earned the \"{{badgeName}}\" badge",
+      "milestone_reached": "{{name}} {{milestone}}",
+      "first_post": "created their first post!",
+      "first_event": "created their first event!",
+      "comments_10": "reached 10 comments!",
+      "comments_50": "reached 50 comments!",
+      "comments_100": "reached 100 comments!"
+    },
+    "entityTypes": {
+      "post": "post",
+      "news": "news",
+      "event": "event",
+      "wiki": "wiki",
+      "comment": "comment",
+      "file": "file"
+    }
   }
 }

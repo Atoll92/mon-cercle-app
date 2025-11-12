@@ -41,6 +41,8 @@ import { useAuth } from '../context/authcontext';
 import { fetchNetworkActivity, subscribeToActivity } from '../api/activityFeed';
 import { formatTimeAgo } from '../utils/dateFormatting';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from '../hooks/useTranslation';
+import { generateActivityText } from '../utils/activityTextGenerator';
 
 // Icon mapping for activity types
 const getActivityIcon = (activityType) => {
@@ -85,6 +87,7 @@ const getActivityColor = (activityType, theme) => {
  */
 const ActivityFeed = ({ networkId, limit = 20, compact = false, autoRefresh = true }) => {
   const theme = useTheme();
+  const { t } = useTranslation();
   // Using global supabase client
   const { activeProfile } = useAuth();
   const navigate = useNavigate();
@@ -175,7 +178,7 @@ const ActivityFeed = ({ networkId, limit = 20, compact = false, autoRefresh = tr
       <Card>
         <CardContent>
           <Typography variant="h6" gutterBottom>
-            Activity Feed
+            {t('activityFeed.title')}
           </Typography>
           <List>
             {[...Array(5)].map((_, i) => (
@@ -202,7 +205,7 @@ const ActivityFeed = ({ networkId, limit = 20, compact = false, autoRefresh = tr
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Typography variant="h6">
-              {compact ? 'Recent Activity' : "What's Happening"}
+              {compact ? t('activityFeed.recentActivity') : t('activityFeed.whatsHappening')}
             </Typography>
             <Chip
               label={activities.length}
@@ -246,7 +249,7 @@ const ActivityFeed = ({ networkId, limit = 20, compact = false, autoRefresh = tr
           {activities.length === 0 ? (
             <Box sx={{ textAlign: 'center', py: 4 }}>
               <Typography variant="body2" color="text.secondary">
-                No recent activity in this network yet
+                {t('activityFeed.noActivity')}
               </Typography>
             </Box>
           ) : (
@@ -296,7 +299,7 @@ const ActivityFeed = ({ networkId, limit = 20, compact = false, autoRefresh = tr
                             color: theme.palette.text.primary
                           }}
                         >
-                          {activity.activity_text}
+                          {generateActivityText(activity, t)}
                         </Typography>
                       }
                       secondary={
@@ -313,7 +316,7 @@ const ActivityFeed = ({ networkId, limit = 20, compact = false, autoRefresh = tr
                           {!compact && (
                             <Chip
                               icon={getActivityIcon(activity.activity_type)}
-                              label={activity.activity_type.replace('_', ' ')}
+                              label={t(`activityFeed.activityTypes.${activity.activity_type}`)}
                               size="small"
                               sx={{
                                 height: 18,
@@ -352,7 +355,7 @@ const ActivityFeed = ({ networkId, limit = 20, compact = false, autoRefresh = tr
               }}
               onClick={handleRefresh}
             >
-              Last updated {activities[0] && formatTimeAgo(activities[0].created_at)}
+              {activities[0] && t('activityFeed.lastUpdated', { time: formatTimeAgo(activities[0].created_at) })}
             </Typography>
           </Box>
         )}
