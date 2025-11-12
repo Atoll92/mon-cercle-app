@@ -1263,7 +1263,8 @@ export const createNewsPost = async (networkId, profileId, title, content, image
         title,
         content,
         mediaUrl || imageUrl,
-        mediaType || (imageUrl ? 'image' : null)
+        mediaType || (imageUrl ? 'image' : null),
+        data[0].category_id
       );
       
       console.log('📰 [NEWS DEBUG] Notification queueing result:', notificationResult);

@@ -115,7 +115,8 @@ export const createPost = async (postData) => {
           title,               // postTitle
           description,         // postDescription
           data.media_url || data.image_url,  // mediaUrl
-          data.media_type      // mediaType
+          data.media_type,     // mediaType
+          data.category_id     // categoryId
         );
       }
     } catch (notificationError) {

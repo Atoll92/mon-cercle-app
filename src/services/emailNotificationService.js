@@ -11,7 +11,7 @@ import { logger } from '../utils/logger';
  * @param {string} newsTitle - Title of the news post
  * @param {string} newsContent - Content preview of the news post
  */
-export const queueNewsNotifications = async (networkId, newsId, authorId, newsTitle, newsContent, mediaUrl = null, mediaType = null) => {
+export const queueNewsNotifications = async (networkId, newsId, authorId, newsTitle, newsContent, mediaUrl = null, mediaType = null, categoryId = null) => {
   try {
 
     // Get all network members who want news notifications (excluding the author)
@@ -60,16 +60,31 @@ export const queueNewsNotifications = async (networkId, newsId, authorId, newsTi
       return { success: false, error: authorError.message };
     }
 
+    // Get category name if categoryId is provided
+    let categoryName = null;
+    if (categoryId) {
+      const { data: category, error: categoryError } = await supabase
+        .from('network_categories')
+        .select('name')
+        .eq('id', categoryId)
+        .single();
+
+      if (!categoryError && category) {
+        categoryName = category.name;
+      }
+    }
+
     // Create notification queue entries
     const notifications = recipients.map(recipient => ({
       recipient_id: recipient.id,
       network_id: networkId,
       notification_type: 'news',
-      subject_line: `New post in ${network.name}: ${newsTitle}`,
+      subject_line: `New post in ${network.name}${categoryName ? ` [${categoryName}]` : ''}: ${newsTitle}`,
       content_preview: `${author.full_name || 'Someone'} shared: ${newsContent?.substring(0, 200) || newsTitle}${newsContent?.length > 200 ? '...' : ''}${mediaUrl ? ` [${mediaType || 'Media'}:${mediaUrl}]` : ''}`,
       related_item_id: newsId,
       metadata: JSON.stringify({
-        authorName: author.full_name || 'Someone'
+        authorName: author.full_name || 'Someone',
+        categoryName: categoryName
       })
     }));
 
@@ -484,7 +499,7 @@ export const queueCommentNotification = async (params) => {
  * @param {string} mediaUrl - URL of attached media (optional)
  * @param {string} mediaType - Type of attached media (optional)
  */
-export const queuePortfolioNotifications = async (networkId, postId, authorId, postTitle, postDescription, mediaUrl = null, mediaType = null) => {
+export const queuePortfolioNotifications = async (networkId, postId, authorId, postTitle, postDescription, mediaUrl = null, mediaType = null, categoryId = null) => {
   try {
 
     // Get all network members who want news notifications (excluding the author)
@@ -532,16 +547,31 @@ export const queuePortfolioNotifications = async (networkId, postId, authorId, p
       return { success: false, error: authorError.message };
     }
 
+    // Get category name if categoryId is provided
+    let categoryName = null;
+    if (categoryId) {
+      const { data: category, error: categoryError } = await supabase
+        .from('network_categories')
+        .select('name')
+        .eq('id', categoryId)
+        .single();
+
+      if (!categoryError && category) {
+        categoryName = category.name;
+      }
+    }
+
     // Create notification queue entries
     const notifications = recipients.map(recipient => ({
       recipient_id: recipient.id,
       network_id: networkId,
       notification_type: 'post', // Portfolio posts have their own type
-      subject_line: `New post shared in ${network.name}: ${postTitle}`,
+      subject_line: `New post shared in ${network.name}${categoryName ? ` [${categoryName}]` : ''}: ${postTitle}`,
       content_preview: `${author.full_name || 'Someone'} shared a new post: ${postTitle}. ${postDescription?.substring(0, 150) || ''}${postDescription?.length > 150 ? '...' : ''}${mediaUrl ? ` [${mediaType || 'Media'}:${mediaUrl}]` : ''}`,
       related_item_id: postId,
       metadata: JSON.stringify({
-        authorName: author.full_name || 'Someone'
+        authorName: author.full_name || 'Someone',
+        categoryName: categoryName
       })
     }));
 

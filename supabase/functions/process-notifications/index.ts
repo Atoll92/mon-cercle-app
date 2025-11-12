@@ -395,38 +395,63 @@ Deno.serve(async (req) => {
             }
 
             if (notification.notification_type === 'news') {
+              // Fetch full news post data with category
+              const { data: newsPost, error: newsError } = await supabase
+                .from('network_news')
+                .select(`
+                  id,
+                  title,
+                  content,
+                  media_url,
+                  media_type,
+                  image_url,
+                  created_by,
+                  profiles!network_news_created_by_fkey (
+                    full_name
+                  ),
+                  network_categories (
+                    name,
+                    color
+                  )
+                `)
+                .eq('id', notification.related_item_id)
+                .single()
+
+              if (newsError) {
+                console.error('📨 Error fetching news post:', newsError)
+              }
+
+              const postTitle = newsPost?.title || ''
+              const postContent = newsPost?.content || content || 'Content not available'
+              const hasMedia = !!(newsPost?.media_url || newsPost?.image_url)
+              const mediaType = newsPost?.media_type || (newsPost?.image_url ? 'image' : '')
+              const mediaUrl = newsPost?.media_url || newsPost?.image_url || ''
+              const authorName = newsPost?.profiles?.full_name || inviterName
+              const categoryName = newsPost?.network_categories?.name || null
+              const categoryColor = newsPost?.network_categories?.color || '#2196f3'
+
               console.log('📨 Creating news notification email with:', {
                 subject,
-                content: content?.substring(0, 100) + '...',
+                postTitle,
+                authorName,
+                categoryName,
+                categoryColor,
                 networkName
               })
               emailSubject = subject || `New post in ${networkName}`
-              // Parse content to extract title, description, and media for news posts
-              let postTitle = ''
-              let postContent = content || 'Content not available'
-              let hasMedia = false
-              let mediaType = ''
-              let mediaUrl = ''
-              // Check for news post with media by looking for the pattern "shared: content [MediaType:URL]"
-              const newsMatch = content?.match(/shared: ([^\[]*?)([\[])([^:]+):([^\]]+)\]\s*$/)
-              if (newsMatch) {
-                postContent = newsMatch[1]?.trim() || 'No description provided'
-                if (newsMatch[3] && newsMatch[4]) {
-                  hasMedia = true
-                  mediaType = newsMatch[3]
-                  mediaUrl = newsMatch[4]
-                }
-              }
               emailHtml = `
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; line-height: 1.6;">
                   <div style="background-color: #2196f3; padding: 20px; border-radius: 8px 8px 0 0;">
                     <h2 style="color: white; margin: 0 0 10px 0; font-size: 24px;">📰 New Post in ${networkName}</h2>
                     <p style="margin: 0; color: #e3f2fd; font-size: 14px;">Stay connected with your network</p>
                   </div>
-                  
+
                   <div style="background-color: white; padding: 24px; border: 1px solid #e0e0e0; border-radius: 0 0 8px 8px; border-top: none;">
-                    <div style="margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #f0f0f0;">
-                      <p style="margin: 0; color: #666; font-size: 14px;">Posted by <strong>${inviterName || 'Someone'}</strong></p>
+                    <div style="margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #f0f0f0; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                      <p style="margin: 0; color: #666; font-size: 14px;">Posted by <strong>${authorName}</strong></p>
+                      ${categoryName ? `
+                      <span style="display: inline-flex; align-items: center; padding: 4px 12px; border-radius: 16px; background-color: ${categoryColor}15; border: 1px solid ${categoryColor}40; font-size: 11px; font-weight: 600; color: ${categoryColor}; letter-spacing: 0.02em; white-space: nowrap;">#${categoryName}</span>
+                      ` : ''}
                     </div>
                     
                     ${postTitle ? `
@@ -478,39 +503,63 @@ Deno.serve(async (req) => {
                 </div>
               `
             } else if (notification.notification_type === 'post') {
+              // Fetch full portfolio post data with category
+              const { data: portfolioPost, error: postError } = await supabase
+                .from('portfolio_items')
+                .select(`
+                  id,
+                  title,
+                  description,
+                  media_url,
+                  media_type,
+                  image_url,
+                  profile_id,
+                  profiles!portfolio_items_profile_id_fkey (
+                    full_name
+                  ),
+                  network_categories (
+                    name,
+                    color
+                  )
+                `)
+                .eq('id', notification.related_item_id)
+                .single()
+
+              if (postError) {
+                console.error('📨 Error fetching portfolio post:', postError)
+              }
+
+              const postTitle = portfolioPost?.title || ''
+              const postContent = portfolioPost?.description || content || 'Content not available'
+              const hasMedia = !!(portfolioPost?.media_url || portfolioPost?.image_url)
+              const mediaType = portfolioPost?.media_type || (portfolioPost?.image_url ? 'image' : '')
+              const mediaUrl = portfolioPost?.media_url || portfolioPost?.image_url || ''
+              const authorName = portfolioPost?.profiles?.full_name || inviterName
+              const categoryName = portfolioPost?.network_categories?.name || null
+              const categoryColor = portfolioPost?.network_categories?.color || '#673ab7'
+
               console.log('📨 Creating portfolio post notification email with:', {
                 subject,
-                content: content?.substring(0, 100) + '...',
+                postTitle,
+                authorName,
+                categoryName,
+                categoryColor,
                 networkName
               })
               emailSubject = subject || `New post in ${networkName}`
-              // Parse content to extract title, description, and media for portfolio posts
-              let postTitle = ''
-              let postContent = content || 'Content not available'
-              let hasMedia = false
-              let mediaType = ''
-              let mediaUrl = ''
-              // Check if this is a portfolio post by looking for the pattern "shared a new post: Title. Description [MediaType:URL]"
-              const portfolioMatch = content?.match(/shared a new post: ([^.]+)\.\s*([^\[]*?)(\[([^:]+):([^\]]+)\])?\s*$/)
-              if (portfolioMatch) {
-                postTitle = portfolioMatch[1]
-                postContent = portfolioMatch[2]?.trim() || 'No description provided'
-                if (portfolioMatch[4] && portfolioMatch[5]) {
-                  hasMedia = true
-                  mediaType = portfolioMatch[4]
-                  mediaUrl = portfolioMatch[5]
-                }
-              }
               emailHtml = `
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; line-height: 1.6;">
                   <div style="background-color: #673ab7; padding: 20px; border-radius: 8px 8px 0 0;">
                     <h2 style="color: white; margin: 0 0 10px 0; font-size: 24px;">📊 New Post in ${networkName}</h2>
                     <p style="margin: 0; color: #ede7f6; font-size: 14px;">Discover what your network members are sharing</p>
                   </div>
-                  
+
                   <div style="background-color: white; padding: 24px; border: 1px solid #e0e0e0; border-radius: 0 0 8px 8px; border-top: none;">
-                    <div style="margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #f0f0f0;">
-                      <p style="margin: 0; color: #666; font-size: 14px;">Shared by <strong>${inviterName || 'Someone'}</strong></p>
+                    <div style="margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #f0f0f0; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                      <p style="margin: 0; color: #666; font-size: 14px;">Shared by <strong>${authorName}</strong></p>
+                      ${categoryName ? `
+                      <span style="display: inline-flex; align-items: center; padding: 4px 12px; border-radius: 16px; background-color: ${categoryColor}15; border: 1px solid ${categoryColor}40; font-size: 11px; font-weight: 600; color: ${categoryColor}; letter-spacing: 0.02em; white-space: nowrap;">#${categoryName}</span>
+                      ` : ''}
                     </div>
                     
                     ${postTitle ? `
