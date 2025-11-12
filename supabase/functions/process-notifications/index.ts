@@ -341,23 +341,16 @@ Deno.serve(async (req) => {
           for (const notification of groupNotifications) {
             // Prepare email data
             let inviterName = 'Network Update'
-            
+
             // Extract appropriate name from metadata based on notification type
-            // Note: News and portfolio posts now fetch author name directly from database
+            // Note: News, portfolio posts, and events now fetch author name directly from database
+            // Direct messages are handled in the grouped section above and never reach here
             if (notification.metadata) {
               try {
                 const metadata = JSON.parse(notification.metadata)
 
-                // For direct messages
-                if (notification.notification_type === 'direct_message' && metadata.senderName) {
-                  inviterName = metadata.senderName
-                }
-                // For events
-                else if (notification.notification_type === 'event' && metadata.organizerName) {
-                  inviterName = metadata.organizerName
-                }
                 // For mentions
-                else if (notification.notification_type === 'mention' && metadata.mentionerName) {
+                if (notification.notification_type === 'mention' && metadata.mentionerName) {
                   inviterName = metadata.mentionerName
                 }
                 // For event proposals
