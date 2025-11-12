@@ -461,11 +461,12 @@ Deno.serve(async (req) => {
             // Generate email HTML based on notification type
             let emailSubject = notification.subject_line || `Notification from ${notification.networks?.name || 'Network'}`
             let emailHtml = ''
-            
+            let icsAttachment: any = null // For event ICS attachments
+
             const subject = notification.subject_line
             const content = notification.content_preview
             const networkName = notification.networks?.name || 'Network'
-            
+
             // Parse metadata for additional data
             let metadata: any = {}
             if (notification.metadata) {
@@ -830,6 +831,28 @@ Deno.serve(async (req) => {
                   </div>
                 </div>
               `
+
+              // Generate ICS attachment for events
+              if (eventData) {
+                try {
+                  icsAttachment = createICSAttachment({
+                    id: eventData.id,
+                    title: eventData.title,
+                    description: eventData.description || '',
+                    startDate: eventData.date,
+                    location: eventData.location || '',
+                    organizer: eventData.profiles?.full_name || 'Event Organizer',
+                    url: `${Deno.env.get('APP_URL') || 'https://conclav.network'}/network/${notification.network_id}/event/${notification.related_item_id}`
+                  })
+                  console.log('📨 Generated ICS attachment:', {
+                    filename: icsAttachment.filename,
+                    type: icsAttachment.type
+                  })
+                } catch (icsError) {
+                  console.error('📨 Error generating ICS attachment:', icsError)
+                  // Continue without ICS if generation fails
+                }
+              }
             } else if (notification.notification_type === 'mention') {
               console.log('📨 Creating mention notification email with:', {
                 subject,
@@ -1251,27 +1274,13 @@ Deno.serve(async (req) => {
               html: emailHtml
             }
             
-            // Add ICS attachment for event notifications
-            if (notification.notification_type === 'event' && eventData) {
-              try {
-                const icsAttachment = createICSAttachment({
-                  id: eventData.id,
-                  title: eventData.title,
-                  description: eventData.description || '',
-                  startDate: eventData.date,
-                  location: eventData.location || '',
-                  organizer: eventData.profiles?.full_name || 'Event Organizer',
-                  url: `${Deno.env.get('APP_URL') || 'https://conclav.network'}/network/${notification.network_id}/event/${notification.related_item_id}`
-                })
-                emailPayload.attachments = [icsAttachment]
-                console.log('📨 Adding ICS attachment:', {
-                  filename: icsAttachment.filename,
-                  type: icsAttachment.type
-                })
-              } catch (icsError) {
-                console.error('📨 Error generating ICS attachment:', icsError)
-                // Continue without ICS if generation fails
-              }
+            // Add ICS attachment for event notifications (if generated)
+            if (icsAttachment) {
+              emailPayload.attachments = [icsAttachment]
+              console.log('📨 Adding ICS attachment to email:', {
+                filename: icsAttachment.filename,
+                type: icsAttachment.type
+              })
             }
             
             const resendResponse = await fetch('https://api.resend.com/emails', {
