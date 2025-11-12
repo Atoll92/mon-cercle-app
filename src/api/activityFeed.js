@@ -3,7 +3,7 @@
  * Handles fetching network activity for engagement
  */
 
-import { handleArrayError } from '../utils/errorHandling';
+import { handleArrayError, handleArraySuccess } from '../utils/errorHandling';
 
 /**
  * Fetch recent activity for a network
@@ -47,10 +47,10 @@ export const fetchNetworkActivity = async (supabase, networkId, limit = 50) => {
     });
 
     if (error) throw error;
-    return handleArrayError(data);
+    return handleArraySuccess(data);
   } catch (error) {
     console.error('[API] ❌ Error fetching network activity:', error);
-    return { error: error.message };
+    return handleArrayError(error, 'fetching network activity');
   }
 };
 
@@ -80,10 +80,10 @@ export const fetchProfileActivity = async (supabase, profileId, limit = 20) => {
       .limit(limit);
 
     if (error) throw error;
-    return handleArrayError(data);
+    return handleArraySuccess(data);
   } catch (error) {
     console.error('Error fetching profile activity:', error);
-    return { error: error.message };
+    return handleArrayError(error, 'fetching profile activity');
   }
 };
 
@@ -120,10 +120,10 @@ export const fetchActivityByType = async (supabase, networkId, activityType, lim
       .limit(limit);
 
     if (error) throw error;
-    return handleArrayError(data);
+    return handleArraySuccess(data);
   } catch (error) {
     console.error('Error fetching activity by type:', error);
-    return { error: error.message };
+    return handleArrayError(error, 'fetching activity by type');
   }
 };
 
