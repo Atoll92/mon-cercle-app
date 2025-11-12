@@ -343,10 +343,11 @@ Deno.serve(async (req) => {
             let inviterName = 'Network Update'
             
             // Extract appropriate name from metadata based on notification type
+            // Note: News and portfolio posts now fetch author name directly from database
             if (notification.metadata) {
               try {
                 const metadata = JSON.parse(notification.metadata)
-                
+
                 // For direct messages
                 if (notification.notification_type === 'direct_message' && metadata.senderName) {
                   inviterName = metadata.senderName
@@ -354,14 +355,6 @@ Deno.serve(async (req) => {
                 // For events
                 else if (notification.notification_type === 'event' && metadata.organizerName) {
                   inviterName = metadata.organizerName
-                }
-                // For news posts
-                else if (notification.notification_type === 'news' && metadata.authorName) {
-                  inviterName = metadata.authorName
-                }
-                // For portfolio posts
-                else if (notification.notification_type === 'post' && metadata.authorName) {
-                  inviterName = metadata.authorName
                 }
                 // For mentions
                 else if (notification.notification_type === 'mention' && metadata.mentionerName) {
