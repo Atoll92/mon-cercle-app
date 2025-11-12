@@ -13,6 +13,8 @@ import { handleArrayError } from '../utils/errorHandling';
  * @returns {Promise<Object>} - { data: activities array, error }
  */
 export const fetchNetworkActivity = async (supabase, networkId, limit = 50) => {
+  console.log('[API] 🔍 Fetching activity for network:', networkId, 'limit:', limit);
+
   try {
     const { data, error } = await supabase
       .from('activity_feed')
@@ -35,10 +37,19 @@ export const fetchNetworkActivity = async (supabase, networkId, limit = 50) => {
       .order('created_at', { ascending: false })
       .limit(limit);
 
+    console.log('[API] 📊 Activity query result:', {
+      count: data?.length,
+      hasError: !!error,
+      errorMessage: error?.message,
+      errorDetails: error?.details,
+      errorHint: error?.hint,
+      data: data
+    });
+
     if (error) throw error;
     return handleArrayError(data);
   } catch (error) {
-    console.error('Error fetching network activity:', error);
+    console.error('[API] ❌ Error fetching network activity:', error);
     return { error: error.message };
   }
 };
