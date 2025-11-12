@@ -604,47 +604,45 @@ Deno.serve(async (req) => {
                 </div>
               `
             } else if (notification.notification_type === 'event') {
-              console.log('📨 Creating event notification email with:', {
-                subject,
-                content: content?.substring(0, 100) + '...',
-                eventDate: metadata.eventDate,
-                eventLocation: metadata.eventLocation,
-                networkName
-              })
-              emailSubject = subject || `New post in ${networkName}`
-              // Parse content for media in events
-              let eventDescription = content || 'Event description not available'
-              let hasMedia = false
-              let mediaType = ''
-              let mediaUrl = ''
-              // Check for event with media by looking for the pattern "Someone created an event: Title on Date. Description [image:URL]"
-              const eventMatch = content?.match(/created an event: ([^.]+)\.\s*([^\[]*?)(\[([^:]+):([^\]]+)\])?\s*$/)
-              if (eventMatch) {
-                // eventMatch[1] contains "Title on Date"
-                // eventMatch[2] contains the description
-                // eventMatch[4] and eventMatch[5] contain media type and URL
-                eventDescription = eventMatch[2]?.trim() || 'Event description not available'
-                if (eventMatch[4] && eventMatch[5]) {
-                  hasMedia = true
-                  mediaType = eventMatch[4]
-                  mediaUrl = eventMatch[5]
-                }
-              } else {
-                // If no media pattern found, just clean up the description by removing the prefix
-                eventDescription = content?.replace(/^[^:]*created an event: /, '') || 'Event description not available'
+              // Fetch full event data with category
+              const { data: eventData, error: eventError } = await supabase
+                .from('network_events')
+                .select(`
+                  id,
+                  title,
+                  description,
+                  date,
+                  location,
+                  cover_image_url,
+                  created_by,
+                  profiles!network_events_created_by_fkey (
+                    full_name
+                  ),
+                  network_categories (
+                    name,
+                    color
+                  )
+                `)
+                .eq('id', notification.related_item_id)
+                .single()
+
+              if (eventError) {
+                console.error('📨 Error fetching event:', eventError)
               }
-              // Debug logging for event media parsing
-              console.log('📨 Event content parsing result:', {
-                originalContent: content,
-                eventDescription,
-                hasMedia,
-                mediaType,
-                mediaUrl,
-                eventMatchFound: !!eventMatch
-              })
-              // Format event date if provided
+
+              const eventTitle = eventData?.title || ''
+              const eventDescription = eventData?.description || content || 'Event description not available'
+              const eventLocation = eventData?.location || metadata.eventLocation || ''
+              const hasMedia = !!eventData?.cover_image_url
+              const mediaType = hasMedia ? 'image' : ''
+              const mediaUrl = eventData?.cover_image_url || ''
+              const organizerName = eventData?.profiles?.full_name || inviterName
+              const categoryName = eventData?.network_categories?.name || null
+              const categoryColor = eventData?.network_categories?.color || '#ff9800'
+
+              // Format event date
               let formattedDate = 'Date TBD'
-              const eventDateValue = metadata.eventDate
+              const eventDateValue = eventData?.date || metadata.eventDate
               if (eventDateValue) {
                 try {
                   const date = new Date(eventDateValue)
@@ -660,16 +658,31 @@ Deno.serve(async (req) => {
                   formattedDate = eventDateValue
                 }
               }
+
+              console.log('📨 Creating event notification email with:', {
+                subject,
+                eventTitle,
+                organizerName,
+                categoryName,
+                categoryColor,
+                formattedDate,
+                eventLocation,
+                networkName
+              })
+              emailSubject = subject || `New event in ${networkName}`
               emailHtml = `
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; line-height: 1.6;">
                   <div style="background-color: #ff9800; padding: 20px; border-radius: 8px 8px 0 0;">
                     <h2 style="color: white; margin: 0 0 10px 0; font-size: 24px;">📅 New Event in ${networkName}</h2>
                     <p style="margin: 0; color: #fff3e0; font-size: 14px;">Don't miss out on this event!</p>
                   </div>
-                  
+
                   <div style="background-color: white; padding: 24px; border: 1px solid #e0e0e0; border-radius: 0 0 8px 8px; border-top: none;">
-                    <div style="margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #f0f0f0;">
-                      <p style="margin: 0; color: #666; font-size: 14px;">Organized by <strong>${inviterName}</strong></p>
+                    <div style="margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #f0f0f0; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                      <p style="margin: 0; color: #666; font-size: 14px;">Organized by <strong>${organizerName}</strong></p>
+                      ${categoryName ? `
+                      <span style="display: inline-flex; align-items: center; padding: 4px 12px; border-radius: 16px; background-color: ${categoryColor}15; border: 1px solid ${categoryColor}40; font-size: 11px; font-weight: 600; color: ${categoryColor}; letter-spacing: 0.02em; white-space: nowrap;">#${categoryName}</span>
+                      ` : ''}
                     </div>
                     
                     <div style="margin-bottom: 20px;">
@@ -701,10 +714,10 @@ Deno.serve(async (req) => {
                         <span style="font-weight: 600; color: #e65100;">📅 When:</span>
                         <span style="color: #333; margin-left: 8px;">${formattedDate}</span>
                       </div>
-                      ${metadata.eventLocation ? `
+                      ${eventLocation ? `
                       <div style="margin-bottom: 8px;">
                         <span style="font-weight: 600; color: #e65100;">📍 Where:</span>
-                        <span style="color: #333; margin-left: 8px;">${metadata.eventLocation}</span>
+                        <span style="color: #333; margin-left: 8px;">${eventLocation}</span>
                       </div>
                       ` : ''}
                     </div>

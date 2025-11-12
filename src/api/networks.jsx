@@ -909,7 +909,8 @@ export const createEvent = async (networkId, profileId, eventData, imageFile, is
           eventData.description,
           eventData.date,
           eventData.location,
-          data[0].cover_image_url
+          data[0].cover_image_url,
+          data[0].category_id
         );
 
         console.log('📅 [EVENT DEBUG] Notification queueing result:', notificationResult);

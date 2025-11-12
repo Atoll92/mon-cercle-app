@@ -240,7 +240,7 @@ export const queueMentionNotification = async (mentionedUserId, networkId, menti
  * @param {string} eventDescription - Description of the event
  * @param {string} eventDate - Date of the event
  */
-export const queueEventNotifications = async (networkId, eventId, authorId, eventTitle, eventDescription, eventDate, eventLocation = null, coverImageUrl = null) => {
+export const queueEventNotifications = async (networkId, eventId, authorId, eventTitle, eventDescription, eventDate, eventLocation = null, coverImageUrl = null, categoryId = null) => {
   try {
 
     // Get all network members who want event notifications (excluding the author)
@@ -289,6 +289,20 @@ export const queueEventNotifications = async (networkId, eventId, authorId, even
       return { success: false, error: authorError.message };
     }
 
+    // Get category name if categoryId is provided
+    let categoryName = null;
+    if (categoryId) {
+      const { data: category, error: categoryError } = await supabase
+        .from('network_categories')
+        .select('name')
+        .eq('id', categoryId)
+        .single();
+
+      if (!categoryError && category) {
+        categoryName = category.name;
+      }
+    }
+
     // Format event date for display
     const formattedDate = new Date(eventDate).toLocaleDateString('en-US', {
       weekday: 'long',
@@ -326,7 +340,7 @@ export const queueEventNotifications = async (networkId, eventId, authorId, even
       recipient_id: recipient.id,
       network_id: networkId,
       notification_type: 'event',
-      subject_line: `New event in ${network.name}: ${eventTitle}`,
+      subject_line: `New event in ${network.name}${categoryName ? ` [${categoryName}]` : ''}: ${eventTitle}`,
       content_preview: `${author.full_name || 'Someone'} created an event: ${eventTitle} on ${formattedDate}. ${eventDescription?.substring(0, 150) || ''}${eventDescription?.length > 150 ? '...' : ''}${coverImageUrl ? ` [image:${coverImageUrl}]` : ''}`,
       related_item_id: eventId,
       // Add ICS attachment data to metadata
@@ -335,12 +349,14 @@ export const queueEventNotifications = async (networkId, eventId, authorId, even
         eventLocation: eventLocation,
         icsAttachment: JSON.parse(icsAttachmentData),
         organizerName: author.full_name || 'Event Organizer',
+        categoryName: categoryName,
         networkId: networkId,
         eventId: eventId
       }) : JSON.stringify({
         eventDate: eventDate,
         eventLocation: eventLocation,
         organizerName: author.full_name || 'Event Organizer',
+        categoryName: categoryName,
         networkId: networkId,
         eventId: eventId
       })
