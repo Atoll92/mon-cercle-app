@@ -123,22 +123,14 @@ const ActivityFeed = ({ networkId, limit = 20, compact = false, autoRefresh = tr
   const loadActivities = async () => {
     if (!networkId) return;
 
-    console.log('[ActivityFeed] Loading activities for network:', networkId);
     setLoading(true);
     const { data, error } = await fetchNetworkActivity(supabase, networkId, limit);
-
-    console.log('[ActivityFeed] Fetch result:', {
-      count: data?.length,
-      error,
-      hasData: !!data
-    });
 
     if (error) {
       console.error('[ActivityFeed] Error loading activities:', error);
     }
 
     if (!error && data) {
-      console.log('[ActivityFeed] Activities loaded:', data);
       setActivities(data);
     }
 
