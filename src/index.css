@@ -1289,16 +1289,34 @@ input, textarea, select, button {
   background-color: rgba(33, 150, 243, 0.08);
 }
 
-/* Event styling */
+/* Event styling - force transparent backgrounds for all event elements */
+.rbc-event,
+.rbc-event *,
+.rbc-event-allday,
+.rbc-event-allday *,
+.rbc-event-content,
+.rbc-day-slot .rbc-event,
+.rbc-month-view .rbc-event,
+.rbc-event.rbc-selected,
+.rbc-event:focus,
+.rbc-event:hover,
+.rbc-event:active,
+.event-attending,
+.event-maybe,
+.event-declined,
+.event-today,
+.event-default {
+  background-color: transparent !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
 .rbc-event {
-  border: none !important;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
-  transition: transform 0.1s, box-shadow 0.1s;
+  transition: transform 0.1s;
 }
 
 .rbc-event:hover {
   transform: translateY(-1px);
-  box-shadow: 0 3px 5px rgba(0,0,0,0.2);
 }
 
 /* Header styling */

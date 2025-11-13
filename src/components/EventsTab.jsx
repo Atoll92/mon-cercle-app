@@ -772,12 +772,17 @@ const EventsTab = ({
   },
   // Dark mode compatible header
   '& .rbc-header': {
-    padding: '8px',
-    fontWeight: 'bold',
+    padding: '10px 8px',
+    fontWeight: 600,
+    fontSize: '0.875rem',
+    textTransform: 'uppercase',
+    letterSpacing: '0.5px',
     backgroundColor: (theme) => theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.02)',
-    borderBottom: '1px solid',
-    borderColor: 'divider', // Using MUI's divider color which is theme aware
-    color: 'text.primary' // Using MUI's text primary color which is theme aware
+    borderBottom: '2px solid',
+    borderRight: '1px solid',
+    borderRightColor: (theme) => theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)',
+    borderBottomColor: (theme) => theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)',
+    color: 'text.secondary' // Using MUI's text secondary color which is theme aware
   },
   '& .rbc-month-view': {
     border: 'none',
@@ -787,15 +792,20 @@ const EventsTab = ({
   },
   '& .rbc-day-bg': {
     transition: 'all 0.2s ease',
+    borderRight: '1px solid',
+    borderRightColor: (theme) => theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)',
     '&:hover': {
       backgroundColor: (theme) => theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.03)',
     }
   },
   '& .rbc-date-cell': {
-    padding: '4px 8px',
-    textAlign: 'center',
-    fontSize: '0.85rem',
-    color: 'text.primary' // Using MUI's text primary color which is theme aware
+    padding: '6px 8px',
+    textAlign: 'right',
+    fontSize: '0.875rem',
+    fontWeight: 500,
+    color: 'text.primary', // Using MUI's text primary color which is theme aware
+    borderRight: '1px solid',
+    borderRightColor: (theme) => theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'
   },
   // Fix for today's date in dark mode
   '& .rbc-today': {
@@ -856,26 +866,25 @@ const EventsTab = ({
       zIndex: -1
     }
   },
-  // Individual color styles to force proper initial rendering for calendar events
-  '& .event-attending, & div.event-attending, & .rbc-event.event-attending': {
-    backgroundColor: '#4caf50 !important',
-    borderColor: '#4caf50 !important'
+  // Individual color styles - only for the custom Box component inside, not the rbc-event container
+  '& .rbc-event.event-attending, & .rbc-event.event-maybe, & .rbc-event.event-declined, & .rbc-event.event-default, & .rbc-event.event-today': {
+    backgroundColor: 'transparent !important',
+    border: 'none !important'
   },
-  '& .event-maybe, & div.event-maybe, & .rbc-event.event-maybe': {
-    backgroundColor: '#ff9800 !important',
-    borderColor: '#ff9800 !important'
+  '& .rbc-event.event-attending .MuiBox-root': {
+    border: '2px solid #4caf50 !important'
   },
-  '& .event-declined, & div.event-declined, & .rbc-event.event-declined': {
-    backgroundColor: '#f44336 !important',
-    borderColor: '#f44336 !important'
+  '& .rbc-event.event-maybe .MuiBox-root': {
+    border: '2px solid #ff9800 !important'
   },
-  '& .event-default, & div.event-default, & .rbc-event.event-default': {
-    backgroundColor: '#757575 !important',
-    borderColor: '#757575 !important'
+  '& .rbc-event.event-declined .MuiBox-root': {
+    border: '2px solid #f44336 !important'
   },
-  '& .event-today, & div.event-today, & .rbc-event.event-today': {
-    backgroundColor: '#2196f3 !important',
-    borderColor: '#2196f3 !important'
+  '& .rbc-event.event-default .MuiBox-root': {
+    border: '2px solid #757575 !important'
+  },
+  '& .rbc-event.event-today .MuiBox-root': {
+    border: '2px solid #2196f3 !important'
   },
   
   // Color styles for date badges
@@ -930,16 +939,13 @@ const EventsTab = ({
   },
   // Fix for off-range days in dark mode
   '& .rbc-off-range-bg': {
-    backgroundColor: (theme) => theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.2)' : 'rgba(0, 0, 0, 0.03)'
+    backgroundColor: (theme) => theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.04)',
+    opacity: 0.5
   },
   // Fix for today's color in month view
   '& .rbc-month-view .rbc-now': {
-    color: 'primary.main' // Use primary color for today's date text
-  },
-  // Fix for daygrid background
-  '& .rbc-month-view .rbc-day-bg + .rbc-day-bg': {
-    borderLeft: '1px solid',
-    borderLeftColor: 'divider' // Using MUI's divider color
+    color: 'primary.main', // Use primary color for today's date text
+    fontWeight: 700
   },
   // Fix month row separator
   '& .rbc-month-row + .rbc-month-row': {
@@ -1063,16 +1069,16 @@ const EventsTab = ({
     onSelectEvent={handleEventSelect}
     eventPropGetter={(event) => {
       // Initialize with default gray
-      let bgColor = '#757575';
+      let borderColor = '#757575';
       let className = event.className || 'event-default';
-      
+
       console.log(`Event prop getter for "${event.title}":`);
       console.log('  - className from event:', event.className);
       console.log('  - color prop from event:', event.color);
-      
+
       // Try multiple sources to determine participation status
       let participationStatus = null;
-      
+
       // Check direct resource reference first
       if (event.resource && event.resource.id) {
         const participation = userParticipations.find(p => p.event_id === event.resource.id);
@@ -1081,7 +1087,7 @@ const EventsTab = ({
           console.log('  - Found participation from resource.id:', participationStatus);
         }
       }
-      
+
       // Look for participation based on date (fallback for single-day events)
       if (!participationStatus && event.start) {
         const sameDay = (date1, date2) => {
@@ -1089,12 +1095,12 @@ const EventsTab = ({
                  date1.getMonth() === date2.getMonth() &&
                  date1.getDate() === date2.getDate();
         };
-        
+
         // Find events on this date
-        const eventsOnSameDay = filteredEvents.filter(e => 
+        const eventsOnSameDay = filteredEvents.filter(e =>
           sameDay(new Date(e.date), event.start)
         );
-        
+
         // If there's just one event on this day, it's likely the one we want
         if (eventsOnSameDay.length === 1) {
           const participation = userParticipations.find(p => p.event_id === eventsOnSameDay[0].id);
@@ -1104,69 +1110,68 @@ const EventsTab = ({
           }
         }
       }
-      
+
       // EXPLICITLY determine color and className based on participation status
       if (participationStatus === 'attending') {
-        bgColor = '#4caf50'; // Green
+        borderColor = '#4caf50'; // Green
         className = 'event-attending';
-        console.log('  → Explicitly setting GREEN color (attending)');
+        console.log('  → Explicitly setting GREEN border (attending)');
       } else if (participationStatus === 'maybe') {
-        bgColor = '#ff9800'; // Orange
+        borderColor = '#ff9800'; // Orange
         className = 'event-maybe';
-        console.log('  → Explicitly setting ORANGE color (maybe)');
+        console.log('  → Explicitly setting ORANGE border (maybe)');
       } else if (participationStatus === 'declined') {
-        bgColor = '#f44336'; // Red
+        borderColor = '#f44336'; // Red
         className = 'event-declined';
-        console.log('  → Explicitly setting RED color (declined)');
-      } 
+        console.log('  → Explicitly setting RED border (declined)');
+      }
       // If we have no participation status, fall back to className or today check
       else {
         // Check if this event is for today
-        const isToday = event.start ? 
+        const isToday = event.start ?
           new Date().toDateString() === event.start.toDateString() : false;
-        
+
         if (isToday) {
-          bgColor = '#2196f3'; // Blue for today
+          borderColor = '#2196f3'; // Blue for today
           className = 'event-today';
-          console.log('  → Explicitly setting BLUE color (today event)');
-        } 
+          console.log('  → Explicitly setting BLUE border (today event)');
+        }
         // As a last resort, use the className from the event
         else if (event.className) {
           if (event.className === 'event-attending') {
-            bgColor = '#4caf50'; // Green
-            console.log('  → Using class-based GREEN color (attending)');
+            borderColor = '#4caf50'; // Green
+            console.log('  → Using class-based GREEN border (attending)');
           } else if (event.className === 'event-maybe') {
-            bgColor = '#ff9800'; // Orange
-            console.log('  → Using class-based ORANGE color (maybe)');
+            borderColor = '#ff9800'; // Orange
+            console.log('  → Using class-based ORANGE border (maybe)');
           } else if (event.className === 'event-declined') {
-            bgColor = '#f44336'; // Red
-            console.log('  → Using class-based RED color (declined)');
+            borderColor = '#f44336'; // Red
+            console.log('  → Using class-based RED border (declined)');
           } else if (event.className === 'event-today') {
-            bgColor = '#2196f3'; // Blue
-            console.log('  → Using class-based BLUE color (today)');
+            borderColor = '#2196f3'; // Blue
+            console.log('  → Using class-based BLUE border (today)');
           } else {
-            console.log('  → Using class-based DEFAULT GRAY color');
+            console.log('  → Using class-based DEFAULT GRAY border');
           }
         } else {
-          console.log('  → Fallback DEFAULT GRAY color');
+          console.log('  → Fallback DEFAULT GRAY border');
         }
       }
-      
+
       const result = {
         className: className, // Use our determined className
         style: {
-          backgroundColor: bgColor + ' !important', // Add !important for CSS priority
-          borderColor: bgColor + ' !important',     // Match border color
-          borderRadius: '8px',
-          border: 'none',
-          boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-          color: 'white',
+          backgroundColor: 'transparent', // No background color
+          border: 'none', // Remove border from container (custom component handles it)
+          borderRadius: '4px',
+          boxShadow: 'none',
+          color: 'inherit',
           position: 'relative'
         }
       };
-      
+
       console.log('  - Final className:', result.className);
-      console.log('  - Final style color:', result.style.backgroundColor);
+      console.log('  - Final border color:', result.style.borderColor);
       return result;
     }}
     dayPropGetter={(date) => ({
@@ -1198,60 +1203,95 @@ const EventsTab = ({
     }}
     popupOffset={{ x: 0, y: 20 }}
     components={{
-      event: ({ event }) => (
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            height: '100%',
-            width: '100%',
-            overflow: 'hidden',
-            padding: '2px 4px',
-            cursor: 'pointer'
-          }}
-        >
-          {event.coverImage && (
-            <Box
-              sx={{
-                width: '28px',
-                height: '28px',
-                marginRight: '4px',
-                flexShrink: 0,
-                borderRadius: '4px',
-                overflow: 'hidden',
-                border: '2px solid rgba(255,255,255,0.7)'
-              }}
-            >
-              <img
+      event: ({ event }) => {
+        const [showTooltip, setShowTooltip] = React.useState(false);
+
+        // The border color is stored in event.color (from the calendar event object)
+        // event.style is not passed to custom components by react-big-calendar
+        const borderColor = event.color || '#9e9e9e';
+        console.log(`Custom event component for "${event.title}":`, {
+          borderColor,
+          eventColor: event.color,
+          className: event.className
+        });
+
+        return (
+          <Box
+            sx={{
+              width: '48px',
+              height: '48px',
+              borderRadius: '6px',
+              border: `2px solid ${borderColor}`,
+              backgroundColor: 'transparent',
+              cursor: 'pointer',
+              position: 'relative',
+              overflow: 'hidden',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+            onMouseEnter={() => setShowTooltip(true)}
+            onMouseLeave={() => setShowTooltip(false)}
+            title={event.title} // Fallback native tooltip
+          >
+            {/* Event cover image */}
+            {event.coverImage && (
+              <Box
+                component="img"
                 src={event.coverImage}
                 alt=""
-                style={{
+                sx={{
                   width: '100%',
                   height: '100%',
-                  objectFit: 'cover'
+                  objectFit: 'cover',
+                  position: 'absolute',
+                  top: 0,
+                  left: 0
                 }}
               />
-            </Box>
-          )}
-          <Typography
-            variant="caption"
-            sx={{
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-              fontWeight: 'medium',
-              textShadow: '0 1px 2px rgba(0,0,0,0.5)', // Increased shadow for better readability in both modes
-              display: 'flex',
-              alignItems: 'center'
-            }}
-          >
-            {event.title}
-            {event.hasLink && (
-              <LinkIcon fontSize="inherit" sx={{ ml: 0.5 }} />
             )}
-          </Typography>
-        </Box>
-      ),
+
+            {/* Custom tooltip */}
+            {showTooltip && (
+              <Box
+                sx={{
+                  position: 'absolute',
+                  bottom: '100%',
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  mb: 1,
+                  bgcolor: (theme) => theme.palette.mode === 'dark' ? 'rgba(50, 50, 50, 0.98)' : 'rgba(0, 0, 0, 0.92)',
+                  color: 'white',
+                  px: 1.5,
+                  py: 0.75,
+                  borderRadius: 1,
+                  fontSize: '0.75rem',
+                  fontWeight: 500,
+                  whiteSpace: 'nowrap',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+                  zIndex: 10000,
+                  pointerEvents: 'none',
+                  minWidth: 'max-content',
+                  '&::after': {
+                    content: '""',
+                    position: 'absolute',
+                    top: '100%',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    width: 0,
+                    height: 0,
+                    borderLeft: '4px solid transparent',
+                    borderRight: '4px solid transparent',
+                    borderTop: (theme) => `4px solid ${theme.palette.mode === 'dark' ? 'rgba(50, 50, 50, 0.98)' : 'rgba(0, 0, 0, 0.92)'}`
+                  }
+                }}
+              >
+                {event.title}
+              </Box>
+            )}
+          </Box>
+        );
+      },
       dateCellWrapper: ({ children, value }) => (
         <div data-date={value.toISOString().split('T')[0]}>
           {children}
