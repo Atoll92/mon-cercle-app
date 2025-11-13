@@ -340,6 +340,7 @@
       "profilePicture": "Profile Picture",
       "professionalDetails": "Professional Details",
       "introPost": "Introduction Post (Optional)",
+      "notifications": "Notification Preferences",
       "review": "Review"
     },
     "welcome": {
@@ -400,6 +401,11 @@
       "mediaUploaded": "Media file uploaded",
       "postWillBePublished": "This post will be published when you complete setup"
     },
+    "notifications": {
+      "description": "Choose which email notifications you'd like to receive",
+      "title": "Email Notifications",
+      "infoMessage": "Stay informed about what matters to you. You can always change these settings later from your profile."
+    },
     "review": {
       "description": "Review your profile before joining",
       "successMessage": "Great! Your profile is ready. Review your information before joining {{networkName}}.",
@@ -409,6 +415,9 @@
       "linkedin": "LinkedIn",
       "skills": "Skills",
       "introPostPreview": "Your Introduction Post Preview",
+      "notificationPreferences": "Notification Preferences",
+      "emailNotificationsEnabled": "Email notifications enabled",
+      "emailNotificationsDisabled": "Email notifications disabled",
       "readyToJoin": "Ready to join {{networkName}}?",
       "mediaPreview": "Media preview",
       "mediaFile": "Media file"

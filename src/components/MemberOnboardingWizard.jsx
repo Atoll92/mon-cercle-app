@@ -34,7 +34,8 @@ import {
   Card,
   CardContent,
   CardMedia,
-  Grid
+  Grid,
+  Switch
 } from '@mui/material';
 import Spinner from './Spinner';
 import {
@@ -57,7 +58,12 @@ import {
   Image as ImageIcon,
   VideoLibrary as VideoIcon,
   AudioFile as AudioIcon,
-  PictureAsPdf as PdfIcon
+  PictureAsPdf as PdfIcon,
+  Notifications as NotificationsIcon,
+  Article as NewsIcon,
+  Event as EventIcon,
+  AlternateEmail as MentionIcon,
+  Message as MessageIcon
 } from '@mui/icons-material';
 import MediaUpload from './MediaUpload';
 import UserContent from './UserContent';
@@ -107,6 +113,15 @@ const MemberOnboardingWizard = ({ profile, network }) => {
   const [introMediaUrl, setIntroMediaUrl] = useState(null);
   const [introMediaType, setIntroMediaType] = useState(null);
   const [introMediaMetadata, setIntroMediaMetadata] = useState({});
+
+  // Notification preferences state
+  const [notificationPreferences, setNotificationPreferences] = useState({
+    email_notifications_enabled: true,
+    notify_on_news: true,
+    notify_on_events: true,
+    notify_on_mentions: true,
+    notify_on_direct_messages: true
+  });
 
   // Common skill suggestions
   const commonSkills = [
@@ -166,7 +181,7 @@ const MemberOnboardingWizard = ({ profile, network }) => {
       label: t('memberOnboarding.steps.introPost'),
       description: t('memberOnboarding.introPost.description'),
       component: (
-        <IntroPostStep 
+        <IntroPostStep
           createIntroPost={createIntroPost}
           setCreateIntroPost={setCreateIntroPost}
           introPostTitle={introPostTitle}
@@ -185,10 +200,21 @@ const MemberOnboardingWizard = ({ profile, network }) => {
       )
     },
     {
+      label: t('memberOnboarding.steps.notifications'),
+      description: t('memberOnboarding.notifications.description'),
+      component: (
+        <NotificationSettingsStep
+          preferences={notificationPreferences}
+          setPreferences={setNotificationPreferences}
+          network={network}
+        />
+      )
+    },
+    {
       label: t('memberOnboarding.steps.review'),
       description: t('memberOnboarding.review.description'),
       component: (
-        <ReviewStep 
+        <ReviewStep
           profileData={profileData}
           network={network}
           createIntroPost={createIntroPost}
@@ -197,6 +223,7 @@ const MemberOnboardingWizard = ({ profile, network }) => {
           introMediaUrl={introMediaUrl}
           introMediaType={introMediaType}
           introMediaMetadata={introMediaMetadata}
+          notificationPreferences={notificationPreferences}
         />
       )
     }
@@ -278,7 +305,7 @@ const MemberOnboardingWizard = ({ profile, network }) => {
         avatarUrl = await uploadAvatar();
       }
 
-      // Update profile in the database
+      // Update profile in the database including notification preferences
       const { error: updateError } = await supabase
         .from('profiles')
         .update({
@@ -290,6 +317,11 @@ const MemberOnboardingWizard = ({ profile, network }) => {
           linkedin_url: profileData.linkedinUrl,
           skills: profileData.skills,
           profile_picture_url: avatarUrl,
+          email_notifications_enabled: notificationPreferences.email_notifications_enabled,
+          notify_on_news: notificationPreferences.notify_on_news,
+          notify_on_events: notificationPreferences.notify_on_events,
+          notify_on_mentions: notificationPreferences.notify_on_mentions,
+          notify_on_direct_messages: notificationPreferences.notify_on_direct_messages,
           updated_at: new Date().toISOString()
         })
         .eq('id', profile.id);
@@ -1009,8 +1041,142 @@ const IntroPostStep = ({
   );
 };
 
-// Step 6: Review
-const ReviewStep = ({ profileData, network, createIntroPost, introPostTitle, introPostContent, introMediaUrl, introMediaType, introMediaMetadata }) => {
+// Step 6: Notification Settings
+const NotificationSettingsStep = ({ preferences, setPreferences, network }) => {
+  const { t } = useTranslation();
+
+  const handlePreferenceChange = (field, value) => {
+    // If turning off master toggle, turn off all specific notifications
+    if (field === 'email_notifications_enabled' && !value) {
+      setPreferences({
+        email_notifications_enabled: false,
+        notify_on_news: false,
+        notify_on_events: false,
+        notify_on_mentions: false,
+        notify_on_direct_messages: false
+      });
+    } else {
+      setPreferences(prev => ({ ...prev, [field]: value }));
+    }
+  };
+
+  const notificationTypes = [
+    {
+      key: 'notify_on_news',
+      label: t('notificationSettings.types.news.label'),
+      description: t('notificationSettings.types.news.description'),
+      icon: <NewsIcon />
+    },
+    {
+      key: 'notify_on_events',
+      label: t('notificationSettings.types.events.label'),
+      description: t('notificationSettings.types.events.description'),
+      icon: <EventIcon />
+    },
+    {
+      key: 'notify_on_mentions',
+      label: t('notificationSettings.types.mentions.label'),
+      description: t('notificationSettings.types.mentions.description'),
+      icon: <MentionIcon />
+    },
+    {
+      key: 'notify_on_direct_messages',
+      label: t('notificationSettings.types.messages.label'),
+      description: t('notificationSettings.types.messages.description'),
+      icon: <MessageIcon />
+    }
+  ];
+
+  return (
+    <Card sx={{ borderRadius: 2 }}>
+      <CardContent>
+        <Box display="flex" alignItems="center" gap={2} mb={3}>
+          <NotificationsIcon color="primary" />
+          <Typography variant="h6" fontWeight={600}>
+            {t('memberOnboarding.notifications.title')}
+          </Typography>
+        </Box>
+
+        <Alert severity="info" sx={{ mb: 3 }}>
+          {t('memberOnboarding.notifications.infoMessage')}
+        </Alert>
+
+        <Stack spacing={3}>
+          {/* Master toggle */}
+          <Box>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={preferences.email_notifications_enabled}
+                  onChange={(e) => handlePreferenceChange('email_notifications_enabled', e.target.checked)}
+                />
+              }
+              label={
+                <Box>
+                  <Typography variant="subtitle1" fontWeight={600}>
+                    {t('notificationSettings.masterToggle')}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {t('notificationSettings.masterToggleDescription')}
+                  </Typography>
+                </Box>
+              }
+            />
+          </Box>
+
+          <Divider />
+
+          {/* Specific notification types */}
+          <Box>
+            <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+              {t('notificationSettings.typesTitle')}
+            </Typography>
+            <Stack spacing={2}>
+              {notificationTypes.map((type) => (
+                <FormControlLabel
+                  key={type.key}
+                  control={
+                    <Switch
+                      checked={preferences[type.key] && preferences.email_notifications_enabled}
+                      onChange={(e) => handlePreferenceChange(type.key, e.target.checked)}
+                      disabled={!preferences.email_notifications_enabled}
+                    />
+                  }
+                  label={
+                    <Box display="flex" alignItems="flex-start" gap={2} sx={{ opacity: preferences.email_notifications_enabled ? 1 : 0.5 }}>
+                      <Box color="primary.main" mt={0.5}>
+                        {type.icon}
+                      </Box>
+                      <Box>
+                        <Typography variant="body1" fontWeight={500}>
+                          {type.label}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {type.description}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  }
+                  sx={{
+                    alignItems: 'flex-start',
+                    ml: 0,
+                    '& .MuiFormControlLabel-label': {
+                      flex: 1,
+                      mt: 1
+                    }
+                  }}
+                />
+              ))}
+            </Stack>
+          </Box>
+        </Stack>
+      </CardContent>
+    </Card>
+  );
+};
+
+// Step 7: Review
+const ReviewStep = ({ profileData, network, createIntroPost, introPostTitle, introPostContent, introMediaUrl, introMediaType, introMediaMetadata, notificationPreferences }) => {
   const { t } = useTranslation();
   // Get media icon for preview
   const getMediaIcon = (type) => {
@@ -1120,7 +1286,7 @@ const ReviewStep = ({ profileData, network, createIntroPost, introPostTitle, int
             <Typography variant="body2" color="text.secondary" sx={{ whiteSpace: 'pre-wrap' }}>
               {introPostContent}
             </Typography>
-            
+
             {/* Show media preview if uploaded */}
             {introMediaUrl && (
               <Box sx={{ mt: 2 }}>
@@ -1129,17 +1295,17 @@ const ReviewStep = ({ profileData, network, createIntroPost, introPostTitle, int
                     component="img"
                     image={introMediaUrl}
                     alt="Media preview"
-                    sx={{ 
-                      maxHeight: 150, 
+                    sx={{
+                      maxHeight: 150,
                       objectFit: 'contain',
                       borderRadius: 1,
                       bgcolor: 'rgba(0,0,0,0.02)'
                     }}
                   />
                 ) : (
-                  <Box 
-                    sx={{ 
-                      p: 2, 
+                  <Box
+                    sx={{
+                      p: 2,
                       textAlign: 'center',
                       bgcolor: 'rgba(0,0,0,0.02)',
                       borderRadius: 1,
@@ -1152,15 +1318,15 @@ const ReviewStep = ({ profileData, network, createIntroPost, introPostTitle, int
                     <Typography variant="body2">
                       {introMediaMetadata?.fileName || t('memberOnboarding.review.mediaFile')}
                     </Typography>
-                    <Chip 
-                      label={introMediaType?.toUpperCase() || 'FILE'} 
-                      size="small" 
+                    <Chip
+                      label={introMediaType?.toUpperCase() || 'FILE'}
+                      size="small"
                     />
                   </Box>
                 )}
               </Box>
             )}
-            
+
             <Box sx={{ mt: 2, display: 'flex', alignItems: 'center' }}>
               <PostAddIcon fontSize="small" sx={{ mr: 1, color: 'primary.main' }} />
               <Typography variant="caption" color="primary.main">
@@ -1170,7 +1336,52 @@ const ReviewStep = ({ profileData, network, createIntroPost, introPostTitle, int
           </Paper>
         </Box>
       )}
-      
+
+      {/* Notification Preferences Preview */}
+      <Box sx={{ mt: 3 }}>
+        <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 600 }}>
+          {t('memberOnboarding.review.notificationPreferences')}
+        </Typography>
+        <Paper elevation={0} sx={{ p: 2, borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+            <NotificationsIcon color={notificationPreferences.email_notifications_enabled ? 'primary' : 'disabled'} fontSize="small" />
+            <Typography variant="body2" fontWeight={500}>
+              {notificationPreferences.email_notifications_enabled
+                ? t('memberOnboarding.review.emailNotificationsEnabled')
+                : t('memberOnboarding.review.emailNotificationsDisabled')}
+            </Typography>
+          </Box>
+          {notificationPreferences.email_notifications_enabled && (
+            <Stack spacing={0.5} sx={{ ml: 4 }}>
+              {notificationPreferences.notify_on_news && (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <CheckIcon fontSize="small" color="success" />
+                  <Typography variant="body2">{t('notificationSettings.types.news.label')}</Typography>
+                </Box>
+              )}
+              {notificationPreferences.notify_on_events && (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <CheckIcon fontSize="small" color="success" />
+                  <Typography variant="body2">{t('notificationSettings.types.events.label')}</Typography>
+                </Box>
+              )}
+              {notificationPreferences.notify_on_mentions && (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <CheckIcon fontSize="small" color="success" />
+                  <Typography variant="body2">{t('notificationSettings.types.mentions.label')}</Typography>
+                </Box>
+              )}
+              {notificationPreferences.notify_on_direct_messages && (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <CheckIcon fontSize="small" color="success" />
+                  <Typography variant="body2">{t('notificationSettings.types.messages.label')}</Typography>
+                </Box>
+              )}
+            </Stack>
+          )}
+        </Paper>
+      </Box>
+
       <Box sx={{ mt: 3, p: 2, bgcolor: alpha('#2196f3', 0.1), borderRadius: 1 }}>
         <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center' }}>
           <GroupsIcon sx={{ mr: 1 }} />

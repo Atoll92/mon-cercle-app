@@ -340,6 +340,7 @@
       "profilePicture": "Photo de profil",
       "professionalDetails": "Détails professionnels",
       "introPost": "Message d'introduction (Optionnel)",
+      "notifications": "Préférences de notification",
       "review": "Révision"
     },
     "welcome": {
@@ -400,6 +401,11 @@
       "mediaUploaded": "Fichier média téléchargé",
       "postWillBePublished": "Ce message sera publié lorsque vous aurez terminé la configuration"
     },
+    "notifications": {
+      "description": "Choisissez les notifications par email que vous souhaitez recevoir",
+      "title": "Notifications par email",
+      "infoMessage": "Restez informé de ce qui vous intéresse. Vous pourrez toujours modifier ces paramètres depuis votre profil."
+    },
     "review": {
       "description": "Révisez votre profil avant de rejoindre",
       "successMessage": "Parfait ! Votre profil est prêt. Révisez vos informations avant de rejoindre {{networkName}}.",
@@ -409,6 +415,9 @@
       "linkedin": "LinkedIn",
       "skills": "Compétences",
       "introPostPreview": "Aperçu de votre message d'introduction",
+      "notificationPreferences": "Préférences de notification",
+      "emailNotificationsEnabled": "Notifications par email activées",
+      "emailNotificationsDisabled": "Notifications par email désactivées",
       "readyToJoin": "Prêt à rejoindre {{networkName}} ?",
       "mediaPreview": "Aperçu du média",
       "mediaFile": "Fichier média"
