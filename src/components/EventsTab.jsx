@@ -1986,6 +1986,177 @@ const EventsTab = ({
         </Paper>
       )}
 
+      {/* Upcoming Events Section (Full Grid) */}
+      {upcomingEvents.length > 0 && (
+        <Paper
+          elevation={0}
+          variant="outlined"
+          sx={{
+            mt: 3,
+            borderRadius: 2,
+            overflow: 'hidden',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+            border: '1px solid',
+            borderColor: 'divider'
+          }}
+        >
+          <Box sx={{
+            p: 2,
+            bgcolor: 'background.paper',
+            borderBottom: '1px solid',
+            borderColor: 'divider',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center'
+          }}>
+            <Box>
+              <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center' }}>
+                <EventIcon sx={{ mr: 1 }} color="primary" />
+                {t('eventsTab.upcomingEvents')}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {t('eventsTab.eventsHappeningSoon')}
+              </Typography>
+            </Box>
+
+            <Chip
+              label={t('eventsTab.eventsCount', { count: upcomingEvents.length })}
+              size="small"
+              color="primary"
+              variant="outlined"
+            />
+          </Box>
+
+          <Box sx={{ p: 2 }}>
+            <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 2 }}>
+              {upcomingEvents
+                .sort((a, b) => new Date(a.date) - new Date(b.date))
+                .map((event) => {
+                  const participation = userParticipations.find(p => p.event_id === event.id);
+                  const eventDate = new Date(event.date);
+
+                  return (
+                    <Card
+                      key={event.id}
+                      sx={{
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                        borderRadius: 2,
+                        overflow: 'hidden',
+                        bgcolor: 'background.paper',
+                        borderTop: '4px solid #2196f3',
+                        '&:hover': {
+                          transform: 'translateY(-2px)',
+                          boxShadow: '0 8px 24px rgba(0,0,0,0.1)'
+                        }
+                      }}
+                      onClick={() => {
+                        setSelectedEvent(event);
+                        setShowEventDialog(true);
+                      }}
+                    >
+                      {/* Cover image */}
+                      {event.cover_image_url && (
+                        <Box sx={{
+                          height: 120,
+                          overflow: 'hidden',
+                          position: 'relative'
+                        }}>
+                          <img
+                            src={event.cover_image_url}
+                            alt={event.title}
+                            style={{
+                              width: '100%',
+                              height: '100%',
+                              objectFit: 'cover'
+                            }}
+                          />
+                          {/* Overlay with date */}
+                          <Box sx={{
+                            position: 'absolute',
+                            top: 8,
+                            left: 8,
+                            bgcolor: '#2196f3',
+                            color: 'white',
+                            px: 1.5,
+                            py: 0.5,
+                            borderRadius: 1,
+                            fontSize: '0.75rem',
+                            fontWeight: 'bold'
+                          }}>
+                            {formatDate(event.date, { month: 'short', day: 'numeric' })}
+                          </Box>
+                        </Box>
+                      )}
+
+                      <CardContent sx={{ p: 2 }}>
+                        <Typography
+                          variant="subtitle2"
+                          sx={{
+                            fontWeight: 'medium',
+                            mb: 0.5,
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap'
+                          }}
+                        >
+                          {event.title}
+                        </Typography>
+
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 1 }}>
+                          <EventIcon sx={{ fontSize: 14, color: 'text.secondary' }} />
+                          <Typography variant="caption" color="text.secondary">
+                            {formatDate(event.date, { month: 'short', day: 'numeric' })}
+                          </Typography>
+                        </Box>
+
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 1 }}>
+                          <LocationOnIcon sx={{ fontSize: 14, color: 'text.secondary' }} />
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            sx={{
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap'
+                            }}
+                          >
+                            {event.location}
+                          </Typography>
+                        </Box>
+
+                        {/* Participation indicator */}
+                        {participation && (
+                          <Chip
+                            label={
+                              participation.status === 'attending' ? t('eventsTab.attending') :
+                              participation.status === 'maybe' ? t('eventsTab.maybe') :
+                              t('eventsTab.notAttending')
+                            }
+                            size="small"
+                            sx={{
+                              height: 20,
+                              fontSize: '0.7rem',
+                              bgcolor: participation.status === 'attending' ? 'rgba(76, 175, 80, 0.1)' :
+                                       participation.status === 'maybe' ? 'rgba(255, 152, 0, 0.1)' :
+                                       'rgba(244, 67, 54, 0.1)',
+                              color: participation.status === 'attending' ? '#4caf50' :
+                                     participation.status === 'maybe' ? '#ff9800' : '#f44336',
+                              border: '1px solid',
+                              borderColor: participation.status === 'attending' ? '#4caf50' :
+                                          participation.status === 'maybe' ? '#ff9800' : '#f44336'
+                            }}
+                          />
+                        )}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+            </Box>
+          </Box>
+        </Paper>
+      )}
+
       {/* Past Events Navigation */}
       <Paper
         elevation={0}
