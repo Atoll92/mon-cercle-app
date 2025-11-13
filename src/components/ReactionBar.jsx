@@ -20,7 +20,6 @@ import {
 } from '@mui/material';
 import AddReactionOutlinedIcon from '@mui/icons-material/AddReactionOutlined';
 import { useProfile } from '../context/profileContext';
-import { useNetwork } from '../context/networkContext';
 import { supabase } from '../supabaseclient';
 import {
   fetchReactionSummary,
@@ -45,7 +44,6 @@ const EMOJI_PICKER = [
 const ReactionBar = ({ contentType, contentId, initialCount = 0, size = 'medium' }) => {
   const theme = useTheme();
   const { activeProfile } = useProfile();
-  const { network } = useNetwork();
 
   const [reactions, setReactions] = useState({});
   const [userReaction, setUserReaction] = useState(null);
@@ -53,23 +51,47 @@ const ReactionBar = ({ contentType, contentId, initialCount = 0, size = 'medium'
   const [tooltipAnchor, setTooltipAnchor] = useState(null);
   const [tooltipContent, setTooltipContent] = useState({ emoji: '', names: [] });
   const [loading, setLoading] = useState(false);
+  const [networkFeaturesConfig, setNetworkFeaturesConfig] = useState(null);
 
   const profileId = activeProfile?.id;
   const networkId = activeProfile?.network_id;
 
+  // Fetch network features config if we have a networkId but no NetworkProvider
+  useEffect(() => {
+    if (!networkId) return;
+
+    const fetchNetworkConfig = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('networks')
+          .select('features_config')
+          .eq('id', networkId)
+          .single();
+
+        if (!error && data) {
+          setNetworkFeaturesConfig(data.features_config);
+        }
+      } catch (err) {
+        console.error('Error fetching network features config:', err);
+      }
+    };
+
+    fetchNetworkConfig();
+  }, [networkId]);
+
   // Check if reactions are enabled for this network
   const reactionsEnabled = React.useMemo(() => {
-    if (!network?.features_config) return true; // Default to enabled if no config
+    if (!networkFeaturesConfig) return true; // Default to enabled if no config
     try {
-      const config = typeof network.features_config === 'string'
-        ? JSON.parse(network.features_config)
-        : network.features_config;
+      const config = typeof networkFeaturesConfig === 'string'
+        ? JSON.parse(networkFeaturesConfig)
+        : networkFeaturesConfig;
       return config.reactions !== false;
     } catch (e) {
       console.error('Error parsing features_config:', e);
       return true; // Default to enabled on error
     }
-  }, [network?.features_config]);
+  }, [networkFeaturesConfig]);
 
   console.log('ReactionBar: activeProfile', { activeProfile, profileId, networkId });
 
