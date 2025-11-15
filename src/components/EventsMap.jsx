@@ -23,6 +23,7 @@ export default function EventsMap({ events = [], onEventSelect, initialCoordinat
   const [loading, setLoading] = useState(true);
   const [mapError, setMapError] = useState(null);
   const [selectedCity, setSelectedCity] = useState('all');
+  const hasInitiallyFitBounds = useRef(false); // Track if we've done initial fit
 
   // Extract unique cities from events
   const cities = useMemo(() => {
@@ -501,12 +502,14 @@ export default function EventsMap({ events = [], onEventSelect, initialCoordinat
           bounds.extend([longitude, latitude]);
         });
 
-        // Fit map to bounds with padding on initial load
-        if (!bounds.isEmpty() && eventsWithCoordinates.length > 0) {
+        // Fit map to bounds with padding ONLY on initial load
+        // Don't reset view when user interacts with markers
+        if (!bounds.isEmpty() && eventsWithCoordinates.length > 0 && !hasInitiallyFitBounds.current) {
           mapRef.current.fitBounds(bounds, {
             padding: 70,
             maxZoom: 15
           });
+          hasInitiallyFitBounds.current = true; // Mark as done
         }
       } catch (error) {
         console.error('Error adding markers:', error);
