@@ -501,8 +501,13 @@ export default function EventsMap({ events = [], onEventSelect, initialCoordinat
           bounds.extend([longitude, latitude]);
         });
 
-        // Don't auto-fit bounds - let user control the zoom/pan
-        // The initial view is set when the map loads, and city filter has its own zoom logic
+        // Fit map to bounds with padding on initial load
+        if (!bounds.isEmpty() && eventsWithCoordinates.length > 0) {
+          mapRef.current.fitBounds(bounds, {
+            padding: 70,
+            maxZoom: 15
+          });
+        }
       } catch (error) {
         console.error('Error adding markers:', error);
       }
