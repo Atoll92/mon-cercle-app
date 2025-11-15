@@ -878,6 +878,7 @@
   "eventsTab": {
     "filterByCategory": "Filtrer par catégorie",
     "allCategories": "Toutes les catégories",
+    "allCities": "Toutes les villes",
     "manageEvents": "Gérer les événements",
     "eventsMap": "Carte des événements",
     "eventsOnMap": "{{shown}} / {{total}} événements sur la carte",

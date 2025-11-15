@@ -209,8 +209,60 @@ const EventsTab = ({
 
   const handleEventSelect = (event) => {
     if (event.resource) {
-      setSelectedEvent(event.resource);
-      setShowEventDialog(true);
+      // If this event has additional events on the same day, show the popover with all events
+      if (event.additionalCount > 0) {
+        // Find all events on this date
+        const eventDate = new Date(event.resource.date);
+        const eventsOnSameDay = filteredEvents.filter(e => {
+          const eDate = new Date(e.date);
+          return eDate.toDateString() === eventDate.toDateString();
+        });
+
+        // Create calendar events for the popover
+        const calendarEvents = eventsOnSameDay.map(e => {
+          const participation = userParticipations.find(p => p.event_id === e.id);
+          const isToday = new Date().toDateString() === eventDate.toDateString();
+
+          let eventColor;
+          let eventClass = 'event-default';
+
+          if (participation) {
+            if (participation.status === 'attending') {
+              eventColor = '#4caf50';
+              eventClass = 'event-attending';
+            } else if (participation.status === 'maybe') {
+              eventColor = '#ff9800';
+              eventClass = 'event-maybe';
+            } else if (participation.status === 'declined') {
+              eventColor = '#f44336';
+              eventClass = 'event-declined';
+            }
+          } else {
+            eventColor = isToday ? '#2196f3' : '#757575';
+            eventClass = isToday ? 'event-today' : 'event-default';
+          }
+
+          return {
+            title: e.title,
+            start: new Date(e.date),
+            end: new Date(e.date),
+            allDay: true,
+            resource: e,
+            color: eventColor,
+            className: eventClass,
+            coverImage: e.cover_image_url,
+            hasLink: !!e.event_link
+          };
+        });
+
+        // Set a fake anchor for the dialog (we'll use centered dialog)
+        setCalendarPopoverAnchor(document.body);
+        setPopoverEvents(calendarEvents);
+      } else {
+        // Single event, show the event details dialog
+        setSelectedEvent(event.resource);
+        setShowEventDialog(true);
+      }
     }
   };
 
@@ -351,111 +403,119 @@ const EventsTab = ({
       
       <Divider sx={{ mb: 3 }} />
 
-      {/* Fixed layout with two equal width columns using a flex container instead of Grid */}
-      <Box sx={{ 
-        display: 'flex', 
-        flexDirection: { xs: 'column', md: 'row' }, 
+      {/* Desktop layout: Full-width map at top, two columns below (mobile: stacked) */}
+      <Box sx={{
+        display: 'flex',
+        flexDirection: 'column',
         gap: 3,
         width: '100%'
       }}>
-        {/* Left column: Map and upcoming events */}
-        <Box sx={{ 
-          flex: '1 1 0px', 
-          display: 'flex', 
-          flexDirection: 'column',
-          minWidth: 0 // This ensures the flex item can shrink below its content size
+        {/* Full-Width Events Map */}
+        <Paper
+          elevation={0}
+          variant="outlined"
+          sx={{
+            borderRadius: 2,
+            overflow: 'hidden',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+            border: '1px solid',
+            borderColor: 'divider'
+          }}
+        >
+          <Box sx={{ p: 2, bgcolor: 'background.paper', borderBottom: '1px solid', borderColor: 'divider' }}>
+            <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center' }}>
+              <LocationOnIcon sx={{ mr: 1 }} color="primary" />
+              {t('eventsTab.eventsMap')}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              {t('eventsTab.geographicView')}
+            </Typography>
+          </Box>
+          <EventsMap
+            events={filteredEvents.filter(event => new Date(event.date) >= new Date())}
+            onEventSelect={(event) => {
+              setSelectedEvent(event);
+              setShowEventDialog(true);
+            }}
+            height="500px"
+          />
+        </Paper>
+
+        {/* Two-column layout: Upcoming Events (left) and Calendar (right) */}
+        <Box sx={{
+          display: 'flex',
+          flexDirection: { xs: 'column', md: 'row' },
+          gap: 3,
+          width: '100%'
         }}>
-          {/* Events Map */}
-          <Paper 
-            elevation={0} 
-            variant="outlined" 
-            sx={{ 
-              mb: 3, 
-              borderRadius: 2, 
-              overflow: 'hidden',
-              flex: '0 0 auto'
-            }}
-          >
-            <Box sx={{ p: 2, bgcolor: 'background.paper', borderBottom: '1px solid', borderColor: 'divider' }}>
-              <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center' }}>
-                <LocationOnIcon sx={{ mr: 1 }} color="primary" />
-                {t('eventsTab.eventsMap')}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                {t('eventsTab.geographicView')}
-              </Typography>
-            </Box>
-            <EventsMap 
-              events={filteredEvents.filter(event => new Date(event.date) >= new Date())} 
-              onEventSelect={(event) => {
-                setSelectedEvent(event);
-                setShowEventDialog(true);
+          {/* Left column: Upcoming Events */}
+          <Box sx={{
+            flex: '1 1 0px',
+            display: 'flex',
+            flexDirection: 'column',
+            minWidth: 0
+          }}>
+            <Paper
+              elevation={0}
+              variant="outlined"
+              sx={{
+                flex: '1 1 auto',
+                borderRadius: 2,
+                overflow: 'hidden',
+                display: 'flex',
+                flexDirection: 'column',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+                border: '1px solid',
+                borderColor: 'divider'
               }}
-            />
-          </Paper>
-          
-          {/* Upcoming Events Section */}
-          <Paper 
-            elevation={0} 
-            variant="outlined" 
-            sx={{ 
-              flex: '1 1 auto',
-              borderRadius: 2,
-              overflow: 'hidden',
-              display: 'flex',
-              flexDirection: 'column',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
-              border: '1px solid',
-              borderColor: 'divider'
-            }}
-          >
-            <Box sx={{ 
-              p: 2, 
-              bgcolor: 'background.paper', 
-              borderBottom: '1px solid', 
-              borderColor: 'divider',
-              display: 'flex', 
-              justifyContent: 'space-between', 
-              alignItems: 'center'
-            }}>
-              <Box>
-                <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center' }}>
-                  <EventIcon sx={{ mr: 1 }} color="primary" />
-                  {t('eventsTab.upcomingEvents')}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {t('eventsTab.eventsHappeningSoon')}
-                </Typography>
-              </Box>
-              
-              <Chip label={t('eventsTab.eventsCount', { count: upcomingEvents.length })}
-                size="small" color="primary" variant="outlined" />
-            </Box>
-            
-            <Box sx={{ flex: '1 1 auto', overflowY: 'auto', maxHeight: '380px' }}>
-              {upcomingEvents.length === 0 ? (
-                <Box sx={{ textAlign: 'center', py: 4, px: 2 }}>
-                  <Typography variant="body1" color="text.secondary" gutterBottom>
-                    {t('eventsTab.noUpcomingEvents')}
+            >
+              <Box sx={{
+                p: 2,
+                bgcolor: 'background.paper',
+                borderBottom: '1px solid',
+                borderColor: 'divider',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center'
+              }}>
+                <Box>
+                  <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center' }}>
+                    <EventIcon sx={{ mr: 1 }} color="primary" />
+                    {t('eventsTab.upcomingEvents')}
                   </Typography>
-                  {isUserAdmin && (
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      component={Link}
-                      to="/admin?tab=events"
-                      startIcon={<EventIcon />}
-                      sx={{ mt: 2 }}
-                    >
-                      {t('eventsTab.createEvent')}
-                    </Button>
-                  )}
+                  <Typography variant="body2" color="text.secondary">
+                    {t('eventsTab.eventsHappeningSoon')}
+                  </Typography>
                 </Box>
-              ) : (
-                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr', gap: 0 }}>
-                  {upcomingEvents
-                    .sort((a, b) => new Date(a.date) - new Date(b.date))
-                    .map((event, index) => {
+
+                <Chip label={t('eventsTab.eventsCount', { count: upcomingEvents.length })}
+                  size="small" color="primary" variant="outlined" />
+              </Box>
+
+              <Box sx={{ flex: '1 1 auto', overflowY: 'auto', maxHeight: { xs: '400px', md: '600px' } }}>
+                {upcomingEvents.length === 0 ? (
+                  <Box sx={{ textAlign: 'center', py: 4, px: 2 }}>
+                    <Typography variant="body1" color="text.secondary" gutterBottom>
+                      {t('eventsTab.noUpcomingEvents')}
+                    </Typography>
+                    {isUserAdmin && (
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        component={Link}
+                        to="/admin?tab=events"
+                        startIcon={<EventIcon />}
+                        sx={{ mt: 2 }}
+                      >
+                        {t('eventsTab.createEvent')}
+                      </Button>
+                    )}
+                  </Box>
+                ) : (
+                  <Box sx={{ display: 'grid', gridTemplateColumns: '1fr', gap: 0 }}>
+                    {upcomingEvents
+                      .sort((a, b) => new Date(a.date) - new Date(b.date))
+                      .map((event, index) => {
                       // Find user participation for this event
                       const participation = userParticipations.find(p => p.event_id === event.id);
                       const eventDate = new Date(event.date);
@@ -511,16 +571,12 @@ const EventsTab = ({
                             overflow: 'hidden',
                             minHeight: '120px' // Ensure consistent height
                           }}>
-                            {/* Event image with overlaid date badge - with animation on hover */}
-                            <Box sx={{ 
-                              width: { xs: '100px', sm: '150px', md: '200px' },
+                            {/* Event image with overlaid date badge */}
+                            <Box sx={{
+                              width: { xs: '100px', sm: '120px', md: '150px' },
                               position: 'relative',
                               overflow: 'hidden',
-                              transition: 'all 0.3s ease',
                               flexShrink: 0, // Prevent shrinking
-                              '.parent-event-row:hover &': {
-                                width: { xs: '100px', sm: '120px', md: '150px' }
-                              }
                             }}>
                               {event.cover_image_url ? (
                                 <>
@@ -1003,63 +1059,79 @@ const EventsTab = ({
 }}>
   <Calendar
     localizer={localizer}
-    events={filteredEvents.map(event => {
-      // Find if user is participating in this event
-      const participation = userParticipations.find(p => p.event_id === event.id);
-      const eventDate = new Date(event.date);
-      const isToday = new Date().toDateString() === eventDate.toDateString();
-      
-      // Enhanced color coding for better dark mode visibility
-      let eventColor;
-      let eventClass = 'event-default';
-      
-      console.log(`Creating calendar event for "${event.title}" (ID: ${event.id}):`);
-      console.log('  - Event date:', eventDate.toLocaleDateString());
-      console.log('  - Is today:', isToday);
-      console.log('  - Participation found:', participation ? 'YES' : 'NO');
-      
-      if (participation) {
-        console.log('  - Participation status:', participation.status);
-        
-        // More saturated colors for dark mode visibility
-        if (participation.status === 'attending') {
-          eventColor = '#4caf50'; // Green - unchanged
-          eventClass = 'event-attending';
-          console.log('  → Assigning attending class and color (GREEN)');
+    events={(() => {
+      // Group events by date
+      const eventsByDate = filteredEvents.reduce((acc, event) => {
+        const dateKey = new Date(event.date).toDateString();
+        if (!acc[dateKey]) {
+          acc[dateKey] = [];
         }
-        else if (participation.status === 'maybe') {
-          eventColor = '#ff9800'; // Orange - unchanged
-          eventClass = 'event-maybe';
-          console.log('  → Assigning maybe class and color (ORANGE)');
+        acc[dateKey].push(event);
+        return acc;
+      }, {});
+
+      // Create calendar events - only show first event per day
+      const calendarEvents = [];
+
+      Object.entries(eventsByDate).forEach(([dateKey, eventsOnDay]) => {
+        // Sort events by participation status (attending first, then maybe, declined, none)
+        const sortedEvents = eventsOnDay.sort((a, b) => {
+          const aParticipation = userParticipations.find(p => p.event_id === a.id);
+          const bParticipation = userParticipations.find(p => p.event_id === b.id);
+
+          const statusOrder = { 'attending': 0, 'maybe': 1, 'declined': 2, 'none': 3 };
+          const aStatus = aParticipation ? statusOrder[aParticipation.status] : statusOrder.none;
+          const bStatus = bParticipation ? statusOrder[bParticipation.status] : statusOrder.none;
+
+          return aStatus - bStatus;
+        });
+
+        // Use the first event (highest priority)
+        const event = sortedEvents[0];
+        const participation = userParticipations.find(p => p.event_id === event.id);
+        const eventDate = new Date(event.date);
+        const isToday = new Date().toDateString() === eventDate.toDateString();
+
+        // Enhanced color coding for better dark mode visibility
+        let eventColor;
+        let eventClass = 'event-default';
+
+        if (participation) {
+          // More saturated colors for dark mode visibility
+          if (participation.status === 'attending') {
+            eventColor = '#4caf50'; // Green
+            eventClass = 'event-attending';
+          }
+          else if (participation.status === 'maybe') {
+            eventColor = '#ff9800'; // Orange
+            eventClass = 'event-maybe';
+          }
+          else if (participation.status === 'declined') {
+            eventColor = '#f44336'; // Red
+            eventClass = 'event-declined';
+          }
+        } else {
+          eventColor = isToday ? '#2196f3' : '#757575'; // Blue for today, gray for other days
+          eventClass = isToday ? 'event-today' : 'event-default';
         }
-        else if (participation.status === 'declined') {
-          eventColor = '#f44336'; // Red - unchanged
-          eventClass = 'event-declined'; 
-          console.log('  → Assigning declined class and color (RED)');
-        }
-      } else {
-        eventColor = isToday ? '#2196f3' : '#757575'; // Blue for today, gray for other days
-        eventClass = isToday ? 'event-today' : 'event-default';
-        console.log(`  → No participation: Assigning ${isToday ? 'today' : 'default'} class and color (${isToday ? 'BLUE' : 'GRAY'})`);
-      }
-      
-      const calendarEvent = {
-        title: event.title,
-        start: new Date(event.date),
-        end: new Date(event.date),
-        allDay: true,
-        resource: event,
-        color: eventColor,
-        className: eventClass,
-        coverImage: event.cover_image_url,
-        hasLink: !!event.event_link
-      };
-      
-      console.log('  - Created calendar event with className:', calendarEvent.className);
-      console.log('  - Created calendar event with color:', calendarEvent.color);
-      
-      return calendarEvent;
-    })}
+
+        calendarEvents.push({
+          title: event.title,
+          start: new Date(event.date),
+          end: new Date(event.date),
+          allDay: true,
+          resource: event,
+          color: eventColor,
+          className: eventClass,
+          coverImage: event.cover_image_url,
+          hasLink: !!event.event_link,
+          // Add count of additional events
+          additionalCount: eventsOnDay.length - 1
+        });
+      });
+
+      return calendarEvents;
+    })()}
     date={calendarDate}
     view="month"
     onNavigate={setCalendarDate}
@@ -1068,111 +1140,17 @@ const EventsTab = ({
     style={{ flex: '1 1 auto', minHeight: '500px', width: '100%' }}
     onSelectEvent={handleEventSelect}
     eventPropGetter={(event) => {
-      // Initialize with default gray
-      let borderColor = '#757575';
-      let className = event.className || 'event-default';
-
-      console.log(`Event prop getter for "${event.title}":`);
-      console.log('  - className from event:', event.className);
-      console.log('  - color prop from event:', event.color);
-
-      // Try multiple sources to determine participation status
-      let participationStatus = null;
-
-      // Check direct resource reference first
-      if (event.resource && event.resource.id) {
-        const participation = userParticipations.find(p => p.event_id === event.resource.id);
-        if (participation) {
-          participationStatus = participation.status;
-          console.log('  - Found participation from resource.id:', participationStatus);
-        }
-      }
-
-      // Look for participation based on date (fallback for single-day events)
-      if (!participationStatus && event.start) {
-        const sameDay = (date1, date2) => {
-          return date1.getFullYear() === date2.getFullYear() &&
-                 date1.getMonth() === date2.getMonth() &&
-                 date1.getDate() === date2.getDate();
-        };
-
-        // Find events on this date
-        const eventsOnSameDay = filteredEvents.filter(e =>
-          sameDay(new Date(e.date), event.start)
-        );
-
-        // If there's just one event on this day, it's likely the one we want
-        if (eventsOnSameDay.length === 1) {
-          const participation = userParticipations.find(p => p.event_id === eventsOnSameDay[0].id);
-          if (participation) {
-            participationStatus = participation.status;
-            console.log('  - Found participation by date match:', participationStatus);
-          }
-        }
-      }
-
-      // EXPLICITLY determine color and className based on participation status
-      if (participationStatus === 'attending') {
-        borderColor = '#4caf50'; // Green
-        className = 'event-attending';
-        console.log('  → Explicitly setting GREEN border (attending)');
-      } else if (participationStatus === 'maybe') {
-        borderColor = '#ff9800'; // Orange
-        className = 'event-maybe';
-        console.log('  → Explicitly setting ORANGE border (maybe)');
-      } else if (participationStatus === 'declined') {
-        borderColor = '#f44336'; // Red
-        className = 'event-declined';
-        console.log('  → Explicitly setting RED border (declined)');
-      }
-      // If we have no participation status, fall back to className or today check
-      else {
-        // Check if this event is for today
-        const isToday = event.start ?
-          new Date().toDateString() === event.start.toDateString() : false;
-
-        if (isToday) {
-          borderColor = '#2196f3'; // Blue for today
-          className = 'event-today';
-          console.log('  → Explicitly setting BLUE border (today event)');
-        }
-        // As a last resort, use the className from the event
-        else if (event.className) {
-          if (event.className === 'event-attending') {
-            borderColor = '#4caf50'; // Green
-            console.log('  → Using class-based GREEN border (attending)');
-          } else if (event.className === 'event-maybe') {
-            borderColor = '#ff9800'; // Orange
-            console.log('  → Using class-based ORANGE border (maybe)');
-          } else if (event.className === 'event-declined') {
-            borderColor = '#f44336'; // Red
-            console.log('  → Using class-based RED border (declined)');
-          } else if (event.className === 'event-today') {
-            borderColor = '#2196f3'; // Blue
-            console.log('  → Using class-based BLUE border (today)');
-          } else {
-            console.log('  → Using class-based DEFAULT GRAY border');
-          }
-        } else {
-          console.log('  → Fallback DEFAULT GRAY border');
-        }
-      }
-
-      const result = {
-        className: className, // Use our determined className
+      return {
+        className: event.className || 'event-default',
         style: {
-          backgroundColor: 'transparent', // No background color
-          border: 'none', // Remove border from container (custom component handles it)
+          backgroundColor: 'transparent',
+          border: 'none',
           borderRadius: '4px',
           boxShadow: 'none',
           color: 'inherit',
           position: 'relative'
         }
       };
-
-      console.log('  - Final className:', result.className);
-      console.log('  - Final border color:', result.style.borderColor);
-      return result;
     }}
     dayPropGetter={(date) => ({
       style: {
@@ -1207,13 +1185,8 @@ const EventsTab = ({
         const [showTooltip, setShowTooltip] = React.useState(false);
 
         // The border color is stored in event.color (from the calendar event object)
-        // event.style is not passed to custom components by react-big-calendar
         const borderColor = event.color || '#9e9e9e';
-        console.log(`Custom event component for "${event.title}":`, {
-          borderColor,
-          eventColor: event.color,
-          className: event.className
-        });
+        const hasAdditional = event.additionalCount > 0;
 
         return (
           <Box
@@ -1232,7 +1205,7 @@ const EventsTab = ({
             }}
             onMouseEnter={() => setShowTooltip(true)}
             onMouseLeave={() => setShowTooltip(false)}
-            title={event.title} // Fallback native tooltip
+            title={hasAdditional ? `${event.title} +${event.additionalCount} more` : event.title}
           >
             {/* Event cover image */}
             {event.coverImage && (
@@ -1249,6 +1222,29 @@ const EventsTab = ({
                   left: 0
                 }}
               />
+            )}
+
+            {/* "+X more" badge */}
+            {hasAdditional && (
+              <Box
+                sx={{
+                  position: 'absolute',
+                  bottom: 2,
+                  right: 2,
+                  bgcolor: 'rgba(0, 0, 0, 0.85)',
+                  color: 'white',
+                  px: 0.5,
+                  py: 0.25,
+                  borderRadius: 0.5,
+                  fontSize: '0.65rem',
+                  fontWeight: 'bold',
+                  lineHeight: 1,
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
+                  zIndex: 1
+                }}
+              >
+                +{event.additionalCount}
+              </Box>
             )}
 
             {/* Custom tooltip */}
@@ -1287,6 +1283,11 @@ const EventsTab = ({
                 }}
               >
                 {event.title}
+                {hasAdditional && (
+                  <Box component="span" sx={{ ml: 1, opacity: 0.8 }}>
+                    +{event.additionalCount} more
+                  </Box>
+                )}
               </Box>
             )}
           </Box>
@@ -1301,6 +1302,7 @@ const EventsTab = ({
   />
 </Box>
           </Paper>
+        </Box>
         </Box>
       </Box>
 

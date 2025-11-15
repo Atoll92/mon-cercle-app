@@ -877,6 +877,7 @@
   "eventsTab": {
     "filterByCategory": "Filter by Category",
     "allCategories": "All Categories",
+    "allCities": "All Cities",
     "manageEvents": "Manage Events",
     "eventsMap": "Events Map",
     "eventsOnMap": "{{shown}} / {{total}} events on map",
