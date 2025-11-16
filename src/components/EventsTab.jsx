@@ -403,44 +403,13 @@ const EventsTab = ({
       
       <Divider sx={{ mb: 3 }} />
 
-      {/* Desktop layout: Full-width map at top, two columns below (mobile: stacked) */}
+      {/* Desktop layout: Two columns at top, map below (mobile: stacked) */}
       <Box sx={{
         display: 'flex',
         flexDirection: 'column',
         gap: 3,
         width: '100%'
       }}>
-        {/* Full-Width Events Map */}
-        <Paper
-          elevation={0}
-          variant="outlined"
-          sx={{
-            borderRadius: 2,
-            overflow: 'hidden',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
-            border: '1px solid',
-            borderColor: 'divider'
-          }}
-        >
-          <Box sx={{ p: 2, bgcolor: 'background.paper', borderBottom: '1px solid', borderColor: 'divider' }}>
-            <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center' }}>
-              <LocationOnIcon sx={{ mr: 1 }} color="primary" />
-              {t('eventsTab.eventsMap')}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              {t('eventsTab.geographicView')}
-            </Typography>
-          </Box>
-          <EventsMap
-            events={filteredEvents.filter(event => new Date(event.date) >= new Date())}
-            onEventSelect={(event) => {
-              setSelectedEvent(event);
-              setShowEventDialog(true);
-            }}
-            height="500px"
-          />
-        </Paper>
-
         {/* Two-column layout: Upcoming Events (left) and Calendar (right) */}
         <Box sx={{
           display: 'flex',
@@ -1304,6 +1273,37 @@ const EventsTab = ({
           </Paper>
         </Box>
         </Box>
+
+        {/* Full-Width Events Map */}
+        <Paper
+          elevation={0}
+          variant="outlined"
+          sx={{
+            borderRadius: 2,
+            overflow: 'hidden',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+            border: '1px solid',
+            borderColor: 'divider'
+          }}
+        >
+          <Box sx={{ p: 2, bgcolor: 'background.paper', borderBottom: '1px solid', borderColor: 'divider' }}>
+            <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center' }}>
+              <LocationOnIcon sx={{ mr: 1 }} color="primary" />
+              {t('eventsTab.eventsMap')}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              {t('eventsTab.geographicView')}
+            </Typography>
+          </Box>
+          <EventsMap
+            events={filteredEvents.filter(event => new Date(event.date) >= new Date())}
+            onEventSelect={(event) => {
+              setSelectedEvent(event);
+              setShowEventDialog(true);
+            }}
+            height="500px"
+          />
+        </Paper>
       </Box>
 
       {/* Event Details Dialog */}
