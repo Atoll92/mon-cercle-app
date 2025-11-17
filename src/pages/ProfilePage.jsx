@@ -807,75 +807,73 @@ function ProfilePage() {
                       
                       <Stack spacing={1.5}>
                         {upcomingEvents.slice(0, 2).map(event => (
-                          <Card 
-                            key={event.id} 
+                          <Card
+                            key={event.id}
                             variant="outlined"
-                            sx={{ 
+                            sx={{
                               cursor: 'pointer',
                               transition: 'all 0.2s ease',
                               '&:hover': {
-                                boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                                boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                                transform: 'translateY(-2px)'
                               }
                             }}
                             onClick={() => handleEventClick(event)}
                           >
-                            <Box sx={{ display: 'flex', alignItems: 'center', p: 1 }}>
-                              {event.cover_image_url ? (
-                                <Box 
-                                  sx={{ 
-                                    width: 50, 
-                                    height: 50, 
-                                    borderRadius: 1,
-                                    overflow: 'hidden',
-                                    mr: 1.5
+                            {/* Event Image - Full Width at Top */}
+                            {event.cover_image_url ? (
+                              <Box
+                                sx={{
+                                  width: '100%',
+                                  height: 200,
+                                  overflow: 'hidden',
+                                  bgcolor: 'grey.100'
+                                }}
+                              >
+                                <img
+                                  src={event.cover_image_url}
+                                  alt={event.title}
+                                  style={{
+                                    width: '100%',
+                                    height: '100%',
+                                    objectFit: 'cover'
                                   }}
-                                >
-                                  <img 
-                                    src={event.cover_image_url} 
-                                    alt={event.title}
-                                    style={{ 
-                                      width: '100%', 
-                                      height: '100%', 
-                                      objectFit: 'cover' 
-                                    }} 
-                                  />
-                                </Box>
-                              ) : (
-                                <Box 
-                                  sx={{ 
-                                    width: 50, 
-                                    height: 50, 
-                                    borderRadius: 1,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    bgcolor: 'primary.light',
-                                    color: 'white',
-                                    mr: 1.5
-                                  }}
-                                >
-                                  <CalendarMonthIcon />
-                                </Box>
-                              )}
-                              
-                              <Box sx={{ minWidth: 0 }}>
-                                <Typography 
-                                  variant="body2" 
-                                  fontWeight="500" 
-                                  noWrap
-                                >
-                                  {event.title}
-                                </Typography>
-                                
-                                <Typography 
-                                  variant="caption" 
-                                  color="text.secondary" 
-                                  sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
-                                >
-                                  <CalendarMonthIcon fontSize="inherit" />
-                                  {formatEventDate(event.date)}
-                                </Typography>
+                                />
                               </Box>
+                            ) : (
+                              <Box
+                                sx={{
+                                  width: '100%',
+                                  height: 200,
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  bgcolor: 'primary.light',
+                                  color: 'white'
+                                }}
+                              >
+                                <CalendarMonthIcon sx={{ fontSize: 60 }} />
+                              </Box>
+                            )}
+
+                            {/* Event Details Below Image */}
+                            <Box sx={{ p: 2 }}>
+                              <Typography
+                                variant="body1"
+                                fontWeight="600"
+                                sx={{ mb: 1 }}
+                              >
+                                {event.title}
+                              </Typography>
+
+                              <Typography
+                                variant="body2"
+                                color="text.secondary"
+                                sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
+                              >
+                                <CalendarMonthIcon fontSize="inherit" />
+                                {formatEventDate(event.date)}
+                              </Typography>
                             </Box>
                           </Card>
                         ))}
