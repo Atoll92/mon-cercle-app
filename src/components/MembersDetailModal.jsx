@@ -55,9 +55,18 @@ const MemberDetailsModal = ({
   const { t } = useTranslation();
   const muiTheme = useTheme(); // Get the MUI theme
   const { activeProfile } = useProfile(); // Get active profile to determine if current user
-  
+
   // Compute isCurrentUser internally
   const isCurrentUser = activeProfile?.id === member?.id;
+
+  // Helper function to ensure URL has proper protocol
+  const ensureHttpProtocol = (url) => {
+    if (!url) return url;
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return url;
+    }
+    return `https://${url}`;
+  };
   
   // When using theme.palette.custom, check first if it exists
   // This is for compatibility with both your custom theme and the default theme
@@ -469,10 +478,10 @@ const MemberDetailsModal = ({
               
               {member.portfolio_url && (
                 <Grid item xs={12} sm={6} md={4}>
-                  <Paper 
-                    elevation={0} 
-                    sx={{ 
-                      p: 1.5, 
+                  <Paper
+                    elevation={0}
+                    sx={{
+                      p: 1.5,
                       bgcolor: darkMode ? alpha('#000000', 0.3) : alpha('#f5f5f5', 0.8),
                       border: '1px solid',
                       borderColor: customBorder,
@@ -488,7 +497,7 @@ const MemberDetailsModal = ({
                     <Typography
                       variant="body2"
                       component="a"
-                      href={member.portfolio_url}
+                      href={ensureHttpProtocol(member.portfolio_url)}
                       target="_blank"
                       rel="noopener noreferrer"
                       sx={{
@@ -505,10 +514,10 @@ const MemberDetailsModal = ({
               
               {member.linkedin_url && (
                 <Grid item xs={12} sm={6} md={4}>
-                  <Paper 
-                    elevation={0} 
-                    sx={{ 
-                      p: 1.5, 
+                  <Paper
+                    elevation={0}
+                    sx={{
+                      p: 1.5,
                       bgcolor: darkMode ? alpha('#000000', 0.3) : alpha('#f5f5f5', 0.8),
                       border: '1px solid',
                       borderColor: customBorder,
@@ -524,7 +533,7 @@ const MemberDetailsModal = ({
                     <Typography
                       variant="body2"
                       component="a"
-                      href={member.linkedin_url}
+                      href={ensureHttpProtocol(member.linkedin_url)}
                       target="_blank"
                       rel="noopener noreferrer"
                       sx={{
