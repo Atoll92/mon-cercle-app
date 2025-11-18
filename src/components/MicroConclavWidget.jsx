@@ -6,14 +6,16 @@ import {
   Typography,
   Button,
   IconButton,
-  alpha
+  alpha,
+  Chip
 } from '@mui/material';
 import Spinner from './Spinner';
 import WidgetHeader from './shared/WidgetHeader';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import EditIcon from '@mui/icons-material/Edit';
 import PublicIcon from '@mui/icons-material/Public';
-import { getUserMoodboard, getUserMoodboardItems } from '../api/moodboards';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import { getUserMoodboard, getUserMoodboardItems, getMoodboardWithViewCount } from '../api/moodboards';
 import { useProfile } from '../context/profileContext';
 import InfiniteMoodboardCarousel from './Moodboard/InfiniteMoodboardCarousel';
 import { getProfileById } from '../api/profiles';
@@ -27,6 +29,7 @@ const MicroConclavWidget = ({ profileId: propProfileId }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [profile, setProfile] = useState(null);
+  const [viewCount, setViewCount] = useState(0);
 
   // For micro conclav, we need a profile ID, not a user ID
   // Use prop if provided, otherwise use active profile or first profile
@@ -56,6 +59,14 @@ const MicroConclavWidget = ({ profileId: propProfileId }) => {
 
       const data = await getUserMoodboard(profileId);
       setMoodboard(data);
+
+      // Fetch view count if viewing own moodboard
+      if (isOwnMoodboard) {
+        const moodboardWithCount = await getMoodboardWithViewCount(profileId);
+        if (moodboardWithCount) {
+          setViewCount(moodboardWithCount.view_count || 0);
+        }
+      }
 
       // Fetch moodboard items for the carousel
       const { items } = await getUserMoodboardItems(profileId, 0, 10);
@@ -108,15 +119,27 @@ const MicroConclavWidget = ({ profileId: propProfileId }) => {
         viewAllLink={microConclavUrl}
         viewAllText={t('dashboard.buttons.view')}
         action={
-          isOwnMoodboard && (
-            <IconButton
-              size="small"
-              onClick={() => navigate(`/moodboard/${moodboard?.id}`)}
-              disabled={!moodboard}
-            >
-              <EditIcon />
-            </IconButton>
-          )
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            {/* Show view count only to owner */}
+            {isOwnMoodboard && (
+              <Chip
+                icon={<VisibilityIcon />}
+                label={`${viewCount} ${viewCount === 1 ? 'view' : 'views'}`}
+                size="small"
+                variant="outlined"
+                sx={{ fontWeight: 500 }}
+              />
+            )}
+            {isOwnMoodboard && (
+              <IconButton
+                size="small"
+                onClick={() => navigate(`/moodboard/${moodboard?.id}`)}
+                disabled={!moodboard}
+              >
+                <EditIcon />
+              </IconButton>
+            )}
+          </Box>
         }
       />
 

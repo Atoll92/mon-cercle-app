@@ -12,7 +12,8 @@ import {
   IconButton,
   Tooltip,
   Collapse,
-  alpha
+  alpha,
+  Chip
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { getUserProfile } from '../api/networks';
@@ -27,10 +28,12 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import EditIcon from '@mui/icons-material/Edit';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 import MoodboardItemDisplay from '../components/Moodboard/MoodboardItemDisplay';
 import MoodboardItemGrid from '../components/Moodboard/MoodboardItemGrid';
 import { useProfile } from '../context/profileContext';
 import { useTranslation } from '../hooks/useTranslation';
+import { incrementMoodboardViewCount } from '../api/moodboards';
 
 const MicroConclavPage = () => {
   const { t } = useTranslation();
@@ -46,7 +49,9 @@ const MicroConclavPage = () => {
   const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'moodboard'
   const [resolvedProfileId, setResolvedProfileId] = useState(null);
   const [bioExpanded, setBioExpanded] = useState(false);
-  
+  const [viewCount, setViewCount] = useState(0);
+  const [hasIncrementedView, setHasIncrementedView] = useState(false);
+
   const containerRef = useRef(null);
   
   // Use the moodboard canvas hook for all canvas navigation
@@ -97,19 +102,20 @@ const MicroConclavPage = () => {
     try {
       const profileIdToUse = resolvedProfileId || profileId;
       if (!profileIdToUse) return null;
-      
+
       // Fetch the user's single moodboard (micro conclav)
       const { data: moodboard, error: moodboardError } = await supabase
         .from('moodboards')
         .select('*')
         .eq('created_by', profileIdToUse)
         .single();
-      
+
       if (moodboardError) throw moodboardError;
-      
+
       if (moodboard) {
         setMoodboardBackgroundColor(moodboard.background_color);
         setPrimaryMoodboardId(moodboard.id);
+        setViewCount(moodboard.view_count || 0);
         return moodboard.id;
       }
       return null;
@@ -169,6 +175,17 @@ const MicroConclavPage = () => {
     }
   }, [primaryMoodboardId]);
 
+  // Track view count when page is viewed (only if not the owner)
+  useEffect(() => {
+    if (primaryMoodboardId && profile && !hasIncrementedView) {
+      // Don't track if viewing own moodboard (user is logged in and it's their profile)
+      const isOwner = activeProfile && activeProfile.id === profile.id;
+      if (!isOwner) {
+        incrementMoodboardViewCount(primaryMoodboardId);
+        setHasIncrementedView(true);
+      }
+    }
+  }, [primaryMoodboardId, profile, activeProfile, hasIncrementedView]);
 
   const handleCanvasClick = () => {
     // Clear any selections or interactions when clicking on empty canvas
@@ -251,7 +268,7 @@ const MicroConclavPage = () => {
           </Typography>
         </Box>
 
-        {/* View Mode Toggle and Edit Button */}
+        {/* View Mode Toggle, View Count, and Edit Button */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <ToggleButtonGroup
             value={viewMode}
@@ -269,7 +286,18 @@ const MicroConclavPage = () => {
               {t('microConclav.moodboard')}
             </ToggleButton>
           </ToggleButtonGroup>
-          
+
+          {/* Show view count only to owner */}
+          {activeProfile && profile && activeProfile.id === profile.id && (
+            <Chip
+              icon={<VisibilityIcon />}
+              label={`${viewCount} ${viewCount === 1 ? 'view' : 'views'}`}
+              size="small"
+              variant="outlined"
+              sx={{ fontWeight: 500 }}
+            />
+          )}
+
           {/* Show edit button if this is the user's own micro conclav */}
           {activeProfile && profile && activeProfile.id === profile.id && primaryMoodboardId && (
             <Button

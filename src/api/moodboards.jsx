@@ -168,13 +168,13 @@ export const getUserMoodboardItems = async (profileId, offset = 0, limit = 20) =
       .select('id, background_color')
       .eq('created_by', profileId)
       .single();
-    
+
     if (moodboardError) throw moodboardError;
-    
+
     if (!moodboard) {
       return { items: [], backgroundColor: null, moodboardId: null };
     }
-    
+
     // Get all items from user's moodboard
     const { data: items, error: itemsError } = await supabase
       .from('moodboard_items')
@@ -182,9 +182,9 @@ export const getUserMoodboardItems = async (profileId, offset = 0, limit = 20) =
       .eq('moodboard_id', moodboard.id)
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1);
-    
+
     if (itemsError) throw itemsError;
-    
+
     // Return items, background color, and moodboard ID
     return {
       items: items || [],
@@ -194,5 +194,44 @@ export const getUserMoodboardItems = async (profileId, offset = 0, limit = 20) =
   } catch (error) {
     console.error('Error fetching user moodboard items:', error);
     return { items: [], backgroundColor: null, moodboardId: null };
+  }
+};
+
+/**
+ * Increment the view count for a moodboard
+ * @param {string} moodboardId - The moodboard ID
+ * @returns {Promise<void>}
+ */
+export const incrementMoodboardViewCount = async (moodboardId) => {
+  try {
+    const { error } = await supabase.rpc('increment_moodboard_view_count', {
+      moodboard_uuid: moodboardId
+    });
+
+    if (error) throw error;
+  } catch (error) {
+    console.error('Error incrementing moodboard view count:', error);
+    // Silently fail - view count is not critical
+  }
+};
+
+/**
+ * Get moodboard with view count
+ * @param {string} profileId - The profile ID
+ * @returns {Promise<object>} Moodboard with view_count
+ */
+export const getMoodboardWithViewCount = async (profileId) => {
+  try {
+    const { data, error } = await supabase
+      .from('moodboards')
+      .select('id, view_count, background_color, title, description')
+      .eq('created_by', profileId)
+      .single();
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error('Error fetching moodboard with view count:', error);
+    return null;
   }
 };
