@@ -36,10 +36,10 @@ const EMOJI_PICKER = [
 
 /**
  * ReactionBar Component
- * @param {string} contentType - Type of content ('post', 'news', 'comment', 'event', 'wiki')
+ * @param {string} contentType - Type of content ('post', 'news', 'comment', 'event', 'wiki', 'message', 'dm')
  * @param {string} contentId - ID of the content
  * @param {number} initialCount - Initial reaction count (optional, for display only)
- * @param {string} size - Size variant ('small', 'medium', 'large')
+ * @param {string} size - Size variant ('xsmall', 'small', 'medium', 'large')
  */
 const ReactionBar = ({ contentType, contentId, initialCount = 0, size = 'medium' }) => {
   const theme = useTheme();
@@ -209,11 +209,12 @@ const ReactionBar = ({ contentType, contentId, initialCount = 0, size = 'medium'
 
   // Calculate sizing based on size prop
   const sizeConfig = {
-    small: { chipHeight: 24, fontSize: '0.75rem', iconSize: 'small' },
-    medium: { chipHeight: 32, fontSize: '0.875rem', iconSize: 'medium' },
-    large: { chipHeight: 40, fontSize: '1rem', iconSize: 'large' }
+    xsmall: { chipHeight: 20, fontSize: '0.65rem', iconSize: 'small', emojiSize: '1.2rem', emojiButtonSize: 32 },
+    small: { chipHeight: 24, fontSize: '0.75rem', iconSize: 'small', emojiSize: '1.5rem', emojiButtonSize: 40 },
+    medium: { chipHeight: 32, fontSize: '0.875rem', iconSize: 'medium', emojiSize: '1.5rem', emojiButtonSize: 40 },
+    large: { chipHeight: 40, fontSize: '1rem', iconSize: 'large', emojiSize: '1.5rem', emojiButtonSize: 40 }
   };
-  const config = sizeConfig[size];
+  const config = sizeConfig[size] || sizeConfig.medium;
 
   const totalReactions = Object.values(reactions).reduce((sum, r) => sum + r.count, 0);
 
@@ -293,7 +294,7 @@ const ReactionBar = ({ contentType, contentId, initialCount = 0, size = 'medium'
           horizontal: 'left',
         }}
       >
-        <Paper sx={{ p: 1, maxWidth: 280 }}>
+        <Paper sx={{ p: 1, maxWidth: size === 'xsmall' ? 240 : 280 }}>
           <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(8, 1fr)', gap: 0.5 }}>
             {EMOJI_PICKER.map((emoji) => (
               <IconButton
@@ -301,9 +302,9 @@ const ReactionBar = ({ contentType, contentId, initialCount = 0, size = 'medium'
                 onClick={() => handleReactionClick(emoji)}
                 disabled={loading}
                 sx={{
-                  fontSize: '1.5rem',
-                  width: 40,
-                  height: 40,
+                  fontSize: config.emojiSize,
+                  width: config.emojiButtonSize,
+                  height: config.emojiButtonSize,
                   backgroundColor: userReaction === emoji
                     ? alpha(theme.palette.primary.main, 0.15)
                     : 'transparent',

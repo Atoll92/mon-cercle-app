@@ -41,6 +41,7 @@ import MemberDetailsModal from './MembersDetailModal';
 import EmojiPicker from 'emoji-picker-react';
 import GifPicker from './GifPicker';
 import { playNotificationIfEnabled, initializeAudioContext } from '../utils/notificationSounds';
+import ReactionBar from './ReactionBar';
 
 function DirectMessageChat({ conversationId, partner, onBack }) {
   const { user } = useAuth();
@@ -1213,12 +1214,20 @@ if (refreshConversations) {
                   <Box
                     sx={{
                       display: 'flex',
-                      justifyContent: isUser ? 'flex-end' : 'flex-start',
-                      mb: 1,
-                      alignItems: 'flex-end',
+                      flexDirection: 'column',
+                      alignItems: isUser ? 'flex-end' : 'flex-start',
+                      mb: 1.5,
                       opacity: message.pending ? 0.7 : 1
                     }}
                   >
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        justifyContent: isUser ? 'flex-end' : 'flex-start',
+                        alignItems: 'flex-end',
+                        width: '100%'
+                      }}
+                    >
                     {!isUser && showAvatar ? (
                       <Avatar
                         src={partner.profile_picture_url}
@@ -1267,9 +1276,9 @@ if (refreshConversations) {
                             {t('chat.sending')}
                           </Typography>
                         )}
-                        <Typography 
-                          variant="caption" 
-                          sx={{ 
+                        <Typography
+                          variant="caption"
+                          sx={{
                             color: isUser ? 'rgba(255,255,255,0.7)' : 'text.secondary',
                             fontSize: '0.6rem'
                           }}
@@ -1278,6 +1287,25 @@ if (refreshConversations) {
                         </Typography>
                       </Box>
                     </Box>
+                    </Box>
+
+                    {/* Reactions for this message */}
+                    {!message.pending && (
+                      <Box
+                        sx={{
+                          mt: 0.5,
+                          ml: isUser ? 0 : showAvatar ? 4.5 : 4.5,
+                          mr: isUser ? 0.5 : 0
+                        }}
+                      >
+                        <ReactionBar
+                          contentType="dm"
+                          contentId={message.id}
+                          initialCount={message.reaction_count || 0}
+                          size="xsmall"
+                        />
+                      </Box>
+                    )}
                   </Box>
                 </Fragment>
               );

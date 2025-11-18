@@ -52,6 +52,7 @@ import EmojiPicker from 'emoji-picker-react';
 import GifPicker from './GifPicker';
 import GifIcon from '@mui/icons-material/Gif';
 import { playNotificationIfEnabled, initializeAudioContext } from '../utils/notificationSounds';
+import ReactionBar from './ReactionBar';
 
 // URL regex pattern to detect links in messages
 // const URL_REGEX = /(https?:\/\/[^\s]+)/g;
@@ -1538,14 +1539,14 @@ const renderMessageContent = (message) => {
                 sx={{
                   opacity: message.pending ? 0.7 : 1,
                   backgroundColor: darkMode
-                    ? (message.user_id === activeProfile.id 
-                      ? 'rgba(99, 102, 241, 0.85)' 
+                    ? (message.user_id === activeProfile.id
+                      ? 'rgba(99, 102, 241, 0.85)'
                       : 'rgba(45, 55, 72, 0.85)')
-                    : (message.user_id === activeProfile.id 
-                      ? '#ffffff' 
+                    : (message.user_id === activeProfile.id
+                      ? '#ffffff'
                       : '#f7fafc'),
                   borderRadius: message.user_id === activeProfile.id ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
-                  mb: 1.5,
+                  mb: 2.5, // Increased margin for reaction bar
                   py: 1.5,
                   px: 2,
                   backdropFilter: 'blur(10px)',
@@ -1747,7 +1748,27 @@ const renderMessageContent = (message) => {
                     }
                   }}
                 />
-                
+
+                {/* Reactions for this message */}
+                {!message.pending && (
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      bottom: -12,
+                      left: message.user_id === activeProfile.id ? 'auto' : 48,
+                      right: message.user_id === activeProfile.id ? 8 : 'auto',
+                      zIndex: 1
+                    }}
+                  >
+                    <ReactionBar
+                      contentType="message"
+                      contentId={message.id}
+                      initialCount={message.reaction_count || 0}
+                      size="xsmall"
+                    />
+                  </Box>
+                )}
+
                 {/* Menu button for message options */}
                 {!message.pending && (
                   <IconButton
