@@ -171,10 +171,10 @@ const Footer = () => {
         >
           <Box sx={{ display: 'flex', alignItems: 'center', mb: { xs: 2, sm: 0 } }}>
             <Box sx={{ mr: 1.5 }}>
-              <svg 
-                xmlns="http://www.w3.org/2000/svg" 
-                width="32" 
-                height="32" 
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="32"
+                height="32"
                 viewBox="-125 -125 250 250"
               >
                 <defs>
@@ -183,10 +183,10 @@ const Footer = () => {
                     <stop offset="100%" stopColor={theme.palette.primary.main} stopOpacity="0.8" />
                   </linearGradient>
                 </defs>
-                
+
                 {/* Central big disk */}
                 <circle cx="0" cy="0" r="35" fill="url(#footer-gradient)"/>
-                
+
                 {/* Medium disks */}
                 <g fill="url(#footer-gradient)">
                   <circle cx="70.00" cy="0.00" r="25" opacity="0.9"/>
@@ -197,7 +197,7 @@ const Footer = () => {
                   <circle cx="-15.57" cy="-68.24" r="25" opacity="0.9"/>
                   <circle cx="43.64" cy="-54.72" r="25" opacity="0.9"/>
                 </g>
-                
+
                 {/* Small disks */}
                 <g fill={theme.palette.primary.main}>
                   <circle cx="85.59" cy="41.21" r="12" opacity="0.7"/>
@@ -210,9 +210,9 @@ const Footer = () => {
                 </g>
               </svg>
             </Box>
-            <Typography 
-              variant="h6" 
-              sx={{ 
+            <Typography
+              variant="h6"
+              sx={{
                 fontWeight: 700,
                 letterSpacing: 1,
                 backgroundImage: 'linear-gradient(120deg, #2196f3, #3f51b5)',
@@ -223,6 +223,17 @@ const Footer = () => {
             >
               CONCLAV
             </Typography>
+            <Box
+              component="img"
+              src="/Flag_of_Europe.svg.png"
+              alt="EU"
+              sx={{
+                width: 24,
+                height: 24,
+                ml: 1.5,
+                objectFit: 'contain'
+              }}
+            />
           </Box>
           
           <Box 
