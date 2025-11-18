@@ -21,125 +21,45 @@ export default function EventsMap({ events = [], onEventSelect, initialCoordinat
   const [selectedCity, setSelectedCity] = useState('all');
   const hasInitiallyFitBounds = useRef(false); // Track if we've done initial fit
 
-  // Extract unique cities from events
+  // Extract unique cities from events using the city field
   const cities = useMemo(() => {
     if (!events || events.length === 0) return [];
 
     const cityMap = new Map();
 
-    // Common street type keywords that indicate this is a street address (must be whole word or at start)
-    const streetTypeKeywords = [
-      'rue', 'avenue', 'boulevard', 'allée', 'impasse', 'chemin', 'voie', 'passage', 'quai', 'cours',
-      'av.', 'ave.', 'blvd.', 'bd.', 'rd.'
-    ];
-
-    // Known country names to exclude
-    const countryNames = [
-      'france', 'spain', 'italy', 'germany', 'belgium', 'switzerland', 'united kingdom', 'uk',
-      'espagne', 'italie', 'allemagne', 'belgique', 'suisse', 'royaume-uni'
-    ];
-
-    const isLikelyStreetAddress = (text) => {
-      const lowerText = text.toLowerCase().trim();
-
-      // Check if it starts with a number followed by space (street number)
-      if (/^\d+\s/.test(text)) {
-        return true;
-      }
-
-      // Check if it starts with a street type keyword
-      for (const keyword of streetTypeKeywords) {
-        if (lowerText.startsWith(keyword + ' ') || lowerText === keyword) {
-          return true;
-        }
-      }
-
-      return false;
-    };
-
-    const isLikelyCountry = (text) => {
-      const lowerText = text.toLowerCase().trim();
-      // Country code (2 letters)
-      if (text.length === 2 && /^[A-Z]{2}$/.test(text)) {
-        return true;
-      }
-      // Known country name
-      return countryNames.includes(lowerText);
-    };
-
     events.forEach(event => {
-      if (event?.coordinates?.latitude && event?.coordinates?.longitude && event?.location) {
-        const locationParts = event.location.split(',').map(part => part.trim());
+      // Use the city field from database (extracted via reverse geocoding)
+      const cityName = event?.city;
 
-        let cityName = null;
-        let possibleCities = [];
+      if (cityName && event?.coordinates?.latitude && event?.coordinates?.longitude) {
+        if (!cityMap.has(cityName)) {
+          cityMap.set(cityName, {
+            name: cityName,
+            coordinates: {
+              latitude: event.coordinates.latitude,
+              longitude: event.coordinates.longitude
+            },
+            count: 1,
+            events: [event]
+          });
+        } else {
+          const cityData = cityMap.get(cityName);
+          cityData.count++;
+          cityData.events.push(event);
 
-        // Collect all possible city/neighborhood candidates
-        for (let i = 0; i < locationParts.length; i++) {
-          const part = locationParts[i];
-
-          // Skip if it's likely a street address
-          if (isLikelyStreetAddress(part)) {
-            continue;
-          }
-
-          // Skip if it's a country
-          if (isLikelyCountry(part)) {
-            continue;
-          }
-
-          // Clean up the name (remove postal codes but keep the rest)
-          const cleaned = part.replace(/\b\d{5}\b/g, '').trim(); // Remove 5-digit postal codes
-
-          if (cleaned.length >= 3) {
-            possibleCities.push({
-              index: i,
-              name: cleaned,
-              original: part
-            });
-          }
-        }
-
-        // Priority selection:
-        // 1. If we have multiple candidates, prefer the second-to-last valid one (usually city before country)
-        // 2. Otherwise take the last valid one
-        if (possibleCities.length > 0) {
-          if (possibleCities.length >= 2) {
-            // Take second-to-last (usually the city, with country being last)
-            cityName = possibleCities[possibleCities.length - 2].name;
-          } else {
-            cityName = possibleCities[possibleCities.length - 1].name;
-          }
-        }
-
-        if (cityName && cityName.length >= 3) {
-          if (!cityMap.has(cityName)) {
-            cityMap.set(cityName, {
-              name: cityName,
-              coordinates: {
-                latitude: event.coordinates.latitude,
-                longitude: event.coordinates.longitude
-              },
-              count: 1,
-              events: [event]
-            });
-          } else {
-            const cityData = cityMap.get(cityName);
-            cityData.count++;
-            cityData.events.push(event);
-
-            // Update average coordinates
-            const totalLat = cityData.coordinates.latitude * (cityData.count - 1) + event.coordinates.latitude;
-            const totalLng = cityData.coordinates.longitude * (cityData.count - 1) + event.coordinates.longitude;
-            cityData.coordinates.latitude = totalLat / cityData.count;
-            cityData.coordinates.longitude = totalLng / cityData.count;
-          }
+          // Update average coordinates
+          const totalLat = cityData.coordinates.latitude * (cityData.count - 1) + event.coordinates.latitude;
+          const totalLng = cityData.coordinates.longitude * (cityData.count - 1) + event.coordinates.longitude;
+          cityData.coordinates.latitude = totalLat / cityData.count;
+          cityData.coordinates.longitude = totalLng / cityData.count;
         }
       }
     });
 
     // Convert to array and sort by event count (most events first)
     const citiesArray = Array.from(cityMap.values()).sort((a, b) => b.count - a.count);
+
+    console.log('🏙️ Cities from database:', citiesArray.map(c => `${c.name} (${c.count} events)`));
 
     return citiesArray;
   }, [events]);

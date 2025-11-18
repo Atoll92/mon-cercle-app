@@ -25,31 +25,57 @@ export default function AddressSuggestions({ value, onChange, label = "Location"
   const [options, setOptions] = useState([]);
   const [loading, setLoading] = useState(false);
   
+  // Helper function to extract city from coordinates using reverse geocoding
+  const extractCityFromCoordinates = async (longitude, latitude) => {
+    try {
+      const response = await fetch(
+        `https://api.mapbox.com/geocoding/v5/mapbox.places/${longitude},${latitude}.json?` +
+        `access_token=${MAPBOX_TOKEN}&types=place&limit=1`
+      );
+      const data = await response.json();
+
+      if (data && data.features && data.features.length > 0) {
+        return data.features[0].text; // The city name
+      }
+      return null;
+    } catch (error) {
+      console.error('Error extracting city from coordinates:', error);
+      return null;
+    }
+  };
+
   // This function fetches address suggestions from Mapbox API
   const fetchSuggestions = async (searchText) => {
     if (searchText.length < 3) {
       setOptions([]);
       return;
     }
-    
+
     setLoading(true);
-    
+
     try {
       const endpoint = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(searchText)}.json`;
       const url = `${endpoint}?access_token=${MAPBOX_TOKEN}&autocomplete=true&types=address,place,locality,neighborhood`;
-      
+
       const response = await fetch(url);
       const data = await response.json();
-      
+
       if (data && data.features) {
-        const suggestions = data.features.map(feature => ({
-          place_name: feature.place_name,
-          center: feature.center, // [longitude, latitude]
-          id: feature.id,
-          text: feature.text,
-          place_type: feature.place_type[0]
-        }));
-        
+        // Enrich suggestions with city data via reverse geocoding
+        const suggestions = await Promise.all(
+          data.features.map(async (feature) => {
+            const city = await extractCityFromCoordinates(feature.center[0], feature.center[1]);
+            return {
+              place_name: feature.place_name,
+              center: feature.center, // [longitude, latitude]
+              id: feature.id,
+              text: feature.text,
+              place_type: feature.place_type[0],
+              city // Add city field
+            };
+          })
+        );
+
         setOptions(suggestions);
       }
     } catch (error) {

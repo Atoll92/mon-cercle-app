@@ -197,7 +197,7 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
 
   const handleLocationChange = (suggestion) => {
     setLocationSuggestion(suggestion);
-    
+
     if (suggestion) {
       setEventForm(prev => ({
         ...prev,
@@ -205,7 +205,8 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
         coordinates: suggestion.center ? {
           latitude: suggestion.center[1],
           longitude: suggestion.center[0]
-        } : null
+        } : null,
+        city: suggestion.city || null  // Add city from reverse geocoding
       }));
     }
   };
@@ -339,6 +340,7 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
         description: eventForm.description,
         capacity: eventForm.capacity ? parseInt(eventForm.capacity) : null,
         coordinates: eventForm.online ? null : eventForm.coordinates,
+        city: eventForm.online ? null : eventForm.city,  // Add city field
         event_link: eventForm.event_link || null,
         price: eventForm.price || 0,
         currency: eventForm.currency,
