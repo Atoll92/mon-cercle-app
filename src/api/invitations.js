@@ -177,6 +177,11 @@ export const getInvitationByCode = async (code) => {
           logo_url,
           privacy_level,
           created_at
+        ),
+        inviter:profiles!created_by(
+          id,
+          full_name,
+          profile_picture_url
         )
       `)
       .eq('code', code.toUpperCase())

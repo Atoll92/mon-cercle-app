@@ -371,7 +371,9 @@ function JoinNetworkPage() {
                 textShadow: '0 2px 4px rgba(0,0,0,0.2)'
               }}
             >
-              {t('joinNetwork.invitationHeader')}
+              {invitation?.inviter?.full_name
+                ? t('joinNetwork.invitationHeaderWithName', { name: invitation.inviter.full_name })
+                : t('joinNetwork.invitationHeader')}
             </Typography>
           </Box>
 

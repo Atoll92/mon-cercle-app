@@ -1758,6 +1758,7 @@
   },
   "joinNetwork": {
     "invitationHeader": "Vous avez été invité à rejoindre ce réseau privé",
+    "invitationHeaderWithName": "Vous avez été invité à rejoindre ce réseau privé par {{name}}",
     "errors": {
       "invalidInvitation": "Lien d'invitation invalide ou expiré",
       "networkNotFound": "Réseau introuvable",

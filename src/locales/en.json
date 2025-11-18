@@ -1818,6 +1818,7 @@
   },
   "joinNetwork": {
     "invitationHeader": "You have been invited to join this private network",
+    "invitationHeaderWithName": "You have been invited to join this private network by {{name}}",
     "errors": {
       "invalidInvitation": "Invalid or expired invitation link",
       "networkNotFound": "Network not found",
