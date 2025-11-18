@@ -1,5 +1,5 @@
 // src/components/NetworkOnboardingWizard.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseclient';
 import { useAuth } from '../context/authcontext';
@@ -60,6 +60,7 @@ import {
   DragIndicator as DragIndicatorIcon,
   School as CoursesIcon,
   Store as MarketplaceIcon,
+  CheckCircle as CheckCircleIcon,
 } from '@mui/icons-material';
 import {
   DndContext,
@@ -143,14 +144,19 @@ const NetworkOnboardingWizard = ({ profile }) => {
   const theme = useTheme();
   const { t } = useTranslation();
 
+  // LocalStorage key for persisting form data
+  const STORAGE_KEY = 'network_onboarding_form_data';
+  const STORAGE_STEP_KEY = 'network_onboarding_active_step';
+
   // State for the wizard
   const [activeStep, setActiveStep] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
-  
-  // Network creation data
-  const [networkData, setNetworkData] = useState({
+  const [autoSaved, setAutoSaved] = useState(false);
+
+  // Default network data structure
+  const defaultNetworkData = {
     name: '',
     description: '',
     purpose: 'general',
@@ -169,7 +175,87 @@ const NetworkOnboardingWizard = ({ profile }) => {
     },
     enabledTabs: ['news', 'members', 'events', 'chat', 'files', 'wiki', 'social'],
     themeColor: theme.palette.primary.main
-  });
+  };
+
+  // Initialize state from localStorage or defaults
+  const getInitialNetworkData = () => {
+    try {
+      const savedData = localStorage.getItem(STORAGE_KEY);
+      if (savedData) {
+        const parsed = JSON.parse(savedData);
+        // Merge with defaults to ensure all fields exist
+        return {
+          ...defaultNetworkData,
+          ...parsed,
+          features: {
+            ...defaultNetworkData.features,
+            ...(parsed.features || {})
+          }
+        };
+      }
+    } catch (error) {
+      console.error('Error loading saved network data:', error);
+    }
+    return defaultNetworkData;
+  };
+
+  const getInitialStep = () => {
+    try {
+      const savedStep = localStorage.getItem(STORAGE_STEP_KEY);
+      if (savedStep !== null) {
+        return parseInt(savedStep, 10);
+      }
+    } catch (error) {
+      console.error('Error loading saved step:', error);
+    }
+    return 0;
+  };
+
+  // Network creation data with persistence
+  const [networkData, setNetworkData] = useState(getInitialNetworkData);
+
+  // Load saved step on mount
+  useEffect(() => {
+    const savedStep = getInitialStep();
+    if (savedStep > 0) {
+      setActiveStep(savedStep);
+      // Show a brief indicator that data was restored
+      setAutoSaved(true);
+      setTimeout(() => setAutoSaved(false), 2000);
+    }
+  }, []);
+
+  // Auto-save networkData to localStorage whenever it changes
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(networkData));
+      // Show auto-save indicator briefly
+      setAutoSaved(true);
+      const timer = setTimeout(() => setAutoSaved(false), 1000);
+      return () => clearTimeout(timer);
+    } catch (error) {
+      console.error('Error saving network data:', error);
+    }
+  }, [networkData]);
+
+  // Save active step to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_STEP_KEY, activeStep.toString());
+    } catch (error) {
+      console.error('Error saving active step:', error);
+    }
+  }, [activeStep]);
+
+  // Clear saved data function
+  const clearSavedData = () => {
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(STORAGE_STEP_KEY);
+    } catch (error) {
+      console.error('Error clearing saved data:', error);
+    }
+  };
 
   // Steps of the wizard
   const steps = [
@@ -326,12 +412,15 @@ const NetworkOnboardingWizard = ({ profile }) => {
       });
 
       setSuccess(true);
-      
+
+      // Clear the saved form data since network was successfully created
+      clearSavedData();
+
       // Set a flag to show onboarding guide when the admin arrives at their network
       if (typeof window !== 'undefined' && newProfile) {
         sessionStorage.setItem(`show_admin_onboarding_${network.id}_${newProfile.id}`, 'true');
       }
-      
+
       // Do a hard reload to ensure all contexts are properly refreshed with the new network
       setTimeout(() => {
         console.log('Redirecting to dashboard with hard reload after network creation');
@@ -397,7 +486,28 @@ const NetworkOnboardingWizard = ({ profile }) => {
           {error}
         </Alert>
       )}
-      
+
+      {/* Auto-save indicator */}
+      {autoSaved && (
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            mb: 2,
+            p: 1,
+            bgcolor: alpha(theme.palette.success.light, 0.1),
+            borderRadius: 1,
+            border: `1px solid ${alpha(theme.palette.success.main, 0.3)}`
+          }}
+        >
+          <CheckCircleIcon sx={{ fontSize: 18, color: 'success.main', mr: 0.5 }} />
+          <Typography variant="body2" color="success.dark">
+            {t('networkOnboarding.autoSaved', 'Progress saved automatically')}
+          </Typography>
+        </Box>
+      )}
+
       <Stepper activeStep={activeStep} orientation="vertical">
         {steps.map((step, index) => (
           <Step key={step.label}>
