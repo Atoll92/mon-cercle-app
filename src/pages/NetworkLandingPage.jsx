@@ -245,7 +245,6 @@ function NetworkLandingPage() {
   // Check if user just joined the network or came from invitation
   useEffect(() => {
     if (!user || !network || !activeProfile) {
-      console.log('[Welcome] Waiting for user, network, and profile data');
       return;
     }
     
@@ -253,33 +252,14 @@ function NetworkLandingPage() {
       // Check if we came from an invitation link first
       const searchParams = new URLSearchParams(location.search);
       const fromInvite = searchParams.get('from_invite') === 'true';
-      
-      console.log('[Welcome] Checking welcome conditions:', {
-        fromInvite,
-        userId: user?.id,
-        activeProfileId: activeProfile?.id,
-        networkId: network?.id,
-        networkMembersCount: networkMembers.length
-      });
-      
-      console.log('[Welcome] Session storage check:', {
-        recentJoinKey: `recent_join_${network.id}_${activeProfile.id}`,
-        hasRecentJoinFlag: sessionStorage.getItem(`recent_join_${network.id}_${activeProfile.id}`)
-      });
-      
+
       // If coming from invite, show welcome immediately (but only once)
       if (fromInvite) {
         const welcomeShownKey = `welcome_shown_${network.id}_${activeProfile.id}`;
         const hasShownWelcome = localStorage.getItem(welcomeShownKey);
-        
-        console.log('[Welcome] From invite - checking if already shown:', {
-          welcomeShownKey,
-          hasShownWelcome
-        });
-        
+
         // Only show welcome if it hasn't been shown before
         if (!hasShownWelcome) {
-          console.log('[Welcome] Showing welcome message from invite!');
           // Add a small delay to ensure page is fully loaded
           setTimeout(() => {
             setShowWelcomeMessage(true);
@@ -305,7 +285,6 @@ function NetworkLandingPage() {
           const shouldShowOnboarding = sessionStorage.getItem(showOnboardingKey) === 'true';
           
           if (shouldShowOnboarding) {
-            console.log('[Welcome] Admin onboarding requested after network creation');
             setTimeout(() => {
               setShowOnboarding(true);
             }, 2000);
@@ -319,7 +298,6 @@ function NetworkLandingPage() {
             const tenMinutesAgo = new Date(now.getTime() - 10 * 60 * 1000);
             
             if (createdAt > tenMinutesAgo && networkMembers.length <= 2) {
-              console.log('[Welcome] New network detected, showing admin onboarding');
               setTimeout(() => {
                 setShowOnboarding(true);
               }, 3000);
@@ -350,20 +328,8 @@ function NetworkLandingPage() {
           // Check user+network created flag
           const userNetworkCreatedKey = `profile_created_user_${user.id}_network_${network.id}`;
           const userNetworkCreatedFlag = localStorage.getItem(userNetworkCreatedKey) === 'true';
-          
-          console.log('[Welcome] Member join checks:', {
-            isRecentJoin,
-            isRecentJoinUserNetwork,
-            profileCreatedFlag,
-            userNetworkCreatedFlag,
-            recentJoinKey,
-            userNetworkJoinKey,
-            profileCreatedKey,
-            userNetworkCreatedKey
-          });
-          
+
           if (isRecentJoin || isRecentJoinUserNetwork || profileCreatedFlag || userNetworkCreatedFlag) {
-            console.log('[Welcome] Showing welcome message for recent join!');
             setTimeout(() => {
               setShowWelcomeMessage(true);
               localStorage.setItem(welcomeShownKey, 'true');
@@ -453,7 +419,6 @@ function NetworkLandingPage() {
         // Reset throttling flag
         ticking = false;
       } catch (error) {
-        console.warn('Error in scroll update:', error);
         ticking = false;
       }
     };
@@ -1339,7 +1304,6 @@ function NetworkLandingPage() {
                   const welcomeShownKey = `welcome_shown_${network?.id}_${user?.id}`;
                   localStorage.removeItem(welcomeShownKey);
                   localStorage.removeItem(`onboarding-dismissed-${network?.id}`);
-                  console.log('[Debug] Cleared welcome flags, reloading...');
                   window.location.reload();
                 }}
                 sx={{ mb: 1, display: 'block' }}
@@ -1351,7 +1315,6 @@ function NetworkLandingPage() {
                 size="small"
                 color="secondary"
                 onClick={() => {
-                  console.log('[Debug] Manually showing welcome message');
                   setShowWelcomeMessage(true);
                 }}
                 sx={{ mb: 1, display: 'block' }}
@@ -1363,9 +1326,7 @@ function NetworkLandingPage() {
                 size="small"
                 color="info"
                 onClick={() => {
-                  console.log('[Debug] Setting profile created flag for testing');
                   localStorage.setItem(`profile_created_${network?.id}_${activeProfile?.id}`, 'true');
-                  console.log('[Debug] Flag set, reloading...');
                   window.location.reload();
                 }}
                 sx={{ mb: 1, display: 'block' }}
@@ -1377,7 +1338,6 @@ function NetworkLandingPage() {
                 size="small"
                 color="warning"
                 onClick={() => {
-                  console.log('[Debug] Simulating from_invite URL parameter');
                   window.location.href = window.location.pathname + '?from_invite=true';
                 }}
               >

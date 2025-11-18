@@ -11,10 +11,6 @@ import { useTranslation } from '../hooks/useTranslation';
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 const MAPBOX_STYLE = 'mapbox://styles/dgcoboss/cm5k9ztpe003g01s76e7v8owz';
 
-if (!MAPBOX_TOKEN) {
-  console.error('VITE_MAPBOX_TOKEN is not defined in environment variables');
-}
-
 export default function EventsMap({ events = [], onEventSelect, initialCoordinates = null, height = '350px' }) {
   const { t } = useTranslation();
   const mapContainerRef = useRef(null);
@@ -75,8 +71,6 @@ export default function EventsMap({ events = [], onEventSelect, initialCoordinat
       if (event?.coordinates?.latitude && event?.coordinates?.longitude && event?.location) {
         const locationParts = event.location.split(',').map(part => part.trim());
 
-        console.log('Processing location:', event.location, '→ parts:', locationParts);
-
         let cityName = null;
         let possibleCities = [];
 
@@ -86,13 +80,11 @@ export default function EventsMap({ events = [], onEventSelect, initialCoordinat
 
           // Skip if it's likely a street address
           if (isLikelyStreetAddress(part)) {
-            console.log('  Skipping street address:', part);
             continue;
           }
 
           // Skip if it's a country
           if (isLikelyCountry(part)) {
-            console.log('  Skipping country:', part);
             continue;
           }
 
@@ -108,8 +100,6 @@ export default function EventsMap({ events = [], onEventSelect, initialCoordinat
           }
         }
 
-        console.log('  Possible cities:', possibleCities.map(c => c.name));
-
         // Priority selection:
         // 1. If we have multiple candidates, prefer the second-to-last valid one (usually city before country)
         // 2. Otherwise take the last valid one
@@ -121,8 +111,6 @@ export default function EventsMap({ events = [], onEventSelect, initialCoordinat
             cityName = possibleCities[possibleCities.length - 1].name;
           }
         }
-
-        console.log('  Selected city:', cityName);
 
         if (cityName && cityName.length >= 3) {
           if (!cityMap.has(cityName)) {
@@ -153,8 +141,6 @@ export default function EventsMap({ events = [], onEventSelect, initialCoordinat
     // Convert to array and sort by event count (most events first)
     const citiesArray = Array.from(cityMap.values()).sort((a, b) => b.count - a.count);
 
-    console.log('🏙️ Final extracted cities:', citiesArray.map(c => `${c.name} (${c.count} events)`));
-
     return citiesArray;
   }, [events]);
 
@@ -163,10 +149,6 @@ export default function EventsMap({ events = [], onEventSelect, initialCoordinat
     const cityName = event.target.value;
     setSelectedCity(cityName);
 
-    console.log('City selected:', cityName);
-    console.log('Map ref exists:', !!mapRef.current);
-    console.log('Available cities:', cities.map(c => c.name));
-
     // Wait for next tick to ensure map is ready
     setTimeout(() => {
       if (cityName === 'all') {
@@ -174,8 +156,6 @@ export default function EventsMap({ events = [], onEventSelect, initialCoordinat
         const eventsWithCoordinates = events.filter(e =>
           e?.coordinates?.latitude && e?.coordinates?.longitude
         );
-
-        console.log('Fitting to all events:', eventsWithCoordinates.length);
 
         if (eventsWithCoordinates.length > 0 && mapRef.current) {
           const bounds = new mapboxgl.LngLatBounds();
@@ -192,18 +172,14 @@ export default function EventsMap({ events = [], onEventSelect, initialCoordinat
       } else {
         // Zoom to selected city
         const city = cities.find(c => c.name === cityName);
-        console.log('Found city:', city);
 
         if (city && mapRef.current) {
-          console.log('Flying to:', city.coordinates);
           mapRef.current.flyTo({
             center: [city.coordinates.longitude, city.coordinates.latitude],
             zoom: 12,
             duration: 1500,
             essential: true
           });
-        } else {
-          console.error('City not found or map not ready:', { city, mapExists: !!mapRef.current });
         }
       }
     }, 100);
@@ -280,7 +256,6 @@ export default function EventsMap({ events = [], onEventSelect, initialCoordinat
           }
         };
       } catch (error) {
-        console.error('Error loading map:', error);
         setMapError(t('events.errors.mapLoadFailed'));
         setLoading(false);
       }
@@ -512,7 +487,7 @@ export default function EventsMap({ events = [], onEventSelect, initialCoordinat
           hasInitiallyFitBounds.current = true; // Mark as done
         }
       } catch (error) {
-        console.error('Error adding markers:', error);
+        // Silent error handling for markers
       }
     };
     

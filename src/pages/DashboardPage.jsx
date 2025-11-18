@@ -351,7 +351,6 @@ function DashboardPage() {
         : networkDetails.features_config;
       return config.activity_feed === true;
     } catch (e) {
-      console.error('Error parsing features config:', e);
       return false;
     }
   }, [networkDetails?.features_config]);
@@ -480,7 +479,7 @@ function DashboardPage() {
           window.location.reload();
         }
       } catch (err) {
-        console.error('Error checking moderation status:', err);
+        // Silent error - will retry on next interval
       } finally {
         setCheckingModerationStatus(false);
       }
@@ -514,7 +513,6 @@ function DashboardPage() {
         const data = activeProfile;
         
         if (!data) {
-          console.error("Error fetching profile: No active profile found");
           // Only retry if we haven't exceeded retry count and we're expecting a profile (from_invite)
           const params = new URLSearchParams(location.search);
           const fromInvite = params.get('from_invite');
