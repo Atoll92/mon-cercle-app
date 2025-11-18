@@ -179,9 +179,7 @@ const fetchNetworkMembers = async (networkId, options = {}) => {
             ascending = true,
             search = null
         } = options;
-        
-        console.log('Fetching network members for network:', networkId, 'with options:', options);
-        
+
         // Calculate offset for pagination
         const offset = (page - 1) * limit;
         
@@ -216,8 +214,6 @@ const fetchNetworkMembers = async (networkId, options = {}) => {
             ...member,
             badge_count: 0 // TODO: Fetch badge count separately if needed
         }));
-        
-        console.log(`Found ${processedMembers.length} network members (total: ${count})`);
 
         return {
             members: processedMembers,
@@ -662,23 +658,20 @@ export const toggleMemberAdmin = async (memberId, currentRole) => {
 
 export const removeMemberFromNetwork = async (memberId) => {
   try {
-    console.log('Starting member removal process for profile:', memberId);
-    
     // Use the database cascade delete function to handle all foreign key constraints
     // This bypasses RLS policies and handles direct messages properly
     const { data: result, error: sqlError } = await supabase.rpc('delete_profile_cascade', {
       profile_id_param: memberId
     });
-    
+
     if (sqlError) {
       console.error('SQL cascade delete failed:', sqlError);
       throw new Error(`Failed to remove member: ${sqlError.message}`);
     }
-    
+
     if (result?.success) {
-      console.log('Successfully deleted profile using cascade function:', result);
-      return { 
-        success: true, 
+      return {
+        success: true,
         message: result.message || 'Member removed from network.'
       };
     } else {
