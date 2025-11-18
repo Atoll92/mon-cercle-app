@@ -68,11 +68,11 @@ import {
   CardHeader
 } from '@mui/material';
 
-// Subscription Badge Component
-const SubscriptionBadge = ({ plan, status }) => {
+// Subscription Badge Component - Memoized to prevent unnecessary re-renders
+const SubscriptionBadge = React.memo(({ plan, status }) => {
   const { t } = useTranslation();
   if (status !== 'active' || !plan) return null;
-  
+
   const planDetails = {
     community: { icon: <GroupsIcon fontSize="small" />, color: 'primary' },
     organization: { icon: <BusinessIcon fontSize="small" />, color: 'primary' },
@@ -93,10 +93,10 @@ const SubscriptionBadge = ({ plan, status }) => {
       />
     </Tooltip>
   );
-};
+});
 
-// Subscription Status Card Component
-const SubscriptionStatusCard = ({ networkDetails, loadingNetworkDetails, profile, t }) => {
+// Subscription Status Card Component - Memoized to prevent unnecessary re-renders
+const SubscriptionStatusCard = React.memo(({ networkDetails, loadingNetworkDetails, profile, t }) => {
   if (loadingNetworkDetails) {
     return (
       <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -246,10 +246,10 @@ const SubscriptionStatusCard = ({ networkDetails, loadingNetworkDetails, profile
       )}
     </Card>
   );
-};
+});
 
-// Event Card Component - Reusable for both admin and non-admin
-const EventCard = ({ event, participationStatus, onViewDetails, t }) => {
+// Event Card Component - Reusable for both admin and non-admin - Memoized for performance
+const EventCard = React.memo(({ event, participationStatus, onViewDetails, t }) => {
   const getParticipationIcon = (status) => {
     switch (status) {
       case 'attending': return <CheckCircleIcon fontSize="small" sx={{ color: 'success.main' }} />;
@@ -319,7 +319,7 @@ const EventCard = ({ event, participationStatus, onViewDetails, t }) => {
       </Button>
     </Paper>
   );
-};
+});
 
 // Rezo Pro Spec network ID
 const REZOPROSPEC_NETWORK_ID = 'b4e51e21-de8f-4f5b-b35d-f98f6df27508';
