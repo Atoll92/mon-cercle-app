@@ -525,13 +525,13 @@ function JoinNetworkPage() {
             <Box sx={{ px: { xs: 3, sm: 4 }, pb: { xs: 3, sm: 4 } }}>
               <Divider sx={{ mb: 3 }} />
 
-              {/* Invitation Details */}
-              {invitation?.name && (
+              {/* Invitation Details - Only show if not auto-generated email invitation text */}
+              {invitation?.name && !invitation.name.includes('Email invitation for') && (
                 <Box sx={{ mb: 3, textAlign: 'left' }}>
                   <Typography variant="subtitle1" gutterBottom fontWeight={600}>
                     {t('joinNetwork.invitation')}: <strong>{invitation.name}</strong>
                   </Typography>
-                  {invitation?.description && (
+                  {invitation?.description && !invitation.description.includes('Invitation sent via email') && (
                     <Typography variant="body2" color="text.secondary">
                       {invitation.description}
                     </Typography>
