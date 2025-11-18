@@ -16,6 +16,7 @@ import CreateEventDialog from '../components/CreateEventDialog';
 import UpcomingEventsWidget from '../components/UpcomingEventsWidget';
 import ActivityFeedWidget from '../components/ActivityFeedWidget';
 import { useFadeIn, useStaggeredAnimation, ANIMATION_DURATION } from '../hooks/useAnimation';
+import { useIsMobile } from '../hooks/useIsMobile';
 import { ProfileSkeleton, GridSkeleton } from '../components/LoadingSkeleton';
 import OnboardingGuide from '../components/OnboardingGuide';
 import WelcomeMessage from '../components/WelcomeMessage';

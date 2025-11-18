@@ -8,6 +8,7 @@ import { useTranslation } from '../hooks/useTranslation';
 import { useApp } from '../context/appContext';
 import { supabase } from '../supabaseclient';
 import { useFadeIn } from '../hooks/useAnimation';
+import { useIsMobile } from '../hooks/useIsMobile';
 import { GridSkeleton } from '../components/LoadingSkeleton';
 import NetworkHeader from '../components/NetworkHeader';
 import { Campaign as AnnouncementIcon } from '@mui/icons-material';
@@ -154,7 +155,7 @@ function NetworkLandingPage() {
 
   // Animation setup - must be at top level, not conditional
   // Disable animation on mobile to prevent content vanishing during scroll
-  const isMobile = typeof window !== 'undefined' && window.innerWidth < 600;
+  const isMobile = useIsMobile();
   const contentRef = useFadeIn(isMobile ? 0 : 200);
 
   // Define all available tabs with their properties (matching admin panel IDs)
