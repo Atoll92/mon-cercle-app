@@ -1,5 +1,5 @@
 // src/pages/DashboardPage.jsx
-import React, { useState, useEffect, useLayoutEffect } from 'react';
+import React, { useState, useEffect, useLayoutEffect, Suspense } from 'react';
 import { useAuth } from '../context/authcontext';
 import { useProfile } from '../context/profileContext';
 import { useApp } from '../context/appContext';
@@ -7,14 +7,17 @@ import { NetworkProvider } from '../context/networkContext';
 import { supabase } from '../supabaseclient';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useTranslation } from '../hooks/useTranslation';
+import { lazyWithRetry } from '../utils/lazyWithRetry';
 import MembersDetailModal from '../components/MembersDetailModal';
-import MicroConclavWidget from '../components/MicroConclavWidget';
 import LatestNewsWidget from '../components/LatestNewsWidget';
 import LatestPostsWidget from '../components/LatestPostsWidget';
 import EventDetailsDialog from '../components/EventDetailsDialog';
 import CreateEventDialog from '../components/CreateEventDialog';
 import UpcomingEventsWidget from '../components/UpcomingEventsWidget';
 import ActivityFeedWidget from '../components/ActivityFeedWidget';
+
+// Lazy load heavy components
+const MicroConclavWidget = lazyWithRetry(() => import('../components/MicroConclavWidget'));
 import { useFadeIn, useStaggeredAnimation, ANIMATION_DURATION } from '../hooks/useAnimation';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { ProfileSkeleton, GridSkeleton } from '../components/LoadingSkeleton';
@@ -1434,12 +1437,14 @@ function DashboardPage() {
               )}
               
               {/* Micro Conclav Widget - Always visible, full width row */}
-              <Box sx={{ 
-                mt: 2, 
-                minHeight: 400, 
+              <Box sx={{
+                mt: 2,
+                minHeight: 400,
                 width: '100%'
               }}>
-                <MicroConclavWidget />
+                <Suspense fallback={<Spinner size={60} />}>
+                  <MicroConclavWidget />
+                </Suspense>
               </Box>
 
         </Box>
