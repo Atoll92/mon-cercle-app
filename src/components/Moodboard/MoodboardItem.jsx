@@ -103,21 +103,12 @@ const MoodboardItem = ({
     };
   }, [isDragging, isResizing, handleMouseMove, handleMouseUp]);
 
-  // Log image loading status
+  // Reset image loaded state when content changes
   useEffect(() => {
-    if (item.type === 'image' && item.content) {
-      const img = new Image();
-      img.onload = () => {
-        console.log(`Image loaded: ${item.id}`);
-        setImageLoaded(true);
-      };
-      img.onerror = () => {
-        console.error(`Image failed to load: ${item.id} - ${item.content}`);
-        setImageLoaded(false);
-      };
-      img.src = item.content;
+    if (item.type === 'image') {
+      setImageLoaded(false);
     }
-  }, [item.type, item.content, item.id]);
+  }, [item.type, item.content]);
 
   // Handle resize handle mousedown
   const handleResizeMouseDown = (e) => {
@@ -158,21 +149,25 @@ const MoodboardItem = ({
               </Box>
             )}
             
-            <img 
-              src={item.content} 
-              alt={item.title || 'Moodboard image'} 
+            <img
+              key={item.content}
+              src={item.content}
+              alt={item.title || 'Moodboard image'}
+              loading="eager"
+              decoding="async"
               onLoad={() => setImageLoaded(true)}
               onError={(e) => {
-                console.error('Image load error:', item.content);
+                console.error('Image load error:', item.content, e);
               }}
-              style={{ 
-                width: '100%', 
-                height: '100%', 
+              style={{
+                width: '100%',
+                height: '100%',
                 objectFit: 'contain',
                 pointerEvents: 'none',
                 opacity: imageLoaded ? 1 : 0.3,
                 transition: 'opacity 0.3s ease',
-              }} 
+                imageRendering: 'auto',
+              }}
             />
           </Box>
         );

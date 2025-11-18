@@ -138,6 +138,12 @@ export const getPDFMetadata = async (file) => {
 
 // Compress image file
 export const compressImage = async (file, options = {}) => {
+  // NEVER compress GIFs - they lose animation when converted to PNG
+  if (file.type === 'image/gif') {
+    console.log('Skipping compression for GIF to preserve animation:', file.name);
+    return file;
+  }
+
   const defaultOptions = {
     maxSizeMB: 1, // Max file size in MB
     maxWidthOrHeight: 1920, // Max width or height
@@ -153,10 +159,10 @@ export const compressImage = async (file, options = {}) => {
     }
 
     const compressedFile = await imageCompression(file, defaultOptions);
-    
+
     // Log compression results
     console.log(`Image compressed: ${(file.size / 1024 / 1024).toFixed(2)}MB -> ${(compressedFile.size / 1024 / 1024).toFixed(2)}MB`);
-    
+
     return compressedFile;
   } catch (error) {
     console.error('Error compressing image:', error);

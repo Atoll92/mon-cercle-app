@@ -395,27 +395,27 @@ function MoodboardPage() {
   
   const handleUploadImage = async () => {
     if (!newImage) return;
-    
+
     try {
       setSaving(true);
-      
+
       // First, load the image to get its dimensions
       const img = new Image();
       const imageUrl = URL.createObjectURL(newImage);
-      
+
       await new Promise((resolve, reject) => {
         img.onload = resolve;
         img.onerror = reject;
         img.src = imageUrl;
       });
-      
+
       // Calculate the aspect ratio and appropriate size
       const aspectRatio = img.width / img.height;
       const maxWidth = 400;
       const maxHeight = 400;
-      
+
       let itemWidth, itemHeight;
-      
+
       if (aspectRatio > 1) {
         // Landscape image
         itemWidth = Math.min(img.width, maxWidth);
@@ -425,8 +425,8 @@ function MoodboardPage() {
         itemHeight = Math.min(img.height, maxHeight);
         itemWidth = itemHeight * aspectRatio;
       }
-      
-      // Clean up the object URL
+
+      // Clean up the object URL after we're done with it
       URL.revokeObjectURL(imageUrl);
       
       // Upload image to storage
@@ -438,15 +438,18 @@ function MoodboardPage() {
         .from('shared')
         .upload(filePath, newImage, {
           cacheControl: '3600',
-          upsert: true
+          upsert: true,
+          contentType: newImage.type // Explicitly set content type to preserve GIF format
         });
-      
+
       if (uploadError) throw uploadError;
-      
+
       // Get public URL
       const { data: { publicUrl } } = supabase.storage
         .from('shared')
-        .getPublicUrl(filePath);
+        .getPublicUrl(filePath, {
+          download: false // Ensure it's served inline, not as download
+        });
       
       // Calculate position based on current view
       const canvasRect = canvasRef.current.getBoundingClientRect();

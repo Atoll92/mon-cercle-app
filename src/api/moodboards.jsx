@@ -136,20 +136,23 @@ export const uploadMoodboardImage = async (file, moodboardId) => {
   const fileExt = file.name.split('.').pop();
   const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
   const filePath = `moodboards/${moodboardId}/${fileName}`;
-  
+
   const { error: uploadError } = await supabase.storage
     .from('shared')
     .upload(filePath, file, {
       cacheControl: '3600',
-      upsert: true
+      upsert: true,
+      contentType: file.type // Explicitly set content type to preserve GIF format
     });
-    
+
   if (uploadError) throw uploadError;
-  
+
   const { data: { publicUrl } } = supabase.storage
     .from('shared')
-    .getPublicUrl(filePath);
-    
+    .getPublicUrl(filePath, {
+      download: false // Ensure it's served inline, not as download
+    });
+
   return publicUrl;
 };
 

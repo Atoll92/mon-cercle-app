@@ -52,8 +52,11 @@ const MoodboardItemSimple = ({ item, style = {}, mediaOnly = false }) => {
               </Box>
             ) : (
               <img
+                key={item.content}
                 src={item.content}
                 alt={item.title || 'Moodboard image'}
+                loading="eager"
+                decoding="async"
                 onLoad={() => setImageLoaded(true)}
                 onError={() => setMediaError(true)}
                 style={{
@@ -62,6 +65,7 @@ const MoodboardItemSimple = ({ item, style = {}, mediaOnly = false }) => {
                   objectFit: 'contain',
                   opacity: imageLoaded ? 1 : 0,
                   transition: 'opacity 0.3s ease',
+                  imageRendering: 'auto',
                 }}
               />
             )}
