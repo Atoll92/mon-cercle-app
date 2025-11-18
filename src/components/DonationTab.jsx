@@ -59,53 +59,6 @@ const DonationTab = ({ helloAssoUrl, darkMode }) => {
 
   return (
     <Box sx={{ mt: 2 }}>
-      {/* Introduction Section */}
-      <Paper
-        elevation={0}
-        sx={{
-          p: 3,
-          mb: 3,
-          backgroundColor: darkMode
-            ? alpha('#4568dc', 0.1)
-            : alpha('#4568dc', 0.05),
-          border: `1px solid ${darkMode
-            ? alpha('#4568dc', 0.3)
-            : alpha('#4568dc', 0.2)}`,
-          borderRadius: 2,
-        }}
-      >
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-          <FavoriteIcon
-            sx={{
-              fontSize: 40,
-              color: darkMode ? '#90caf9' : '#4568dc',
-            }}
-          />
-          <Typography
-            variant="h6"
-            sx={{
-              color: darkMode
-                ? alpha('#ffffff', 0.95)
-                : alpha('#000000', 0.9),
-              fontWeight: 600,
-            }}
-          >
-            {t('dashboard.donation.title')}
-          </Typography>
-        </Box>
-        <Typography
-          variant="body2"
-          sx={{
-            color: darkMode
-              ? alpha('#ffffff', 0.8)
-              : alpha('#000000', 0.7),
-            lineHeight: 1.6,
-          }}
-        >
-          {t('dashboard.donation.description')}
-        </Typography>
-      </Paper>
-
       {/* HelloAsso Widget */}
       <Paper
         elevation={0}
