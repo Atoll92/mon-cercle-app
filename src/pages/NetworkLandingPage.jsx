@@ -17,6 +17,7 @@ import TimelineIcon from '@mui/icons-material/Timeline';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import AttachmentIcon from '@mui/icons-material/Attachment';
 import SchoolIcon from '@mui/icons-material/School';
+import FavoriteIcon from '@mui/icons-material/Favorite';
 
 import {
   Container,
@@ -57,6 +58,7 @@ import CoursesTab from '../components/CoursesTab';
 import AboutTab from '../components/AboutTab';
 import MemberDetailsModal from '../components/MembersDetailModal';
 import FilesTab from '../components/FilesTab';
+import DonationTab from '../components/DonationTab';
 import OnboardingGuide from '../components/OnboardingGuide';
 import WelcomeMessage from '../components/WelcomeMessage';
 import { getTabDescription } from '../utils/tabDescriptions';
@@ -168,6 +170,7 @@ function NetworkLandingPage() {
     { id: 'wiki', icon: <MenuBookIcon />, label: t('dashboard.tabs.wiki') },
     { id: 'courses', icon: <SchoolIcon />, label: t('dashboard.tabs.courses') },
     { id: 'social', icon: <TimelineIcon />, label: t('dashboard.tabs.social') },
+    { id: 'donation', icon: <FavoriteIcon />, label: t('dashboard.tabs.donation') },
     // Always show About tab regardless of config
     { id: 'about', icon: <InfoIcon />, label: t('dashboard.tabs.about') }
   ];
@@ -180,7 +183,14 @@ function NetworkLandingPage() {
     // Create tabs in the order specified by enabledTabs, then add About at the end
     const orderedTabs = tabsToUse
       .map(tabId => allTabs.find(tab => tab.id === tabId))
-      .filter(tab => tab); // Remove any undefined tabs
+      .filter(tab => {
+        if (!tab) return false;
+        // Special handling for donation tab - only show if HelloAsso URL is configured
+        if (tab.id === 'donation') {
+          return !!network?.helloasso_url;
+        }
+        return true;
+      });
 
     // Always add About tab at the end
     const aboutTab = allTabs.find(tab => tab.id === 'about');
@@ -189,7 +199,7 @@ function NetworkLandingPage() {
     }
 
     return orderedTabs.length > 0 ? orderedTabs : allTabs;
-  }, [enabledTabs, allTabs]);
+  }, [enabledTabs, allTabs, network?.helloasso_url]);
   
   // Helper function to get tab index from tab id within visible tabs
   const getTabIndexFromId = React.useCallback((tabId) => {
@@ -1219,6 +1229,13 @@ function NetworkLandingPage() {
                 isUserMember={isUserMember}
                 darkMode={darkMode} // Pass dark mode to files tab
                 files={files}
+              />
+            )}
+
+            {currentTabId === 'donation' && (
+              <DonationTab
+                helloAssoUrl={network?.helloasso_url}
+                darkMode={darkMode} // Pass dark mode to donation tab
               />
             )}
           </Box>

@@ -318,6 +318,8 @@ const NetworkOnboardingWizard = ({ profile }) => {
           purpose: networkData.purpose,
           features_enabled: Object.keys(networkData.features).filter(k => networkData.features[k])
         }
+      }).then(() => {
+        // Analytics tracked successfully
       }).catch((analyticsError) => {
         console.error('Analytics tracking error:', analyticsError);
         // Fail silently

@@ -217,8 +217,8 @@ const NetworkSettingsTab = ({ network, onNetworkUpdate, darkMode }) => {
   const [tabDescriptions, setTabDescriptions] = useState(() => {
     if (network?.tab_descriptions) {
       try {
-        return typeof network.tab_descriptions === 'string' 
-          ? JSON.parse(network.tab_descriptions) 
+        return typeof network.tab_descriptions === 'string'
+          ? JSON.parse(network.tab_descriptions)
           : network.tab_descriptions || {};
       } catch (e) {
         console.error('Error parsing tab descriptions:', e);
@@ -227,6 +227,9 @@ const NetworkSettingsTab = ({ network, onNetworkUpdate, darkMode }) => {
     }
     return {};
   });
+
+  // HelloAsso donation URL
+  const [helloAssoUrl, setHelloAssoUrl] = useState(network?.helloasso_url || '');
   
   const [updating, setUpdating] = useState(false);
   const [error, setError] = useState(null);
@@ -264,7 +267,8 @@ const NetworkSettingsTab = ({ network, onNetworkUpdate, darkMode }) => {
         activity_feed: features.activity_feed
       }),
       enabled_tabs: enabledTabs,
-      tab_descriptions: tabDescriptions
+      tab_descriptions: tabDescriptions,
+      helloasso_url: helloAssoUrl || null
     };
     
     const result = await updateNetworkDetails(network.id, updates);
@@ -320,59 +324,66 @@ const NetworkSettingsTab = ({ network, onNetworkUpdate, darkMode }) => {
   };
   
   const availableTabs = [
-    { 
-      id: 'news', 
-      label: t('admin.networkSettings.tabs.news'), 
+    {
+      id: 'news',
+      label: t('admin.networkSettings.tabs.news'),
       icon: <ArticleIcon fontSize="small" />,
       defaultDescription: defaultTabDescriptions.news
     },
-    { 
-      id: 'members', 
-      label: t('admin.networkSettings.tabs.members'), 
+    {
+      id: 'members',
+      label: t('admin.networkSettings.tabs.members'),
       icon: <GroupsIcon fontSize="small" />,
       defaultDescription: defaultTabDescriptions.members
     },
-    { 
-      id: 'events', 
-      label: t('admin.networkSettings.tabs.events'), 
+    {
+      id: 'events',
+      label: t('admin.networkSettings.tabs.events'),
       icon: <EventIcon fontSize="small" />,
       defaultDescription: defaultTabDescriptions.events
     },
-    { 
-      id: 'chat', 
-      label: t('admin.networkSettings.tabs.chat'), 
+    {
+      id: 'chat',
+      label: t('admin.networkSettings.tabs.chat'),
       icon: <ForumIcon fontSize="small" />,
       defaultDescription: defaultTabDescriptions.chat
     },
-    { 
-      id: 'files', 
-      label: t('admin.networkSettings.tabs.files'), 
+    {
+      id: 'files',
+      label: t('admin.networkSettings.tabs.files'),
       icon: <FileIcon fontSize="small" />,
       defaultDescription: defaultTabDescriptions.files
     },
-    { 
-      id: 'wiki', 
-      label: t('admin.networkSettings.tabs.wiki'), 
+    {
+      id: 'wiki',
+      label: t('admin.networkSettings.tabs.wiki'),
       icon: <WikiIcon fontSize="small" />,
       defaultDescription: defaultTabDescriptions.wiki
     },
-    { 
-      id: 'social', 
-      label: t('admin.networkSettings.tabs.social'), 
+    {
+      id: 'social',
+      label: t('admin.networkSettings.tabs.social'),
       icon: <TimelineIcon fontSize="small" />,
       defaultDescription: defaultTabDescriptions.social
     },
-    { 
-      id: 'courses', 
-      label: t('admin.networkSettings.tabs.courses'), 
+    {
+      id: 'courses',
+      label: t('admin.networkSettings.tabs.courses'),
       icon: <CoursesIcon fontSize="small" />,
       defaultDescription: defaultTabDescriptions.courses
     },
-    { 
-      id: 'marketplace', 
-      label: t('admin.networkSettings.tabs.marketplace'), 
+    {
+      id: 'marketplace',
+      label: t('admin.networkSettings.tabs.marketplace'),
       icon: <MarketplaceIcon fontSize="small" />,
       defaultDescription: defaultTabDescriptions.marketplace
+    },
+    {
+      id: 'donation',
+      label: t('admin.networkSettings.tabs.donation'),
+      icon: <ReactionsIcon fontSize="small" />,
+      defaultDescription: defaultTabDescriptions.donation,
+      requiresUrl: true // Special flag to indicate this tab requires HelloAsso URL
     }
   ];
   
@@ -615,7 +626,13 @@ label={t('admin.networkSettings.fields.networkDescription')}
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                     {enabledTabs
                       .map(tabId => availableTabs.find(tab => tab.id === tabId))
-                      .filter(tab => tab && features[tab.id] !== false)
+                      .filter(tab => {
+                        if (!tab) return false;
+                        // Special handling for donation tab - only show if URL is configured
+                        if (tab.id === 'donation') return !!helloAssoUrl;
+                        // For other tabs, check features config
+                        return features[tab.id] !== false;
+                      })
                       .map((tab) => (
                         <SortableTabChip
                           key={tab.id}
@@ -637,7 +654,13 @@ label={t('admin.networkSettings.fields.networkDescription')}
               </Typography>
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                 {availableTabs
-                  .filter(tab => !enabledTabs.includes(tab.id) && features[tab.id] !== false)
+                  .filter(tab => {
+                    if (enabledTabs.includes(tab.id)) return false;
+                    // Special handling for donation tab - only show if URL is configured
+                    if (tab.id === 'donation') return !!helloAssoUrl;
+                    // For other tabs, check features config
+                    return features[tab.id] !== false;
+                  })
                   .map((tab) => (
                     <Chip
                       key={tab.id}
@@ -703,7 +726,13 @@ label={t('admin.networkSettings.fields.networkDescription')}
             {/* Tab items */}
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
               {availableTabs
-                .filter(tab => enabledTabs.includes(tab.id) && features[tab.id] !== false)
+                .filter(tab => {
+                  if (!enabledTabs.includes(tab.id)) return false;
+                  // Special handling for donation tab - only show if URL is configured
+                  if (tab.id === 'donation') return !!helloAssoUrl;
+                  // For other tabs, check features config
+                  return features[tab.id] !== false;
+                })
                 .sort((a, b) => enabledTabs.indexOf(a.id) - enabledTabs.indexOf(b.id))
                 .map((tab) => (
                   <Paper
@@ -844,7 +873,59 @@ label={tabDescriptions[tab.id] ? t('admin.networkSettings.tabGuidelines.custom')
             </Box>
           </AccordionDetails>
         </Accordion>
-        
+
+        {/* HelloAsso Donation Integration */}
+        <Accordion sx={{ mt: 2 }}>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography sx={{ display: 'flex', alignItems: 'center', fontWeight: 'medium' }}>
+              <ReactionsIcon sx={{ mr: 1 }} />
+              {t('admin.networkSettings.sections.donationIntegration')}
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                {t('admin.networkSettings.donation.description')}
+              </Typography>
+              <Alert severity="info" sx={{ mb: 3 }}>
+                {t('admin.networkSettings.donation.infoMessage')}
+              </Alert>
+            </Box>
+
+            <TextField
+              fullWidth
+              label={t('admin.networkSettings.donation.urlLabel')}
+              variant="outlined"
+              value={helloAssoUrl}
+              onChange={(e) => setHelloAssoUrl(e.target.value)}
+              placeholder="https://www.helloasso.com/associations/votre-association/formulaires/1/widget"
+              helperText={t('admin.networkSettings.donation.urlHelper')}
+              sx={{ mb: 2 }}
+            />
+
+            {helloAssoUrl && (
+              <Alert severity="success" sx={{ mt: 2 }}>
+                {t('admin.networkSettings.donation.enabledMessage')}
+              </Alert>
+            )}
+
+            {!helloAssoUrl && (
+              <Box sx={{ mt: 2, p: 2, bgcolor: alpha(muiTheme.palette.warning.main, 0.08), borderRadius: 1 }}>
+                <Typography variant="caption" sx={{ display: 'block', fontWeight: 'medium', mb: 1 }}>
+                  {t('admin.networkSettings.donation.howToGetUrl')}
+                </Typography>
+                <Box component="ol" sx={{ m: 0, pl: 2.5, '& li': { fontSize: '0.75rem', color: 'text.secondary', mb: 0.5 } }}>
+                  <li>{t('admin.networkSettings.donation.steps.login')}</li>
+                  <li>{t('admin.networkSettings.donation.steps.selectForm')}</li>
+                  <li>{t('admin.networkSettings.donation.steps.getWidget')}</li>
+                  <li>{t('admin.networkSettings.donation.steps.copyUrl')}</li>
+                  <li>{t('admin.networkSettings.donation.steps.pasteHere')}</li>
+                </Box>
+              </Box>
+            )}
+          </AccordionDetails>
+        </Accordion>
+
         {/* Save Button */}
         <Box sx={{ mt: 4, display: 'flex', justifyContent: 'flex-end' }}>
           <Button

@@ -109,7 +109,8 @@
         "privacyPurpose": "Privacy & Purpose",
         "featuresModules": "Features & Modules",
         "navigationTabs": "Navigation Tabs",
-        "tabGuidelines": "Tab Feature Guidelines"
+        "tabGuidelines": "Tab Feature Guidelines",
+        "donationIntegration": "HelloAsso Integration - Donations"
       },
       "fields": {
         "networkName": "Network Name",
@@ -197,7 +198,8 @@
         "wiki": "Wiki",
         "social": "Social Wall",
         "courses": "Courses",
-        "marketplace": "Marketplace"
+        "marketplace": "Marketplace",
+        "donation": "Donations"
       },
       "navigationTabs": {
         "description": "Select which tabs will appear in your network navigation. Drag to reorder them.",
@@ -239,6 +241,21 @@
       },
       "success": {
         "settingsUpdated": "Network settings updated successfully!"
+      },
+      "donation": {
+        "description": "Integrate your HelloAsso donation page to allow members to support your association directly from your network.",
+        "infoMessage": "HelloAsso is a free platform (0 fees, 0 commission) for French associations. Only declared associations with a bank account in the association's name can use HelloAsso.",
+        "urlLabel": "HelloAsso Widget URL",
+        "urlHelper": "Paste your HelloAsso donation form widget URL here",
+        "enabledMessage": "The Donations tab will be enabled once you save these settings. Don't forget to activate the 'Donations' tab in the Navigation Tabs section above.",
+        "howToGetUrl": "How to get your HelloAsso widget URL:",
+        "steps": {
+          "login": "Log in to your HelloAsso account",
+          "selectForm": "Select your donation form",
+          "getWidget": "Click on 'Embed the form' then 'Widget'",
+          "copyUrl": "Copy the widget URL (format: https://www.helloasso.com/associations/.../forms/.../widget)",
+          "pasteHere": "Paste the URL here and save your settings"
+        }
       }
     },
     "networkInfo": {
@@ -753,7 +770,18 @@
       "wiki": "Wiki",
       "courses": "Courses",
       "social": "Social Wall",
+      "donation": "Donations",
       "about": "About"
+    },
+    "donation": {
+      "title": "Support Our Association",
+      "description": "Your support helps us continue our mission and serve our community. Every contribution makes a difference.",
+      "notConfigured": "Donation page not configured",
+      "contactAdmin": "Contact a network administrator to enable donations.",
+      "loading": "Loading donation form...",
+      "loadError": "Error loading donation form. Please refresh the page or contact an administrator.",
+      "iframeTitle": "HelloAsso Donation Form",
+      "securityNotice": "Secured by HelloAsso - Certified payment platform for French associations. Your donations are secure and 100% of funds go directly to the association."
     },
     "notLoggedIn": "You're not logged in or your session has expired.",
     "debug": {

@@ -109,7 +109,8 @@
         "privacyPurpose": "Confidentialité et objectif",
         "featuresModules": "Fonctionnalités et modules",
         "navigationTabs": "Onglets de navigation",
-        "tabGuidelines": "Directives des fonctionnalités d'onglets"
+        "tabGuidelines": "Directives des fonctionnalités d'onglets",
+        "donationIntegration": "Intégration HelloAsso - Dons"
       },
       "fields": {
         "networkName": "Nom du réseau",
@@ -197,7 +198,8 @@
         "wiki": "Wiki",
         "social": "Mur social",
         "courses": "Cours",
-        "marketplace": "Marché"
+        "marketplace": "Marché",
+        "donation": "Dons"
       },
       "navigationTabs": {
         "description": "Sélectionnez les onglets qui apparaîtront dans la navigation de votre réseau. Glissez pour les réorganiser.",
@@ -239,6 +241,21 @@
       },
       "success": {
         "settingsUpdated": "Paramètres du réseau mis à jour avec succès !"
+      },
+      "donation": {
+        "description": "Intégrez votre page de dons HelloAsso pour permettre aux membres de soutenir votre association directement depuis votre réseau.",
+        "infoMessage": "HelloAsso est une plateforme gratuite (0 frais, 0 commission) pour les associations françaises. Seules les associations déclarées avec un compte bancaire au nom de l'association peuvent utiliser HelloAsso.",
+        "urlLabel": "URL du widget HelloAsso",
+        "urlHelper": "Collez l'URL du widget de votre formulaire de don HelloAsso ici",
+        "enabledMessage": "L'onglet Dons sera activé une fois que vous aurez enregistré ces paramètres. N'oubliez pas d'activer l'onglet 'Dons' dans la section Onglets de navigation ci-dessus.",
+        "howToGetUrl": "Comment obtenir l'URL de votre widget HelloAsso :",
+        "steps": {
+          "login": "Connectez-vous à votre compte HelloAsso",
+          "selectForm": "Sélectionnez votre formulaire de don",
+          "getWidget": "Cliquez sur 'Intégrer le formulaire' puis 'Widget'",
+          "copyUrl": "Copiez l'URL du widget (format : https://www.helloasso.com/associations/.../ formulaires/.../widget)",
+          "pasteHere": "Collez l'URL ici et enregistrez vos paramètres"
+        }
       }
     },
     "networkInfo": {
@@ -754,7 +771,18 @@
       "wiki": "Wiki",
       "courses": "Cours",
       "social": "Social Wall",
+      "donation": "Dons",
       "about": "À propos"
+    },
+    "donation": {
+      "title": "Soutenir notre association",
+      "description": "Votre soutien nous aide à poursuivre notre mission et à servir notre communauté. Chaque contribution fait la différence.",
+      "notConfigured": "Page de dons non configurée",
+      "contactAdmin": "Contactez un administrateur du réseau pour activer les dons.",
+      "loading": "Chargement du formulaire de don...",
+      "loadError": "Erreur lors du chargement du formulaire de don. Veuillez actualiser la page ou contacter un administrateur.",
+      "iframeTitle": "Formulaire de don HelloAsso",
+      "securityNotice": "Sécurisé par HelloAsso - Plateforme de paiement certifiée pour les associations françaises. Vos dons sont sécurisés et 100% des fonds vont directement à l'association."
     },
     "notLoggedIn": "Vous n'êtes pas connecté ou votre session a expiré.",
     "debug": {

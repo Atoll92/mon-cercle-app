@@ -8,7 +8,8 @@ export const defaultTabDescriptions = {
   wiki: 'Collaborate on building a knowledge base with guides, documentation, and shared resources',
   social: 'Share updates, posts, and engage with your community through content and interactions',
   courses: 'Access and manage educational courses, learning materials, and track your progress',
-  marketplace: 'Browse and trade products, services, and resources within your network community'
+  marketplace: 'Browse and trade products, services, and resources within your network community',
+  donation: 'Support our association by making a secure donation through HelloAsso platform'
 };
 
 // Default tab descriptions (French)
@@ -21,7 +22,8 @@ export const defaultTabDescriptionsFr = {
   wiki: 'Collaborez à la construction d\'une base de connaissances avec des guides, de la documentation et des ressources partagées',
   social: 'Partagez des mises à jour, des publications et interagissez avec votre communauté à travers du contenu et des interactions',
   courses: 'Accédez et gérez des cours éducatifs, du matériel d\'apprentissage et suivez votre progression',
-  marketplace: 'Parcourez et échangez des produits, services et ressources au sein de votre communauté réseau'
+  marketplace: 'Parcourez et échangez des produits, services et ressources au sein de votre communauté réseau',
+  donation: 'Soutenez notre association en effectuant un don sécurisé via la plateforme HelloAsso'
 };
 
 /**
