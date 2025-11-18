@@ -223,17 +223,6 @@ const Footer = () => {
             >
               CONCLAV
             </Typography>
-            <Box
-              component="img"
-              src="/Flag_of_Europe.svg.png"
-              alt="EU"
-              sx={{
-                width: 24,
-                height: 24,
-                ml: 1.5,
-                objectFit: 'contain'
-              }}
-            />
           </Box>
           
           <Box 
@@ -245,9 +234,21 @@ const Footer = () => {
               textAlign: { xs: 'center', sm: 'right' }
             }}
           >
-            <Typography variant="body2" color="text.secondary">
-              © {currentYear} Conclav Networks. All rights reserved.
-            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Box
+                component="img"
+                src="/Flag_of_Europe.svg.png"
+                alt="EU"
+                sx={{
+                  width: 20,
+                  height: 20,
+                  objectFit: 'contain'
+                }}
+              />
+              <Typography variant="body2" color="text.secondary">
+                © {currentYear} Conclav Networks. All rights reserved.
+              </Typography>
+            </Box>
             <Box 
               sx={{ 
                 display: { xs: 'none', sm: 'block' },
