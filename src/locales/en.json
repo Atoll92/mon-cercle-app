@@ -905,6 +905,7 @@
   "eventsTab": {
     "filterByCategory": "Filter by Category",
     "allCategories": "All Categories",
+    "filterByCity": "Filter by City",
     "allCities": "All Cities",
     "manageEvents": "Manage Events",
     "eventsMap": "Events Map",

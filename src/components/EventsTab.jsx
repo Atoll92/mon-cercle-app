@@ -37,7 +37,8 @@ import {
   ArrowForward as ArrowForwardIcon,
   Link as LinkIcon,
   ChevronLeft as ChevronLeftIcon,
-  ChevronRight as ChevronRightIcon
+  ChevronRight as ChevronRightIcon,
+  LocationCity as LocationCityIcon
 } from '@mui/icons-material';
 import TimelineIcon from '@mui/icons-material/Timeline';
 import { Calendar, dateFnsLocalizer } from 'react-big-calendar';
@@ -87,6 +88,7 @@ const EventsTab = ({
   const [calendarDate, setCalendarDate] = useState(new Date());
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedCity, setSelectedCity] = useState('all');
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState(null);
@@ -295,7 +297,43 @@ const EventsTab = ({
     }
   };
 
-  // Filter events by selected category and status (only approved events for non-admins)
+  // Extract unique cities from future events
+  const cities = useMemo(() => {
+    if (!events || events.length === 0) return [];
+
+    const now = new Date();
+    const cityMap = new Map();
+
+    events.forEach(event => {
+      // Only include future events
+      const eventDate = new Date(event.date);
+      if (eventDate < now) return;
+
+      // Use the city field from database
+      const cityName = event?.city;
+
+      if (cityName && event?.coordinates?.latitude && event?.coordinates?.longitude) {
+        if (!cityMap.has(cityName)) {
+          cityMap.set(cityName, {
+            name: cityName,
+            coordinates: {
+              latitude: event.coordinates.latitude,
+              longitude: event.coordinates.longitude
+            },
+            count: 1
+          });
+        } else {
+          const cityData = cityMap.get(cityName);
+          cityData.count++;
+        }
+      }
+    });
+
+    // Convert to array and sort by event count (most events first)
+    return Array.from(cityMap.values()).sort((a, b) => b.count - a.count);
+  }, [events]);
+
+  // Filter events by selected category, city, and status (only approved events for non-admins)
   const filteredEvents = useMemo(() => {
     let filtered = events;
 
@@ -309,8 +347,13 @@ const EventsTab = ({
       filtered = filtered.filter(event => event.category_id === selectedCategory);
     }
 
+    // Filter by city if selected
+    if (selectedCity && selectedCity !== 'all') {
+      filtered = filtered.filter(event => event.city === selectedCity);
+    }
+
     return filtered;
-  }, [events, selectedCategory, isUserAdmin]);
+  }, [events, selectedCategory, selectedCity, isUserAdmin]);
 
   // Separate events by category
   const upcomingEvents = useMemo(() =>
@@ -342,7 +385,7 @@ const EventsTab = ({
           </Alert>
         )}
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>            
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
             {categories.length > 0 && (
               <FormControl size="small" sx={{ minWidth: 200 }}>
                 <InputLabel>{t('eventsTab.filterByCategory')}</InputLabel>
@@ -357,15 +400,50 @@ const EventsTab = ({
                   {categories.map((category) => (
                     <MenuItem key={category.id} value={category.id}>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Box 
-                          sx={{ 
-                            width: 12, 
-                            height: 12, 
-                            borderRadius: '50%', 
-                            bgcolor: category.color || '#666' 
-                          }} 
+                        <Box
+                          sx={{
+                            width: 12,
+                            height: 12,
+                            borderRadius: '50%',
+                            bgcolor: category.color || '#666'
+                          }}
                         />
                         {category.name}
+                      </Box>
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            )}
+            {cities.length > 0 && (
+              <FormControl size="small" sx={{ minWidth: 180 }}>
+                <InputLabel>{t('eventsTab.filterByCity')}</InputLabel>
+                <Select
+                  value={selectedCity}
+                  onChange={(e) => setSelectedCity(e.target.value)}
+                  label={t('eventsTab.filterByCity')}
+                >
+                  <MenuItem value="all">
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <LocationCityIcon sx={{ fontSize: 18, color: 'primary.main' }} />
+                      <em>{t('eventsTab.allCities')}</em>
+                    </Box>
+                  </MenuItem>
+                  {cities.map((city) => (
+                    <MenuItem key={city.name} value={city.name}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%' }}>
+                        <LocationOnIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
+                        <Box sx={{ flex: 1 }}>{city.name}</Box>
+                        <Chip
+                          label={city.count}
+                          size="small"
+                          sx={{
+                            height: 20,
+                            fontSize: '0.7rem',
+                            fontWeight: 600,
+                            bgcolor: 'action.selected'
+                          }}
+                        />
                       </Box>
                     </MenuItem>
                   ))}
@@ -1302,6 +1380,8 @@ const EventsTab = ({
               setShowEventDialog(true);
             }}
             height="500px"
+            selectedCity={selectedCity}
+            onCityChange={setSelectedCity}
           />
         </Paper>
       </Box>

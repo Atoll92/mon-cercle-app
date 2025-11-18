@@ -11,15 +11,26 @@ import { useTranslation } from '../hooks/useTranslation';
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 const MAPBOX_STYLE = 'mapbox://styles/dgcoboss/cm5k9ztpe003g01s76e7v8owz';
 
-export default function EventsMap({ events = [], onEventSelect, initialCoordinates = null, height = '350px' }) {
+export default function EventsMap({
+  events = [],
+  onEventSelect,
+  initialCoordinates = null,
+  height = '350px',
+  selectedCity: controlledSelectedCity,
+  onCityChange
+}) {
   const { t } = useTranslation();
   const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
   const markersRef = useRef([]);
   const [loading, setLoading] = useState(true);
   const [mapError, setMapError] = useState(null);
-  const [selectedCity, setSelectedCity] = useState('all');
+  const [internalSelectedCity, setInternalSelectedCity] = useState('all');
   const hasInitiallyFitBounds = useRef(false); // Track if we've done initial fit
+
+  // Use controlled or internal state
+  const selectedCity = controlledSelectedCity !== undefined ? controlledSelectedCity : internalSelectedCity;
+  const setSelectedCity = onCityChange || setInternalSelectedCity;
 
   // Extract unique cities from events using the city field
   const cities = useMemo(() => {
@@ -104,7 +115,47 @@ export default function EventsMap({ events = [], onEventSelect, initialCoordinat
       }
     }, 100);
   }, [cities, events]);
-  
+
+  // Effect to handle map navigation when selectedCity changes from parent
+  useEffect(() => {
+    if (!mapRef.current || loading) return;
+
+    // Wait for next tick to ensure map is ready
+    setTimeout(() => {
+      if (selectedCity === 'all') {
+        // Show all events - fit to bounds
+        const eventsWithCoordinates = events.filter(e =>
+          e?.coordinates?.latitude && e?.coordinates?.longitude
+        );
+
+        if (eventsWithCoordinates.length > 0) {
+          const bounds = new mapboxgl.LngLatBounds();
+          eventsWithCoordinates.forEach(e => {
+            bounds.extend([e.coordinates.longitude, e.coordinates.latitude]);
+          });
+
+          mapRef.current.fitBounds(bounds, {
+            padding: 70,
+            maxZoom: 15,
+            duration: 1000
+          });
+        }
+      } else {
+        // Zoom to selected city
+        const city = cities.find(c => c.name === selectedCity);
+
+        if (city) {
+          mapRef.current.flyTo({
+            center: [city.coordinates.longitude, city.coordinates.latitude],
+            zoom: 12,
+            duration: 1500,
+            essential: true
+          });
+        }
+      }
+    }, 100);
+  }, [selectedCity, cities, events, loading]);
+
   useEffect(() => {
     const loadMapbox = async () => {
       try {
