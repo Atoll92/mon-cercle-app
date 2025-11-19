@@ -164,6 +164,15 @@ function htmlToText(html: string): string {
   text = text.replace(/<[^>]+>/g, '')
 
   // Decode HTML entities
+  // First decode numeric entities (&#233; or &#xE9;)
+  text = text.replace(/&#(\d+);/g, (match, dec) => {
+    return String.fromCharCode(parseInt(dec, 10))
+  })
+  text = text.replace(/&#x([0-9A-Fa-f]+);/g, (match, hex) => {
+    return String.fromCharCode(parseInt(hex, 16))
+  })
+
+  // Then decode named entities
   text = text.replace(/&nbsp;/g, ' ')
   text = text.replace(/&amp;/g, '&')
   text = text.replace(/&lt;/g, '<')
