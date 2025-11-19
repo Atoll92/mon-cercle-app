@@ -540,6 +540,24 @@ serve(async (req) => {
       // Use subject, fall back to first line of content if no subject
       const subject = originalSubject || content.split('\n')[0].substring(0, 150) || 'Message sans objet'
 
+      // Log raw email if subject extraction failed
+      if (!originalSubject) {
+        console.warn('⚠️ Subject extraction failed, using fallback. Logging raw email for debugging:')
+        console.warn('Raw email length:', rawEmail.length)
+        console.warn('Raw email first 500 chars:', rawEmail.substring(0, 500))
+
+        // Log full raw email if it's not too large (limit to 20KB to avoid log overflow)
+        if (rawEmail.length <= 20480) {
+          console.warn('Full raw email:', rawEmail)
+        } else {
+          console.warn('Raw email too large for full logging. First 20KB:', rawEmail.substring(0, 20480))
+          console.warn('Last 1KB:', rawEmail.substring(rawEmail.length - 1024))
+        }
+
+        // Also log headers for debugging
+        console.warn('Parsed headers:', Array.from(headerMap.entries()))
+      }
+
       // Auto-categorize based on subject and content
       const category = autoCategorize(subject + ' ' + content)
 
