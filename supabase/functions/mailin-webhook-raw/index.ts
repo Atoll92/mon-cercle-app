@@ -296,7 +296,7 @@ serve(async (req) => {
                 if (fromHeader) {
                   const sender = parseFromHeader(fromHeader)
                   originalSender.email = sender.email
-                  originalSender.name = sender.name || ''
+                  originalSender.name = sender.name ? decodeEncodedWord(sender.name) : ''
                 }
 
                 // Extract subject
