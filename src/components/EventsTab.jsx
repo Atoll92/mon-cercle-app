@@ -158,18 +158,42 @@ const EventsTab = ({
     fetchUserParticipations();
   }, [user, events]);
 
-  // Load categories on mount
+  // Load categories on mount and filter based on upcoming/ongoing events
   useEffect(() => {
     const loadCategories = async () => {
       if (network?.id) {
         const { data, error } = await fetchNetworkCategories(network.id, true); // Only active categories
         if (data && !error) {
-          setCategories(data);
+          // Filter categories to only include those with upcoming or ongoing events
+          const now = new Date();
+          const categoriesWithFutureEvents = data.filter(category => {
+            return events.some(event => {
+              // Check if event belongs to this category
+              if (event.category_id !== category.id) return false;
+
+              // Check if event is approved (for non-admins) or has no status
+              if (!isUserAdmin && event.status && event.status !== 'approved') return false;
+
+              // Check if event is upcoming or ongoing
+              const startDate = new Date(event.date);
+              const endDate = event.end_date ? new Date(event.end_date) : startDate;
+
+              // Event is upcoming (starts in the future)
+              if (startDate > now) return true;
+
+              // Event is ongoing (started but not ended)
+              if (endDate >= now) return true;
+
+              return false;
+            });
+          });
+
+          setCategories(categoriesWithFutureEvents);
         }
       }
     };
     loadCategories();
-  }, [network?.id]);
+  }, [network?.id, events, isUserAdmin]);
 
   // Handle participation change locally
   const handleParticipationChange = (eventId, newStatus) => {
