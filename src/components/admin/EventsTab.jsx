@@ -435,11 +435,19 @@ const EventsTab = ({ events, setEvents, user, activeProfile, networkId, network,
             {filteredAndSortedEvents.map((event) => (
               <TableRow
                 key={event.id}
-                sx={{ 
-                  '&:hover': { 
-                    backgroundColor: darkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.04)' 
+                onClick={(e) => {
+                  // Don't open dialog if clicking on action buttons
+                  if (!e.target.closest('.MuiIconButton-root')) {
+                    handleViewEvent(event);
+                  }
+                }}
+                sx={{
+                  '&:hover': {
+                    backgroundColor: darkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.04)',
+                    cursor: 'pointer'
                   },
-                  height: 60 
+                  height: 60,
+                  cursor: 'pointer'
                 }}
               >
                 <TableCell padding="checkbox">
