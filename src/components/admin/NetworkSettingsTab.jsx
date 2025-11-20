@@ -252,7 +252,7 @@ const NetworkSettingsTab = ({ network, onNetworkUpdate, darkMode }) => {
       description: networkDescription,
       privacy_level: privacyLevel,
       purpose: purpose,
-      features_config: JSON.stringify({
+      features_config: {
         events: features.events,
         news: features.news,
         files: features.files,
@@ -265,7 +265,7 @@ const NetworkSettingsTab = ({ network, onNetworkUpdate, darkMode }) => {
         marketplace: features.marketplace,
         reactions: features.reactions,
         activity_feed: features.activity_feed
-      }),
+      },
       enabled_tabs: enabledTabs,
       tab_descriptions: tabDescriptions,
       helloasso_url: helloAssoUrl || null

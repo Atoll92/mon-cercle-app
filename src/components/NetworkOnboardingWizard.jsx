@@ -343,7 +343,7 @@ const NetworkOnboardingWizard = ({ profile }) => {
           description: networkData.description,
           created_by: user.id,
           logo_url: networkData.logoUrl || null,
-          features_config: JSON.stringify({
+          features_config: {
             events: networkData.features.events,
             news: networkData.features.news,
             files: networkData.features.files,
@@ -352,7 +352,7 @@ const NetworkOnboardingWizard = ({ profile }) => {
             moodboards: networkData.features.moodboards,
             courses: networkData.features.courses,
             marketplace: networkData.features.marketplace
-          }),
+          },
           privacy_level: networkData.privacyLevel,
           purpose: networkData.purpose,
           enabled_tabs: networkData.enabledTabs,
