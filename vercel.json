@@ -1,22 +1,9 @@
 {
-  "version": 2,
+  "version": 3,
   "rewrites": [
     {
-      "source": "/join/:code",
-      "destination": "/api/join/:code"
-    }
-  ],
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "dist"
-      }
-    },
-    {
-      "src": "api/**/*.js",
-      "use": "@vercel/node"
+      "source": "/((?!api|assets|.*\\..*).*)",
+      "destination": "/api/og-handler/$1"
     }
   ]
 }
