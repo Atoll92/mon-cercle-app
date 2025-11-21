@@ -6,7 +6,6 @@ import App from './App.jsx'
 import { AuthProvider } from './context/authcontext.jsx'
 import { BrowserRouter } from 'react-router-dom'; // <= THE MISSING PIECE!
 import { initializeLogger } from './utils/logger'
-import { SpeedInsights } from '@vercel/speed-insights/react'
 // Removed: import { startAutomaticNotificationProcessing } from './services/emailNotificationService'
 // Notification processing now handled server-side via Supabase cron job
 
@@ -20,7 +19,6 @@ createRoot(document.getElementById('root')).render(
     <BrowserRouter>
   <AuthProvider> {/* Wrap App with AuthProvider */}
     <App />
-    <SpeedInsights />
   </AuthProvider>
   </BrowserRouter>
   </StrictMode>,

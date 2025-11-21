@@ -13,6 +13,7 @@ import { DirectMessagesProvider } from './context/directMessagesContext';
 import { AppProvider, useApp } from './context/appContext';
 import ErrorBoundary from './components/ErrorBoundary';
 import { Analytics } from '@vercel/analytics/react';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 import { ProfileProvider, useProfile } from './context/profileContext';
 import NetworkSelector from './components/NetworkSelector';
 import ProfileAwareRoute from './components/ProfileAwareRoute';
@@ -293,6 +294,7 @@ function App() {
             </Box>
             <Footer />
             <Analytics />
+            <SpeedInsights />
           </Box>
             </DirectMessagesProvider>
           </AppWithProfileContext>
