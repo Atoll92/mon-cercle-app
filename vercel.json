@@ -13,15 +13,23 @@
       "use": "@vercel/node"
     }
   ],
+  "rewrites": [
+    {
+      "source": "/join/:code",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": ".*(bot|crawler|spider|crawling|facebookexternalhit|Twitterbot|LinkedInBot|WhatsApp).*"
+        }
+      ],
+      "destination": "https://etoxvocwsktguoddmgcu.supabase.co/functions/v1/invitation-preview/:code"
+    }
+  ],
   "routes": [
     {
       "src": "/api/(.*)",
       "dest": "/api/$1"
-    },
-    {
-      "src": "/join/([^/]+)",
-      "dest": "https://etoxvocwsktguoddmgcu.supabase.co/functions/v1/invitation-preview/$1",
-      "status": 200
     },
     {
       "handle": "filesystem"

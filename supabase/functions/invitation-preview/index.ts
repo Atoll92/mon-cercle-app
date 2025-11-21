@@ -135,42 +135,55 @@ function generateInvitationHTML(code: string, network: any, invitation: any): st
       align-items: center;
       justify-content: center;
       padding: 20px;
-    }
-    .loader {
       text-align: center;
       color: white;
     }
-    .spinner {
-      width: 50px;
-      height: 50px;
-      border: 4px solid rgba(255, 255, 255, 0.3);
-      border-top-color: white;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
+    .card {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      padding: 40px;
+      max-width: 500px;
+    }
+    .logo {
+      width: 100px;
+      height: 100px;
       margin: 0 auto 20px;
+      border-radius: 50%;
+      object-fit: cover;
     }
-    @keyframes spin {
-      to { transform: rotate(360deg); }
+    h1 {
+      font-size: 32px;
+      margin-bottom: 16px;
+      font-weight: 600;
     }
-    h1 { font-size: 24px; margin-bottom: 10px; }
-    p { font-size: 16px; opacity: 0.9; }
+    p {
+      font-size: 18px;
+      opacity: 0.9;
+      margin-bottom: 24px;
+    }
+    .btn {
+      display: inline-block;
+      background: white;
+      color: #667eea;
+      padding: 12px 32px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      transition: transform 0.2s;
+    }
+    .btn:hover {
+      transform: translateY(-2px);
+    }
   </style>
-
-  <script>
-    // Redirect to the React app immediately
-    window.location.href = '${invitationUrl}';
-  </script>
 </head>
 <body>
-  <div class="loader">
-    <div class="spinner"></div>
-    <h1>Loading ${networkName}...</h1>
-    <p>You will be redirected shortly</p>
+  <div class="card">
+    <img src="${networkLogoUrl}" alt="${networkName}" class="logo" onerror="this.style.display='none'">
+    <h1>Join ${networkName}</h1>
+    <p>${cleanDescription}</p>
+    <a href="${invitationUrl}" class="btn">Join Network</a>
   </div>
-
-  <noscript>
-    <meta http-equiv="refresh" content="0; url=${invitationUrl}">
-  </noscript>
 </body>
 </html>`;
 }
