@@ -5,7 +5,7 @@
       "destination": "/api/join/:code"
     },
     {
-      "source": "/(.*)",
+      "source": "/((?!api|join).*)",
       "destination": "/index.html"
     }
   ]
