@@ -122,7 +122,30 @@ Deno.serve(async (req) => {
 
     console.log('📨 Starting notification processing...')
 
-    // Get pending notifications
+    // First, get unique recipients with pending notifications (limit how many recipients we process per run)
+    const { data: recipientsWithNotifications, error: recipientsFetchError } = await supabase
+      .from('notification_queue')
+      .select('recipient_id')
+      .eq('is_sent', false)
+      .is('error_message', null)
+      .limit(50) // Process up to 50 recipients per invocation to avoid timeouts
+
+    if (recipientsFetchError) {
+      throw new Error(`Failed to fetch recipients: ${recipientsFetchError.message}`)
+    }
+
+    if (!recipientsWithNotifications || recipientsWithNotifications.length === 0) {
+      return new Response(
+        JSON.stringify({ success: true, message: 'No pending notifications', processed: 0 }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Get unique recipient IDs
+    const uniqueRecipientIds = [...new Set(recipientsWithNotifications.map(r => r.recipient_id))]
+    console.log(`📨 Processing notifications for ${uniqueRecipientIds.length} recipients`)
+
+    // Now fetch ALL notifications for these recipients (no limit on notifications per recipient)
     const { data: notifications, error: fetchError } = await supabase
       .from('notification_queue')
       .select(`
@@ -143,9 +166,10 @@ Deno.serve(async (req) => {
           name
         )
       `)
+      .in('recipient_id', uniqueRecipientIds)
       .eq('is_sent', false)
       .is('error_message', null)
-      .limit(50)
+      .order('created_at', { ascending: true }) // Process oldest first
 
     if (fetchError) {
       throw new Error(`Failed to fetch notifications: ${fetchError.message}`)
@@ -153,26 +177,26 @@ Deno.serve(async (req) => {
 
     if (!notifications || notifications.length === 0) {
       return new Response(
-        JSON.stringify({ success: true, message: 'No pending notifications', processed: 0 }),
+        JSON.stringify({ success: true, message: 'No notifications found for recipients', processed: 0 }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    console.log(`📨 Processing ${notifications.length} notifications`)
+    console.log(`📨 Found ${notifications.length} total notifications for ${uniqueRecipientIds.length} recipients`)
 
     // Group notifications by recipient, network, and type for batching
     const groupedNotifications = new Map()
-    
+
     for (const notification of notifications) {
       // Skip if no email
       if (!notification.profiles?.contact_email) {
         console.log(`Skipping notification ${notification.id} - no email`)
         continue
       }
-      
+
       // Create group key: recipient_network_type
       const groupKey = `${notification.recipient_id}_${notification.network_id}_${notification.notification_type}`
-      
+
       if (!groupedNotifications.has(groupKey)) {
         groupedNotifications.set(groupKey, {
           recipient: notification.profiles,
@@ -181,7 +205,7 @@ Deno.serve(async (req) => {
           notifications: []
         })
       }
-      
+
       groupedNotifications.get(groupKey).notifications.push(notification)
     }
 
@@ -194,18 +218,51 @@ Deno.serve(async (req) => {
     for (const [groupKey, group] of groupedNotifications) {
       try {
         const { recipient, network, type, notifications: groupNotifications } = group
-        
+
+        // Configuration for digest times (will eventually come from user preferences)
+        const EVENT_DIGEST_HOUR = parseInt(Deno.env.get('EVENT_DIGEST_HOUR') || '16') // Default 16:00
+        const EVENT_DIGEST_ENABLED = Deno.env.get('EVENT_DIGEST_ENABLED') !== 'false' // Default true
+
+        // For event notifications, check if we should wait for digest
+        if (type === 'event' && EVENT_DIGEST_ENABLED) {
+          const now = new Date()
+          const currentHour = now.getHours()
+
+          // Get the oldest event notification creation time
+          const oldestEventTime = Math.min(...groupNotifications.map(n => new Date(n.created_at).getTime()))
+          const oldestEventDate = new Date(oldestEventTime)
+
+          // Calculate today's digest time
+          const todayDigestTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), EVENT_DIGEST_HOUR, 0, 0)
+
+          // If oldest event was created before today's digest time and it's now past digest time, send
+          // Otherwise, wait for the appropriate digest time
+          if (oldestEventDate < todayDigestTime) {
+            // Event was created before today's digest cutoff
+            if (currentHour < EVENT_DIGEST_HOUR) {
+              // Not yet digest time, skip for now
+              console.log(`📅 Skipping event notifications for ${recipient.contact_email} - waiting until ${EVENT_DIGEST_HOUR}:00 for digest`)
+              continue
+            }
+            // It's past digest time, proceed to send
+          } else {
+            // Event was created after today's digest time, will be sent tomorrow at digest time
+            console.log(`📅 Skipping event notifications for ${recipient.contact_email} - created after today's ${EVENT_DIGEST_HOUR}:00 cutoff, will send tomorrow`)
+            continue
+          }
+        }
+
         // For direct messages, check if we should wait for more messages
         if (type === 'direct_message') {
           // Check if all messages are recent (less than 5 minutes old)
           const now = new Date()
           const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000)
-          
+
           const hasOldMessage = groupNotifications.some(notif => {
             const createdAt = new Date(notif.created_at)
             return createdAt < fiveMinutesAgo
           })
-          
+
           // If no message is older than 5 minutes, skip this group for now
           // They will be processed in the next run when they're old enough
           if (!hasOldMessage) {
@@ -432,8 +489,148 @@ Deno.serve(async (req) => {
           // Rate limit delay
           await new Promise(resolve => setTimeout(resolve, 600))
         }
+      } else if (type === 'event' && groupNotifications.length > 1) {
+        // Multiple event notifications - send as digest
+        console.log(`📅 Sending event digest with ${groupNotifications.length} events to ${recipient.contact_email}`)
+
+        // Fetch all event details
+        const eventIds = groupNotifications.map(n => n.related_item_id).filter(Boolean)
+        const { data: events, error: eventsError } = await supabase
+          .from('network_events')
+          .select(`
+            id,
+            title,
+            description,
+            date,
+            location,
+            cover_image_url,
+            created_by,
+            profiles!network_events_created_by_fkey (
+              full_name
+            ),
+            network_categories (
+              name,
+              color
+            )
+          `)
+          .in('id', eventIds)
+          .order('date', { ascending: true })
+
+        if (eventsError) {
+          console.error('📨 Error fetching events for digest:', eventsError)
+        }
+
+        const validEvents = events || []
+        const eventCount = validEvents.length
+
+        // Generate digest email HTML
+        const emailSubject = `${eventCount} new events in ${network?.name || 'your network'}`
+
+        // Build event cards HTML
+        let eventCardsHtml = ''
+        for (const event of validEvents) {
+          const eventDate = event.date ? new Date(event.date) : null
+          const formattedDate = eventDate
+            ? eventDate.toLocaleDateString('en-US', {
+                weekday: 'short',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+              })
+            : 'Date TBD'
+
+          const categoryBadge = event.network_categories?.name
+            ? `<span style="display: inline-flex; align-items: center; padding: 4px 12px; border-radius: 16px; background-color: ${event.network_categories.color}15; border: 1px solid ${event.network_categories.color}40; font-size: 11px; font-weight: 600; color: ${event.network_categories.color}; letter-spacing: 0.02em;">#${event.network_categories.name}</span>`
+            : ''
+
+          eventCardsHtml += `
+            <div style="background-color: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 16px; margin-bottom: 16px;">
+              ${event.cover_image_url ? `
+              <img src="${event.cover_image_url}" alt="${event.title}" style="width: 100%; height: 120px; object-fit: cover; border-radius: 6px; margin-bottom: 12px;" />
+              ` : ''}
+              <h3 style="margin: 0 0 8px 0; color: #333; font-size: 16px; font-weight: 600;">${event.title}</h3>
+              <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+                <span style="color: #666; font-size: 13px;">📅 ${formattedDate}</span>
+                ${event.location ? `<span style="color: #666; font-size: 13px;">📍 ${event.location}</span>` : ''}
+              </div>
+              ${categoryBadge ? `<div style="margin-bottom: 8px;">${categoryBadge}</div>` : ''}
+              <p style="margin: 0 0 12px 0; color: #666; font-size: 14px; line-height: 1.4;">
+                ${event.description ? (event.description.length > 150 ? event.description.substring(0, 150) + '...' : event.description) : 'No description available'}
+              </p>
+              ${event.profiles?.full_name ? `
+              <p style="margin: 8px 0 12px 0; color: #999; font-size: 12px;">Organized by ${event.profiles.full_name}</p>
+              ` : ''}
+              <a href="${Deno.env.get('APP_URL') || 'https://your-app-url.com'}/network/${groupNotifications[0].network_id}/event/${event.id}"
+                 style="display: inline-block; background-color: #ff9800; color: white; padding: 8px 16px; text-decoration: none; border-radius: 4px; font-size: 13px; font-weight: 500;">
+                View Event Details →
+              </a>
+            </div>
+          `
+        }
+
+        const emailHtml = `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; line-height: 1.6;">
+            <div style="background-color: #ff9800; padding: 20px; border-radius: 8px 8px 0 0;">
+              <h2 style="color: white; margin: 0 0 10px 0; font-size: 24px;">📅 ${eventCount} New Event${eventCount > 1 ? 's' : ''} in ${network?.name || 'Your Network'}</h2>
+              <p style="margin: 0; color: #fff3e0; font-size: 14px;">Your daily event digest</p>
+            </div>
+
+            <div style="background-color: #f8f9fa; padding: 24px; border: 1px solid #e0e0e0; border-radius: 0 0 8px 8px; border-top: none;">
+              ${eventCardsHtml}
+            </div>
+
+            <div style="margin-top: 20px; padding: 16px; background-color: #f8f9fa; border-radius: 6px; font-size: 12px; color: #666;">
+              <p style="margin: 0 0 8px 0;">You're receiving this daily event digest because you're subscribed to event notifications.</p>
+              <p style="margin: 0;">
+                <a href="${Deno.env.get('APP_URL') || 'https://your-app-url.com'}/profile/edit?tab=settings"
+                   style="color: #ff9800; text-decoration: none;">
+                  Manage your notification preferences
+                </a>
+              </p>
+            </div>
+          </div>
+        `
+
+        // Send the digest email
+        const emailPayload = {
+          from: Deno.env.get('FROM_EMAIL') || 'noreply@your-domain.com',
+          to: recipient.contact_email,
+          subject: emailSubject,
+          html: emailHtml
+        }
+
+        const resendResponse = await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${RESEND_API_KEY}`
+          },
+          body: JSON.stringify(emailPayload)
+        })
+
+        if (!resendResponse.ok) {
+          const errorData = await resendResponse.json()
+          throw new Error(`Failed to send event digest: ${JSON.stringify(errorData)}`)
+        }
+
+        // Mark all event notifications as sent
+        const notificationIds = groupNotifications.map(n => n.id)
+        await supabase
+          .from('notification_queue')
+          .update({
+            is_sent: true,
+            sent_at: new Date().toISOString()
+          })
+          .in('id', notificationIds)
+
+        sent += notificationIds.length
+
+        // Rate limit delay
+        await new Promise(resolve => setTimeout(resolve, 600))
+
       } else {
-        // For other notification types, process individually
+        // For other notification types or single events, process individually
           for (const notification of groupNotifications) {
             // Prepare email data
             let inviterName = 'Network Update'
