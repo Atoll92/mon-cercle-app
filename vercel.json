@@ -5,10 +5,16 @@
     {
       "source": "/join/:code",
       "destination": "/api/invitation/:code"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/$1"
     },
     {
-      "source": "/(.*)",
-      "destination": "/"
+      "src": "/(.*)",
+      "dest": "/$1"
     }
   ],
   "functions": {
