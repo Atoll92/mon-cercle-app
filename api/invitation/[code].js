@@ -8,17 +8,38 @@ const SUPABASE_ANON_KEY = process.env.VITE_SUPABASE_ANON_KEY;
 const APP_URL = process.env.VITE_APP_URL || 'https://www.conclav.club';
 
 export default async function handler(req, res) {
+  const startTime = Date.now();
+  console.log('[OG-META] Function invoked at:', new Date().toISOString());
+  console.log('[OG-META] Request method:', req.method);
+  console.log('[OG-META] Request URL:', req.url);
+  console.log('[OG-META] Request headers:', JSON.stringify(req.headers, null, 2));
+
   const { code } = req.query;
+  console.log('[OG-META] Invitation code:', code);
 
   if (!code) {
+    console.error('[OG-META] No invitation code provided');
     return res.status(400).send('Invalid invitation code');
+  }
+
+  // Check environment variables
+  console.log('[OG-META] Environment check:');
+  console.log('[OG-META] - SUPABASE_URL exists:', !!SUPABASE_URL);
+  console.log('[OG-META] - SUPABASE_ANON_KEY exists:', !!SUPABASE_ANON_KEY);
+  console.log('[OG-META] - APP_URL:', APP_URL);
+
+  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+    console.error('[OG-META] Missing Supabase credentials');
+    return generateErrorHTML(res, 'Configuration error');
   }
 
   try {
     // Create Supabase client
+    console.log('[OG-META] Creating Supabase client...');
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     // Fetch invitation and network details
+    console.log('[OG-META] Fetching invitation for code:', code.toUpperCase());
     const { data: invitation, error } = await supabase
       .from('network_invitation_links')
       .select(`
@@ -37,21 +58,46 @@ export default async function handler(req, res) {
       .eq('is_active', true)
       .single();
 
-    if (error || !invitation) {
-      console.error('Error fetching invitation:', error);
-      return generateErrorHTML(res);
+    if (error) {
+      console.error('[OG-META] Supabase error:', error);
+      return generateErrorHTML(res, 'Database error');
     }
 
+    if (!invitation) {
+      console.error('[OG-META] No invitation found for code:', code);
+      return generateErrorHTML(res, 'Invitation not found');
+    }
+
+    console.log('[OG-META] Invitation found:', {
+      id: invitation.id,
+      network_id: invitation.network_id,
+      hasNetwork: !!invitation.networks
+    });
+
     const network = invitation.networks;
+    console.log('[OG-META] Network details:', {
+      id: network?.id,
+      name: network?.name,
+      hasBackgroundImage: !!network?.background_image_url,
+      hasLogo: !!network?.logo_url
+    });
+
     const html = generateInvitationHTML(code, network);
+
+    const duration = Date.now() - startTime;
+    console.log('[OG-META] Success! Generated HTML in', duration, 'ms');
+    console.log('[OG-META] HTML preview (first 500 chars):', html.substring(0, 500));
 
     // Set headers
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.setHeader('Cache-Control', 'public, max-age=300, s-maxage=600');
+    res.setHeader('X-OG-Function', 'invitation-preview');
+    res.setHeader('X-OG-Duration', duration.toString());
     res.status(200).send(html);
   } catch (error) {
-    console.error('Error in invitation handler:', error);
-    return generateErrorHTML(res);
+    console.error('[OG-META] Unexpected error:', error);
+    console.error('[OG-META] Error stack:', error.stack);
+    return generateErrorHTML(res, 'Internal error');
   }
 }
 
@@ -160,7 +206,9 @@ function generateInvitationHTML(code, network) {
 </html>`;
 }
 
-function generateErrorHTML(res) {
+function generateErrorHTML(res, reason = 'Unknown error') {
+  console.log('[OG-META] Generating error HTML. Reason:', reason);
+
   const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -183,18 +231,21 @@ function generateErrorHTML(res) {
       padding: 20px;
     }
     h1 { margin-bottom: 10px; }
+    p { margin: 10px 0; }
     a {
       color: white;
       text-decoration: underline;
       margin-top: 20px;
       display: inline-block;
     }
+    .debug { font-size: 12px; opacity: 0.7; margin-top: 20px; }
   </style>
 </head>
 <body>
   <div>
     <h1>⚠️ Invitation not found</h1>
     <p>This invitation link may be invalid or expired.</p>
+    <div class="debug">Error: ${reason}</div>
     <a href="${APP_URL}">Go to Conclav</a>
   </div>
 </body>
@@ -202,5 +253,6 @@ function generateErrorHTML(res) {
 
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
   res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('X-OG-Error', reason);
   res.status(404).send(html);
 }
