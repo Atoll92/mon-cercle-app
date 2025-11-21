@@ -20,7 +20,8 @@
     },
     {
       "src": "/join/([^/]+)",
-      "dest": "/api/invitation/$1"
+      "dest": "https://etoxvocwsktguoddmgcu.supabase.co/functions/v1/invitation-preview/$1",
+      "status": 200
     },
     {
       "handle": "filesystem"

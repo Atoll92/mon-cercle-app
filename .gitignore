@@ -31,3 +31,4 @@ fix_event_trigger.js
 # Testing
 coverage
 .vitest-cache
+.vercel
