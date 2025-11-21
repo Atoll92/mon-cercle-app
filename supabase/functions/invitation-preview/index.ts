@@ -83,6 +83,9 @@ function generateInvitationHTML(code: string, network: any, invitation: any): st
   const networkName = network?.name || 'Conclav Network';
   const networkDescription = network?.description || 'Join this network on Conclav';
   const networkLogoUrl = network?.logo_url || `${APP_URL}/logo.png`;
+  // Use logo for OG image instead of background (logos are typically smaller)
+  // WhatsApp requires images < 300KB
+  const ogImageUrl = networkLogoUrl;
   const networkBackgroundUrl = network?.background_image_url || networkLogoUrl;
   const invitationUrl = `${APP_URL}/join/${code}`;
   const previewUrl = `https://etoxvocwsktguoddmgcu.supabase.co/functions/v1/invitation-preview/${code}`;
@@ -99,31 +102,31 @@ function generateInvitationHTML(code: string, network: any, invitation: any): st
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- Primary Meta Tags -->
+  <!-- Primary Meta Tags - MUST come before style tags for WhatsApp -->
   <title>Join ${networkName} on Conclav</title>
   <meta name="title" content="Join ${networkName} on Conclav">
   <meta name="description" content="${cleanDescription}">
 
-  <!-- Open Graph / Facebook / WhatsApp -->
+  <!-- Open Graph / Facebook / WhatsApp - Image must be < 300KB -->
   <meta property="og:type" content="website">
   <meta property="og:url" content="${previewUrl}">
   <meta property="og:title" content="Join ${networkName} on Conclav">
   <meta property="og:description" content="${cleanDescription}">
-  <meta property="og:image" content="${networkBackgroundUrl}">
-  <meta property="og:image:secure_url" content="${networkBackgroundUrl}">
+  <meta property="og:image" content="${ogImageUrl}">
+  <meta property="og:image:secure_url" content="${ogImageUrl}">
   <meta property="og:image:type" content="image/png">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">
+  <meta property="og:image:width" content="300">
+  <meta property="og:image:height" content="300">
   <meta property="og:image:alt" content="${networkName}">
   <meta property="og:site_name" content="Conclav">
   <meta property="og:locale" content="en_US">
 
   <!-- Twitter -->
-  <meta property="twitter:card" content="summary_large_image">
+  <meta property="twitter:card" content="summary">
   <meta property="twitter:url" content="${invitationUrl}">
   <meta property="twitter:title" content="Join ${networkName} on Conclav">
   <meta property="twitter:description" content="${cleanDescription}">
-  <meta property="twitter:image" content="${networkBackgroundUrl}">
+  <meta property="twitter:image" content="${ogImageUrl}">
 
   <!-- Additional Meta -->
   <meta name="theme-color" content="#667eea">
