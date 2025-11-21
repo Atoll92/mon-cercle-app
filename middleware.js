@@ -1,8 +1,6 @@
 // Edge middleware to inject OG tags for invitation links
-import { createClient } from '@supabase/supabase-js';
-
 export const config = {
-  runtime: 'edge',
+  matcher: '/join/:code*',
 };
 
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL;
@@ -15,7 +13,7 @@ export default async function middleware(request) {
   // Only handle /join/:code routes
   const joinMatch = pathname.match(/^\/join\/([^\/]+)$/);
   if (!joinMatch) {
-    return undefined; // Continue to next middleware/handler
+    return; // Continue to next middleware/handler
   }
 
   const code = joinMatch[1];
@@ -25,33 +23,29 @@ export default async function middleware(request) {
   const isCrawler = /bot|crawler|spider|crawling|facebookexternalhit|Twitterbot|LinkedInBot|WhatsApp|Slackbot|Discordbot|Telegram/i.test(userAgent);
 
   if (!isCrawler) {
-    return undefined; // Let React app handle it for regular users
+    return; // Let React app handle it for regular users
   }
 
   // For crawlers, fetch network data and inject OG tags
   try {
-    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    // Use Supabase REST API directly
+    const response = await fetch(
+      `${SUPABASE_URL}/rest/v1/network_invitation_links?code=eq.${code.toUpperCase()}&is_active=eq.true&select=*,networks!inner(id,name,description,logo_url,background_image_url)`,
+      {
+        headers: {
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        },
+      }
+    );
 
-    const { data: invitation, error } = await supabase
-      .from('network_invitation_links')
-      .select(`
-        *,
-        networks!inner(
-          id,
-          name,
-          description,
-          logo_url,
-          background_image_url
-        )
-      `)
-      .eq('code', code.toUpperCase())
-      .eq('is_active', true)
-      .single();
+    const data = await response.json();
 
-    if (error || !invitation) {
-      return undefined; // Fallback to React app
+    if (!data || data.length === 0) {
+      return; // Fallback to React app
     }
 
+    const invitation = data[0];
     const network = invitation.networks;
     const networkName = network?.name || 'Conclav Network';
     const networkDescription = (network?.description || 'Join this network on Conclav')
