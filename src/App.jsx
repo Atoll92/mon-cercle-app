@@ -19,6 +19,7 @@ import NetworkSelector from './components/NetworkSelector';
 import ProfileAwareRoute from './components/ProfileAwareRoute';
 import { LanguageProvider } from './hooks/useTranslation.jsx';
 import { lazyWithRetry } from './utils/lazyWithRetry';
+import { HelmetProvider } from 'react-helmet-async';
 
 // Eagerly loaded pages (small, frequently accessed)
 import LoginPage from './pages/LoginPage';
@@ -160,12 +161,13 @@ function App() {
 
   return (
     <ErrorBoundary>
-      <LanguageProvider>
-        <ProfileProvider>
-          <ThemeProvider>
-            <AppWithProfileContext>
-              <DirectMessagesProvider>
-                <Box className="App" sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+      <HelmetProvider>
+        <LanguageProvider>
+          <ProfileProvider>
+            <ThemeProvider>
+              <AppWithProfileContext>
+                <DirectMessagesProvider>
+                  <Box className="App" sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
             {/* Pass the network name to the header */}
             {(window.location.pathname !== "/" || !session) &&
              window.location.pathname !== "/pricing" &&
@@ -301,6 +303,7 @@ function App() {
         </ThemeProvider>
       </ProfileProvider>
     </LanguageProvider>
+      </HelmetProvider>
     </ErrorBoundary>
   );
 }

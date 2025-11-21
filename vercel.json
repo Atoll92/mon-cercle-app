@@ -1,6 +1,10 @@
 {
   "rewrites": [
     {
+      "source": "/join/:code",
+      "destination": "/api/invitation/:code"
+    },
+    {
       "source": "/(.*)",
       "destination": "/"
     }

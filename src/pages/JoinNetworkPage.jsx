@@ -31,6 +31,7 @@ import {
 import { getInvitationByCode, joinNetworkViaInvitation } from '../api/invitations';
 import { fetchNetworkDetails, getUserProfile } from '../api/networks';
 import UserContent from '../components/UserContent';
+import { Helmet } from 'react-helmet-async';
 
 function JoinNetworkPage() {
   const { code } = useParams();
@@ -129,21 +130,38 @@ function JoinNetworkPage() {
     }
   };
 
+  // Prepare meta tags data
+  const networkName = network?.name || 'Conclav Network';
+  const networkDescription = network?.description
+    ? network.description.replace(/<[^>]*>/g, '').replace(/\n/g, ' ').substring(0, 160)
+    : 'Join this network on Conclav';
+  const networkLogoUrl = network?.logo_url || `${window.location.origin}/logo.png`;
+  const networkBackgroundUrl = network?.background_image_url || networkLogoUrl;
+  const invitationUrl = `${window.location.origin}/join/${code}`;
+
   if (loading) {
     return (
-      <Box
-        sx={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          minHeight: '100vh',
-          background: theme.palette.mode === 'dark'
-            ? 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)'
-            : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-        }}
-      >
-        <Spinner size={120} />
-      </Box>
+      <>
+        <Helmet>
+          <title>Loading Invitation - Conclav</title>
+          <meta property="og:title" content="Join Conclav" />
+          <meta property="og:description" content="Join a network on Conclav" />
+          <meta property="og:image" content={`${window.location.origin}/logo.png`} />
+        </Helmet>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            minHeight: '100vh',
+            background: theme.palette.mode === 'dark'
+              ? 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)'
+              : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+          }}
+        >
+          <Spinner size={120} />
+        </Box>
+      </>
     );
   }
 
@@ -293,21 +311,45 @@ function JoinNetworkPage() {
   }
 
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        minHeight: '100vh',
-        background: theme.palette.mode === 'dark'
-          ? 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)'
-          : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        py: { xs: 3, sm: 4 },
-        px: 2
-      }}
-    >
-      <Fade in={true} timeout={600}>
-        <Container maxWidth="sm">
+    <>
+      <Helmet>
+        <title>Join {networkName} on Conclav</title>
+        <meta name="title" content={`Join ${networkName} on Conclav`} />
+        <meta name="description" content={networkDescription} />
+
+        {/* Open Graph / Facebook */}
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={invitationUrl} />
+        <meta property="og:title" content={`Join ${networkName} on Conclav`} />
+        <meta property="og:description" content={networkDescription} />
+        <meta property="og:image" content={networkBackgroundUrl} />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:alt" content={networkName} />
+        <meta property="og:site_name" content="Conclav" />
+
+        {/* Twitter */}
+        <meta property="twitter:card" content="summary_large_image" />
+        <meta property="twitter:url" content={invitationUrl} />
+        <meta property="twitter:title" content={`Join ${networkName} on Conclav`} />
+        <meta property="twitter:description" content={networkDescription} />
+        <meta property="twitter:image" content={networkBackgroundUrl} />
+      </Helmet>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          minHeight: '100vh',
+          background: theme.palette.mode === 'dark'
+            ? 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)'
+            : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          py: { xs: 3, sm: 4 },
+          px: 2
+        }}
+      >
+        <Fade in={true} timeout={600}>
+          <Container maxWidth="sm">
           {/* Invitation Header with Logo */}
           <Box
             sx={{
@@ -669,6 +711,7 @@ function JoinNetworkPage() {
         </Container>
       </Fade>
     </Box>
+    </>
   );
 }
 

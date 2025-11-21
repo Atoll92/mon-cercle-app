@@ -14,7 +14,7 @@ export default defineConfig({
     global: 'globalThis',
   },
   optimizeDeps: {
-    include: ['buffer']
+    include: ['buffer', 'styled-components']
   },
   test: {
     globals: true,
