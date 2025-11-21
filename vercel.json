@@ -2,10 +2,17 @@
   "rewrites": [
     {
       "source": "/join/:code",
-      "destination": "/api/join/:code"
+      "destination": "/api/join/:code",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": ".*(bot|crawler|spider|crawling|facebookexternalhit|Twitterbot|LinkedInBot|WhatsApp|Slackbot|Discordbot|Telegram|facebot|ia_archiver).*"
+        }
+      ]
     },
     {
-      "source": "/((?!api|join).*)",
+      "source": "/((?!api).*)",
       "destination": "/index.html"
     }
   ]
