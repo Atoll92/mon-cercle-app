@@ -1,9 +1,8 @@
 {
-  "version": 3,
   "rewrites": [
     {
-      "source": "/((?!api|assets|.*\\..*).*)",
-      "destination": "/api/og-handler/$1"
+      "source": "/join/:code",
+      "destination": "/api/join/:code"
     }
   ]
 }
