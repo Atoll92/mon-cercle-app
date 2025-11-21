@@ -57,6 +57,7 @@ import {
   toggleInvitationStatus,
   updateInvitationLink
 } from '../../api/invitations';
+import { fetchNetworkDetails } from '../../api/networks';
 import { useProfile } from '../../context/profileContext';
 
 const InvitationLinksTab = ({ networkId, darkMode, refreshTrigger }) => {
@@ -67,7 +68,8 @@ const InvitationLinksTab = ({ networkId, darkMode, refreshTrigger }) => {
   const [qrDialog, setQrDialog] = useState({ open: false, link: null });
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'info' });
   const [qrCodeUrl, setQrCodeUrl] = useState('');
-  
+  const [network, setNetwork] = useState(null);
+
   // Form state
   const [formData, setFormData] = useState({
     name: '',
@@ -81,6 +83,7 @@ const InvitationLinksTab = ({ networkId, darkMode, refreshTrigger }) => {
 
   useEffect(() => {
     loadInvitations();
+    loadNetworkDetails();
   }, [networkId]);
 
   // Reload invitations when refreshTrigger changes
@@ -89,6 +92,13 @@ const InvitationLinksTab = ({ networkId, darkMode, refreshTrigger }) => {
       loadInvitations();
     }
   }, [refreshTrigger]);
+
+  const loadNetworkDetails = async () => {
+    const networkData = await fetchNetworkDetails(networkId);
+    if (networkData) {
+      setNetwork(networkData);
+    }
+  };
 
   const loadInvitations = async () => {
     setLoading(true);
@@ -170,15 +180,108 @@ const InvitationLinksTab = ({ networkId, darkMode, refreshTrigger }) => {
   const generateQRCode = async (invitation) => {
     try {
       const inviteUrl = `${window.location.origin}/join/${invitation.code}`;
+
+      // Generate QR code with high error correction and better resolution
       const qrDataUrl = await QRCode.toDataURL(inviteUrl, {
-        width: 300,
+        width: 800, // Higher resolution for better quality
         margin: 2,
+        errorCorrectionLevel: 'H', // High error correction (30% redundancy)
         color: {
           dark: '#000000',
           light: '#FFFFFF'
         }
       });
-      setQrCodeUrl(qrDataUrl);
+
+      // If network has a logo, overlay it on the QR code
+      if (network?.logo_url) {
+        try {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+
+          // Load QR code image
+          const qrImage = new Image();
+          qrImage.crossOrigin = 'anonymous';
+
+          await new Promise((resolve, reject) => {
+            qrImage.onload = resolve;
+            qrImage.onerror = reject;
+            qrImage.src = qrDataUrl;
+          });
+
+          // Set canvas size with high resolution
+          canvas.width = qrImage.width;
+          canvas.height = qrImage.height;
+
+          // Enable image smoothing for better quality
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = 'high';
+
+          // Draw QR code
+          ctx.drawImage(qrImage, 0, 0);
+
+          // Load and draw logo
+          const logo = new Image();
+          logo.crossOrigin = 'anonymous';
+
+          await new Promise((resolve, reject) => {
+            logo.onload = resolve;
+            logo.onerror = reject;
+            logo.src = network.logo_url;
+          });
+
+          // Calculate logo container size (20% of QR code size)
+          const logoContainerSize = canvas.width * 0.2;
+          const containerX = (canvas.width - logoContainerSize) / 2;
+          const containerY = (canvas.height - logoContainerSize) / 2;
+
+          // Draw white background square for logo with padding
+          const padding = 10;
+          ctx.fillStyle = '#FFFFFF';
+          ctx.fillRect(
+            containerX - padding,
+            containerY - padding,
+            logoContainerSize + (padding * 2),
+            logoContainerSize + (padding * 2)
+          );
+
+          // Calculate logo dimensions to fit within square (contain mode)
+          const logoAspectRatio = logo.width / logo.height;
+          let logoWidth = logoContainerSize;
+          let logoHeight = logoContainerSize;
+          let offsetX = 0;
+          let offsetY = 0;
+
+          if (logoAspectRatio > 1) {
+            // Logo is wider than tall - fit to width
+            logoHeight = logoContainerSize / logoAspectRatio;
+            offsetY = (logoContainerSize - logoHeight) / 2;
+          } else if (logoAspectRatio < 1) {
+            // Logo is taller than wide - fit to height
+            logoWidth = logoContainerSize * logoAspectRatio;
+            offsetX = (logoContainerSize - logoWidth) / 2;
+          }
+
+          // Draw logo contained within square
+          ctx.drawImage(
+            logo,
+            containerX + offsetX,
+            containerY + offsetY,
+            logoWidth,
+            logoHeight
+          );
+
+          // Get final image with logo at maximum quality
+          const finalQrDataUrl = canvas.toDataURL('image/png', 1.0);
+          setQrCodeUrl(finalQrDataUrl);
+        } catch (logoError) {
+          console.warn('Failed to overlay logo, using plain QR code:', logoError);
+          setQrCodeUrl(qrDataUrl);
+        }
+      } else {
+        // No logo, use plain QR code
+        setQrCodeUrl(qrDataUrl);
+      }
+
       setQrDialog({ open: true, link: invitation });
     } catch (error) {
       console.error('Error generating QR code:', error);
