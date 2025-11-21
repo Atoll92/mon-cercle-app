@@ -85,6 +85,7 @@ function generateInvitationHTML(code: string, network: any, invitation: any): st
   const networkLogoUrl = network?.logo_url || `${APP_URL}/logo.png`;
   const networkBackgroundUrl = network?.background_image_url || networkLogoUrl;
   const invitationUrl = `${APP_URL}/join/${code}`;
+  const previewUrl = `https://etoxvocwsktguoddmgcu.supabase.co/functions/v1/invitation-preview/${code}`;
 
   // Clean description for meta tag (remove HTML, truncate)
   const cleanDescription = networkDescription
@@ -103,16 +104,19 @@ function generateInvitationHTML(code: string, network: any, invitation: any): st
   <meta name="title" content="Join ${networkName} on Conclav">
   <meta name="description" content="${cleanDescription}">
 
-  <!-- Open Graph / Facebook -->
+  <!-- Open Graph / Facebook / WhatsApp -->
   <meta property="og:type" content="website">
-  <meta property="og:url" content="${invitationUrl}">
+  <meta property="og:url" content="${previewUrl}">
   <meta property="og:title" content="Join ${networkName} on Conclav">
   <meta property="og:description" content="${cleanDescription}">
   <meta property="og:image" content="${networkBackgroundUrl}">
+  <meta property="og:image:secure_url" content="${networkBackgroundUrl}">
+  <meta property="og:image:type" content="image/png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="${networkName}">
   <meta property="og:site_name" content="Conclav">
+  <meta property="og:locale" content="en_US">
 
   <!-- Twitter -->
   <meta property="twitter:card" content="summary_large_image">
