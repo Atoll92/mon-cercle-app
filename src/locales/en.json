@@ -986,7 +986,8 @@
     "membershipRequired": "You must be a member of this network to participate in the chat",
     "closeFullscreen": "close fullscreen",
     "networkChat": "Network Chat",
-    "exitFullscreen": "Exit fullscreen"
+    "exitFullscreen": "Exit fullscreen",
+    "chat": "Chat"
   },
   "filesTab": {
     "processFilesFailed": "Failed to process network files.",

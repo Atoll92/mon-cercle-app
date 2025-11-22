@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Box,
   Drawer,
@@ -39,9 +39,30 @@ const MobileMenu = ({ networkLogo, networkName, networkId, user, visibleTabs = [
   const { unreadTotal } = useDirectMessages();
   const { activeProfile } = useProfile();
   const navigate = useNavigate();
+  const headerRef = useRef(null);
 
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [avatarMenuAnchor, setAvatarMenuAnchor] = useState(null);
+
+  // Set CSS variable for header height on mobile
+  useEffect(() => {
+    const updateHeaderHeight = () => {
+      if (headerRef.current) {
+        const height = headerRef.current.getBoundingClientRect().height;
+        document.documentElement.style.setProperty('--network-header-height', `${height}px`);
+      }
+    };
+
+    // Initial measurement
+    updateHeaderHeight();
+
+    // Update on resize
+    window.addEventListener('resize', updateHeaderHeight);
+
+    return () => {
+      window.removeEventListener('resize', updateHeaderHeight);
+    };
+  }, []);
 
   const handleDrawerToggle = () => {
     setDrawerOpen(!drawerOpen);
@@ -81,6 +102,7 @@ const MobileMenu = ({ networkLogo, networkName, networkId, user, visibleTabs = [
   if (showDefaultHeader) {
     return (
       <Box
+        ref={headerRef}
         sx={{
           display: { xs: 'flex', sm: 'none' },
           alignItems: 'center',
@@ -175,6 +197,7 @@ const MobileMenu = ({ networkLogo, networkName, networkId, user, visibleTabs = [
 
   return (
     <Box
+      ref={headerRef}
       sx={{
         display: { xs: 'flex', sm: 'none' },
         alignItems: 'center',

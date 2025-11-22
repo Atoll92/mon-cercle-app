@@ -1457,16 +1457,20 @@ const renderMessageContent = (message) => {
       </Box>
 
       {/* Messages List */}
-      <List 
-        sx={{ 
-          flexGrow: 1, 
+      <List
+        sx={{
+          flexGrow: 1,
           overflowY: 'auto',
           overflowX: 'hidden',
-          px: isFullscreen ? 4 : 3,
-          py: 3,
+          // Reduced padding on mobile for more message space
+          px: { xs: 1.5, sm: isFullscreen ? 4 : 3 },
+          py: { xs: 1.5, sm: 3 },
           zIndex: 1,
           position: 'relative',
           backgroundColor: darkMode ? 'transparent' : 'rgba(255,255,255,0)',
+          // Contain scroll within chat on mobile
+          overscrollBehavior: 'contain',
+          WebkitOverflowScrolling: 'touch',
           '&::-webkit-scrollbar': {
             width: '8px',
           },
@@ -1546,22 +1550,30 @@ const renderMessageContent = (message) => {
                       ? '#ffffff'
                       : '#f7fafc'),
                   borderRadius: message.user_id === activeProfile.id ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
-                  mb: 2.5, // Increased margin for reaction bar
-                  py: 1.5,
-                  px: 2,
+                  // Reduced margin on mobile for denser layout
+                  mb: { xs: 2, sm: 2.5 },
+                  py: { xs: 1, sm: 1.5 },
+                  px: { xs: 1.5, sm: 2 },
                   backdropFilter: 'blur(10px)',
                   boxShadow: message.user_id === activeProfile.id
-                    ? darkMode 
+                    ? darkMode
                       ? '0 4px 12px rgba(99, 102, 241, 0.2)'
                       : '0 4px 12px rgba(99, 102, 241, 0.1)'
                     : darkMode
                       ? '0 2px 8px rgba(0,0,0,0.3)'
                       : '0 2px 8px rgba(0,0,0,0.08)',
                   transform: 'none',
-                  maxWidth: containsLink ? '85%' : '70%',
+                  // Wider messages on mobile to save vertical space
+                  maxWidth: {
+                    xs: containsLink ? '95%' : '92%',
+                    sm: containsLink ? '85%' : '70%'
+                  },
                   marginLeft: message.user_id === activeProfile.id ? 'auto' : '0',
                   marginRight: message.user_id === activeProfile.id ? '0' : 'auto',
-                  width: containsLink ? '85%' : 'fit-content',
+                  width: {
+                    xs: containsLink ? '95%' : 'fit-content',
+                    sm: containsLink ? '85%' : 'fit-content'
+                  },
                   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                   border: darkMode 
                     ? 'none' 
@@ -1595,7 +1607,7 @@ const renderMessageContent = (message) => {
                   }
                 }}
               >
-                <ListItemAvatar sx={{ minWidth: 40, alignSelf: 'flex-start', mt: 0.5 }}>
+                <ListItemAvatar sx={{ minWidth: { xs: 36, sm: 40 }, alignSelf: 'flex-start', mt: 0.5 }}>
                   <Avatar
                     src={message.profiles?.profile_picture_url}
                     alt={message.profiles?.full_name}
@@ -1605,8 +1617,8 @@ const renderMessageContent = (message) => {
                     } : undefined}
                     sx={{
                       cursor: message.profiles?.id ? 'pointer' : 'default',
-                      width: 36,
-                      height: 36,
+                      width: { xs: 30, sm: 36 },
+                      height: { xs: 30, sm: 36 },
                       border: darkMode
                         ? '2px solid rgba(255,255,255,0.9)'
                         : '2px solid rgba(0,0,0,0.08)',
