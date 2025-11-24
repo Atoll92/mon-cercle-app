@@ -1,0 +1,71 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background gradient matching homepage -->
+  <defs>
+    <linearGradient id="bg-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1976d2;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#1565c0;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0d47a1;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="logo-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1976d2;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#42a5f5;stop-opacity:0.9" />
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bg-gradient)"/>
+
+  <!-- Logo - orbital design matching homepage -->
+  <g transform="translate(280, 315)">
+    <!-- Central big disk -->
+    <circle cx="0" cy="0" r="45" fill="url(#logo-gradient)" filter="url(#glow)"/>
+
+    <!-- Medium disks in orbit -->
+    <g fill="url(#logo-gradient)">
+      <circle cx="90" cy="0" r="32" opacity="0.9"/>
+      <circle cx="56" cy="70" r="32" opacity="0.9"/>
+      <circle cx="-20" cy="88" r="32" opacity="0.9"/>
+      <circle cx="-81" cy="39" r="32" opacity="0.9"/>
+      <circle cx="-81" cy="-39" r="32" opacity="0.9"/>
+      <circle cx="-20" cy="-88" r="32" opacity="0.9"/>
+      <circle cx="56" cy="-70" r="32" opacity="0.9"/>
+    </g>
+
+    <!-- Small disks in outer orbit -->
+    <g fill="#1976d2">
+      <circle cx="110" cy="53" r="18" opacity="0.7"/>
+      <circle cx="27" cy="119" r="18" opacity="0.7"/>
+      <circle cx="-76" cy="96" r="18" opacity="0.7"/>
+      <circle cx="-122" cy="0" r="18" opacity="0.7"/>
+      <circle cx="-76" cy="-96" r="18" opacity="0.7"/>
+      <circle cx="27" cy="-119" r="18" opacity="0.7"/>
+      <circle cx="110" cy="-53" r="18" opacity="0.7"/>
+    </g>
+  </g>
+
+  <!-- Text content -->
+  <text x="520" y="280" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="72" font-weight="700" fill="#ffffff">
+    Conclav
+  </text>
+
+  <text x="520" y="340" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="32" font-weight="400" fill="rgba(255, 255, 255, 0.95)">
+    Privacy-Focused Professional Networks
+  </text>
+
+  <text x="520" y="395" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="22" font-weight="300" fill="rgba(255, 255, 255, 0.8)">
+    No tracking • No ads • GDPR compliant
+  </text>
+
+  <!-- European badge -->
+  <rect x="520" y="430" width="420" height="45" rx="22" fill="rgba(255, 255, 255, 0.15)" stroke="rgba(255, 255, 255, 0.3)" stroke-width="2"/>
+  <text x="540" y="460" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="18" font-weight="500" fill="rgba(255, 255, 255, 0.95)">
+    🇪🇺 Made in Europe • Independent of Big Tech
+  </text>
+</svg>

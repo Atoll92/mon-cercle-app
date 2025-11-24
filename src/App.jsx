@@ -20,6 +20,7 @@ import ProfileAwareRoute from './components/ProfileAwareRoute';
 import { LanguageProvider } from './hooks/useTranslation.jsx';
 import { lazyWithRetry } from './utils/lazyWithRetry';
 import { HelmetProvider } from 'react-helmet-async';
+import DynamicMetaTags from './components/DynamicMetaTags';
 
 // Eagerly loaded pages (small, frequently accessed)
 import LoginPage from './pages/LoginPage';
@@ -163,6 +164,7 @@ function App() {
     <ErrorBoundary>
       <HelmetProvider>
         <LanguageProvider>
+          <DynamicMetaTags />
           <ProfileProvider>
             <ThemeProvider>
               <AppWithProfileContext>
