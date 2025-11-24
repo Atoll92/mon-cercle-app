@@ -24,7 +24,9 @@ import {
   MenuItem,
   Chip,
   Menu,
-  Link as MuiLink
+  Link as MuiLink,
+  useTheme,
+  useMediaQuery
 } from '@mui/material';
 import Spinner from './Spinner';
 import SendIcon from '@mui/icons-material/Send';
@@ -41,6 +43,7 @@ import VideocamIcon from '@mui/icons-material/Videocam';
 import AudiotrackIcon from '@mui/icons-material/Audiotrack';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import EmojiEmotionsIcon from '@mui/icons-material/EmojiEmotions';
+import AddIcon from '@mui/icons-material/Add';
 import backgroundImage from '../assets/8-bit-artwork-sky-landscape-wallpaper-preview.jpg';
 import LinkPreview from './LinkPreview'; // Import the LinkPreview component
 import MediaUpload from './MediaUpload';
@@ -61,6 +64,8 @@ const Chat = ({ networkId, isFullscreen = false, backgroundImageUrl }) => {
   const { user } = useAuth();
   const { activeProfile } = useProfile();
   const { t } = useTranslation();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
@@ -74,6 +79,7 @@ const Chat = ({ networkId, isFullscreen = false, backgroundImageUrl }) => {
   const [pendingMedia, setPendingMedia] = useState(null);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showGifPicker, setShowGifPicker] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
   
   // Image viewer modal state
   const [imageViewerOpen, setImageViewerOpen] = useState(false);
@@ -2029,13 +2035,13 @@ const renderMessageContent = (message) => {
       )}
       
       {/* Message Input */}
-      <Box 
-        sx={{ 
-          p: 2, 
+      <Box
+        sx={{
+          p: 2,
           display: 'flex',
-          flexWrap: {xs : 'wrap', sm: 'nowrap'},
-          gap: 1, 
-          bgcolor: darkMode 
+          flexWrap: 'nowrap',
+          gap: 1,
+          bgcolor: darkMode
             ? 'rgba(0, 0, 0, 0.6)'
             : 'rgba(245, 245, 245, 0.9)',
           backdropFilter: 'blur(10px)',
@@ -2046,39 +2052,71 @@ const renderMessageContent = (message) => {
           position: 'relative'
         }}
       >
-        {/* Media upload button */}
-        <IconButton
-          color="primary"
-          onClick={() => setShowMediaUpload(!showMediaUpload)}
-          disabled={false}
-          sx={{ mr: 0.5 }}
-          title={t('chat.attachFile', 'Attach file')}
-        >
-          <AttachFileIcon />
-        </IconButton>
+        {/* Mobile: Show '+' button that opens menu */}
+        {isMobile ? (
+          <IconButton
+            color="primary"
+            onClick={() => setShowMobileMenu(!showMobileMenu)}
+            title={t('chat.moreOptions', 'More options')}
+            sx={{
+              bgcolor: darkMode ? 'transparent' : 'white',
+              '&:hover': {
+                bgcolor: darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.04)'
+              }
+            }}
+          >
+            <AddIcon />
+          </IconButton>
+        ) : (
+          <>
+            {/* Desktop: Show all three buttons */}
+            <IconButton
+              color="primary"
+              onClick={() => setShowMediaUpload(!showMediaUpload)}
+              sx={{
+                mr: 0.5,
+                bgcolor: darkMode ? 'transparent' : 'white',
+                '&:hover': {
+                  bgcolor: darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.04)'
+                }
+              }}
+              title={t('chat.attachFile', 'Attach file')}
+            >
+              <AttachFileIcon />
+            </IconButton>
 
-        {/* GIF picker button */}
-        <IconButton
-          color="primary"
-          onClick={() => setShowGifPicker(!showGifPicker)}
-          disabled={false}
-          sx={{ mr: 0.5 }}
-          title={t('chat.addGif', 'Add GIF')}
-        >
-          <GifIcon />
-        </IconButton>
+            <IconButton
+              color="primary"
+              onClick={() => setShowGifPicker(!showGifPicker)}
+              sx={{
+                mr: 0.5,
+                bgcolor: darkMode ? 'transparent' : 'white',
+                '&:hover': {
+                  bgcolor: darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.04)'
+                }
+              }}
+              title={t('chat.addGif', 'Add GIF')}
+            >
+              <GifIcon />
+            </IconButton>
 
-        {/* Emoji picker button */}
-        <IconButton
-          color="primary"
-          onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-          disabled={false}
-          sx={{ mr: 1 }}
-          title={t('chat.addEmoji', 'Add emoji')}
-        >
-          <EmojiEmotionsIcon />
-        </IconButton>
-        
+            <IconButton
+              color="primary"
+              onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+              sx={{
+                mr: 1,
+                bgcolor: darkMode ? 'transparent' : 'white',
+                '&:hover': {
+                  bgcolor: darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.04)'
+                }
+              }}
+              title={t('chat.addEmoji', 'Add emoji')}
+            >
+              <EmojiEmotionsIcon />
+            </IconButton>
+          </>
+        )}
+
         <TextField
           ref={textFieldRef}
           fullWidth
@@ -2100,13 +2138,13 @@ const renderMessageContent = (message) => {
           maxRows={3}
           sx={{
             '& .MuiOutlinedInput-root': {
-              backgroundColor: darkMode 
+              backgroundColor: darkMode
                 ? 'rgba(255, 255, 255, 0.1)'
                 : 'rgba(255, 255, 255, 0.8)',
               color: darkMode ? 'white' : 'text.primary',
               borderRadius: 2,
               '&:hover .MuiOutlinedInput-notchedOutline': {
-                borderColor: darkMode 
+                borderColor: darkMode
                   ? 'rgba(255, 255, 255, 0.5)'
                   : 'rgba(0, 0, 0, 0.23)',
               },
@@ -2114,25 +2152,25 @@ const renderMessageContent = (message) => {
                 borderColor: 'primary.main',
               },
               '& .MuiOutlinedInput-notchedOutline': {
-                borderColor: darkMode 
+                borderColor: darkMode
                   ? 'rgba(255, 255, 255, 0.3)'
                   : 'rgba(0, 0, 0, 0.15)',
               }
             },
             '& .MuiInputBase-input::placeholder': {
-              color: darkMode 
+              color: darkMode
                 ? 'rgba(255, 255, 255, 0.7)'
                 : 'rgba(0, 0, 0, 0.5)',
               opacity: 1
             }
           }}
         />
-        <IconButton 
-          color="primary" 
+        <IconButton
+          color="primary"
           onClick={() => handleSend()}
           disabled={!newMessage.trim() && !pendingMedia}
-          sx={{ 
-            bgcolor: 'primary.main', 
+          sx={{
+            bgcolor: 'primary.main',
             color: 'white',
             '&:hover': {
               bgcolor: 'primary.dark'
@@ -2150,6 +2188,55 @@ const renderMessageContent = (message) => {
           <SendIcon />
         </IconButton>
       </Box>
+
+      {/* Mobile menu popover with three buttons */}
+      {isMobile && (
+        <Menu
+          anchorReference="anchorPosition"
+          anchorPosition={{ top: window.innerHeight - 150, left: 16 }}
+          open={showMobileMenu}
+          onClose={() => setShowMobileMenu(false)}
+          sx={{
+            '& .MuiPaper-root': {
+              backdropFilter: 'blur(10px)',
+              borderRadius: 2,
+              boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
+              border: '1px solid rgba(255,255,255,0.1)'
+            }
+          }}
+        >
+          <MenuItem
+            onClick={() => {
+              setShowMediaUpload(!showMediaUpload);
+              setShowMobileMenu(false);
+            }}
+            sx={{ gap: 1.5, py: 1.5 }}
+          >
+            <AttachFileIcon color="primary" />
+            <Typography>{t('chat.attachFile', 'Attach file')}</Typography>
+          </MenuItem>
+          <MenuItem
+            onClick={() => {
+              setShowGifPicker(!showGifPicker);
+              setShowMobileMenu(false);
+            }}
+            sx={{ gap: 1.5, py: 1.5 }}
+          >
+            <GifIcon color="primary" />
+            <Typography>{t('chat.addGif', 'Add GIF')}</Typography>
+          </MenuItem>
+          <MenuItem
+            onClick={() => {
+              setShowEmojiPicker(!showEmojiPicker);
+              setShowMobileMenu(false);
+            }}
+            sx={{ gap: 1.5, py: 1.5 }}
+          >
+            <EmojiEmotionsIcon color="primary" />
+            <Typography>{t('chat.addEmoji', 'Add emoji')}</Typography>
+          </MenuItem>
+        </Menu>
+      )}
       
       {/* GIF picker dialog */}
       {showGifPicker && (

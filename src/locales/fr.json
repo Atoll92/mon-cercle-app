@@ -2143,7 +2143,11 @@
     "onlineNow": "En ligne maintenant",
     "offline": "Hors ligne",
     "conversationStart": "C'est le début de votre conversation avec {{name}}",
-    "placeholderWithLink": "Tapez un message... (Ajoutez des liens avec https://)"
+    "placeholderWithLink": "Tapez un message... (Ajoutez des liens avec https://)",
+    "attachFile": "Joindre un fichier",
+    "addGif": "Ajouter un GIF",
+    "addEmoji": "Ajouter un emoji",
+    "moreOptions": "Plus d'options"
   },
   "directMessages": {
     "retry": "Réessayer",

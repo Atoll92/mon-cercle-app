@@ -1707,7 +1707,11 @@
     "onlineNow": "Online now",
     "offline": "Offline",
     "conversationStart": "This is the beginning of your conversation with {{name}}",
-    "placeholderWithLink": "Type a message... (Add links with https://)"
+    "placeholderWithLink": "Type a message... (Add links with https://)",
+    "attachFile": "Attach file",
+    "addGif": "Add GIF",
+    "addEmoji": "Add emoji",
+    "moreOptions": "More options"
   },
   "directMessages": {
     "retry": "Retry",
