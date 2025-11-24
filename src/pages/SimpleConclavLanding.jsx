@@ -30,6 +30,7 @@ import { useProfile } from '../context/profileContext';
 import screenshot1 from '../assets/screensforsteps/1.png';
 import screenshot2 from '../assets/screensforsteps/2.png';
 import screenshot3 from '../assets/screensforsteps/3.png';
+import helloAssoLogo from '../assets/Logo-HelloAsso.svg.png';
 
 // Define animation keyframes
 const fadeInUp = keyframes`
@@ -91,7 +92,17 @@ const translations = {
   readyToOwn: "Ready to own your digital space?",
   joinThousands: "Join thousands of creators and professionals building authentic, privacy-first communities.",
   startYourFreeTrial: "Start for Free",
-  finalTrialInfo: "Free for 14 days • Setup under 5 minutes • Cancel anytime"
+  finalTrialInfo: "Free for 14 days • Setup under 5 minutes • Cancel anytime",
+
+  helloAssoTitle: "Fundraising Made Easy",
+  helloAssoSubtitle: "Integrated with HelloAsso",
+  helloAssoDescription: "Accept donations for your association directly on your network. 100% free, no commission, 0% platform fee — powered by HelloAsso, France's leading donation platform for associations.",
+  helloAssoFeature1: "Zero fees",
+  helloAssoFeature1Desc: "No commission, no subscription",
+  helloAssoFeature2: "Secure payments",
+  helloAssoFeature2Desc: "Certified payment platform",
+  helloAssoFeature3: "One-click setup",
+  helloAssoFeature3Desc: "Embed your donation form instantly"
 },
 
   fr: {
@@ -131,7 +142,17 @@ const translations = {
   readyToOwn: "Prêt à développer votre espace numérique ?",
   joinThousands: "Rejoignez des milliers de créateurs et de professionnels qui construisent des communautés authentiques et respectueuses de la vie privée.",
   startYourFreeTrial: "Commencez gratuitement",
-  finalTrialInfo: "14 jours gratuits • Installation en moins de 5 minutes • Annulez à tout moment"
+  finalTrialInfo: "14 jours gratuits • Installation en moins de 5 minutes • Annulez à tout moment",
+
+  helloAssoTitle: "Collectez simplement",
+  helloAssoSubtitle: "Intégré avec HelloAsso",
+  helloAssoDescription: "Acceptez des dons pour votre association directement sur votre réseau. 100% gratuit, sans commission, 0% de frais — propulsé par HelloAsso, la plateforme de référence pour les associations françaises.",
+  helloAssoFeature1: "Zéro frais",
+  helloAssoFeature1Desc: "Pas de commission, pas d'abonnement",
+  helloAssoFeature2: "Paiements sécurisés",
+  helloAssoFeature2Desc: "Plateforme de paiement certifiée",
+  helloAssoFeature3: "Installation en un clic",
+  helloAssoFeature3Desc: "Intégrez votre formulaire instantanément"
 }
 
 };
@@ -973,6 +994,262 @@ const SimpleConclavLanding = () => {
           </Grid>
           </Grid>
         </Box>
+        </Container>
+      </Box>
+
+      {/* HelloAsso Integration Section */}
+      <Box sx={{ py: 8, bgcolor: 'white' }}>
+        <Container maxWidth="lg">
+          <Box
+            sx={{
+              animation: isSafariMobile ? 'none' : `${fadeInUp} 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.3s both`,
+              ...(isSafariMobile && {
+                opacity: 1,
+                transform: 'translateY(0)'
+              })
+            }}
+          >
+            {/* Header with logo */}
+            <Box textAlign="center" mb={6}>
+              <Box
+                sx={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 2,
+                  mb: 3,
+                  p: 2,
+                  borderRadius: 3,
+                  bgcolor: '#f8f9fa',
+                  border: '2px solid #e9ecef'
+                }}
+              >
+                <img
+                  src={helloAssoLogo}
+                  alt="HelloAsso"
+                  style={{
+                    height: '50px',
+                    width: 'auto'
+                  }}
+                />
+                <Typography
+                  variant="h5"
+                  sx={{
+                    color: '#2c3e50',
+                    fontWeight: 'bold',
+                    display: { xs: 'none', sm: 'block' }
+                  }}
+                >
+                  ×
+                </Typography>
+                <Typography
+                  variant="h5"
+                  sx={{
+                    color: '#667eea',
+                    fontWeight: 'bold',
+                    display: { xs: 'none', sm: 'block' }
+                  }}
+                >
+                  Conclav
+                </Typography>
+              </Box>
+
+              <Typography
+                variant="h3"
+                gutterBottom
+                fontWeight="bold"
+                color="#2c3e50"
+                sx={{ mb: 2 }}
+              >
+                {t.helloAssoTitle}
+              </Typography>
+
+              <Typography
+                variant="h6"
+                sx={{
+                  color: '#7f8c8d',
+                  maxWidth: '700px',
+                  mx: 'auto',
+                  lineHeight: 1.8,
+                  mb: 1
+                }}
+              >
+                {t.helloAssoDescription}
+              </Typography>
+            </Box>
+
+            {/* Features Grid */}
+            <Grid container spacing={4} justifyContent="center">
+              <Grid
+                item
+                xs={12}
+                md={4}
+                sx={{
+                  animation: isSafariMobile ? 'none' : `${fadeInUp} 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.4s both`,
+                  ...(isSafariMobile && {
+                    opacity: 1,
+                    transform: 'translateY(0)'
+                  })
+                }}
+              >
+                <Card
+                  elevation={0}
+                  sx={{
+                    height: '100%',
+                    textAlign: 'center',
+                    p: 4,
+                    border: '1px solid #e9ecef',
+                    borderRadius: 3,
+                    transition: 'all 0.3s ease',
+                    ...(!isSafariMobile && {
+                      '&:hover': {
+                        transform: 'translateY(-8px)',
+                        boxShadow: '0 12px 30px rgba(102, 126, 234, 0.15)',
+                        borderColor: '#667eea',
+                      }
+                    })
+                  }}
+                >
+                  <CardContent>
+                    <Box
+                      sx={{
+                        width: 70,
+                        height: 70,
+                        borderRadius: '50%',
+                        bgcolor: '#e8f5e8',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        mx: 'auto',
+                        mb: 3
+                      }}
+                    >
+                      <Typography variant="h3" sx={{ color: '#4caf50' }}>
+                        0%
+                      </Typography>
+                    </Box>
+                    <Typography variant="h6" gutterBottom fontWeight="bold" color="#2c3e50">
+                      {t.helloAssoFeature1}
+                    </Typography>
+                    <Typography color="#7f8c8d">
+                      {t.helloAssoFeature1Desc}
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+
+              <Grid
+                item
+                xs={12}
+                md={4}
+                sx={{
+                  animation: isSafariMobile ? 'none' : `${fadeInUp} 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.5s both`,
+                  ...(isSafariMobile && {
+                    opacity: 1,
+                    transform: 'translateY(0)'
+                  })
+                }}
+              >
+                <Card
+                  elevation={0}
+                  sx={{
+                    height: '100%',
+                    textAlign: 'center',
+                    p: 4,
+                    border: '1px solid #e9ecef',
+                    borderRadius: 3,
+                    transition: 'all 0.3s ease',
+                    ...(!isSafariMobile && {
+                      '&:hover': {
+                        transform: 'translateY(-8px)',
+                        boxShadow: '0 12px 30px rgba(102, 126, 234, 0.15)',
+                        borderColor: '#667eea',
+                      }
+                    })
+                  }}
+                >
+                  <CardContent>
+                    <Box
+                      sx={{
+                        width: 70,
+                        height: 70,
+                        borderRadius: '50%',
+                        bgcolor: '#fff8e1',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        mx: 'auto',
+                        mb: 3
+                      }}
+                    >
+                      <Shield sx={{ fontSize: 40, color: '#ffc107' }} />
+                    </Box>
+                    <Typography variant="h6" gutterBottom fontWeight="bold" color="#2c3e50">
+                      {t.helloAssoFeature2}
+                    </Typography>
+                    <Typography color="#7f8c8d">
+                      {t.helloAssoFeature2Desc}
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+
+              <Grid
+                item
+                xs={12}
+                md={4}
+                sx={{
+                  animation: isSafariMobile ? 'none' : `${fadeInUp} 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.6s both`,
+                  ...(isSafariMobile && {
+                    opacity: 1,
+                    transform: 'translateY(0)'
+                  })
+                }}
+              >
+                <Card
+                  elevation={0}
+                  sx={{
+                    height: '100%',
+                    textAlign: 'center',
+                    p: 4,
+                    border: '1px solid #e9ecef',
+                    borderRadius: 3,
+                    transition: 'all 0.3s ease',
+                    ...(!isSafariMobile && {
+                      '&:hover': {
+                        transform: 'translateY(-8px)',
+                        boxShadow: '0 12px 30px rgba(102, 126, 234, 0.15)',
+                        borderColor: '#667eea',
+                      }
+                    })
+                  }}
+                >
+                  <CardContent>
+                    <Box
+                      sx={{
+                        width: 70,
+                        height: 70,
+                        borderRadius: '50%',
+                        bgcolor: '#e3f2fd',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        mx: 'auto',
+                        mb: 3
+                      }}
+                    >
+                      <Speed sx={{ fontSize: 40, color: '#667eea' }} />
+                    </Box>
+                    <Typography variant="h6" gutterBottom fontWeight="bold" color="#2c3e50">
+                      {t.helloAssoFeature3}
+                    </Typography>
+                    <Typography color="#7f8c8d">
+                      {t.helloAssoFeature3Desc}
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+            </Grid>
+          </Box>
         </Container>
       </Box>
 
