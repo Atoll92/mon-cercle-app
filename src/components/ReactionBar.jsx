@@ -27,6 +27,7 @@ import {
   removeReaction,
   subscribeToReactions
 } from '../api/reactions';
+import ReactorsModal from './ReactorsModal';
 
 // Common emoji reactions
 const EMOJI_PICKER = [
@@ -52,6 +53,8 @@ const ReactionBar = ({ contentType, contentId, initialCount = 0, size = 'medium'
   const [tooltipContent, setTooltipContent] = useState({ emoji: '', names: [] });
   const [loading, setLoading] = useState(false);
   const [networkFeaturesConfig, setNetworkFeaturesConfig] = useState(null);
+  const [reactorsModalOpen, setReactorsModalOpen] = useState(false);
+  const [profileDataCache, setProfileDataCache] = useState({});
 
   const profileId = activeProfile?.id;
   const networkId = activeProfile?.network_id;
@@ -188,20 +191,84 @@ const ReactionBar = ({ contentType, contentId, initialCount = 0, size = 'medium'
   const handleReactionHover = async (event, emoji) => {
     if (!reactions[emoji]) return;
 
-    setTooltipAnchor(event.currentTarget);
-
     // Fetch profile names for this reaction
     const profileIds = reactions[emoji].profileIds;
 
-    // For now, just show count. In future, fetch names
-    setTooltipContent({
-      emoji,
-      names: [`${profileIds.length} ${profileIds.length === 1 ? 'person' : 'people'}`]
-    });
+    // Check cache first
+    const uncachedIds = profileIds.filter(id => !profileDataCache[id]);
+
+    // If we need to fetch profiles, do it BEFORE showing tooltip
+    if (uncachedIds.length > 0) {
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('id, full_name')
+          .in('id', uncachedIds);
+
+        if (!error && data) {
+          const newCache = { ...profileDataCache };
+          data.forEach(profile => {
+            newCache[profile.id] = profile.full_name || 'Unknown User';
+          });
+          setProfileDataCache(newCache);
+
+          // Now show tooltip with names from updated cache
+          const names = profileIds.slice(0, 3).map(id =>
+            newCache[id] || 'Unknown User'
+          );
+
+          // Add "and X more" if there are more than 3
+          if (profileIds.length > 3) {
+            names.push(`and ${profileIds.length - 3} more`);
+          }
+
+          setTooltipContent({
+            emoji,
+            names,
+            count: profileIds.length
+          });
+          setTooltipAnchor(event.currentTarget);
+        }
+      } catch (err) {
+        console.error('Error fetching profile names:', err);
+        // Fallback to showing count on error
+        setTooltipContent({
+          emoji,
+          names: [`${profileIds.length} ${profileIds.length === 1 ? 'person' : 'people'}`],
+          count: profileIds.length
+        });
+        setTooltipAnchor(event.currentTarget);
+      }
+    } else {
+      // All profiles are cached, show tooltip immediately
+      const names = profileIds.slice(0, 3).map(id =>
+        profileDataCache[id] || 'Unknown User'
+      );
+
+      // Add "and X more" if there are more than 3
+      if (profileIds.length > 3) {
+        names.push(`and ${profileIds.length - 3} more`);
+      }
+
+      setTooltipContent({
+        emoji,
+        names,
+        count: profileIds.length
+      });
+      setTooltipAnchor(event.currentTarget);
+    }
   };
 
   const handleReactionLeave = () => {
     setTooltipAnchor(null);
+  };
+
+  const handleShowAllReactors = (event) => {
+    if (event) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
+    setReactorsModalOpen(true);
   };
 
   const open = Boolean(anchorEl);
@@ -232,13 +299,19 @@ const ReactionBar = ({ contentType, contentId, initialCount = 0, size = 'medium'
           label={
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
               <span style={{ fontSize: config.fontSize }}>{emoji}</span>
-              <Typography variant="caption" sx={{ fontSize: config.fontSize }}>
+              <Typography
+                variant="caption"
+                sx={{
+                  fontSize: config.fontSize,
+                  fontWeight: 600
+                }}
+              >
                 {count}
               </Typography>
             </Box>
           }
           size={size}
-          onClick={() => handleReactionClick(emoji)}
+          onClick={handleShowAllReactors}
           onMouseEnter={(e) => handleReactionHover(e, emoji)}
           onMouseLeave={handleReactionLeave}
           disabled={loading}
@@ -339,12 +412,77 @@ const ReactionBar = ({ contentType, contentId, initialCount = 0, size = 'medium'
         }}
         disableRestoreFocus
       >
-        <Paper sx={{ p: 1, maxWidth: 200 }}>
-          <Typography variant="body2">
-            {tooltipContent.emoji} {tooltipContent.names.join(', ')}
-          </Typography>
+        <Paper
+          sx={{
+            p: 1.5,
+            maxWidth: 250,
+            boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+            borderRadius: 2
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+            <Typography
+              component="span"
+              sx={{
+                fontSize: '1.25rem',
+                lineHeight: 1,
+                mt: 0.25
+              }}
+            >
+              {tooltipContent.emoji}
+            </Typography>
+            <Box sx={{ flex: 1 }}>
+              <Typography
+                variant="body2"
+                sx={{
+                  fontWeight: 600,
+                  lineHeight: 1.4,
+                  mb: 0.5
+                }}
+              >
+                {tooltipContent.names?.slice(0, -1).join(', ')}
+                {tooltipContent.names?.length > 1 && tooltipContent.names[tooltipContent.names.length - 1].startsWith('and') && (
+                  <>
+                    {' '}
+                    <Typography
+                      component="span"
+                      variant="body2"
+                      sx={{
+                        color: 'text.secondary',
+                        fontWeight: 500
+                      }}
+                    >
+                      {tooltipContent.names[tooltipContent.names.length - 1]}
+                    </Typography>
+                  </>
+                )}
+                {tooltipContent.names?.length === 1 && tooltipContent.names[0]}
+              </Typography>
+              {tooltipContent.count > 0 && (
+                <Typography
+                  variant="caption"
+                  sx={{
+                    color: 'text.secondary',
+                    fontSize: '0.7rem'
+                  }}
+                >
+                  Click to see all {tooltipContent.count} {tooltipContent.count === 1 ? 'reactor' : 'reactors'}
+                </Typography>
+              )}
+            </Box>
+          </Box>
         </Paper>
       </Popover>
+
+      {/* Reactors Modal */}
+      <ReactorsModal
+        open={reactorsModalOpen}
+        onClose={() => setReactorsModalOpen(false)}
+        contentType={contentType}
+        contentId={contentId}
+        reactions={reactions}
+        darkMode={false}
+      />
     </Box>
   );
 };
