@@ -446,6 +446,7 @@
       "fullNameHelper": "Comment vous apparaîtrez aux autres membres",
       "contactEmail": "Email de contact",
       "contactEmailHelper": "Votre email est privé par défaut. Vous pouvez choisir de le rendre visible ci-dessous.",
+      "contactEmailHelperPublic": "Cet email sera visible par tous les membres du réseau. Vous pouvez changer cela ci-dessous.",
       "emailVisibility": {
         "label": "Rendre l'email visible aux membres du réseau",
         "public": "Votre email sera visible par tous les membres du réseau",
