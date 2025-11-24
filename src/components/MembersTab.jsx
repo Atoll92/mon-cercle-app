@@ -67,6 +67,13 @@ const MembersTab = ({
   const [showFilters, setShowFilters] = useState(false);
   const [uniqueSkills, setUniqueSkills] = useState([]);
   const [randomSeed, setRandomSeed] = useState(Math.random());
+
+  // Regenerate random seed when component mounts or networkMembers change
+  useEffect(() => {
+    if (sortBy === 'random') {
+      setRandomSeed(Math.random());
+    }
+  }, [networkMembers.length, sortBy]); // Only regenerate when member count changes or sort becomes random
   
   // State for infinite scrolling
   const [filteredMembers, setFilteredMembers] = useState([]);
