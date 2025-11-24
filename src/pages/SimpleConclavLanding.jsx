@@ -61,7 +61,7 @@ const translations = {
   descriptionStrong: "Only authentic human connections.",
   startFreeTrial: "Start in 5 Minutes",
   seeDemo: "Watch the Demo",
-  trialInfo: "30 days free • No credit card required • Cancel anytime",
+  trialInfo: "14 days free • No credit card required • Cancel anytime",
 
   howItWorks: "How It Works",
   howItWorksSubtitle: "Your private network in 3 simple steps",
@@ -91,7 +91,7 @@ const translations = {
   readyToOwn: "Ready to own your digital space?",
   joinThousands: "Join thousands of creators and professionals building authentic, privacy-first communities.",
   startYourFreeTrial: "Start for Free",
-  finalTrialInfo: "Free for 30 days • Setup under 5 minutes • Cancel anytime"
+  finalTrialInfo: "Free for 14 days • Setup under 5 minutes • Cancel anytime"
 },
 
   fr: {
@@ -101,7 +101,7 @@ const translations = {
   descriptionStrong: "Uniquement des connexions humaines authentiques.",
   startFreeTrial: "Commencez en 5 minutes",
   seeDemo: "Voir la démo",
-  trialInfo: "30 jours gratuits • Aucune carte requise • Annulez à tout moment",
+  trialInfo: "14 jours gratuits • Aucune carte requise • Annulez à tout moment",
 
   howItWorks: "Comment ça marche",
   howItWorksSubtitle: "Votre réseau privé en 3 étapes simples",
@@ -131,7 +131,7 @@ const translations = {
   readyToOwn: "Prêt à développer votre espace numérique ?",
   joinThousands: "Rejoignez des milliers de créateurs et de professionnels qui construisent des communautés authentiques et respectueuses de la vie privée.",
   startYourFreeTrial: "Commencez gratuitement",
-  finalTrialInfo: "30 jours gratuits • Installation en moins de 5 minutes • Annulez à tout moment"
+  finalTrialInfo: "14 jours gratuits • Installation en moins de 5 minutes • Annulez à tout moment"
 }
 
 };
