@@ -445,7 +445,12 @@
       "fullName": "Full Name",
       "fullNameHelper": "How you'll appear to other members",
       "contactEmail": "Contact Email",
-      "contactEmailHelper": "This will be visible to other network members",
+      "contactEmailHelper": "Your email is private by default. You can choose to make it visible below.",
+      "emailVisibility": {
+        "label": "Make email visible to network members",
+        "public": "Your email will be visible to all network members",
+        "private": "Your email will be hidden from other members"
+      },
       "bio": "Bio",
       "bioHelper": "Tell others about yourself (optional)",
       "tagline": "Tagline",
@@ -894,8 +899,14 @@
       "fullNamePlaceholder": "Your full name",
       "fullNameHelper": "Please enter your name",
       "contactEmail": "Contact Email",
-      "contactEmailPlaceholder": "Email address visible to network members",
-      "contactEmailHelper": "This email will be visible to other network members",
+      "contactEmailPlaceholder": "Your contact email address",
+      "contactEmailHelper": "Your email is private by default. Use the toggle below to make it visible to network members.",
+      "contactEmailHelperPublic": "This email will be visible to all network members. Use the toggle below to make it private.",
+      "emailVisibility": {
+        "label": "Make email visible to network members",
+        "public": "Your email is visible to all network members",
+        "private": "Your email is hidden from other members"
+      },
       "bio": "Bio",
       "bioPlaceholder": "Tell others about yourself",
       "tagline": "Tagline",

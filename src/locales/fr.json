@@ -445,7 +445,12 @@
       "fullName": "Nom complet",
       "fullNameHelper": "Comment vous apparaîtrez aux autres membres",
       "contactEmail": "Email de contact",
-      "contactEmailHelper": "Ceci sera visible aux autres membres du réseau",
+      "contactEmailHelper": "Votre email est privé par défaut. Vous pouvez choisir de le rendre visible ci-dessous.",
+      "emailVisibility": {
+        "label": "Rendre l'email visible aux membres du réseau",
+        "public": "Votre email sera visible par tous les membres du réseau",
+        "private": "Votre email sera masqué aux autres membres"
+      },
       "bio": "Biographie",
       "bioHelper": "Parlez aux autres de vous (optionnel)",
       "tagline": "Phrase d'accroche",
@@ -895,8 +900,14 @@
       "fullNamePlaceholder": "Votre nom complet",
       "fullNameHelper": "Veuillez entrer votre nom",
       "contactEmail": "Email de contact",
-      "contactEmailPlaceholder": "Adresse email visible aux membres du réseau",
-      "contactEmailHelper": "Cet email sera visible aux autres membres du réseau",
+      "contactEmailPlaceholder": "Votre adresse email de contact",
+      "contactEmailHelper": "Votre email est privé par défaut. Utilisez le bouton ci-dessous pour le rendre visible aux membres du réseau.",
+      "contactEmailHelperPublic": "Cet email sera visible par tous les membres du réseau. Utilisez le bouton ci-dessous pour le rendre privé.",
+      "emailVisibility": {
+        "label": "Rendre l'email visible aux membres du réseau",
+        "public": "Votre email est visible par tous les membres du réseau",
+        "private": "Votre email est masqué aux autres membres"
+      },
       "bio": "Biographie",
       "bioPlaceholder": "Parlez aux autres de vous",
       "tagline": "Phrase d'accroche",

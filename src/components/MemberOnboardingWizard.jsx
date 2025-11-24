@@ -91,6 +91,7 @@ const MemberOnboardingWizard = ({ profile, network }) => {
   const [profileData, setProfileData] = useState({
     fullName: '',
     contactEmail: user?.email || '',
+    emailPublic: false,
     bio: '',
     tagline: '',
     portfolioUrl: '',
@@ -311,6 +312,7 @@ const MemberOnboardingWizard = ({ profile, network }) => {
         .update({
           full_name: profileData.fullName,
           contact_email: profileData.contactEmail,
+          email_public: profileData.emailPublic,
           bio: profileData.bio,
           tagline: profileData.tagline,
           portfolio_url: profileData.portfolioUrl,
@@ -570,7 +572,7 @@ const BasicInfoStep = ({ profileData, setProfileData }) => {
           startAdornment: <PersonIcon color="action" sx={{ mr: 1 }} />
         }}
       />
-      
+
       <TextField
         label={t('memberOnboarding.basicInfo.contactEmail')}
         name="contactEmail"
@@ -579,13 +581,51 @@ const BasicInfoStep = ({ profileData, setProfileData }) => {
         onChange={handleChange}
         fullWidth
         required
-        helperText={t('memberOnboarding.basicInfo.contactEmailHelper')}
+        helperText={
+          profileData.emailPublic
+            ? t('memberOnboarding.basicInfo.contactEmailHelperPublic', { defaultValue: 'This email will be visible to all network members. You can change this below.' })
+            : t('memberOnboarding.basicInfo.contactEmailHelper', { defaultValue: 'Your email is private by default. You can choose to make it visible below.' })
+        }
         variant="outlined"
         InputProps={{
           startAdornment: <MailIcon color="action" sx={{ mr: 1 }} />
         }}
       />
-      
+
+      {/* Email Privacy Toggle */}
+      <Paper
+        elevation={0}
+        variant="outlined"
+        sx={{
+          p: 2,
+          borderRadius: 2,
+          bgcolor: alpha('#2196f3', 0.05)
+        }}
+      >
+        <FormControlLabel
+          control={
+            <Switch
+              checked={profileData.emailPublic}
+              onChange={(e) => setProfileData(prev => ({ ...prev, emailPublic: e.target.checked }))}
+              color="primary"
+            />
+          }
+          label={
+            <Box>
+              <Typography variant="subtitle2" fontWeight={600}>
+                {t('memberOnboarding.basicInfo.emailVisibility.label', { defaultValue: 'Make email visible to network members' })}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {profileData.emailPublic
+                  ? t('memberOnboarding.basicInfo.emailVisibility.public', { defaultValue: 'Your email will be visible to all network members' })
+                  : t('memberOnboarding.basicInfo.emailVisibility.private', { defaultValue: 'Your email will be hidden from other members (recommended for privacy)' })
+                }
+              </Typography>
+            </Box>
+          }
+        />
+      </Paper>
+
       <TextField
         label={t('memberOnboarding.basicInfo.bio')}
         name="bio"
@@ -597,7 +637,7 @@ const BasicInfoStep = ({ profileData, setProfileData }) => {
         helperText={t('memberOnboarding.basicInfo.bioHelper')}
         variant="outlined"
       />
-      
+
       <TextField
         label={t('memberOnboarding.basicInfo.tagline')}
         name="tagline"

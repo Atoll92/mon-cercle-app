@@ -425,7 +425,7 @@ const MemberDetailsModal = ({
         </Box>
         
         {/* Contact and Links */}
-        {(member.contact_email || member.portfolio_url || member.linkedin_url) && (
+        {((member.contact_email && (isCurrentUser || member.email_public)) || member.portfolio_url || member.linkedin_url) && (
           <Box sx={{ px: 3, pb: 2 }}>
             <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
               <Box component="span" sx={{
@@ -440,14 +440,14 @@ const MemberDetailsModal = ({
               </Box>
               {t('components.memberDetails.contactLinks')}
             </Typography>
-            
+
             <Grid container spacing={2} sx={{ ml: 1 }}>
-              {member.contact_email && (
+              {member.contact_email && (isCurrentUser || member.email_public) && (
                 <Grid item xs={12} sm={6} md={4}>
-                  <Paper 
-                    elevation={0} 
-                    sx={{ 
-                      p: 1.5, 
+                  <Paper
+                    elevation={0}
+                    sx={{
+                      p: 1.5,
                       bgcolor: darkMode ? alpha('#000000', 0.3) : alpha('#f5f5f5', 0.8),
                       border: '1px solid',
                       borderColor: customBorder,
@@ -460,11 +460,11 @@ const MemberDetailsModal = ({
                     }}
                   >
                     <MailIcon sx={{ mr: 1, color: darkMode ? '#90caf9' : '#1976d2' }} />
-                    <Typography 
-                      variant="body2" 
-                      component="a" 
+                    <Typography
+                      variant="body2"
+                      component="a"
                       href={`mailto:${member.contact_email}`}
-                      sx={{ 
+                      sx={{
                         textDecoration: 'none',
                         color: customLightText,
                         wordBreak: 'break-all'

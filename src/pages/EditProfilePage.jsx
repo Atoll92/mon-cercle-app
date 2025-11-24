@@ -36,7 +36,9 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  alpha
+  alpha,
+  FormControlLabel,
+  Switch
 } from '@mui/material';
 import {
   Save as SaveIcon,
@@ -116,6 +118,7 @@ function EditProfilePage() {
   const [avatarUrl, setAvatarUrl] = useState('');
   const [postItems, setPostItems] = useState([]);
   const [initialPostItems, setInitialPostItems] = useState([]);
+  const [emailPublic, setEmailPublic] = useState(false);
   const [activeTab, setActiveTab] = useState(() => {
     // Check URL params for tab parameter
     const urlParams = new URLSearchParams(location.search);
@@ -415,6 +418,7 @@ function EditProfilePage() {
         setSocialLinks(socialLinksData);
         setSkillsInput(data.skills || []);
         setAvatarUrl(data.profile_picture_url || '');
+        setEmailPublic(data.email_public || false);
         
         // Fetch common skills from the database if available or use default ones
         try {
@@ -608,6 +612,7 @@ function EditProfilePage() {
       const profileData = {
         full_name: fullName,
         contact_email: contactEmail,
+        email_public: emailPublic,
         bio,
         tagline,
         portfolio_url: portfolioUrl,
@@ -1113,12 +1118,50 @@ function EditProfilePage() {
                       placeholder={t('editProfile.form.contactEmailPlaceholder')}
                       InputLabelProps={{ shrink: true }}
                       required
-                      helperText={t('editProfile.form.contactEmailHelper')}
+                      helperText={
+                        emailPublic
+                          ? t('editProfile.form.contactEmailHelperPublic', { defaultValue: 'This email will be visible to all network members. Use the toggle below to make it private.' })
+                          : t('editProfile.form.contactEmailHelper', { defaultValue: 'Your email is private by default. Use the toggle below to make it visible to network members.' })
+                      }
                       InputProps={{
                         startAdornment: <MailIcon color="action" sx={{ mr: 1 }} />
                       }}
                     />
-                    
+
+                    {/* Email Privacy Toggle */}
+                    <Paper
+                      elevation={0}
+                      variant="outlined"
+                      sx={{
+                        p: { xs: 1.5, sm: 2 },
+                        borderRadius: 2,
+                        bgcolor: (theme) => theme.palette.mode === 'dark' ? 'grey.900' : 'grey.50'
+                      }}
+                    >
+                      <FormControlLabel
+                        control={
+                          <Switch
+                            checked={emailPublic}
+                            onChange={(e) => setEmailPublic(e.target.checked)}
+                            color="primary"
+                          />
+                        }
+                        label={
+                          <Box>
+                            <Typography variant="subtitle2" fontWeight={600}>
+                              {t('editProfile.form.emailVisibility.label', { defaultValue: 'Make email visible to network members' })}
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary">
+                              {emailPublic
+                                ? t('editProfile.form.emailVisibility.public', { defaultValue: 'Your email is visible to all network members' })
+                                : t('editProfile.form.emailVisibility.private', { defaultValue: 'Your email is hidden from other members (recommended)' })
+                              }
+                            </Typography>
+                          </Box>
+                        }
+                      />
+                    </Paper>
+
                     <TextField
                       fullWidth
                       label={t('editProfile.form.bio')}

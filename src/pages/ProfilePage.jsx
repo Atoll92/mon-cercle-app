@@ -599,7 +599,7 @@ function ProfilePage() {
                     </Typography>
                     
                     <Stack spacing={2} mt={1}>
-                      {profile.contact_email && (
+                      {profile.contact_email && (isOwnProfile || profile.email_public) && (
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                           <MailIcon fontSize="small" color="action" sx={{ flexShrink: 0 }} />
                           <Typography
