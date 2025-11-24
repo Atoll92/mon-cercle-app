@@ -134,7 +134,17 @@ const ActivityFeed = ({ networkId, limit = 20, compact = false, autoRefresh = tr
     }
 
     if (!error && data) {
-      setActivities(data);
+      // Filter reaction activities to only show reactions to the current user's own posts
+      const filteredActivities = data.filter(activity => {
+        if (activity.activity_type === 'reaction_added') {
+          // Only show if the reaction is on content owned by the active profile
+          const contentOwnerName = activity.metadata?.content_owner_name;
+          const currentUserName = activeProfile?.full_name;
+          return contentOwnerName === currentUserName;
+        }
+        return true; // Show all other activity types
+      });
+      setActivities(filteredActivities);
     }
 
     setLoading(false);
