@@ -2039,6 +2039,7 @@ const renderMessageContent = (message) => {
         sx={{
           p: 2,
           display: 'flex',
+          alignItems: 'center',
           flexWrap: 'nowrap',
           gap: 1,
           bgcolor: darkMode
