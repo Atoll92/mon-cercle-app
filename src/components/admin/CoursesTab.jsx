@@ -16,7 +16,8 @@ import {
   Skeleton,
   CardMedia,
   Avatar,
-  Rating
+  Rating,
+  Tooltip
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -29,13 +30,16 @@ import {
   Analytics as AnalyticsIcon,
   People as StudentsIcon,
   School as CourseIcon,
-  AccessTime as AccessTimeIcon
+  AccessTime as AccessTimeIcon,
+  LibraryBooks as ContentIcon
 } from '@mui/icons-material';
 import { useAuth } from '../../context/authcontext';
 import { useProfile } from '../../context/profileContext';
 import { supabase } from '../../supabaseclient';
-import { getCourses, createCourse } from '../../api/courses';
+import { getCourses, createCourse, deleteCourse } from '../../api/courses';
 import CourseCreationDialog from './CourseCreationDialog';
+import CourseContentManager from './CourseContentManager';
+import ConfirmDialog from '../ConfirmDialog';
 
 function CoursesTab({ networkId }) {
   const theme = useTheme();
@@ -48,6 +52,9 @@ function CoursesTab({ networkId }) {
   const [dialogOpen, setDialogOpen] = useState(false);
 
   const profileId = activeProfile?.id || user?.id;
+  const [selectedCourseId, setSelectedCourseId] = useState(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [courseToDelete, setCourseToDelete] = useState(null);
 
   // Load courses and categories
   useEffect(() => {
@@ -127,29 +134,35 @@ function CoursesTab({ networkId }) {
         throw new Error(result.error);
       }
 
-      // Upload thumbnail if provided (temporarily disabled for debugging)
+      // Upload thumbnail if provided
       if (thumbnailFile && result.data) {
-        console.log('CoursesTab: Would upload thumbnail for course:', result.data.id);
-        // TODO: Re-enable thumbnail upload after basic course creation is working
-        /*
-        const fileExt = thumbnailFile.name.split('.').pop();
-        const fileName = `${result.data.id}/thumbnail.${fileExt}`;
-        const { error: uploadError } = await supabase.storage
-          .from('course-thumbnails')
-          .upload(fileName, thumbnailFile);
-
-        if (!uploadError) {
-          // Update course with thumbnail URL
-          const { data: { publicUrl } } = supabase.storage
+        console.log('CoursesTab: Uploading thumbnail for course:', result.data.id);
+        try {
+          const fileExt = thumbnailFile.name.split('.').pop();
+          const fileName = `${result.data.id}/thumbnail.${fileExt}`;
+          const { error: uploadError } = await supabase.storage
             .from('course-thumbnails')
-            .getPublicUrl(fileName);
-          
-          await supabase
-            .from('courses')
-            .update({ thumbnail_url: publicUrl })
-            .eq('id', result.data.id);
+            .upload(fileName, thumbnailFile, { upsert: true });
+
+          if (uploadError) {
+            console.error('CoursesTab: Thumbnail upload error:', uploadError);
+          } else {
+            // Update course with thumbnail URL
+            const { data: { publicUrl } } = supabase.storage
+              .from('course-thumbnails')
+              .getPublicUrl(fileName);
+
+            console.log('CoursesTab: Thumbnail URL:', publicUrl);
+
+            await supabase
+              .from('courses')
+              .update({ thumbnail_url: publicUrl })
+              .eq('id', result.data.id);
+          }
+        } catch (thumbError) {
+          console.error('CoursesTab: Error uploading thumbnail:', thumbError);
+          // Don't fail the whole operation if thumbnail fails
         }
-        */
       }
 
       // Reload courses
@@ -182,6 +195,45 @@ function CoursesTab({ networkId }) {
       currency: currency
     }).format(price);
   };
+
+  const handleManageContent = (courseId) => {
+    setSelectedCourseId(courseId);
+  };
+
+  const handleBackFromContent = () => {
+    setSelectedCourseId(null);
+    loadData(); // Refresh courses list
+  };
+
+  const handleDeleteCourse = async () => {
+    if (!courseToDelete) return;
+
+    try {
+      setLoading(true);
+      const result = await deleteCourse(supabase, courseToDelete.id);
+      if (result.error) {
+        throw new Error(result.error);
+      }
+      await loadData();
+      setConfirmDelete(false);
+      setCourseToDelete(null);
+    } catch (err) {
+      console.error('Error deleting course:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // If a course is selected for content management, show the content manager
+  if (selectedCourseId) {
+    return (
+      <CourseContentManager
+        courseId={selectedCourseId}
+        onBack={handleBackFromContent}
+      />
+    );
+  }
 
   return (
     <Box>
@@ -441,28 +493,41 @@ function CoursesTab({ networkId }) {
                       )}
                     </CardContent>
                     
-                    <CardActions sx={{ justifyContent: 'space-between' }}>
+                    <CardActions sx={{ justifyContent: 'space-between', flexWrap: 'wrap', gap: 1 }}>
                       <Button
                         size="small"
-                        startIcon={<PlayIcon />}
-                        variant="outlined"
+                        startIcon={<ContentIcon />}
+                        variant="contained"
+                        onClick={() => handleManageContent(course.id)}
                       >
-                        {t('admin.courses.buttons.preview')}
+                        {t('admin.courses.buttons.manageContent')}
                       </Button>
                       <Box>
-                        <IconButton
-                          size="small"
-                          onClick={() => console.log('Edit course:', course.id)}
-                        >
-                          <EditIcon />
-                        </IconButton>
-                        <IconButton
-                          size="small"
-                          color="error"
-                          onClick={() => console.log('Delete course:', course.id)}
-                        >
-                          <DeleteIcon />
-                        </IconButton>
+                        <Tooltip title={t('admin.courses.buttons.preview')}>
+                          <IconButton size="small">
+                            <PlayIcon />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title={t('common.edit')}>
+                          <IconButton
+                            size="small"
+                            onClick={() => setSelectedCourseId(course.id)}
+                          >
+                            <EditIcon />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title={t('common.delete')}>
+                          <IconButton
+                            size="small"
+                            color="error"
+                            onClick={() => {
+                              setCourseToDelete(course);
+                              setConfirmDelete(true);
+                            }}
+                          >
+                            <DeleteIcon />
+                          </IconButton>
+                        </Tooltip>
                       </Box>
                     </CardActions>
                   </Card>
@@ -480,6 +545,20 @@ function CoursesTab({ networkId }) {
         onSubmit={handleSubmitCourse}
         categories={[]}
         loading={loading}
+      />
+
+      {/* Confirm Delete Dialog */}
+      <ConfirmDialog
+        open={confirmDelete}
+        onClose={() => {
+          setConfirmDelete(false);
+          setCourseToDelete(null);
+        }}
+        onConfirm={handleDeleteCourse}
+        title={t('admin.courses.deleteCourse')}
+        message={t('admin.courses.deleteCourseConfirm', { title: courseToDelete?.title })}
+        confirmText={t('common.delete')}
+        confirmColor="error"
       />
     </Box>
   );

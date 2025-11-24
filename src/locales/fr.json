@@ -308,7 +308,10 @@
         "cancel": "Annuler",
         "create": "Créer",
         "update": "Mettre à jour",
-        "save": "Enregistrer le cours"
+        "save": "Enregistrer le cours",
+        "manageContent": "Gérer le contenu",
+        "publish": "Publier le cours",
+        "unpublish": "Dépublier"
       },
       "dialogs": {
         "createCourse": "Créer un nouveau cours",
@@ -337,6 +340,72 @@
       },
       "coursesList": {
         "title": "Vos cours ({{count}})"
+      },
+      "deleteCourse": "Supprimer le cours",
+      "deleteCourseConfirm": "Êtes-vous sûr de vouloir supprimer \"{{title}}\" ? Cette action est irréversible et supprimera toutes les leçons et le contenu.",
+      "content": {
+        "manageContent": "Gérer le contenu du cours",
+        "lessons": "Leçons",
+        "totalDuration": "Durée totale",
+        "attachments": "Pièces jointes",
+        "lessonsList": "Leçons du cours",
+        "addLesson": "Ajouter une leçon",
+        "addFirstLesson": "Ajouter la première leçon",
+        "noLessons": "Aucune leçon pour le moment",
+        "noLessonsDescription": "Commencez à construire votre cours en ajoutant votre première leçon. Vous pouvez ajouter des vidéos, PDF, liens et du contenu texte.",
+        "freePreview": "Aperçu gratuit",
+        "files": "fichiers",
+        "moveUp": "Monter",
+        "moveDown": "Descendre",
+        "duplicate": "Dupliquer",
+        "deleteLesson": "Supprimer la leçon",
+        "deleteLessonConfirm": "Êtes-vous sûr de vouloir supprimer \"{{title}}\" ? Cela supprimera également toutes les pièces jointes.",
+        "editLesson": "Modifier la leçon",
+        "createLesson": "Créer la leçon",
+        "tabs": {
+          "basic": "Informations",
+          "content": "Contenu",
+          "attachments": "Fichiers",
+          "settings": "Paramètres"
+        },
+        "lessonTitle": "Titre de la leçon",
+        "lessonSlug": "Slug URL",
+        "slugHelper": "Généré automatiquement à partir du titre. Utilisé dans l'URL de la leçon.",
+        "description": "Description",
+        "descriptionHelper": "Brève description du contenu de cette leçon",
+        "moduleName": "Module / Section",
+        "moduleHelper": "Optionnel : Regroupez les leçons en modules (ex. 'Semaine 1', 'Introduction')",
+        "duration": "Durée estimée",
+        "contentType": "Type de contenu",
+        "videoOptions": "Contenu vidéo",
+        "externalVideoUrl": "URL vidéo (YouTube, Vimeo, etc.)",
+        "externalVideoHelper": "Collez une URL YouTube ou Vimeo. Les vidéos seront intégrées directement.",
+        "uploadVideoInfo": "Vous pouvez également télécharger des fichiers vidéo dans l'onglet Fichiers. Les vidéos téléchargées seront hébergées en toute sécurité.",
+        "externalLink": "URL du lien externe",
+        "textContent": "Contenu de la leçon (Texte)",
+        "textContentHelper": "Rédigez le contenu de votre leçon. Vous pouvez utiliser le formatage HTML de base.",
+        "dropFiles": "Déposez des fichiers ici ou cliquez pour télécharger",
+        "supportedFormats": "Formats supportés : PDF, Images, Vidéos (MP4, WebM), Audio (MP3, WAV)",
+        "selectFiles": "Sélectionner des fichiers",
+        "uploading": "Téléchargement des fichiers...",
+        "noAttachments": "Aucune pièce jointe. Téléchargez des fichiers pour inclure des ressources téléchargeables.",
+        "freePreviewHelper": "Permettre aux utilisateurs non inscrits de voir cette leçon gratuitement",
+        "required": "Leçon obligatoire",
+        "requiredHelper": "Les étudiants doivent compléter cette leçon pour progresser",
+        "thumbnail": "Miniature du cours",
+        "thumbnailDescription": "Téléchargez une image qui représente votre cours. Elle sera affichée dans les listes de cours.",
+        "uploadThumbnail": "Télécharger une miniature",
+        "changeThumbnail": "Changer la miniature",
+        "thumbnailHint": "Recommandé : ratio 16:9, au moins 800x450px. Max 5Mo (JPEG, PNG, GIF, WebP)",
+        "errors": {
+          "titleRequired": "Le titre de la leçon est requis",
+          "videoRequired": "Veuillez fournir une URL vidéo ou télécharger un fichier vidéo",
+          "linkRequired": "Veuillez fournir une URL de lien externe"
+        }
+      },
+      "errors": {
+        "invalidImageType": "Veuillez télécharger un fichier image valide (JPEG, PNG, GIF ou WebP)",
+        "imageTooLarge": "L'image doit être inférieure à 5 Mo"
       }
     },
     "events": {
@@ -1151,6 +1220,26 @@
     "noCoursesFoundDescription": "Essayez d'ajuster vos filtres pour trouver plus de cours.",
     "noCourses": "Aucun cours disponible",
     "noCoursesDescription": "Revenez plus tard pour de nouvelles offres de cours.",
+    "noResults": "Aucun cours correspondant trouvé",
+    "noResultsDescription": "Essayez d'ajuster votre recherche ou vos filtres pour trouver plus de cours.",
+    "allCourses": "Tous les cours",
+    "completed": "Terminé",
+    "duration": "Durée",
+    "students": "Étudiants",
+    "enrolling": "Inscription en cours...",
+    "viewCertificate": "Voir le certificat",
+    "continueLearning": "Continuer l'apprentissage",
+    "enrollFree": "S'inscrire gratuitement",
+    "enrollNow": "S'inscrire maintenant",
+    "featured": "À la une",
+    "signInToEnroll": "Connectez-vous pour vous inscrire aux cours",
+    "joinToAccess": "Rejoignez ce réseau pour accéder aux cours",
+    "memberOnly": "Les cours sont disponibles uniquement pour les membres du réseau. Contactez un administrateur pour demander l'accès.",
+    "difficulty": {
+      "beginner": "Débutant",
+      "intermediate": "Intermédiaire",
+      "advanced": "Avancé"
+    },
     "filters": {
       "category": "Catégorie",
       "allCategories": "Toutes les catégories",
@@ -1167,8 +1256,11 @@
       "featured": "À la une",
       "newest": "Plus récents",
       "popularity": "Plus populaires",
+      "popular": "Plus populaires",
       "rating": "Mieux notés",
-      "moreFilters": "Plus de filtres"
+      "topRated": "Mieux notés",
+      "moreFilters": "Plus de filtres",
+      "clear": "Effacer les filtres"
     },
     "card": {
       "lessons": "{{count}} leçons",
@@ -1260,7 +1352,40 @@
       "published": "Publié",
       "archived": "Archivé",
       "underReview": "En cours de révision"
-    }
+    },
+    "tabs": {
+      "allCourses": "Tous les cours",
+      "myCourses": "Mes cours"
+    },
+    "viewer": {
+      "backToCourses": "Retour aux cours",
+      "defaultModule": "Contenu du cours",
+      "selectLesson": "Sélectionnez une leçon pour commencer",
+      "notEnrolled": "Vous n'êtes pas inscrit à ce cours",
+      "markComplete": "Marquer comme terminé",
+      "lessonComplete": "Vous avez terminé cette leçon !",
+      "lessonOf": "Leçon {{current}} sur {{total}}",
+      "viewPdf": "Voir le document PDF",
+      "openPdf": "Ouvrir le lecteur PDF",
+      "pdfDocument": "Document PDF",
+      "openExternalResource": "Ouvrir la ressource externe",
+      "attachments": "Pièces jointes"
+    },
+    "contentType": {
+      "text": "Texte",
+      "video": "Vidéo",
+      "pdf": "PDF",
+      "link": "Lien",
+      "mixed": "Mixte"
+    },
+    "enrollmentSuccess": "Vous êtes inscrit avec succès à \"{{title}}\" !",
+    "noEnrollments": "Vous n'êtes inscrit à aucun cours",
+    "noEnrollmentsDescription": "Parcourez les cours disponibles et commencez à apprendre dès aujourd'hui.",
+    "browseCourses": "Parcourir les cours",
+    "progress": "{{completed}} leçons sur {{total}} terminées",
+    "viewCourse": "Voir le cours",
+    "instructor": "Instructeur",
+    "free": "Gratuit"
   },
   "marketplace": {
     "title": "Gestion du Marketplace",

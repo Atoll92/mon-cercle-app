@@ -482,11 +482,18 @@ export const getLessonProgress = async (supabase, enrollmentId) => {
         *,
         lesson:course_lessons(id, title, sort_order)
       `)
-      .eq('enrollment_id', enrollmentId)
-      .order('lesson.sort_order', { ascending: true });
-    
+      .eq('enrollment_id', enrollmentId);
+
     if (error) throw error;
-    return handleArraySuccess(data);
+
+    // Sort by lesson sort_order in application code since Supabase doesn't support ordering by nested fields
+    const sortedData = (data || []).sort((a, b) => {
+      const sortA = a.lesson?.sort_order ?? 0;
+      const sortB = b.lesson?.sort_order ?? 0;
+      return sortA - sortB;
+    });
+
+    return handleArraySuccess(sortedData);
   } catch (error) {
     console.error('Error fetching lesson progress:', error);
     return { error: error.message };
@@ -567,6 +574,263 @@ export const getCourseStats = async (supabase, courseId) => {
     };
   } catch (error) {
     console.error('Error fetching course stats:', error);
+    return { error: error.message };
+  }
+};
+
+// Lesson Content Management API
+
+export const reorderLessons = async (supabase, courseId, lessonIds) => {
+  try {
+    // Update sort_order for each lesson based on array position
+    const updates = lessonIds.map((lessonId, index) =>
+      supabase
+        .from('course_lessons')
+        .update({ sort_order: index })
+        .eq('id', lessonId)
+        .eq('course_id', courseId)
+    );
+
+    await Promise.all(updates);
+    return { success: true };
+  } catch (error) {
+    console.error('Error reordering lessons:', error);
+    return { error: error.message };
+  }
+};
+
+export const duplicateLesson = async (supabase, lessonId) => {
+  try {
+    // Get the lesson to duplicate
+    const { data: lesson, error: fetchError } = await supabase
+      .from('course_lessons')
+      .select('*')
+      .eq('id', lessonId)
+      .single();
+
+    if (fetchError) throw fetchError;
+
+    // Get the highest sort_order for this course
+    const { data: lastLesson } = await supabase
+      .from('course_lessons')
+      .select('sort_order')
+      .eq('course_id', lesson.course_id)
+      .order('sort_order', { ascending: false })
+      .limit(1)
+      .single();
+
+    // Create the duplicate
+    const { id, created_at, updated_at, slug, ...lessonData } = lesson;
+    const duplicateData = {
+      ...lessonData,
+      title: `${lesson.title} (Copy)`,
+      slug: `${lesson.slug}-copy-${Date.now()}`,
+      sort_order: (lastLesson?.sort_order || 0) + 1
+    };
+
+    const { data, error } = await supabase
+      .from('course_lessons')
+      .insert([duplicateData])
+      .select()
+      .single();
+
+    if (error) throw error;
+    return handleObjectSuccess(data);
+  } catch (error) {
+    console.error('Error duplicating lesson:', error);
+    return { error: error.message };
+  }
+};
+
+export const updateLessonContent = async (supabase, lessonId, content) => {
+  try {
+    const { data, error } = await supabase
+      .from('course_lessons')
+      .update({
+        content,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', lessonId)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return handleObjectSuccess(data);
+  } catch (error) {
+    console.error('Error updating lesson content:', error);
+    return { error: error.message };
+  }
+};
+
+export const updateLessonAttachments = async (supabase, lessonId, attachments) => {
+  try {
+    const { data, error } = await supabase
+      .from('course_lessons')
+      .update({
+        attachments,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', lessonId)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return handleObjectSuccess(data);
+  } catch (error) {
+    console.error('Error updating lesson attachments:', error);
+    return { error: error.message };
+  }
+};
+
+export const addLessonAttachment = async (supabase, lessonId, attachment) => {
+  try {
+    // Get current attachments
+    const { data: lesson, error: fetchError } = await supabase
+      .from('course_lessons')
+      .select('attachments')
+      .eq('id', lessonId)
+      .single();
+
+    if (fetchError) throw fetchError;
+
+    const currentAttachments = lesson.attachments || [];
+    const newAttachments = [...currentAttachments, {
+      ...attachment,
+      id: crypto.randomUUID(),
+      uploadedAt: new Date().toISOString()
+    }];
+
+    const { data, error } = await supabase
+      .from('course_lessons')
+      .update({
+        attachments: newAttachments,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', lessonId)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return handleObjectSuccess(data);
+  } catch (error) {
+    console.error('Error adding lesson attachment:', error);
+    return { error: error.message };
+  }
+};
+
+export const removeLessonAttachment = async (supabase, lessonId, attachmentId) => {
+  try {
+    // Get current attachments
+    const { data: lesson, error: fetchError } = await supabase
+      .from('course_lessons')
+      .select('attachments')
+      .eq('id', lessonId)
+      .single();
+
+    if (fetchError) throw fetchError;
+
+    const currentAttachments = lesson.attachments || [];
+    const newAttachments = currentAttachments.filter(a => a.id !== attachmentId);
+
+    const { data, error } = await supabase
+      .from('course_lessons')
+      .update({
+        attachments: newAttachments,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', lessonId)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return handleObjectSuccess(data);
+  } catch (error) {
+    console.error('Error removing lesson attachment:', error);
+    return { error: error.message };
+  }
+};
+
+// Upload course content file
+export const uploadCourseContent = async (supabase, courseId, lessonId, file, options = {}) => {
+  try {
+    const timestamp = Date.now();
+    const randomString = Math.random().toString(36).substring(2, 15);
+    const extension = file.name.split('.').pop();
+    const fileName = `${courseId}/${lessonId || 'general'}/${timestamp}_${randomString}.${extension}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('course-content')
+      .upload(fileName, file, {
+        cacheControl: '3600',
+        upsert: false
+      });
+
+    if (uploadError) throw uploadError;
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('course-content')
+      .getPublicUrl(fileName);
+
+    return {
+      data: {
+        url: publicUrl,
+        path: fileName,
+        fileName: file.name,
+        fileSize: file.size,
+        mimeType: file.type
+      }
+    };
+  } catch (error) {
+    console.error('Error uploading course content:', error);
+    return { error: error.message };
+  }
+};
+
+// Delete course content file
+export const deleteCourseContent = async (supabase, filePath) => {
+  try {
+    const { error } = await supabase.storage
+      .from('course-content')
+      .remove([filePath]);
+
+    if (error) throw error;
+    return { success: true };
+  } catch (error) {
+    console.error('Error deleting course content:', error);
+    return { error: error.message };
+  }
+};
+
+// Get course with full lesson details
+export const getCourseWithLessons = async (supabase, courseId) => {
+  try {
+    const { data, error } = await supabase
+      .from('courses')
+      .select(`
+        *,
+        category:course_categories(id, name, color, icon),
+        instructor:profiles!instructor_profile_id(id, full_name, profile_picture_url, bio),
+        lessons:course_lessons(
+          id, title, slug, description, content, content_type,
+          module_name, sort_order, is_preview, is_required,
+          video_url, video_duration_seconds, external_url,
+          attachments, estimated_duration_minutes,
+          created_at, updated_at
+        )
+      `)
+      .eq('id', courseId)
+      .single();
+
+    if (error) throw error;
+
+    // Sort lessons by sort_order
+    if (data.lessons) {
+      data.lessons.sort((a, b) => a.sort_order - b.sort_order);
+    }
+
+    return handleObjectSuccess(data);
+  } catch (error) {
+    console.error('Error fetching course with lessons:', error);
     return { error: error.message };
   }
 };

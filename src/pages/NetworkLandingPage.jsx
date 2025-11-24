@@ -7,6 +7,7 @@ import { useNetwork, NetworkProvider, NetworkProviderWithParams } from '../conte
 import { useTranslation } from '../hooks/useTranslation';
 import { useApp } from '../context/appContext';
 import { supabase } from '../supabaseclient';
+import { getCourses } from '../api/courses';
 import { useFadeIn } from '../hooks/useAnimation';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { GridSkeleton } from '../components/LoadingSkeleton';
@@ -146,6 +147,32 @@ function NetworkLandingPage() {
       setMemberCount(networkMembers.length);
     }
   }, [networkMembers]);
+
+  // Check for published courses when network changes
+  useEffect(() => {
+    const checkPublishedCourses = async () => {
+      if (!network?.id) return;
+
+      try {
+        const result = await getCourses(supabase, network.id, { status: 'published' });
+        console.log('Courses check result:', result);
+        if (!result.error && result.data && result.data.length > 0) {
+          console.log('Found published courses:', result.data.length);
+          setHasPublishedCourses(true);
+        } else {
+          console.log('No published courses found or error:', result.error);
+          setHasPublishedCourses(false);
+        }
+      } catch (err) {
+        console.error('Error checking published courses:', err);
+        setHasPublishedCourses(false);
+      } finally {
+        setCoursesChecked(true);
+      }
+    };
+
+    checkPublishedCourses();
+  }, [network?.id]);
   const [showWelcomeMessage, setShowWelcomeMessage] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [isTabsFixed, setIsTabsFixed] = useState(false);
@@ -154,6 +181,8 @@ function NetworkLandingPage() {
   const [smoothTransitionProgress, setSmoothTransitionProgress] = useState(0);
   const [networkDescriptionModalOpen, setNetworkDescriptionModalOpen] = useState(false);
   const [showDebugPanel, setShowDebugPanel] = useState(false);
+  const [hasPublishedCourses, setHasPublishedCourses] = useState(false);
+  const [coursesChecked, setCoursesChecked] = useState(false);
 
   // Animation setup - must be at top level, not conditional
   // Disable animation on mobile to prevent content vanishing during scroll
@@ -178,7 +207,18 @@ function NetworkLandingPage() {
   // Filter tabs based on network configuration, preserving order from enabledTabs
   const visibleTabs = React.useMemo(() => {
     // Use enabledTabs from context, with fallback
-    const tabsToUse = enabledTabs && enabledTabs.length > 0 ? enabledTabs : ['news', 'members', 'events', 'chat', 'files', 'wiki', 'social'];
+    let tabsToUse = enabledTabs && enabledTabs.length > 0 ? enabledTabs : ['news', 'members', 'events', 'chat', 'files', 'wiki', 'social'];
+
+    // Auto-add courses tab if there are published courses and it's not already in the list
+    if (hasPublishedCourses && !tabsToUse.includes('courses')) {
+      // Insert courses tab after wiki if wiki exists, otherwise at the end
+      const wikiIndex = tabsToUse.indexOf('wiki');
+      if (wikiIndex !== -1) {
+        tabsToUse = [...tabsToUse.slice(0, wikiIndex + 1), 'courses', ...tabsToUse.slice(wikiIndex + 1)];
+      } else {
+        tabsToUse = [...tabsToUse, 'courses'];
+      }
+    }
 
     // Create tabs in the order specified by enabledTabs, then add About at the end
     const orderedTabs = tabsToUse
@@ -188,6 +228,10 @@ function NetworkLandingPage() {
         // Special handling for donation tab - only show if HelloAsso URL is configured
         if (tab.id === 'donation') {
           return !!network?.helloasso_url;
+        }
+        // Special handling for courses tab - only show if there are published courses
+        if (tab.id === 'courses') {
+          return hasPublishedCourses;
         }
         return true;
       });
@@ -199,7 +243,7 @@ function NetworkLandingPage() {
     }
 
     return orderedTabs.length > 0 ? orderedTabs : allTabs;
-  }, [enabledTabs, allTabs, network?.helloasso_url]);
+  }, [enabledTabs, allTabs, network?.helloasso_url, hasPublishedCourses]);
   
   // Helper function to get tab index from tab id within visible tabs
   const getTabIndexFromId = React.useCallback((tabId) => {

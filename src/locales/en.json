@@ -308,7 +308,10 @@
         "cancel": "Cancel",
         "create": "Create",
         "update": "Update",
-        "save": "Save Course"
+        "save": "Save Course",
+        "manageContent": "Manage Content",
+        "publish": "Publish Course",
+        "unpublish": "Unpublish"
       },
       "dialogs": {
         "createCourse": "Create New Course",
@@ -337,6 +340,72 @@
       },
       "coursesList": {
         "title": "Your Courses ({{count}})"
+      },
+      "deleteCourse": "Delete Course",
+      "deleteCourseConfirm": "Are you sure you want to delete \"{{title}}\"? This action cannot be undone and will remove all lessons and content.",
+      "content": {
+        "manageContent": "Manage course content",
+        "lessons": "Lessons",
+        "totalDuration": "Total Duration",
+        "attachments": "Attachments",
+        "lessonsList": "Course Lessons",
+        "addLesson": "Add Lesson",
+        "addFirstLesson": "Add First Lesson",
+        "noLessons": "No lessons yet",
+        "noLessonsDescription": "Start building your course by adding your first lesson. You can add videos, PDFs, links, and text content.",
+        "freePreview": "Free Preview",
+        "files": "files",
+        "moveUp": "Move Up",
+        "moveDown": "Move Down",
+        "duplicate": "Duplicate",
+        "deleteLesson": "Delete Lesson",
+        "deleteLessonConfirm": "Are you sure you want to delete \"{{title}}\"? This will also delete all attachments.",
+        "editLesson": "Edit Lesson",
+        "createLesson": "Create Lesson",
+        "tabs": {
+          "basic": "Basic Info",
+          "content": "Content",
+          "attachments": "Attachments",
+          "settings": "Settings"
+        },
+        "lessonTitle": "Lesson Title",
+        "lessonSlug": "URL Slug",
+        "slugHelper": "Auto-generated from title. Used in the lesson URL.",
+        "description": "Description",
+        "descriptionHelper": "Brief description of what this lesson covers",
+        "moduleName": "Module / Section",
+        "moduleHelper": "Optional: Group lessons into modules (e.g., 'Week 1', 'Introduction')",
+        "duration": "Estimated Duration",
+        "contentType": "Content Type",
+        "videoOptions": "Video Content",
+        "externalVideoUrl": "Video URL (YouTube, Vimeo, etc.)",
+        "externalVideoHelper": "Paste a YouTube or Vimeo URL. Videos will be embedded directly.",
+        "uploadVideoInfo": "You can also upload video files in the Attachments tab. Uploaded videos will be hosted securely.",
+        "externalLink": "External Link URL",
+        "textContent": "Lesson Content (Text)",
+        "textContentHelper": "Write your lesson content. You can use basic HTML formatting.",
+        "dropFiles": "Drop files here or click to upload",
+        "supportedFormats": "Supported: PDF, Images, Videos (MP4, WebM), Audio (MP3, WAV)",
+        "selectFiles": "Select Files",
+        "uploading": "Uploading files...",
+        "noAttachments": "No attachments yet. Upload files to include downloadable resources.",
+        "freePreviewHelper": "Allow non-enrolled users to view this lesson for free",
+        "required": "Required Lesson",
+        "requiredHelper": "Students must complete this lesson to progress",
+        "thumbnail": "Course Thumbnail",
+        "thumbnailDescription": "Upload an image that represents your course. This will be displayed in course listings.",
+        "uploadThumbnail": "Upload Thumbnail",
+        "changeThumbnail": "Change Thumbnail",
+        "thumbnailHint": "Recommended: 16:9 ratio, at least 800x450px. Max 5MB (JPEG, PNG, GIF, WebP)",
+        "errors": {
+          "titleRequired": "Lesson title is required",
+          "videoRequired": "Please provide a video URL or upload a video file",
+          "linkRequired": "Please provide an external link URL"
+        }
+      },
+      "errors": {
+        "invalidImageType": "Please upload a valid image file (JPEG, PNG, GIF, or WebP)",
+        "imageTooLarge": "Image must be smaller than 5MB"
       }
     },
     "events": {
@@ -1158,6 +1227,26 @@
     "noCoursesFoundDescription": "Try adjusting your filters to find more courses.",
     "noCourses": "No courses available",
     "noCoursesDescription": "Check back later for new course offerings.",
+    "noResults": "No matching courses found",
+    "noResultsDescription": "Try adjusting your search or filters to find more courses.",
+    "allCourses": "All Courses",
+    "completed": "Completed",
+    "duration": "Duration",
+    "students": "Students",
+    "enrolling": "Enrolling...",
+    "viewCertificate": "View Certificate",
+    "continueLearning": "Continue Learning",
+    "enrollFree": "Enroll Free",
+    "enrollNow": "Enroll Now",
+    "featured": "Featured",
+    "signInToEnroll": "Sign in to enroll in courses",
+    "joinToAccess": "Join this network to access courses",
+    "memberOnly": "Courses are available to network members only. Contact an admin to request access.",
+    "difficulty": {
+      "beginner": "Beginner",
+      "intermediate": "Intermediate",
+      "advanced": "Advanced"
+    },
     "filters": {
       "category": "Category",
       "allCategories": "All Categories",
@@ -1174,8 +1263,11 @@
       "featured": "Featured",
       "newest": "Newest",
       "popularity": "Most Popular",
+      "popular": "Most Popular",
       "rating": "Highest Rated",
-      "moreFilters": "More Filters"
+      "topRated": "Top Rated",
+      "moreFilters": "More Filters",
+      "clear": "Clear Filters"
     },
     "card": {
       "lessons": "{{count}} lessons",
@@ -1267,7 +1359,40 @@
       "published": "Published",
       "archived": "Archived",
       "underReview": "Under Review"
-    }
+    },
+    "tabs": {
+      "allCourses": "All Courses",
+      "myCourses": "My Courses"
+    },
+    "viewer": {
+      "backToCourses": "Back to Courses",
+      "defaultModule": "Course Content",
+      "selectLesson": "Select a lesson to begin",
+      "notEnrolled": "You are not enrolled in this course",
+      "markComplete": "Mark as Complete",
+      "lessonComplete": "You have completed this lesson!",
+      "lessonOf": "Lesson {{current}} of {{total}}",
+      "viewPdf": "View PDF Document",
+      "openPdf": "Open PDF Reader",
+      "pdfDocument": "PDF Document",
+      "openExternalResource": "Open External Resource",
+      "attachments": "Attachments"
+    },
+    "contentType": {
+      "text": "Text",
+      "video": "Video",
+      "pdf": "PDF",
+      "link": "Link",
+      "mixed": "Mixed"
+    },
+    "enrollmentSuccess": "You have successfully enrolled in \"{{title}}\"!",
+    "noEnrollments": "You haven't enrolled in any courses yet",
+    "noEnrollmentsDescription": "Browse available courses and start learning today.",
+    "browseCourses": "Browse Courses",
+    "progress": "{{completed}} of {{total}} lessons completed",
+    "viewCourse": "View Course",
+    "instructor": "Instructor",
+    "free": "Free"
   },
   "marketplace": {
     "title": "Marketplace Management",
