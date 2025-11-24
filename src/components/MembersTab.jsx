@@ -62,10 +62,11 @@ const MembersTab = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
   const [skillFilter, setSkillFilter] = useState('');
-  const [sortBy, setSortBy] = useState('name');
+  const [sortBy, setSortBy] = useState('random');
   const [sortDirection, setSortDirection] = useState('asc');
   const [showFilters, setShowFilters] = useState(false);
   const [uniqueSkills, setUniqueSkills] = useState([]);
+  const [randomSeed, setRandomSeed] = useState(Math.random());
   
   // State for infinite scrolling
   const [filteredMembers, setFilteredMembers] = useState([]);
@@ -134,8 +135,14 @@ const MembersTab = ({
     // Then sort the filtered results
     filtered.sort((a, b) => {
       let compareResult = 0;
-      
+
       switch (sortBy) {
+        case 'random':
+          // Use a deterministic random sort based on the seed and member IDs
+          const hashA = (a.id + randomSeed).split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+          const hashB = (b.id + randomSeed).split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+          compareResult = hashA - hashB;
+          break;
         case 'name':
           compareResult = (a.full_name || '').localeCompare(b.full_name || '');
           break;
@@ -148,7 +155,7 @@ const MembersTab = ({
         default:
           compareResult = (a.full_name || '').localeCompare(b.full_name || '');
       }
-      
+
       return sortDirection === 'asc' ? compareResult : -compareResult;
     });
     
@@ -224,8 +231,9 @@ const MembersTab = ({
     setSearchTerm('');
     setRoleFilter('all');
     setSkillFilter('');
-    setSortBy('name');
+    setSortBy('random');
     setSortDirection('asc');
+    setRandomSeed(Math.random()); // Generate new random order
   };
   
   const scrollToTop = () => {
@@ -454,8 +462,8 @@ const MembersTab = ({
                 flexWrap: 'wrap',
                 mt: 1
               }}>
-                <Box sx={{ 
-                  display: 'flex', 
+                <Box sx={{
+                  display: 'flex',
                   gap: 1,
                   flexWrap: 'wrap',
                   '& button': {
@@ -465,10 +473,27 @@ const MembersTab = ({
                 }}>
                   <Button
                     size="small"
+                    color={sortBy === 'random' ? 'primary' : 'inherit'}
+                    onClick={() => {
+                      setSortBy('random');
+                      setRandomSeed(Math.random()); // Generate new random order
+                    }}
+                    sx={{
+                      color: darkMode ? (sortBy === 'random' ? 'primary.light' : customLightText) : 'inherit',
+                      textTransform: 'none',
+                      fontWeight: sortBy === 'random' ? 600 : 400,
+                      bgcolor: sortBy === 'random' ? (darkMode ? alpha('#1976d2', 0.1) : alpha('#1976d2', 0.05)) : 'transparent'
+                    }}
+                  >
+                    {t('membersTab.random') || 'Random'}
+                  </Button>
+
+                  <Button
+                    size="small"
                     color={sortBy === 'name' ? 'primary' : 'inherit'}
                     onClick={() => handleSortChange('name')}
                     startIcon={sortBy === 'name' && (sortDirection === 'asc' ? <ArrowUpwardIcon fontSize="small" /> : <ArrowDownwardIcon fontSize="small" />)}
-                    sx={{ 
+                    sx={{
                       color: darkMode ? (sortBy === 'name' ? 'primary.light' : customLightText) : 'inherit',
                       textTransform: 'none',
                       fontWeight: sortBy === 'name' ? 600 : 400,
@@ -477,13 +502,13 @@ const MembersTab = ({
                   >
                     {t('membersTab.name')}
                   </Button>
-                  
+
                   <Button
                     size="small"
                     color={sortBy === 'joinDate' ? 'primary' : 'inherit'}
                     onClick={() => handleSortChange('joinDate')}
                     startIcon={sortBy === 'joinDate' && (sortDirection === 'asc' ? <ArrowUpwardIcon fontSize="small" /> : <ArrowDownwardIcon fontSize="small" />)}
-                    sx={{ 
+                    sx={{
                       color: darkMode ? (sortBy === 'joinDate' ? 'primary.light' : customLightText) : 'inherit',
                       textTransform: 'none',
                       fontWeight: sortBy === 'joinDate' ? 600 : 400,
