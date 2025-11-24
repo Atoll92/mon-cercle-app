@@ -264,7 +264,10 @@ const NetworkSettingsTab = ({ network, onNetworkUpdate, darkMode }) => {
         courses: features.courses,
         marketplace: features.marketplace,
         reactions: features.reactions,
-        activity_feed: features.activity_feed
+        activity_feed: features.activity_feed,
+        // PRESERVE allow_member_event_publishing from existing network config
+        // This setting is managed in EventsTab, not here
+        allow_member_event_publishing: network?.features_config?.allow_member_event_publishing ?? false
       },
       enabled_tabs: enabledTabs,
       tab_descriptions: tabDescriptions,
