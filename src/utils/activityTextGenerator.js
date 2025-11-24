@@ -77,6 +77,16 @@ export const generateActivityText = (activity, t) => {
           milestone
         });
 
+      case 'reaction_added':
+        const emoji = metadata?.emoji || '👍';
+        const contentType = metadata?.content_type || 'post';
+        const contentTitle = metadata?.content_title || t(`activityFeed.entityTypes.${contentType}`, contentType);
+        return t('activityFeed.templates.reaction_added', {
+          name,
+          emoji,
+          contentTitle
+        }, `${name} reacted ${emoji} to ${contentTitle}`);
+
       default:
         // Fallback to stored activity_text if no template matches
         return activity.activity_text || `${name} performed an action`;

@@ -2322,7 +2322,8 @@
       "file_shared": "file shared",
       "wiki_page_created": "wiki page created",
       "badge_earned": "badge earned",
-      "milestone_reached": "milestone reached"
+      "milestone_reached": "milestone reached",
+      "reaction_added": "reaction added"
     },
     "templates": {
       "member_joined": "{{name}} joined the network",
@@ -2335,6 +2336,7 @@
       "wiki_page_created": "{{name}} created a wiki page: {{title}}",
       "badge_earned": "{{name}} earned the \"{{badgeName}}\" badge",
       "milestone_reached": "{{name}} {{milestone}}",
+      "reaction_added": "{{name}} reacted {{emoji}} to {{contentTitle}}",
       "first_post": "created their first post!",
       "first_event": "created their first event!",
       "comments_10": "reached 10 comments!",

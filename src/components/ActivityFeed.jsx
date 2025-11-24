@@ -32,6 +32,7 @@ import {
   EmojiEvents as BadgeIcon,
   TrendingUp as MilestoneIcon,
   CheckCircle as RsvpIcon,
+  EmojiEmotions as ReactionIcon,
   ExpandMore as ExpandMoreIcon,
   ExpandLess as ExpandLessIcon,
   Refresh as RefreshIcon
@@ -56,9 +57,10 @@ const getActivityIcon = (activityType) => {
     file_shared: <FileIcon />,
     wiki_page_created: <WikiIcon />,
     badge_earned: <BadgeIcon />,
-    milestone_reached: <MilestoneIcon />
+    milestone_reached: <MilestoneIcon />,
+    reaction_added: <ReactionIcon />
   };
-  return iconMap[activityType] || <TrendingUpIcon />;
+  return iconMap[activityType] || <MilestoneIcon />;
 };
 
 // Color mapping for activity types
@@ -73,7 +75,8 @@ const getActivityColor = (activityType, theme) => {
     file_shared: theme.palette.warning.main,
     wiki_page_created: theme.palette.info.light,
     badge_earned: theme.palette.warning.dark,
-    milestone_reached: theme.palette.success.dark
+    milestone_reached: theme.palette.success.dark,
+    reaction_added: theme.palette.warning.light
   };
   return colorMap[activityType] || theme.palette.primary.main;
 };
