@@ -1,5 +1,5 @@
 // src/components/MemberOnboardingWizard.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseclient';
 import { useAuth } from '../context/authcontext';
@@ -105,10 +105,12 @@ const MemberOnboardingWizard = ({ profile, network }) => {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isDraggingAvatar, setIsDraggingAvatar] = useState(false);
   
-  // Intro post state
-  const [createIntroPost, setCreateIntroPost] = useState(false);
+  // Intro post state - default to true to encourage users to post
+  const [createIntroPost, setCreateIntroPost] = useState(true);
   const [introPostTitle, setIntroPostTitle] = useState('');
   const [introPostContent, setIntroPostContent] = useState('');
+  const [examplePost, setExamplePost] = useState(null);
+  const [loadingExample, setLoadingExample] = useState(false);
   
   // Intro post media state
   const [introMediaUrl, setIntroMediaUrl] = useState(null);
@@ -123,6 +125,59 @@ const MemberOnboardingWizard = ({ profile, network }) => {
     notify_on_mentions: true,
     notify_on_direct_messages: true
   });
+
+  // Fetch an example presentation post created during onboarding from the network
+  useEffect(() => {
+    const fetchExamplePost = async () => {
+      if (!network?.id) return;
+
+      try {
+        setLoadingExample(true);
+
+        // Fetch recent posts with profile creation dates
+        const { data, error } = await supabase
+          .from('portfolio_items')
+          .select(`
+            id,
+            title,
+            description,
+            created_at,
+            profile_id,
+            profiles!inner(
+              id,
+              full_name,
+              profile_picture_url,
+              network_id,
+              created_at
+            )
+          `)
+          .eq('profiles.network_id', network.id)
+          .not('title', 'is', null)
+          .not('description', 'is', null)
+          .order('created_at', { ascending: false })
+          .limit(10);
+
+        if (!error && data && data.length > 0) {
+          // Find a post that was created within 24 hours of profile creation (likely an intro post)
+          const introPost = data.find(post => {
+            const profileCreatedAt = new Date(post.profiles.created_at);
+            const postCreatedAt = new Date(post.created_at);
+            const hoursDiff = Math.abs(postCreatedAt - profileCreatedAt) / 36e5; // Convert to hours
+            return hoursDiff <= 24; // Post created within 24 hours of profile creation
+          });
+
+          // Use intro post if found, otherwise fallback to most recent post
+          setExamplePost(introPost || data[0]);
+        }
+      } catch (error) {
+        console.log('No example post found:', error);
+      } finally {
+        setLoadingExample(false);
+      }
+    };
+
+    fetchExamplePost();
+  }, [network?.id]);
 
   // Common skill suggestions
   const commonSkills = [
@@ -168,13 +223,12 @@ const MemberOnboardingWizard = ({ profile, network }) => {
       )
     },
     {
-      label: t('memberOnboarding.steps.professionalDetails'),
-      description: t('memberOnboarding.professionalDetails.description'),
+      label: t('memberOnboarding.steps.onlinePresence'),
+      description: t('memberOnboarding.onlinePresence.description'),
       component: (
-        <ProfessionalStep 
-          profileData={profileData} 
+        <OnlinePresenceStep
+          profileData={profileData}
           setProfileData={setProfileData}
-          commonSkills={commonSkills}
         />
       )
     },
@@ -197,6 +251,7 @@ const MemberOnboardingWizard = ({ profile, network }) => {
           setIntroMediaMetadata={setIntroMediaMetadata}
           network={network}
           user={user}
+          examplePost={examplePost}
         />
       )
     },
@@ -809,8 +864,8 @@ const AvatarStep = ({ profileData, setProfileData, uploadProgress, isDraggingAva
   );
 };
 
-// Step 4: Professional Details
-const ProfessionalStep = ({ profileData, setProfileData, commonSkills }) => {
+// Step 4: Online Presence (formerly Professional Details)
+const OnlinePresenceStep = ({ profileData, setProfileData }) => {
   const { t } = useTranslation();
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -822,84 +877,49 @@ const ProfessionalStep = ({ profileData, setProfileData, commonSkills }) => {
 
   return (
     <Stack spacing={3}>
+      <Alert severity="info" icon={<InfoIcon />}>
+        {t('memberOnboarding.onlinePresence.infoMessage')}
+      </Alert>
+
       <TextField
-        label={t('memberOnboarding.professionalDetails.websiteUrl')}
+        label={t('memberOnboarding.onlinePresence.websiteUrl')}
         name="portfolioUrl"
         value={profileData.portfolioUrl}
         onChange={handleChange}
         fullWidth
-        placeholder={t('memberOnboarding.professionalDetails.websiteUrlPlaceholder')}
-        helperText={t('memberOnboarding.professionalDetails.websiteUrlHelper')}
+        placeholder={t('memberOnboarding.onlinePresence.websiteUrlPlaceholder')}
+        helperText={t('memberOnboarding.onlinePresence.websiteUrlHelper')}
         variant="outlined"
         InputProps={{
           startAdornment: <LanguageIcon color="action" sx={{ mr: 1 }} />
         }}
       />
-      
+
       <TextField
-        label={t('memberOnboarding.professionalDetails.linkedinUrl')}
+        label={t('memberOnboarding.onlinePresence.linkedinUrl')}
         name="linkedinUrl"
         value={profileData.linkedinUrl}
         onChange={handleChange}
         fullWidth
-        placeholder={t('memberOnboarding.professionalDetails.linkedinUrlPlaceholder')}
-        helperText={t('memberOnboarding.professionalDetails.linkedinUrlHelper')}
+        placeholder={t('memberOnboarding.onlinePresence.linkedinUrlPlaceholder')}
+        helperText={t('memberOnboarding.onlinePresence.linkedinUrlHelper')}
         variant="outlined"
         InputProps={{
           startAdornment: <LinkedInIcon color="action" sx={{ mr: 1 }} />
         }}
       />
-      
-      {/* <Autocomplete
-        multiple
-        freeSolo
-        options={commonSkills}
-        value={profileData.skills}
-        onChange={(_, newValue) => setProfileData(prev => ({ ...prev, skills: newValue }))}
-        renderTags={(value, getTagProps) =>
-          value.map((option, index) => (
-            <Chip
-              label={option}
-              {...getTagProps({ index })}
-              key={index}
-            />
-          ))
-        }
-        renderInput={(params) => (
-          <TextField
-            {...params}
-            variant="outlined"
-            label={t('memberOnboarding.professionalDetails.skills')}
-            placeholder={t('memberOnboarding.professionalDetails.skillsPlaceholder')}
-            helperText={t('memberOnboarding.professionalDetails.skillsHelper')}
-            InputProps={{
-              ...params.InputProps,
-              startAdornment: (
-                <>
-                  <BadgeIcon color="action" sx={{ mr: 1 }} />
-                  {params.InputProps.startAdornment}
-                </>
-              )
-            }}
-          />
-        )}
-      /> */}
-      
-      <Alert severity="info">
-        {t('memberOnboarding.professionalDetails.infoMessage')}
-      </Alert>
     </Stack>
   );
 };
 
 // Step 5: Introduction Post (Optional)
-const IntroPostStep = ({ 
-  createIntroPost, 
-  setCreateIntroPost, 
-  introPostTitle, 
-  setIntroPostTitle, 
-  introPostContent, 
-  setIntroPostContent, 
+const IntroPostStep = ({
+  createIntroPost,
+  setCreateIntroPost,
+  introPostTitle,
+  setIntroPostTitle,
+  introPostContent,
+  setIntroPostContent,
   introMediaUrl,
   setIntroMediaUrl,
   introMediaType,
@@ -907,9 +927,11 @@ const IntroPostStep = ({
   introMediaMetadata,
   setIntroMediaMetadata,
   network,
-  user
+  user,
+  examplePost
 }) => {
   const { t } = useTranslation();
+  const theme = useTheme();
   // Handle media upload - same pattern as CreatePostModal
   const handleMediaUpload = (uploadResult) => {
     console.log("=== Introduction post media upload ===");
@@ -949,34 +971,108 @@ const IntroPostStep = ({
   };
   return (
     <Stack spacing={3}>
-      <Alert severity="info">
-        {t('memberOnboarding.introPost.wouldYouLike', { networkName: network?.name })}
+      {/* Example post display */}
+      {examplePost && (
+        <Box>
+          <Typography variant="subtitle2" gutterBottom sx={{ fontWeight: 600, mb: 2 }}>
+            {t('memberOnboarding.introPost.exampleTitle')}
+          </Typography>
+          <Paper
+            elevation={0}
+            sx={{
+              p: 2.5,
+              borderRadius: 2,
+              border: '1px solid',
+              borderColor: 'divider',
+              bgcolor: alpha(theme.palette.primary.main, 0.02)
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, mb: 1.5 }}>
+              <Avatar
+                src={examplePost.profiles?.profile_picture_url}
+                sx={{ width: 40, height: 40 }}
+              >
+                {examplePost.profiles?.full_name?.charAt(0).toUpperCase()}
+              </Avatar>
+              <Box sx={{ flex: 1 }}>
+                <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                  {examplePost.profiles?.full_name}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {new Date(examplePost.created_at).toLocaleDateString()}
+                </Typography>
+              </Box>
+            </Box>
+            <Typography variant="h6" sx={{ fontWeight: 600, mb: 1, fontSize: '1rem' }}>
+              {examplePost.title}
+            </Typography>
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                display: '-webkit-box',
+                WebkitLineClamp: 3,
+                WebkitBoxOrient: 'vertical'
+              }}
+            >
+              {examplePost.description}
+            </Typography>
+          </Paper>
+        </Box>
+      )}
+
+      {/* Encouraging message */}
+      <Alert severity="success" icon={<GroupsIcon />}>
+        {t('memberOnboarding.introPost.encouragement', { networkName: network?.name })}
       </Alert>
-      
-      <FormControlLabel
-        control={
-          <Radio
-            checked={!createIntroPost}
-            onChange={() => setCreateIntroPost(false)}
-            value={false}
-          />
-        }
-        label={t('memberOnboarding.introPost.skipForNow')}
-      />
-      
-      <FormControlLabel
-        control={
-          <Radio
-            checked={createIntroPost}
-            onChange={() => setCreateIntroPost(true)}
-            value={true}
-          />
-        }
-        label={t('memberOnboarding.introPost.yesCreate')}
-      />
-      
+
+      {/* Toggle options - reversed order, Yes first */}
+      <Box>
+        <FormControlLabel
+          control={
+            <Radio
+              checked={createIntroPost}
+              onChange={() => setCreateIntroPost(true)}
+              value={true}
+            />
+          }
+          label={
+            <Box>
+              <Typography variant="body1" fontWeight={500}>
+                {t('memberOnboarding.introPost.yesCreate')}
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                {t('memberOnboarding.introPost.yesCreateHelper')}
+              </Typography>
+            </Box>
+          }
+        />
+
+        <FormControlLabel
+          control={
+            <Radio
+              checked={!createIntroPost}
+              onChange={() => setCreateIntroPost(false)}
+              value={false}
+            />
+          }
+          label={
+            <Box>
+              <Typography variant="body1" fontWeight={500}>
+                {t('memberOnboarding.introPost.skipForNow')}
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                {t('memberOnboarding.introPost.skipHelper')}
+              </Typography>
+            </Box>
+          }
+        />
+      </Box>
+
       {createIntroPost && (
-        <Box sx={{ pl: 4, pt: 2 }}>
+        <Box sx={{ pt: 2 }}>
           <Stack spacing={2}>
             <TextField
               label={t('memberOnboarding.introPost.postTitle')}
@@ -990,7 +1086,7 @@ const IntroPostStep = ({
                 startAdornment: <PostAddIcon color="action" sx={{ mr: 1 }} />
               }}
             />
-            
+
             <TextField
               label={t('memberOnboarding.introPost.postContent')}
               value={introPostContent}
@@ -1002,10 +1098,6 @@ const IntroPostStep = ({
               placeholder={t('memberOnboarding.introPost.postContentPlaceholder')}
               variant="outlined"
             />
-            
-            <Alert severity="success" sx={{ mt: 2 }}>
-              {t('memberOnboarding.introPost.successMessage')}
-            </Alert>
             
             {/* Media Upload Section - Same pattern as CreatePostModal */}
             <Box sx={{ mt: 3 }}>
