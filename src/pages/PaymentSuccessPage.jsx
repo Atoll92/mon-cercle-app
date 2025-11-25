@@ -18,26 +18,40 @@ const PaymentSuccessPage = () => {
     const verifyPayment = async () => {
       try {
         setVerifying(true);
-        
+
+        // Get the session_id from URL params
+        const sessionId = searchParams.get('session_id');
+        if (!sessionId) {
+          throw new Error('No session ID found in URL');
+        }
+
         // First get the user's network ID
         if (!user) {
           throw new Error('User not authenticated');
         }
-        
-        const { data: profile, error: profileError } = await supabase
+
+        // Get the active profile's network (user can have multiple profiles)
+        const { data: profiles, error: profileError } = await supabase
           .from('profiles')
-          .select('network_id')
+          .select('network_id, id')
           .eq('user_id', user.id)
-          .single();
-          
+          .order('created_at', { ascending: false });
+
         if (profileError) {
           throw profileError;
         }
-        
+
+        if (!profiles || profiles.length === 0) {
+          throw new Error('No profiles found for your account');
+        }
+
+        // Use the most recently created profile's network
+        const profile = profiles[0];
+
         if (!profile.network_id) {
           throw new Error('No network associated with your account');
         }
-        
+
         setNetworkId(profile.network_id);
         
         // Wait a moment for webhook to process
