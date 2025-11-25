@@ -46,14 +46,14 @@
     </g>
 
     <!-- Small disks in outer orbit -->
-    <g fill="#ffffff" opacity="0.75">
-      <circle cx="122" cy="59" r="20"/>
-      <circle cx="30" cy="132" r="20"/>
-      <circle cx="-84" cy="106" r="20"/>
-      <circle cx="-135" cy="0" r="20"/>
-      <circle cx="-84" cy="-106" r="20"/>
-      <circle cx="30" cy="-132" r="20"/>
-      <circle cx="122" cy="-59" r="20"/>
+    <g fill="#1976d2">
+      <circle cx="122" cy="59" r="20" opacity="0.7"/>
+      <circle cx="30" cy="132" r="20" opacity="0.7"/>
+      <circle cx="-84" cy="106" r="20" opacity="0.7"/>
+      <circle cx="-135" cy="0" r="20" opacity="0.7"/>
+      <circle cx="-84" cy="-106" r="20" opacity="0.7"/>
+      <circle cx="30" cy="-132" r="20" opacity="0.7"/>
+      <circle cx="122" cy="-59" r="20" opacity="0.7"/>
     </g>
   </g>
 
@@ -62,17 +62,17 @@
     Conclav
   </text>
 
-  <text x="480" y="330" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="44" font-weight="400" fill="rgba(255, 255, 255, 0.98)" letter-spacing="0.5">
+  <text x="480" y="330" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="48" font-weight="400" fill="rgba(255, 255, 255, 0.98)" letter-spacing="0.5">
     Privacy-Focused Networks
   </text>
 
-  <text x="480" y="395" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="30" font-weight="300" fill="rgba(255, 255, 255, 0.85)">
+  <text x="480" y="395" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="34" font-weight="300" fill="rgba(255, 255, 255, 0.85)">
     No tracking • No ads • GDPR compliant
   </text>
 
   <!-- European badge -->
-  <rect x="480" y="440" width="480" height="54" rx="27" fill="rgba(255, 255, 255, 0.18)" stroke="rgba(255, 255, 255, 0.35)" stroke-width="2"/>
+  <rect x="480" y="440" width="280" height="54" rx="27" fill="rgba(255, 255, 255, 0.18)" stroke="rgba(255, 255, 255, 0.35)" stroke-width="2"/>
   <text x="505" y="475" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="24" font-weight="500" fill="rgba(255, 255, 255, 0.98)">
-    🇪🇺 Made in Europe • Independent of Big Tech
+    🇪🇺 Made in Europe
   </text>
 </svg>
