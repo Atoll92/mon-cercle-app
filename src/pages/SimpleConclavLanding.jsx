@@ -107,7 +107,7 @@ const translations = {
 
   fr: {
   europeanBadge: "🇪🇺 Conçu en Europe • Indépendant de la Silicon Valley",
-  subtitle: "Le réseau social privé qui vous respecte vraiment",
+  subtitle: "Le réseau social privé qui vous respecte",
   description: "Créez vos propres micro-réseaux de confiance en quelques minutes — avec une confidentialité totale. Aucun traçage. Aucune pub. Aucun bot. Aucune Big Tech.",
   descriptionStrong: "Uniquement des connexions humaines authentiques.",
   startFreeTrial: "Commencez en 5 minutes",
@@ -129,18 +129,18 @@ const translations = {
   europeanPrivacy: "Confidentialité européenne",
   europeanPrivacyDesc: "Conforme au RGPD dès la conception. Vos données restent en Europe, protégées par les lois les plus strictes au monde.",
   zeroBloat: "Rapide et léger",
-  zeroBloatDesc: "Pas de pubs, pas de traceurs, pas de scripts lourds. Conclav se charge instantanément et met les gens avant les algorithmes.",
+  zeroBloatDesc: "Pas de pubs, pas de traceurs, pas de scripts lourds. Conclav est un outil intuitif pensé pour une expérience apaisée de la sociabilité en ligne.",
   yourNetworks: "Vos réseaux, vos règles",
-  yourNetworksDesc: "Créez des communautés privées librement. Vous possédez votre espace, votre contenu et vos membres.",
+  yourNetworksDesc: "Créez des communautés privées librement. Votre espace, votre contenu, vos règles.",
 
   everythingYouNeed: "Tout ce dont vous avez besoin — rien de superflu.",
   simpleSecure: "Simple et sécurisé",
   simpleSecureDesc: "Créez vos réseaux en quelques secondes. Partagez, organisez, discutez en toute sécurité, sans surveillance.",
   europeanAlternative: "Conçu en Europe",
-  europeanAlternativeDesc: "Développé et hébergé en Europe — une véritable alternative aux plateformes de la Silicon Valley.",
+  europeanAlternativeDesc: "Développé et hébergé en Europe — une alternative aux plateformes de la Silicon Valley.",
 
   readyToOwn: "Prêt à développer votre espace numérique ?",
-  joinThousands: "Rejoignez des milliers de créateurs et de professionnels qui construisent des communautés authentiques et respectueuses de la vie privée.",
+  joinThousands: "Rejoignez des milliers de créateurs, d'associations et de professionnels qui construisent des communautés authentiques et respectueuses de la vie privée.",
   startYourFreeTrial: "Commencez gratuitement",
   finalTrialInfo: "14 jours gratuits • Installation en moins de 5 minutes • Annulez à tout moment",
 
