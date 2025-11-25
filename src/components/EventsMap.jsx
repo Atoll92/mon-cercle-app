@@ -468,7 +468,14 @@ export default function EventsMap({
   }, [events, loading]); // Only re-run when events or loading state changes
   
   return (
-    <Box sx={{ position: 'relative', width: '100%', height: height, borderRadius: 1, overflow: 'hidden' }}>
+    <Box sx={{
+      position: 'relative',
+      width: '100%',
+      height: height,
+      borderRadius: 1,
+      overflow: 'hidden',
+      display: { xs: 'none', sm: 'block' } // Hide on mobile (xs), show on tablet and up (sm+)
+    }}>
       {loading && (
         <Box sx={{
           position: 'absolute',
