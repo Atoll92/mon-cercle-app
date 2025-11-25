@@ -42,6 +42,7 @@ import CommentSection from '../components/CommentSection';
 import LinkifiedText from '../components/LinkifiedText';
 import UserContent from '../components/UserContent';
 import CreatePostModal from '../components/CreatePostModal';
+import ReactionBar from '../components/ReactionBar';
 
 function PostPage() {
   const { t } = useTranslation();
@@ -516,6 +517,16 @@ function PostPage() {
             </Button>
           </Box>
         )}
+
+        {/* Reactions */}
+        <Box sx={{ mb: 3, pt: 2, borderTop: '1px solid rgba(0, 0, 0, 0.12)' }}>
+          <ReactionBar
+            contentType="post"
+            contentId={post.id}
+            initialCount={post.reaction_count || 0}
+            size="medium"
+          />
+        </Box>
 
         <Divider sx={{ my: 3 }} />
 
