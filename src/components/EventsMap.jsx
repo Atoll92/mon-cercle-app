@@ -27,8 +27,6 @@ export default function EventsMap({
   const [mapError, setMapError] = useState(null);
   const [internalSelectedCity, setInternalSelectedCity] = useState('all');
   const hasInitiallyFitBounds = useRef(false); // Track if we've done initial fit
-  const [showTouchHint, setShowTouchHint] = useState(false);
-  const touchHintTimeoutRef = useRef(null);
 
   // Use controlled or internal state
   const selectedCity = controlledSelectedCity !== undefined ? controlledSelectedCity : internalSelectedCity;
@@ -163,22 +161,18 @@ export default function EventsMap({
       try {
         // Set access token
         mapboxgl.accessToken = MAPBOX_TOKEN;
-
+        
         if (!mapContainerRef.current) return;
-
+        
         // Initialize map with custom style
         mapRef.current = new mapboxgl.Map({
           container: mapContainerRef.current,
           style: MAPBOX_STYLE, // Use the custom style
-          center: initialCoordinates
-            ? [initialCoordinates.longitude, initialCoordinates.latitude]
+          center: initialCoordinates 
+            ? [initialCoordinates.longitude, initialCoordinates.latitude] 
             : [0, 20], // Use initialCoordinates if provided, otherwise default
-          zoom: initialCoordinates ? 10 : 1,// Zoom in if we have initialCoordinates
+          zoom: initialCoordinates ? 10 : 1,// Zoom in if we have initialCoordinates       
           projection: 'mercator',
-          // Disable scroll zoom on mobile to prevent scroll trap
-          scrollZoom: false,
-          // Disable touch rotation
-          touchPitch: false,
         });
         
         // Add navigation controls
@@ -194,14 +188,10 @@ export default function EventsMap({
         });
         mapRef.current.addControl(geolocate, 'top-right');
         
-        // Enable two-finger zoom and pan on mobile
-        mapRef.current.touchZoomRotate.enable();
-        mapRef.current.dragPan.enable();
-
         // Set up event listeners
         mapRef.current.on('load', () => {
           setLoading(false);
-
+          
           // If we have initialCoordinates, add a single marker
           if (initialCoordinates && initialCoordinates.latitude && initialCoordinates.longitude) {
             const marker = new mapboxgl.Marker({ draggable: false })
@@ -209,7 +199,7 @@ export default function EventsMap({
               .addTo(mapRef.current);
 
             markersRef.current.push({ marker, popup: null, cleanup: null });
-          }
+          } 
           // Otherwise try to geolocate user if we don't have specific coordinates
           else if (!initialCoordinates) {
             setTimeout(() => {
@@ -220,53 +210,20 @@ export default function EventsMap({
           }
         });
         
-        // Add touch hint handler for mobile devices
-        const handleTouchStart = (e) => {
-          // Only show hint on mobile and when user uses single touch
-          if (e.touches && e.touches.length === 1 && window.innerWidth <= 768) {
-            setShowTouchHint(true);
-
-            // Clear any existing timeout
-            if (touchHintTimeoutRef.current) {
-              clearTimeout(touchHintTimeoutRef.current);
-            }
-
-            // Hide hint after 2 seconds
-            touchHintTimeoutRef.current = setTimeout(() => {
-              setShowTouchHint(false);
-            }, 2000);
-          } else if (e.touches && e.touches.length >= 2) {
-            // Hide hint when user uses two fingers
-            setShowTouchHint(false);
-            if (touchHintTimeoutRef.current) {
-              clearTimeout(touchHintTimeoutRef.current);
-            }
-          }
-        };
-
-        // Add touch event listener to map container
-        if (mapContainerRef.current) {
-          mapContainerRef.current.addEventListener('touchstart', handleTouchStart, { passive: true });
-        }
-
         // Add resize observer to ensure map fits its container
         const resizeObserver = new ResizeObserver(() => {
           if (mapRef.current) {
             mapRef.current.resize();
           }
         });
-
+        
         if (mapContainerRef.current) {
           resizeObserver.observe(mapContainerRef.current);
         }
-
+        
         return () => {
           if (mapContainerRef.current) {
             resizeObserver.unobserve(mapContainerRef.current);
-            mapContainerRef.current.removeEventListener('touchstart', handleTouchStart);
-          }
-          if (touchHintTimeoutRef.current) {
-            clearTimeout(touchHintTimeoutRef.current);
           }
         };
       } catch (error) {
@@ -659,55 +616,6 @@ export default function EventsMap({
 
       <div ref={mapContainerRef} style={{ width: '100%', height: '100%' }} />
 
-      {/* Touch Hint Overlay - shows on mobile when user tries to interact with one finger */}
-      <Fade in={showTouchHint} timeout={300}>
-        <Box sx={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          backgroundColor: 'rgba(0, 0, 0, 0.7)',
-          zIndex: 30,
-          pointerEvents: 'none',
-        }}>
-          <Paper sx={{
-            padding: 3,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: 1.5,
-            backgroundColor: (theme) => theme.palette.mode === 'dark'
-              ? 'rgba(30, 30, 30, 0.95)'
-              : 'rgba(255, 255, 255, 0.95)',
-            backdropFilter: 'blur(10px)',
-            borderRadius: 3,
-            maxWidth: '80%',
-            boxShadow: '0 8px 32px rgba(0,0,0,0.3)'
-          }}>
-            <Box sx={{
-              fontSize: '3rem',
-              animation: 'pinchAnimation 1.5s ease-in-out infinite'
-            }}>
-              🤏
-            </Box>
-            <Typography
-              variant="body2"
-              sx={{
-                fontWeight: 600,
-                textAlign: 'center',
-                color: 'text.primary'
-              }}
-            >
-              {t('eventsTab.touchHint') || 'Use two fingers to interact with the map'}
-            </Typography>
-          </Paper>
-        </Box>
-      </Fade>
-
       {/* Event Counter */}
       {events && events.length > 0 && (
         <Fade in={!loading} timeout={800}>
@@ -757,15 +665,6 @@ export default function EventsMap({
           @keyframes pulse {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.5; }
-          }
-
-          @keyframes pinchAnimation {
-            0%, 100% {
-              transform: scale(1);
-            }
-            50% {
-              transform: scale(1.2);
-            }
           }
 
           /* Event marker popup styling */

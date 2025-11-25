@@ -992,7 +992,6 @@
     "manageEvents": "Gérer les événements",
     "eventsMap": "Carte des événements",
     "eventsOnMap": "{{shown}} / {{total}} événements sur la carte",
-    "touchHint": "Utilisez deux doigts pour interagir avec la carte",
     "geographicView": "Vue géographique des événements à venir",
     "upcomingEvents": "Événements à venir",
     "eventsHappeningSoon": "Événements à venir bientôt",
