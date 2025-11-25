@@ -2346,7 +2346,14 @@
       "first_event": "a créé son premier événement !",
       "comments_10": "a atteint 10 commentaires !",
       "comments_50": "a atteint 50 commentaires !",
-      "comments_100": "a atteint 100 commentaires !"
+      "comments_100": "a atteint 100 commentaires !",
+      "members_10": "a atteint 10 membres ! 🎉",
+      "members_25": "a atteint 25 membres ! 🎊",
+      "members_50": "a atteint 50 membres ! 🚀",
+      "members_100": "a atteint 100 membres ! 🌟",
+      "members_250": "a atteint 250 membres ! 💪",
+      "members_500": "a atteint 500 membres ! 🔥",
+      "members_1000": "a atteint 1000 membres ! 🏆"
     },
     "entityTypes": {
       "post": "publication",

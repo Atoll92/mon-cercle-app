@@ -72,8 +72,10 @@ export const generateActivityText = (activity, t) => {
       case 'milestone_reached':
         const milestoneType = metadata?.milestone_type || '';
         const milestone = t(`activityFeed.templates.${milestoneType}`, milestoneType);
+        // For network milestones, use network name instead of profile name
+        const displayName = metadata?.network_name || name;
         return t('activityFeed.templates.milestone_reached', {
-          name,
+          name: displayName,
           milestone
         });
 

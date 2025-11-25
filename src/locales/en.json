@@ -2353,7 +2353,14 @@
       "first_event": "created their first event!",
       "comments_10": "reached 10 comments!",
       "comments_50": "reached 50 comments!",
-      "comments_100": "reached 100 comments!"
+      "comments_100": "reached 100 comments!",
+      "members_10": "reached 10 members! 🎉",
+      "members_25": "reached 25 members! 🎊",
+      "members_50": "reached 50 members! 🚀",
+      "members_100": "reached 100 members! 🌟",
+      "members_250": "reached 250 members! 💪",
+      "members_500": "reached 500 members! 🔥",
+      "members_1000": "reached 1000 members! 🏆"
     },
     "entityTypes": {
       "post": "post",
