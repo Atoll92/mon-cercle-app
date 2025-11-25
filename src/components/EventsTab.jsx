@@ -1385,7 +1385,8 @@ const EventsTab = ({
             overflow: 'hidden',
             boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
             border: '1px solid',
-            borderColor: 'divider'
+            borderColor: 'divider',
+            display: { xs: 'none', sm: 'block' } // Hide on mobile (xs), show on tablet and up (sm+)
           }}
         >
           <Box sx={{ p: 2, bgcolor: 'background.paper', borderBottom: '1px solid', borderColor: 'divider' }}>
