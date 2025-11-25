@@ -15,6 +15,7 @@ import PostsGrid from '../components/PostsGrid';
 import PostCard from '../components/PostCard';
 import Spinner from '../components/Spinner';
 import LinkifiedText from '../components/LinkifiedText';
+import UserContent from '../components/UserContent';
 import { useTranslation } from '../hooks/useTranslation';
 import {
   Button,
@@ -1182,20 +1183,16 @@ function ProfilePage() {
                         </Box>
                         
                         {event.description && (
-                          <Typography 
-                            variant="body2" 
-                            color="text.secondary"
+                          <UserContent
+                            content={event.description}
+                            maxLines={4}
+                            noShowMore={true}
                             sx={{
                               mt: 2,
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                              display: '-webkit-box',
-                              WebkitLineClamp: 3,
-                              WebkitBoxOrient: 'vertical'
+                              color: 'text.secondary',
+                              fontSize: '0.875rem'
                             }}
-                          >
-                            {event.description}
-                          </Typography>
+                          />
                         )}
                       </CardContent>
                       
