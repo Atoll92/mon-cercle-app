@@ -44,13 +44,13 @@ https://[YOUR-SUPABASE-PROJECT-ID].supabase.co/functions/v1/stripe-webhook
 
 ### Current Price IDs Configuration
 ```javascript
-// Development Price IDs
-community: 'price_1RSy002KqNIKpvjTG7YyuZZ6' // €17/month
-organization: 'price_1RK6qr2KqNIKpvjTZh47uSJO' // €97/month
+// Production Price IDs (ACTIVE - Updated Nov 2025)
+community: 'price_1RSxxQ2KqNIKpvjTYs9cYDin' // €17/month - PRODUCTION
+organization: 'price_1RK6Vk2KqNIKpvjTKgFNpV0y' // €97/month - PRODUCTION
 
-// Production Price IDs (to be verified)
-community: 'price_1RSxxQ2KqNIKpvjTYs9cYDin' // €17/month
-organization: 'price_1RK6Vk2KqNIKpvjTKgFNpV0y' // €97/month
+// Test Price IDs (DEPRECATED - for reference only)
+community_test: 'price_1RSy002KqNIKpvjTG7YyuZZ6' // €17/month - TEST MODE
+organization_test: 'price_1RK6qr2KqNIKpvjTZh47uSJO' // €97/month - TEST MODE
 ```
 
 ## Pre-Production Checklist

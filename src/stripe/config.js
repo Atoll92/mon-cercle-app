@@ -9,9 +9,9 @@ const envPriceIds = getPriceIds();
 // Price IDs for different plans
 export const PRICE_IDS = {
   family: 'price_family', // Free plan, no price ID needed
-  community: envPriceIds.community || 'price_1RSy002KqNIKpvjTG7YyuZZ6', // €17/month - Community plan
+  community: envPriceIds.community || 'price_1RSxxQ2KqNIKpvjTYs9cYDin', // €17/month - Community plan - PRODUCTION
   nonprofit: envPriceIds.nonprofit || 'price_nonprofit', // €49/month
-  organization: envPriceIds.organization || 'price_organization', // €97/month  
+  organization: envPriceIds.organization || 'price_organization', // €97/month
   network: envPriceIds.network || 'price_network', // €247/month
   business: envPriceIds.business || 'price_business', // €497/month
   enterprise: 'price_enterprise', // Custom pricing

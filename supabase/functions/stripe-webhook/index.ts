@@ -205,7 +205,8 @@ function getPlanFromPriceId(amount: number | null, priceId: string | undefined):
   
   // Map price IDs to plan names
   const priceToPlans: Record<string, string> = {
-    'price_1RSy002KqNIKpvjTG7YyuZZ6': 'community', // Community plan €17/month
+    'price_1RSxxQ2KqNIKpvjTYs9cYDin': 'community', // Community plan €17/month - PRODUCTION
+    'price_1RSy002KqNIKpvjTG7YyuZZ6': 'community', // Community plan €17/month - TEST (deprecated)
     'price_1RK6Vk2KqNIKpvjTKgFNpV0y': 'organization',
     'price_1RK6qr2KqNIKpvjTZh47uSJO': 'organization', // Added based on your PricingPage.jsx
     'price_nonprofit': 'nonprofit',
