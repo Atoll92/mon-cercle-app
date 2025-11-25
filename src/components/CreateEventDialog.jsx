@@ -27,7 +27,11 @@ import {
   Fade,
   LinearProgress,
   FormControlLabel,
-  Checkbox
+  Checkbox,
+  useTheme,
+  useMediaQuery,
+  Slide,
+  Collapse
 } from '@mui/material';
 import {
   LocationOn as LocationOnIcon,
@@ -52,6 +56,9 @@ import { supabase } from '../supabaseclient';
 
 const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated, editingEvent = null, onEventUpdated, isAdmin = false }) => {
   const { t } = useTranslation();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isSmallMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [eventForm, setEventForm] = useState({
     title: '',
     date: '',
@@ -466,25 +473,35 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
     switch (step) {
       case 0:
         return (
-          <Grid container spacing={3}>
+          <Grid container spacing={isMobile ? 2 : 3}>
             <Grid item xs={12}>
-              <Card elevation={0} sx={{ mb: 3, border: '1px solid', borderColor: 'divider' }}>
-                <CardContent>
+              <Card elevation={0} sx={{
+                mb: isMobile ? 2 : 3,
+                border: '1px solid',
+                borderColor: 'divider',
+                borderRadius: isMobile ? 2 : 1
+              }}>
+                <CardContent sx={{ p: isMobile ? 2 : 3 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                     <EventIcon sx={{ mr: 1, color: 'primary.main' }} />
                     <Typography variant="h6">{t('events.basicInfo.title')}</Typography>
                   </Box>
 
                   <TextField
-                    autoFocus
+                    autoFocus={!isMobile}
                     label={t('events.basicInfo.eventTitle')}
                     fullWidth
                     required
                     value={eventForm.title}
                     onChange={(e) => setEventForm({ ...eventForm, title: e.target.value })}
-                    sx={{ mb: 3 }}
+                    sx={{ mb: isMobile ? 2.5 : 3 }}
                     variant="outlined"
                     placeholder={t('events.basicInfo.titlePlaceholder')}
+                    slotProps={{
+                      htmlInput: {
+                        style: { fontSize: isMobile ? '16px' : '14px' }
+                      }
+                    }}
                   />
                   
                   <FormControlLabel
@@ -520,11 +537,14 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
                             <AccessTimeIcon />
                           </InputAdornment>
                         ),
+                      },
+                      htmlInput: {
+                        style: { fontSize: isMobile ? '16px' : '14px' }
                       }
                     }}
                     value={eventForm.date}
                     onChange={(e) => setEventForm({ ...eventForm, date: e.target.value })}
-                    sx={{ mb: 3 }}
+                    sx={{ mb: isMobile ? 2.5 : 3 }}
                     helperText={eventForm.all_day ? t('events.basicInfo.dateHelper') : t('events.basicInfo.dateTimeHelper')}
                   />
 
@@ -540,11 +560,14 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
                             <AccessTimeIcon />
                           </InputAdornment>
                         ),
+                      },
+                      htmlInput: {
+                        style: { fontSize: isMobile ? '16px' : '14px' }
                       }
                     }}
                     value={eventForm.end_date}
                     onChange={(e) => setEventForm({ ...eventForm, end_date: e.target.value })}
-                    sx={{ mb: 3 }}
+                    sx={{ mb: isMobile ? 2.5 : 3 }}
                     helperText={t('events.basicInfo.endDateHelper')}
                   />
                   
@@ -669,10 +692,15 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
 
       case 1:
         return (
-          <Grid container spacing={3}>
+          <Grid container spacing={isMobile ? 2 : 3}>
             <Grid item xs={12} md={6}>
-              <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider', height: 'fit-content' }}>
-                <CardContent>
+              <Card elevation={0} sx={{
+                border: '1px solid',
+                borderColor: 'divider',
+                height: 'fit-content',
+                borderRadius: isMobile ? 2 : 1
+              }}>
+                <CardContent sx={{ p: isMobile ? 2 : 3 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                     <DescriptionIcon sx={{ mr: 1, color: 'primary.main' }} />
                     <Typography variant="h6">{t('events.details.title')}</Typography>
@@ -681,12 +709,17 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
                   <TextField
                     label={t('events.details.description')}
                     multiline
-                    rows={8}
+                    rows={isMobile ? 6 : 8}
                     fullWidth
                     value={eventForm.description}
                     onChange={(e) => setEventForm({ ...eventForm, description: e.target.value })}
                     placeholder={t('events.details.descriptionPlaceholder')}
-                    sx={{ mb: 3 }}
+                    sx={{ mb: isMobile ? 2.5 : 3 }}
+                    slotProps={{
+                      htmlInput: {
+                        style: { fontSize: isMobile ? '16px' : '14px' }
+                      }
+                    }}
                   />
 
                   <TextField
@@ -714,17 +747,21 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
             </Grid>
             
             <Grid item xs={12} md={6}>
-              <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider' }}>
-                <CardContent>
+              <Card elevation={0} sx={{
+                border: '1px solid',
+                borderColor: 'divider',
+                borderRadius: isMobile ? 2 : 1
+              }}>
+                <CardContent sx={{ p: isMobile ? 2 : 3 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                     <ImageIcon sx={{ mr: 1, color: 'primary.main' }} />
                     <Typography variant="h6">{t('events.details.coverImage')}</Typography>
                   </Box>
-                  
+
                   <Paper
-                    sx={{ 
-                      width: '100%', 
-                      height: 240, 
+                    sx={{
+                      width: '100%',
+                      height: isMobile ? 200 : 240, 
                       border: dragOver ? '2px solid' : '2px dashed',
                       borderColor: dragOver ? 'primary.main' : 'grey.300',
                       borderRadius: 2,
@@ -803,10 +840,14 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
 
       case 2:
         return (
-          <Grid container spacing={3}>
+          <Grid container spacing={isMobile ? 2 : 3}>
             <Grid item xs={12} md={6}>
-              <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider' }}>
-                <CardContent>
+              <Card elevation={0} sx={{
+                border: '1px solid',
+                borderColor: 'divider',
+                borderRadius: isMobile ? 2 : 1
+              }}>
+                <CardContent sx={{ p: isMobile ? 2 : 3 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                     <PeopleIcon sx={{ mr: 1, color: 'primary.main' }} />
                     <Typography variant="h6">{t('events.settings.capacityTickets')}</Typography>
@@ -837,8 +878,12 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
             </Grid>
             
             <Grid item xs={12} md={6}>
-              <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider' }}>
-                <CardContent>
+              <Card elevation={0} sx={{
+                border: '1px solid',
+                borderColor: 'divider',
+                borderRadius: isMobile ? 2 : 1
+              }}>
+                <CardContent sx={{ p: isMobile ? 2 : 3 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                     <EuroIcon sx={{ mr: 1, color: 'primary.main' }} />
                     <Typography variant="h6">{t('events.settings.pricing')}</Typography>
@@ -886,8 +931,13 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
               </Card>
               
               {categories.length > 0 && (
-                <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider', mt: 3 }}>
-                  <CardContent>
+                <Card elevation={0} sx={{
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  mt: isMobile ? 2 : 3,
+                  borderRadius: isMobile ? 2 : 1
+                }}>
+                  <CardContent sx={{ p: isMobile ? 2 : 3 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                       <CategoryIcon sx={{ mr: 1, color: 'primary.main' }} />
                       <Typography variant="h6">{t('events.settings.category')}</Typography>
@@ -935,27 +985,45 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
   };
 
   return (
-    <Dialog 
-      open={open} 
-      onClose={onClose} 
-      maxWidth="lg" 
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth="lg"
       fullWidth
+      fullScreen={isMobile}
+      TransitionComponent={isMobile ? Slide : Fade}
+      TransitionProps={isMobile ? { direction: 'up' } : {}}
       slotProps={{
         paper: {
-          sx: { 
-            borderRadius: 2,
-            maxHeight: '90vh'
+          sx: {
+            borderRadius: isMobile ? 0 : 2,
+            maxHeight: isMobile ? '100vh' : '90vh',
+            m: isMobile ? 0 : 2
           }
         }
       }}
     >
-      <DialogTitle sx={{ pb: 1 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Typography variant="h5" component="div">
+      <DialogTitle sx={{
+        pb: isMobile ? 1 : 2,
+        pt: isMobile ? 2 : 3,
+        px: isMobile ? 2 : 3,
+        position: 'sticky',
+        top: 0,
+        bgcolor: 'background.paper',
+        zIndex: 1,
+        borderBottom: '1px solid',
+        borderColor: 'divider'
+      }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1, minWidth: 0 }}>
+            <Typography variant={isMobile ? "h6" : "h5"} component="div" sx={{
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap'
+            }}>
               {editingEvent ? t('events.dialog.editEvent') : t('events.dialog.createEvent')}
             </Typography>
-            {eventForm.online && (
+            {eventForm.online && !isSmallMobile && (
               <Chip
                 icon={<ComputerIcon />}
                 label={t('events.dialog.online')}
@@ -965,109 +1033,211 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
               />
             )}
           </Box>
-          <IconButton onClick={onClose} disabled={updating}>
+          <IconButton
+            onClick={onClose}
+            disabled={updating}
+            sx={{ ml: 1 }}
+            edge="end"
+          >
             <CloseIcon />
           </IconButton>
         </Box>
-        <Stepper activeStep={currentStep} sx={{ mt: 2 }}>
+        <Stepper
+          activeStep={currentStep}
+          alternativeLabel={isMobile}
+          sx={{
+            mt: isMobile ? 1 : 2,
+            '& .MuiStepLabel-label': {
+              fontSize: isMobile ? '0.75rem' : '0.875rem',
+              mt: isMobile ? 0.5 : 1
+            },
+            '& .MuiStepIcon-root': {
+              fontSize: isMobile ? '1.5rem' : '1.75rem'
+            }
+          }}
+        >
           {steps.map((label) => (
             <Step key={label}>
-              <StepLabel>{label}</StepLabel>
+              <StepLabel>{isMobile && isSmallMobile ? '' : label}</StepLabel>
             </Step>
           ))}
         </Stepper>
       </DialogTitle>
       
       {updating && <LinearProgress />}
-      
-      <DialogContent sx={{ pt: 2 }}>
-        {error && (
-          <Alert 
-            severity="error" 
-            sx={{ mb: 3 }}
-            onClose={() => setError(null)}
-          >
-            {error}
-          </Alert>
-        )}
-        
-        {!isAdmin && !editingEvent && !allowMemberPublishing && (
-          <Alert
-            severity="info"
-            sx={{ my: 3 }}
-            icon={<InfoIcon />}
-          >
-            {t('eventsTab.approvalNotice')}
-          </Alert>
-        )}
 
-        {!isAdmin && !editingEvent && allowMemberPublishing && (
-          <Alert
-            severity="success"
-            sx={{ my: 3 }}
-            icon={<InfoIcon />}
-          >
-            {t('eventsTab.directPublishNotice')}
-          </Alert>
-        )}
+      <DialogContent sx={{
+        pt: isMobile ? 2 : 3,
+        pb: isMobile ? 2 : 3,
+        px: isMobile ? 2 : 3,
+        overflowY: 'auto',
+        WebkitOverflowScrolling: 'touch'
+      }}>
+        <Collapse in={!!error}>
+          {error && (
+            <Alert
+              severity="error"
+              sx={{ mb: 2 }}
+              onClose={() => setError(null)}
+            >
+              {error}
+            </Alert>
+          )}
+        </Collapse>
         
-        <Fade in={true} key={currentStep}>
-          <Box>
-            {renderStepContent(currentStep)}
-          </Box>
-        </Fade>
-      </DialogContent>
-      
-      <Divider />
-      
-      <DialogActions sx={{ p: 3 }}>
-        <Button
-          onClick={onClose}
-          disabled={updating}
-          variant="outlined"
+        <Collapse in={!isAdmin && !editingEvent && !allowMemberPublishing}>
+          {!isAdmin && !editingEvent && !allowMemberPublishing && (
+            <Alert
+              severity="info"
+              sx={{ mb: 2 }}
+              icon={<InfoIcon />}
+            >
+              {t('eventsTab.approvalNotice')}
+            </Alert>
+          )}
+        </Collapse>
+
+        <Collapse in={!isAdmin && !editingEvent && allowMemberPublishing}>
+          {!isAdmin && !editingEvent && allowMemberPublishing && (
+            <Alert
+              severity="success"
+              sx={{ mb: 2 }}
+              icon={<InfoIcon />}
+            >
+              {t('eventsTab.directPublishNotice')}
+            </Alert>
+          )}
+        </Collapse>
+
+        <Box
+          sx={{
+            minHeight: isMobile ? 'auto' : '400px',
+            transition: 'all 0.3s ease-in-out'
+          }}
         >
-          {t('events.dialog.cancel')}
-        </Button>
+          {renderStepContent(currentStep)}
+        </Box>
+      </DialogContent>
 
-        <Box sx={{ flex: 1 }} />
+      <Divider />
 
-        {currentStep > 0 && (
-          <Button
-            onClick={prevStep}
-            disabled={updating}
-            variant="outlined"
-            sx={{ mr: 1 }}
-          >
-            {t('events.dialog.back')}
-          </Button>
-        )}
+      <DialogActions sx={{
+        p: isMobile ? 2 : 3,
+        flexDirection: isMobile ? 'column' : 'row',
+        gap: isMobile ? 1 : 0,
+        position: 'sticky',
+        bottom: 0,
+        bgcolor: 'background.paper',
+        borderTop: '1px solid',
+        borderColor: 'divider',
+        zIndex: 1
+      }}>
+        {isMobile ? (
+          <>
+            {/* Mobile: Full-width stacked buttons */}
+            <Box sx={{ display: 'flex', gap: 1, width: '100%' }}>
+              <Button
+                onClick={onClose}
+                disabled={updating}
+                variant="outlined"
+                fullWidth
+                sx={{ minHeight: 48 }}
+              >
+                {t('events.dialog.cancel')}
+              </Button>
 
-        {currentStep < steps.length - 1 ? (
-          <Button
-            onClick={nextStep}
-            disabled={!canProceedToNext() || updating}
-            variant="contained"
-          >
-            {t('events.dialog.next')}
-          </Button>
+              {currentStep > 0 && (
+                <Button
+                  onClick={prevStep}
+                  disabled={updating}
+                  variant="outlined"
+                  fullWidth
+                  sx={{ minHeight: 48 }}
+                >
+                  {t('events.dialog.back')}
+                </Button>
+              )}
+            </Box>
+
+            {currentStep < steps.length - 1 ? (
+              <Button
+                onClick={nextStep}
+                disabled={!canProceedToNext() || updating}
+                variant="contained"
+                fullWidth
+                size="large"
+                sx={{ minHeight: 48 }}
+              >
+                {t('events.dialog.next')}
+              </Button>
+            ) : (
+              <Button
+                onClick={handleSubmit}
+                variant="contained"
+                disabled={updating || !canProceedToNext() || !networkId || !profileId}
+                fullWidth
+                size="large"
+                sx={{ minHeight: 48 }}
+              >
+                {updating ? (editingEvent ? t('events.dialog.updating') : t('events.dialog.creating')) : (editingEvent ? t('events.dialog.updateEvent') : t('events.dialog.createEvent'))}
+              </Button>
+            )}
+          </>
         ) : (
-          <Button
-            onClick={handleSubmit}
-            variant="contained"
-            disabled={updating || !canProceedToNext() || !networkId || !profileId}
-            sx={{ minWidth: 140 }}
-          >
-            {updating ? (editingEvent ? t('events.dialog.updating') : t('events.dialog.creating')) : (editingEvent ? t('events.dialog.updateEvent') : t('events.dialog.createEvent'))}
-          </Button>
+          <>
+            {/* Desktop: Horizontal layout */}
+            <Button
+              onClick={onClose}
+              disabled={updating}
+              variant="outlined"
+            >
+              {t('events.dialog.cancel')}
+            </Button>
+
+            <Box sx={{ flex: 1 }} />
+
+            {currentStep > 0 && (
+              <Button
+                onClick={prevStep}
+                disabled={updating}
+                variant="outlined"
+                sx={{ mr: 1 }}
+              >
+                {t('events.dialog.back')}
+              </Button>
+            )}
+
+            {currentStep < steps.length - 1 ? (
+              <Button
+                onClick={nextStep}
+                disabled={!canProceedToNext() || updating}
+                variant="contained"
+              >
+                {t('events.dialog.next')}
+              </Button>
+            ) : (
+              <Button
+                onClick={handleSubmit}
+                variant="contained"
+                disabled={updating || !canProceedToNext() || !networkId || !profileId}
+                sx={{ minWidth: 140 }}
+              >
+                {updating ? (editingEvent ? t('events.dialog.updating') : t('events.dialog.creating')) : (editingEvent ? t('events.dialog.updateEvent') : t('events.dialog.createEvent'))}
+              </Button>
+            )}
+          </>
         )}
       </DialogActions>
       
       {/* Category Creation Dialog */}
-      <Dialog 
-        open={categoryDialogOpen} 
+      <Dialog
+        open={categoryDialogOpen}
         onClose={() => !categoryCreating && setCategoryDialogOpen(false)}
         maxWidth="sm"
         fullWidth
+        fullScreen={isSmallMobile}
+        TransitionComponent={isSmallMobile ? Slide : Fade}
+        TransitionProps={isSmallMobile ? { direction: 'up' } : {}}
       >
         <DialogTitle>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
