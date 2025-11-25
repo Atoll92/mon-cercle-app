@@ -145,9 +145,12 @@ const MembersTab = ({
 
       switch (sortBy) {
         case 'random':
-          // Use a deterministic random sort based on the seed and member IDs
-          const hashA = (a.id + randomSeed).split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-          const hashB = (b.id + randomSeed).split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+          // Use XOR-based hashing for better randomization
+          const seedStr = randomSeed.toString();
+          const hashA = a.id.split('').reduce((acc, char, i) =>
+            acc ^ char.charCodeAt(0) ^ seedStr.charCodeAt(i % seedStr.length), 0);
+          const hashB = b.id.split('').reduce((acc, char, i) =>
+            acc ^ char.charCodeAt(0) ^ seedStr.charCodeAt(i % seedStr.length), 0);
           compareResult = hashA - hashB;
           break;
         case 'name':
