@@ -123,7 +123,7 @@ function EditProfilePage() {
     // Check URL params for tab parameter
     const urlParams = new URLSearchParams(location.search);
     const tabParam = urlParams.get('tab');
-    if (tabParam === 'settings') return 2;
+    if (tabParam === 'settings') return 1;
     return 0;
   });
   const [isDraggingAvatar, setIsDraggingAvatar] = useState(false);
@@ -878,16 +878,6 @@ function EditProfilePage() {
             }}
           />
           <Tab
-            label={t('editProfile.tabs.posts')}
-            icon={<LanguageIcon fontSize="small" />}
-            iconPosition="start"
-            sx={{
-              '& .MuiTab-iconWrapper': {
-                display: { xs: 'none', sm: 'inline-flex' }
-              }
-            }}
-          />
-          <Tab
             label={t('editProfile.tabs.settings')}
             icon={<SettingsIcon fontSize="small" />}
             iconPosition="start"
@@ -1332,125 +1322,9 @@ function EditProfilePage() {
                 </Grid>
               </Grid>
             )}
-            
-            {/* Posts Tab */}
-            {activeTab === 1 && (
-              <Box>
-                {/* Previously Published Posts Section */}
-                <Box sx={{ mb: 4 }}>
-                  {/* Section Header with Create Button */}
-                  <Box 
-                    sx={{ 
-                      display: 'flex', 
-                      justifyContent: 'space-between', 
-                      alignItems: 'center',
-                      mb: 3,
-                      pb: 2,
-                      borderBottom: '2px solid',
-                      borderColor: 'primary.main'
-                    }}
-                  >
-                    <Typography variant="h5" fontWeight="600" color="primary.main">
-                      {t('editProfile.posts.title')}
-                    </Typography>
 
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      onClick={() => setCreatePostModalOpen(true)}
-                      startIcon={<AddIcon />}
-                      size="medium"
-                      sx={{
-                        borderRadius: 2,
-                        px: 3,
-                        py: 1,
-                        textTransform: 'none',
-                        fontSize: '0.95rem',
-                        fontWeight: 500,
-                        boxShadow: '0 2px 8px rgba(33, 150, 243, 0.3)',
-                        '&:hover': {
-                          boxShadow: '0 4px 12px rgba(33, 150, 243, 0.4)'
-                        }
-                      }}
-                    >
-                      {t('editProfile.posts.createPost')}
-                    </Button>
-                  </Box>
-                  
-                  {/* Posts Content */}
-                  {postItems.length === 0 ? (
-                    <Paper 
-                      elevation={0}
-                      variant="outlined"
-                      sx={{ 
-                        p: 6, 
-                        textAlign: 'center',
-                        borderRadius: 3,
-                        borderStyle: 'dashed',
-                        borderWidth: 2,
-                        borderColor: 'grey.300',
-                        bgcolor: (theme) => theme.palette.mode === 'dark' ? 'grey.900' : 'grey.50',
-                        transition: 'all 0.2s ease'
-                      }}
-                    >
-                      <Box sx={{ mb: 2 }}>
-                        <LanguageIcon sx={{ fontSize: 48, color: 'text.secondary', opacity: 0.5 }} />
-                      </Box>
-                      <Typography variant="h6" color="text.secondary" gutterBottom>
-                        {t('editProfile.posts.noPosts')}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                        {t('editProfile.posts.noPostsDescription')}
-                      </Typography>
-                      <Button
-                        variant="outlined"
-                        color="primary"
-                        onClick={() => setCreatePostModalOpen(true)}
-                        startIcon={<AddIcon />}
-                        sx={{
-                          borderRadius: 2,
-                          textTransform: 'none',
-                          fontWeight: 500
-                        }}
-                      >
-                        {t('editProfile.posts.createFirstPost')}
-                      </Button>
-                    </Paper>
-                  ) : (
-                    <Box>
-                      <Typography variant="body2" color="text.secondary" sx={{ mb: { xs: 2, sm: 3 } }}>
-                        {t('editProfile.posts.postsPublished', { count: postItems.length })}
-                      </Typography>
-
-                      <Grid container spacing={{ xs: 2, sm: 2.5, lg: 3 }}>
-                        {postItems.map((post) => (
-                          <Grid item xs={12} sm={6} lg={6} key={post.id}>
-                            <PostCard
-                              post={post}
-                              author={profile}
-                              isOwner={true}
-                              onPostUpdated={handlePostUpdated}
-                              onPostDeleted={handlePostDeleted}
-                              sx={{ 
-                                height: '100%',
-                                transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-                                '&:hover': {
-                                  transform: 'translateY(-2px)',
-                                  boxShadow: '0 8px 25px rgba(0,0,0,0.12)'
-                                }
-                              }}
-                            />
-                          </Grid>
-                        ))}
-                      </Grid>
-                    </Box>
-                  )}
-                </Box>
-              </Box>
-            )}
-            
             {/* Settings Tab */}
-            {activeTab === 2 && (
+            {activeTab === 1 && (
               <Box>
                 <Stack spacing={{ xs: 2, sm: 2.5, md: 3 }}>
                   {/* Language Preference Section */}
