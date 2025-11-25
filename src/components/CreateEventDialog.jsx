@@ -735,6 +735,9 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
                             <LinkIcon />
                           </InputAdornment>
                         ),
+                      },
+                      htmlInput: {
+                        style: { fontSize: isMobile ? '16px' : '14px' }
                       }
                     }}
                     helperText={eventForm.online
@@ -998,7 +1001,9 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
           sx: {
             borderRadius: isMobile ? 0 : 2,
             maxHeight: isMobile ? '100vh' : '90vh',
-            m: isMobile ? 0 : 2
+            m: isMobile ? 0 : 2,
+            // Ensure proper stacking context for date pickers
+            isolation: 'isolate'
           }
         }
       }}
@@ -1010,7 +1015,7 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
         position: 'sticky',
         top: 0,
         bgcolor: 'background.paper',
-        zIndex: 1,
+        zIndex: 2,
         borderBottom: '1px solid',
         borderColor: 'divider'
       }}>
@@ -1071,7 +1076,10 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
         pb: isMobile ? 2 : 3,
         px: isMobile ? 2 : 3,
         overflowY: 'auto',
-        WebkitOverflowScrolling: 'touch'
+        WebkitOverflowScrolling: 'touch',
+        // Ensure date pickers and other popovers render above content
+        position: 'relative',
+        zIndex: 0
       }}>
         <Collapse in={!!error}>
           {error && (
@@ -1130,7 +1138,7 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
         bgcolor: 'background.paper',
         borderTop: '1px solid',
         borderColor: 'divider',
-        zIndex: 1
+        zIndex: 2
       }}>
         {isMobile ? (
           <>
