@@ -93,6 +93,7 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
   const [categoryCreating, setCategoryCreating] = useState(false);
   const [categoryError, setCategoryError] = useState(null);
   const [allowMemberPublishing, setAllowMemberPublishing] = useState(false);
+  const contentRef = React.useRef(null);
 
   const steps = [t('events.steps.basicInfo'), t('events.steps.detailsMedia'), t('events.steps.settings')];
 
@@ -264,15 +265,28 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
     }
   };
 
+  const scrollToTop = () => {
+    if (contentRef.current) {
+      contentRef.current.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    }
+  };
+
   const nextStep = () => {
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
+      // Scroll to top after a brief delay to allow content to render
+      setTimeout(scrollToTop, 100);
     }
   };
 
   const prevStep = () => {
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
+      // Scroll to top after a brief delay to allow content to render
+      setTimeout(scrollToTop, 100);
     }
   };
 
@@ -1071,16 +1085,19 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
       
       {updating && <LinearProgress />}
 
-      <DialogContent sx={{
-        pt: isMobile ? 2 : 3,
-        pb: isMobile ? 2 : 3,
-        px: isMobile ? 2 : 3,
-        overflowY: 'auto',
-        WebkitOverflowScrolling: 'touch',
-        // Ensure date pickers and other popovers render above content
-        position: 'relative',
-        zIndex: 0
-      }}>
+      <DialogContent
+        ref={contentRef}
+        sx={{
+          pt: isMobile ? 2 : 3,
+          pb: isMobile ? 2 : 3,
+          px: isMobile ? 2 : 3,
+          overflowY: 'auto',
+          WebkitOverflowScrolling: 'touch',
+          // Ensure date pickers and other popovers render above content
+          position: 'relative',
+          zIndex: 0
+        }}
+      >
         <Collapse in={!!error}>
           {error && (
             <Alert
