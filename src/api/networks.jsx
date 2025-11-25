@@ -808,6 +808,17 @@ export const createEvent = async (networkId, profileId, eventData, imageFile, is
       isAdmin
     });
 
+    // Validate required parameters
+    if (!networkId || !profileId) {
+      const error = new Error('Missing required parameters: networkId and profileId are required');
+      console.error('📅 [CREATE EVENT] Validation error:', error.message);
+      return {
+        success: false,
+        message: error.message,
+        event: null
+      };
+    }
+
     // Fetch network settings to check if member publishing is allowed
     const { data: networkData, error: networkError } = await supabase
       .from('networks')

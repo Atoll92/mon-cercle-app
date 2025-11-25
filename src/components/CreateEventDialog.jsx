@@ -286,7 +286,14 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
     console.log('🎯 [EVENT DIALOG] profileId:', profileId);
     console.log('🎯 [EVENT DIALOG] isAdmin:', isAdmin);
     console.log('🎯 [EVENT DIALOG] editingEvent:', editingEvent ? 'Yes' : 'No');
-    
+
+    // Validate required parameters (critical for mobile to prevent NULL profile_id errors)
+    if (!networkId || !profileId) {
+      console.error('🎯 [EVENT DIALOG] Validation failed: Missing networkId or profileId');
+      setError(t('events.errors.authenticationRequired') || 'Authentication required. Please wait for the page to fully load and try again.');
+      return;
+    }
+
     // Validate required fields FIRST, before setting updating
     if (!eventForm.title || !eventForm.date) {
       console.error('🎯 [EVENT DIALOG] Validation failed: Missing title or date');
@@ -1047,7 +1054,7 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
           <Button
             onClick={handleSubmit}
             variant="contained"
-            disabled={updating || !canProceedToNext()}
+            disabled={updating || !canProceedToNext() || !networkId || !profileId}
             sx={{ minWidth: 140 }}
           >
             {updating ? (editingEvent ? t('events.dialog.updating') : t('events.dialog.creating')) : (editingEvent ? t('events.dialog.updateEvent') : t('events.dialog.createEvent'))}
