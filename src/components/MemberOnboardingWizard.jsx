@@ -130,6 +130,36 @@ const MemberOnboardingWizard = ({ profile, network }) => {
   const [featuredMembers, setFeaturedMembers] = useState([]);
   const [loadingMembers, setLoadingMembers] = useState(false);
 
+  // State for presentation category
+  const [presentationCategoryId, setPresentationCategoryId] = useState(null);
+
+  // Fetch presentation category ID for this network
+  useEffect(() => {
+    const fetchPresentationCategory = async () => {
+      if (!network?.id) return;
+
+      try {
+        const { data, error } = await supabase
+          .from('network_categories')
+          .select('id')
+          .eq('network_id', network.id)
+          .eq('slug', 'presentation')
+          .single();
+
+        if (!error && data) {
+          setPresentationCategoryId(data.id);
+          console.log('Presentation category found:', data.id);
+        } else {
+          console.log('No presentation category found for network');
+        }
+      } catch (error) {
+        console.log('Error fetching presentation category:', error);
+      }
+    };
+
+    fetchPresentationCategory();
+  }, [network?.id]);
+
   // Fetch up to 3 random members with profile pictures
   // Will display 1, 2, or 3 members depending on availability
   useEffect(() => {
@@ -174,15 +204,15 @@ const MemberOnboardingWizard = ({ profile, network }) => {
   }, [network?.id]);
 
   // Fetch an example presentation post created during onboarding from the network
-  // Only displays if valid posts with actual content exist
+  // Only displays presentation posts (category_id = presentation category)
   useEffect(() => {
     const fetchExamplePost = async () => {
-      if (!network?.id) return;
+      if (!network?.id || !presentationCategoryId) return;
 
       try {
         setLoadingExample(true);
 
-        // Fetch recent posts with profile creation dates
+        // Fetch presentation posts only (using category filter)
         const { data, error } = await supabase
           .from('portfolio_items')
           .select(`
@@ -191,6 +221,7 @@ const MemberOnboardingWizard = ({ profile, network }) => {
             description,
             created_at,
             profile_id,
+            category_id,
             profiles!inner(
               id,
               full_name,
@@ -200,6 +231,7 @@ const MemberOnboardingWizard = ({ profile, network }) => {
             )
           `)
           .eq('profiles.network_id', network.id)
+          .eq('category_id', presentationCategoryId)
           .not('title', 'is', null)
           .not('description', 'is', null)
           .order('created_at', { ascending: false })
@@ -217,26 +249,19 @@ const MemberOnboardingWizard = ({ profile, network }) => {
           );
 
           if (validPosts.length > 0) {
-            // Find a post that was created within 24 hours of profile creation (likely an intro post)
-            const introPost = validPosts.find(post => {
-              const profileCreatedAt = new Date(post.profiles.created_at);
-              const postCreatedAt = new Date(post.created_at);
-              const hoursDiff = Math.abs(postCreatedAt - profileCreatedAt) / 36e5; // Convert to hours
-              return hoursDiff <= 24; // Post created within 24 hours of profile creation
-            });
-
-            // Use intro post if found, otherwise fallback to most recent valid post
-            setExamplePost(introPost || validPosts[0]);
+            // Randomly select one from valid presentation posts
+            const randomIndex = Math.floor(Math.random() * validPosts.length);
+            setExamplePost(validPosts[randomIndex]);
           } else {
-            // No valid posts found, don't display any
+            // No valid presentation posts found, don't display any
             setExamplePost(null);
           }
         } else {
-          // No posts found, don't display any
+          // No presentation posts found, don't display any
           setExamplePost(null);
         }
       } catch (error) {
-        console.log('No example post found:', error);
+        console.log('No presentation post found:', error);
         setExamplePost(null);
       } finally {
         setLoadingExample(false);
@@ -244,7 +269,7 @@ const MemberOnboardingWizard = ({ profile, network }) => {
     };
 
     fetchExamplePost();
-  }, [network?.id]);
+  }, [network?.id, presentationCategoryId]);
 
   // Common skill suggestions
   const commonSkills = [
@@ -457,7 +482,7 @@ const MemberOnboardingWizard = ({ profile, network }) => {
       // Refresh the active profile in context
       await refreshActiveProfile();
 
-      // Create introduction post if requested
+      // Create introduction post if requested with presentation category
       if (createIntroPost && introPostTitle.trim() && introPostContent.trim()) {
         try {
           const { createPost } = await import('../api/posts');
@@ -465,14 +490,14 @@ const MemberOnboardingWizard = ({ profile, network }) => {
             title: introPostTitle,
             description: introPostContent,
             profile_id: profile.id,
-            category_id: null,
+            category_id: presentationCategoryId, // Use presentation category
             mediaUrl: introMediaUrl,
             mediaType: introMediaType,
             mediaMetadata: introMediaMetadata
           });
-          console.log('Introduction post created successfully');
+          console.log('Presentation post created successfully with category:', presentationCategoryId);
         } catch (postError) {
-          console.error('Error creating introduction post:', postError);
+          console.error('Error creating presentation post:', postError);
           // Don't fail the onboarding if post creation fails
         }
       }
