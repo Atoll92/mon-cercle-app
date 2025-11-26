@@ -7,6 +7,7 @@ import { supabase } from '../supabaseclient';
 import { formatTime, formatDate } from '../utils/dateFormatting';
 import Spinner from './Spinner';
 import { useTranslation } from '../hooks/useTranslation';
+import { decryptMessage, decryptMetadata } from '../utils/messageEncryption';
 import {
   Box,
   Typography,
@@ -86,57 +87,82 @@ function DirectMessageChat({ conversationId, partner, onBack }) {
   // Subscription for real-time messages
   useEffect(() => {
     if (!conversationId) return;
-    
+
     // Clean up previous subscription
     if (channelRef.current) {
       supabase.removeChannel(channelRef.current);
       channelRef.current = null;
     }
-    
+
     const channel = supabase.channel(`conversation-${conversationId}`);
-    
+
     channel
-      .on('postgres_changes', { 
-        event: 'INSERT', 
-        schema: 'public', 
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
         table: 'direct_messages',
         filter: `conversation_id=eq.${conversationId}`
       }, (payload) => {
         console.log('New message received in conversation:', payload);
-        
-        // Get sender info to display with the message
-        const fetchSenderInfo = async () => {
+
+        // Get sender info and decrypt message
+        const fetchSenderInfoAndDecrypt = async () => {
+          // Fetch sender info
           const { data } = await supabase
             .from('profiles')
             .select('id, full_name, profile_picture_url')
             .eq('id', payload.new.sender_id)
             .single();
-            
+
+          // Fetch conversation participants for decryption
+          const { data: conversation } = await supabase
+            .from('direct_conversations')
+            .select('participants')
+            .eq('id', conversationId)
+            .single();
+
+          // Decrypt message content
+          let decryptedContent = payload.new.content;
+          let decryptedMetadata = payload.new.media_metadata;
+
+          if (conversation?.participants) {
+            try {
+              decryptedContent = await decryptMessage(payload.new.content, conversation.participants);
+              if (payload.new.media_metadata) {
+                decryptedMetadata = await decryptMetadata(payload.new.media_metadata, conversation.participants);
+              }
+            } catch (error) {
+              console.error('Failed to decrypt real-time message:', error);
+            }
+          }
+
           const messageWithSender = {
             ...payload.new,
+            content: decryptedContent,
+            media_metadata: decryptedMetadata,
             sender: data
           };
-          
+
           setMessages(prevMessages => {
             // Check if the message already exists
             if (prevMessages.some(msg => msg.id === messageWithSender.id)) {
               return prevMessages;
             }
-            
+
             // If this is from the current user, try to find and remove the corresponding pending message
             if (payload.new.sender_id === activeProfile?.id) {
-              // Find the oldest pending message with matching content from this sender
-              const pendingIndex = prevMessages.findIndex(msg => 
-                msg.pending && 
-                msg.sender_id === payload.new.sender_id && 
-                msg.content === payload.new.content
+              // Find the oldest pending message with matching DECRYPTED content from this sender
+              const pendingIndex = prevMessages.findIndex(msg =>
+                msg.pending &&
+                msg.sender_id === payload.new.sender_id &&
+                msg.content === decryptedContent
               );
-              
+
               if (pendingIndex !== -1) {
                 // Remove the pending message and add the real one
                 const filteredMessages = [...prevMessages];
                 const removedPending = filteredMessages.splice(pendingIndex, 1)[0];
-                
+
                 // Clean up the pending message tracking
                 if (removedPending && removedPending.id) {
                   pendingMessagesRef.current.delete(removedPending.id);
@@ -146,15 +172,15 @@ function DirectMessageChat({ conversationId, partner, onBack }) {
                     return newSet;
                   });
                 }
-                
+
                 return [...filteredMessages, messageWithSender];
               }
             }
-            
+
             // Just add the new message if no pending message was found
             return [...prevMessages, messageWithSender];
           });
-          
+
           // Only update unread count if the message is from the other user
           if (payload.new.sender_id !== activeProfile?.id) {
             // Mark as read if we're currently viewing this conversation
@@ -168,13 +194,13 @@ function DirectMessageChat({ conversationId, partner, onBack }) {
             updateConversationWithMessage(conversationId, messageWithSender);
           }
         };
-        
-        fetchSenderInfo();
+
+        fetchSenderInfoAndDecrypt();
       })
       .subscribe();
-      
+
     channelRef.current = channel;
-      
+
     return () => {
       supabase.removeChannel(channel);
       channelRef.current = null;

@@ -1,5 +1,12 @@
 import { supabase } from '../supabaseclient';
 import { queueDirectMessageNotification } from '../services/emailNotificationService';
+import {
+  encryptMessage,
+  decryptMessage,
+  batchDecryptMessages,
+  encryptMetadata,
+  decryptMetadata
+} from '../utils/messageEncryption';
 
 /**
  * Get or create a conversation between two users
@@ -79,46 +86,46 @@ export const getOrCreateConversation = async (user1Id, user2Id) => {
 export const getUserConversations = async (userId) => {
   try {
     console.log('Fetching conversations for user:', userId);
-    
+
     // First get all conversations the user is part of
     const { data: conversations, error: convError } = await supabase
       .from('direct_conversations')
       .select('*');
-      
+
     if (convError) throw convError;
-    
+
     // Filter conversations to include only those where the user is a participant
-    const userConversations = conversations.filter(conv => 
+    const userConversations = conversations.filter(conv =>
       conv.participants.includes(userId)
     );
-    
+
     console.log(`Found ${userConversations.length} conversations for user`);
-    
+
     if (!userConversations || userConversations.length === 0) {
       return { conversations: [], error: null };
     }
-    
+
     // Extract all unique partner IDs
     const partnerIds = userConversations
       .map(conv => conv.participants.find(id => id !== userId))
       .filter(id => id != null);
-    
+
     // Batch fetch all partner profiles
     const { data: partners, error: partnersError } = await supabase
       .from('profiles')
       .select('id, full_name, profile_picture_url')
       .in('id', partnerIds);
-      
+
     if (partnersError) {
       console.error('Error fetching partner profiles:', partnersError);
     }
-    
+
     // Create a map for quick partner lookup
     const partnerMap = new Map();
     partners?.forEach(partner => {
       partnerMap.set(partner.id, partner);
     });
-    
+
     // Batch fetch last messages for all conversations
     const conversationIds = userConversations.map(conv => conv.id);
     const { data: allMessages, error: messagesError } = await supabase
@@ -126,11 +133,11 @@ export const getUserConversations = async (userId) => {
       .select('*')
       .in('conversation_id', conversationIds)
       .order('created_at', { ascending: false });
-      
+
     if (messagesError) {
       console.error('Error fetching messages:', messagesError);
     }
-    
+
     // Group messages by conversation
     const messagesByConversation = new Map();
     allMessages?.forEach(msg => {
@@ -139,35 +146,51 @@ export const getUserConversations = async (userId) => {
       }
       messagesByConversation.get(msg.conversation_id).push(msg);
     });
-    
-    // Build enhanced conversations
-    const enhancedConversations = userConversations.map(conversation => {
-      const partnerId = conversation.participants.find(id => id !== userId);
-      
-      if (!partnerId) {
-        console.log('No partner found in conversation:', conversation.id);
-        return null;
-      }
-      
-      const partner = partnerMap.get(partnerId) || { 
-        id: partnerId, 
-        full_name: 'Unknown User', 
-        profile_picture_url: null 
-      };
-      
-      const messages = messagesByConversation.get(conversation.id) || [];
-      const unreadCount = messages.filter(msg => 
-        msg.sender_id !== userId && msg.read_at === null
-      ).length;
-      
-      return {
-        ...conversation,
-        partner,
-        last_message: messages[0] || null,
-        unread_count: unreadCount
-      };
-    });
-    
+
+    // Build enhanced conversations with decrypted last messages
+    const enhancedConversations = await Promise.all(
+      userConversations.map(async (conversation) => {
+        const partnerId = conversation.participants.find(id => id !== userId);
+
+        if (!partnerId) {
+          console.log('No partner found in conversation:', conversation.id);
+          return null;
+        }
+
+        const partner = partnerMap.get(partnerId) || {
+          id: partnerId,
+          full_name: 'Unknown User',
+          profile_picture_url: null
+        };
+
+        const messages = messagesByConversation.get(conversation.id) || [];
+        const unreadCount = messages.filter(msg =>
+          msg.sender_id !== userId && msg.read_at === null
+        ).length;
+
+        // Decrypt last message if it exists
+        let lastMessage = messages[0] || null;
+        if (lastMessage && lastMessage.content) {
+          try {
+            lastMessage = {
+              ...lastMessage,
+              content: await decryptMessage(lastMessage.content, conversation.participants)
+            };
+          } catch (error) {
+            console.error('Failed to decrypt last message:', error);
+            // Keep encrypted message as fallback
+          }
+        }
+
+        return {
+          ...conversation,
+          partner,
+          last_message: lastMessage,
+          unread_count: unreadCount
+        };
+      })
+    );
+
     // Filter out null conversations and sort by last message date
     const validConversations = enhancedConversations
       .filter(conv => conv !== null)
@@ -176,7 +199,7 @@ export const getUserConversations = async (userId) => {
         const bDate = b.last_message ? new Date(b.last_message.created_at) : new Date(b.last_message_at);
         return bDate - aDate; // Sort descending (newest first)
       });
-    
+
     return { conversations: validConversations, error: null };
   } catch (error) {
     console.error('Error fetching user conversations:', error);
@@ -191,6 +214,15 @@ export const getUserConversations = async (userId) => {
  */
 export const getConversationMessages = async (conversationId) => {
   try {
+    // First, get the conversation to retrieve participant IDs for decryption
+    const { data: conversation, error: convError } = await supabase
+      .from('direct_conversations')
+      .select('participants')
+      .eq('id', conversationId)
+      .single();
+
+    if (convError) throw convError;
+
     // Fetch messages with sender information in a single query using join
     const { data: messagesWithSenders, error } = await supabase
       .from('direct_messages')
@@ -204,20 +236,26 @@ export const getConversationMessages = async (conversationId) => {
       `)
       .eq('conversation_id', conversationId)
       .order('created_at', { ascending: true });
-      
+
     if (error) throw error;
-    
+
     // Handle cases where sender profile might be null
     const messages = messagesWithSenders.map(message => ({
       ...message,
-      sender: message.sender || { 
-        id: message.sender_id, 
+      sender: message.sender || {
+        id: message.sender_id,
         full_name: 'Unknown User',
         profile_picture_url: null
       }
     }));
-    
-    return { messages, error: null };
+
+    // Decrypt all messages in batch
+    const decryptedMessages = await batchDecryptMessages(
+      messages,
+      conversation.participants
+    );
+
+    return { messages: decryptedMessages, error: null };
   } catch (error) {
     console.error('Error fetching conversation messages:', error);
     return { messages: [], error };
@@ -234,31 +272,47 @@ export const getConversationMessages = async (conversationId) => {
  */
 export const sendDirectMessage = async (conversationId, senderId, content, mediaData = null) => {
   try {
-    // Build message data
+    // Get conversation to retrieve participant IDs for encryption
+    const { data: conversation, error: convError } = await supabase
+      .from('direct_conversations')
+      .select('participants')
+      .eq('id', conversationId)
+      .single();
+
+    if (convError) throw convError;
+
+    // Encrypt the message content before storing
+    const encryptedContent = await encryptMessage(content, conversation.participants);
+
+    // Build message data with encrypted content
     const messageData = {
       conversation_id: conversationId,
       sender_id: senderId,
-      content
+      content: encryptedContent
     };
-    
+
     // Add media data if provided
     if (mediaData) {
       messageData.media_url = mediaData.url;
       messageData.media_type = mediaData.type;
       if (mediaData.metadata) {
-        messageData.media_metadata = mediaData.metadata;
+        // Encrypt metadata
+        messageData.media_metadata = await encryptMetadata(
+          mediaData.metadata,
+          conversation.participants
+        );
       }
     }
-    
+
     // Insert message
     const { data: message, error: messageError } = await supabase
       .from('direct_messages')
       .insert(messageData)
       .select()
       .single();
-      
+
     if (messageError) throw messageError;
-    
+
     // Update conversation last_message_at
     const { error: updateError } = await supabase
       .from('direct_conversations')
@@ -267,57 +321,51 @@ export const sendDirectMessage = async (conversationId, senderId, content, media
         last_message_at: new Date().toISOString()
       })
       .eq('id', conversationId);
-      
+
     if (updateError) throw updateError;
-    
+
     // Get sender info for the returned message
     const { data: senderInfo, error: senderError } = await supabase
       .from('profiles')
       .select('id, full_name, profile_picture_url')
       .eq('id', senderId)
       .single();
-      
+
     if (senderError) throw senderError;
-    
+
     // Get recipient ID from conversation participants
-    const { data: conversation, error: convError } = await supabase
-      .from('direct_conversations')
-      .select('participants')
-      .eq('id', conversationId)
-      .single();
-      
-    if (!convError && conversation) {
-      const recipientId = conversation.participants.find(id => id !== senderId);
-      
-      if (recipientId) {
-        // Queue notification for the recipient (similar to news notifications)
-        try {
-          console.log('💬 [DM API DEBUG] Queueing notification for recipient:', recipientId);
-          const notificationResult = await queueDirectMessageNotification(
-            recipientId,           // recipient ID
-            senderId,              // sender ID
-            content || '[Media message]',  // message content
-            message.id             // message ID
-          );
-          
-          if (notificationResult.success) {
-            console.log('💬 [DM API DEBUG] Notification queued successfully');
-          } else {
-            console.warn('💬 [DM API DEBUG] Failed to queue notification:', notificationResult.error);
-          }
-        } catch (notificationError) {
-          console.error('💬 [DM API DEBUG] Error queueing notification:', notificationError);
-          // Don't fail the message sending if notification fails
+    const recipientId = conversation.participants.find(id => id !== senderId);
+
+    if (recipientId) {
+      // Queue notification for the recipient with DECRYPTED content
+      try {
+        console.log('💬 [DM API DEBUG] Queueing notification for recipient:', recipientId);
+        const notificationResult = await queueDirectMessageNotification(
+          recipientId,           // recipient ID
+          senderId,              // sender ID
+          content || '[Media message]',  // Use original decrypted content for notification
+          message.id             // message ID
+        );
+
+        if (notificationResult.success) {
+          console.log('💬 [DM API DEBUG] Notification queued successfully');
+        } else {
+          console.warn('💬 [DM API DEBUG] Failed to queue notification:', notificationResult.error);
         }
+      } catch (notificationError) {
+        console.error('💬 [DM API DEBUG] Error queueing notification:', notificationError);
+        // Don't fail the message sending if notification fails
       }
     }
-    
-    return { 
-      message: { 
-        ...message, 
-        sender: senderInfo 
-      }, 
-      error: null 
+
+    // Return message with DECRYPTED content for immediate display
+    return {
+      message: {
+        ...message,
+        content: content, // Return decrypted content
+        sender: senderInfo
+      },
+      error: null
     };
   } catch (error) {
     console.error('Error sending message:', error);
