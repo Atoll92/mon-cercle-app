@@ -222,6 +222,10 @@ Deno.serve(async (req) => {
         // Configuration for digest times (will eventually come from user preferences)
         const EVENT_DIGEST_HOUR = parseInt(Deno.env.get('EVENT_DIGEST_HOUR') || '16') // Default 16:00
         const EVENT_DIGEST_ENABLED = Deno.env.get('EVENT_DIGEST_ENABLED') !== 'false' // Default true
+        const NEWS_DIGEST_HOUR = parseInt(Deno.env.get('NEWS_DIGEST_HOUR') || '16') // Default 16:00
+        const NEWS_DIGEST_ENABLED = Deno.env.get('NEWS_DIGEST_ENABLED') !== 'false' // Default true
+        const POST_DIGEST_HOUR = parseInt(Deno.env.get('POST_DIGEST_HOUR') || '16') // Default 16:00
+        const POST_DIGEST_ENABLED = Deno.env.get('POST_DIGEST_ENABLED') !== 'false' // Default true
 
         // For event notifications, check if we should wait for digest
         if (type === 'event' && EVENT_DIGEST_ENABLED) {
@@ -248,6 +252,64 @@ Deno.serve(async (req) => {
           } else {
             // Event was created after today's digest time, will be sent tomorrow at digest time
             console.log(`📅 Skipping event notifications for ${recipient.contact_email} - created after today's ${EVENT_DIGEST_HOUR}:00 cutoff, will send tomorrow`)
+            continue
+          }
+        }
+
+        // For news notifications, check if we should wait for digest
+        if (type === 'news' && NEWS_DIGEST_ENABLED) {
+          const now = new Date()
+          const currentHour = now.getHours()
+
+          // Get the oldest news notification creation time
+          const oldestNewsTime = Math.min(...groupNotifications.map(n => new Date(n.created_at).getTime()))
+          const oldestNewsDate = new Date(oldestNewsTime)
+
+          // Calculate today's digest time
+          const todayDigestTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), NEWS_DIGEST_HOUR, 0, 0)
+
+          // If oldest news was created before today's digest time and it's now past digest time, send
+          // Otherwise, wait for the appropriate digest time
+          if (oldestNewsDate < todayDigestTime) {
+            // News was created before today's digest cutoff
+            if (currentHour < NEWS_DIGEST_HOUR) {
+              // Not yet digest time, skip for now
+              console.log(`📰 Skipping news notifications for ${recipient.contact_email} - waiting until ${NEWS_DIGEST_HOUR}:00 for digest`)
+              continue
+            }
+            // It's past digest time, proceed to send
+          } else {
+            // News was created after today's digest time, will be sent tomorrow at digest time
+            console.log(`📰 Skipping news notifications for ${recipient.contact_email} - created after today's ${NEWS_DIGEST_HOUR}:00 cutoff, will send tomorrow`)
+            continue
+          }
+        }
+
+        // For portfolio post notifications, check if we should wait for digest
+        if (type === 'post' && POST_DIGEST_ENABLED) {
+          const now = new Date()
+          const currentHour = now.getHours()
+
+          // Get the oldest post notification creation time
+          const oldestPostTime = Math.min(...groupNotifications.map(n => new Date(n.created_at).getTime()))
+          const oldestPostDate = new Date(oldestPostTime)
+
+          // Calculate today's digest time
+          const todayDigestTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), POST_DIGEST_HOUR, 0, 0)
+
+          // If oldest post was created before today's digest time and it's now past digest time, send
+          // Otherwise, wait for the appropriate digest time
+          if (oldestPostDate < todayDigestTime) {
+            // Post was created before today's digest cutoff
+            if (currentHour < POST_DIGEST_HOUR) {
+              // Not yet digest time, skip for now
+              console.log(`📊 Skipping portfolio post notifications for ${recipient.contact_email} - waiting until ${POST_DIGEST_HOUR}:00 for digest`)
+              continue
+            }
+            // It's past digest time, proceed to send
+          } else {
+            // Post was created after today's digest time, will be sent tomorrow at digest time
+            console.log(`📊 Skipping portfolio post notifications for ${recipient.contact_email} - created after today's ${POST_DIGEST_HOUR}:00 cutoff, will send tomorrow`)
             continue
           }
         }
@@ -615,6 +677,314 @@ Deno.serve(async (req) => {
         }
 
         // Mark all event notifications as sent
+        const notificationIds = groupNotifications.map(n => n.id)
+        await supabase
+          .from('notification_queue')
+          .update({
+            is_sent: true,
+            sent_at: new Date().toISOString()
+          })
+          .in('id', notificationIds)
+
+        sent += notificationIds.length
+
+        // Rate limit delay
+        await new Promise(resolve => setTimeout(resolve, 600))
+
+      } else if (type === 'news' && groupNotifications.length > 1) {
+        // Multiple news notifications - send as digest
+        console.log(`📰 Sending news digest with ${groupNotifications.length} posts to ${recipient.contact_email}`)
+
+        // Fetch all news post details
+        const newsIds = groupNotifications.map(n => n.related_item_id).filter(Boolean)
+        const { data: newsPosts, error: newsError } = await supabase
+          .from('network_news')
+          .select(`
+            id,
+            title,
+            content,
+            media_url,
+            media_type,
+            image_url,
+            created_at,
+            created_by,
+            profiles!network_news_created_by_fkey (
+              full_name
+            ),
+            network_categories (
+              name,
+              color
+            )
+          `)
+          .in('id', newsIds)
+          .order('created_at', { ascending: false })
+
+        if (newsError) {
+          console.error('📨 Error fetching news posts for digest:', newsError)
+        }
+
+        const validPosts = newsPosts || []
+        const postCount = validPosts.length
+
+        // Generate digest email HTML
+        const emailSubject = `${postCount} new post${postCount > 1 ? 's' : ''} in ${network?.name || 'your network'}`
+
+        // Build news post cards HTML
+        let newsCardsHtml = ''
+        for (const post of validPosts) {
+          const postDate = post.created_at ? new Date(post.created_at) : null
+          const formattedDate = postDate
+            ? postDate.toLocaleDateString('en-US', {
+                weekday: 'short',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+              })
+            : 'Date unknown'
+
+          const categoryBadge = post.network_categories?.name
+            ? `<span style="display: inline-flex; align-items: center; padding: 4px 12px; border-radius: 16px; background-color: ${post.network_categories.color}15; border: 1px solid ${post.network_categories.color}40; font-size: 11px; font-weight: 600; color: ${post.network_categories.color}; letter-spacing: 0.02em;">#${post.network_categories.name}</span>`
+            : ''
+
+          const hasMedia = !!(post.media_url || post.image_url)
+          const mediaType = post.media_type || (post.image_url ? 'image' : '')
+          const mediaUrl = post.media_url || post.image_url || ''
+
+          newsCardsHtml += `
+            <div style="background-color: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 16px; margin-bottom: 16px;">
+              ${hasMedia && mediaType === 'image' ? `
+              <img src="${mediaUrl}" alt="${post.title || 'News post'}" style="width: 100%; height: 120px; object-fit: cover; border-radius: 6px; margin-bottom: 12px;" />
+              ` : ''}
+              ${post.title ? `
+              <h3 style="margin: 0 0 8px 0; color: #333; font-size: 16px; font-weight: 600;">${post.title}</h3>
+              ` : ''}
+              <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px; flex-wrap: wrap;">
+                <span style="color: #666; font-size: 13px;">📅 ${formattedDate}</span>
+                ${post.profiles?.full_name ? `<span style="color: #666; font-size: 13px;">✍️ ${post.profiles.full_name}</span>` : ''}
+              </div>
+              ${categoryBadge ? `<div style="margin-bottom: 8px;">${categoryBadge}</div>` : ''}
+              <p style="margin: 0 0 12px 0; color: #666; font-size: 14px; line-height: 1.4;">
+                ${post.content ? (post.content.length > 150 ? post.content.substring(0, 150) + '...' : post.content) : 'No content available'}
+              </p>
+              ${hasMedia && mediaType !== 'image' ? `
+              <div style="padding: 12px; background-color: #f8f9fa; border-radius: 6px; border-left: 4px solid #2196f3; margin-bottom: 12px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="font-size: 18px;">${mediaType === 'video' ? '🎥' : mediaType === 'audio' ? '🎵' : '📎'}</span>
+                  <span style="color: #2196f3; font-weight: 500; font-size: 14px;">
+                    ${mediaType === 'video' ? 'Video attached' : mediaType === 'audio' ? 'Audio attached' : 'Media attached'}
+                  </span>
+                </div>
+              </div>
+              ` : ''}
+              <a href="${Deno.env.get('APP_URL') || 'https://your-app-url.com'}/network/${groupNotifications[0].network_id}/news/${post.id}"
+                 style="display: inline-block; background-color: #2196f3; color: white; padding: 8px 16px; text-decoration: none; border-radius: 4px; font-size: 13px; font-weight: 500;">
+                View Post →
+              </a>
+            </div>
+          `
+        }
+
+        const emailHtml = `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; line-height: 1.6;">
+            <div style="background-color: #2196f3; padding: 20px; border-radius: 8px 8px 0 0;">
+              <h2 style="color: white; margin: 0 0 10px 0; font-size: 24px;">📰 ${postCount} New Post${postCount > 1 ? 's' : ''} in ${network?.name || 'Your Network'}</h2>
+              <p style="margin: 0; color: #e3f2fd; font-size: 14px;">Your daily news digest</p>
+            </div>
+
+            <div style="background-color: #f8f9fa; padding: 24px; border: 1px solid #e0e0e0; border-radius: 0 0 8px 8px; border-top: none;">
+              ${newsCardsHtml}
+            </div>
+
+            <div style="margin-top: 20px; padding: 16px; background-color: #f8f9fa; border-radius: 6px; font-size: 12px; color: #666;">
+              <p style="margin: 0 0 8px 0;">You're receiving this daily news digest because you're subscribed to news notifications.</p>
+              <p style="margin: 0;">
+                <a href="${Deno.env.get('APP_URL') || 'https://your-app-url.com'}/profile/edit?tab=settings"
+                   style="color: #2196f3; text-decoration: none;">
+                  Manage your notification preferences
+                </a>
+              </p>
+            </div>
+          </div>
+        `
+
+        // Send the digest email
+        const emailPayload = {
+          from: Deno.env.get('FROM_EMAIL') || 'noreply@your-domain.com',
+          to: recipient.contact_email,
+          subject: emailSubject,
+          html: emailHtml
+        }
+
+        const resendResponse = await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${RESEND_API_KEY}`
+          },
+          body: JSON.stringify(emailPayload)
+        })
+
+        if (!resendResponse.ok) {
+          const errorData = await resendResponse.json()
+          throw new Error(`Failed to send news digest: ${JSON.stringify(errorData)}`)
+        }
+
+        // Mark all news notifications as sent
+        const notificationIds = groupNotifications.map(n => n.id)
+        await supabase
+          .from('notification_queue')
+          .update({
+            is_sent: true,
+            sent_at: new Date().toISOString()
+          })
+          .in('id', notificationIds)
+
+        sent += notificationIds.length
+
+        // Rate limit delay
+        await new Promise(resolve => setTimeout(resolve, 600))
+
+      } else if (type === 'post' && groupNotifications.length > 1) {
+        // Multiple portfolio post notifications - send as digest
+        console.log(`📊 Sending portfolio post digest with ${groupNotifications.length} posts to ${recipient.contact_email}`)
+
+        // Fetch all portfolio post details
+        const postIds = groupNotifications.map(n => n.related_item_id).filter(Boolean)
+        const { data: portfolioPosts, error: postError } = await supabase
+          .from('portfolio_items')
+          .select(`
+            id,
+            title,
+            description,
+            media_url,
+            media_type,
+            image_url,
+            created_at,
+            profile_id,
+            profiles!portfolio_items_profile_id_fkey (
+              full_name
+            ),
+            network_categories (
+              name,
+              color
+            )
+          `)
+          .in('id', postIds)
+          .order('created_at', { ascending: false })
+
+        if (postError) {
+          console.error('📨 Error fetching portfolio posts for digest:', postError)
+        }
+
+        const validPosts = portfolioPosts || []
+        const postCount = validPosts.length
+
+        // Generate digest email HTML
+        const emailSubject = `${postCount} new post${postCount > 1 ? 's' : ''} in ${network?.name || 'your network'}`
+
+        // Build portfolio post cards HTML
+        let postCardsHtml = ''
+        for (const post of validPosts) {
+          const postDate = post.created_at ? new Date(post.created_at) : null
+          const formattedDate = postDate
+            ? postDate.toLocaleDateString('en-US', {
+                weekday: 'short',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+              })
+            : 'Date unknown'
+
+          const categoryBadge = post.network_categories?.name
+            ? `<span style="display: inline-flex; align-items: center; padding: 4px 12px; border-radius: 16px; background-color: ${post.network_categories.color}15; border: 1px solid ${post.network_categories.color}40; font-size: 11px; font-weight: 600; color: ${post.network_categories.color}; letter-spacing: 0.02em;">#${post.network_categories.name}</span>`
+            : ''
+
+          const hasMedia = !!(post.media_url || post.image_url)
+          const mediaType = post.media_type || (post.image_url ? 'image' : '')
+          const mediaUrl = post.media_url || post.image_url || ''
+
+          postCardsHtml += `
+            <div style="background-color: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 16px; margin-bottom: 16px;">
+              ${hasMedia && mediaType === 'image' ? `
+              <img src="${mediaUrl}" alt="${post.title || 'Portfolio post'}" style="width: 100%; height: 120px; object-fit: cover; border-radius: 6px; margin-bottom: 12px;" />
+              ` : ''}
+              ${post.title ? `
+              <h3 style="margin: 0 0 8px 0; color: #333; font-size: 16px; font-weight: 600;">${post.title}</h3>
+              ` : ''}
+              <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px; flex-wrap: wrap;">
+                <span style="color: #666; font-size: 13px;">📅 ${formattedDate}</span>
+                ${post.profiles?.full_name ? `<span style="color: #666; font-size: 13px;">✍️ ${post.profiles.full_name}</span>` : ''}
+              </div>
+              ${categoryBadge ? `<div style="margin-bottom: 8px;">${categoryBadge}</div>` : ''}
+              <p style="margin: 0 0 12px 0; color: #666; font-size: 14px; line-height: 1.4;">
+                ${post.description ? (post.description.length > 150 ? post.description.substring(0, 150) + '...' : post.description) : 'No description available'}
+              </p>
+              ${hasMedia && mediaType !== 'image' ? `
+              <div style="padding: 12px; background-color: #f8f9fa; border-radius: 6px; border-left: 4px solid #673ab7; margin-bottom: 12px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="font-size: 18px;">${mediaType === 'video' ? '🎥' : mediaType === 'audio' ? '🎵' : '📎'}</span>
+                  <span style="color: #673ab7; font-weight: 500; font-size: 14px;">
+                    ${mediaType === 'video' ? 'Video attached' : mediaType === 'audio' ? 'Audio attached' : 'Media attached'}
+                  </span>
+                </div>
+              </div>
+              ` : ''}
+              <a href="${Deno.env.get('APP_URL') || 'https://your-app-url.com'}/post/${post.id}"
+                 style="display: inline-block; background-color: #673ab7; color: white; padding: 8px 16px; text-decoration: none; border-radius: 4px; font-size: 13px; font-weight: 500;">
+                View Post →
+              </a>
+            </div>
+          `
+        }
+
+        const emailHtml = `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; line-height: 1.6;">
+            <div style="background-color: #673ab7; padding: 20px; border-radius: 8px 8px 0 0;">
+              <h2 style="color: white; margin: 0 0 10px 0; font-size: 24px;">📊 ${postCount} New Post${postCount > 1 ? 's' : ''} in ${network?.name || 'Your Network'}</h2>
+              <p style="margin: 0; color: #ede7f6; font-size: 14px;">Your daily portfolio digest</p>
+            </div>
+
+            <div style="background-color: #f8f9fa; padding: 24px; border: 1px solid #e0e0e0; border-radius: 0 0 8px 8px; border-top: none;">
+              ${postCardsHtml}
+            </div>
+
+            <div style="margin-top: 20px; padding: 16px; background-color: #f8f9fa; border-radius: 6px; font-size: 12px; color: #666;">
+              <p style="margin: 0 0 8px 0;">You're receiving this daily portfolio digest because you're subscribed to portfolio notifications.</p>
+              <p style="margin: 0;">
+                <a href="${Deno.env.get('APP_URL') || 'https://your-app-url.com'}/profile/edit?tab=settings"
+                   style="color: #673ab7; text-decoration: none;">
+                  Manage your notification preferences
+                </a>
+              </p>
+            </div>
+          </div>
+        `
+
+        // Send the digest email
+        const emailPayload = {
+          from: Deno.env.get('FROM_EMAIL') || 'noreply@your-domain.com',
+          to: recipient.contact_email,
+          subject: emailSubject,
+          html: emailHtml
+        }
+
+        const resendResponse = await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${RESEND_API_KEY}`
+          },
+          body: JSON.stringify(emailPayload)
+        })
+
+        if (!resendResponse.ok) {
+          const errorData = await resendResponse.json()
+          throw new Error(`Failed to send portfolio post digest: ${JSON.stringify(errorData)}`)
+        }
+
+        // Mark all portfolio post notifications as sent
         const notificationIds = groupNotifications.map(n => n.id)
         await supabase
           .from('notification_queue')
