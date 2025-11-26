@@ -174,6 +174,7 @@ const MemberOnboardingWizard = ({ profile, network }) => {
   }, [network?.id]);
 
   // Fetch an example presentation post created during onboarding from the network
+  // Only displays if valid posts with actual content exist
   useEffect(() => {
     const fetchExamplePost = async () => {
       if (!network?.id) return;
@@ -205,19 +206,38 @@ const MemberOnboardingWizard = ({ profile, network }) => {
           .limit(10);
 
         if (!error && data && data.length > 0) {
-          // Find a post that was created within 24 hours of profile creation (likely an intro post)
-          const introPost = data.find(post => {
-            const profileCreatedAt = new Date(post.profiles.created_at);
-            const postCreatedAt = new Date(post.created_at);
-            const hoursDiff = Math.abs(postCreatedAt - profileCreatedAt) / 36e5; // Convert to hours
-            return hoursDiff <= 24; // Post created within 24 hours of profile creation
-          });
+          // Additional filter to ensure title and description have actual content (not empty strings)
+          const validPosts = data.filter(
+            post => post.title &&
+                   post.title.trim() !== '' &&
+                   post.description &&
+                   post.description.trim() !== '' &&
+                   post.profiles?.full_name &&
+                   post.profiles.full_name.trim() !== ''
+          );
 
-          // Use intro post if found, otherwise fallback to most recent post
-          setExamplePost(introPost || data[0]);
+          if (validPosts.length > 0) {
+            // Find a post that was created within 24 hours of profile creation (likely an intro post)
+            const introPost = validPosts.find(post => {
+              const profileCreatedAt = new Date(post.profiles.created_at);
+              const postCreatedAt = new Date(post.created_at);
+              const hoursDiff = Math.abs(postCreatedAt - profileCreatedAt) / 36e5; // Convert to hours
+              return hoursDiff <= 24; // Post created within 24 hours of profile creation
+            });
+
+            // Use intro post if found, otherwise fallback to most recent valid post
+            setExamplePost(introPost || validPosts[0]);
+          } else {
+            // No valid posts found, don't display any
+            setExamplePost(null);
+          }
+        } else {
+          // No posts found, don't display any
+          setExamplePost(null);
         }
       } catch (error) {
         console.log('No example post found:', error);
+        setExamplePost(null);
       } finally {
         setLoadingExample(false);
       }
