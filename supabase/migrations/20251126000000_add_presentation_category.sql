@@ -9,13 +9,23 @@ SECURITY DEFINER
 AS $$
 DECLARE
   v_category_id uuid;
-  v_creator_id uuid;
+  v_network_creator_user_id uuid;
+  v_network_creator_profile_id uuid;
 BEGIN
-  -- Get the network creator/admin to set as category creator
-  SELECT created_by INTO v_creator_id
+  -- Get the network creator user_id
+  SELECT created_by INTO v_network_creator_user_id
   FROM networks
   WHERE id = p_network_id
   LIMIT 1;
+
+  -- Get the profile_id for this user in this network
+  IF v_network_creator_user_id IS NOT NULL THEN
+    SELECT id INTO v_network_creator_profile_id
+    FROM profiles
+    WHERE user_id = v_network_creator_user_id
+      AND network_id = p_network_id
+    LIMIT 1;
+  END IF;
 
   -- Check if presentation category already exists for this network
   SELECT id INTO v_category_id
@@ -44,7 +54,7 @@ BEGIN
       '#2196f3', -- Blue color
       0, -- High priority
       true,
-      v_creator_id,
+      v_network_creator_profile_id, -- Can be NULL if profile doesn't exist yet
       now()
     )
     RETURNING id INTO v_category_id;
