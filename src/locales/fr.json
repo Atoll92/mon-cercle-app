@@ -433,6 +433,7 @@
       "title": "Bienvenue sur {{networkName}} !",
       "description": "Bienvenue sur {{networkName}} ! Configurons votre profil.",
       "subtitle": "Vous avez été invité à rejoindre ce réseau privé. Avant de pouvoir accéder à l'expérience complète, nous devons compléter votre profil.",
+      "meetMembers": "Rencontrez quelques-uns de nos membres",
       "whatHappensNext": "Ce qui se passe ensuite :",
       "setupProfile": "Configurer vos informations de profil de base",
       "addPicture": "Ajouter une photo de profil",

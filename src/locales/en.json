@@ -433,6 +433,7 @@
       "title": "Welcome to {{networkName}}!",
       "description": "Welcome to {{networkName}}! Let's set up your profile.",
       "subtitle": "You've been invited to join this private network. Before you can access the full experience, we need you to complete your profile.",
+      "meetMembers": "Meet some of our members",
       "whatHappensNext": "What happens next:",
       "setupProfile": "Set up your basic profile information",
       "addPicture": "Add a profile picture",

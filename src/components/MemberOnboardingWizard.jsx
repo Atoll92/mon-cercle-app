@@ -126,6 +126,42 @@ const MemberOnboardingWizard = ({ profile, network }) => {
     notify_on_direct_messages: true
   });
 
+  // State for featured members
+  const [featuredMembers, setFeaturedMembers] = useState([]);
+  const [loadingMembers, setLoadingMembers] = useState(false);
+
+  // Fetch 3 random members with profile pictures
+  useEffect(() => {
+    const fetchFeaturedMembers = async () => {
+      if (!network?.id) return;
+
+      try {
+        setLoadingMembers(true);
+
+        // Fetch members with profile pictures
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('id, full_name, profile_picture_url')
+          .eq('network_id', network.id)
+          .not('profile_picture_url', 'is', null)
+          .not('full_name', 'is', null)
+          .limit(20); // Get more than we need for randomization
+
+        if (!error && data && data.length > 0) {
+          // Randomly select 3 members
+          const shuffled = data.sort(() => 0.5 - Math.random());
+          setFeaturedMembers(shuffled.slice(0, 3));
+        }
+      } catch (error) {
+        console.log('No featured members found:', error);
+      } finally {
+        setLoadingMembers(false);
+      }
+    };
+
+    fetchFeaturedMembers();
+  }, [network?.id]);
+
   // Fetch an example presentation post created during onboarding from the network
   useEffect(() => {
     const fetchExamplePost = async () => {
@@ -194,8 +230,10 @@ const MemberOnboardingWizard = ({ profile, network }) => {
       label: t('memberOnboarding.steps.welcome'),
       description: t('memberOnboarding.welcome.description', { networkName: network?.name || 'the network' }),
       component: (
-        <WelcomeStep 
+        <WelcomeStep
           network={network}
+          featuredMembers={featuredMembers}
+          loadingMembers={loadingMembers}
         />
       )
     },
@@ -535,9 +573,10 @@ const MemberOnboardingWizard = ({ profile, network }) => {
 };
 
 // Step 1: Welcome
-const WelcomeStep = ({ network }) => {
+const WelcomeStep = ({ network, featuredMembers, loadingMembers }) => {
   const { t } = useTranslation();
-  
+  const theme = useTheme();
+
   return (
     <Card sx={{ borderRadius: 2 }}>
       <CardContent>
@@ -556,27 +595,103 @@ const WelcomeStep = ({ network }) => {
               }}
             />
           )}
-          
+
           <Typography variant="h5" gutterBottom>
             {t('memberOnboarding.welcome.title', { networkName: network?.name || 'our network' })}
           </Typography>
-          
+
           <Typography variant="body1" paragraph color="text.secondary">
             {t('memberOnboarding.welcome.subtitle')}
           </Typography>
         </Box>
-          
+
+          {/* Featured Members Section */}
+          {!loadingMembers && featuredMembers.length > 0 && (
+            <Box sx={{ mb: 3 }}>
+              <Typography
+                variant="subtitle2"
+                color="text.secondary"
+                textAlign="center"
+                sx={{ mb: 2, fontWeight: 500 }}
+              >
+                {t('memberOnboarding.welcome.meetMembers')}
+              </Typography>
+              <Box
+                sx={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'flex-start',
+                  gap: 3,
+                  flexWrap: 'wrap'
+                }}
+              >
+                {featuredMembers.map((member, index) => (
+                  <Box
+                    key={member.id}
+                    sx={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      maxWidth: 120,
+                      animation: `fadeInUp 0.5s ease-out ${index * 0.1}s both`,
+                      '@keyframes fadeInUp': {
+                        from: {
+                          opacity: 0,
+                          transform: 'translateY(20px)'
+                        },
+                        to: {
+                          opacity: 1,
+                          transform: 'translateY(0)'
+                        }
+                      }
+                    }}
+                  >
+                    <Avatar
+                      src={member.profile_picture_url}
+                      alt={member.full_name}
+                      sx={{
+                        width: 72,
+                        height: 72,
+                        mb: 1,
+                        border: `3px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                        boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.15)}`,
+                        transition: 'transform 0.2s ease',
+                        '&:hover': {
+                          transform: 'scale(1.08)',
+                          boxShadow: `0 6px 16px ${alpha(theme.palette.primary.main, 0.25)}`
+                        }
+                      }}
+                    >
+                      {member.full_name?.charAt(0).toUpperCase()}
+                    </Avatar>
+                    <Typography
+                      variant="body2"
+                      fontWeight={600}
+                      textAlign="center"
+                      sx={{
+                        lineHeight: 1.3,
+                        color: theme.palette.text.primary
+                      }}
+                    >
+                      {member.full_name}
+                    </Typography>
+                  </Box>
+                ))}
+              </Box>
+            </Box>
+          )}
+
           {network?.description && (
             <UserContent
               content={network.description}
             />
           )}
-          
-          <Paper 
-            elevation={0} 
-            sx={{ 
-              p: 2, 
-              borderRadius: 2, 
+
+          <Paper
+            elevation={0}
+            sx={{
+              p: 2,
+              borderRadius: 2,
               bgcolor: alpha('#2196f3', 0.1),
               mt: 3
             }}
@@ -592,7 +707,7 @@ const WelcomeStep = ({ network }) => {
               <Typography variant="body2">• {t('memberOnboarding.welcome.joinCommunity', { networkName: network?.name })}</Typography>
             </Stack>
           </Paper>
-          
+
           <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 3 }}>
             {t('memberOnboarding.welcome.timeEstimate')}
           </Typography>
