@@ -130,7 +130,8 @@ const MemberOnboardingWizard = ({ profile, network }) => {
   const [featuredMembers, setFeaturedMembers] = useState([]);
   const [loadingMembers, setLoadingMembers] = useState(false);
 
-  // Fetch 3 random members with profile pictures
+  // Fetch up to 3 random members with profile pictures
+  // Will display 1, 2, or 3 members depending on availability
   useEffect(() => {
     const fetchFeaturedMembers = async () => {
       if (!network?.id) return;
@@ -138,7 +139,7 @@ const MemberOnboardingWizard = ({ profile, network }) => {
       try {
         setLoadingMembers(true);
 
-        // Fetch members with profile pictures
+        // Fetch members with profile pictures - filter for non-null and non-empty
         const { data, error } = await supabase
           .from('profiles')
           .select('id, full_name, profile_picture_url')
@@ -148,9 +149,19 @@ const MemberOnboardingWizard = ({ profile, network }) => {
           .limit(20); // Get more than we need for randomization
 
         if (!error && data && data.length > 0) {
-          // Randomly select 3 members
-          const shuffled = data.sort(() => 0.5 - Math.random());
-          setFeaturedMembers(shuffled.slice(0, 3));
+          // Additional filter to ensure profile_picture_url is not empty string
+          const validMembers = data.filter(
+            member => member.profile_picture_url &&
+                     member.profile_picture_url.trim() !== '' &&
+                     member.full_name &&
+                     member.full_name.trim() !== ''
+          );
+
+          if (validMembers.length > 0) {
+            // Randomly select up to 3 members (will show 1, 2, or 3 depending on availability)
+            const shuffled = validMembers.sort(() => 0.5 - Math.random());
+            setFeaturedMembers(shuffled.slice(0, 3));
+          }
         }
       } catch (error) {
         console.log('No featured members found:', error);
