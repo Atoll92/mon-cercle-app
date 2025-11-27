@@ -309,8 +309,14 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
     console.log('🎯 [EVENT DIALOG] editingEvent:', editingEvent ? 'Yes' : 'No');
 
     // Validate required parameters (critical for mobile to prevent NULL profile_id errors)
-    if (!networkId || !profileId) {
-      console.error('🎯 [EVENT DIALOG] Validation failed: Missing networkId or profileId');
+    if (!networkId) {
+      console.error('🎯 [EVENT DIALOG] Validation failed: Missing networkId');
+      setError(t('events.errors.networkRequired') || 'Network information is missing. Please refresh the page and try again.');
+      return;
+    }
+
+    if (!profileId) {
+      console.error('🎯 [EVENT DIALOG] Validation failed: Missing profileId');
       setError(t('events.errors.authenticationRequired') || 'Authentication required. Please wait for the page to fully load and try again.');
       return;
     }
@@ -1199,7 +1205,7 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
               <Button
                 onClick={handleSubmit}
                 variant="contained"
-                disabled={updating || !canProceedToNext() || !networkId || !profileId}
+                disabled={updating || !canProceedToNext()}
                 fullWidth
                 size="large"
                 sx={{ minHeight: 48 }}
@@ -1244,7 +1250,7 @@ const CreateEventDialog = ({ open, onClose, networkId, profileId, onEventCreated
               <Button
                 onClick={handleSubmit}
                 variant="contained"
-                disabled={updating || !canProceedToNext() || !networkId || !profileId}
+                disabled={updating || !canProceedToNext()}
                 sx={{ minWidth: 140 }}
               >
                 {updating ? (editingEvent ? t('events.dialog.updating') : t('events.dialog.creating')) : (editingEvent ? t('events.dialog.updateEvent') : t('events.dialog.createEvent'))}
