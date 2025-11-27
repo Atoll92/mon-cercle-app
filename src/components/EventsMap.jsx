@@ -17,7 +17,9 @@ export default function EventsMap({
   initialCoordinates = null,
   height = '350px',
   selectedCity: controlledSelectedCity,
-  onCityChange
+  onCityChange,
+  showCitySelect = true,
+  showEventCounter = true
 }) {
   const { t } = useTranslation();
   const mapContainerRef = useRef(null);
@@ -509,7 +511,7 @@ export default function EventsMap({
       )}
 
       {/* City Filter Dropdown */}
-      {cities.length > 0 && !loading && (
+      {showCitySelect && cities.length > 0 && !loading && (
         <Fade in={!loading} timeout={800}>
           <Box sx={{
             position: 'absolute',
@@ -624,7 +626,7 @@ export default function EventsMap({
       <div ref={mapContainerRef} style={{ width: '100%', height: '100%' }} />
 
       {/* Event Counter */}
-      {events && events.length > 0 && (
+      {showEventCounter && events && events.length > 0 && (
         <Fade in={!loading} timeout={800}>
           <Box sx={{
             position: 'absolute',

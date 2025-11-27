@@ -9,7 +9,6 @@ import CommentSection from '../components/CommentSection';
 import UserContent from '../components/UserContent';
 import CreateEventDialog from '../components/CreateEventDialog';
 import HelloAssoWidget from '../components/HelloAssoWidget';
-import { linkifyHtml } from '../utils/textFormatting';
 import { isHelloAssoUrl, extractHelloAssoInfo } from '../utils/helloAssoEmbed';
 import {
   Container,
@@ -25,7 +24,6 @@ import {
   Menu,
   MenuItem,
   List,
-  ListItem,
   ListItemAvatar,
   ListItemText,
   ListItemButton,
@@ -552,26 +550,6 @@ function EventPage() {
                     )}
                   </Box>
                 </Box>
-                
-                {/* Map Preview */}
-                {event.coordinates && event.coordinates.latitude && event.coordinates.longitude && (
-                  <Paper 
-                    elevation={0} 
-                    sx={{ 
-                      height: 300, 
-                      overflow: 'hidden',
-                      border: '1px solid',
-                      borderColor: 'divider',
-                      borderRadius: 2
-                    }}
-                  >
-                    <EventsMap 
-                      events={[event]} 
-                      initialCoordinates={event.coordinates}
-                      onEventSelect={() => {}}
-                    />
-                  </Paper>
-                )}
               </Box>
             )}
 
@@ -801,6 +779,8 @@ function EventPage() {
                     events={[event]}
                     initialCoordinates={event.coordinates}
                     onEventSelect={() => {}}
+                    showCitySelect={false}
+                    showEventCounter={false}
                   />
                 </Box>
                 <Box sx={{ p: 2, pt: 1 }}>
