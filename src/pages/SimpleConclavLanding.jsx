@@ -489,8 +489,9 @@ const SimpleConclavLanding = () => {
             >
               {t.startFreeTrial}
             </Button>
-            
-            <Button
+
+            {/* Demo button hidden until demo is ready */}
+            {/* <Button
               variant="outlined"
               size="large"
               endIcon={<ArrowForward />}
@@ -514,7 +515,7 @@ const SimpleConclavLanding = () => {
               }}
             >
               {t.seeDemo}
-            </Button>
+            </Button> */}
           </Stack>
 
           {/* Trial Info */}
