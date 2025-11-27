@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   Box, 
   Container, 
@@ -11,18 +11,31 @@ import {
   Stack,
   Paper,
   keyframes,
-  alpha,
-  useTheme
+  alpha
 } from '@mui/material';
-import { 
-  Security, 
-  Speed, 
-  Group, 
-  Shield, 
+import {
+  Security,
+  Speed,
+  Group,
+  Shield,
   Rocket,
   Block,
   Public,
-  ArrowForward
+  ArrowForward,
+  Feed,
+  Chat,
+  EventAvailable,
+  MenuBook,
+  School,
+  Palette,
+  Email,
+  ConfirmationNumber,
+  ContactPage,
+  Notifications,
+  Favorite,
+  AdminPanelSettings,
+  FlightTakeoff,
+  VerifiedUser
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/authcontext';
@@ -44,21 +57,13 @@ const fadeInUp = keyframes`
   }
 `;
 
-const fadeIn = keyframes`
-  0% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 1;
-  }
-`;
 
 // Translations object
 const translations = {
   en: {
   europeanBadge: "🇪🇺 Made in Europe • Independent of Silicon Valley",
   subtitle: "A private social network that truly respects you",
-  description: "Create your own trusted micro-networks in minutes — with total privacy. No tracking. No ads. No Big Tech.",
+  description: "Create your own trusted micro-networks in minutes, with total privacy. No tracking. No ads. No Big Tech.",
   descriptionStrong: "Only authentic human connections.",
   startFreeTrial: "Start in 5 Minutes",
   seeDemo: "Watch the Demo",
@@ -70,24 +75,24 @@ const translations = {
   step1Title: "Create Your Space",
   step1Description: "Name your network, upload your logo, and customize it in seconds. No technical setup required.",
   step2Title: "Invite Your People",
-  step2Description: "Invite members by email or link. You decide who joins and what’s shared — nothing goes public unless you choose.",
+  step2Description: "Invite members by email or link. You decide who joins and what's shared. Nothing goes public unless you choose.",
   step3Title: "Share & Connect",
-  step3Description: "Publish posts, organize meetups, or share your work — all inside a safe, ad-free environment.",
+  step3Description: "Publish posts, organize meetups, or share your work, all inside a safe, ad-free environment.",
 
-  breakFree: "Break Free from Big Tech",
-  noTracking: "No Google. No Meta. No Amazon. No Apple. No Microsoft — ever watching you.",
-  europeanPrivacy: "European Privacy",
-  europeanPrivacyDesc: "GDPR by design. Your data stays securely in Europe under the world’s strongest privacy protections.",
-  zeroBloat: "Lightning Fast",
-  zeroBloatDesc: "No ads, trackers, or bloated scripts. Conclav loads instantly and keeps you focused on people, not algorithms.",
-  yourNetworks: "Your Networks, Your Rules",
-  yourNetworksDesc: "Create unlimited private communities. You own the space, the content, and the access.",
+  breakFree: "Your Network, Your Rules",
+  noTracking: "Take back control from Big Tech. Build communities on your own terms, with complete independence and transparency.",
+  fullControl: "Full Admin Control",
+  fullControlDesc: "You're in charge. Manage members, moderate content, and customize every aspect of your network. No corporate oversight, no hidden algorithms.",
+  trueIndependence: "True Independence",
+  trueIndependenceDesc: "Built in Europe, free from Silicon Valley giants. Your community belongs to you, not to advertisers or data brokers.",
+  simplicityTrust: "Simple & Trustworthy",
+  simplicityTrustDesc: "No tracking. No surveillance. No surprises. Just a straightforward platform designed to serve your community, not exploit it.",
 
-  everythingYouNeed: "Everything you need — nothing you don’t.",
+  everythingYouNeed: "Everything you need, nothing you don't.",
   simpleSecure: "Simple & Secure",
-  simpleSecureDesc: "Build networks in seconds. Share content, host events, and chat securely — with end-to-end protection and zero corporate oversight.",
+  simpleSecureDesc: "Build networks in seconds. Share content, host events, and chat securely with end-to-end protection and zero corporate oversight.",
   europeanAlternative: "Built for Europe",
-  europeanAlternativeDesc: "Designed and hosted entirely in Europe — a genuine alternative to Silicon Valley platforms that respect your digital independence.",
+  europeanAlternativeDesc: "Designed and hosted entirely in Europe. A genuine alternative to Silicon Valley platforms that respect your digital independence.",
 
   readyToOwn: "Ready to own your digital space?",
   joinThousands: "Join thousands of creators and professionals building authentic, privacy-first communities.",
@@ -96,19 +101,55 @@ const translations = {
 
   helloAssoTitle: "Fundraising Made Easy",
   helloAssoSubtitle: "Integrated with HelloAsso",
-  helloAssoDescription: "Accept donations for your association directly on your network. 100% free, no commission, 0% platform fee — powered by HelloAsso, France's leading donation platform for associations.",
+  helloAssoDescription: "Accept donations for your association directly on your network. 100% free, no commission, 0% platform fee. Powered by HelloAsso, France's leading donation platform for associations.",
   helloAssoFeature1: "Zero fees",
   helloAssoFeature1Desc: "No commission, no subscription",
   helloAssoFeature2: "Secure payments",
   helloAssoFeature2Desc: "Certified payment platform",
   helloAssoFeature3: "One-click setup",
-  helloAssoFeature3Desc: "Embed your donation form instantly"
+  helloAssoFeature3Desc: "Embed your donation form instantly",
+  
+  featuresTitle: "Everything your community needs to thrive",
+  featuresSubtitle: "Powerful tools designed for real human connection",
+  
+  socialWallTitle: "Social Wall",
+  socialWallDesc: "Share moments, ideas, and updates in a beautiful feed",
+  
+  groupChatTitle: "Group Chat", 
+  groupChatDesc: "Real-time conversations that bring your community together",
+  
+  eventsTitle: "Events",
+  eventsDesc: "Organize gatherings, meetings, and celebrations with ease",
+  
+  wikiTitle: "Wiki",
+  wikiDesc: "Build collective knowledge and share resources",
+  
+  coursesTitle: "Courses",
+  coursesDesc: "Create and share learning experiences within your network",
+  
+  moodboardsTitle: "Moodboards",
+  moodboardsDesc: "Curate visual inspiration and creative collections",
+  
+  newsletterTitle: "Newsletter", 
+  newsletterDesc: "Keep everyone informed with beautiful updates",
+  
+  ticketingTitle: "Ticketing",
+  ticketingDesc: "Manage registrations and access to your events",
+
+  directoryTitle: "Directory",
+  directoryDesc: "Connect members with a comprehensive contact hub",
+
+  donationsTitle: "Donations",
+  donationsDesc: "Accept donations seamlessly with HelloAsso integration",
+
+  notificationsTitle: "Smart Notifications",
+  notificationsDesc: "Respectful email updates that value your attention"
 },
 
   fr: {
   europeanBadge: "🇪🇺 Conçu en Europe • Indépendant de la Silicon Valley",
   subtitle: "Le réseau social privé qui vous respecte",
-  description: "Créez vos propres micro-réseaux de confiance en quelques minutes — avec une confidentialité totale. Aucun traçage. Aucune pub. Aucun bot. Aucune Big Tech.",
+  description: "Créez vos propres micro-réseaux de confiance en quelques minutes, avec une confidentialité totale. Aucun traçage. Aucune pub. Aucun bot. Aucune Big Tech.",
   descriptionStrong: "Uniquement des connexions humaines authentiques.",
   startFreeTrial: "Commencez en 5 minutes",
   seeDemo: "Voir la démo",
@@ -120,24 +161,24 @@ const translations = {
   step1Title: "Créez votre espace",
   step1Description: "Choisissez un nom, téléchargez votre logo et personnalisez votre réseau en quelques secondes. Aucun réglage technique nécessaire.",
   step2Title: "Invitez vos membres",
-  step2Description: "Envoyez des invitations par e-mail ou partagez un lien. Vous contrôlez qui peut entrer et ce qui est partagé — rien ne devient public sans votre accord.",
+  step2Description: "Envoyez des invitations par e-mail ou partagez un lien. Vous contrôlez qui peut entrer et ce qui est partagé. Rien ne devient public sans votre accord.",
   step3Title: "Partagez et connectez-vous",
-  step3Description: "Publiez, organisez des événements ou montrez vos projets — dans un espace sûr, sans publicité ni algorithme.",
+  step3Description: "Publiez, organisez des événements ou montrez vos projets, dans un espace sûr, sans publicité ni algorithme.",
 
-  breakFree: "Libérez-vous des Big Tech",
-  noTracking: "Zéro tracking. Pas de Google, Meta, qui espionnent vos données.",
-  europeanPrivacy: "Confidentialité européenne",
-  europeanPrivacyDesc: "Conforme au RGPD dès la conception. Vos données restent en Europe, protégées par les lois les plus strictes au monde.",
-  zeroBloat: "Rapide et léger",
-  zeroBloatDesc: "Pas de pubs, pas de traceurs, pas de scripts lourds. Conclav est un outil intuitif pensé pour une expérience apaisée de la sociabilité en ligne.",
-  yourNetworks: "Vos réseaux, vos règles",
-  yourNetworksDesc: "Créez des communautés privées librement. Votre espace, votre contenu, vos règles.",
+  breakFree: "Votre réseau, vos règles",
+  noTracking: "Reprenez le contrôle face aux Big Tech. Créez des communautés selon vos propres conditions, en toute indépendance et transparence.",
+  fullControl: "Contrôle administrateur total",
+  fullControlDesc: "Vous êtes aux commandes. Gérez les membres, modérez le contenu et personnalisez chaque aspect de votre réseau. Aucune surveillance, aucun algorithme caché.",
+  trueIndependence: "Vraie indépendance",
+  trueIndependenceDesc: "Conçu en Europe, libre des géants de la Silicon Valley. Votre communauté vous appartient, pas aux annonceurs ni aux courtiers de données.",
+  simplicityTrust: "Simple et de confiance",
+  simplicityTrustDesc: "Aucun tracking. Aucune surveillance. Aucune surprise. Juste une plateforme transparente conçue pour servir votre communauté, pas pour l'exploiter.",
 
-  everythingYouNeed: "Tout ce dont vous avez besoin — rien de superflu.",
+  everythingYouNeed: "Tout ce dont vous avez besoin, rien de superflu.",
   simpleSecure: "Simple et sécurisé",
   simpleSecureDesc: "Créez vos réseaux en quelques secondes. Partagez, organisez, discutez en toute sécurité, sans surveillance.",
   europeanAlternative: "Conçu en Europe",
-  europeanAlternativeDesc: "Développé et hébergé en Europe — une alternative aux plateformes de la Silicon Valley.",
+  europeanAlternativeDesc: "Développé et hébergé en Europe. Une alternative aux plateformes de la Silicon Valley.",
 
   readyToOwn: "Prêt à développer votre espace numérique ?",
   joinThousands: "Rejoignez des milliers de créateurs, d'associations et de professionnels qui construisent des communautés authentiques et respectueuses de la vie privée.",
@@ -146,13 +187,49 @@ const translations = {
 
   helloAssoTitle: "Collectez simplement",
   helloAssoSubtitle: "Intégré avec HelloAsso",
-  helloAssoDescription: "Acceptez des dons pour votre association directement sur votre réseau. 100% gratuit, sans commission, 0% de frais — propulsé par HelloAsso, la plateforme de référence pour les associations françaises.",
+  helloAssoDescription: "Acceptez des dons pour votre association directement sur votre réseau. 100% gratuit, sans commission, 0% de frais. Propulsé par HelloAsso, la plateforme de référence pour les associations françaises.",
   helloAssoFeature1: "Zéro frais",
   helloAssoFeature1Desc: "Pas de commission, pas d'abonnement",
   helloAssoFeature2: "Paiements sécurisés",
   helloAssoFeature2Desc: "Plateforme de paiement certifiée",
   helloAssoFeature3: "Installation en un clic",
-  helloAssoFeature3Desc: "Intégrez votre formulaire instantanément"
+  helloAssoFeature3Desc: "Intégrez votre formulaire instantanément",
+  
+  featuresTitle: "Tout ce dont votre communauté a besoin pour s'épanouir",
+  featuresSubtitle: "Des outils puissants conçus pour des connexions humaines authentiques",
+  
+  socialWallTitle: "Mur social",
+  socialWallDesc: "Partagez des moments, idées et actualités dans un fil élégant",
+  
+  groupChatTitle: "Chat de groupe",
+  groupChatDesc: "Des conversations en temps réel qui rassemblent votre communauté",
+  
+  eventsTitle: "Événements", 
+  eventsDesc: "Organisez rencontres, réunions et célébrations facilement",
+  
+  wikiTitle: "Wiki",
+  wikiDesc: "Construisez un savoir collectif et partagez des ressources",
+  
+  coursesTitle: "Cours",
+  coursesDesc: "Créez et partagez des expériences d'apprentissage dans votre réseau",
+  
+  moodboardsTitle: "Moodboards",
+  moodboardsDesc: "Créez des collections visuelles inspirantes et créatives",
+  
+  newsletterTitle: "Newsletter",
+  newsletterDesc: "Tenez tout le monde informé avec de belles actualités",
+  
+  ticketingTitle: "Billetterie",
+  ticketingDesc: "Gérez les inscriptions et l'accès à vos événements",
+
+  directoryTitle: "Annuaire",
+  directoryDesc: "Connectez les membres avec un répertoire complet",
+
+  donationsTitle: "Dons",
+  donationsDesc: "Acceptez des dons facilement avec l'intégration HelloAsso",
+
+  notificationsTitle: "Notifications intelligentes",
+  notificationsDesc: "Alertes email respectueuses qui valorisent votre attention"
 }
 
 };
@@ -165,7 +242,6 @@ const detectBrowserLanguage = () => {
 
 const SimpleConclavLanding = () => {
   const navigate = useNavigate();
-  const theme = useTheme();
   const { user } = useAuth();
   const { profiles } = useProfile();
   const [language, setLanguage] = useState(detectBrowserLanguage());
@@ -750,10 +826,24 @@ const SimpleConclavLanding = () => {
         </Container>
       </Box>
 
-      {/* Anti-GAFAM Section */}
-      <Box sx={{ py: 8, bgcolor: 'white' }}>
-        <Container maxWidth="lg">
-          <Box 
+      {/* Network Features Section */}
+      <Box sx={{
+        py: { xs: 8, md: 12 },
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        position: 'relative',
+        overflow: 'hidden',
+        '&::before': {
+          content: '""',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'url("data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.05"%3E%3Cpath d="M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")',
+        }
+      }}>
+        <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
+          <Box
             sx={{
               animation: isSafariMobile ? 'none' : `${fadeInUp} 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.2s both`,
               textAlign: 'center',
@@ -763,140 +853,505 @@ const SimpleConclavLanding = () => {
               })
             }}
           >
-          <Box mb={8}>
-            <Block sx={{ fontSize: 80, color: '#ff4757', mb: 3 }} />
-            <Typography variant="h3" gutterBottom fontWeight="bold" color="#2c3e50" sx={{ mb: 3 }}>
-              {t.breakFree}
+            <Typography
+              variant="h3"
+              gutterBottom
+              fontWeight="bold"
+              sx={{
+                mb: 2,
+                color: 'white',
+                textShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                fontSize: { xs: '2rem', md: '3rem' }
+              }}
+            >
+              {t.featuresTitle}
             </Typography>
-            <Typography variant="h5" sx={{ color: '#7f8c8d', maxWidth: '600px', mx: 'auto', lineHeight: 1.6 }}>
-              {t.noTracking}
+            <Typography
+              variant="h6"
+              sx={{
+                color: 'rgba(255, 255, 255, 0.95)',
+                maxWidth: '800px',
+                mx: 'auto',
+                mb: { xs: 6, md: 10 },
+                lineHeight: 1.8,
+                fontSize: { xs: '1rem', md: '1.25rem' },
+                textShadow: '0 1px 3px rgba(0,0,0,0.1)'
+              }}
+            >
+              {t.featuresSubtitle}
             </Typography>
+
+            <Grid container spacing={{ xs: 3, md: 4 }} justifyContent="center">
+              {/* Feature cards configuration */}
+              {[
+                { icon: Feed, color: '#667eea', title: 'socialWallTitle', desc: 'socialWallDesc', delay: '0.2s' },
+                { icon: Chat, color: '#4caf50', title: 'groupChatTitle', desc: 'groupChatDesc', delay: '0.3s' },
+                { icon: EventAvailable, color: '#e91e63', title: 'eventsTitle', desc: 'eventsDesc', delay: '0.4s' },
+                { icon: MenuBook, color: '#2196f3', title: 'wikiTitle', desc: 'wikiDesc', delay: '0.5s' },
+                { icon: School, color: '#9c27b0', title: 'coursesTitle', desc: 'coursesDesc', delay: '0.6s' },
+                { icon: Palette, color: '#ff5722', title: 'moodboardsTitle', desc: 'moodboardsDesc', delay: '0.7s' },
+                { icon: Email, color: '#00bcd4', title: 'newsletterTitle', desc: 'newsletterDesc', delay: '0.8s' },
+                { icon: ConfirmationNumber, color: '#ffc107', title: 'ticketingTitle', desc: 'ticketingDesc', delay: '0.9s' },
+                { icon: ContactPage, color: '#607d8b', title: 'directoryTitle', desc: 'directoryDesc', delay: '1s' },
+                { icon: Favorite, color: '#f06292', title: 'donationsTitle', desc: 'donationsDesc', delay: '1.1s' },
+                { icon: Notifications, color: '#26a69a', title: 'notificationsTitle', desc: 'notificationsDesc', delay: '1.2s' }
+              ].map((feature, index) => {
+                const Icon = feature.icon;
+                return (
+                  <Grid item xs={12} sm={6} md={4} key={index}>
+                    <Box
+                      sx={{
+                        height: '100%',
+                        display: 'flex',
+                        animation: isSafariMobile ? 'none' : `${fadeInUp} 0.6s cubic-bezier(0.4, 0, 0.2, 1) ${feature.delay} both`,
+                        ...(isSafariMobile && {
+                          opacity: 1,
+                          transform: 'translateY(0)'
+                        })
+                      }}
+                    >
+                      <Paper
+                        elevation={0}
+                        sx={{
+                          p: { xs: 3.5, md: 4.5 },
+                          width: '100%',
+                          borderRadius: 4,
+                          backgroundColor: 'rgba(255, 255, 255, 0.98)',
+                          backdropFilter: 'blur(20px)',
+                          border: '2px solid rgba(255, 255, 255, 0.3)',
+                          textAlign: 'center',
+                          transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          minHeight: { xs: '240px', md: '260px' },
+                          position: 'relative',
+                          overflow: 'hidden',
+                          '&::before': {
+                            content: '""',
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            height: '4px',
+                            background: `linear-gradient(90deg, ${feature.color}, ${alpha(feature.color, 0.6)})`,
+                            transform: 'scaleX(0)',
+                            transformOrigin: 'left',
+                            transition: 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                          },
+                          ...(!isSafariMobile && {
+                            '&:hover': {
+                              transform: 'translateY(-12px)',
+                              boxShadow: `0 24px 48px rgba(0, 0, 0, 0.18), 0 0 0 1px ${alpha(feature.color, 0.1)}`,
+                              backgroundColor: 'white',
+                              borderColor: alpha(feature.color, 0.2),
+                              '&::before': {
+                                transform: 'scaleX(1)',
+                              },
+                              '& .feature-icon-wrapper': {
+                                transform: 'scale(1.1) rotate(5deg)',
+                                bgcolor: alpha(feature.color, 0.15),
+                              },
+                              '& .feature-icon': {
+                                transform: 'scale(1.15)',
+                              }
+                            }
+                          })
+                        }}
+                      >
+                        <Box
+                          className="feature-icon-wrapper"
+                          sx={{
+                            width: { xs: 72, md: 80 },
+                            height: { xs: 72, md: 80 },
+                            borderRadius: 3,
+                            bgcolor: alpha(feature.color, 0.12),
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            mb: 3,
+                            transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                            boxShadow: `0 4px 12px ${alpha(feature.color, 0.15)}`,
+                          }}
+                        >
+                          <Icon
+                            className="feature-icon"
+                            sx={{
+                              fontSize: { xs: 36, md: 40 },
+                              color: feature.color,
+                              transition: 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                            }}
+                          />
+                        </Box>
+                        <Typography
+                          variant="h6"
+                          gutterBottom
+                          fontWeight="700"
+                          color="#2c3e50"
+                          sx={{
+                            mb: 2,
+                            fontSize: { xs: '1.1rem', md: '1.25rem' },
+                            letterSpacing: '-0.02em'
+                          }}
+                        >
+                          {t[feature.title]}
+                        </Typography>
+                        <Typography
+                          variant="body2"
+                          color="#7f8c8d"
+                          sx={{
+                            lineHeight: 1.7,
+                            flex: 1,
+                            fontSize: { xs: '0.9rem', md: '0.95rem' },
+                            px: { xs: 0, md: 1 }
+                          }}
+                        >
+                          {t[feature.desc]}
+                        </Typography>
+                      </Paper>
+                    </Box>
+                  </Grid>
+                );
+              })}
+            </Grid>
           </Box>
+        </Container>
+      </Box>
 
-          <Grid container spacing={4} justifyContent="center">
-            <Grid 
-              item 
-              xs={12} 
-              md={4} 
-              textAlign="center"
-              sx={{
-                animation: isSafariMobile ? 'none' : `${fadeInUp} 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.3s both`,
-                ...(isSafariMobile && {
-                  opacity: 1,
-                  transform: 'translateY(0)'
-                })
-              }}
-            >
-              <Box sx={{
-                p: 4,
-                borderRadius: 4,
-                backgroundColor: '#f8f9fa',
-                border: '1px solid #e9ecef',
-                height: '100%',
-                textAlign: 'center',
-                transition: 'all 0.3s ease',
-                ...(!isSafariMobile && {
-                  '&:hover': {
-                    transform: 'translateY(-8px)',
-                    boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
-                    borderColor: '#667eea',
+      {/* Anti-GAFAM Section */}
+      <Box sx={{
+        py: { xs: 8, md: 12 },
+        background: 'linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%)',
+        position: 'relative',
+        overflow: 'hidden'
+      }}>
+        <Container maxWidth="lg">
+          <Box
+            sx={{
+              animation: isSafariMobile ? 'none' : `${fadeInUp} 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.2s both`,
+              textAlign: 'center',
+              ...(isSafariMobile && {
+                opacity: 1,
+                transform: 'translateY(0)'
+              })
+            }}
+          >
+            <Box mb={{ xs: 6, md: 10 }}>
+              <Typography
+                variant="h3"
+                gutterBottom
+                fontWeight="bold"
+                color="#2c3e50"
+                sx={{
+                  mb: 3,
+                  fontSize: { xs: '2rem', md: '3rem' },
+                  position: 'relative',
+                  display: 'inline-block',
+                  '&::after': {
+                    content: '""',
+                    position: 'absolute',
+                    bottom: -10,
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    width: 80,
+                    height: 4,
+                    background: 'linear-gradient(90deg, #667eea, #764ba2)',
+                    borderRadius: 2
                   }
-                })
-              }}>
-                <Shield sx={{ fontSize: 60, color: '#667eea', mb: 2 }} />
-                <Typography variant="h6" gutterBottom fontWeight="bold" color="#2c3e50">
-                  {t.europeanPrivacy}
-                </Typography>
-                <Typography color="#7f8c8d" sx={{ lineHeight: 1.6 }}>
-                  {t.europeanPrivacyDesc}
-                </Typography>
-              </Box>
-            </Grid>
+                }}
+              >
+                {t.breakFree}
+              </Typography>
+              <Typography
+                variant="h6"
+                sx={{
+                  color: '#555',
+                  maxWidth: '800px',
+                  mx: 'auto',
+                  lineHeight: 1.8,
+                  mt: 5,
+                  fontSize: { xs: '1rem', md: '1.25rem' },
+                  fontWeight: 400
+                }}
+              >
+                {t.noTracking}
+              </Typography>
+            </Box>
 
-            <Grid 
-              item 
-              xs={12} 
-              md={4} 
-              textAlign="center"
-              sx={{
-                animation: isSafariMobile ? 'none' : `${fadeInUp} 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.4s both`,
-                ...(isSafariMobile && {
-                  opacity: 1,
-                  transform: 'translateY(0)'
-                })
-              }}
-            >
-              <Box sx={{
-                p: 4,
-                borderRadius: 4,
-                backgroundColor: '#f8f9fa',
-                border: '1px solid #e9ecef',
-                height: '100%',
-                textAlign: 'center',
-                transition: 'all 0.3s ease',
-                ...(!isSafariMobile && {
-                  '&:hover': {
-                    transform: 'translateY(-8px)',
-                    boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
-                    borderColor: '#667eea',
-                  }
-                })
-              }}>
-                <Speed sx={{ fontSize: 60, color: '#667eea', mb: 2 }} />
-                <Typography variant="h6" gutterBottom fontWeight="bold" color="#2c3e50">
-                  {t.zeroBloat}
-                </Typography>
-                <Typography color="#7f8c8d" sx={{ lineHeight: 1.6 }}>
-                  {t.zeroBloatDesc}
-                </Typography>
-              </Box>
-            </Grid>
+            <Grid container spacing={{ xs: 3, md: 4 }} justifyContent="center">
+              <Grid
+                item
+                xs={12}
+                md={4}
+                sx={{
+                  animation: isSafariMobile ? 'none' : `${fadeInUp} 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.3s both`,
+                  ...(isSafariMobile && {
+                    opacity: 1,
+                    transform: 'translateY(0)'
+                  })
+                }}
+              >
+                <Paper
+                  elevation={0}
+                  sx={{
+                    p: { xs: 4, md: 5 },
+                    borderRadius: 4,
+                    backgroundColor: 'white',
+                    border: '2px solid #e9ecef',
+                    height: '100%',
+                    textAlign: 'center',
+                    transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    '&::before': {
+                      content: '""',
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      height: '5px',
+                      background: 'linear-gradient(90deg, #667eea, #764ba2)',
+                      transform: 'scaleX(0)',
+                      transformOrigin: 'left',
+                      transition: 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                    },
+                    ...(!isSafariMobile && {
+                      '&:hover': {
+                        transform: 'translateY(-12px)',
+                        boxShadow: '0 24px 48px rgba(102, 126, 234, 0.15)',
+                        borderColor: '#667eea',
+                        '&::before': {
+                          transform: 'scaleX(1)',
+                        },
+                        '& .feature-icon-box': {
+                          transform: 'scale(1.1)',
+                          bgcolor: alpha('#667eea', 0.15),
+                        }
+                      }
+                    })
+                  }}
+                >
+                  <Box
+                    className="feature-icon-box"
+                    sx={{
+                      width: 90,
+                      height: 90,
+                      borderRadius: 3,
+                      bgcolor: alpha('#667eea', 0.1),
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      mx: 'auto',
+                      mb: 3,
+                      transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                      boxShadow: `0 8px 24px ${alpha('#667eea', 0.15)}`
+                    }}
+                  >
+                    <AdminPanelSettings sx={{ fontSize: 48, color: '#667eea' }} />
+                  </Box>
+                  <Typography
+                    variant="h5"
+                    gutterBottom
+                    fontWeight="700"
+                    color="#2c3e50"
+                    sx={{ mb: 2, fontSize: { xs: '1.25rem', md: '1.5rem' } }}
+                  >
+                    {t.fullControl}
+                  </Typography>
+                  <Typography
+                    variant="body1"
+                    color="#666"
+                    sx={{ lineHeight: 1.8, fontSize: { xs: '0.95rem', md: '1rem' } }}
+                  >
+                    {t.fullControlDesc}
+                  </Typography>
+                </Paper>
+              </Grid>
 
-            <Grid 
-              item 
-              xs={12} 
-              md={4} 
-              textAlign="center"
-              sx={{
-                animation: isSafariMobile ? 'none' : `${fadeInUp} 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.5s both`,
-                ...(isSafariMobile && {
-                  opacity: 1,
-                  transform: 'translateY(0)'
-                })
-              }}
-            >
-              <Box sx={{
-                p: 4,
-                borderRadius: 4,
-                backgroundColor: '#f8f9fa',
-                border: '1px solid #e9ecef',
-                height: '100%',
-                textAlign: 'center',
-                transition: 'all 0.3s ease',
-                ...(!isSafariMobile && {
-                  '&:hover': {
-                    transform: 'translateY(-8px)',
-                    boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
-                    borderColor: '#667eea',
-                  }
-                })
-              }}>
-                <Group sx={{ fontSize: 60, color: '#667eea', mb: 2 }} />
-                <Typography variant="h6" gutterBottom fontWeight="bold" color="#2c3e50">
-                  {t.yourNetworks}
-                </Typography>
-                <Typography color="#7f8c8d" sx={{ lineHeight: 1.6 }}>
-                  {t.yourNetworksDesc}
-                </Typography>
-              </Box>
+              <Grid
+                item
+                xs={12}
+                md={4}
+                sx={{
+                  animation: isSafariMobile ? 'none' : `${fadeInUp} 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.4s both`,
+                  ...(isSafariMobile && {
+                    opacity: 1,
+                    transform: 'translateY(0)'
+                  })
+                }}
+              >
+                <Paper
+                  elevation={0}
+                  sx={{
+                    p: { xs: 4, md: 5 },
+                    borderRadius: 4,
+                    backgroundColor: 'white',
+                    border: '2px solid #e9ecef',
+                    height: '100%',
+                    textAlign: 'center',
+                    transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    '&::before': {
+                      content: '""',
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      height: '5px',
+                      background: 'linear-gradient(90deg, #4caf50, #45a049)',
+                      transform: 'scaleX(0)',
+                      transformOrigin: 'left',
+                      transition: 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                    },
+                    ...(!isSafariMobile && {
+                      '&:hover': {
+                        transform: 'translateY(-12px)',
+                        boxShadow: '0 24px 48px rgba(76, 175, 80, 0.15)',
+                        borderColor: '#4caf50',
+                        '&::before': {
+                          transform: 'scaleX(1)',
+                        },
+                        '& .feature-icon-box': {
+                          transform: 'scale(1.1)',
+                          bgcolor: alpha('#4caf50', 0.15),
+                        }
+                      }
+                    })
+                  }}
+                >
+                  <Box
+                    className="feature-icon-box"
+                    sx={{
+                      width: 90,
+                      height: 90,
+                      borderRadius: 3,
+                      bgcolor: alpha('#4caf50', 0.1),
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      mx: 'auto',
+                      mb: 3,
+                      transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                      boxShadow: `0 8px 24px ${alpha('#4caf50', 0.15)}`
+                    }}
+                  >
+                    <FlightTakeoff sx={{ fontSize: 48, color: '#4caf50' }} />
+                  </Box>
+                  <Typography
+                    variant="h5"
+                    gutterBottom
+                    fontWeight="700"
+                    color="#2c3e50"
+                    sx={{ mb: 2, fontSize: { xs: '1.25rem', md: '1.5rem' } }}
+                  >
+                    {t.trueIndependence}
+                  </Typography>
+                  <Typography
+                    variant="body1"
+                    color="#666"
+                    sx={{ lineHeight: 1.8, fontSize: { xs: '0.95rem', md: '1rem' } }}
+                  >
+                    {t.trueIndependenceDesc}
+                  </Typography>
+                </Paper>
+              </Grid>
+
+              <Grid
+                item
+                xs={12}
+                md={4}
+                sx={{
+                  animation: isSafariMobile ? 'none' : `${fadeInUp} 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.5s both`,
+                  ...(isSafariMobile && {
+                    opacity: 1,
+                    transform: 'translateY(0)'
+                  })
+                }}
+              >
+                <Paper
+                  elevation={0}
+                  sx={{
+                    p: { xs: 4, md: 5 },
+                    borderRadius: 4,
+                    backgroundColor: 'white',
+                    border: '2px solid #e9ecef',
+                    height: '100%',
+                    textAlign: 'center',
+                    transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    '&::before': {
+                      content: '""',
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      height: '5px',
+                      background: 'linear-gradient(90deg, #2196f3, #1976d2)',
+                      transform: 'scaleX(0)',
+                      transformOrigin: 'left',
+                      transition: 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                    },
+                    ...(!isSafariMobile && {
+                      '&:hover': {
+                        transform: 'translateY(-12px)',
+                        boxShadow: '0 24px 48px rgba(33, 150, 243, 0.15)',
+                        borderColor: '#2196f3',
+                        '&::before': {
+                          transform: 'scaleX(1)',
+                        },
+                        '& .feature-icon-box': {
+                          transform: 'scale(1.1)',
+                          bgcolor: alpha('#2196f3', 0.15),
+                        }
+                      }
+                    })
+                  }}
+                >
+                  <Box
+                    className="feature-icon-box"
+                    sx={{
+                      width: 90,
+                      height: 90,
+                      borderRadius: 3,
+                      bgcolor: alpha('#2196f3', 0.1),
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      mx: 'auto',
+                      mb: 3,
+                      transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                      boxShadow: `0 8px 24px ${alpha('#2196f3', 0.15)}`
+                    }}
+                  >
+                    <VerifiedUser sx={{ fontSize: 48, color: '#2196f3' }} />
+                  </Box>
+                  <Typography
+                    variant="h5"
+                    gutterBottom
+                    fontWeight="700"
+                    color="#2c3e50"
+                    sx={{ mb: 2, fontSize: { xs: '1.25rem', md: '1.5rem' } }}
+                  >
+                    {t.simplicityTrust}
+                  </Typography>
+                  <Typography
+                    variant="body1"
+                    color="#666"
+                    sx={{ lineHeight: 1.8, fontSize: { xs: '0.95rem', md: '1rem' } }}
+                  >
+                    {t.simplicityTrustDesc}
+                  </Typography>
+                </Paper>
+              </Grid>
             </Grid>
-          </Grid>
           </Box>
         </Container>
       </Box>
 
       {/* Why Conclav Section */}
-      <Box sx={{ py: 8, bgcolor: '#f8f9fa' }}>
+      <Box sx={{ py: { xs: 6, md: 8 }, bgcolor: '#f8f9fa' }}>
         <Container maxWidth="lg">
           <Box
             sx={{
@@ -908,92 +1363,73 @@ const SimpleConclavLanding = () => {
               })
             }}
           >
-          <Typography variant="h3" textAlign="center" gutterBottom fontWeight="bold" mb={8} color="#2c3e50">
-            {t.everythingYouNeed}
-          </Typography>
-          
-          <Grid container spacing={4}>
-          <Grid 
-            item 
-            xs={12} 
-            md={6}
-            sx={{
-              animation: isSafariMobile ? 'none' : `${fadeInUp} 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.5s both`,
-              ...(isSafariMobile && {
-                opacity: 1,
-                transform: 'translateY(0)'
-              })
-            }}
-          >
-            <Paper 
-              elevation={0} 
-              sx={{ 
-                p: 5, 
-                height: '100%',
-                backgroundColor: 'white',
-                borderRadius: 4,
-                border: '1px solid #e9ecef',
-                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                ...(!isSafariMobile && {
-                  '&:hover': {
-                    transform: 'translateY(-8px)',
-                    boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
-                    borderColor: '#667eea',
-                  }
-                }),
+            <Typography
+              variant="h3"
+              textAlign="center"
+              fontWeight="bold"
+              color="#2c3e50"
+              sx={{
+                fontSize: { xs: '2rem', md: '3rem' },
+                lineHeight: 1.4
               }}
             >
-              <Security sx={{ fontSize: 48, color: '#667eea', mb: 3 }} />
-              <Typography variant="h5" gutterBottom fontWeight="bold" color="#2c3e50">
-                {t.simpleSecure}
-              </Typography>
-              <Typography variant="body1" sx={{ lineHeight: 1.8, color: '#7f8c8d' }}>
-                {t.simpleSecureDesc}
-              </Typography>
-            </Paper>
-          </Grid>
+              {t.everythingYouNeed}
+            </Typography>
+          </Box>
+        </Container>
+      </Box>
 
-          <Grid 
-            item 
-            xs={12} 
-            md={6}
+      {/* CTA Section */}
+      <Box sx={{ py: 8, background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
+        <Container maxWidth="md" textAlign="center">
+          <Box
             sx={{
-              animation: isSafariMobile ? 'none' : `${fadeInUp} 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.6s both`,
+              animation: isSafariMobile ? 'none' : `${fadeInUp} 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.6s both`,
+              color: 'white',
               ...(isSafariMobile && {
                 opacity: 1,
                 transform: 'translateY(0)'
               })
             }}
           >
-            <Paper 
-              elevation={0} 
-              sx={{ 
-                p: 5, 
-                height: '100%',
-                backgroundColor: 'white',
-                borderRadius: 4,
-                border: '1px solid #e9ecef',
-                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            <Typography variant="h3" gutterBottom fontWeight="bold" color="white" sx={{ mb: 3 }}>
+              {t.readyToOwn}
+            </Typography>
+            <Typography variant="h6" sx={{ mb: 5, color: 'rgba(255, 255, 255, 0.9)', lineHeight: 1.6 }}>
+              {t.joinThousands}
+            </Typography>
+
+            <Button
+              variant="contained"
+              size="large"
+              startIcon={<Rocket />}
+              onClick={() => navigate('/signup')}
+              sx={{
+                py: 3,
+                px: 6,
+                fontSize: '1.3rem',
+                borderRadius: 50,
+                bgcolor: 'white',
+                color: '#667eea',
+                fontWeight: 'bold',
+                boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
                 ...(!isSafariMobile && {
                   '&:hover': {
-                    transform: 'translateY(-8px)',
-                    boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
-                    borderColor: '#667eea',
+                    bgcolor: '#f8f9fa',
+                    transform: 'translateY(-2px)',
+                    boxShadow: '0 12px 35px rgba(0,0,0,0.2)'
                   }
                 }),
+                transition: 'all 0.3s ease'
               }}
             >
-              <Public sx={{ fontSize: 48, color: '#667eea', mb: 3 }} />
-              <Typography variant="h5" gutterBottom fontWeight="bold" color="#2c3e50">
-                {t.europeanAlternative}
-              </Typography>
-              <Typography variant="body1" sx={{ lineHeight: 1.8, color: '#7f8c8d' }}>
-                {t.europeanAlternativeDesc}
-              </Typography>
-            </Paper>
-          </Grid>
-          </Grid>
-        </Box>
+              {t.startYourFreeTrial}
+            </Button>
+
+            <Typography variant="body2" sx={{ mt: 3, opacity: 0.8 }}>
+              {t.finalTrialInfo}
+            </Typography>
+          </Box>
         </Container>
       </Box>
 
@@ -1249,60 +1685,6 @@ const SimpleConclavLanding = () => {
                 </Card>
               </Grid>
             </Grid>
-          </Box>
-        </Container>
-      </Box>
-
-      {/* Final CTA Section */}
-      <Box sx={{ py: 8, background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
-        <Container maxWidth="md" textAlign="center">
-          <Box
-            sx={{
-              animation: isSafariMobile ? 'none' : `${fadeInUp} 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.6s both`,
-              color: 'white',
-              ...(isSafariMobile && {
-                opacity: 1,
-                transform: 'translateY(0)'
-              })
-            }}
-          >
-          <Typography variant="h3" gutterBottom fontWeight="bold" color="white" sx={{ mb: 3 }}>
-            {t.readyToOwn}
-          </Typography>
-          <Typography variant="h6" sx={{ mb: 5, color: 'rgba(255, 255, 255, 0.9)', lineHeight: 1.6 }}>
-            {t.joinThousands}
-          </Typography>
-          
-          <Button
-            variant="contained"
-            size="large"
-            startIcon={<Rocket />}
-            onClick={() => navigate('/signup')}
-            sx={{
-              py: 3,
-              px: 6,
-              fontSize: '1.3rem',
-              borderRadius: 50,
-              bgcolor: 'white',
-              color: '#667eea',
-              fontWeight: 'bold',
-              boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
-              ...(!isSafariMobile && {
-                '&:hover': {
-                  bgcolor: '#f8f9fa',
-                  transform: 'translateY(-2px)',
-                  boxShadow: '0 12px 35px rgba(0,0,0,0.2)'
-                }
-              }),
-              transition: 'all 0.3s ease'
-            }}
-          >
-            {t.startYourFreeTrial}
-          </Button>
-          
-          <Typography variant="body2" sx={{ mt: 3, opacity: 0.8 }}>
-            {t.finalTrialInfo}
-          </Typography>
           </Box>
         </Container>
       </Box>
