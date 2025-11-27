@@ -8,7 +8,7 @@ import {
   IconButton,
   alpha,
   Chip,
-  useTheme
+  useTheme as useMuiTheme
 } from '@mui/material';
 import Spinner from './Spinner';
 import WidgetHeader from './shared/WidgetHeader';
@@ -20,11 +20,13 @@ import { getUserMoodboard, getUserMoodboardItems, getMoodboardWithViewCount } fr
 import { useProfile } from '../context/profileContext';
 import InfiniteMoodboardCarousel from './Moodboard/InfiniteMoodboardCarousel';
 import { getProfileById } from '../api/profiles';
+import { useTheme } from './ThemeProvider';
 
 const MicroConclavWidget = ({ profileId: propProfileId }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const theme = useTheme();
+  const muiTheme = useMuiTheme();
+  const { darkMode } = useTheme();
   const { activeProfile, userProfiles, isLoadingProfiles } = useProfile();
   const [moodboard, setMoodboard] = useState(null);
   const [moodboardItems, setMoodboardItems] = useState([]);
@@ -41,8 +43,8 @@ const MicroConclavWidget = ({ profileId: propProfileId }) => {
   const isOwnMoodboard = !propProfileId || propProfileId === activeProfile?.id;
 
   // Get default background color based on theme
-  const defaultBgColor = theme.palette.mode === 'dark'
-    ? theme.palette.background.default
+  const defaultBgColor = darkMode
+    ? muiTheme.palette.background.default
     : '#f5f5f5';
 
   useEffect(() => {
@@ -166,7 +168,7 @@ const MicroConclavWidget = ({ profileId: propProfileId }) => {
           <InfiniteMoodboardCarousel
             items={moodboardItems}
             backgroundColor={moodboard?.background_color || (alpha(defaultBgColor, 0.8))}
-            darkMode={theme.palette.mode === 'dark'}
+            darkMode={darkMode}
           />
         ) : (
           /* Empty State - Full Height */
