@@ -4,8 +4,7 @@ import {
   encryptMessage,
   decryptMessage,
   batchDecryptMessages,
-  encryptMetadata,
-  decryptMetadata
+  encryptMetadata
 } from '../utils/messageEncryption';
 
 /**
@@ -281,8 +280,11 @@ export const sendDirectMessage = async (conversationId, senderId, content, media
 
     if (convError) throw convError;
 
-    // Encrypt the message content before storing
-    const encryptedContent = await encryptMessage(content, conversation.participants);
+    // Only encrypt content if it's a non-empty string
+    // GIFs, emojis, and media-only messages may have empty content
+    const encryptedContent = content && content.trim()
+      ? await encryptMessage(content, conversation.participants)
+      : '';
 
     // Build message data with encrypted content
     const messageData = {
@@ -340,10 +342,23 @@ export const sendDirectMessage = async (conversationId, senderId, content, media
       // Queue notification for the recipient with DECRYPTED content
       try {
         console.log('💬 [DM API DEBUG] Queueing notification for recipient:', recipientId);
+
+        // Determine notification content based on message type
+        let notificationContent = content;
+        if (!content || !content.trim()) {
+          // For media-only messages (GIFs, images, etc.)
+          if (mediaData) {
+            const mediaType = mediaData.type || mediaData.mediaType;
+            notificationContent = mediaType === 'image' ? '[Image]' : `[${mediaType || 'Media'}]`;
+          } else {
+            notificationContent = '[Message]';
+          }
+        }
+
         const notificationResult = await queueDirectMessageNotification(
           recipientId,           // recipient ID
           senderId,              // sender ID
-          content || '[Media message]',  // Use original decrypted content for notification
+          notificationContent,   // Use original decrypted content or media placeholder
           message.id             // message ID
         );
 
@@ -362,7 +377,7 @@ export const sendDirectMessage = async (conversationId, senderId, content, media
     return {
       message: {
         ...message,
-        content: content, // Return decrypted content
+        content: content || '', // Return decrypted content or empty string
         sender: senderInfo
       },
       error: null
