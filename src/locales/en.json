@@ -1755,7 +1755,12 @@
       "maybeCount": "{{count}} maybe",
       "capacity": "Capacity: {{capacity}}",
       "location": "Location",
-      "getDirections": "Get directions"
+      "getDirections": "Get directions",
+      "buyTickets": "Buy Tickets",
+      "openHelloAsso": "Open in HelloAsso",
+      "helloAssoDescription": "Purchase your tickets securely through HelloAsso",
+      "helloAssoLoadError": "Unable to load the ticketing widget. Please click the button to purchase tickets directly on HelloAsso.",
+      "poweredByHelloAsso": "Powered by HelloAsso - Secure online ticketing"
     },
     "profile": {
       "loading": "Loading profile...",

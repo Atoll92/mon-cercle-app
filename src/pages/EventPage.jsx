@@ -8,7 +8,9 @@ import Spinner from '../components/Spinner';
 import CommentSection from '../components/CommentSection';
 import UserContent from '../components/UserContent';
 import CreateEventDialog from '../components/CreateEventDialog';
+import HelloAssoWidget from '../components/HelloAssoWidget';
 import { linkifyHtml } from '../utils/textFormatting';
+import { isHelloAssoUrl, extractHelloAssoInfo } from '../utils/helloAssoEmbed';
 import {
   Container,
   Paper,
@@ -355,6 +357,13 @@ function EventPage() {
   const attendingCount = useMemo(() => participants.filter(p => p.status === 'attending').length, [participants]);
   const maybeCount = useMemo(() => participants.filter(p => p.status === 'maybe').length, [participants]);
 
+  // Check if event has HelloAsso ticketing
+  const helloAssoInfo = useMemo(() => {
+    if (!event?.event_link) return null;
+    if (!isHelloAssoUrl(event.event_link)) return null;
+    return extractHelloAssoInfo(event.event_link);
+  }, [event?.event_link]);
+
   if (loading) {
     return (
       <Container maxWidth="md" sx={{ 
@@ -606,10 +615,23 @@ function EventPage() {
             <Typography variant="h5" gutterBottom>
               {t('pages.event.aboutThisEvent')}
             </Typography>
-            <UserContent 
+            <UserContent
               content={event.description}
               html={false}
             />
+
+            {/* HelloAsso Ticketing Widget - only show if event link is HelloAsso */}
+            {helloAssoInfo && !isPastEvent && (
+              <>
+                <Divider sx={{ my: 3 }} />
+                <HelloAssoWidget
+                  organizationSlug={helloAssoInfo.organizationSlug}
+                  formSlug={helloAssoInfo.formSlug}
+                  formType={helloAssoInfo.formType}
+                  eventLink={event.event_link}
+                />
+              </>
+            )}
 
             {/* Organizer */}
             {organizer && (

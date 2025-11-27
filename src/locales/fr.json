@@ -1748,7 +1748,12 @@
       "maybeCount": "{{count}} peut-être",
       "capacity": "Capacité : {{capacity}}",
       "location": "Lieu",
-      "getDirections": "Obtenir l'itinéraire"
+      "getDirections": "Obtenir l'itinéraire",
+      "buyTickets": "Acheter des billets",
+      "openHelloAsso": "Ouvrir dans HelloAsso",
+      "helloAssoDescription": "Achetez vos billets en toute sécurité via HelloAsso",
+      "helloAssoLoadError": "Impossible de charger le widget de billetterie. Veuillez cliquer sur le bouton pour acheter vos billets directement sur HelloAsso.",
+      "poweredByHelloAsso": "Propulsé par HelloAsso - Billetterie en ligne sécurisée"
     },
     "profile": {
       "loading": "Chargement du profil...",
