@@ -7,7 +7,8 @@ import {
   Button,
   IconButton,
   alpha,
-  Chip
+  Chip,
+  useTheme
 } from '@mui/material';
 import Spinner from './Spinner';
 import WidgetHeader from './shared/WidgetHeader';
@@ -23,6 +24,7 @@ import { getProfileById } from '../api/profiles';
 const MicroConclavWidget = ({ profileId: propProfileId }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const theme = useTheme();
   const { activeProfile, userProfiles, isLoadingProfiles } = useProfile();
   const [moodboard, setMoodboard] = useState(null);
   const [moodboardItems, setMoodboardItems] = useState([]);
@@ -37,6 +39,11 @@ const MicroConclavWidget = ({ profileId: propProfileId }) => {
 
   // Check if viewing own moodboard
   const isOwnMoodboard = !propProfileId || propProfileId === activeProfile?.id;
+
+  // Get default background color based on theme
+  const defaultBgColor = theme.palette.mode === 'dark'
+    ? theme.palette.background.default
+    : '#f5f5f5';
 
   useEffect(() => {
     if (profileId && !isLoadingProfiles) {
@@ -151,19 +158,19 @@ const MicroConclavWidget = ({ profileId: propProfileId }) => {
             justifyContent: 'center',
             alignItems: 'center',
             height: '100%',
-            bgcolor: moodboard?.background_color || '#f5f5f5'
+            bgcolor: moodboard?.background_color || defaultBgColor
           }}>
             <Spinner size={60} />
           </Box>
         ) : moodboardItems.length > 0 ? (
           <InfiniteMoodboardCarousel
             items={moodboardItems}
-            backgroundColor={moodboard?.background_color || (alpha('#f5f5f5', 0.8))}
-            darkMode={false}
+            backgroundColor={moodboard?.background_color || (alpha(defaultBgColor, 0.8))}
+            darkMode={theme.palette.mode === 'dark'}
           />
         ) : (
           /* Empty State - Full Height */
-          <Box sx={{ 
+          <Box sx={{
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
@@ -171,7 +178,7 @@ const MicroConclavWidget = ({ profileId: propProfileId }) => {
             height: '100%',
             p: 3,
             textAlign: 'center',
-            bgcolor: moodboard?.background_color || '#f5f5f5'
+            bgcolor: moodboard?.background_color || defaultBgColor
           }}>
             {moodboard && (
               <>
