@@ -42,10 +42,15 @@ const MicroConclavWidget = ({ profileId: propProfileId }) => {
   // Check if viewing own moodboard
   const isOwnMoodboard = !propProfileId || propProfileId === activeProfile?.id;
 
-  // Get default background color based on theme
-  const defaultBgColor = darkMode
-    ? muiTheme.palette.background.default
-    : '#f5f5f5';
+  // Get background color based on theme
+  // In dark mode, always use theme background to ensure text readability
+  // In light mode, use custom moodboard color or default
+  const getBackgroundColor = () => {
+    if (darkMode) {
+      return muiTheme.palette.background.default;
+    }
+    return moodboard?.background_color || '#f5f5f5';
+  };
 
   useEffect(() => {
     if (profileId && !isLoadingProfiles) {
@@ -160,14 +165,14 @@ const MicroConclavWidget = ({ profileId: propProfileId }) => {
             justifyContent: 'center',
             alignItems: 'center',
             height: '100%',
-            bgcolor: moodboard?.background_color || defaultBgColor
+            bgcolor: getBackgroundColor()
           }}>
             <Spinner size={60} />
           </Box>
         ) : moodboardItems.length > 0 ? (
           <InfiniteMoodboardCarousel
             items={moodboardItems}
-            backgroundColor={moodboard?.background_color || (alpha(defaultBgColor, 0.8))}
+            backgroundColor={darkMode ? muiTheme.palette.background.default : (moodboard?.background_color || alpha('#f5f5f5', 0.8))}
             darkMode={darkMode}
           />
         ) : (
@@ -180,7 +185,7 @@ const MicroConclavWidget = ({ profileId: propProfileId }) => {
             height: '100%',
             p: 3,
             textAlign: 'center',
-            bgcolor: moodboard?.background_color || defaultBgColor
+            bgcolor: getBackgroundColor()
           }}>
             {moodboard && (
               <>
