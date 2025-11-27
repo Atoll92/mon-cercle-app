@@ -268,6 +268,7 @@ serve(async (req) => {
       let originalSubject = ''
       let originalPlainContent = ''
       let originalHtmlContent = ''
+      let headerMap: Map<string, string> | null = null
 
       // Try to identify MIME boundaries
       const boundaryMatch = normalizedEmail.match(/boundary="?([^"\s]+)"?/i)
@@ -298,7 +299,7 @@ serve(async (req) => {
                 const embeddedBody = body.substring(embeddedHeaderEnd + 2)
 
                 // Parse headers
-                const headerMap = parseEmailHeaders(embeddedHeaders)
+                headerMap = parseEmailHeaders(embeddedHeaders)
 
                 // Extract sender
                 const fromHeader = headerMap.get('from')
@@ -555,7 +556,9 @@ serve(async (req) => {
         }
 
         // Also log headers for debugging
-        console.warn('Parsed headers:', Array.from(headerMap.entries()))
+        if (headerMap) {
+          console.warn('Parsed headers:', Array.from(headerMap.entries()))
+        }
       }
 
       // Auto-categorize based on subject and content
