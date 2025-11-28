@@ -38,7 +38,7 @@ import {
   Refresh as RefreshIcon
 } from '@mui/icons-material';
 import { supabase } from '../supabaseclient';
-import { useAuth } from '../context/authcontext';
+import { useProfile } from '../context/profileContext';
 import { fetchNetworkActivity, subscribeToActivity } from '../api/activityFeed';
 import { formatTimeAgo } from '../utils/dateFormatting';
 import { useNavigate } from 'react-router-dom';
@@ -92,7 +92,7 @@ const ActivityFeed = ({ networkId, limit = 20, compact = false, autoRefresh = tr
   const theme = useTheme();
   const { t } = useTranslation();
   // Using global supabase client
-  const { activeProfile } = useAuth();
+  const { activeProfile } = useProfile();
   const navigate = useNavigate();
 
   const [activities, setActivities] = useState([]);
@@ -127,28 +127,38 @@ const ActivityFeed = ({ networkId, limit = 20, compact = false, autoRefresh = tr
     if (!networkId) return;
 
     setLoading(true);
-    const { data, error } = await fetchNetworkActivity(supabase, networkId, limit);
+    // Fetch more activities than needed to account for filtered reactions
+    const fetchLimit = limit * 3;
+    const { data, error } = await fetchNetworkActivity(supabase, networkId, fetchLimit);
 
     if (error) {
       console.error('[ActivityFeed] Error loading activities:', error);
     }
 
     if (!error && data) {
-      // Filter reaction activities to only show reactions to the current user's own posts
-      const filteredActivities = data.filter(activity => {
-        if (activity.activity_type === 'reaction_added') {
-          // Only show if the reaction is on content owned by the active profile
-          const contentOwnerName = activity.metadata?.content_owner_name;
-          const currentUserName = activeProfile?.full_name;
-          return contentOwnerName === currentUserName;
-        }
-        return true; // Show all other activity types
-      });
-      setActivities(filteredActivities);
+      // Store raw data - filtering happens at render time via useMemo
+      setActivities(data);
     }
 
     setLoading(false);
   };
+
+  // Filter reaction activities to only show reactions to the current user's own posts
+  // Done at render time so it updates when activeProfile changes
+  // Then slice to the requested limit
+  const filteredActivities = React.useMemo(() => {
+    const filtered = activities.filter(activity => {
+      if (activity.activity_type === 'reaction_added') {
+        // Only show if the reaction is on content owned by the active profile
+        const contentOwnerName = activity.metadata?.content_owner_name;
+        const currentUserName = activeProfile?.full_name;
+        return contentOwnerName === currentUserName;
+      }
+      return true; // Show all other activity types
+    });
+    // Return only the requested number of activities
+    return filtered.slice(0, limit);
+  }, [activities, activeProfile?.full_name, limit]);
 
   const handleRefresh = async () => {
     setRefreshing(true);
@@ -178,7 +188,7 @@ const ActivityFeed = ({ networkId, limit = 20, compact = false, autoRefresh = tr
     }
   };
 
-  if (loading && activities.length === 0) {
+  if (loading && filteredActivities.length === 0) {
     return (
       <Card>
         <CardContent>
@@ -213,7 +223,7 @@ const ActivityFeed = ({ networkId, limit = 20, compact = false, autoRefresh = tr
               {compact ? t('activityFeed.recentActivity') : t('activityFeed.whatsHappening')}
             </Typography>
             <Chip
-              label={activities.length}
+              label={filteredActivities.length}
               size="small"
               sx={{
                 height: 20,
@@ -251,7 +261,7 @@ const ActivityFeed = ({ networkId, limit = 20, compact = false, autoRefresh = tr
 
         {/* Activity List */}
         <Collapse in={expanded} timeout="auto">
-          {activities.length === 0 ? (
+          {filteredActivities.length === 0 ? (
             <Box sx={{ textAlign: 'center', py: 4 }}>
               <Typography variant="body2" color="text.secondary">
                 {t('activityFeed.noActivity')}
@@ -259,7 +269,7 @@ const ActivityFeed = ({ networkId, limit = 20, compact = false, autoRefresh = tr
             </Box>
           ) : (
             <List sx={{ p: 0 }}>
-              {activities.map((activity, index) => {
+              {filteredActivities.map((activity, index) => {
                 const activityColor = getActivityColor(activity.activity_type, theme);
                 const isClickable = activity.entity_type && activity.entity_id;
 
@@ -346,7 +356,7 @@ const ActivityFeed = ({ networkId, limit = 20, compact = false, autoRefresh = tr
         </Collapse>
 
         {/* View All Button */}
-        {!compact && activities.length > 0 && (
+        {!compact && filteredActivities.length > 0 && (
           <Box sx={{ textAlign: 'center', mt: 2, pt: 1, borderTop: `1px solid ${theme.palette.divider}` }}>
             <Typography
               variant="caption"
@@ -360,7 +370,7 @@ const ActivityFeed = ({ networkId, limit = 20, compact = false, autoRefresh = tr
               }}
               onClick={handleRefresh}
             >
-              {activities[0] && t('activityFeed.lastUpdated', { time: formatTimeAgo(activities[0].created_at) })}
+              {filteredActivities[0] && t('activityFeed.lastUpdated', { time: formatTimeAgo(filteredActivities[0].created_at) })}
             </Typography>
           </Box>
         )}
