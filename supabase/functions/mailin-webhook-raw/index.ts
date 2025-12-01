@@ -105,17 +105,23 @@ function parseEmailHeaders(headerText: string): Map<string, string> {
   let currentValue = ''
 
   for (const line of lines) {
-    if (line.match(/^[A-Za-z-]+:\s/)) {
-      // New header
+    if (line.match(/^[A-Za-z-]+:/)) {
+      // New header (may or may not have a value on the same line)
       if (currentHeader) {
         headers.set(currentHeader.toLowerCase(), currentValue.trim())
       }
       const colonIndex = line.indexOf(':')
       currentHeader = line.substring(0, colonIndex)
+      // Get value after colon, which might be empty
       currentValue = line.substring(colonIndex + 1).trim()
-    } else if (line.match(/^\s+/)) {
+    } else if (line.match(/^\s+/) && currentHeader) {
       // Continuation of previous header
-      currentValue += ' ' + line.trim()
+      if (currentValue) {
+        currentValue += ' ' + line.trim()
+      } else {
+        // First line of value (when header name was on previous line alone)
+        currentValue = line.trim()
+      }
     }
   }
 
