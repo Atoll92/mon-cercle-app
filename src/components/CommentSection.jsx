@@ -33,6 +33,8 @@ import {
   Close as CloseIcon
 } from '@mui/icons-material';
 import { getItemComments, addComment, updateComment, deleteComment, toggleCommentVisibility } from '../api/comments';
+import { fetchBatchReactionSummaries } from '../api/reactions';
+import { supabase } from '../supabaseclient';
 import { formatTimeAgo } from '../utils/dateFormatting';
 
 /**
@@ -63,6 +65,7 @@ const CommentSection = ({ itemType, itemId, onMemberClick, defaultExpanded = fal
   const [showMemberDetailsModal, setShowMemberDetailsModal] = useState(false);
   const [editingComment, setEditingComment] = useState(null);
   const [editContent, setEditContent] = useState('');
+  const [commentReactions, setCommentReactions] = useState({});
 
   // Fetch comments if we have a user and when itemType or itemId changes
   useEffect(() => {
@@ -82,6 +85,32 @@ const CommentSection = ({ itemType, itemId, onMemberClick, defaultExpanded = fal
     }, 0);
   };
 
+  // Helper function to collect all comment IDs (including nested replies)
+  const collectAllCommentIds = (comments) => {
+    const ids = [];
+    const collect = (commentList) => {
+      commentList.forEach(comment => {
+        ids.push(comment.id);
+        if (comment.replies && comment.replies.length > 0) {
+          collect(comment.replies);
+        }
+      });
+    };
+    collect(comments);
+    return ids;
+  };
+
+  // Batch fetch reactions for all comments
+  const fetchCommentReactions = useCallback(async (commentList) => {
+    const commentIds = collectAllCommentIds(commentList);
+    if (commentIds.length === 0) return;
+
+    const { data, error } = await fetchBatchReactionSummaries(supabase, 'comment', commentIds);
+    if (!error && data) {
+      setCommentReactions(data);
+    }
+  }, []);
+
   const fetchComments = async () => {
     setLoading(true);
     const { data, error } = await getItemComments(itemType, itemId);
@@ -90,6 +119,8 @@ const CommentSection = ({ itemType, itemId, onMemberClick, defaultExpanded = fal
       // Count all comments including nested replies
       const totalCount = countAllComments(data);
       setCommentCount(totalCount);
+      // Batch fetch reactions for all comments
+      await fetchCommentReactions(data);
     }
     setLoading(false);
   };
@@ -242,6 +273,11 @@ const CommentSection = ({ itemType, itemId, onMemberClick, defaultExpanded = fal
   const handleOpenMenuCallback = useCallback((event, comment) => {
     handleOpenMenu(event, comment);
   }, []);
+
+  // Handler for when any comment reaction changes - refresh all reactions
+  const handleReactionChange = useCallback(() => {
+    fetchCommentReactions(comments);
+  }, [comments, fetchCommentReactions]);
 
   const CommentItem = React.memo(({ comment, depth = 0, parentId = null, onOpenMenu }) => {
     const [localEditContent, setLocalEditContent] = useState(comment.content);
@@ -492,6 +528,8 @@ const CommentSection = ({ itemType, itemId, onMemberClick, defaultExpanded = fal
                   contentId={comment.id}
                   initialCount={comment.reaction_count || 0}
                   size="small"
+                  preloadedReactions={commentReactions[comment.id] || {}}
+                  onReactionChange={handleReactionChange}
                 />
               </Box>
 

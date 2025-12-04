@@ -41,8 +41,10 @@ const EMOJI_PICKER = [
  * @param {string} contentId - ID of the content
  * @param {number} initialCount - Initial reaction count (optional, for display only)
  * @param {string} size - Size variant ('xsmall', 'small', 'medium', 'large')
+ * @param {Object} preloadedReactions - Pre-loaded reactions data (optional, skips fetch if provided)
+ * @param {Function} onReactionChange - Callback when reactions change (optional, for parent to refresh batch data)
  */
-const ReactionBar = ({ contentType, contentId, initialCount = 0, size = 'medium' }) => {
+const ReactionBar = ({ contentType, contentId, initialCount = 0, size = 'medium', preloadedReactions = null, onReactionChange = null }) => {
   const theme = useTheme();
   const { activeProfile } = useProfile();
 
@@ -98,11 +100,25 @@ const ReactionBar = ({ contentType, contentId, initialCount = 0, size = 'medium'
 
   console.log('ReactionBar: activeProfile', { activeProfile, profileId, networkId });
 
-  // Fetch reactions on mount
+  // Use preloaded reactions if provided, otherwise fetch
   useEffect(() => {
     if (!contentType || !contentId) return;
-    loadReactions();
-  }, [contentType, contentId]);
+
+    if (preloadedReactions !== null) {
+      // Use preloaded data
+      setReactions(preloadedReactions);
+      // Check if user has reacted
+      if (profileId) {
+        const userEmoji = Object.keys(preloadedReactions).find(emoji =>
+          preloadedReactions[emoji].profileIds.includes(profileId)
+        );
+        setUserReaction(userEmoji || null);
+      }
+    } else {
+      // Fetch reactions
+      loadReactions();
+    }
+  }, [contentType, contentId, preloadedReactions, profileId]);
 
   // Subscribe to real-time updates
   useEffect(() => {
@@ -170,9 +186,14 @@ const ReactionBar = ({ contentType, contentId, initialCount = 0, size = 'medium'
         setUserReaction(emoji);
       }
 
-      // Reload reactions
+      // Reload reactions or notify parent
       console.log('ReactionBar: Reloading reactions after action');
-      await loadReactions();
+      if (onReactionChange) {
+        // Let parent handle the refresh (batch mode)
+        onReactionChange();
+      } else {
+        await loadReactions();
+      }
     } catch (error) {
       console.error('ReactionBar: Error handling reaction:', error);
     } finally {

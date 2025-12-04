@@ -185,6 +185,48 @@ export const fetchProfileReactions = async (supabase, profileId, networkId) => {
 };
 
 /**
+ * Batch fetch reaction summaries for multiple content items
+ * @param {Object} supabase - Supabase client
+ * @param {string} contentType - Type of content
+ * @param {string[]} contentIds - Array of content IDs
+ * @returns {Promise<Object>} - { data: { contentId: { emoji: { count, profileIds } } }, error }
+ */
+export const fetchBatchReactionSummaries = async (supabase, contentType, contentIds) => {
+  if (!contentIds || contentIds.length === 0) {
+    return { data: {} };
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from('reaction_summaries')
+      .select('*')
+      .eq('content_type', contentType)
+      .in('content_id', contentIds);
+
+    if (error) throw error;
+
+    // Transform to nested format: { contentId: { emoji: { count, profileIds } } }
+    const summaries = {};
+    if (data) {
+      data.forEach(item => {
+        if (!summaries[item.content_id]) {
+          summaries[item.content_id] = {};
+        }
+        summaries[item.content_id][item.emoji] = {
+          count: item.count,
+          profileIds: item.profile_ids || []
+        };
+      });
+    }
+
+    return { data: summaries };
+  } catch (error) {
+    console.error('Error fetching batch reaction summaries:', error);
+    return { error: error.message };
+  }
+};
+
+/**
  * Subscribe to reactions for content (real-time)
  * @param {Object} supabase - Supabase client
  * @param {string} contentType - Type of content
