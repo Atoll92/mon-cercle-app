@@ -61,6 +61,11 @@ import {
   School as CoursesIcon,
   Store as MarketplaceIcon,
   CheckCircle as CheckCircleIcon,
+  Timeline as SocialWallIcon,
+  AddReactionOutlined as ReactionsIcon,
+  Feed as ActivityFeedIcon,
+  LocationOn as LocationIcon,
+  NotificationsActive as NotificationsIcon,
 } from '@mui/icons-material';
 import {
   DndContext,
@@ -170,8 +175,13 @@ const NetworkOnboardingWizard = ({ profile }) => {
       chat: true,
       wiki: true,
       moodboards: true,
+      social: true,
+      location: false,
+      notifications: true,
       courses: false,
-      marketplace: false
+      marketplace: false,
+      reactions: true,
+      activity_feed: false
     },
     enabledTabs: ['news', 'members', 'events', 'chat', 'files', 'wiki', 'social'],
     themeColor: theme.palette.primary.main
@@ -350,8 +360,13 @@ const NetworkOnboardingWizard = ({ profile }) => {
             chat: networkData.features.chat,
             wiki: networkData.features.wiki,
             moodboards: networkData.features.moodboards,
+            social: networkData.features.social,
+            location_sharing: networkData.features.location,
+            notifications: networkData.features.notifications,
             courses: networkData.features.courses,
-            marketplace: networkData.features.marketplace
+            marketplace: networkData.features.marketplace,
+            reactions: networkData.features.reactions,
+            activity_feed: networkData.features.activity_feed
           },
           privacy_level: networkData.privacyLevel,
           purpose: networkData.purpose,
@@ -480,7 +495,7 @@ const NetworkOnboardingWizard = ({ profile }) => {
 
   // Main wizard render
   return (
-    <Box sx={{ maxWidth: 800, mx: 'auto' }}>
+    <Box sx={{ width: '100%' }}>
       {error && (
         <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError(null)}>
           {error}
@@ -712,18 +727,52 @@ const PrivacyStep = ({ networkData, setNetworkData }) => {
 const FeaturesStep = ({ networkData, setNetworkData }) => {
   const theme = useTheme();
   const { t } = useTranslation();
-  
-  const handleFeatureChange = (feature) => (e) => {
-    setNetworkData(prev => ({
-      ...prev,
-      features: {
-        ...prev.features,
-        [feature]: e.target.checked
-      }
-    }));
+
+  // Map features to their corresponding tab IDs
+  // Note: 'members' tab has no feature toggle (always available)
+  // Note: 'moodboards', 'location', 'notifications', 'reactions', 'activity_feed' features have no dedicated tab
+  const featureToTabMap = {
+    events: ['events'],
+    news: ['news'],
+    files: ['files'],
+    chat: ['chat'],
+    wiki: ['wiki'],
+    social: ['social'],
+    courses: ['courses'],
+    marketplace: ['marketplace']
   };
 
-  // Feature cards with toggles
+  const handleFeatureChange = (feature) => (e) => {
+    const isEnabled = e.target.checked;
+    const tabIds = featureToTabMap[feature] || [];
+
+    setNetworkData(prev => {
+      let newEnabledTabs = [...prev.enabledTabs];
+
+      if (isEnabled) {
+        // Add tabs if not already present
+        tabIds.forEach(tabId => {
+          if (!newEnabledTabs.includes(tabId)) {
+            newEnabledTabs.push(tabId);
+          }
+        });
+      } else {
+        // Remove tabs when feature is disabled
+        newEnabledTabs = newEnabledTabs.filter(t => !tabIds.includes(t));
+      }
+
+      return {
+        ...prev,
+        features: {
+          ...prev.features,
+          [feature]: isEnabled
+        },
+        enabledTabs: newEnabledTabs
+      };
+    });
+  };
+
+  // Feature cards with toggles - matching NetworkSettingsTab features
   const featureCards = [
     {
       name: 'events',
@@ -756,84 +805,137 @@ const FeaturesStep = ({ networkData, setNetworkData }) => {
       description: t('networkOnboarding.features.wikiDesc'),
     },
     {
-      name: 'moodboards',
-      title: t('networkOnboarding.features.moodboards'),
-      icon: <ImageIcon fontSize="large" sx={{ color: theme.palette.error.main }} />,
-      description: t('networkOnboarding.features.moodboardsDesc'),
+      name: 'social',
+      title: t('networkOnboarding.features.social'),
+      icon: <SocialWallIcon fontSize="large" sx={{ color: theme.palette.info.light }} />,
+      description: t('networkOnboarding.features.socialDesc'),
     },
     {
-      name: 'courses',
-      title: t('networkOnboarding.features.courses'),
-      icon: <CoursesIcon fontSize="large" sx={{ color: theme.palette.primary.dark }} />,
-      description: t('networkOnboarding.features.coursesDesc'),
+      name: 'reactions',
+      title: t('networkOnboarding.features.reactions'),
+      icon: <ReactionsIcon fontSize="large" sx={{ color: theme.palette.success.dark }} />,
+      description: t('networkOnboarding.features.reactionsDesc'),
     },
     {
-      name: 'marketplace',
-      title: t('networkOnboarding.features.marketplace'),
-      icon: <MarketplaceIcon fontSize="large" sx={{ color: theme.palette.secondary.dark }} />,
-      description: t('networkOnboarding.features.marketplaceDesc'),
+      name: 'notifications',
+      title: t('networkOnboarding.features.notifications'),
+      icon: <NotificationsIcon fontSize="large" sx={{ color: theme.palette.warning.dark }} />,
+      description: t('networkOnboarding.features.notificationsDesc'),
     }
   ];
 
   return (
-    <Box>
-      <Typography variant="body1" paragraph>
-        {t('networkOnboarding.features.description')}
-      </Typography>
-      
-      <Grid container spacing={2}>
-        {featureCards.map((feature) => (
-          <Grid item xs={12} sm={6} key={feature.name}>
-            <Card 
-              variant="outlined" 
-              sx={{ 
+    <Box sx={{ width: '100%' }}>
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))' },
+          gap: 1.5,
+          width: '100%'
+        }}
+      >
+        {featureCards.map((feature) => {
+          const isEnabled = networkData.features[feature.name];
+          return (
+            <Box
+              key={feature.name}
+              onClick={() => handleFeatureChange(feature.name)({target: {checked: !isEnabled}})}
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1.5,
+                p: 1.5,
                 borderRadius: 2,
-                borderColor: networkData.features[feature.name] 
-                  ? theme.palette.primary.main 
-                  : theme.palette.divider,
-                bgcolor: networkData.features[feature.name] 
-                  ? alpha(theme.palette.primary.main, 0.05)
-                  : 'transparent',
-                transition: 'all 0.2s ease-in-out',
+                border: '1.5px solid',
+                borderColor: isEnabled ? theme.palette.primary.main : theme.palette.divider,
+                bgcolor: isEnabled ? alpha(theme.palette.primary.main, 0.04) : 'transparent',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                minWidth: 0,
+                overflow: 'hidden',
                 '&:hover': {
                   borderColor: theme.palette.primary.main,
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                  bgcolor: alpha(theme.palette.primary.main, 0.06)
                 }
               }}
             >
-              <CardActionArea 
-                onClick={() => handleFeatureChange(feature.name)({target: {checked: !networkData.features[feature.name]}})}
-                sx={{ 
-                  p: 2,
+              {/* Icon */}
+              <Box
+                sx={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: '10px',
                   display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'flex-start'
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  bgcolor: isEnabled
+                    ? alpha(theme.palette.primary.main, 0.1)
+                    : alpha(theme.palette.grey[500], 0.08),
+                  flexShrink: 0
                 }}
               >
-                <Box sx={{ display: 'flex', width: '100%', mb: 1 }}>
-                  <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center' }}>
-                    {feature.icon}
-                    <Typography variant="h6" sx={{ ml: 1 }}>
-                      {feature.title}
-                    </Typography>
-                  </Box>
-                  <Switch
-                    checked={networkData.features[feature.name]}
-                    onChange={handleFeatureChange(feature.name)}
-                    color="primary"
-                  />
-                </Box>
-                <Typography variant="body2" color="text.secondary">
+                {React.cloneElement(feature.icon, {
+                  fontSize: 'small',
+                  sx: {
+                    color: isEnabled
+                      ? feature.icon.props.sx?.color
+                      : theme.palette.grey[500]
+                  }
+                })}
+              </Box>
+
+              {/* Text content */}
+              <Box sx={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
+                <Typography
+                  variant="body2"
+                  noWrap
+                  sx={{
+                    fontWeight: 600,
+                    color: isEnabled ? theme.palette.text.primary : theme.palette.text.secondary,
+                    lineHeight: 1.3
+                  }}
+                >
+                  {feature.title}
+                </Typography>
+                <Typography
+                  variant="caption"
+                  noWrap
+                  sx={{
+                    color: theme.palette.text.secondary,
+                    display: 'block',
+                    lineHeight: 1.3
+                  }}
+                >
                   {feature.description}
                 </Typography>
-              </CardActionArea>
-            </Card>
-          </Grid>
-        ))}
-      </Grid>
-      
-      <Alert severity="info" sx={{ mt: 3 }}>
-        {t('networkOnboarding.features.changeInfo')}
+              </Box>
+
+              {/* Switch */}
+              <Switch
+                checked={isEnabled}
+                onChange={handleFeatureChange(feature.name)}
+                color="primary"
+                size="small"
+                onClick={(e) => e.stopPropagation()}
+                sx={{ flexShrink: 0 }}
+              />
+            </Box>
+          );
+        })}
+      </Box>
+
+      <Alert
+        severity="info"
+        sx={{
+          mt: 2,
+          borderRadius: 2,
+          py: 0.5,
+          '& .MuiAlert-message': { py: 0.5 }
+        }}
+      >
+        <Typography variant="caption">
+          {t('networkOnboarding.features.changeInfo')}
+        </Typography>
       </Alert>
     </Box>
   );
@@ -857,16 +959,22 @@ const NavigationStep = ({ networkData, setNetworkData }) => {
   );
   
   const availableTabs = [
-    { id: 'news', label: t('networkOnboarding.branding.navigation.tabs.news'), icon: <ArticleIcon fontSize="small" /> },
-    { id: 'members', label: t('networkOnboarding.branding.navigation.tabs.members'), icon: <GroupsIcon fontSize="small" /> },
-    { id: 'events', label: t('networkOnboarding.branding.navigation.tabs.events'), icon: <EventIcon fontSize="small" /> },
-    { id: 'chat', label: t('networkOnboarding.branding.navigation.tabs.chat'), icon: <ForumIcon fontSize="small" /> },
-    { id: 'files', label: t('networkOnboarding.branding.navigation.tabs.files'), icon: <FileIcon fontSize="small" /> },
-    { id: 'wiki', label: t('networkOnboarding.branding.navigation.tabs.wiki'), icon: <WikiIcon fontSize="small" /> },
-    { id: 'social', label: t('networkOnboarding.branding.navigation.tabs.social'), icon: <ImageIcon fontSize="small" /> },
-    { id: 'courses', label: t('networkOnboarding.branding.navigation.tabs.courses'), icon: <CoursesIcon fontSize="small" /> },
-    { id: 'marketplace', label: t('networkOnboarding.branding.navigation.tabs.marketplace'), icon: <MarketplaceIcon fontSize="small" /> }
+    { id: 'news', label: t('networkOnboarding.branding.navigation.tabs.news'), icon: <ArticleIcon fontSize="small" />, featureKey: 'news' },
+    { id: 'members', label: t('networkOnboarding.branding.navigation.tabs.members'), icon: <GroupsIcon fontSize="small" />, featureKey: null }, // Always available
+    { id: 'events', label: t('networkOnboarding.branding.navigation.tabs.events'), icon: <EventIcon fontSize="small" />, featureKey: 'events' },
+    { id: 'chat', label: t('networkOnboarding.branding.navigation.tabs.chat'), icon: <ForumIcon fontSize="small" />, featureKey: 'chat' },
+    { id: 'files', label: t('networkOnboarding.branding.navigation.tabs.files'), icon: <FileIcon fontSize="small" />, featureKey: 'files' },
+    { id: 'wiki', label: t('networkOnboarding.branding.navigation.tabs.wiki'), icon: <WikiIcon fontSize="small" />, featureKey: 'wiki' },
+    { id: 'social', label: t('networkOnboarding.branding.navigation.tabs.social'), icon: <SocialWallIcon fontSize="small" />, featureKey: 'social' },
+    { id: 'courses', label: t('networkOnboarding.branding.navigation.tabs.courses'), icon: <CoursesIcon fontSize="small" />, featureKey: 'courses' },
+    { id: 'marketplace', label: t('networkOnboarding.branding.navigation.tabs.marketplace'), icon: <MarketplaceIcon fontSize="small" />, featureKey: 'marketplace' }
   ];
+
+  // Helper to check if a tab should be visible based on its feature
+  const isTabAvailable = (tab) => {
+    if (tab.featureKey === null) return true; // Always available (like members)
+    return networkData.features[tab.featureKey] !== false;
+  };
   
   // Handle logo upload
   const handleLogoUpload = async (event) => {
@@ -1147,7 +1255,7 @@ const NavigationStep = ({ networkData, setNetworkData }) => {
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                 {networkData.enabledTabs
                   .map(tabId => availableTabs.find(tab => tab.id === tabId))
-                  .filter(tab => tab && networkData.features[tab.id] !== false)
+                  .filter(tab => tab && isTabAvailable(tab))
                   .map((tab) => (
                     <SortableWizardTabChip
                       key={tab.id}
@@ -1160,7 +1268,7 @@ const NavigationStep = ({ networkData, setNetworkData }) => {
             </SortableContext>
           </DndContext>
         </Box>
-        
+
         {/* Available Tabs - Not enabled */}
         <Box>
           <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 'medium' }}>
@@ -1168,7 +1276,7 @@ const NavigationStep = ({ networkData, setNetworkData }) => {
           </Typography>
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
             {availableTabs
-              .filter(tab => !networkData.enabledTabs.includes(tab.id) && networkData.features[tab.id] !== false)
+              .filter(tab => !networkData.enabledTabs.includes(tab.id) && isTabAvailable(tab))
               .map((tab) => (
                 <Chip
                   key={tab.id}
