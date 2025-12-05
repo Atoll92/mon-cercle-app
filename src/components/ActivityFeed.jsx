@@ -314,7 +314,7 @@ const ActivityFeed = ({ networkId, limit = 20, compact = false, autoRefresh = tr
                             color: theme.palette.text.primary
                           }}
                         >
-                          {generateActivityText(activity, t)}
+                          {generateActivityText(activity, t, activeProfile)}
                         </Typography>
                       }
                       secondary={

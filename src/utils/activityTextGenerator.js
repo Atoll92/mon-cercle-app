@@ -1,15 +1,41 @@
 /**
  * Activity Text Generator
  * Generates translated activity text from metadata
+ * Supports personalized text when content belongs to the current user
  */
+
+/**
+ * Check if the content owner matches the current user
+ * @param {Object} metadata - Activity metadata
+ * @param {Object} activeProfile - Current user's active profile
+ * @returns {boolean}
+ */
+const isOwnContent = (metadata, activeProfile) => {
+  if (!activeProfile) return false;
+  const contentOwnerName = metadata?.content_owner_name;
+  return contentOwnerName && contentOwnerName === activeProfile.full_name;
+};
+
+/**
+ * Check if the entity owner matches the current user
+ * @param {Object} metadata - Activity metadata
+ * @param {Object} activeProfile - Current user's active profile
+ * @returns {boolean}
+ */
+const isOwnEntity = (metadata, activeProfile) => {
+  if (!activeProfile) return false;
+  const entityOwnerName = metadata?.entity_owner_name;
+  return entityOwnerName && entityOwnerName === activeProfile.full_name;
+};
 
 /**
  * Generate translated activity text from activity metadata
  * @param {Object} activity - Activity object with type and metadata
  * @param {Function} t - Translation function
+ * @param {Object} activeProfile - Current user's active profile (optional, for personalization)
  * @returns {string} - Translated activity text
  */
-export const generateActivityText = (activity, t) => {
+export const generateActivityText = (activity, t, activeProfile = null) => {
   const { activity_type, metadata, profiles } = activity;
   const name = profiles?.full_name || metadata?.profile_name || 'Unknown';
 
@@ -42,14 +68,25 @@ export const generateActivityText = (activity, t) => {
           title: metadata?.event_title || 'Event'
         });
 
-      case 'comment_added':
+      case 'comment_added': {
         const entityType = metadata?.entity_type || 'item';
         const translatedEntityType = t(`activityFeed.entityTypes.${entityType}`, entityType);
+
+        // Check if comment is on the current user's content
+        if (isOwnEntity(metadata, activeProfile)) {
+          return t('activityFeed.templates.comment_added_own', {
+            name,
+            entityType: translatedEntityType,
+            title: metadata?.entity_title || 'Untitled'
+          }, `${name} commented on your ${translatedEntityType}: ${metadata?.entity_title || 'Untitled'}`);
+        }
+
         return t('activityFeed.templates.comment_added', {
           name,
           entityType: translatedEntityType,
           title: metadata?.entity_title || 'Untitled'
         });
+      }
 
       case 'file_shared':
         return t('activityFeed.templates.file_shared', {
@@ -69,7 +106,7 @@ export const generateActivityText = (activity, t) => {
           badgeName: metadata?.badge_name || 'Badge'
         });
 
-      case 'milestone_reached':
+      case 'milestone_reached': {
         const milestoneType = metadata?.milestone_type || '';
         const milestone = t(`activityFeed.templates.${milestoneType}`, milestoneType);
         // For network milestones, use network name instead of profile name
@@ -78,16 +115,40 @@ export const generateActivityText = (activity, t) => {
           name: displayName,
           milestone
         });
+      }
 
-      case 'reaction_added':
+      case 'reaction_added': {
         const emoji = metadata?.emoji || '👍';
         const contentType = metadata?.content_type || 'post';
-        const contentTitle = metadata?.content_title || t(`activityFeed.entityTypes.${contentType}`, contentType);
+        const translatedContentType = t(`activityFeed.entityTypes.${contentType}`, contentType);
+        const contentTitle = metadata?.content_title;
+
+        // Check if reaction is on the current user's content
+        if (isOwnContent(metadata, activeProfile)) {
+          // Use personalized template: "X reacted to your post"
+          if (contentTitle && contentTitle !== 'comment') {
+            return t('activityFeed.templates.reaction_added_own_titled', {
+              name,
+              emoji,
+              contentType: translatedContentType,
+              contentTitle
+            }, `${name} reacted ${emoji} to your ${translatedContentType}: ${contentTitle}`);
+          }
+          return t('activityFeed.templates.reaction_added_own', {
+            name,
+            emoji,
+            contentType: translatedContentType
+          }, `${name} reacted ${emoji} to your ${translatedContentType}`);
+        }
+
+        // Default non-personalized text
+        const displayTitle = contentTitle || translatedContentType;
         return t('activityFeed.templates.reaction_added', {
           name,
           emoji,
-          contentTitle
-        }, `${name} reacted ${emoji} to ${contentTitle}`);
+          contentTitle: displayTitle
+        }, `${name} reacted ${emoji} to ${displayTitle}`);
+      }
 
       default:
         // Fallback to stored activity_text if no template matches
