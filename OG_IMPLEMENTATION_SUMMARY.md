@@ -95,7 +95,7 @@ User shares: https://www.conclav.club/join/5B1E7D90
 - Social sharing fallback for unknown routes
 
 **Tags Included**:
-- `og:title`: "Conclav - Privacy-Focused Professional Networks"
+- `og:title`: "Conclav - Privacy-Focused Networks"
 - `og:description`: Platform description
 - `og:image`: Conclav logo
 - `twitter:card`: Summary card
