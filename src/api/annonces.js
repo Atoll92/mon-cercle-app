@@ -138,6 +138,108 @@ export const moderateAnnonceWithSympa = async (annonceId, status, category = nul
  * @param {Object} annonceData - Annonce data
  * @returns {Promise<Object>} Created annonce
  */
+/**
+ * Fetch approved annonces for the social wall (RezoProSpec only)
+ * @param {string} networkId - Network ID
+ * @returns {Promise<Array>} Array of approved annonces formatted for social wall
+ */
+export const fetchApprovedAnnoncesForSocialWall = async (networkId) => {
+  // Only fetch annonces for RezoProSpec network
+  const REZOPROSPEC_NETWORK_ID = 'b4e51e21-de8f-4f5b-b35d-f98f6df27508';
+
+  if (networkId !== REZOPROSPEC_NETWORK_ID) {
+    return [];
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from('annonces_moderation')
+      .select('*')
+      .eq('network_id', networkId)
+      .eq('status', 'approved')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching approved annonces:', error);
+      throw error;
+    }
+
+    return data || [];
+  } catch (error) {
+    console.error('Error fetching approved annonces:', error);
+    return [];
+  }
+};
+
+/**
+ * Parse author name from sender email
+ * Extracts name from email format: "Name <email@domain.com>" or uses email prefix
+ * @param {string} senderEmail - Sender email
+ * @param {string} senderName - Sender name (if available)
+ * @returns {string} Parsed author name
+ */
+export const parseAuthorFromEmail = (senderEmail, senderName) => {
+  // If sender name is provided, use it
+  if (senderName && senderName.trim()) {
+    return senderName.trim();
+  }
+
+  if (!senderEmail) {
+    return 'Membre du réseau';
+  }
+
+  // Try to extract name from email format: "Name <email@domain.com>"
+  const nameMatch = senderEmail.match(/^([^<]+)\s*</);
+  if (nameMatch && nameMatch[1].trim()) {
+    return nameMatch[1].trim();
+  }
+
+  // Extract email prefix as fallback
+  const emailMatch = senderEmail.match(/<?([^@<]+)@/);
+  if (emailMatch) {
+    // Convert email prefix to readable name (e.g., "john.doe" -> "John Doe")
+    const prefix = emailMatch[1];
+    return prefix
+      .split(/[._-]/)
+      .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+      .join(' ');
+  }
+
+  return 'Membre du réseau';
+};
+
+/**
+ * Get display label for annonce category
+ * @param {string} category - Category value
+ * @returns {string} Display label
+ */
+export const getAnnonceCategoryLabel = (category) => {
+  const labels = {
+    'general': 'Général',
+    'logement': 'Logement',
+    'espaces_de_travail': 'Espaces de travail',
+    // Legacy category names
+    'ateliers': 'Espaces de travail'
+  };
+  return labels[category] || category || 'Général';
+};
+
+/**
+ * Get color for annonce category
+ * @param {string} category - Category value
+ * @returns {string} Color hex code
+ */
+export const getAnnonceCategoryColor = (category) => {
+  const colors = {
+    'general': '#00bcd4',
+    'logement': '#2196f3',
+    'espaces_de_travail': '#9c27b0',
+    // Legacy category names
+    'ateliers': '#9c27b0'
+  };
+  return colors[category] || '#00bcd4';
+};
+
 export const createAnnonce = async (annonceData) => {
   try {
     const { data, error } = await supabase

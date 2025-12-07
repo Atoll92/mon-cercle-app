@@ -8,6 +8,12 @@ import SocialWallGrid from './SocialWall/SocialWallGrid';
 import { Paper, Divider, Box, alpha, useTheme } from '@mui/material';
 import { fetchNetworkCategories } from '../api/categories';
 import { supabase } from '../supabaseclient';
+import {
+  fetchApprovedAnnoncesForSocialWall,
+  parseAuthorFromEmail,
+  getAnnonceCategoryLabel,
+  getAnnonceCategoryColor
+} from '../api/annonces';
 import { useAuth } from '../context/authcontext';
 import { useProfile } from '../context/profileContext';
 import { getUserProfile } from '../api/networks';
@@ -36,6 +42,7 @@ const SocialWallTab = ({
 
   // State for post items
   const [postItems, setPostItems] = useState([]);
+  const [annonceItems, setAnnonceItems] = useState([]);
   const [initialItemOrder, setInitialItemOrder] = useState(null);
   const [initialLoading, setInitialLoading] = useState(true);
 
@@ -110,6 +117,42 @@ const SocialWallTab = ({
     }
   }, []);
 
+  // Fetch approved annonces for RezoProSpec network
+  const fetchAnnoncesForNetwork = useCallback(async (currentNetworkId) => {
+    if (!currentNetworkId) {
+      return;
+    }
+
+    try {
+      const annonces = await fetchApprovedAnnoncesForSocialWall(currentNetworkId);
+
+      // Transform annonces to social wall item format
+      const annonceItemsFormatted = annonces.map(annonce => ({
+        ...annonce,
+        itemType: 'annonce',
+        createdAt: annonce.created_at,
+        stableId: `annonce-${annonce.id}`,
+        // Parse author from sender email/name
+        memberName: parseAuthorFromEmail(annonce.sender_email, annonce.sender_name),
+        memberAvatar: '', // Annonces don't have avatars
+        memberId: null, // Annonces don't have profile IDs
+        // Map annonce fields to news-like structure
+        title: annonce.subject || 'Annonce',
+        content: annonce.content,
+        // Category info for display
+        annonceCategory: annonce.category,
+        annonceCategoryLabel: getAnnonceCategoryLabel(annonce.category),
+        annonceCategoryColor: getAnnonceCategoryColor(annonce.category),
+        // Network info
+        network_id: annonce.network_id
+      }));
+
+      setAnnonceItems(annonceItemsFormatted);
+    } catch (err) {
+      console.error('Error fetching annonces:', err);
+    }
+  }, []);
+
   // Prepare social wall items
   const socialWallItems = useMemo(() => {
     const newsItems = networkNews ? networkNews.map(item => {
@@ -136,7 +179,8 @@ const SocialWallTab = ({
       stableId: `post-${item.id}`
     }));
 
-    let combinedFeed = [...newsItems, ...postItemsWithIds];
+    // Annonces already have stableId set in fetchAnnoncesForNetwork
+    let combinedFeed = [...newsItems, ...postItemsWithIds, ...annonceItems];
 
     if (initialItemOrder && initialItemOrder.length > 0) {
       const itemMap = new Map();
@@ -162,7 +206,7 @@ const SocialWallTab = ({
     }
 
     return combinedFeed;
-  }, [networkNews, postItems, initialItemOrder]);
+  }, [networkNews, postItems, annonceItems, initialItemOrder]);
 
   // Set initial order once when items are first loaded
   useEffect(() => {
@@ -227,13 +271,15 @@ const SocialWallTab = ({
     return () => window.removeEventListener('scroll', throttledScroll);
   }, [throttledScroll]);
 
-  // Fetch post items for the network
+  // Fetch post items and annonces for the network
   useEffect(() => {
     const currentNetworkId = networkId || network?.id || activeProfile?.network_id;
     if (currentNetworkId) {
       fetchPostItemsForNetwork(currentNetworkId);
+      // Fetch annonces (only returns data for RezoProSpec network)
+      fetchAnnoncesForNetwork(currentNetworkId);
     }
-  }, [networkId, network?.id, activeProfile?.network_id, fetchPostItemsForNetwork]);
+  }, [networkId, network?.id, activeProfile?.network_id, fetchPostItemsForNetwork, fetchAnnoncesForNetwork]);
 
   // Load categories
   useEffect(() => {

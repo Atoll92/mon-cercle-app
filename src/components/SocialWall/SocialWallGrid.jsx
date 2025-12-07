@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { Box, Typography, useTheme, useMediaQuery } from '@mui/material';
 import PostCard from '../PostCard';
 import NewsCard from './NewsCard';
+import AnnonceCard from './AnnonceCard';
 import Spinner from '../Spinner';
 import { useCardAnimations } from '../../hooks/useCardAnimations';
 
@@ -114,6 +115,34 @@ const SocialWallGrid = React.memo(({
                   boxShadow: darkMode ? '0 6px 20px rgba(0,0,0,0.25)' : '0 6px 20px rgba(0,0,0,0.08)'
                 }
               }}
+            />
+          </Box>
+        );
+      }
+
+      // Handle annonces with AnnonceCard component (RezoProSpec only)
+      if (item.itemType === 'annonce') {
+        return (
+          <Box
+            key={cardId}
+            data-social-wall-card="true"
+            data-item-type="annonce"
+            data-item-id={item.id}
+            ref={(el) => {
+              setAnimationRef(originalIndex)(el);
+              if (isRefItem && lastItemRef) {
+                lastItemRef(el);
+              }
+            }}
+            sx={{ mb: 3 }}
+          >
+            <AnnonceCard
+              item={item}
+              darkMode={darkMode}
+              customLightText={customLightText}
+              customFadedText={customFadedText}
+              customBorder={customBorder}
+              onMemberClick={onMemberClick}
             />
           </Box>
         );
