@@ -203,7 +203,7 @@ function generateErrorHTML(message: string): Response {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Invitation Error - Conclav</title>
   <meta property="og:title" content="Conclav Networks">
-  <meta property="og:description" content="Join professional networks on Conclav">
+  <meta property="og:description" content="Join networks on Conclav">
   <meta property="og:image" content="${APP_URL}/logo.png">
   <style>
     body {

@@ -14,13 +14,13 @@ const DynamicMetaTags = () => {
     // Meta content by language
     const metaContent = {
       en: {
-        title: 'Conclav - Privacy-Focused Professional Networks',
-        description: 'Create private professional networks in minutes. No tracking, no ads, no Big Tech. GDPR compliant. Made in Europe.',
+        title: 'Conclav - Privacy-Focused Networks',
+        description: 'Create private networks in minutes. No tracking, no ads, no Big Tech. GDPR compliant. Made in Europe.',
         locale: 'en_US'
       },
       fr: {
-        title: 'Conclav - Réseaux Professionnels Privés',
-        description: 'Créez des réseaux professionnels privés en quelques minutes. Aucun traçage, aucune pub, aucune Big Tech. Conforme RGPD. Conçu en Europe.',
+        title: 'Conclav - Réseaux Privés',
+        description: 'Créez des réseaux privés en quelques minutes. Aucun traçage, aucune pub, aucune Big Tech. Conforme RGPD. Conçu en Europe.',
         locale: 'fr_FR'
       }
     };

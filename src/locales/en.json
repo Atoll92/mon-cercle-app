@@ -474,7 +474,7 @@
       "websiteUrlHelper": "Your personal website, blog, or portfolio (optional)",
       "linkedinUrl": "LinkedIn Profile",
       "linkedinUrlPlaceholder": "https://linkedin.com/in/your-profile",
-      "linkedinUrlHelper": "Connect with your professional network (optional)",
+      "linkedinUrlHelper": "Connect with your network (optional)",
       "infoMessage": "These links help other members learn more about you and connect outside the network"
     },
     "introPost": {
