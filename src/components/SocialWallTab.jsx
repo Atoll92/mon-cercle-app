@@ -14,6 +14,16 @@ import {
   getAnnonceCategoryLabel,
   getAnnonceCategoryColor
 } from '../api/annonces';
+
+// RezoProSpec network ID
+const REZOPROSPEC_NETWORK_ID = 'b4e51e21-de8f-4f5b-b35d-f98f6df27508';
+
+// RezoProSpec annonce categories (same as in AnnoncesModerationTab)
+const REZOPROSPEC_CATEGORIES = [
+  { id: 'general', name: 'Général', color: '#00bcd4' },
+  { id: 'logement', name: 'Logement', color: '#2196f3' },
+  { id: 'espaces_de_travail', name: 'Espaces de travail', color: '#9c27b0' }
+];
 import { useAuth } from '../context/authcontext';
 import { useProfile } from '../context/profileContext';
 import { getUserProfile } from '../api/networks';
@@ -221,7 +231,14 @@ const SocialWallTab = ({
     let items = socialWallItems;
 
     if (selectedCategory) {
-      items = items.filter(item => item.category_id === selectedCategory);
+      items = items.filter(item => {
+        // For annonces, match against annonceCategory
+        if (item.itemType === 'annonce') {
+          return item.annonceCategory === selectedCategory;
+        }
+        // For news/posts, match against category_id
+        return item.category_id === selectedCategory;
+      });
     }
 
     return [...items].sort((a, b) => {
@@ -281,11 +298,19 @@ const SocialWallTab = ({
     }
   }, [networkId, network?.id, activeProfile?.network_id, fetchPostItemsForNetwork, fetchAnnoncesForNetwork]);
 
-  // Load categories
+  // Load categories - use RezoProSpec annonce categories for that network only
   useEffect(() => {
     const loadCategories = async () => {
       if (!networkId && !activeProfile?.network_id) return;
       const netId = networkId || activeProfile?.network_id;
+
+      // For RezoProSpec, use only annonce categories
+      if (netId === REZOPROSPEC_NETWORK_ID) {
+        setCategories(REZOPROSPEC_CATEGORIES);
+        return;
+      }
+
+      // For other networks, fetch regular network categories
       const { data, error } = await fetchNetworkCategories(netId, true);
       if (data && !error) {
         setCategories(data);
