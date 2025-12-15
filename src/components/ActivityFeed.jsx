@@ -177,7 +177,7 @@ const ActivityFeed = ({ networkId, limit = 20, compact = false, autoRefresh = tr
           navigate(`/network/${networkId}/news/${activity.entity_id}`);
           break;
         case 'event':
-          navigate(`/network/${networkId}/events`);
+          navigate(`/network/${networkId}/event/${activity.entity_id}`);
           break;
         case 'wiki':
           navigate(`/network/${networkId}/wiki`);
