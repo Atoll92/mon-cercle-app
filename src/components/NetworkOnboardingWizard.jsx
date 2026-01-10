@@ -66,7 +66,11 @@ import {
   Feed as ActivityFeedIcon,
   LocationOn as LocationIcon,
   NotificationsActive as NotificationsIcon,
+  RssFeed as BlogIcon,
+  Comment as CommentIcon,
+  Link as LinkIcon,
 } from '@mui/icons-material';
+import { checkSubdomainAvailability } from '../api/blog';
 import {
   DndContext,
   closestCenter,
@@ -164,6 +168,7 @@ const NetworkOnboardingWizard = ({ profile }) => {
   const defaultNetworkData = {
     name: '',
     description: '',
+    networkType: 'network', // 'network' or 'blog'
     purpose: 'general',
     privacyLevel: 'private',
     logoUrl: '',
@@ -184,7 +189,23 @@ const NetworkOnboardingWizard = ({ profile }) => {
       activity_feed: false
     },
     enabledTabs: ['news', 'members', 'events', 'chat', 'files', 'wiki', 'social'],
-    themeColor: theme.palette.primary.main
+    themeColor: theme.palette.primary.main,
+    // Blog-specific fields
+    subdomain: '',
+    blogSettings: {
+      comments_enabled: true,
+      anonymous_comments: true,
+      comment_moderation: true,
+      newsletter_enabled: false,
+      rss_enabled: true,
+      about_page_content: '',
+      social_links: {}
+    },
+    seoSettings: {
+      meta_title: '',
+      meta_description: '',
+      og_image_url: ''
+    }
   };
 
   // Initialize state from localStorage or defaults
@@ -267,15 +288,17 @@ const NetworkOnboardingWizard = ({ profile }) => {
     }
   };
 
-  // Steps of the wizard
-  const steps = [
+  // Steps of the wizard - different steps for blog vs network
+  const isBlog = networkData.networkType === 'blog';
+
+  const networkSteps = [
     {
       label: t('networkOnboarding.steps.basics'),
       description: t('networkOnboarding.basics.description'),
       component: (
-        <BasicInfoStep 
-          networkData={networkData} 
-          setNetworkData={setNetworkData} 
+        <BasicInfoStep
+          networkData={networkData}
+          setNetworkData={setNetworkData}
         />
       )
     },
@@ -283,9 +306,9 @@ const NetworkOnboardingWizard = ({ profile }) => {
       label: t('networkOnboarding.steps.privacy'),
       description: t('networkOnboarding.privacy.description'),
       component: (
-        <PrivacyStep 
-          networkData={networkData} 
-          setNetworkData={setNetworkData} 
+        <PrivacyStep
+          networkData={networkData}
+          setNetworkData={setNetworkData}
         />
       )
     },
@@ -293,9 +316,9 @@ const NetworkOnboardingWizard = ({ profile }) => {
       label: t('networkOnboarding.steps.features'),
       description: t('networkOnboarding.features.description'),
       component: (
-        <FeaturesStep 
-          networkData={networkData} 
-          setNetworkData={setNetworkData} 
+        <FeaturesStep
+          networkData={networkData}
+          setNetworkData={setNetworkData}
         />
       )
     },
@@ -303,9 +326,9 @@ const NetworkOnboardingWizard = ({ profile }) => {
       label: t('networkOnboarding.steps.branding'),
       description: t('networkOnboarding.branding.description'),
       component: (
-        <NavigationStep 
-          networkData={networkData} 
-          setNetworkData={setNetworkData} 
+        <NavigationStep
+          networkData={networkData}
+          setNetworkData={setNetworkData}
         />
       )
     },
@@ -313,12 +336,66 @@ const NetworkOnboardingWizard = ({ profile }) => {
       label: t('networkOnboarding.steps.review'),
       description: t('networkOnboarding.review.description'),
       component: (
-        <ReviewStep 
-          networkData={networkData} 
+        <ReviewStep
+          networkData={networkData}
         />
       )
     }
   ];
+
+  const blogSteps = [
+    {
+      label: t('networkOnboarding.steps.basics'),
+      description: t('networkOnboarding.blog.basics.description', 'Set up your personal blog'),
+      component: (
+        <BasicInfoStep
+          networkData={networkData}
+          setNetworkData={setNetworkData}
+        />
+      )
+    },
+    {
+      label: t('networkOnboarding.blog.steps.subdomain', 'Blog Address'),
+      description: t('networkOnboarding.blog.subdomain.description', 'Choose your blog URL'),
+      component: (
+        <BlogSubdomainStep
+          networkData={networkData}
+          setNetworkData={setNetworkData}
+        />
+      )
+    },
+    {
+      label: t('networkOnboarding.steps.branding'),
+      description: t('networkOnboarding.blog.branding.description', 'Customize your blog appearance'),
+      component: (
+        <BlogBrandingStep
+          networkData={networkData}
+          setNetworkData={setNetworkData}
+        />
+      )
+    },
+    {
+      label: t('networkOnboarding.blog.steps.settings', 'Blog Settings'),
+      description: t('networkOnboarding.blog.settings.description', 'Configure comments and features'),
+      component: (
+        <BlogSettingsStep
+          networkData={networkData}
+          setNetworkData={setNetworkData}
+        />
+      )
+    },
+    {
+      label: t('networkOnboarding.steps.review'),
+      description: t('networkOnboarding.review.description'),
+      component: (
+        <BlogReviewStep
+          networkData={networkData}
+        />
+      )
+    }
+  ];
+
+  const steps = isBlog ? blogSteps : networkSteps;
 
   // Handle next button click
   const handleNext = () => {
@@ -345,35 +422,68 @@ const NetworkOnboardingWizard = ({ profile }) => {
       setLoading(true);
       setError(null);
 
+      const isBlogNetwork = networkData.networkType === 'blog';
+
+      // Build the network record based on type
+      const networkRecord = {
+        name: networkData.name,
+        description: networkData.description,
+        created_by: user.id,
+        logo_url: networkData.logoUrl || null,
+        theme_color: networkData.themeColor,
+        background_image_url: networkData.backgroundImageUrl || null,
+        network_type: networkData.networkType
+      };
+
+      if (isBlogNetwork) {
+        // Blog-specific settings
+        networkRecord.privacy_level = 'public'; // Blogs are always public
+        networkRecord.purpose = 'general';
+        networkRecord.subdomain = networkData.subdomain?.toLowerCase() || null;
+        networkRecord.blog_settings = networkData.blogSettings;
+        networkRecord.seo_settings = networkData.seoSettings;
+        networkRecord.features_config = {
+          events: false,
+          news: false,
+          files: false,
+          chat: false,
+          wiki: false,
+          moodboards: false,
+          social: false,
+          location_sharing: false,
+          notifications: true,
+          courses: false,
+          marketplace: false,
+          reactions: false,
+          activity_feed: false
+        };
+        networkRecord.enabled_tabs = []; // Blog doesn't use tabs
+      } else {
+        // Regular network settings
+        networkRecord.privacy_level = networkData.privacyLevel;
+        networkRecord.purpose = networkData.purpose;
+        networkRecord.enabled_tabs = networkData.enabledTabs;
+        networkRecord.features_config = {
+          events: networkData.features.events,
+          news: networkData.features.news,
+          files: networkData.features.files,
+          chat: networkData.features.chat,
+          wiki: networkData.features.wiki,
+          moodboards: networkData.features.moodboards,
+          social: networkData.features.social,
+          location_sharing: networkData.features.location,
+          notifications: networkData.features.notifications,
+          courses: networkData.features.courses,
+          marketplace: networkData.features.marketplace,
+          reactions: networkData.features.reactions,
+          activity_feed: networkData.features.activity_feed
+        };
+      }
+
       // Create network in the database
       const { data: network, error: networkError } = await supabase
         .from('networks')
-        .insert([{
-          name: networkData.name,
-          description: networkData.description,
-          created_by: user.id,
-          logo_url: networkData.logoUrl || null,
-          features_config: {
-            events: networkData.features.events,
-            news: networkData.features.news,
-            files: networkData.features.files,
-            chat: networkData.features.chat,
-            wiki: networkData.features.wiki,
-            moodboards: networkData.features.moodboards,
-            social: networkData.features.social,
-            location_sharing: networkData.features.location,
-            notifications: networkData.features.notifications,
-            courses: networkData.features.courses,
-            marketplace: networkData.features.marketplace,
-            reactions: networkData.features.reactions,
-            activity_feed: networkData.features.activity_feed
-          },
-          privacy_level: networkData.privacyLevel,
-          purpose: networkData.purpose,
-          enabled_tabs: networkData.enabledTabs,
-          theme_color: networkData.themeColor,
-          background_image_url: networkData.backgroundImageUrl || null
-        }])
+        .insert([networkRecord])
         .select()
         .single();
 
@@ -407,17 +517,19 @@ const NetworkOnboardingWizard = ({ profile }) => {
         await setActiveProfile(newProfile);
       }
 
-      // Track network creation event (fire and forget - don't block)
+      // Track network/blog creation event (fire and forget - don't block)
       supabase.from('analytics_events').insert({
-        event_type: 'network_created',
+        event_type: isBlogNetwork ? 'blog_created' : 'network_created',
         user_id: user.id,
         network_id: network.id,
         profile_id: newProfile?.id,
         metadata: {
           network_name: network.name,
-          privacy_level: networkData.privacyLevel,
+          network_type: networkData.networkType,
+          privacy_level: isBlogNetwork ? 'public' : networkData.privacyLevel,
           purpose: networkData.purpose,
-          features_enabled: Object.keys(networkData.features).filter(k => networkData.features[k])
+          subdomain: isBlogNetwork ? networkData.subdomain : null,
+          features_enabled: isBlogNetwork ? [] : Object.keys(networkData.features).filter(k => networkData.features[k])
         }
       }).then(() => {
         // Analytics tracked successfully
@@ -436,10 +548,17 @@ const NetworkOnboardingWizard = ({ profile }) => {
         sessionStorage.setItem(`show_admin_onboarding_${network.id}_${newProfile.id}`, 'true');
       }
 
-      // Do a hard reload to ensure all contexts are properly refreshed with the new network
+      // Redirect based on network type
       setTimeout(() => {
-        console.log('Redirecting to dashboard with hard reload after network creation');
-        window.location.href = '/dashboard';
+        if (isBlogNetwork) {
+          // Redirect to blog admin dashboard using the subdomain
+          console.log('Redirecting to blog admin after blog creation');
+          window.location.href = `/blog/${networkData.subdomain.toLowerCase()}/admin`;
+        } else {
+          // Do a hard reload to ensure all contexts are properly refreshed with the new network
+          console.log('Redirecting to dashboard with hard reload after network creation');
+          window.location.href = '/dashboard';
+        }
       }, 2000);
       
     } catch (error) {
@@ -542,8 +661,9 @@ const NetworkOnboardingWizard = ({ profile }) => {
                     variant="contained"
                     onClick={handleNext}
                     sx={{ mt: 1, mr: 1 }}
-                    disabled={loading || 
-                      (index === 0 && !networkData.name) || 
+                    disabled={loading ||
+                      (index === 0 && !networkData.name) ||
+                      (isBlog && index === 1 && (!networkData.subdomain || networkData.subdomain.length < 3)) ||
                       (index === steps.length - 1 && loading)
                     }
                     endIcon={index === steps.length - 1 ? <CreateIcon /> : <ArrowForwardIcon />}
@@ -577,6 +697,8 @@ const NetworkOnboardingWizard = ({ profile }) => {
 // Step 1: Basic network information
 const BasicInfoStep = ({ networkData, setNetworkData }) => {
   const { t } = useTranslation();
+  const theme = useTheme();
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setNetworkData(prev => ({
@@ -585,47 +707,162 @@ const BasicInfoStep = ({ networkData, setNetworkData }) => {
     }));
   };
 
+  const handleNetworkTypeChange = (type) => {
+    setNetworkData(prev => ({
+      ...prev,
+      networkType: type
+    }));
+  };
+
+  const isBlog = networkData.networkType === 'blog';
+
   return (
     <Stack spacing={3}>
+      {/* Network Type Selection */}
+      <Box>
+        <FormLabel sx={{ mb: 2, display: 'block' }}>
+          {t('networkOnboarding.basics.whatToCreate', 'What would you like to create?')}
+        </FormLabel>
+        <Grid container spacing={2}>
+          <Grid item xs={12} sm={6}>
+            <Card
+              variant="outlined"
+              sx={{
+                cursor: 'pointer',
+                borderWidth: 2,
+                borderColor: !isBlog ? theme.palette.primary.main : 'divider',
+                bgcolor: !isBlog ? alpha(theme.palette.primary.main, 0.04) : 'transparent',
+                transition: 'all 0.2s ease',
+                '&:hover': {
+                  borderColor: theme.palette.primary.main,
+                  bgcolor: alpha(theme.palette.primary.main, 0.06)
+                }
+              }}
+              onClick={() => handleNetworkTypeChange('network')}
+            >
+              <CardActionArea sx={{ p: 2 }}>
+                <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+                  <Box
+                    sx={{
+                      p: 1.5,
+                      borderRadius: 2,
+                      bgcolor: !isBlog ? alpha(theme.palette.primary.main, 0.1) : 'grey.100'
+                    }}
+                  >
+                    <GroupsIcon sx={{ fontSize: 32, color: !isBlog ? 'primary.main' : 'grey.500' }} />
+                  </Box>
+                  <Box sx={{ flex: 1 }}>
+                    <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+                      {t('networkOnboarding.basics.networkOption.title', 'Community Network')}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {t('networkOnboarding.basics.networkOption.description', 'Full-featured community with events, chat, wiki, files, and more')}
+                    </Typography>
+                  </Box>
+                  {!isBlog && (
+                    <CheckCircleIcon sx={{ color: 'primary.main' }} />
+                  )}
+                </Box>
+              </CardActionArea>
+            </Card>
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <Card
+              variant="outlined"
+              sx={{
+                cursor: 'pointer',
+                borderWidth: 2,
+                borderColor: isBlog ? theme.palette.primary.main : 'divider',
+                bgcolor: isBlog ? alpha(theme.palette.primary.main, 0.04) : 'transparent',
+                transition: 'all 0.2s ease',
+                '&:hover': {
+                  borderColor: theme.palette.primary.main,
+                  bgcolor: alpha(theme.palette.primary.main, 0.06)
+                }
+              }}
+              onClick={() => handleNetworkTypeChange('blog')}
+            >
+              <CardActionArea sx={{ p: 2 }}>
+                <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+                  <Box
+                    sx={{
+                      p: 1.5,
+                      borderRadius: 2,
+                      bgcolor: isBlog ? alpha(theme.palette.primary.main, 0.1) : 'grey.100'
+                    }}
+                  >
+                    <BlogIcon sx={{ fontSize: 32, color: isBlog ? 'primary.main' : 'grey.500' }} />
+                  </Box>
+                  <Box sx={{ flex: 1 }}>
+                    <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+                      {t('networkOnboarding.basics.blogOption.title', 'Personal Blog')}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {t('networkOnboarding.basics.blogOption.description', 'Simple public blog with posts, media, and optional comments')}
+                    </Typography>
+                  </Box>
+                  {isBlog && (
+                    <CheckCircleIcon sx={{ color: 'primary.main' }} />
+                  )}
+                </Box>
+              </CardActionArea>
+            </Card>
+          </Grid>
+        </Grid>
+      </Box>
+
+      <Divider />
+
       <TextField
-        label={t('networkOnboarding.basics.networkName')}
+        label={isBlog
+          ? t('networkOnboarding.basics.blogName', 'Blog Name')
+          : t('networkOnboarding.basics.networkName')}
         name="name"
         value={networkData.name}
         onChange={handleChange}
         fullWidth
         required
-        helperText={t('networkOnboarding.basics.networkNameHelper')}
+        helperText={isBlog
+          ? t('networkOnboarding.basics.blogNameHelper', 'This will be displayed as your blog title')
+          : t('networkOnboarding.basics.networkNameHelper')}
         variant="outlined"
       />
-      
+
       <TextField
-        label={t('networkOnboarding.basics.networkDescription')}
+        label={isBlog
+          ? t('networkOnboarding.basics.blogDescription', 'Blog Description')
+          : t('networkOnboarding.basics.networkDescription')}
         name="description"
         value={networkData.description}
         onChange={handleChange}
         multiline
         rows={3}
         fullWidth
-        helperText={t('networkOnboarding.basics.descriptionHelper')}
+        helperText={isBlog
+          ? t('networkOnboarding.basics.blogDescriptionHelper', 'A short description that appears in search results and your blog header')
+          : t('networkOnboarding.basics.descriptionHelper')}
         variant="outlined"
       />
-      
-      <FormControl fullWidth>
-        <FormLabel id="purpose-type-label">{t('networkOnboarding.basics.networkType')}</FormLabel>
-        <RadioGroup
-          aria-labelledby="purpose-type-label"
-          name="purpose"
-          value={networkData.purpose}
-          onChange={handleChange}
-          row
-        >
-          <FormControlLabel value="general" control={<Radio />} label={t('networkOnboarding.basics.types.general')} />
-          <FormControlLabel value="professional" control={<Radio />} label={t('networkOnboarding.basics.types.professional')} />
-          <FormControlLabel value="interest" control={<Radio />} label={t('networkOnboarding.basics.types.interest')} />
-          <FormControlLabel value="education" control={<Radio />} label={t('networkOnboarding.basics.types.education')} />
-          <FormControlLabel value="nonprofit" control={<Radio />} label={t('networkOnboarding.basics.types.nonprofit')} />
-        </RadioGroup>
-      </FormControl>
+
+      {/* Only show purpose selection for networks, not blogs */}
+      {!isBlog && (
+        <FormControl fullWidth>
+          <FormLabel id="purpose-type-label">{t('networkOnboarding.basics.networkType')}</FormLabel>
+          <RadioGroup
+            aria-labelledby="purpose-type-label"
+            name="purpose"
+            value={networkData.purpose}
+            onChange={handleChange}
+            row
+          >
+            <FormControlLabel value="general" control={<Radio />} label={t('networkOnboarding.basics.types.general')} />
+            <FormControlLabel value="professional" control={<Radio />} label={t('networkOnboarding.basics.types.professional')} />
+            <FormControlLabel value="interest" control={<Radio />} label={t('networkOnboarding.basics.types.interest')} />
+            <FormControlLabel value="education" control={<Radio />} label={t('networkOnboarding.basics.types.education')} />
+            <FormControlLabel value="nonprofit" control={<Radio />} label={t('networkOnboarding.basics.types.nonprofit')} />
+          </RadioGroup>
+        </FormControl>
+      )}
     </Stack>
   );
 };
@@ -1609,6 +1846,732 @@ const ReviewStep = ({ networkData }) => {
                 />
               ))}
             </Box>
+          </Grid>
+        </Grid>
+      </Paper>
+    </Box>
+  );
+};
+
+// ============================================
+// Blog-Specific Wizard Steps
+// ============================================
+
+// Blog Step 2: Subdomain Selection
+const BlogSubdomainStep = ({ networkData, setNetworkData }) => {
+  const { t } = useTranslation();
+  const theme = useTheme();
+  const [checking, setChecking] = useState(false);
+  const [availability, setAvailability] = useState(null); // null, 'available', 'taken'
+  const [checkError, setCheckError] = useState(null);
+
+  const handleSubdomainChange = (e) => {
+    const value = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '');
+    setNetworkData(prev => ({
+      ...prev,
+      subdomain: value
+    }));
+    // Reset availability check
+    setAvailability(null);
+    setCheckError(null);
+  };
+
+  const handleCheckAvailability = async () => {
+    if (!networkData.subdomain || networkData.subdomain.length < 3) {
+      setCheckError(t('networkOnboarding.blog.subdomain.tooShort', 'Subdomain must be at least 3 characters'));
+      return;
+    }
+
+    setChecking(true);
+    setCheckError(null);
+
+    try {
+      const isAvailable = await checkSubdomainAvailability(networkData.subdomain);
+      setAvailability(isAvailable ? 'available' : 'taken');
+    } catch (error) {
+      setCheckError(t('networkOnboarding.blog.subdomain.checkError', 'Error checking availability'));
+    } finally {
+      setChecking(false);
+    }
+  };
+
+  const blogUrl = networkData.subdomain
+    ? `${networkData.subdomain}.conclav.club`
+    : 'yourblog.conclav.club';
+
+  return (
+    <Stack spacing={3}>
+      <Paper
+        elevation={0}
+        sx={{
+          p: 3,
+          borderRadius: 2,
+          border: '1px solid',
+          borderColor: 'divider',
+          bgcolor: alpha(theme.palette.info.light, 0.05)
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+          <LinkIcon sx={{ mr: 1, color: 'info.main' }} />
+          <Typography variant="subtitle1" fontWeight="medium">
+            {t('networkOnboarding.blog.subdomain.title', 'Choose Your Blog Address')}
+          </Typography>
+        </Box>
+
+        <Typography variant="body2" color="text.secondary" paragraph>
+          {t('networkOnboarding.blog.subdomain.helper', 'This will be your blog\'s unique web address. Choose something memorable!')}
+        </Typography>
+
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+          <TextField
+            value={networkData.subdomain}
+            onChange={handleSubdomainChange}
+            placeholder="myblog"
+            variant="outlined"
+            size="small"
+            sx={{ width: 200 }}
+            inputProps={{
+              maxLength: 63,
+              style: { fontFamily: 'monospace' }
+            }}
+          />
+          <Typography variant="body1" color="text.secondary" sx={{ fontFamily: 'monospace' }}>
+            .conclav.club
+          </Typography>
+          <Button
+            variant="outlined"
+            size="small"
+            onClick={handleCheckAvailability}
+            disabled={checking || !networkData.subdomain || networkData.subdomain.length < 3}
+          >
+            {checking ? <Spinner size={20} /> : t('networkOnboarding.blog.subdomain.check', 'Check')}
+          </Button>
+        </Box>
+
+        {availability === 'available' && (
+          <Alert severity="success" sx={{ mt: 1 }}>
+            <Typography variant="body2">
+              <strong>{blogUrl}</strong> {t('networkOnboarding.blog.subdomain.available', 'is available!')}
+            </Typography>
+          </Alert>
+        )}
+
+        {availability === 'taken' && (
+          <Alert severity="error" sx={{ mt: 1 }}>
+            <Typography variant="body2">
+              <strong>{blogUrl}</strong> {t('networkOnboarding.blog.subdomain.taken', 'is already taken. Please choose another.')}
+            </Typography>
+          </Alert>
+        )}
+
+        {checkError && (
+          <Alert severity="warning" sx={{ mt: 1 }}>
+            {checkError}
+          </Alert>
+        )}
+
+        <Box
+          sx={{
+            mt: 3,
+            p: 2,
+            bgcolor: 'background.paper',
+            borderRadius: 1,
+            border: '1px dashed',
+            borderColor: 'divider'
+          }}
+        >
+          <Typography variant="caption" color="text.secondary" display="block" gutterBottom>
+            {t('networkOnboarding.blog.subdomain.preview', 'Preview')}
+          </Typography>
+          <Typography variant="h6" sx={{ fontFamily: 'monospace', color: 'primary.main' }}>
+            https://{blogUrl}
+          </Typography>
+        </Box>
+      </Paper>
+
+      <Alert severity="info">
+        {t('networkOnboarding.blog.subdomain.customDomainInfo', 'You can add a custom domain (like myblog.com) later in settings.')}
+      </Alert>
+    </Stack>
+  );
+};
+
+// Blog Step 3: Branding (simplified version)
+const BlogBrandingStep = ({ networkData, setNetworkData }) => {
+  const theme = useTheme();
+  const { t } = useTranslation();
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState(null);
+
+  // Handle logo upload
+  const handleLogoUpload = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      setUploadError(t('networkOnboarding.branding.logo.error.invalidType'));
+      return;
+    }
+
+    if (file.size > 2 * 1024 * 1024) {
+      setUploadError(t('networkOnboarding.branding.logo.error.tooLarge'));
+      return;
+    }
+
+    try {
+      setUploading(true);
+      setUploadError(null);
+
+      const fileExt = file.name.split('.').pop();
+      const fileName = `temp-logos/${Date.now()}-blog-logo.${fileExt}`;
+
+      const { error: uploadErr } = await supabase.storage
+        .from('networks')
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: true,
+          contentType: file.type
+        });
+
+      if (uploadErr) throw uploadErr;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('networks')
+        .getPublicUrl(fileName);
+
+      setNetworkData(prev => ({
+        ...prev,
+        logoUrl: publicUrl
+      }));
+    } catch (error) {
+      console.error('Error uploading logo:', error);
+      setUploadError(t('networkOnboarding.branding.logo.error.failed'));
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleRemoveLogo = () => {
+    setNetworkData(prev => ({ ...prev, logoUrl: '' }));
+  };
+
+  const handleColorChange = (e) => {
+    setNetworkData(prev => ({ ...prev, themeColor: e.target.value }));
+  };
+
+  return (
+    <Stack spacing={3}>
+      {/* Logo Upload */}
+      <Paper
+        elevation={0}
+        sx={{
+          p: 3,
+          borderRadius: 2,
+          border: '1px solid',
+          borderColor: 'divider'
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+          <ImageIcon sx={{ mr: 1, color: 'primary.main' }} />
+          <Typography variant="subtitle1" fontWeight="medium">
+            {t('networkOnboarding.blog.branding.logo', 'Blog Logo')}
+          </Typography>
+        </Box>
+
+        <Typography variant="body2" color="text.secondary" paragraph>
+          {t('networkOnboarding.blog.branding.logoHelper', 'Add a logo or profile picture for your blog')}
+        </Typography>
+
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          {networkData.logoUrl ? (
+            <>
+              <Box
+                component="img"
+                src={networkData.logoUrl}
+                alt="Blog Logo"
+                sx={{
+                  width: 80,
+                  height: 80,
+                  objectFit: 'contain',
+                  borderRadius: '50%',
+                  border: '1px solid',
+                  borderColor: 'divider'
+                }}
+              />
+              <Button
+                variant="outlined"
+                color="error"
+                size="small"
+                onClick={handleRemoveLogo}
+                startIcon={<CloseIcon />}
+              >
+                {t('networkOnboarding.branding.logo.remove')}
+              </Button>
+            </>
+          ) : (
+            <Button
+              variant="outlined"
+              component="label"
+              startIcon={uploading ? <Spinner size={20} /> : <UploadIcon />}
+              disabled={uploading}
+            >
+              {uploading ? t('networkOnboarding.branding.logo.uploading') : t('networkOnboarding.branding.logo.upload')}
+              <input type="file" hidden accept="image/*" onChange={handleLogoUpload} />
+            </Button>
+          )}
+        </Box>
+
+        {uploadError && (
+          <Alert severity="error" sx={{ mt: 2 }}>
+            {uploadError}
+          </Alert>
+        )}
+      </Paper>
+
+      {/* Theme Color */}
+      <Paper
+        elevation={0}
+        sx={{
+          p: 3,
+          borderRadius: 2,
+          border: '1px solid',
+          borderColor: 'divider'
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+          <ThemeIcon sx={{ mr: 1, color: 'primary.main' }} />
+          <Typography variant="subtitle1" fontWeight="medium">
+            {t('networkOnboarding.branding.theme.title')}
+          </Typography>
+        </Box>
+
+        <FormControl fullWidth>
+          <InputLabel id="blog-theme-color-label">{t('networkOnboarding.branding.theme.title')}</InputLabel>
+          <Select
+            labelId="blog-theme-color-label"
+            value={networkData.themeColor}
+            onChange={handleColorChange}
+            label="Theme Color"
+          >
+            <MenuItem value={theme.palette.primary.main}>{t('networkOnboarding.branding.theme.colors.blue')}</MenuItem>
+            <MenuItem value={theme.palette.secondary.main}>{t('networkOnboarding.branding.theme.colors.purple')}</MenuItem>
+            <MenuItem value={theme.palette.success.main}>{t('networkOnboarding.branding.theme.colors.green')}</MenuItem>
+            <MenuItem value={theme.palette.error.main}>{t('networkOnboarding.branding.theme.colors.red')}</MenuItem>
+            <MenuItem value={theme.palette.warning.main}>{t('networkOnboarding.branding.theme.colors.orange')}</MenuItem>
+            <MenuItem value={theme.palette.info.main}>{t('networkOnboarding.branding.theme.colors.lightBlue')}</MenuItem>
+            <MenuItem value="#000000">{t('networkOnboarding.branding.theme.colors.black')}</MenuItem>
+            <MenuItem value="#424242">{t('networkOnboarding.branding.theme.colors.gray')}</MenuItem>
+          </Select>
+        </FormControl>
+
+        <Box
+          sx={{
+            mt: 2,
+            height: 20,
+            bgcolor: networkData.themeColor,
+            borderRadius: 1
+          }}
+        />
+      </Paper>
+    </Stack>
+  );
+};
+
+// Blog Step 4: Settings (comments, newsletter, social links)
+const BlogSettingsStep = ({ networkData, setNetworkData }) => {
+  const { t } = useTranslation();
+  const theme = useTheme();
+
+  const handleBlogSettingChange = (setting) => (e) => {
+    setNetworkData(prev => ({
+      ...prev,
+      blogSettings: {
+        ...prev.blogSettings,
+        [setting]: e.target.checked
+      }
+    }));
+  };
+
+  const handleSocialLinkChange = (platform) => (e) => {
+    setNetworkData(prev => ({
+      ...prev,
+      blogSettings: {
+        ...prev.blogSettings,
+        social_links: {
+          ...prev.blogSettings.social_links,
+          [platform]: e.target.value
+        }
+      }
+    }));
+  };
+
+  const handleAboutChange = (e) => {
+    setNetworkData(prev => ({
+      ...prev,
+      blogSettings: {
+        ...prev.blogSettings,
+        about_page_content: e.target.value
+      }
+    }));
+  };
+
+  return (
+    <Stack spacing={3}>
+      {/* Comments Settings */}
+      <Paper
+        elevation={0}
+        sx={{
+          p: 3,
+          borderRadius: 2,
+          border: '1px solid',
+          borderColor: 'divider'
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+          <CommentIcon sx={{ mr: 1, color: 'primary.main' }} />
+          <Typography variant="subtitle1" fontWeight="medium">
+            {t('networkOnboarding.blog.settings.comments.title', 'Comments')}
+          </Typography>
+        </Box>
+
+        <FormGroup>
+          <FormControlLabel
+            control={
+              <Switch
+                checked={networkData.blogSettings.comments_enabled}
+                onChange={handleBlogSettingChange('comments_enabled')}
+                color="primary"
+              />
+            }
+            label={t('networkOnboarding.blog.settings.comments.enable', 'Enable comments on posts')}
+          />
+
+          {networkData.blogSettings.comments_enabled && (
+            <>
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={networkData.blogSettings.anonymous_comments}
+                    onChange={handleBlogSettingChange('anonymous_comments')}
+                    color="primary"
+                  />
+                }
+                label={t('networkOnboarding.blog.settings.comments.anonymous', 'Allow anonymous comments (visitors can comment without an account)')}
+                sx={{ ml: 2 }}
+              />
+
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={networkData.blogSettings.comment_moderation}
+                    onChange={handleBlogSettingChange('comment_moderation')}
+                    color="primary"
+                  />
+                }
+                label={t('networkOnboarding.blog.settings.comments.moderation', 'Require approval before comments are visible')}
+                sx={{ ml: 2 }}
+              />
+            </>
+          )}
+        </FormGroup>
+      </Paper>
+
+      {/* Newsletter & RSS */}
+      <Paper
+        elevation={0}
+        sx={{
+          p: 3,
+          borderRadius: 2,
+          border: '1px solid',
+          borderColor: 'divider'
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+          <BlogIcon sx={{ mr: 1, color: 'primary.main' }} />
+          <Typography variant="subtitle1" fontWeight="medium">
+            {t('networkOnboarding.blog.settings.features.title', 'Features')}
+          </Typography>
+        </Box>
+
+        <FormGroup>
+          <FormControlLabel
+            control={
+              <Switch
+                checked={networkData.blogSettings.newsletter_enabled}
+                onChange={handleBlogSettingChange('newsletter_enabled')}
+                color="primary"
+              />
+            }
+            label={t('networkOnboarding.blog.settings.features.newsletter', 'Enable newsletter subscription (collect email subscribers)')}
+          />
+
+          <FormControlLabel
+            control={
+              <Switch
+                checked={networkData.blogSettings.rss_enabled}
+                onChange={handleBlogSettingChange('rss_enabled')}
+                color="primary"
+              />
+            }
+            label={t('networkOnboarding.blog.settings.features.rss', 'Enable RSS feed')}
+          />
+        </FormGroup>
+      </Paper>
+
+      {/* About Section */}
+      <Paper
+        elevation={0}
+        sx={{
+          p: 3,
+          borderRadius: 2,
+          border: '1px solid',
+          borderColor: 'divider'
+        }}
+      >
+        <Typography variant="subtitle1" fontWeight="medium" gutterBottom>
+          {t('networkOnboarding.blog.settings.about.title', 'About You')}
+        </Typography>
+
+        <Typography variant="body2" color="text.secondary" paragraph>
+          {t('networkOnboarding.blog.settings.about.helper', 'Tell your readers a bit about yourself. This will appear on your blog\'s About page.')}
+        </Typography>
+
+        <TextField
+          multiline
+          rows={4}
+          fullWidth
+          value={networkData.blogSettings.about_page_content || ''}
+          onChange={handleAboutChange}
+          placeholder={t('networkOnboarding.blog.settings.about.placeholder', 'Hello! I\'m a writer passionate about...')}
+          variant="outlined"
+        />
+      </Paper>
+
+      {/* Social Links */}
+      <Paper
+        elevation={0}
+        sx={{
+          p: 3,
+          borderRadius: 2,
+          border: '1px solid',
+          borderColor: 'divider'
+        }}
+      >
+        <Typography variant="subtitle1" fontWeight="medium" gutterBottom>
+          {t('networkOnboarding.blog.settings.social.title', 'Social Links')}
+        </Typography>
+
+        <Typography variant="body2" color="text.secondary" paragraph>
+          {t('networkOnboarding.blog.settings.social.helper', 'Add links to your social profiles (optional)')}
+        </Typography>
+
+        <Stack spacing={2}>
+          <TextField
+            label="Twitter / X"
+            placeholder="https://twitter.com/yourhandle"
+            value={networkData.blogSettings.social_links?.twitter || ''}
+            onChange={handleSocialLinkChange('twitter')}
+            size="small"
+            fullWidth
+          />
+          <TextField
+            label="LinkedIn"
+            placeholder="https://linkedin.com/in/yourprofile"
+            value={networkData.blogSettings.social_links?.linkedin || ''}
+            onChange={handleSocialLinkChange('linkedin')}
+            size="small"
+            fullWidth
+          />
+          <TextField
+            label="Instagram"
+            placeholder="https://instagram.com/yourhandle"
+            value={networkData.blogSettings.social_links?.instagram || ''}
+            onChange={handleSocialLinkChange('instagram')}
+            size="small"
+            fullWidth
+          />
+          <TextField
+            label="Website"
+            placeholder="https://yourwebsite.com"
+            value={networkData.blogSettings.social_links?.website || ''}
+            onChange={handleSocialLinkChange('website')}
+            size="small"
+            fullWidth
+          />
+        </Stack>
+      </Paper>
+    </Stack>
+  );
+};
+
+// Blog Step 5: Review
+const BlogReviewStep = ({ networkData }) => {
+  const theme = useTheme();
+  const { t } = useTranslation();
+
+  const blogUrl = networkData.subdomain
+    ? `https://${networkData.subdomain}.conclav.club`
+    : null;
+
+  return (
+    <Box>
+      <Alert severity="info" sx={{ mb: 3 }}>
+        {t('networkOnboarding.blog.review.info', 'Review your blog settings before creating. You can change these anytime in settings.')}
+      </Alert>
+
+      <Paper elevation={0} sx={{ p: 3, borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
+        {/* Header with logo and name */}
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+          {networkData.logoUrl ? (
+            <Box
+              component="img"
+              src={networkData.logoUrl}
+              alt="Blog Logo"
+              sx={{
+                width: 60,
+                height: 60,
+                objectFit: 'contain',
+                borderRadius: '50%',
+                mr: 2
+              }}
+            />
+          ) : (
+            <Box
+              sx={{
+                width: 60,
+                height: 60,
+                borderRadius: '50%',
+                bgcolor: networkData.themeColor,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                mr: 2
+              }}
+            >
+              <BlogIcon sx={{ fontSize: 30, color: 'white' }} />
+            </Box>
+          )}
+          <Box>
+            <Typography variant="h5" sx={{ color: networkData.themeColor }}>
+              {networkData.name || 'Your Blog'}
+            </Typography>
+            {blogUrl && (
+              <Typography variant="body2" color="text.secondary" sx={{ fontFamily: 'monospace' }}>
+                {blogUrl}
+              </Typography>
+            )}
+          </Box>
+        </Box>
+
+        {networkData.description && (
+          <Typography variant="body1" paragraph color="text.secondary">
+            {networkData.description}
+          </Typography>
+        )}
+
+        <Divider sx={{ my: 2 }} />
+
+        <Grid container spacing={3}>
+          {/* Left Column */}
+          <Grid item xs={12} sm={6}>
+            <Stack spacing={2}>
+              <Box>
+                <Typography variant="subtitle2" color="text.secondary">
+                  {t('networkOnboarding.blog.review.visibility', 'Visibility')}
+                </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', mt: 0.5 }}>
+                  <PublicIcon fontSize="small" sx={{ mr: 0.5, color: 'success.main' }} />
+                  <Typography variant="body1">
+                    {t('networkOnboarding.blog.review.public', 'Public - Anyone can view your blog')}
+                  </Typography>
+                </Box>
+              </Box>
+
+              <Box>
+                <Typography variant="subtitle2" color="text.secondary">
+                  {t('networkOnboarding.blog.review.themeColor', 'Theme Color')}
+                </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', mt: 0.5 }}>
+                  <Box
+                    sx={{
+                      width: 20,
+                      height: 20,
+                      borderRadius: '50%',
+                      bgcolor: networkData.themeColor,
+                      mr: 1
+                    }}
+                  />
+                  <Typography variant="body1">{t('networkOnboarding.review.custom')}</Typography>
+                </Box>
+              </Box>
+            </Stack>
+          </Grid>
+
+          {/* Right Column */}
+          <Grid item xs={12} sm={6}>
+            <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+              {t('networkOnboarding.blog.review.features', 'Features')}
+            </Typography>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+              {networkData.blogSettings.comments_enabled && (
+                <Chip
+                  icon={<CommentIcon />}
+                  label={networkData.blogSettings.anonymous_comments ? 'Anonymous Comments' : 'Comments'}
+                  size="small"
+                  color="primary"
+                  variant="outlined"
+                />
+              )}
+              {networkData.blogSettings.comment_moderation && (
+                <Chip
+                  label="Comment Moderation"
+                  size="small"
+                  color="warning"
+                  variant="outlined"
+                />
+              )}
+              {networkData.blogSettings.newsletter_enabled && (
+                <Chip
+                  label="Newsletter"
+                  size="small"
+                  color="secondary"
+                  variant="outlined"
+                />
+              )}
+              {networkData.blogSettings.rss_enabled && (
+                <Chip
+                  icon={<BlogIcon />}
+                  label="RSS Feed"
+                  size="small"
+                  color="info"
+                  variant="outlined"
+                />
+              )}
+            </Box>
+
+            {/* Social Links Preview */}
+            {Object.values(networkData.blogSettings.social_links || {}).some(v => v) && (
+              <Box sx={{ mt: 2 }}>
+                <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                  {t('networkOnboarding.blog.review.socialLinks', 'Social Links')}
+                </Typography>
+                <Box sx={{ display: 'flex', gap: 1 }}>
+                  {networkData.blogSettings.social_links?.twitter && (
+                    <Chip label="Twitter" size="small" variant="outlined" />
+                  )}
+                  {networkData.blogSettings.social_links?.linkedin && (
+                    <Chip label="LinkedIn" size="small" variant="outlined" />
+                  )}
+                  {networkData.blogSettings.social_links?.instagram && (
+                    <Chip label="Instagram" size="small" variant="outlined" />
+                  )}
+                  {networkData.blogSettings.social_links?.website && (
+                    <Chip label="Website" size="small" variant="outlined" />
+                  )}
+                </Box>
+              </Box>
+            )}
           </Grid>
         </Grid>
       </Paper>

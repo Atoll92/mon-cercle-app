@@ -63,6 +63,11 @@ const CoursesPage = lazyWithRetry(() => import('./components/courses/CoursesPage
 const CourseDetailPage = lazyWithRetry(() => import('./components/courses/CourseDetailPage'));
 const EngagementDemoPage = lazyWithRetry(() => import('./pages/EngagementDemoPage'));
 
+// Blog pages
+const PublicBlogPage = lazyWithRetry(() => import('./pages/blog/PublicBlogPage'));
+const BlogPostPage = lazyWithRetry(() => import('./pages/blog/BlogPostPage'));
+const BlogAdminPage = lazyWithRetry(() => import('./pages/blog/BlogAdminPage'));
+
 // Loading component for lazy loaded routes
 const PageLoader = () => (
   <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
@@ -178,6 +183,7 @@ function App() {
              window.location.pathname !== "/login" &&
              !window.location.pathname.startsWith("/micro-conclav/") &&
              !window.location.pathname.startsWith("/join/") &&
+             !window.location.pathname.startsWith("/blog/") &&
              window.location.pathname !== "/network" &&
              window.location.pathname !== "/network-floating" &&
              window.location.pathname !== "/network-alt" &&
@@ -287,7 +293,16 @@ function App() {
             
             {/* Individual post route */}
             <Route path="/post/:postId" element={<PostPage />} />
-            
+
+            {/* Public Blog Routes */}
+            <Route path="/blog/:subdomain" element={<PublicBlogPage />} />
+            <Route path="/blog/:subdomain/post/:postId" element={<BlogPostPage />} />
+
+            {/* Protected Blog Admin Route */}
+            <Route element={<ProtectedRoute />}>
+              <Route path="/blog/:subdomain/admin" element={<ProfileAwareRoute><BlogAdminPage /></ProfileAwareRoute>} />
+            </Route>
+
             {/* Join network via invitation link */}
             <Route path="/join/:code" element={<JoinNetworkPage />} />
             

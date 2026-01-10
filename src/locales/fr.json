@@ -417,6 +417,239 @@
         "memberPublishingEnabled": "Les membres peuvent maintenant publier des événements sans modération",
         "memberPublishingDisabled": "Les événements des membres nécessitent maintenant l'approbation d'un administrateur"
       }
+    },
+    "backToDashboard": "Retour au tableau de bord",
+    "blog": {
+      "tabs": {
+        "posts": "Articles",
+        "comments": "Commentaires",
+        "subscribers": "Abonnés",
+        "analytics": "Statistiques",
+        "theme": "Thème",
+        "settings": "Paramètres"
+      },
+      "createPost": "Créer un article",
+      "viewBlog": "Voir le blog",
+      "posts": {
+        "title": "Articles du blog",
+        "newPost": "Nouvel article",
+        "editPost": "Modifier l'article",
+        "noTitle": "(Sans titre)",
+        "featured": "À la une",
+        "published": "Publié",
+        "draft": "Brouillon",
+        "views": "vues",
+        "noPosts": "Aucun article",
+        "noPostsDescription": "Créez votre premier article pour commencer",
+        "createFirstPost": "Créer le premier article",
+        "setAsFeatured": "Mettre à la une",
+        "removeFeatured": "Retirer de la une",
+        "delete": "Supprimer",
+        "deletePost": "Supprimer l'article ?",
+        "deletePostConfirm": "Êtes-vous sûr de vouloir supprimer \"{{title}}\" ? Cette action est irréversible.",
+        "form": {
+          "title": "Titre",
+          "content": "Contenu",
+          "media": "Médias",
+          "publishImmediately": "Publier immédiatement",
+          "featureThisPost": "Mettre cet article à la une",
+          "cancel": "Annuler",
+          "saveChanges": "Enregistrer",
+          "createPost": "Créer l'article"
+        },
+        "errors": {
+          "loadFailed": "Échec du chargement des articles",
+          "saveFailed": "Échec de l'enregistrement de l'article",
+          "deleteFailed": "Échec de la suppression de l'article"
+        }
+      },
+      "comments": {
+        "title": "Modération des commentaires",
+        "description": "Examinez et modérez les commentaires sur vos articles",
+        "pending": "En attente",
+        "approved": "Approuvés",
+        "rejected": "Rejetés",
+        "approve": "Approuver",
+        "reject": "Rejeter",
+        "unapprove": "Retirer l'approbation",
+        "deletePermanently": "Supprimer définitivement",
+        "reply": "Réponse",
+        "on": "Sur",
+        "untitledPost": "Article sans titre",
+        "anonymous": "Anonyme",
+        "justNow": "à l'instant",
+        "minutesAgo": "il y a {{count}} min",
+        "hoursAgo": "il y a {{count}}h",
+        "daysAgo": "il y a {{count}}j",
+        "noPendingComments": "Aucun commentaire en attente",
+        "noApprovedComments": "Aucun commentaire approuvé",
+        "noRejectedComments": "Aucun commentaire rejeté",
+        "allReviewed": "Tous les commentaires ont été examinés !",
+        "willAppearHere": "Les commentaires apparaîtront ici une fois examinés.",
+        "deleteComment": "Supprimer le commentaire ?",
+        "deleteCommentConfirm": "Êtes-vous sûr de vouloir supprimer définitivement ce commentaire ? Cette action est irréversible.",
+        "cancel": "Annuler",
+        "delete": "Supprimer",
+        "errors": {
+          "loadFailed": "Échec du chargement des commentaires",
+          "approveFailed": "Échec de l'approbation du commentaire",
+          "rejectFailed": "Échec du rejet du commentaire",
+          "deleteFailed": "Échec de la suppression du commentaire"
+        }
+      },
+      "subscribers": {
+        "title": "Abonnés à la newsletter",
+        "count": "{{count}} abonné",
+        "countPlural": "{{count}} abonnés",
+        "exportCsv": "Exporter en CSV",
+        "addSubscriber": "Ajouter un abonné",
+        "addSubscriberManually": "Ajouter un abonné manuellement",
+        "email": "Email",
+        "status": "Statut",
+        "subscribed": "Inscrit le",
+        "actions": "Actions",
+        "verified": "Vérifié",
+        "pendingVerification": "En attente",
+        "removeSubscriber": "Supprimer l'abonné",
+        "noSubscribers": "Aucun abonné",
+        "noSubscribersDescription": "Activez l'inscription à la newsletter sur votre blog pour commencer à collecter des abonnés",
+        "addDialog": {
+          "title": "Ajouter un abonné",
+          "description": "Ajoutez manuellement une adresse email à votre liste d'abonnés.",
+          "emailLabel": "Adresse email",
+          "cancel": "Annuler",
+          "add": "Ajouter l'abonné"
+        },
+        "removeDialog": {
+          "title": "Supprimer l'abonné ?",
+          "confirm": "Êtes-vous sûr de vouloir supprimer {{email}} de votre liste d'abonnés ?",
+          "cancel": "Annuler",
+          "remove": "Supprimer"
+        },
+        "errors": {
+          "loadFailed": "Échec du chargement des abonnés",
+          "addFailed": "Échec de l'ajout de l'abonné",
+          "deleteFailed": "Échec de la suppression de l'abonné"
+        }
+      },
+      "analytics": {
+        "title": "Statistiques du blog",
+        "description": "Aperçu des performances de votre blog",
+        "totalViews": "Vues totales",
+        "allTimeViews": "Vues de tout temps",
+        "publishedPosts": "Articles publiés",
+        "drafts": "{{count}} brouillons",
+        "comments": "Commentaires",
+        "pendingCount": "{{count}} en attente",
+        "allApproved": "Tous approuvés",
+        "subscribers": "Abonnés",
+        "newsletterSignups": "Inscriptions newsletter",
+        "topPosts": "Articles les plus performants",
+        "post": "Article",
+        "views": "Vues",
+        "published": "Publié",
+        "untitled": "(Sans titre)",
+        "noPostsYet": "Aucun article. Créez votre premier article pour voir les statistiques !",
+        "quickSummary": "Résumé rapide",
+        "summaryText": "Votre blog compte {{posts}} articles avec un total de {{views}} vues.",
+        "subscriberCount": "Vous avez {{count}} abonnés à la newsletter.",
+        "pendingModeration": "Il y a {{count}} commentaires en attente de modération.",
+        "errors": {
+          "loadFailed": "Échec du chargement des statistiques"
+        }
+      },
+      "theme": {
+        "title": "Paramètres du thème",
+        "save": "Enregistrer",
+        "saved": "Paramètres du thème enregistrés avec succès",
+        "color": "Couleur de marque",
+        "colorDescription": "Choisissez une couleur principale pour votre blog. Elle sera utilisée pour les boutons, liens et accents.",
+        "customColor": "Couleur personnalisée",
+        "logo": "Logo du blog",
+        "logoDescription": "Téléchargez un logo pour votre blog. Taille recommandée : 200x200px.",
+        "removeLogo": "Supprimer le logo",
+        "background": "Image d'en-tête",
+        "backgroundDescription": "Téléchargez une image de fond pour l'en-tête de votre blog. Taille recommandée : 1920x400px.",
+        "removeBackground": "Supprimer l'arrière-plan",
+        "errors": {
+          "saveFailed": "Échec de l'enregistrement des paramètres du thème"
+        }
+      },
+      "settings": {
+        "title": "Paramètres du blog",
+        "description": "Configurez les fonctionnalités et l'apparence de votre blog",
+        "saveSettings": "Enregistrer les paramètres",
+        "saved": "Paramètres enregistrés avec succès",
+        "comments": {
+          "title": "Commentaires",
+          "enableComments": "Activer les commentaires sur les articles",
+          "requireApproval": "Exiger l'approbation des commentaires avant publication",
+          "allowAnonymous": "Autoriser les commentaires anonymes (visiteurs sans compte)"
+        },
+        "newsletter": {
+          "title": "Newsletter",
+          "showSignup": "Afficher le formulaire d'inscription à la newsletter",
+          "description": "Collectez les adresses email des visiteurs. Vous pouvez exporter la liste des abonnés depuis l'onglet Abonnés."
+        },
+        "rss": {
+          "title": "Flux RSS",
+          "enable": "Activer le flux RSS",
+          "url": "URL du flux RSS"
+        },
+        "about": {
+          "title": "Page À propos",
+          "content": "Contenu À propos",
+          "placeholder": "Parlez de vous et de votre blog aux visiteurs..."
+        },
+        "social": {
+          "title": "Liens sociaux",
+          "twitter": "URL Twitter",
+          "linkedin": "URL LinkedIn",
+          "instagram": "URL Instagram",
+          "website": "URL du site web"
+        },
+        "seo": {
+          "title": "Paramètres SEO",
+          "metaTitle": "Titre méta",
+          "metaTitlePlaceholder": "Titre du blog",
+          "metaTitleHelper": "Apparaît dans les onglets du navigateur et les résultats de recherche",
+          "metaDescription": "Description méta",
+          "metaDescriptionPlaceholder": "Une brève description de votre blog",
+          "metaDescriptionHelper": "Apparaît dans les résultats des moteurs de recherche (max 160 caractères)",
+          "socialImage": "URL de l'image de partage social",
+          "socialImagePlaceholder": "https://exemple.com/image.jpg",
+          "socialImageHelper": "Image affichée lorsque votre blog est partagé sur les réseaux sociaux"
+        },
+        "domain": {
+          "title": "Domaine personnalisé",
+          "placeholder": "blog.votredomaine.com",
+          "helper": "Pointez un enregistrement CNAME vers le sous-domaine de votre blog",
+          "defaultUrl": "URL par défaut"
+        },
+        "convert": {
+          "title": "Convertir en réseau complet",
+          "description": "Transformez votre blog en un réseau communautaire complet avec des membres, événements, fichiers et plus encore. Cette action est irréversible. Vos articles de blog resteront accessibles.",
+          "button": "Convertir en réseau",
+          "dialog": {
+            "title": "Convertir le blog en réseau ?",
+            "description": "Cela convertira votre blog en un réseau communautaire complet avec :",
+            "features": {
+              "members": "Gestion des membres et invitations",
+              "events": "Événements et calendrier",
+              "files": "Partage de fichiers",
+              "wiki": "Wiki/documentation",
+              "admin": "Tableau de bord administrateur complet"
+            },
+            "warning": "Cette action est irréversible. Vos articles de blog existants seront préservés.",
+            "cancel": "Annuler",
+            "confirm": "Convertir en réseau"
+          }
+        },
+        "errors": {
+          "saveFailed": "Échec de l'enregistrement des paramètres",
+          "convertFailed": "Échec de la conversion du blog en réseau"
+        }
+      }
     }
   },
   "memberOnboarding": {
@@ -540,11 +773,24 @@
     },
     "basics": {
       "description": "Commençons par créer votre réseau. Comment souhaitez-vous l'appeler ?",
+      "whatToCreate": "Que souhaitez-vous créer ?",
       "networkName": "Nom du réseau",
       "networkNameHelper": "Choisissez un nom pour votre réseau",
       "networkDescription": "Description",
       "descriptionHelper": "Décrivez brièvement l'objectif de votre réseau",
+      "blogName": "Nom du blog",
+      "blogNameHelper": "Ce sera affiché comme titre de votre blog",
+      "blogDescription": "Description du blog",
+      "blogDescriptionHelper": "Une courte description qui apparaîtra dans les résultats de recherche et l'en-tête de votre blog",
       "networkType": "Type de réseau",
+      "networkOption": {
+        "title": "Réseau Communautaire",
+        "description": "Communauté complète avec événements, chat, wiki, fichiers et plus encore"
+      },
+      "blogOption": {
+        "title": "Blog Personnel",
+        "description": "Blog public simple avec articles, médias et commentaires optionnels"
+      },
       "types": {
         "general": "Communauté générale",
         "professional": "Équipe professionnelle",
@@ -691,6 +937,82 @@
       "errorLoadingProfile": "Échec du chargement des informations du profil. Veuillez réessayer.",
       "loginRequired": "Veuillez vous connecter pour créer un réseau.",
       "questionsHelp": "Vous avez encore des questions ? Consultez notre documentation pour des informations plus détaillées sur la configuration de votre réseau."
+    },
+    "typeSelection": {
+      "title": "Que souhaitez-vous créer ?",
+      "description": "Choisissez le type d'espace qui correspond le mieux à vos besoins",
+      "network": {
+        "title": "Réseau Communautaire",
+        "description": "Une communauté privée complète avec membres, événements, fichiers, chat et plus encore. Parfait pour les équipes, clubs ou organisations."
+      },
+      "blog": {
+        "title": "Blog Personnel",
+        "description": "Un blog public minimaliste avec articles, commentaires et newsletter. Parfait pour les écrivains, créateurs et leaders d'opinion."
+      }
+    },
+    "blog": {
+      "basics": {
+        "description": "Configurons votre blog personnel. Choisissez un nom qui vous représente ou représente votre contenu."
+      },
+      "steps": {
+        "subdomain": "Adresse du blog",
+        "branding": "Image de marque et mise en page",
+        "settings": "Paramètres du blog",
+        "review": "Révision et création"
+      },
+      "subdomain": {
+        "description": "Choisissez l'adresse web unique de votre blog",
+        "title": "Choisissez l'adresse de votre blog",
+        "helper": "Ce sera l'adresse web unique de votre blog. Choisissez quelque chose de mémorable !",
+        "check": "Vérifier",
+        "available": "est disponible !",
+        "taken": "est déjà pris. Veuillez en choisir un autre.",
+        "tooShort": "Le sous-domaine doit contenir au moins 3 caractères",
+        "checkError": "Erreur lors de la vérification de la disponibilité",
+        "preview": "Aperçu",
+        "customDomainInfo": "Vous pourrez ajouter un domaine personnalisé (comme monblog.com) plus tard dans les paramètres."
+      },
+      "branding": {
+        "description": "Personnalisez l'apparence de votre blog",
+        "logo": "Logo du blog",
+        "logoHelper": "Ajoutez un logo ou une photo de profil pour votre blog"
+      },
+      "settings": {
+        "description": "Configurez le fonctionnement de votre blog",
+        "comments": {
+          "title": "Commentaires",
+          "enable": "Activer les commentaires sur les articles",
+          "anonymous": "Autoriser les commentaires anonymes (les visiteurs peuvent commenter sans compte)",
+          "moderation": "Exiger une approbation avant que les commentaires soient visibles"
+        },
+        "features": {
+          "title": "Fonctionnalités",
+          "newsletter": "Activer l'inscription à la newsletter (collecter des abonnés email)",
+          "rss": "Activer le flux RSS"
+        },
+        "about": {
+          "title": "À propos de vous",
+          "helper": "Parlez un peu de vous à vos lecteurs. Cela apparaîtra sur la page À propos de votre blog.",
+          "placeholder": "Bonjour ! Je suis un auteur passionné par..."
+        },
+        "social": {
+          "title": "Liens sociaux",
+          "helper": "Ajoutez des liens vers vos profils sociaux (facultatif)"
+        }
+      },
+      "review": {
+        "info": "Vérifiez les paramètres de votre blog avant de le créer. Vous pourrez les modifier à tout moment dans les paramètres.",
+        "visibility": "Visibilité",
+        "public": "Public - Tout le monde peut voir votre blog",
+        "themeColor": "Couleur du thème",
+        "features": "Fonctionnalités",
+        "socialLinks": "Liens sociaux"
+      },
+      "success": {
+        "title": "Blog créé avec succès !",
+        "message": "Votre blog \"{{blogName}}\" est maintenant en ligne à {{blogUrl}}. Commencez à rédiger votre premier article !",
+        "redirecting": "Redirection vers l'administration de votre blog..."
+      }
     }
   },
   "dashboard": {

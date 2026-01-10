@@ -417,6 +417,239 @@
         "memberPublishingEnabled": "Members can now publish events without moderation",
         "memberPublishingDisabled": "Member events now require admin approval"
       }
+    },
+    "backToDashboard": "Back to Dashboard",
+    "blog": {
+      "tabs": {
+        "posts": "Posts",
+        "comments": "Comments",
+        "subscribers": "Subscribers",
+        "analytics": "Analytics",
+        "theme": "Theme",
+        "settings": "Settings"
+      },
+      "createPost": "Create Post",
+      "viewBlog": "View Blog",
+      "posts": {
+        "title": "Blog Posts",
+        "newPost": "New Post",
+        "editPost": "Edit Post",
+        "noTitle": "(No title)",
+        "featured": "Featured",
+        "published": "Published",
+        "draft": "Draft",
+        "views": "views",
+        "noPosts": "No posts yet",
+        "noPostsDescription": "Create your first blog post to get started",
+        "createFirstPost": "Create First Post",
+        "setAsFeatured": "Set as Featured",
+        "removeFeatured": "Remove Featured",
+        "delete": "Delete",
+        "deletePost": "Delete Post?",
+        "deletePostConfirm": "Are you sure you want to delete \"{{title}}\"? This action cannot be undone.",
+        "form": {
+          "title": "Title",
+          "content": "Content",
+          "media": "Media",
+          "publishImmediately": "Publish immediately",
+          "featureThisPost": "Feature this post",
+          "cancel": "Cancel",
+          "saveChanges": "Save Changes",
+          "createPost": "Create Post"
+        },
+        "errors": {
+          "loadFailed": "Failed to load posts",
+          "saveFailed": "Failed to save post",
+          "deleteFailed": "Failed to delete post"
+        }
+      },
+      "comments": {
+        "title": "Comment Moderation",
+        "description": "Review and moderate comments on your blog posts",
+        "pending": "Pending",
+        "approved": "Approved",
+        "rejected": "Rejected",
+        "approve": "Approve",
+        "reject": "Reject",
+        "unapprove": "Unapprove",
+        "deletePermanently": "Delete permanently",
+        "reply": "Reply",
+        "on": "On",
+        "untitledPost": "Untitled post",
+        "anonymous": "Anonymous",
+        "justNow": "just now",
+        "minutesAgo": "{{count}}m ago",
+        "hoursAgo": "{{count}}h ago",
+        "daysAgo": "{{count}}d ago",
+        "noPendingComments": "No pending comments",
+        "noApprovedComments": "No approved comments",
+        "noRejectedComments": "No rejected comments",
+        "allReviewed": "All comments have been reviewed!",
+        "willAppearHere": "Comments will appear here once they are reviewed.",
+        "deleteComment": "Delete Comment?",
+        "deleteCommentConfirm": "Are you sure you want to permanently delete this comment? This action cannot be undone.",
+        "cancel": "Cancel",
+        "delete": "Delete",
+        "errors": {
+          "loadFailed": "Failed to load comments",
+          "approveFailed": "Failed to approve comment",
+          "rejectFailed": "Failed to reject comment",
+          "deleteFailed": "Failed to delete comment"
+        }
+      },
+      "subscribers": {
+        "title": "Newsletter Subscribers",
+        "count": "{{count}} subscriber",
+        "countPlural": "{{count}} subscribers",
+        "exportCsv": "Export CSV",
+        "addSubscriber": "Add Subscriber",
+        "addSubscriberManually": "Add Subscriber Manually",
+        "email": "Email",
+        "status": "Status",
+        "subscribed": "Subscribed",
+        "actions": "Actions",
+        "verified": "Verified",
+        "pendingVerification": "Pending",
+        "removeSubscriber": "Remove subscriber",
+        "noSubscribers": "No subscribers yet",
+        "noSubscribersDescription": "Enable the newsletter signup on your blog to start collecting subscribers",
+        "addDialog": {
+          "title": "Add Subscriber",
+          "description": "Manually add an email address to your subscriber list.",
+          "emailLabel": "Email Address",
+          "cancel": "Cancel",
+          "add": "Add Subscriber"
+        },
+        "removeDialog": {
+          "title": "Remove Subscriber?",
+          "confirm": "Are you sure you want to remove {{email}} from your subscriber list?",
+          "cancel": "Cancel",
+          "remove": "Remove"
+        },
+        "errors": {
+          "loadFailed": "Failed to load subscribers",
+          "addFailed": "Failed to add subscriber",
+          "deleteFailed": "Failed to delete subscriber"
+        }
+      },
+      "analytics": {
+        "title": "Blog Analytics",
+        "description": "Overview of your blog's performance",
+        "totalViews": "Total Views",
+        "allTimeViews": "All-time page views",
+        "publishedPosts": "Published Posts",
+        "drafts": "{{count}} drafts",
+        "comments": "Comments",
+        "pendingCount": "{{count}} pending",
+        "allApproved": "All approved",
+        "subscribers": "Subscribers",
+        "newsletterSignups": "Newsletter signups",
+        "topPosts": "Top Performing Posts",
+        "post": "Post",
+        "views": "Views",
+        "published": "Published",
+        "untitled": "(Untitled)",
+        "noPostsYet": "No posts yet. Create your first post to see analytics!",
+        "quickSummary": "Quick Summary",
+        "summaryText": "Your blog has {{posts}} posts with a total of {{views}} views.",
+        "subscriberCount": "You have {{count}} newsletter subscribers.",
+        "pendingModeration": "There are {{count}} comments awaiting moderation.",
+        "errors": {
+          "loadFailed": "Failed to load analytics"
+        }
+      },
+      "theme": {
+        "title": "Theme Settings",
+        "save": "Save Changes",
+        "saved": "Theme settings saved successfully",
+        "color": "Brand Color",
+        "colorDescription": "Choose a primary color for your blog. This will be used for buttons, links, and accents.",
+        "customColor": "Custom Color",
+        "logo": "Blog Logo",
+        "logoDescription": "Upload a logo for your blog. Recommended size: 200x200px.",
+        "removeLogo": "Remove Logo",
+        "background": "Header Background",
+        "backgroundDescription": "Upload a background image for your blog header. Recommended size: 1920x400px.",
+        "removeBackground": "Remove Background",
+        "errors": {
+          "saveFailed": "Failed to save theme settings"
+        }
+      },
+      "settings": {
+        "title": "Blog Settings",
+        "description": "Configure your blog's features and appearance",
+        "saveSettings": "Save Settings",
+        "saved": "Settings saved successfully",
+        "comments": {
+          "title": "Comments",
+          "enableComments": "Enable comments on posts",
+          "requireApproval": "Require comment approval before publishing",
+          "allowAnonymous": "Allow anonymous comments (visitors without accounts)"
+        },
+        "newsletter": {
+          "title": "Newsletter",
+          "showSignup": "Show newsletter signup form",
+          "description": "Collect email addresses from visitors. You can export the subscriber list from the Subscribers tab."
+        },
+        "rss": {
+          "title": "RSS Feed",
+          "enable": "Enable RSS feed",
+          "url": "RSS feed URL"
+        },
+        "about": {
+          "title": "About Page",
+          "content": "About Content",
+          "placeholder": "Tell visitors about yourself and your blog..."
+        },
+        "social": {
+          "title": "Social Links",
+          "twitter": "Twitter URL",
+          "linkedin": "LinkedIn URL",
+          "instagram": "Instagram URL",
+          "website": "Website URL"
+        },
+        "seo": {
+          "title": "SEO Settings",
+          "metaTitle": "Meta Title",
+          "metaTitlePlaceholder": "Blog title",
+          "metaTitleHelper": "Appears in browser tabs and search results",
+          "metaDescription": "Meta Description",
+          "metaDescriptionPlaceholder": "A brief description of your blog",
+          "metaDescriptionHelper": "Appears in search engine results (max 160 characters)",
+          "socialImage": "Social Share Image URL",
+          "socialImagePlaceholder": "https://example.com/image.jpg",
+          "socialImageHelper": "Image shown when your blog is shared on social media"
+        },
+        "domain": {
+          "title": "Custom Domain",
+          "placeholder": "blog.yourdomain.com",
+          "helper": "Point a CNAME record to your blog's subdomain",
+          "defaultUrl": "Default URL"
+        },
+        "convert": {
+          "title": "Convert to Full Network",
+          "description": "Transform your blog into a full community network with members, events, files, and more. This action cannot be undone. Your blog posts will remain accessible.",
+          "button": "Convert to Network",
+          "dialog": {
+            "title": "Convert Blog to Network?",
+            "description": "This will convert your blog into a full community network with:",
+            "features": {
+              "members": "Member management and invitations",
+              "events": "Events and calendar",
+              "files": "File sharing",
+              "wiki": "Wiki/documentation",
+              "admin": "Full admin dashboard"
+            },
+            "warning": "This action cannot be undone. Your existing blog posts will be preserved.",
+            "cancel": "Cancel",
+            "confirm": "Convert to Network"
+          }
+        },
+        "errors": {
+          "saveFailed": "Failed to save settings",
+          "convertFailed": "Failed to convert blog to network"
+        }
+      }
     }
   },
   "memberOnboarding": {
@@ -540,11 +773,24 @@
     },
     "basics": {
       "description": "Let's start by creating your network. What would you like to call it?",
+      "whatToCreate": "What would you like to create?",
       "networkName": "Network Name",
       "networkNameHelper": "Choose a name for your network",
       "networkDescription": "Description",
       "descriptionHelper": "Briefly describe your network's purpose",
+      "blogName": "Blog Name",
+      "blogNameHelper": "This will be displayed as your blog title",
+      "blogDescription": "Blog Description",
+      "blogDescriptionHelper": "A short description that appears in search results and your blog header",
       "networkType": "Network Type",
+      "networkOption": {
+        "title": "Community Network",
+        "description": "Full-featured community with events, chat, wiki, files, and more"
+      },
+      "blogOption": {
+        "title": "Personal Blog",
+        "description": "Simple public blog with posts, media, and optional comments"
+      },
       "types": {
         "general": "General Community",
         "professional": "Professional Team",
@@ -691,6 +937,82 @@
       "errorLoadingProfile": "Failed to load profile information. Please try again.",
       "loginRequired": "Please log in to create a network.",
       "questionsHelp": "Still have questions? Refer to our documentation for more detailed information about setting up your network."
+    },
+    "typeSelection": {
+      "title": "What would you like to create?",
+      "description": "Choose the type of space that best fits your needs",
+      "network": {
+        "title": "Community Network",
+        "description": "A full-featured private community with members, events, files, chat, and more. Perfect for teams, clubs, or organizations."
+      },
+      "blog": {
+        "title": "Personal Blog",
+        "description": "A minimalist public blog with posts, comments, and newsletter. Perfect for writers, creators, and thought leaders."
+      }
+    },
+    "blog": {
+      "basics": {
+        "description": "Let's set up your personal blog. Choose a name that represents you or your content."
+      },
+      "steps": {
+        "subdomain": "Blog Address",
+        "branding": "Branding & Layout",
+        "settings": "Blog Settings",
+        "review": "Review & Create"
+      },
+      "subdomain": {
+        "description": "Choose your unique blog web address",
+        "title": "Choose Your Blog Address",
+        "helper": "This will be your blog's unique web address. Choose something memorable!",
+        "check": "Check",
+        "available": "is available!",
+        "taken": "is already taken. Please choose another.",
+        "tooShort": "Subdomain must be at least 3 characters",
+        "checkError": "Error checking availability",
+        "preview": "Preview",
+        "customDomainInfo": "You can add a custom domain (like myblog.com) later in settings."
+      },
+      "branding": {
+        "description": "Customize your blog's appearance",
+        "logo": "Blog Logo",
+        "logoHelper": "Add a logo or profile picture for your blog"
+      },
+      "settings": {
+        "description": "Configure how your blog works",
+        "comments": {
+          "title": "Comments",
+          "enable": "Enable comments on posts",
+          "anonymous": "Allow anonymous comments (visitors can comment without an account)",
+          "moderation": "Require approval before comments are visible"
+        },
+        "features": {
+          "title": "Features",
+          "newsletter": "Enable newsletter subscription (collect email subscribers)",
+          "rss": "Enable RSS feed"
+        },
+        "about": {
+          "title": "About You",
+          "helper": "Tell your readers a bit about yourself. This will appear on your blog's About page.",
+          "placeholder": "Hello! I'm a writer passionate about..."
+        },
+        "social": {
+          "title": "Social Links",
+          "helper": "Add links to your social profiles (optional)"
+        }
+      },
+      "review": {
+        "info": "Review your blog settings before creating. You can change these anytime in settings.",
+        "visibility": "Visibility",
+        "public": "Public - Anyone can view your blog",
+        "themeColor": "Theme Color",
+        "features": "Features",
+        "socialLinks": "Social Links"
+      },
+      "success": {
+        "title": "Blog Created Successfully!",
+        "message": "Your blog \"{{blogName}}\" is now live at {{blogUrl}}. Start writing your first post!",
+        "redirecting": "Redirecting to your blog admin..."
+      }
     }
   },
   "dashboard": {

@@ -386,7 +386,7 @@ function DashboardPage() {
       // Check if coming from invitation signup
       const searchParams = new URLSearchParams(location.search);
       const fromInvite = searchParams.get('from_invite');
-      
+
       if (fromInvite) {
         setError(t('dashboard.errors.profileLoadFailed'));
         return;
@@ -394,6 +394,39 @@ function DashboardPage() {
       navigate('/create-network', { replace: true });
     }
   }, [user, userProfiles, isLoadingProfiles, navigate, location.search]);
+
+  // Redirect blog admins to blog admin page
+  useEffect(() => {
+    const checkBlogRedirect = async () => {
+      if (!activeProfile?.network_id || isLoadingProfiles) return;
+
+      // Only redirect admins
+      if (activeProfile.role !== 'admin') return;
+
+      try {
+        // Check if this is a blog-type network
+        const { data: network, error } = await supabase
+          .from('networks')
+          .select('network_type, subdomain')
+          .eq('id', activeProfile.network_id)
+          .single();
+
+        if (error) {
+          console.error('Error checking network type:', error);
+          return;
+        }
+
+        // If it's a blog, redirect to blog admin
+        if (network?.network_type === 'blog' && network?.subdomain) {
+          navigate(`/blog/${network.subdomain}/admin`, { replace: true });
+        }
+      } catch (err) {
+        console.error('Error in blog redirect check:', err);
+      }
+    };
+
+    checkBlogRedirect();
+  }, [activeProfile, isLoadingProfiles, navigate]);
   
   // Check for from_invite parameter and show appropriate welcome
   useEffect(() => {
