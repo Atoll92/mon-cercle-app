@@ -21,12 +21,9 @@ const ThemeProvider = ({ children }) => {
   
   // Add darkMode state
   const [darkMode, setDarkMode] = useState(() => {
-    // If user is not logged in, default to light mode
-    if (!session) {
-      return false;
-    }
-    // Check localStorage for user preference only if logged in
+    // Check localStorage for user preference
     const savedMode = localStorage.getItem('darkMode');
+    // Default to dark mode if no preference saved
     return savedMode === null ? true : savedMode === 'true';
   });
   
@@ -57,13 +54,6 @@ const theme = createTheme({
     }
   },
 });
-  // Effect to reset theme when session changes
-  useEffect(() => {
-    if (!session && darkMode) {
-      // Reset to light mode when user logs out
-      setDarkMode(false);
-    }
-  }, [session, darkMode]);
 
   useEffect(() => {
     const loadNetworkTheme = async () => {
