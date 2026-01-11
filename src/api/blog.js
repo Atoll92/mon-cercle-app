@@ -621,6 +621,30 @@ export const addBlogComment = async (commentData) => {
       is_hidden: false
     };
 
+    // For anonymous comments (no profile_id), don't use .select() because
+    // RLS prevents reading unapproved comments. Just insert and return constructed data.
+    if (!profile_id) {
+      const { error } = await supabase
+        .from('blog_comments')
+        .insert(newComment);
+
+      if (error) {
+        console.error('Error adding blog comment:', error);
+        throw error;
+      }
+
+      // Return constructed comment data for anonymous comments
+      // (we can't read it back due to RLS on unapproved comments)
+      return {
+        ...newComment,
+        id: 'pending', // Actual ID is not available
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        profile: null
+      };
+    }
+
+    // For authenticated users, we can fetch the profile
     const { data, error } = await supabase
       .from('blog_comments')
       .insert(newComment)
