@@ -187,7 +187,7 @@ const BlogSubscribersTab = ({ network, activeProfile }) => {
         <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid', borderColor: 'divider' }}>
           <Table>
             <TableHead>
-              <TableRow sx={{ bgcolor: 'grey.50' }}>
+              <TableRow sx={{ bgcolor: 'action.hover' }}>
                 <TableCell>Email</TableCell>
                 <TableCell>Status</TableCell>
                 <TableCell>Subscribed</TableCell>

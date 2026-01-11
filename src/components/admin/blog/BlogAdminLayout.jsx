@@ -42,13 +42,13 @@ const drawerWidth = 240;
 
 const BlogAdminLayout = ({
   children,
-  darkMode,
   activeTab,
   setActiveTab,
   network,
   pendingCommentsCount = 0
 }) => {
   const muiTheme = useMuiTheme();
+  const darkMode = muiTheme.palette.mode === 'dark';
   const { t } = useTranslation();
   const { signOut } = useAuth();
   const navigate = useNavigate();

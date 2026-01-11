@@ -196,7 +196,7 @@ const BlogAnalyticsTab = ({ network, activeProfile }) => {
         <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid', borderColor: 'divider' }}>
           <Table>
             <TableHead>
-              <TableRow sx={{ bgcolor: 'grey.50' }}>
+              <TableRow sx={{ bgcolor: 'action.hover' }}>
                 <TableCell>Post</TableCell>
                 <TableCell align="center">Views</TableCell>
                 <TableCell align="center">Comments</TableCell>
