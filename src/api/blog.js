@@ -495,7 +495,7 @@ export const fetchBlogComments = async (postId, includeUnapproved = false) => {
       .from('blog_comments')
       .select(`
         *,
-        profile:profiles (
+        profile:profiles!blog_comments_profile_id_fkey (
           id,
           full_name,
           profile_picture_url
@@ -557,7 +557,7 @@ export const fetchPendingComments = async (networkId) => {
       .from('blog_comments')
       .select(`
         *,
-        profile:profiles (
+        profile:profiles!blog_comments_profile_id_fkey (
           id,
           full_name,
           profile_picture_url
@@ -626,7 +626,7 @@ export const addBlogComment = async (commentData) => {
       .insert(newComment)
       .select(`
         *,
-        profile:profiles (
+        profile:profiles!blog_comments_profile_id_fkey (
           id,
           full_name,
           profile_picture_url
