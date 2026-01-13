@@ -10,8 +10,10 @@ import {
   Alert,
   Button,
   Divider,
-  useTheme,
-  alpha
+  alpha,
+  ThemeProvider,
+  createTheme,
+  CssBaseline
 } from '@mui/material';
 import { RssFeed as RssIcon } from '@mui/icons-material';
 import { fetchBlogBySubdomain, fetchBlogPosts } from '../../api/blog';
@@ -20,9 +22,19 @@ import BlogPostCard from '../../components/blog/BlogPostCard';
 import NewsletterSignup from '../../components/blog/NewsletterSignup';
 import BlogAboutSection from '../../components/blog/BlogAboutSection';
 
+// Create a local dark theme for the blog page
+const darkTheme = createTheme({
+  palette: {
+    mode: 'dark',
+    background: {
+      default: '#121212',
+      paper: '#1e1e1e',
+    },
+  },
+});
+
 const PublicBlogPage = () => {
   const { subdomain } = useParams();
-  const theme = useTheme();
 
   const [blog, setBlog] = useState(null);
   const [posts, setPosts] = useState([]);
@@ -117,48 +129,55 @@ const PublicBlogPage = () => {
 
   if (loading) {
     return (
-      <Box
-        sx={{
-          minHeight: '100vh',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          bgcolor: 'background.default'
-        }}
-      >
-        <CircularProgress />
-      </Box>
+      <ThemeProvider theme={darkTheme}>
+        <CssBaseline />
+        <Box
+          sx={{
+            minHeight: '100vh',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            bgcolor: 'background.default'
+          }}
+        >
+          <CircularProgress />
+        </Box>
+      </ThemeProvider>
     );
   }
 
   if (error || !blog) {
     return (
-      <Box
-        sx={{
-          minHeight: '100vh',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          bgcolor: 'background.default'
-        }}
-      >
-        <Container maxWidth="sm">
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {error || 'Blog not found'}
-          </Alert>
-          <Button component={RouterLink} to="/" variant="contained">
-            Go to Homepage
-          </Button>
-        </Container>
-      </Box>
+      <ThemeProvider theme={darkTheme}>
+        <CssBaseline />
+        <Box
+          sx={{
+            minHeight: '100vh',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            bgcolor: 'background.default'
+          }}
+        >
+          <Container maxWidth="sm">
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {error || 'Blog not found'}
+            </Alert>
+            <Button component={RouterLink} to="/" variant="contained">
+              Go to Homepage
+            </Button>
+          </Container>
+        </Box>
+      </ThemeProvider>
     );
   }
 
   const blogSettings = blog.blog_settings || {};
-  const themeColor = blog.theme_color || theme.palette.primary.main;
+  const themeColor = blog.theme_color || '#1976d2'; // Default MUI primary color
 
   return (
-    <>
+    <ThemeProvider theme={darkTheme}>
+      <CssBaseline />
       <Helmet>
         <title>{seoTitle}</title>
         <meta name="description" content={seoDescription} />
@@ -369,7 +388,7 @@ const PublicBlogPage = () => {
           </Typography>
         </Box>
       </Box>
-    </>
+    </ThemeProvider>
   );
 };
 
