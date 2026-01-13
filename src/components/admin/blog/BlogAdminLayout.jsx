@@ -33,10 +33,13 @@ import {
   Public as PublicIcon,
   RssFeed as BlogIcon,
   Add as AddIcon,
-  Logout as LogoutIcon
+  Logout as LogoutIcon,
+  LightMode as SunIcon,
+  DarkMode as MoonIcon
 } from '@mui/icons-material';
 import { useTranslation } from '../../../hooks/useTranslation';
 import { useAuth } from '../../../context/authcontext';
+import { useTheme } from '../../ThemeProvider';
 
 const drawerWidth = 240;
 
@@ -48,7 +51,7 @@ const BlogAdminLayout = ({
   pendingCommentsCount = 0
 }) => {
   const muiTheme = useMuiTheme();
-  const darkMode = muiTheme.palette.mode === 'dark';
+  const { darkMode, toggleDarkMode } = useTheme();
   const { t } = useTranslation();
   const { signOut } = useAuth();
   const navigate = useNavigate();
@@ -258,6 +261,40 @@ const BlogAdminLayout = ({
           </ListItem>
         ))}
       </List>
+
+      <Divider />
+
+      {/* Theme Toggle */}
+      <Box sx={{ px: 2, py: 1.5 }}>
+        <Box
+          onClick={toggleDarkMode}
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            p: 1.5,
+            borderRadius: 1,
+            cursor: 'pointer',
+            bgcolor: darkMode ? alpha('#ffffff', 0.05) : alpha('#000000', 0.02),
+            border: `1px solid ${darkMode ? alpha('#ffffff', 0.1) : alpha('#000000', 0.08)}`,
+            transition: 'all 0.2s ease-in-out',
+            '&:hover': {
+              bgcolor: darkMode ? alpha('#ffffff', 0.1) : alpha('#000000', 0.05),
+            }
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            {darkMode ? (
+              <SunIcon sx={{ color: '#FFA000', fontSize: 20 }} />
+            ) : (
+              <MoonIcon sx={{ color: '#424242', fontSize: 20 }} />
+            )}
+            <Typography variant="body2" color="text.secondary">
+              {darkMode ? t('networkHeader.switchToLightMode', 'Light Mode') : t('networkHeader.switchToDarkMode', 'Dark Mode')}
+            </Typography>
+          </Box>
+        </Box>
+      </Box>
 
       <Divider />
 

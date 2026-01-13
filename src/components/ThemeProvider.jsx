@@ -59,13 +59,20 @@ const theme = createTheme({
   },
 });
 
-  // Effect to reset theme when session changes
+  // Effect to handle theme when session changes
   useEffect(() => {
-    if (!session && darkMode) {
-      // Reset to light mode when user logs out
+    if (session) {
+      // User logged in - restore their saved preference
+      const savedMode = localStorage.getItem('darkMode');
+      const shouldBeDark = savedMode === null ? true : savedMode === 'true';
+      if (darkMode !== shouldBeDark) {
+        setDarkMode(shouldBeDark);
+      }
+    } else if (darkMode) {
+      // User logged out - reset to light mode for public pages
       setDarkMode(false);
     }
-  }, [session, darkMode]);
+  }, [session]); // Only depend on session, not darkMode to avoid loops
 
   useEffect(() => {
     const loadNetworkTheme = async () => {
