@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, Link as RouterLink } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import {
@@ -14,7 +14,7 @@ import {
   alpha
 } from '@mui/material';
 import { RssFeed as RssIcon } from '@mui/icons-material';
-import { fetchBlogBySubdomain, fetchBlogPosts, incrementPostViews } from '../../api/blog';
+import { fetchBlogBySubdomain, fetchBlogPosts } from '../../api/blog';
 import BlogHeader from '../../components/blog/BlogHeader';
 import BlogPostCard from '../../components/blog/BlogPostCard';
 import NewsletterSignup from '../../components/blog/NewsletterSignup';
@@ -175,7 +175,7 @@ const PublicBlogPage = () => {
             rel="alternate"
             type="application/rss+xml"
             title={`${blog.name} RSS Feed`}
-            href={`/api/blog/${subdomain}/rss`}
+            href={`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/blog-rss/${subdomain}`}
           />
         )}
       </Helmet>
@@ -192,16 +192,23 @@ const PublicBlogPage = () => {
           themeColor={themeColor}
         />
 
-        <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Container maxWidth="lg" sx={{ py: { xs: 3, md: 5 } }}>
           {/* Featured Post */}
           {featuredPost && (
-            <Box sx={{ mb: 6 }}>
+            <Box
+              sx={{
+                mb: { xs: 4, md: 6 },
+                maxWidth: 1000,
+                mx: 'auto'
+              }}
+            >
               <Typography
                 variant="overline"
                 sx={{
                   color: themeColor,
                   fontWeight: 600,
-                  letterSpacing: 1
+                  letterSpacing: 1.5,
+                  fontSize: '0.75rem'
                 }}
               >
                 Featured
@@ -217,15 +224,19 @@ const PublicBlogPage = () => {
 
           {/* Posts Grid */}
           {regularPosts.length > 0 ? (
-            <>
+            <Box sx={{ maxWidth: 1000, mx: 'auto' }}>
               <Typography
                 variant="h5"
-                sx={{ mb: 3, fontWeight: 600 }}
+                sx={{
+                  mb: { xs: 2, md: 3 },
+                  fontWeight: 600,
+                  fontSize: { xs: '1.25rem', md: '1.5rem' }
+                }}
               >
                 Latest Posts
               </Typography>
 
-              <Grid container spacing={3}>
+              <Grid container spacing={{ xs: 2, sm: 3 }}>
                 {regularPosts.map((post) => (
                   <Grid item xs={12} sm={6} md={4} key={post.id}>
                     <BlogPostCard
@@ -239,14 +250,17 @@ const PublicBlogPage = () => {
 
               {/* Load More */}
               {hasMore && (
-                <Box sx={{ textAlign: 'center', mt: 4 }}>
+                <Box sx={{ textAlign: 'center', mt: { xs: 3, md: 5 } }}>
                   <Button
                     variant="outlined"
                     onClick={loadMorePosts}
                     disabled={loadingMore}
+                    size="large"
                     sx={{
                       borderColor: themeColor,
                       color: themeColor,
+                      borderRadius: 2,
+                      px: 4,
                       '&:hover': {
                         borderColor: themeColor,
                         bgcolor: alpha(themeColor, 0.05)
@@ -257,10 +271,14 @@ const PublicBlogPage = () => {
                   </Button>
                 </Box>
               )}
-            </>
+            </Box>
           ) : (
-            <Box sx={{ textAlign: 'center', py: 8 }}>
-              <Typography variant="h6" color="text.secondary">
+            <Box sx={{ textAlign: 'center', py: { xs: 6, md: 10 } }}>
+              <Typography
+                variant="h6"
+                color="text.secondary"
+                sx={{ mb: 1 }}
+              >
                 No posts yet
               </Typography>
               <Typography variant="body2" color="text.secondary">
@@ -269,52 +287,70 @@ const PublicBlogPage = () => {
             </Box>
           )}
 
-          <Divider sx={{ my: 6 }} />
-
-          {/* About Section */}
-          {blogSettings.about_page_content && (
-            <BlogAboutSection
-              blog={blog}
-              themeColor={themeColor}
-            />
+          {/* Divider only if there's content below */}
+          {(blogSettings.about_page_content || blogSettings.newsletter_enabled || blogSettings.rss_enabled) && (
+            <Divider sx={{ my: { xs: 4, md: 6 } }} />
           )}
 
-          {/* Newsletter Signup */}
-          {blogSettings.newsletter_enabled && (
-            <NewsletterSignup
-              networkId={blog.id}
-              themeColor={themeColor}
-            />
-          )}
+          {/* About & Newsletter Section */}
+          <Box sx={{ maxWidth: 800, mx: 'auto' }}>
+            {/* About Section */}
+            {blogSettings.about_page_content && (
+              <BlogAboutSection
+                blog={blog}
+                themeColor={themeColor}
+              />
+            )}
 
-          {/* RSS Link */}
-          {blogSettings.rss_enabled && (
-            <Box sx={{ textAlign: 'center', mt: 4 }}>
-              <Button
-                component="a"
-                href={`/api/blog/${subdomain}/rss`}
-                target="_blank"
-                rel="noopener noreferrer"
-                startIcon={<RssIcon />}
-                sx={{ color: 'text.secondary' }}
-              >
-                RSS Feed
-              </Button>
-            </Box>
-          )}
+            {/* Newsletter Signup */}
+            {blogSettings.newsletter_enabled && (
+              <Box sx={{ mt: blogSettings.about_page_content ? 4 : 0 }}>
+                <NewsletterSignup
+                  networkId={blog.id}
+                  themeColor={themeColor}
+                />
+              </Box>
+            )}
+
+            {/* RSS Link */}
+            {blogSettings.rss_enabled && (
+              <Box sx={{ textAlign: 'center', mt: 4 }}>
+                <Button
+                  component="a"
+                  href={`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/blog-rss/${subdomain}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  startIcon={<RssIcon />}
+                  size="small"
+                  sx={{
+                    color: 'text.secondary',
+                    '&:hover': {
+                      bgcolor: alpha(themeColor, 0.05)
+                    }
+                  }}
+                >
+                  RSS Feed
+                </Button>
+              </Box>
+            )}
+          </Box>
         </Container>
 
         {/* Footer */}
         <Box
           sx={{
-            py: 4,
-            mt: 6,
+            py: { xs: 3, md: 4 },
+            mt: { xs: 4, md: 6 },
             borderTop: '1px solid',
             borderColor: 'divider',
             textAlign: 'center'
           }}
         >
-          <Typography variant="body2" color="text.secondary">
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{ fontSize: '0.8125rem' }}
+          >
             Powered by{' '}
             <Box
               component="a"
@@ -324,6 +360,7 @@ const PublicBlogPage = () => {
               sx={{
                 color: themeColor,
                 textDecoration: 'none',
+                fontWeight: 500,
                 '&:hover': { textDecoration: 'underline' }
               }}
             >

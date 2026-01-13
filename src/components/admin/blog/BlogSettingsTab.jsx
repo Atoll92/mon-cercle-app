@@ -253,7 +253,7 @@ const BlogSettingsTab = ({ network, activeProfile, onNetworkUpdate }) => {
         />
         {settings.rss_enabled && (
           <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
-            RSS feed URL: <code>/api/blog/{network.subdomain}/rss</code>
+            RSS feed URL: <code>{import.meta.env.VITE_SUPABASE_URL}/functions/v1/blog-rss/{network.subdomain}</code>
           </Typography>
         )}
       </SettingSection>

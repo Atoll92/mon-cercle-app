@@ -1,10 +1,8 @@
-import React from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import {
   Box,
   Card,
   CardContent,
-  CardMedia,
   CardActionArea,
   Typography,
   Chip,
@@ -69,20 +67,22 @@ const BlogPostCard = ({ post, blog, featured = false, themeColor }) => {
           <Box
             sx={{
               width: { xs: '100%', md: '50%' },
-              minHeight: { xs: 200, md: 250 },
+              minHeight: { xs: 200, md: 280 },
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              bgcolor: 'grey.100'
+              bgcolor: theme.palette.mode === 'dark' ? 'grey.900' : 'grey.50',
+              p: 2
             }}
           >
             <LazyImage
               src={previewImage}
               alt={post.title || 'Post image'}
               sx={{
-                width: '100%',
+                maxWidth: '100%',
+                maxHeight: { xs: 280, md: 400 },
+                width: 'auto',
                 height: 'auto',
-                maxHeight: { xs: 300, md: 400 },
                 objectFit: 'contain'
               }}
             />
@@ -193,17 +193,19 @@ const BlogPostCard = ({ post, blog, featured = false, themeColor }) => {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              bgcolor: 'grey.100',
-              minHeight: 120
+              bgcolor: theme.palette.mode === 'dark' ? 'grey.900' : 'grey.50',
+              minHeight: 140,
+              p: 1.5
             }}
           >
             <LazyImage
               src={previewImage}
               alt={post.title || 'Post image'}
               sx={{
-                width: '100%',
+                maxWidth: '100%',
+                maxHeight: { xs: 220, md: 240 },
+                width: 'auto',
                 height: 'auto',
-                maxHeight: 200,
                 objectFit: 'contain'
               }}
             />

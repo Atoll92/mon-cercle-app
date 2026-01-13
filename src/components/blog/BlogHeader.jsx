@@ -204,7 +204,7 @@ const BlogHeader = ({ blog, themeColor, compact = false }) => {
                 <Tooltip title="RSS Feed">
                   <IconButton
                     component="a"
-                    href={`/api/blog/${blog?.subdomain}/rss`}
+                    href={`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/blog-rss/${blog?.subdomain}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     sx={{
