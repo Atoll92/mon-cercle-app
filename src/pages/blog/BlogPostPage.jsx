@@ -11,8 +11,10 @@ import {
   Divider,
   Avatar,
   IconButton,
-  useTheme,
-  alpha
+  alpha,
+  ThemeProvider,
+  createTheme,
+  CssBaseline
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
@@ -27,10 +29,20 @@ import MediaPlayer from '../../components/MediaPlayer';
 import LazyImage from '../../components/LazyImage';
 import UserContent from '../../components/UserContent';
 
+// Create a local dark theme for the blog post page
+const darkTheme = createTheme({
+  palette: {
+    mode: 'dark',
+    background: {
+      default: '#121212',
+      paper: '#1e1e1e',
+    },
+  },
+});
+
 const BlogPostPage = () => {
   const { subdomain, postId } = useParams();
   const navigate = useNavigate();
-  const theme = useTheme();
 
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -75,47 +87,53 @@ const BlogPostPage = () => {
 
   if (loading) {
     return (
-      <Box
-        sx={{
-          minHeight: '100vh',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          bgcolor: 'background.default'
-        }}
-      >
-        <CircularProgress />
-      </Box>
+      <ThemeProvider theme={darkTheme}>
+        <CssBaseline />
+        <Box
+          sx={{
+            minHeight: '100vh',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            bgcolor: 'background.default'
+          }}
+        >
+          <CircularProgress />
+        </Box>
+      </ThemeProvider>
     );
   }
 
   if (error || !post) {
     return (
-      <Box
-        sx={{
-          minHeight: '100vh',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          bgcolor: 'background.default'
-        }}
-      >
-        <Container maxWidth="sm">
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {error || 'Post not found'}
-          </Alert>
-          <Button component={RouterLink} to={`/blog/${subdomain}`} variant="contained">
-            Back to Blog
-          </Button>
-        </Container>
-      </Box>
+      <ThemeProvider theme={darkTheme}>
+        <CssBaseline />
+        <Box
+          sx={{
+            minHeight: '100vh',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            bgcolor: 'background.default'
+          }}
+        >
+          <Container maxWidth="sm">
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {error || 'Post not found'}
+            </Alert>
+            <Button component={RouterLink} to={`/blog/${subdomain}`} variant="contained">
+              Back to Blog
+            </Button>
+          </Container>
+        </Box>
+      </ThemeProvider>
     );
   }
 
   const blog = post.network;
   const author = post.created_by_profile;
   const blogSettings = blog?.blog_settings || {};
-  const themeColor = blog?.theme_color || theme.palette.primary.main;
+  const themeColor = blog?.theme_color || '#1976d2'; // Default MUI primary color
 
   // Get media items
   const mediaItems = post.media_metadata?.media_items || [];
@@ -138,7 +156,8 @@ const BlogPostPage = () => {
   };
 
   return (
-    <>
+    <ThemeProvider theme={darkTheme}>
+      <CssBaseline />
       <Helmet>
         <title>{seoTitle}</title>
         <meta name="description" content={seoDescription} />
@@ -319,7 +338,7 @@ const BlogPostPage = () => {
           </Typography>
         </Box>
       </Box>
-    </>
+    </ThemeProvider>
   );
 };
 
