@@ -69,7 +69,7 @@ const BlogAdminLayout = ({
     }
   };
 
-  const themeColor = network?.theme_color || muiTheme.palette.primary.main;
+  const themeColor = network?.theme_color || muiTheme.palette.primary.main || '#0097a7';
 
   // Simplified nav items for blog admin
   const navItems = [

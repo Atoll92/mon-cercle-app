@@ -312,8 +312,8 @@ const handlePlanSelect = async (plan) => {
     }
   ];
 
-  // Filter out Network and Business tiers
-  const visiblePlans = plans.filter(plan => plan.name !== 'Network' && plan.name !== 'Business');
+  // Filter out Network, Business, and Non-Profit tiers
+  const visiblePlans = plans.filter(plan => plan.name !== 'Network' && plan.name !== 'Business' && plan.name !== 'Non-Profit');
   
   // For desktop view, we'll determine the number of plans to show based on screen size
   const desktopPlans = visiblePlans;

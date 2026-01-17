@@ -196,7 +196,7 @@ const NetworkOnboardingWizard = ({ profile }) => {
       comments_enabled: true,
       anonymous_comments: true,
       comment_moderation: true,
-      newsletter_enabled: false,
+      newsletter_enabled: true,
       rss_enabled: true,
       about_page_content: '',
       social_links: {}

@@ -14,14 +14,9 @@ import {
   alpha
 } from '@mui/material';
 import {
-  Security,
   Speed,
-  Group,
   Shield,
   Rocket,
-  Block,
-  Public,
-  ArrowForward,
   Feed,
   Chat,
   EventAvailable,
@@ -35,7 +30,8 @@ import {
   Favorite,
   AdminPanelSettings,
   FlightTakeoff,
-  VerifiedUser
+  VerifiedUser,
+  Article
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/authcontext';
@@ -143,7 +139,10 @@ const translations = {
   donationsDesc: "Accept donations seamlessly with HelloAsso integration",
 
   notificationsTitle: "Smart Notifications",
-  notificationsDesc: "Respectful email updates that value your attention"
+  notificationsDesc: "Respectful email updates that value your attention",
+
+  blogTitle: "Blog",
+  blogDesc: "Share stories and insights with a beautiful publishing experience"
 },
 
   fr: {
@@ -229,7 +228,10 @@ const translations = {
   donationsDesc: "Acceptez des dons facilement avec l'intégration HelloAsso",
 
   notificationsTitle: "Notifications intelligentes",
-  notificationsDesc: "Alertes email respectueuses qui valorisent votre attention"
+  notificationsDesc: "Alertes email respectueuses qui valorisent votre attention",
+
+  blogTitle: "Blog",
+  blogDesc: "Partagez des histoires et des réflexions avec une expérience de publication simple"
 }
 
 };
@@ -895,7 +897,8 @@ const SimpleConclavLanding = () => {
                 { icon: ConfirmationNumber, color: '#ffc107', title: 'ticketingTitle', desc: 'ticketingDesc', delay: '0.9s' },
                 { icon: ContactPage, color: '#607d8b', title: 'directoryTitle', desc: 'directoryDesc', delay: '1s' },
                 { icon: Favorite, color: '#f06292', title: 'donationsTitle', desc: 'donationsDesc', delay: '1.1s' },
-                { icon: Notifications, color: '#26a69a', title: 'notificationsTitle', desc: 'notificationsDesc', delay: '1.2s' }
+                { icon: Notifications, color: '#26a69a', title: 'notificationsTitle', desc: 'notificationsDesc', delay: '1.2s' },
+                { icon: Article, color: '#795548', title: 'blogTitle', desc: 'blogDesc', delay: '1.3s' }
               ].map((feature, index) => {
                 const Icon = feature.icon;
                 return (
