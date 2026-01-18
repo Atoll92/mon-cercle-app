@@ -182,7 +182,7 @@ const handlePlanSelect = async (plan) => {
         { name: 'Members', value: '100', icon: <GroupsIcon color="primary" /> },
         { name: 'Storage', value: '20GB', icon: <StorageIcon color="primary" /> },
         { name: 'Admin accounts', value: '2', icon: <AdminIcon color="primary" /> },
-        { name: 'White label', value: false, icon: <PaletteIcon color="primary" /> },
+        { name: 'White label', value: true, icon: <PaletteIcon color="primary" /> },
         { name: 'Wiki', value: true, icon: <BookmarkIcon color="primary" /> },
         { name: 'Events', value: true, icon: <EventIcon color="primary" /> },
         { name: 'Zero tracking by design', value: true, icon: <VisibilityOffIcon color="primary" /> },
@@ -625,7 +625,7 @@ const handlePlanSelect = async (plan) => {
                     align="center"
                     sx={{ fontWeight: 500 }}
                   >
-                    {plan.name === 'Enterprise' ? 'Included' : (plan.name === 'Free' ? 'Not available' : '€2/member/month')}
+                    {plan.name === 'Enterprise' ? 'Included' : (plan.name === 'Free' ? 'Not available' : (plan.name === 'Community' || plan.name === 'Organization' ? '€0.20/member/month' : '€2/member/month'))}
                   </TableCell>
                 ))}
               </TableRow>
@@ -779,7 +779,7 @@ const handlePlanSelect = async (plan) => {
                       </ListItemIcon>
                       <ListItemText 
                         primary="Additional members" 
-                        secondary={plan.name === 'Enterprise' ? 'Included' : (plan.name === 'Free' ? 'Not available' : '€2/member/month')}
+                        secondary={plan.name === 'Enterprise' ? 'Included' : (plan.name === 'Free' ? 'Not available' : (plan.name === 'Community' || plan.name === 'Organization' ? '€0.20/member/month' : '€2/member/month'))}
                         primaryTypographyProps={{ fontWeight: 500 }}
                       />
                     </ListItem>
@@ -862,7 +862,7 @@ const handlePlanSelect = async (plan) => {
               </TableRow>
               <TableRow>
                 <TableCell>White Label Option</TableCell>
-                <TableCell align="center" sx={{ fontWeight: 'bold', color: 'primary.main' }}>€97/mo</TableCell>
+                <TableCell align="center" sx={{ fontWeight: 'bold', color: 'primary.main' }}>€17/mo</TableCell>
                 <TableCell align="center">€300+/mo</TableCell>
               </TableRow>
               <TableRow>
