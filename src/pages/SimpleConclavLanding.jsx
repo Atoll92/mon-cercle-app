@@ -231,7 +231,7 @@ const translations = {
   notificationsDesc: "Alertes email respectueuses qui valorisent votre attention",
 
   blogTitle: "Blog",
-  blogDesc: "Partagez des histoires et des réflexions avec une expérience de publication simple"
+  blogDesc: "Partagez des histoires et des réflexions simplement"
 }
 
 };
