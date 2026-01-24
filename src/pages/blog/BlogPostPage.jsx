@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, Link as RouterLink, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import {
@@ -25,6 +25,7 @@ import MediaCarousel from '../../components/MediaCarousel';
 import MediaPlayer from '../../components/MediaPlayer';
 import LazyImage from '../../components/LazyImage';
 import UserContent from '../../components/UserContent';
+import { getBrowserLanguage, createTranslator } from '../../utils/publicTranslation';
 
 // Create a local dark theme for the blog post page
 const darkTheme = createTheme({
@@ -45,6 +46,10 @@ const BlogPostPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Get browser language and create translator
+  const language = useMemo(() => getBrowserLanguage(), []);
+  const t = useMemo(() => createTranslator(language), [language]);
+
   // Fetch post
   useEffect(() => {
     const loadPost = async () => {
@@ -55,13 +60,13 @@ const BlogPostPage = () => {
         const postData = await fetchBlogPost(postId);
 
         if (!postData) {
-          setError('Post not found');
+          setError('postNotFound');
           return;
         }
 
         // Verify this post belongs to the correct blog
         if (postData.network?.subdomain !== subdomain) {
-          setError('Post not found');
+          setError('postNotFound');
           return;
         }
 
@@ -71,7 +76,7 @@ const BlogPostPage = () => {
         await incrementPostViews(postId);
       } catch (err) {
         console.error('Error loading post:', err);
-        setError('Failed to load post');
+        setError('failedToLoadPost');
       } finally {
         setLoading(false);
       }
@@ -116,10 +121,10 @@ const BlogPostPage = () => {
         >
           <Container maxWidth="sm">
             <Alert severity="error" sx={{ mb: 2 }}>
-              {error || 'Post not found'}
+              {t(`publicBlog.${error}`) || t('publicBlog.postNotFound')}
             </Alert>
             <Button component={RouterLink} to={`/blog/${subdomain}`} variant="contained">
-              Back to Blog
+              {t('publicBlog.backToBlog')}
             </Button>
           </Container>
         </Box>
@@ -142,10 +147,11 @@ const BlogPostPage = () => {
   const seoDescription = post.content?.substring(0, 160) || blog?.description || '';
   const ogImage = post.media_url || blog?.logo_url || '';
 
-  // Format date
+  // Format date based on detected language
   const formatDate = (dateString) => {
     if (!dateString) return '';
-    return new Date(dateString).toLocaleDateString('en-US', {
+    const locale = language === 'fr' ? 'fr-FR' : 'en-US';
+    return new Date(dateString).toLocaleDateString(locale, {
       year: 'numeric',
       month: 'long',
       day: 'numeric'
@@ -183,7 +189,7 @@ const BlogPostPage = () => {
             onClick={() => navigate(`/blog/${subdomain}`)}
             sx={{ mb: 3, color: 'text.secondary' }}
           >
-            Back to Blog
+            {t('publicBlog.backToBlog')}
           </Button>
 
           {/* Post Content */}
@@ -296,6 +302,7 @@ const BlogPostPage = () => {
               postId={post.id}
               blogSettings={blogSettings}
               themeColor={themeColor}
+              language={language}
             />
           )}
         </Container>
@@ -311,7 +318,7 @@ const BlogPostPage = () => {
           }}
         >
           <Typography variant="body2" color="text.secondary">
-            Powered by{' '}
+            {t('publicBlog.poweredBy')}{' '}
             <Box
               component="a"
               href="https://conclav.club"

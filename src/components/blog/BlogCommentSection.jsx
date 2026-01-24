@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Box,
   Typography,
@@ -11,7 +11,6 @@ import {
   Collapse,
   CircularProgress,
   Divider,
-  useTheme,
   alpha
 } from '@mui/material';
 import {
@@ -26,6 +25,7 @@ import {
   addBlogComment,
   getBlogCommentCount
 } from '../../api/blog';
+import { getBrowserLanguage, createTranslator } from '../../utils/publicTranslation';
 
 // Single Comment Item
 const CommentItem = ({
@@ -33,13 +33,14 @@ const CommentItem = ({
   depth = 0,
   blogSettings,
   themeColor,
-  onReply
+  onReply,
+  t,
+  language
 }) => {
-  const theme = useTheme();
   const [showReplies, setShowReplies] = useState(depth < 2);
   const hasReplies = comment.replies && comment.replies.length > 0;
 
-  // Format date
+  // Format date based on language
   const formatDate = (dateString) => {
     if (!dateString) return '';
     const date = new Date(dateString);
@@ -49,11 +50,12 @@ const CommentItem = ({
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
 
-    if (diffMins < 1) return 'just now';
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays < 7) return `${diffDays}d ago`;
-    return date.toLocaleDateString();
+    if (diffMins < 1) return t('publicBlog.comments.justNow');
+    if (diffMins < 60) return t('publicBlog.comments.minutesAgo', { count: diffMins });
+    if (diffHours < 24) return t('publicBlog.comments.hoursAgo', { count: diffHours });
+    if (diffDays < 7) return t('publicBlog.comments.daysAgo', { count: diffDays });
+    const locale = language === 'fr' ? 'fr-FR' : 'en-US';
+    return date.toLocaleDateString(locale);
   };
 
   // Get author name
@@ -113,7 +115,7 @@ const CommentItem = ({
               onClick={() => onReply(comment)}
               sx={{ color: 'text.secondary', fontSize: '0.75rem' }}
             >
-              Reply
+              {t('publicBlog.comments.reply')}
             </Button>
           )}
         </Box>
@@ -128,7 +130,7 @@ const CommentItem = ({
             startIcon={showReplies ? <ExpandLessIcon /> : <ExpandMoreIcon />}
             sx={{ ml: indent + 52, color: 'text.secondary', fontSize: '0.75rem' }}
           >
-            {showReplies ? 'Hide' : 'Show'} {comment.replies.length} {comment.replies.length === 1 ? 'reply' : 'replies'}
+            {showReplies ? t('publicBlog.comments.hideReplies') : t('publicBlog.comments.showReplies')} {comment.replies.length} {comment.replies.length === 1 ? t('publicBlog.comments.reply_one') : t('publicBlog.comments.reply_other')}
           </Button>
 
           <Collapse in={showReplies}>
@@ -140,6 +142,8 @@ const CommentItem = ({
                 blogSettings={blogSettings}
                 themeColor={themeColor}
                 onReply={onReply}
+                t={t}
+                language={language}
               />
             ))}
           </Collapse>
@@ -156,7 +160,8 @@ const CommentForm = ({
   blogSettings,
   themeColor,
   onCancel,
-  onCommentAdded
+  onCommentAdded,
+  t
 }) => {
   const [content, setContent] = useState('');
   const [authorName, setAuthorName] = useState('');
@@ -169,12 +174,12 @@ const CommentForm = ({
     e.preventDefault();
 
     if (!content.trim()) {
-      setError('Please enter a comment');
+      setError(t('publicBlog.comments.errorEmptyComment'));
       return;
     }
 
     if (blogSettings.anonymous_comments && !authorName.trim()) {
-      setError('Please enter your name');
+      setError(t('publicBlog.comments.errorEmptyName'));
       return;
     }
 
@@ -200,7 +205,7 @@ const CommentForm = ({
       }
     } catch (err) {
       console.error('Error adding comment:', err);
-      setError('Failed to post comment. Please try again.');
+      setError(t('publicBlog.comments.errorFailed'));
     } finally {
       setLoading(false);
     }
@@ -217,8 +222,8 @@ const CommentForm = ({
         }}
       >
         {blogSettings.comment_moderation
-          ? 'Thank you for your comment! It will appear once approved.'
-          : 'Your comment has been posted!'}
+          ? t('publicBlog.comments.successModerated')
+          : t('publicBlog.comments.successPosted')}
       </Alert>
     );
   }
@@ -240,11 +245,11 @@ const CommentForm = ({
       {parentComment && (
         <Box sx={{ mb: 2 }}>
           <Typography variant="caption" color="text.secondary">
-            Replying to{' '}
-            <strong>{parentComment.profile?.full_name || parentComment.author_name || 'Anonymous'}</strong>
+            {t('publicBlog.comments.replyingTo')}{' '}
+            <strong>{parentComment.profile?.full_name || parentComment.author_name || t('publicBlog.comments.anonymous')}</strong>
           </Typography>
           <Button size="small" onClick={onCancel} sx={{ ml: 1 }}>
-            Cancel
+            {t('publicBlog.comments.cancel')}
           </Button>
         </Box>
       )}
@@ -259,7 +264,7 @@ const CommentForm = ({
       {blogSettings.anonymous_comments && (
         <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
           <TextField
-            label="Name"
+            label={t('publicBlog.comments.name')}
             value={authorName}
             onChange={(e) => setAuthorName(e.target.value)}
             size="small"
@@ -267,19 +272,19 @@ const CommentForm = ({
             sx={{ flex: 1 }}
           />
           <TextField
-            label="Email (optional)"
+            label={t('publicBlog.comments.emailOptional')}
             type="email"
             value={authorEmail}
             onChange={(e) => setAuthorEmail(e.target.value)}
             size="small"
             sx={{ flex: 1 }}
-            helperText="Not displayed publicly"
+            helperText={t('publicBlog.comments.emailNotPublic')}
           />
         </Box>
       )}
 
       <TextField
-        placeholder={parentComment ? 'Write a reply...' : 'Write a comment...'}
+        placeholder={parentComment ? t('publicBlog.comments.writeReply') : t('publicBlog.comments.writeComment')}
         value={content}
         onChange={(e) => setContent(e.target.value)}
         multiline
@@ -292,7 +297,7 @@ const CommentForm = ({
         {blogSettings.comment_moderation && (
           <Typography variant="caption" color="text.secondary">
             <TimeIcon sx={{ fontSize: 14, verticalAlign: 'middle', mr: 0.5 }} />
-            Comments require approval
+            {t('publicBlog.comments.commentsRequireApproval')}
           </Typography>
         )}
         <Button
@@ -305,7 +310,7 @@ const CommentForm = ({
             ml: 'auto'
           }}
         >
-          {loading ? <CircularProgress size={20} color="inherit" /> : 'Post Comment'}
+          {loading ? <CircularProgress size={20} color="inherit" /> : t('publicBlog.comments.postComment')}
         </Button>
       </Box>
     </Paper>
@@ -313,12 +318,15 @@ const CommentForm = ({
 };
 
 // Main Comment Section
-const BlogCommentSection = ({ postId, blogSettings, themeColor }) => {
-  const theme = useTheme();
+const BlogCommentSection = ({ postId, blogSettings, themeColor, language: propLanguage }) => {
   const [comments, setComments] = useState([]);
   const [commentCount, setCommentCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [replyingTo, setReplyingTo] = useState(null);
+
+  // Use provided language or detect from browser
+  const language = propLanguage || getBrowserLanguage();
+  const t = useMemo(() => createTranslator(language), [language]);
 
   // Load comments
   const loadComments = async () => {
@@ -363,7 +371,9 @@ const BlogCommentSection = ({ postId, blogSettings, themeColor }) => {
   return (
     <Box>
       <Typography variant="h5" gutterBottom fontWeight={600}>
-        Comments {commentCount > 0 && `(${commentCount})`}
+        {commentCount > 0
+          ? t('publicBlog.comments.titleWithCount', { count: commentCount })
+          : t('publicBlog.comments.title')}
       </Typography>
 
       {/* Main comment form */}
@@ -373,6 +383,7 @@ const BlogCommentSection = ({ postId, blogSettings, themeColor }) => {
           blogSettings={blogSettings}
           themeColor={themeColor}
           onCommentAdded={handleCommentAdded}
+          t={t}
         />
       )}
 
@@ -385,6 +396,7 @@ const BlogCommentSection = ({ postId, blogSettings, themeColor }) => {
           themeColor={themeColor}
           onCancel={() => setReplyingTo(null)}
           onCommentAdded={handleCommentAdded}
+          t={t}
         />
       )}
 
@@ -402,6 +414,8 @@ const BlogCommentSection = ({ postId, blogSettings, themeColor }) => {
                 blogSettings={blogSettings}
                 themeColor={themeColor}
                 onReply={handleReply}
+                t={t}
+                language={language}
               />
               <Divider sx={{ my: 1 }} />
             </React.Fragment>
@@ -410,7 +424,7 @@ const BlogCommentSection = ({ postId, blogSettings, themeColor }) => {
       ) : (
         <Box sx={{ textAlign: 'center', py: 4 }}>
           <Typography variant="body2" color="text.secondary">
-            No comments yet. Be the first to comment!
+            {t('publicBlog.comments.noComments')}
           </Typography>
         </Box>
       )}

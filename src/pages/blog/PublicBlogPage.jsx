@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, Link as RouterLink } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import {
@@ -21,6 +21,7 @@ import BlogHeader from '../../components/blog/BlogHeader';
 import BlogPostCard from '../../components/blog/BlogPostCard';
 import NewsletterSignup from '../../components/blog/NewsletterSignup';
 import BlogAboutSection from '../../components/blog/BlogAboutSection';
+import { getBrowserLanguage, createTranslator } from '../../utils/publicTranslation';
 
 // Create a local dark theme for the blog page
 const darkTheme = createTheme({
@@ -44,6 +45,10 @@ const PublicBlogPage = () => {
   const [hasMore, setHasMore] = useState(true);
   const [offset, setOffset] = useState(0);
 
+  // Get browser language and create translator
+  const language = useMemo(() => getBrowserLanguage(), []);
+  const t = useMemo(() => createTranslator(language), [language]);
+
   const POSTS_PER_PAGE = 12;
 
   // Fetch blog details
@@ -56,14 +61,14 @@ const PublicBlogPage = () => {
         const blogData = await fetchBlogBySubdomain(subdomain);
 
         if (!blogData) {
-          setError('Blog not found');
+          setError('blogNotFound');
           return;
         }
 
         setBlog(blogData);
       } catch (err) {
         console.error('Error loading blog:', err);
-        setError('Failed to load blog');
+        setError('failedToLoadBlog');
       } finally {
         setLoading(false);
       }
@@ -161,10 +166,10 @@ const PublicBlogPage = () => {
         >
           <Container maxWidth="sm">
             <Alert severity="error" sx={{ mb: 2 }}>
-              {error || 'Blog not found'}
+              {t(`publicBlog.${error}`) || t('publicBlog.blogNotFound')}
             </Alert>
             <Button component={RouterLink} to="/" variant="contained">
-              Go to Homepage
+              {t('publicBlog.goToHomepage')}
             </Button>
           </Container>
         </Box>
@@ -230,7 +235,7 @@ const PublicBlogPage = () => {
                   fontSize: '0.75rem'
                 }}
               >
-                Featured
+                {t('publicBlog.featured')}
               </Typography>
               <BlogPostCard
                 post={featuredPost}
@@ -252,7 +257,7 @@ const PublicBlogPage = () => {
                   fontSize: { xs: '1.25rem', md: '1.5rem' }
                 }}
               >
-                Latest Posts
+                {t('publicBlog.latestPosts')}
               </Typography>
 
               <Grid container spacing={{ xs: 2, sm: 3 }} justifyContent="center">
@@ -286,7 +291,7 @@ const PublicBlogPage = () => {
                       }
                     }}
                   >
-                    {loadingMore ? <CircularProgress size={20} /> : 'Load More'}
+                    {loadingMore ? <CircularProgress size={20} /> : t('publicBlog.loadMore')}
                   </Button>
                 </Box>
               )}
@@ -298,10 +303,10 @@ const PublicBlogPage = () => {
                 color="text.secondary"
                 sx={{ mb: 1 }}
               >
-                No posts yet
+                {t('publicBlog.noPostsYet')}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Check back soon for new content!
+                {t('publicBlog.checkBackSoon')}
               </Typography>
             </Box>
           )}
@@ -318,6 +323,7 @@ const PublicBlogPage = () => {
               <BlogAboutSection
                 blog={blog}
                 themeColor={themeColor}
+                language={language}
               />
             )}
 
@@ -327,6 +333,7 @@ const PublicBlogPage = () => {
                 <NewsletterSignup
                   networkId={blog.id}
                   themeColor={themeColor}
+                  language={language}
                 />
               </Box>
             )}
@@ -348,7 +355,7 @@ const PublicBlogPage = () => {
                     }
                   }}
                 >
-                  RSS Feed
+                  {t('publicBlog.rssFeed')}
                 </Button>
               </Box>
             )}
@@ -370,7 +377,7 @@ const PublicBlogPage = () => {
             color="text.secondary"
             sx={{ fontSize: '0.8125rem' }}
           >
-            Powered by{' '}
+            {t('publicBlog.poweredBy')}{' '}
             <Box
               component="a"
               href="https://conclav.club"

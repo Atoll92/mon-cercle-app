@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   Box,
   Typography,
@@ -15,8 +15,12 @@ import {
   Language as WebsiteIcon
 } from '@mui/icons-material';
 import UserContent from '../UserContent';
+import { getBrowserLanguage, createTranslator } from '../../utils/publicTranslation';
 
-const BlogAboutSection = ({ blog, themeColor }) => {
+const BlogAboutSection = ({ blog, themeColor, language: propLanguage }) => {
+  // Use provided language or detect from browser
+  const language = propLanguage || getBrowserLanguage();
+  const t = useMemo(() => createTranslator(language), [language]);
   const blogSettings = blog?.blog_settings || {};
   const socialLinks = blogSettings.social_links || {};
   const aboutContent = blogSettings.about_page_content;
@@ -90,7 +94,7 @@ const BlogAboutSection = ({ blog, themeColor }) => {
         {/* Content */}
         <Box sx={{ flex: 1 }}>
           <Typography variant="h6" gutterBottom fontWeight={600}>
-            About the Author
+            {t('publicBlog.aboutTheAuthor')}
           </Typography>
 
           <Box sx={{ mb: 2, color: 'text.secondary' }}>

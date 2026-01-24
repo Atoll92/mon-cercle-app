@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Box,
   Typography,
@@ -11,8 +11,12 @@ import {
 } from '@mui/material';
 import { Email as EmailIcon, Check as CheckIcon } from '@mui/icons-material';
 import { subscribeToBlog } from '../../api/blog';
+import { getBrowserLanguage, createTranslator } from '../../utils/publicTranslation';
 
-const NewsletterSignup = ({ networkId, themeColor }) => {
+const NewsletterSignup = ({ networkId, themeColor, language: propLanguage }) => {
+  // Use provided language or detect from browser
+  const language = propLanguage || getBrowserLanguage();
+  const t = useMemo(() => createTranslator(language), [language]);
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -22,14 +26,14 @@ const NewsletterSignup = ({ networkId, themeColor }) => {
     e.preventDefault();
 
     if (!email?.trim()) {
-      setError('Please enter your email address');
+      setError(t('publicBlog.newsletter.errorEmptyEmail'));
       return;
     }
 
     // Basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      setError('Please enter a valid email address');
+      setError(t('publicBlog.newsletter.errorInvalidEmail'));
       return;
     }
 
@@ -43,7 +47,7 @@ const NewsletterSignup = ({ networkId, themeColor }) => {
       setEmail('');
     } catch (err) {
       console.error('Error subscribing:', err);
-      setError('Failed to subscribe. Please try again.');
+      setError(t('publicBlog.newsletter.errorFailed'));
     } finally {
       setLoading(false);
     }
@@ -78,10 +82,10 @@ const NewsletterSignup = ({ networkId, themeColor }) => {
           <CheckIcon sx={{ fontSize: 30, color: 'white' }} />
         </Box>
         <Typography variant="h6" gutterBottom>
-          You're subscribed!
+          {t('publicBlog.newsletter.successTitle')}
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          Thank you for subscribing. You'll receive updates when new posts are published.
+          {t('publicBlog.newsletter.successMessage')}
         </Typography>
       </Paper>
     );
@@ -116,11 +120,11 @@ const NewsletterSignup = ({ networkId, themeColor }) => {
       </Box>
 
       <Typography variant="h5" gutterBottom fontWeight={600}>
-        Subscribe to Newsletter
+        {t('publicBlog.newsletter.title')}
       </Typography>
 
       <Typography variant="body1" color="text.secondary" sx={{ mb: 3, maxWidth: 400, mx: 'auto' }}>
-        Get notified when new posts are published. No spam, unsubscribe anytime.
+        {t('publicBlog.newsletter.description')}
       </Typography>
 
       {error && (
@@ -142,7 +146,7 @@ const NewsletterSignup = ({ networkId, themeColor }) => {
       >
         <TextField
           type="email"
-          placeholder="Enter your email"
+          placeholder={t('publicBlog.newsletter.placeholder')}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           size="small"
@@ -167,7 +171,7 @@ const NewsletterSignup = ({ networkId, themeColor }) => {
             px: 3
           }}
         >
-          {loading ? <CircularProgress size={20} color="inherit" /> : 'Subscribe'}
+          {loading ? <CircularProgress size={20} color="inherit" /> : t('publicBlog.newsletter.subscribe')}
         </Button>
       </Box>
     </Paper>
