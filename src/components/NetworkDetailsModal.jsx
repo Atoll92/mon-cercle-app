@@ -170,19 +170,13 @@ const NetworkDetailsModal = ({ open, onClose, networkId }) => {
                     </Grid>
                     <Grid item xs={12} sm={6}>
                       <Typography variant="body2" color="text.secondary">
-                        Network Type (Purpose)
+                        Network Type
                       </Typography>
                       <Chip
-                        label={networkDetails.purpose || 'general'}
+                        label={networkDetails.network_type || 'network'}
                         size="small"
                         variant="outlined"
-                        color={
-                          networkDetails.purpose === 'professional' ? 'primary' :
-                          networkDetails.purpose === 'community' ? 'success' :
-                          networkDetails.purpose === 'educational' ? 'info' :
-                          networkDetails.purpose === 'hobby' ? 'warning' :
-                          'default'
-                        }
+                        color={networkDetails.network_type === 'blog' ? 'info' : 'primary'}
                         icon={<CategoryIcon />}
                       />
                     </Grid>
@@ -196,6 +190,132 @@ const NetworkDetailsModal = ({ open, onClose, networkId }) => {
                         </Typography>
                       </Grid>
                     )}
+                  </Grid>
+                </CardContent>
+              </Card>
+            </Grid>
+
+            {/* Network Settings */}
+            <Grid item xs={12}>
+              <Card>
+                <CardContent>
+                  <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <SettingsIcon /> Network Settings
+                  </Typography>
+                  <Grid container spacing={2}>
+                    {/* Enabled Tabs */}
+                    <Grid item xs={12} sm={6}>
+                      <Typography variant="body2" color="text.secondary" gutterBottom>
+                        Enabled Tabs
+                      </Typography>
+                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                        {networkDetails.enabled_tabs ? (
+                          Object.entries(networkDetails.enabled_tabs)
+                            .filter(([_, enabled]) => enabled)
+                            .map(([tab]) => (
+                              <Chip
+                                key={tab}
+                                label={tab.replace(/_/g, ' ')}
+                                size="small"
+                                color="primary"
+                                variant="outlined"
+                                icon={<CheckCircleIcon />}
+                              />
+                            ))
+                        ) : (
+                          <Typography variant="body2" color="text.secondary">No tabs configured</Typography>
+                        )}
+                      </Box>
+                    </Grid>
+
+                    {/* Disabled Tabs */}
+                    <Grid item xs={12} sm={6}>
+                      <Typography variant="body2" color="text.secondary" gutterBottom>
+                        Disabled Tabs
+                      </Typography>
+                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                        {networkDetails.enabled_tabs ? (
+                          Object.entries(networkDetails.enabled_tabs)
+                            .filter(([_, enabled]) => !enabled)
+                            .map(([tab]) => (
+                              <Chip
+                                key={tab}
+                                label={tab.replace(/_/g, ' ')}
+                                size="small"
+                                color="default"
+                                variant="outlined"
+                                icon={<CancelIcon />}
+                              />
+                            ))
+                        ) : (
+                          <Typography variant="body2" color="text.secondary">-</Typography>
+                        )}
+                      </Box>
+                    </Grid>
+
+                    {/* Features Config */}
+                    <Grid item xs={12}>
+                      <Typography variant="body2" color="text.secondary" gutterBottom>
+                        Features Configuration
+                      </Typography>
+                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                        {networkDetails.features_config ? (
+                          Object.entries(networkDetails.features_config).map(([feature, enabled]) => (
+                            <Chip
+                              key={feature}
+                              label={feature.replace(/_/g, ' ')}
+                              size="small"
+                              color={enabled ? 'success' : 'default'}
+                              variant={enabled ? 'filled' : 'outlined'}
+                              icon={enabled ? <CheckCircleIcon /> : <CancelIcon />}
+                            />
+                          ))
+                        ) : (
+                          <Typography variant="body2" color="text.secondary">No features configured</Typography>
+                        )}
+                      </Box>
+                    </Grid>
+
+                    {/* Theme Colors */}
+                    <Grid item xs={12} sm={6}>
+                      <Typography variant="body2" color="text.secondary" gutterBottom>
+                        Theme Color
+                      </Typography>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Box
+                          sx={{
+                            width: 24,
+                            height: 24,
+                            borderRadius: 1,
+                            backgroundColor: networkDetails.theme_color || '#1976d2',
+                            border: '1px solid rgba(0,0,0,0.2)'
+                          }}
+                        />
+                        <Typography variant="body2" fontFamily="monospace">
+                          {networkDetails.theme_color || '#1976d2'}
+                        </Typography>
+                      </Box>
+                    </Grid>
+
+                    <Grid item xs={12} sm={6}>
+                      <Typography variant="body2" color="text.secondary" gutterBottom>
+                        Background Color
+                      </Typography>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Box
+                          sx={{
+                            width: 24,
+                            height: 24,
+                            borderRadius: 1,
+                            backgroundColor: networkDetails.theme_bg_color || '#ffffff',
+                            border: '1px solid rgba(0,0,0,0.2)'
+                          }}
+                        />
+                        <Typography variant="body2" fontFamily="monospace">
+                          {networkDetails.theme_bg_color || '#ffffff'}
+                        </Typography>
+                      </Box>
+                    </Grid>
                   </Grid>
                 </CardContent>
               </Card>

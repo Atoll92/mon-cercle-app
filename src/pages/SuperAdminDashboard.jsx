@@ -575,16 +575,10 @@ const SuperAdminDashboard = () => {
                     </TableCell>
                     <TableCell>
                       <Chip
-                        label={network.purpose || 'general'}
+                        label={network.network_type || 'network'}
                         size="small"
                         variant="outlined"
-                        color={
-                          network.purpose === 'professional' ? 'primary' :
-                          network.purpose === 'community' ? 'success' :
-                          network.purpose === 'educational' ? 'info' :
-                          network.purpose === 'hobby' ? 'warning' :
-                          'default'
-                        }
+                        color={network.network_type === 'blog' ? 'info' : 'primary'}
                       />
                     </TableCell>
                     <TableCell>
