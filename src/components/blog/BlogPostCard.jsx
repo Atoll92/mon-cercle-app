@@ -16,7 +16,7 @@ import {
 } from '@mui/icons-material';
 import LazyImage from '../LazyImage';
 
-const BlogPostCard = ({ post, blog, featured = false, themeColor }) => {
+const BlogPostCard = ({ post, blog, featured = false, themeColor, showViews = false }) => {
   const theme = useTheme();
 
   // Get first media item for preview
@@ -145,12 +145,14 @@ const BlogPostCard = ({ post, blog, featured = false, themeColor }) => {
                   {formatDate(post.published_at || post.created_at)}
                 </Typography>
               </Box>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                <ViewIcon fontSize="small" />
-                <Typography variant="body2">
-                  {post.view_count || 0} views
-                </Typography>
-              </Box>
+              {showViews && (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <ViewIcon fontSize="small" />
+                  <Typography variant="body2">
+                    {post.view_count || 0} views
+                  </Typography>
+                </Box>
+              )}
             </Box>
           </CardContent>
         </CardActionArea>
@@ -262,12 +264,14 @@ const BlogPostCard = ({ post, blog, featured = false, themeColor }) => {
             <Typography variant="caption" color="text.secondary">
               {formatDate(post.published_at || post.created_at)}
             </Typography>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: 'text.secondary' }}>
-              <ViewIcon sx={{ fontSize: 14 }} />
-              <Typography variant="caption">
-                {post.view_count || 0}
-              </Typography>
-            </Box>
+            {showViews && (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: 'text.secondary' }}>
+                <ViewIcon sx={{ fontSize: 14 }} />
+                <Typography variant="caption">
+                  {post.view_count || 0}
+                </Typography>
+              </Box>
+            )}
           </Box>
         </CardContent>
       </CardActionArea>

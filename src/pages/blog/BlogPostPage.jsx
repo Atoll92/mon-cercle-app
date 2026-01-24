@@ -10,16 +10,13 @@ import {
   Button,
   Divider,
   Avatar,
-  IconButton,
-  alpha,
   ThemeProvider,
   createTheme,
   CssBaseline
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
-  CalendarToday as CalendarIcon,
-  Visibility as ViewIcon
+  CalendarToday as CalendarIcon
 } from '@mui/icons-material';
 import { fetchBlogPost, incrementPostViews } from '../../api/blog';
 import BlogHeader from '../../components/blog/BlogHeader';
@@ -240,13 +237,6 @@ const BlogPostPage = () => {
                 </Typography>
               </Box>
 
-              {/* Views */}
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: 'text.secondary' }}>
-                <ViewIcon fontSize="small" />
-                <Typography variant="body2">
-                  {post.view_count || 0} views
-                </Typography>
-              </Box>
             </Box>
 
             {/* Media */}
