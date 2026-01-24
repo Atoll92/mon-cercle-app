@@ -255,7 +255,7 @@ const PublicBlogPage = () => {
                 Latest Posts
               </Typography>
 
-              <Grid container spacing={{ xs: 2, sm: 3 }}>
+              <Grid container spacing={{ xs: 2, sm: 3 }} justifyContent="center">
                 {regularPosts.map((post) => (
                   <Grid item xs={12} sm={6} md={4} key={post.id}>
                     <BlogPostCard
