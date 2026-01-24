@@ -535,6 +535,7 @@ const SuperAdminDashboard = () => {
               <TableHead>
                 <TableRow>
                   <TableCell>Network</TableCell>
+                  <TableCell>Type</TableCell>
                   <TableCell>Members</TableCell>
                   <TableCell>Plan</TableCell>
                   <TableCell>Status</TableCell>
@@ -555,7 +556,36 @@ const SuperAdminDashboard = () => {
                         <Typography variant="caption" color="text.secondary">
                           {network.id}
                         </Typography>
+                        {network.description && (
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            display="block"
+                            sx={{
+                              maxWidth: 200,
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap'
+                            }}
+                          >
+                            {network.description}
+                          </Typography>
+                        )}
                       </Box>
+                    </TableCell>
+                    <TableCell>
+                      <Chip
+                        label={network.purpose || 'general'}
+                        size="small"
+                        variant="outlined"
+                        color={
+                          network.purpose === 'professional' ? 'primary' :
+                          network.purpose === 'community' ? 'success' :
+                          network.purpose === 'educational' ? 'info' :
+                          network.purpose === 'hobby' ? 'warning' :
+                          'default'
+                        }
+                      />
                     </TableCell>
                     <TableCell>
                       <Badge badgeContent={network.member_count} color="primary">
