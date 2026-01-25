@@ -2766,5 +2766,79 @@
       "daysAgo": "{{count}}d ago",
       "anonymous": "Anonymous"
     }
+  },
+  "pricing": {
+    "header": {
+      "title": "One Simple Plan",
+      "subtitle": "Everything you need to build your private community"
+    },
+    "card": {
+      "planName": "Community Plan",
+      "price": "€14",
+      "perMonth": "/month",
+      "billing": "Billed monthly • Cancel anytime",
+      "subscribeButton": "Subscribe Now",
+      "trialButton": "Start Free Trial",
+      "trialInfo": "14-day free trial • No credit card required"
+    },
+    "features": {
+      "members": "Up to 200 members",
+      "storage": "20GB storage",
+      "admins": "2 admin accounts",
+      "socialWall": "Social wall & posts",
+      "newsletter": "Newsletter",
+      "chats": "Private chats",
+      "fileSharing": "File sharing",
+      "wiki": "Wiki & knowledge base",
+      "events": "Events & calendar",
+      "privacy": "Zero tracking by design",
+      "support": "Email support"
+    },
+    "trust": {
+      "privacyFirst": {
+        "title": "Privacy First",
+        "description": "Your data stays yours. No ads, no tracking, no selling."
+      },
+      "cancelAnytime": {
+        "title": "Cancel Anytime",
+        "description": "No contracts, no commitments. Cancel with one click."
+      },
+      "securePayments": {
+        "title": "Secure Payments",
+        "description": "Powered by Stripe. We never see your card details."
+      }
+    },
+    "needMore": {
+      "title": "Need more than 200 members?",
+      "description": "We're launching with one plan to keep things simple.",
+      "descriptionLine2": "Contact us for custom solutions for larger communities.",
+      "button": "Contact Us"
+    },
+    "faq": {
+      "title": "Common Questions",
+      "afterTrial": {
+        "question": "What happens after the free trial?",
+        "answer": "After 14 days, you'll be asked to subscribe to continue. Your data is always safe - we'll never delete it if you decide not to continue."
+      },
+      "cancel": {
+        "question": "Can I cancel anytime?",
+        "answer": "Yes, absolutely. Cancel with one click from your dashboard. You'll keep access until the end of your billing period."
+      },
+      "privacy": {
+        "question": "Is my data private?",
+        "answer": "100%. We don't track, we don't sell data, we don't show ads. Your community is yours."
+      },
+      "nonprofit": {
+        "question": "Do you offer discounts for non-profits?",
+        "answer": "Yes! Contact us at contact@conclav.club with proof of non-profit status for special pricing."
+      }
+    },
+    "stripe": {
+      "poweredBy": "Secure payments powered by"
+    },
+    "errors": {
+      "noNetwork": "Your account is not associated with a network. Please create one first.",
+      "paymentError": "Payment error: {{error}}"
+    }
   }
 }

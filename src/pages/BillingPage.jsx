@@ -85,12 +85,12 @@ import {
 const planDetails = {
   community: {
     name: 'Community',
-    price: 17,
+    price: 14,
     description: 'Perfect for small communities',
     icon: <GroupsIcon color="primary" />,
     color: 'primary',
-    members: '100',
-    storage: '10GB',
+    members: '200',
+    storage: '20GB',
     admins: '2'
   },
   nonprofit: {

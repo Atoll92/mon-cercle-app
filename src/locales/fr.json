@@ -2759,5 +2759,79 @@
       "daysAgo": "il y a {{count}} j",
       "anonymous": "Anonyme"
     }
+  },
+  "pricing": {
+    "header": {
+      "title": "Une Offre Simple",
+      "subtitle": "Tout ce dont vous avez besoin pour créer votre communauté privée"
+    },
+    "card": {
+      "planName": "Offre Communauté",
+      "price": "14 €",
+      "perMonth": "/mois",
+      "billing": "Facturation mensuelle • Annulez à tout moment",
+      "subscribeButton": "S'abonner",
+      "trialButton": "Essai Gratuit",
+      "trialInfo": "14 jours d'essai gratuit • Sans carte bancaire"
+    },
+    "features": {
+      "members": "Jusqu'à 200 membres",
+      "storage": "20 Go de stockage",
+      "admins": "2 comptes administrateurs",
+      "socialWall": "Mur social & publications",
+      "newsletter": "Newsletter",
+      "chats": "Messagerie privée",
+      "fileSharing": "Partage de fichiers",
+      "wiki": "Wiki & base de connaissances",
+      "events": "Événements & calendrier",
+      "privacy": "Aucun tracking",
+      "support": "Support par email"
+    },
+    "trust": {
+      "privacyFirst": {
+        "title": "Vie Privée",
+        "description": "Vos données vous appartiennent. Pas de publicités, pas de tracking, pas de revente."
+      },
+      "cancelAnytime": {
+        "title": "Annulez Quand Vous Voulez",
+        "description": "Sans engagement, sans contrainte. Annulez en un clic."
+      },
+      "securePayments": {
+        "title": "Paiements Sécurisés",
+        "description": "Nous utilisons Stripe. Nous ne voyons jamais vos données bancaires."
+      }
+    },
+    "needMore": {
+      "title": "Votre communautée compte plus de 200 membres ?",
+      "description": "Nous lançons avec une offre unique pour garder les choses simples.",
+      "descriptionLine2": "Contactez-nous pour des solutions personnalisées pour les grandes communautés.",
+      "button": "Nous Contacter"
+    },
+    "faq": {
+      "title": "Questions Fréquentes",
+      "afterTrial": {
+        "question": "Que se passe-t-il après l'essai gratuit ?",
+        "answer": "Après 14 jours, vous devrez vous abonner pour continuer à administrer votre réseau."
+      },
+      "cancel": {
+        "question": "Puis-je annuler à tout moment ?",
+        "answer": "Oui, absolument. Annulez en un clic depuis votre tableau de bord. Vous garderez l'accès jusqu'à la fin de votre période de facturation."
+      },
+      "privacy": {
+        "question": "Mes données sont-elles privées ?",
+        "answer": "100%. Nous ne trackons pas, nous ne vendons pas vos données, nous n'affichons pas de publicités. Votre communauté vous appartient."
+      },
+      "nonprofit": {
+        "question": "Proposez-vous des réductions pour les associations ?",
+        "answer": "Oui ! Contactez-nous à contact@conclav.club avec un justificatif de statut associatif pour une tarification spéciale."
+      }
+    },
+    "stripe": {
+      "poweredBy": "Paiements sécurisés par"
+    },
+    "errors": {
+      "noNetwork": "Votre compte n'est associé à aucun réseau. Veuillez d'abord en créer un.",
+      "paymentError": "Erreur de paiement : {{error}}"
+    }
   }
 }

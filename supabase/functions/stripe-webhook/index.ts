@@ -205,7 +205,8 @@ function getPlanFromPriceId(amount: number | null, priceId: string | undefined):
   
   // Map price IDs to plan names
   const priceToPlans: Record<string, string> = {
-    'price_1RSxxQ2KqNIKpvjTYs9cYDin': 'community', // Community plan €17/month - PRODUCTION
+    'price_1StYeP2KqNIKpvjT9yDYjFDc': 'community', // Community plan €14/month - PRODUCTION (current)
+    'price_1RSxxQ2KqNIKpvjTYs9cYDin': 'community', // Community plan €17/month - PRODUCTION (legacy)
     'price_1RSy002KqNIKpvjTG7YyuZZ6': 'community', // Community plan €17/month - TEST (deprecated)
     'price_1RK6Vk2KqNIKpvjTKgFNpV0y': 'organization',
     'price_1RK6qr2KqNIKpvjTZh47uSJO': 'organization', // Added based on your PricingPage.jsx
@@ -223,7 +224,8 @@ function getPlanFromPriceId(amount: number | null, priceId: string | undefined):
   }
   
   // Fallback to matching by amount (in cents)
-  if (amount === 1700) return 'community'  // €17
+  if (amount === 1400) return 'community'  // €14
+  if (amount === 1700) return 'community'  // €17 (legacy)
   if (amount === 4900) return 'nonprofit'  // €49
   if (amount === 9700) return 'organization'  // €97
   if (amount === 24700) return 'network'  // €247

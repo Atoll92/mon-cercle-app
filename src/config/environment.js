@@ -78,14 +78,14 @@ export const config = {
 // Environment-specific price IDs
 export const STRIPE_PRICE_IDS = {
   development: {
-    community: 'price_1RSxxQ2KqNIKpvjTYs9cYDin', // Community plan €17/month - PRODUCTION PRICE ID
+    community: 'price_1StYeP2KqNIKpvjT9yDYjFDc', // Community plan €14/month - PRODUCTION PRICE ID
     nonprofit: 'price_test_nonprofit',
     organization: 'price_1RK6qr2KqNIKpvjTZh47uSJO',
     network: 'price_test_network',
     business: 'price_test_business',
   },
   production: {
-    community: 'price_1RSxxQ2KqNIKpvjTYs9cYDin', // Community plan €17/month - PRODUCTION PRICE ID
+    community: 'price_1StYeP2KqNIKpvjT9yDYjFDc', // Community plan €14/month - PRODUCTION PRICE ID
     nonprofit: 'price_prod_nonprofit',
     organization: 'price_1RK6Vk2KqNIKpvjTKgFNpV0y', // Professional 97€/month
     network: 'price_prod_network',
