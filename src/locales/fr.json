@@ -2762,11 +2762,11 @@
   },
   "pricing": {
     "header": {
-      "title": "Une Offre Simple",
+      "title": "Un Forfait Simple",
       "subtitle": "Tout ce dont vous avez besoin pour créer votre communauté privée"
     },
     "card": {
-      "planName": "Offre Communauté",
+      "planName": "Forfait Communauté",
       "price": "14 €",
       "perMonth": "/mois",
       "billing": "Facturation mensuelle • Annulez à tout moment",
@@ -2803,7 +2803,7 @@
     },
     "needMore": {
       "title": "Votre communautée compte plus de 200 membres ?",
-      "description": "Nous lançons avec une offre unique pour garder les choses simples.",
+      "description": "Nous lançons avec un forfait unique pour garder les choses simples.",
       "descriptionLine2": "Contactez-nous pour des solutions personnalisées pour les grandes communautés.",
       "button": "Nous Contacter"
     },
