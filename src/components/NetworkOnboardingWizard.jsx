@@ -538,6 +538,23 @@ const NetworkOnboardingWizard = ({ profile }) => {
         // Fail silently
       });
 
+      // Send welcome email to network admin (fire and forget - don't block)
+      if (!isBlogNetwork) {
+        fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-network-welcome-email`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            adminEmail: user.email,
+            adminName: user.user_metadata?.full_name || user.email?.split('@')[0] || 'Admin',
+            networkName: network.name,
+            networkId: network.id
+          })
+        }).catch((emailError) => {
+          console.error('Welcome email error:', emailError);
+          // Fail silently - don't block network creation
+        });
+      }
+
       setSuccess(true);
 
       // Clear the saved form data since network was successfully created
