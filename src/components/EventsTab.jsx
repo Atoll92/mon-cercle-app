@@ -477,8 +477,8 @@ const EventsTab = ({
           </Box>
         
         <Box sx={{ display: 'flex', gap: 2 }}>
-          {/* Button for members to propose events */}
-          {!isUserAdmin && (
+          {/* Button for members to propose events - only show for logged-in non-admin users */}
+          {user && !isUserAdmin && (
             <Button
               onClick={() => setShowCreateDialog(true)}
               startIcon={<AddIcon />}
