@@ -65,6 +65,9 @@
       "inviteAsAdmin": "Inviter comme administrateur",
       "invitationLinks": "Liens d'invitation",
       "invitationLinksDescription": "Créer des liens d'invitation réutilisables que n'importe qui peut utiliser pour rejoindre votre réseau",
+      "allowMemberInvites": "Autoriser les membres à inviter d'autres personnes",
+      "allowMemberInvitesDescription": "Lorsqu'activé, tous les membres peuvent voir et partager un lien d'invitation sur la page À propos pour inviter de nouveaux membres",
+      "memberInvitesUpdated": "Paramètre d'invitation des membres mis à jour",
       "sendingInvitations": "Envoi des invitations... ({{progress}}%)",
       "person": "Personne",
       "people": "Personnes",
@@ -2191,7 +2194,15 @@
       "notFound": "Non trouvé",
       "loading": "Chargement",
       "noResults": "Aucun résultat"
-    }
+    },
+    "copied": "Copié !",
+    "copyLink": "Copier le lien"
+  },
+  "about": {
+    "inviteMembers": "Inviter des membres",
+    "qrCodeAlt": "QR Code pour rejoindre le réseau",
+    "shareInviteDescription": "Partagez ce lien ou ce QR code pour inviter de nouveaux membres :",
+    "copyInviteLink": "Copier le lien d'invitation"
   },
   "footer": {
     "cta": {

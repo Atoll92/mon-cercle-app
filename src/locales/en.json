@@ -65,6 +65,9 @@
       "inviteAsAdmin": "Invite as Admin",
       "invitationLinks": "Invitation Links",
       "invitationLinksDescription": "Create reusable invitation links that anyone can use to join your network",
+      "allowMemberInvites": "Allow members to invite others",
+      "allowMemberInvitesDescription": "When enabled, all members can see and share an invitation link on the About page to invite new members",
+      "memberInvitesUpdated": "Member invitation setting updated",
       "sendingInvitations": "Sending invitations... ({{progress}}%)",
       "person": "Person",
       "people": "People",
@@ -2255,7 +2258,15 @@
       "notFound": "Not Found",
       "loading": "Loading",
       "noResults": "No Results"
-    }
+    },
+    "copied": "Copied!",
+    "copyLink": "Copy link"
+  },
+  "about": {
+    "inviteMembers": "Invite Members",
+    "qrCodeAlt": "QR Code to join network",
+    "shareInviteDescription": "Share this link or QR code to invite new members:",
+    "copyInviteLink": "Copy Invite Link"
   },
   "footer": {
     "cta": {

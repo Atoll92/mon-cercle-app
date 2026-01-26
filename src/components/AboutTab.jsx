@@ -13,6 +13,7 @@ import {
   Chip
 } from '@mui/material';
 import InvitationLinkWidget from './InvitationLinkWidget';
+import PublicInviteWidget from './PublicInviteWidget';
 import UserContent from './UserContent';
 
 const AboutTab = ({ network, networkMembers, isUserAdmin, currentUserId }) => {
@@ -58,6 +59,14 @@ const AboutTab = ({ network, networkMembers, isUserAdmin, currentUserId }) => {
                 >
                   Edit Network Details
                 </Button>
+              )}
+
+              {/* Public Invite Widget - shown if admin or if member invites are allowed */}
+              {(isUserAdmin || network?.allow_member_invites) && (
+                <>
+                  <Divider sx={{ my: 3 }} />
+                  <PublicInviteWidget networkId={network?.id} />
+                </>
               )}
             </CardContent>
           </Card>

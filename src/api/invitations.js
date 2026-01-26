@@ -426,6 +426,69 @@ export const joinNetworkViaInvitation = async (code, inviteeEmail = null) => {
   }
 };
 
+// Get or create a public invitation link for member sharing
+export const getOrCreatePublicInvitationLink = async (networkId, profileId) => {
+  try {
+    // First, try to find an existing public invitation link
+    const { data: existingLinks, error: fetchError } = await supabase
+      .from('network_invitation_links')
+      .select('*')
+      .eq('network_id', networkId)
+      .eq('name', 'Public Invitation')
+      .eq('is_active', true)
+      .is('max_uses', null)
+      .is('expires_at', null)
+      .limit(1);
+
+    if (fetchError) throw fetchError;
+
+    // If a public link exists and is valid, return it
+    if (existingLinks && existingLinks.length > 0) {
+      return {
+        success: true,
+        invitation: existingLinks[0],
+        isNew: false
+      };
+    }
+
+    // No existing public link, create one
+    const { data: codeResult, error: codeError } = await supabase
+      .rpc('generate_invitation_code');
+
+    if (codeError) throw codeError;
+
+    const { data: newInvitation, error: createError } = await supabase
+      .from('network_invitation_links')
+      .insert([{
+        network_id: networkId,
+        created_by: profileId,
+        code: codeResult,
+        name: 'Public Invitation',
+        description: 'Shared invitation link for all members',
+        role: 'member',
+        max_uses: null,
+        expires_at: null,
+        is_active: true
+      }])
+      .select()
+      .single();
+
+    if (createError) throw createError;
+
+    return {
+      success: true,
+      invitation: newInvitation,
+      isNew: true
+    };
+  } catch (error) {
+    console.error('Error getting/creating public invitation link:', error);
+    return {
+      success: false,
+      error: error.message || 'Failed to get invitation link'
+    };
+  }
+};
+
 // Toggle invitation link active status
 export const toggleInvitationStatus = async (linkId) => {
   try {

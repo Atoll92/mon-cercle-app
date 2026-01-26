@@ -249,6 +249,19 @@ function NetworkAdminPage() {
     setNetwork(updatedNetwork);
   };
 
+  const refreshNetwork = async () => {
+    if (!profile || !profile.network_id) return;
+
+    try {
+      const networkData = await fetchNetworkDetails(profile.network_id);
+      if (networkData) {
+        setNetwork(networkData);
+      }
+    } catch (error) {
+      console.error('Error refreshing network:', error);
+    }
+  };
+
   if (loading) {
     // Show a more engaging loading state with the AdminLayout
     return (
@@ -418,6 +431,7 @@ function NetworkAdminPage() {
             activeProfile={activeProfile}
             network={network}
             onMembersChange={refreshMembers}
+            onNetworkUpdate={refreshNetwork}
             darkMode={darkMode} // Pass dark mode to component
           />
         )}

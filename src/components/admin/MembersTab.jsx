@@ -52,21 +52,24 @@ import {
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
 import { Link } from 'react-router-dom';
-import { inviteUserToNetwork, toggleMemberAdmin, removeMemberFromNetwork, getNetworkPendingInvitations } from '../../api/networks';
+import { inviteUserToNetwork, toggleMemberAdmin, removeMemberFromNetwork, getNetworkPendingInvitations, updateNetworkDetails } from '../../api/networks';
 import BatchInviteModal from './BatchInviteModal';
 import InvitationLinksTab from './InvitationLinksTab';
+import Switch from '@mui/material/Switch';
 
 // Helper function to validate emails
 const isValidEmail = (email) => {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 };
 
-const MembersTab = ({ members, activeProfile, network, onMembersChange, darkMode = false }) => {
+const MembersTab = ({ members, activeProfile, network, onMembersChange, onNetworkUpdate, darkMode = false }) => {
   const { t } = useTranslation();
   const [inviteEmail, setInviteEmail] = useState('');
   const [emailList, setEmailList] = useState([]);
   const [inviteAsAdmin, setInviteAsAdmin] = useState(false);
   const [inviting, setInviting] = useState(false);
+  const [allowMemberInvites, setAllowMemberInvites] = useState(network?.allow_member_invites || false);
+  const [updatingMemberInvites, setUpdatingMemberInvites] = useState(false);
   const [batchInviting, setBatchInviting] = useState(false);
   const [invitationProgress, setInvitationProgress] = useState(0);
   const [message, setMessage] = useState('');
@@ -79,6 +82,11 @@ const MembersTab = ({ members, activeProfile, network, onMembersChange, darkMode
   const [pendingInvitations, setPendingInvitations] = useState([]);
   const [loadingInvitations, setLoadingInvitations] = useState(false);
   const [invitationLinksRefresh, setInvitationLinksRefresh] = useState(0);
+
+  // Sync allowMemberInvites state with network prop
+  useEffect(() => {
+    setAllowMemberInvites(network?.allow_member_invites || false);
+  }, [network?.allow_member_invites]);
 
   // Fetch pending invitations
   useEffect(() => {
@@ -101,6 +109,30 @@ const MembersTab = ({ members, activeProfile, network, onMembersChange, darkMode
       console.log('MembersTab: No network ID, skipping fetch');
     }
   }, [network?.id, members]);
+
+  // Handle toggle for allowing member invites
+  const handleToggleMemberInvites = async (event) => {
+    const newValue = event.target.checked;
+    setUpdatingMemberInvites(true);
+    setError(null);
+
+    const result = await updateNetworkDetails(network.id, {
+      allow_member_invites: newValue
+    });
+
+    if (result.success) {
+      setAllowMemberInvites(newValue);
+      setMessage(t('admin.members.memberInvitesUpdated'));
+      // Notify parent to refresh network data
+      if (onNetworkUpdate) {
+        onNetworkUpdate();
+      }
+    } else {
+      setError(result.message || t('admin.members.errors.updateFailed'));
+    }
+
+    setUpdatingMemberInvites(false);
+  };
 
   const addEmailToList = () => {
     if (!inviteEmail || !isValidEmail(inviteEmail)) {
@@ -639,10 +671,35 @@ label={t('admin.members.inviteAsAdmin')}
             <Typography variant="h5" component="h2" gutterBottom>
 {t('admin.members.invitationLinks')}
             </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
 {t('admin.members.invitationLinksDescription')}
             </Typography>
-            
+
+            {/* Allow member invites toggle */}
+            <Paper variant="outlined" sx={{ p: 2, mb: 3 }}>
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={allowMemberInvites}
+                    onChange={handleToggleMemberInvites}
+                    disabled={updatingMemberInvites}
+                    color="primary"
+                  />
+                }
+                label={
+                  <Box>
+                    <Typography variant="body1">
+                      {t('admin.members.allowMemberInvites')}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {t('admin.members.allowMemberInvitesDescription')}
+                    </Typography>
+                  </Box>
+                }
+                sx={{ alignItems: 'flex-start', ml: 0 }}
+              />
+            </Paper>
+
             {/* Embed the InvitationLinksTab component here */}
             <InvitationLinksTab networkId={network.id} darkMode={darkMode} refreshTrigger={invitationLinksRefresh} />
           </Box>
