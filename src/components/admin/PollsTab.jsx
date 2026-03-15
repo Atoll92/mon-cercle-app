@@ -50,7 +50,10 @@ import {
   Schedule as ScheduleIcon,
   BarChart as StatsIcon,
   DateRange as DateRangeIcon,
-  People as PeopleIcon
+  People as PeopleIcon,
+  Download as DownloadIcon,
+  HowToVote as HowToVoteIcon,
+  VisibilityOff as VisibilityOffIcon
 } from '@mui/icons-material';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -63,6 +66,95 @@ import {
   deletePoll 
 } from '../../api/polls';
 import { useProfile } from '../../context/profileContext';
+
+const exportPollToCsv = (poll) => {
+  if (!poll || !poll.votes) return;
+
+  const rows = [];
+  const isAnonymous = poll.is_anonymous;
+
+  if (poll.poll_type === 'multiple_choice') {
+    const headers = isAnonymous
+      ? ['Option', 'Vote Count', 'Percentage']
+      : ['Voter', 'Selected Options', 'Voted At'];
+    rows.push(headers);
+
+    if (isAnonymous) {
+      Object.values(poll.stats.options).forEach(opt => {
+        rows.push([opt.text, opt.count, `${opt.percentage}%`]);
+      });
+      rows.push([]);
+      rows.push(['Total Votes', poll.stats.totalVotes]);
+    } else {
+      poll.votes.forEach(vote => {
+        const optionTexts = vote.selected_options.map(optId => {
+          const opt = poll.options?.find(o => o.id === optId);
+          return opt ? opt.text : optId;
+        });
+        rows.push([
+          vote.user?.full_name || 'Unknown',
+          optionTexts.join('; '),
+          new Date(vote.created_at).toLocaleString()
+        ]);
+      });
+    }
+  } else if (poll.poll_type === 'yes_no') {
+    const headers = isAnonymous
+      ? ['Answer', 'Vote Count', 'Percentage']
+      : ['Voter', 'Answer', 'Voted At'];
+    rows.push(headers);
+
+    if (isAnonymous) {
+      rows.push(['Yes', poll.stats.options.yes.count, `${poll.stats.options.yes.percentage}%`]);
+      rows.push(['No', poll.stats.options.no.count, `${poll.stats.options.no.percentage}%`]);
+      rows.push([]);
+      rows.push(['Total Votes', poll.stats.totalVotes]);
+    } else {
+      poll.votes.forEach(vote => {
+        rows.push([
+          vote.user?.full_name || 'Unknown',
+          vote.selected_options[0],
+          new Date(vote.created_at).toLocaleString()
+        ]);
+      });
+    }
+  } else if (poll.poll_type === 'date_picker') {
+    const headers = isAnonymous
+      ? ['Date', 'Vote Count']
+      : ['Voter', 'Selected Dates', 'Voted At'];
+    rows.push(headers);
+
+    if (isAnonymous) {
+      Object.entries(poll.stats.dateVotes)
+        .sort(([a], [b]) => new Date(a) - new Date(b))
+        .forEach(([date, data]) => {
+          rows.push([new Date(date).toLocaleString(), data.count]);
+        });
+      rows.push([]);
+      rows.push(['Total Votes', poll.stats.totalVotes]);
+    } else {
+      poll.votes.forEach(vote => {
+        rows.push([
+          vote.user?.full_name || 'Unknown',
+          vote.selected_options.map(d => new Date(d).toLocaleString()).join('; '),
+          new Date(vote.created_at).toLocaleString()
+        ]);
+      });
+    }
+  }
+
+  const csvContent = rows.map(row =>
+    row.map(cell => `"${String(cell ?? '').replace(/"/g, '""')}"`).join(',')
+  ).join('\n');
+
+  const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `poll-${poll.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}-${new Date().toISOString().slice(0, 10)}.csv`;
+  link.click();
+  URL.revokeObjectURL(url);
+};
 
 const PollsTab = ({ networkId }) => {
   const { activeProfile } = useProfile();
@@ -540,27 +632,83 @@ const PollsTab = ({ networkId }) => {
       >
         <DialogTitle>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            Poll Results: {selectedPoll?.title}
-            <IconButton onClick={() => setStatsDialogOpen(false)}>
-              <CloseIcon />
-            </IconButton>
+            <Box>
+              <Typography variant="h6" component="span">Poll Results: {selectedPoll?.title}</Typography>
+              {selectedPoll?.is_anonymous && (
+                <Chip icon={<VisibilityOffIcon />} label="Anonymous" size="small" sx={{ ml: 1 }} />
+              )}
+            </Box>
+            <Box sx={{ display: 'flex', gap: 1 }}>
+              {selectedPoll?.stats && (
+                <Tooltip title="Export to CSV">
+                  <IconButton onClick={() => exportPollToCsv(selectedPoll)}>
+                    <DownloadIcon />
+                  </IconButton>
+                </Tooltip>
+              )}
+              <IconButton onClick={() => setStatsDialogOpen(false)}>
+                <CloseIcon />
+              </IconButton>
+            </Box>
           </Box>
         </DialogTitle>
         <DialogContent>
           {selectedPoll?.stats && (
             <Box>
-              <Typography variant="body2" color="text.secondary" paragraph>
-                Total votes: {selectedPoll.stats.totalVotes}
-              </Typography>
+              {/* Poll meta info */}
+              <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
+                <Chip
+                  icon={<HowToVoteIcon />}
+                  label={`${selectedPoll.stats.totalVotes} vote${selectedPoll.stats.totalVotes !== 1 ? 's' : ''}`}
+                  color="primary"
+                  variant="outlined"
+                />
+                <Chip
+                  label={selectedPoll.status === 'active' ? 'Active' : 'Closed'}
+                  color={selectedPoll.status === 'active' ? 'success' : 'default'}
+                  size="small"
+                />
+                <Chip
+                  label={selectedPoll.poll_type.replace('_', ' ')}
+                  size="small"
+                  variant="outlined"
+                />
+                {selectedPoll.ends_at && (
+                  <Chip
+                    icon={<ScheduleIcon />}
+                    label={`Ends ${formatDateTime(selectedPoll.ends_at)}`}
+                    size="small"
+                    variant="outlined"
+                  />
+                )}
+                {selectedPoll.created_by_profile && (
+                  <Chip
+                    label={`Created by ${selectedPoll.created_by_profile.full_name}`}
+                    size="small"
+                    variant="outlined"
+                  />
+                )}
+              </Box>
+
+              {selectedPoll.description && (
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                  {selectedPoll.description}
+                </Typography>
+              )}
+
+              <Divider sx={{ mb: 2 }} />
 
               {/* Multiple Choice Results */}
               {selectedPoll.poll_type === 'multiple_choice' && (
                 <Box>
+                  <Typography variant="subtitle1" gutterBottom fontWeight="bold">
+                    Results Breakdown
+                  </Typography>
                   {Object.values(selectedPoll.stats.options).map((option) => (
                     <Box key={option.id} sx={{ mb: 2 }}>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
                         <Typography>{option.text}</Typography>
-                        <Typography>
+                        <Typography fontWeight="bold">
                           {option.count} ({option.percentage}%)
                         </Typography>
                       </Box>
@@ -576,127 +724,187 @@ const PollsTab = ({ networkId }) => {
 
               {/* Yes/No Results */}
               {selectedPoll.poll_type === 'yes_no' && (
-                <Grid container spacing={2}>
-                  <Grid item xs={6}>
-                    <Paper sx={{ p: 2, textAlign: 'center', bgcolor: 'success.light' }}>
-                      <Typography variant="h4">
-                        {selectedPoll.stats.options.yes.percentage}%
-                      </Typography>
-                      <Typography>Yes ({selectedPoll.stats.options.yes.count})</Typography>
-                    </Paper>
+                <Box>
+                  <Typography variant="subtitle1" gutterBottom fontWeight="bold">
+                    Results Breakdown
+                  </Typography>
+                  <Grid container spacing={2} sx={{ mb: 2 }}>
+                    <Grid item xs={6}>
+                      <Paper sx={{ p: 2, textAlign: 'center', bgcolor: 'success.light' }}>
+                        <Typography variant="h4">
+                          {selectedPoll.stats.options.yes.percentage}%
+                        </Typography>
+                        <Typography>Yes ({selectedPoll.stats.options.yes.count})</Typography>
+                      </Paper>
+                    </Grid>
+                    <Grid item xs={6}>
+                      <Paper sx={{ p: 2, textAlign: 'center', bgcolor: 'error.light' }}>
+                        <Typography variant="h4">
+                          {selectedPoll.stats.options.no.percentage}%
+                        </Typography>
+                        <Typography>No ({selectedPoll.stats.options.no.count})</Typography>
+                      </Paper>
+                    </Grid>
                   </Grid>
-                  <Grid item xs={6}>
-                    <Paper sx={{ p: 2, textAlign: 'center', bgcolor: 'error.light' }}>
-                      <Typography variant="h4">
-                        {selectedPoll.stats.options.no.percentage}%
-                      </Typography>
-                      <Typography>No ({selectedPoll.stats.options.no.count})</Typography>
-                    </Paper>
-                  </Grid>
-                </Grid>
+                </Box>
               )}
 
               {/* Date Picker Results */}
               {selectedPoll.poll_type === 'date_picker' && (
-                <TableContainer>
-                  <Table size="small">
-                    <TableHead>
-                      <TableRow>
-                        <TableCell>Date</TableCell>
-                        <TableCell>Votes</TableCell>
-                        {!selectedPoll.is_anonymous && <TableCell>Voters</TableCell>}
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {Object.entries(selectedPoll.stats.dateVotes)
-                        .sort(([a], [b]) => new Date(a) - new Date(b))
-                        .map(([date, data]) => (
-                          <TableRow key={date}>
-                            <TableCell>{formatDateTime(date)}</TableCell>
-                            <TableCell>{data.count}</TableCell>
-                            {!selectedPoll.is_anonymous && (
-                              <TableCell>
-                                <Stack direction="row" spacing={1}>
-                                  {data.users.map((user) => (
-                                    <Tooltip key={user.id} title={user.full_name}>
-                                      <Avatar sx={{ width: 24, height: 24 }}>
-                                        {user.full_name?.[0]}
-                                      </Avatar>
-                                    </Tooltip>
-                                  ))}
-                                </Stack>
+                <Box>
+                  <Typography variant="subtitle1" gutterBottom fontWeight="bold">
+                    Date Availability
+                  </Typography>
+                  <TableContainer component={Paper} variant="outlined" sx={{ mb: 2 }}>
+                    <Table size="small">
+                      <TableHead>
+                        <TableRow>
+                          <TableCell>Date</TableCell>
+                          <TableCell align="center">Votes</TableCell>
+                          {!selectedPoll.is_anonymous && <TableCell>Voters</TableCell>}
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {Object.entries(selectedPoll.stats.dateVotes)
+                          .sort(([a], [b]) => new Date(a) - new Date(b))
+                          .map(([date, data]) => (
+                            <TableRow key={date}>
+                              <TableCell>{formatDateTime(date)}</TableCell>
+                              <TableCell align="center">
+                                <Chip label={data.count} size="small" color="primary" />
                               </TableCell>
-                            )}
-                          </TableRow>
-                        ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
+                              {!selectedPoll.is_anonymous && (
+                                <TableCell>
+                                  <Stack direction="row" spacing={0.5} flexWrap="wrap">
+                                    {data.users.map((user) => (
+                                      <Chip
+                                        key={user.id}
+                                        avatar={<Avatar sx={{ width: 20, height: 20 }}>{user.full_name?.[0]}</Avatar>}
+                                        label={user.full_name}
+                                        size="small"
+                                        variant="outlined"
+                                        onClick={() => {
+                                          setSelectedMember(user);
+                                          setShowMemberDetailsModal(true);
+                                        }}
+                                        sx={{ cursor: 'pointer' }}
+                                      />
+                                    ))}
+                                  </Stack>
+                                </TableCell>
+                              )}
+                            </TableRow>
+                          ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                </Box>
               )}
 
-              {/* Voters List (if not anonymous) */}
-              {!selectedPoll.is_anonymous && selectedPoll.votes && (
+              {/* Detailed Voters Table (admin view) */}
+              {selectedPoll.votes && selectedPoll.votes.length > 0 && (
                 <Box sx={{ mt: 3 }}>
                   <Divider sx={{ mb: 2 }} />
-                  <Typography variant="h6" gutterBottom>
-                    Voters
+                  <Typography variant="subtitle1" gutterBottom fontWeight="bold">
+                    <PeopleIcon sx={{ verticalAlign: 'middle', mr: 1 }} />
+                    {selectedPoll.is_anonymous ? 'Vote Details (anonymous - names hidden from members)' : 'Voter Details'}
                   </Typography>
-                  <List dense>
-                    {selectedPoll.votes.map((vote) => (
-                      <ListItem key={vote.id}>
-                        <Avatar 
-                          onClick={() => {
-                            if (vote.user) {
-                              setSelectedMember(vote.user);
-                              setShowMemberDetailsModal(true);
+                  <TableContainer component={Paper} variant="outlined">
+                    <Table size="small">
+                      <TableHead>
+                        <TableRow>
+                          <TableCell>Voter</TableCell>
+                          <TableCell>Selection</TableCell>
+                          <TableCell>Voted At</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {selectedPoll.votes.map((vote) => {
+                          const getSelectionDisplay = () => {
+                            if (selectedPoll.poll_type === 'yes_no') {
+                              return (
+                                <Chip
+                                  label={vote.selected_options[0]}
+                                  size="small"
+                                  color={vote.selected_options[0] === 'yes' ? 'success' : 'error'}
+                                />
+                              );
                             }
-                          }}
-                          sx={{ 
-                            mr: 2,
-                            cursor: 'pointer',
-                            '&:hover': {
-                              opacity: 0.8
+                            if (selectedPoll.poll_type === 'date_picker') {
+                              return vote.selected_options.map(d => formatDateTime(d)).join(', ');
                             }
-                          }}
-                        >
-                          {vote.user?.full_name?.[0]}
-                        </Avatar>
-                        <ListItemText
-                          primary={
-                            <Typography
-                              onClick={() => {
-                                if (vote.user) {
-                                  setSelectedMember(vote.user);
-                                  setShowMemberDetailsModal(true);
-                                }
-                              }}
-                              sx={{ 
-                                cursor: 'pointer',
-                                '&:hover': {
-                                  color: 'primary.main',
-                                  textDecoration: 'underline'
-                                }
-                              }}
-                            >
-                              {vote.user?.full_name}
-                            </Typography>
-                          }
-                          secondary={`Voted: ${
-                            selectedPoll.poll_type === 'yes_no'
-                              ? vote.selected_options[0]
-                              : selectedPoll.poll_type === 'date_picker'
-                              ? vote.selected_options.map(d => formatDate(d)).join(', ')
-                              : vote.selected_options.join(', ')
-                          }`}
-                        />
-                      </ListItem>
-                    ))}
-                  </List>
+                            // multiple_choice
+                            return vote.selected_options.map(optId => {
+                              const opt = selectedPoll.options?.find(o => o.id === optId);
+                              return opt ? opt.text : optId;
+                            }).join(', ');
+                          };
+
+                          return (
+                            <TableRow key={vote.id} hover>
+                              <TableCell>
+                                <Box
+                                  sx={{ display: 'flex', alignItems: 'center', gap: 1, cursor: 'pointer' }}
+                                  onClick={() => {
+                                    if (vote.user) {
+                                      setSelectedMember(vote.user);
+                                      setShowMemberDetailsModal(true);
+                                    }
+                                  }}
+                                >
+                                  <Avatar
+                                    src={vote.user?.profile_picture_url}
+                                    sx={{ width: 28, height: 28 }}
+                                  >
+                                    {vote.user?.full_name?.[0]}
+                                  </Avatar>
+                                  <Typography
+                                    variant="body2"
+                                    sx={{
+                                      '&:hover': { color: 'primary.main', textDecoration: 'underline' }
+                                    }}
+                                  >
+                                    {vote.user?.full_name || 'Unknown'}
+                                  </Typography>
+                                </Box>
+                              </TableCell>
+                              <TableCell>
+                                <Typography variant="body2">{getSelectionDisplay()}</Typography>
+                              </TableCell>
+                              <TableCell>
+                                <Typography variant="body2" color="text.secondary">
+                                  {formatDateTime(vote.created_at)}
+                                </Typography>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                </Box>
+              )}
+
+              {/* No votes yet */}
+              {selectedPoll.stats.totalVotes === 0 && (
+                <Box sx={{ textAlign: 'center', py: 3 }}>
+                  <HowToVoteIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 1 }} />
+                  <Typography color="text.secondary">No votes yet</Typography>
                 </Box>
               )}
             </Box>
           )}
         </DialogContent>
+        <DialogActions>
+          <Button
+            startIcon={<DownloadIcon />}
+            onClick={() => exportPollToCsv(selectedPoll)}
+            disabled={!selectedPoll?.stats || selectedPoll?.stats.totalVotes === 0}
+          >
+            Export CSV
+          </Button>
+          <Button onClick={() => setStatsDialogOpen(false)}>Close</Button>
+        </DialogActions>
       </Dialog>
 
       {/* Member Details Modal */}
