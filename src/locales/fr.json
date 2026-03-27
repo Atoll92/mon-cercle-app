@@ -2806,7 +2806,7 @@
       "ctaButton": "Commencer",
       "ctaInfo": "Annulez à tout moment • Sans engagement",
       "features": {
-        "members": "Jusqu'à 200 membres",
+        "members": "Jusqu'à 1000 membres",
         "storage": "20 Go de stockage",
         "admins": "2 comptes administrateurs",
         "socialWall": "Mur social & publications",
@@ -2834,7 +2834,7 @@
       }
     },
     "needMore": {
-      "title": "Votre communauté compte plus de 200 membres ?",
+      "title": "Votre communauté compte plus de 1000 membres ?",
       "description": "Nous proposons des forfaits pour les grandes communautés.",
       "descriptionLine2": "Contactez-nous pour des solutions personnalisées.",
       "button": "Nous Contacter"

@@ -2813,7 +2813,7 @@
       "ctaButton": "Get Started",
       "ctaInfo": "Cancel anytime • No long-term commitment",
       "features": {
-        "members": "Up to 200 members",
+        "members": "Up to 1000 members",
         "storage": "20GB storage",
         "admins": "2 admin accounts",
         "socialWall": "Social wall & posts",
@@ -2841,7 +2841,7 @@
       }
     },
     "needMore": {
-      "title": "Need more than 200 members?",
+      "title": "Need more than 1000 members?",
       "description": "We offer plans for larger communities.",
       "descriptionLine2": "Contact us for custom solutions.",
       "button": "Contact Us"

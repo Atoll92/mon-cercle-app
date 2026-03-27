@@ -79,9 +79,9 @@ const planDetails = {
   community: {
     name: 'Community',
     price: 14,
-    description: 'For growing communities up to 200 members',
+    description: 'For growing communities up to 1000 members',
     color: 'primary',
-    members: '200',
+    members: '1000',
     storage: '20GB',
     admins: '2'
   },

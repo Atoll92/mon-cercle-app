@@ -89,7 +89,7 @@ const planDetails = {
     description: 'Perfect for small communities',
     icon: <GroupsIcon color="primary" />,
     color: 'primary',
-    members: '200',
+    members: '1000',
     storage: '20GB',
     admins: '2'
   },

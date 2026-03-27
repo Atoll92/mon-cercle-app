@@ -123,7 +123,7 @@ function generateEmailHTML(
                       Besoin de plus ? Le forfait Community à 14 € / mois
                     </h3>
                     <p style="margin: 0; color: #4a4a4a; font-size: 15px; line-height: 1.6;">
-                      Si votre communauté dépasse 100 membres, vous pouvez passer au <strong>forfait Community</strong> à <strong>14 € par mois</strong> (jusqu'à 200 membres, 20 Go de stockage, 2 admins). Vous pouvez upgrader à tout moment depuis votre tableau de bord.
+                      Si votre communauté dépasse 100 membres, vous pouvez passer au <strong>forfait Community</strong> à <strong>14 € par mois</strong> (jusqu'à 1000 membres, 20 Go de stockage, 2 admins). Vous pouvez upgrader à tout moment depuis votre tableau de bord.
                     </p>
                   </td>
                 </tr>
