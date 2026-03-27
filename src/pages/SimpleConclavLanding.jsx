@@ -61,9 +61,9 @@ const translations = {
   subtitle: "A private social network that truly respects you",
   description: "Create your own trusted micro-networks in minutes, with total privacy. No tracking. No ads. No Big Tech.",
   descriptionStrong: "Only authentic human connections.",
-  startFreeTrial: "Start in 5 Minutes",
+  startFreeTrial: "Start for Free",
   seeDemo: "Watch the Demo",
-  trialInfo: "14 days free • No credit card required • Cancel anytime",
+  trialInfo: "Free forever under 100 members • No credit card required",
 
   howItWorks: "How It Works",
   howItWorksSubtitle: "Your private network in 3 simple steps",
@@ -93,7 +93,7 @@ const translations = {
   readyToOwn: "Ready to own your digital space?",
   joinThousands: "Join thousands of creators and professionals building authentic, privacy-first communities.",
   startYourFreeTrial: "Start for Free",
-  finalTrialInfo: "Free for 14 days • Setup under 5 minutes • Cancel anytime",
+  finalTrialInfo: "Free forever • Setup under 5 minutes • No credit card required",
 
   helloAssoTitle: "Fundraising Made Easy",
   helloAssoSubtitle: "Integrated with HelloAsso",
@@ -150,9 +150,9 @@ const translations = {
   subtitle: "Le réseau social privé qui vous respecte",
   description: "Créez vos propres micro-réseaux de confiance en quelques minutes, avec une confidentialité totale. Aucun traçage. Aucune pub. Aucun bot. Aucune Big Tech.",
   descriptionStrong: "Uniquement des connexions humaines authentiques.",
-  startFreeTrial: "Commencez en 5 minutes",
+  startFreeTrial: "Commencez gratuitement",
   seeDemo: "Voir la démo",
-  trialInfo: "14 jours gratuits • Aucune carte requise • Annulez à tout moment",
+  trialInfo: "Gratuit pour toujours sous 100 membres • Aucune carte requise",
 
   howItWorks: "Comment ça marche",
   howItWorksSubtitle: "Votre réseau privé en 3 étapes simples",
@@ -182,7 +182,7 @@ const translations = {
   readyToOwn: "Prêt à développer votre espace numérique ?",
   joinThousands: "Rejoignez des milliers de créateurs, d'associations et de professionnels qui construisent des communautés authentiques et respectueuses de la vie privée.",
   startYourFreeTrial: "Commencez gratuitement",
-  finalTrialInfo: "14 jours gratuits • Installation en moins de 5 minutes • Annulez à tout moment",
+  finalTrialInfo: "Gratuit pour toujours • Installation en moins de 5 minutes • Aucune carte requise",
 
   helloAssoTitle: "Collectez simplement",
   helloAssoSubtitle: "Intégré avec HelloAsso",

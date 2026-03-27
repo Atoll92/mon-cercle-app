@@ -95,17 +95,17 @@ function generateEmailHTML(
             </td>
           </tr>
 
-          <!-- Trial info box -->
+          <!-- Free plan info box -->
           <tr>
             <td style="padding: 0 40px 25px;">
               <table role="presentation" style="width: 100%; background-color: #e3f2fd; border-radius: 8px; border-left: 4px solid #1976d2;">
                 <tr>
                   <td style="padding: 20px;">
                     <h3 style="margin: 0 0 12px; color: #1565c0; font-size: 17px; font-weight: 600;">
-                      Votre période d'essai gratuit
+                      Votre réseau est prêt !
                     </h3>
                     <p style="margin: 0; color: #4a4a4a; font-size: 15px; line-height: 1.6;">
-                      Vous bénéficiez d'un <strong>essai gratuit de 14 jours</strong> pour explorer toutes les fonctionnalités de Conclav sans engagement. Prenez le temps de configurer votre réseau, d'inviter vos premiers membres et de découvrir ce que nous avons construit pour vous.
+                      Votre réseau <strong>${networkName}</strong> est dès maintenant opérationnel avec le <strong>plan Gratuit</strong> : toutes les fonctionnalités sont incluses pour les communautés de moins de 100 membres. Aucune limite de temps, aucune carte bancaire requise.
                     </p>
                   </td>
                 </tr>
@@ -113,17 +113,17 @@ function generateEmailHTML(
             </td>
           </tr>
 
-          <!-- Pricing info -->
+          <!-- Upgrade info -->
           <tr>
             <td style="padding: 0 40px 25px;">
               <table role="presentation" style="width: 100%; background-color: #f5f5f5; border-radius: 8px;">
                 <tr>
                   <td style="padding: 20px;">
                     <h3 style="margin: 0 0 12px; color: #1a1a1a; font-size: 17px; font-weight: 600;">
-                      Après l'essai : 14 € / mois
+                      Besoin de plus ? Le forfait Community à 14 € / mois
                     </h3>
                     <p style="margin: 0; color: #4a4a4a; font-size: 15px; line-height: 1.6;">
-                      À la fin de votre période d'essai, le <strong>forfait Community</strong> est proposé à <strong>14 € par mois</strong> pour votre réseau (jusqu'à 200 membres inclus).
+                      Si votre communauté dépasse 100 membres, vous pouvez passer au <strong>forfait Community</strong> à <strong>14 € par mois</strong> (jusqu'à 200 membres, 20 Go de stockage, 2 admins). Vous pouvez upgrader à tout moment depuis votre tableau de bord.
                     </p>
                   </td>
                 </tr>
@@ -159,7 +159,7 @@ function generateEmailHTML(
           <tr>
             <td style="padding: 0 40px 25px;">
               <p style="margin: 0; color: #4a4a4a; font-size: 15px; line-height: 1.7; font-style: italic;">
-                Ce modèle a un coût. Sur les grandes plateformes « gratuites », c'est vous le produit. Ici, c'est différent : le prix que vous payez nous permet de rester indépendants, de vous offrir un service de qualité et de ne jamais avoir à compromettre nos valeurs.
+                Conclav est financé par ses abonnements, pas par la publicité. Cela nous permet de rester indépendants et de ne jamais compromettre votre vie privée. Si notre outil vous est utile, un abonnement nous aide à continuer.
               </p>
             </td>
           </tr>

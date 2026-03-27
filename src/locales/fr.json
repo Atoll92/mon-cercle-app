@@ -2773,30 +2773,51 @@
   },
   "pricing": {
     "header": {
-      "title": "Un Forfait Simple",
-      "subtitle": "Tout ce dont vous avez besoin pour créer votre communauté privée"
+      "title": "Tarifs Simples et Transparents",
+      "subtitle": "Commencez gratuitement. Passez au supérieur quand vous en avez besoin."
     },
-    "card": {
-      "planName": "Forfait Communauté",
+    "free": {
+      "planName": "Gratuit",
+      "price": "0 €",
+      "billing": "Gratuit pour toujours • Sans carte bancaire",
+      "ctaButton": "Commencer gratuitement",
+      "ctaInfo": "Sans carte bancaire",
+      "features": {
+        "members": "Jusqu'à 100 membres",
+        "storage": "2 Go de stockage",
+        "admins": "1 compte administrateur",
+        "socialWall": "Mur social & publications",
+        "newsletter": "Newsletter",
+        "chats": "Messagerie privée",
+        "fileSharing": "Partage de fichiers",
+        "wiki": "Wiki & base de connaissances",
+        "events": "Événements & calendrier",
+        "privacy": "Aucun tracking",
+        "support": "Support communautaire"
+      }
+    },
+    "community": {
+      "planName": "Communauté",
+      "badge": "Populaire",
       "price": "14 €",
       "perMonth": "/mois",
       "billing": "Facturation mensuelle • Annulez à tout moment",
       "subscribeButton": "S'abonner",
-      "trialButton": "Essai Gratuit",
-      "trialInfo": "14 jours d'essai gratuit • Sans carte bancaire"
-    },
-    "features": {
-      "members": "Jusqu'à 200 membres",
-      "storage": "20 Go de stockage",
-      "admins": "2 comptes administrateurs",
-      "socialWall": "Mur social & publications",
-      "newsletter": "Newsletter",
-      "chats": "Messagerie privée",
-      "fileSharing": "Partage de fichiers",
-      "wiki": "Wiki & base de connaissances",
-      "events": "Événements & calendrier",
-      "privacy": "Aucun tracking",
-      "support": "Support par email"
+      "ctaButton": "Commencer",
+      "ctaInfo": "Annulez à tout moment • Sans engagement",
+      "features": {
+        "members": "Jusqu'à 200 membres",
+        "storage": "20 Go de stockage",
+        "admins": "2 comptes administrateurs",
+        "socialWall": "Mur social & publications",
+        "newsletter": "Newsletter",
+        "chats": "Messagerie privée",
+        "fileSharing": "Partage de fichiers",
+        "wiki": "Wiki & base de connaissances",
+        "events": "Événements & calendrier",
+        "privacy": "Aucun tracking",
+        "support": "Support prioritaire par email"
+      }
     },
     "trust": {
       "privacyFirst": {
@@ -2813,20 +2834,24 @@
       }
     },
     "needMore": {
-      "title": "Votre communautée compte plus de 200 membres ?",
-      "description": "Nous lançons avec un forfait unique pour garder les choses simples.",
-      "descriptionLine2": "Contactez-nous pour des solutions personnalisées pour les grandes communautés.",
+      "title": "Votre communauté compte plus de 200 membres ?",
+      "description": "Nous proposons des forfaits pour les grandes communautés.",
+      "descriptionLine2": "Contactez-nous pour des solutions personnalisées.",
       "button": "Nous Contacter"
     },
     "faq": {
       "title": "Questions Fréquentes",
-      "afterTrial": {
-        "question": "Que se passe-t-il après l'essai gratuit ?",
-        "answer": "Après 14 jours, vous devrez vous abonner pour continuer à administrer votre réseau."
+      "whatIsFree": {
+        "question": "Le forfait gratuit est-il vraiment gratuit pour toujours ?",
+        "answer": "Oui ! Les communautés de moins de 100 membres peuvent utiliser Conclav gratuitement, avec toutes les fonctionnalités incluses. Pas d'essai, pas de limite de temps."
+      },
+      "whenUpgrade": {
+        "question": "Quand dois-je passer au forfait supérieur ?",
+        "answer": "Passez au forfait Communauté quand vous avez besoin de plus de 100 membres, plus de stockage ou de comptes administrateurs supplémentaires. Vous pouvez upgrader à tout moment depuis votre tableau de bord."
       },
       "cancel": {
         "question": "Puis-je annuler à tout moment ?",
-        "answer": "Oui, absolument. Annulez en un clic depuis votre tableau de bord. Vous garderez l'accès jusqu'à la fin de votre période de facturation."
+        "answer": "Oui, absolument. Annulez en un clic depuis votre tableau de bord. Vous garderez l'accès jusqu'à la fin de votre période de facturation, puis vous reviendrez au forfait gratuit."
       },
       "privacy": {
         "question": "Mes données sont-elles privées ?",

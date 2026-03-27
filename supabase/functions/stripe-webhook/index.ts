@@ -159,8 +159,8 @@ serve(async (req) => {
         const { data, error } = await supabase
           .from('networks')
           .update({
-            subscription_status: 'canceled',
-            subscription_plan: 'community'
+            subscription_status: 'free',
+            subscription_plan: 'free'
           })
           .eq('stripe_subscription_id', subscription.id)
           .select()

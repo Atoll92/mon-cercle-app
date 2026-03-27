@@ -67,13 +67,22 @@ import {
 
 // Subscription Plans Data
 const planDetails = {
+  free: {
+    name: 'Free',
+    price: 0,
+    description: 'Perfect for small communities under 100 members',
+    color: 'default',
+    members: '100',
+    storage: '2GB',
+    admins: '1'
+  },
   community: {
     name: 'Community',
-    price: 17,
-    description: 'Perfect for small communities',
+    price: 14,
+    description: 'For growing communities up to 200 members',
     color: 'primary',
-    members: '100',
-    storage: '10GB',
+    members: '200',
+    storage: '20GB',
     admins: '2'
   },
   nonprofit: {
@@ -310,16 +319,16 @@ const BillingTab = ({ activeProfile, darkMode }) => {
 
   // Get plan info
   const getCurrentPlanInfo = () => {
-    const planKey = networkDetails?.subscription_plan || 'community';
-    return planDetails[planKey] || planDetails.community;
+    const planKey = networkDetails?.subscription_plan || 'free';
+    return planDetails[planKey] || planDetails.free;
   };
   
   // Get available upgrade plans
   const getAvailableUpgradePlans = () => {
-    const currentPlan = networkDetails?.subscription_plan || 'community';
-    
+    const currentPlan = networkDetails?.subscription_plan || 'free';
+
     // Define the plan hierarchy
-    const planHierarchy = ['community', 'nonprofit', 'organization', 'network', 'business'];
+    const planHierarchy = ['free', 'community', 'nonprofit', 'organization', 'network', 'business'];
     
     // Find current plan position
     const currentIndex = planHierarchy.indexOf(currentPlan);
@@ -364,6 +373,11 @@ const BillingTab = ({ activeProfile, darkMode }) => {
         statusColor = "success";
         statusIcon = <CheckIcon />;
         break;
+      case 'free':
+        statusText = "Free Plan";
+        statusColor = "default";
+        statusIcon = <CheckIcon />;
+        break;
       case 'canceled':
         statusText = "Canceled";
         statusColor = "warning";
@@ -382,7 +396,7 @@ const BillingTab = ({ activeProfile, darkMode }) => {
       default:
         statusText = networkDetails.subscription_status || "Free Plan";
         statusColor = "default";
-        statusIcon = <CloseIcon />;
+        statusIcon = <CheckIcon />;
     }
   }
 
@@ -775,7 +789,7 @@ const BillingTab = ({ activeProfile, darkMode }) => {
         </DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Are you sure you want to cancel your subscription? You'll still have access to premium features until the end of your current billing period on <strong>{networkDetails?.subscription_end_date && new Date(networkDetails.subscription_end_date).toLocaleDateString()}</strong>. After that, your plan will be downgraded to the Family plan.
+            Are you sure you want to cancel your subscription? You'll still have access to premium features until the end of your current billing period on <strong>{networkDetails?.subscription_end_date && new Date(networkDetails.subscription_end_date).toLocaleDateString()}</strong>. After that, your plan will revert to the Free plan.
           </DialogContentText>
         </DialogContent>
         <DialogActions>

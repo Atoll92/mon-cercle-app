@@ -8,7 +8,8 @@ const envPriceIds = getPriceIds();
 
 // Price IDs for different plans
 export const PRICE_IDS = {
-  family: 'price_family', // Free plan, no price ID needed
+  free: null, // Free plan, no Stripe price needed
+  family: 'price_family', // Legacy alias for free plan
   community: envPriceIds.community || 'price_1StYeP2KqNIKpvjT9yDYjFDc', // €14/month - Community plan - PRODUCTION
   nonprofit: envPriceIds.nonprofit || 'price_nonprofit', // €49/month
   organization: envPriceIds.organization || 'price_organization', // €97/month

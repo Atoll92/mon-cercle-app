@@ -14,6 +14,7 @@ import {
   ListItemIcon,
   ListItemText,
   Divider,
+  Chip,
   useMediaQuery
 } from '@mui/material';
 import Spinner from '../components/Spinner';
@@ -81,18 +82,23 @@ const PricingPage = () => {
     }
   };
 
-  const features = [
-    { icon: <GroupsIcon color="primary" />, textKey: 'pricing.features.members' },
-    { icon: <StorageIcon color="primary" />, textKey: 'pricing.features.storage' },
-    { icon: <AdminIcon color="primary" />, textKey: 'pricing.features.admins' },
-    { icon: <ForumIcon color="primary" />, textKey: 'pricing.features.socialWall' },
-    { icon: <EmailIcon color="primary" />, textKey: 'pricing.features.newsletter' },
-    { icon: <ChatIcon color="primary" />, textKey: 'pricing.features.chats' },
-    { icon: <FolderIcon color="primary" />, textKey: 'pricing.features.fileSharing' },
-    { icon: <BookmarkIcon color="primary" />, textKey: 'pricing.features.wiki' },
-    { icon: <EventIcon color="primary" />, textKey: 'pricing.features.events' },
-    { icon: <VisibilityOffIcon color="primary" />, textKey: 'pricing.features.privacy' },
-    { icon: <SupportIcon color="primary" />, textKey: 'pricing.features.support' },
+  const featureIcons = [
+    <GroupsIcon color="primary" />,
+    <StorageIcon color="primary" />,
+    <AdminIcon color="primary" />,
+    <ForumIcon color="primary" />,
+    <EmailIcon color="primary" />,
+    <ChatIcon color="primary" />,
+    <FolderIcon color="primary" />,
+    <BookmarkIcon color="primary" />,
+    <EventIcon color="primary" />,
+    <VisibilityOffIcon color="primary" />,
+    <SupportIcon color="primary" />,
+  ];
+
+  const featureKeys = [
+    'members', 'storage', 'admins', 'socialWall', 'newsletter',
+    'chats', 'fileSharing', 'wiki', 'events', 'privacy', 'support'
   ];
 
   const trustPoints = [
@@ -102,18 +108,36 @@ const PricingPage = () => {
   ];
 
   const faqItems = [
-    { questionKey: 'pricing.faq.afterTrial.question', answerKey: 'pricing.faq.afterTrial.answer' },
+    { questionKey: 'pricing.faq.whatIsFree.question', answerKey: 'pricing.faq.whatIsFree.answer' },
+    { questionKey: 'pricing.faq.whenUpgrade.question', answerKey: 'pricing.faq.whenUpgrade.answer' },
     { questionKey: 'pricing.faq.cancel.question', answerKey: 'pricing.faq.cancel.answer' },
     { questionKey: 'pricing.faq.privacy.question', answerKey: 'pricing.faq.privacy.answer' },
     { questionKey: 'pricing.faq.nonprofit.question', answerKey: 'pricing.faq.nonprofit.answer' },
   ];
+
+  const renderFeatureList = (planKey) => (
+    <List disablePadding>
+      {featureKeys.map((key, index) => (
+        <ListItem key={key} disableGutters sx={{ py: 0.75 }}>
+          <ListItemIcon sx={{ minWidth: 36 }}>
+            {featureIcons[index]}
+          </ListItemIcon>
+          <ListItemText
+            primary={t(`pricing.${planKey}.features.${key}`)}
+            primaryTypographyProps={{ fontWeight: 500, fontSize: '0.9rem' }}
+          />
+          <CheckIcon color="success" fontSize="small" />
+        </ListItem>
+      ))}
+    </List>
+  );
 
   return (
     <ThemeProvider theme={lightTheme}>
       <ThreeJSBackground />
 
       <Container
-        maxWidth="md"
+        maxWidth="lg"
         sx={{
           py: 8,
           zIndex: 99,
@@ -142,96 +166,176 @@ const PricingPage = () => {
           </Typography>
         </Box>
 
-        {/* Main Pricing Card */}
-        <Card
-          elevation={8}
-          sx={{
-            maxWidth: 480,
-            mx: 'auto',
-            borderRadius: 4,
-            overflow: 'visible',
-            position: 'relative',
-            border: `2px solid ${lightTheme.palette.primary.main}`
-          }}
-        >
-          <CardContent sx={{ p: 4 }}>
-            {/* Price */}
-            <Box sx={{ textAlign: 'center', mb: 4 }}>
-              <Typography variant="h6" color="text.secondary" gutterBottom>
-                {t('pricing.card.planName')}
-              </Typography>
-              <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'baseline' }}>
-                <Typography
-                  variant="h2"
-                  component="span"
-                  fontWeight="bold"
-                  color="primary"
-                >
-                  {t('pricing.card.price')}
-                </Typography>
-                <Typography variant="h6" color="text.secondary" sx={{ ml: 1 }}>
-                  {t('pricing.card.perMonth')}
-                </Typography>
-              </Box>
-              <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                {t('pricing.card.billing')}
-              </Typography>
-            </Box>
-
-            <Divider sx={{ my: 3 }} />
-
-            {/* Features List */}
-            <List disablePadding>
-              {features.map((feature, index) => (
-                <ListItem key={index} disableGutters sx={{ py: 1 }}>
-                  <ListItemIcon sx={{ minWidth: 40 }}>
-                    {feature.icon}
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={t(feature.textKey)}
-                    primaryTypographyProps={{ fontWeight: 500 }}
-                  />
-                  <CheckIcon color="success" fontSize="small" />
-                </ListItem>
-              ))}
-            </List>
-
-            <Divider sx={{ my: 3 }} />
-
-            {/* CTA Button */}
-            <Button
-              variant="contained"
-              color="primary"
-              size="large"
-              fullWidth
-              onClick={handleSubscribe}
-              disabled={loading}
+        {/* Two-Card Pricing Layout */}
+        <Grid container spacing={4} justifyContent="center" sx={{ maxWidth: 900, mx: 'auto' }}>
+          {/* Free Plan Card */}
+          <Grid item xs={12} md={6}>
+            <Card
+              elevation={3}
               sx={{
-                py: 2,
-                fontSize: '1.1rem',
-                fontWeight: 600,
-                borderRadius: 2
+                borderRadius: 4,
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column'
               }}
             >
-              {loading ? (
-                <Spinner size={48} color="inherit" />
-              ) : user ? (
-                t('pricing.card.subscribeButton')
-              ) : (
-                t('pricing.card.trialButton')
-              )}
-            </Button>
+              <CardContent sx={{ p: 4, flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+                {/* Price */}
+                <Box sx={{ textAlign: 'center', mb: 3 }}>
+                  <Typography variant="h6" color="text.secondary" gutterBottom>
+                    {t('pricing.free.planName')}
+                  </Typography>
+                  <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'baseline' }}>
+                    <Typography
+                      variant="h2"
+                      component="span"
+                      fontWeight="bold"
+                      color="text.primary"
+                    >
+                      {t('pricing.free.price')}
+                    </Typography>
+                  </Box>
+                  <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                    {t('pricing.free.billing')}
+                  </Typography>
+                </Box>
 
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              align="center"
-              sx={{ mt: 2 }}
+                <Divider sx={{ my: 2 }} />
+
+                {/* Features List */}
+                <Box sx={{ flexGrow: 1 }}>
+                  {renderFeatureList('free')}
+                </Box>
+
+                <Divider sx={{ my: 2 }} />
+
+                {/* CTA Button */}
+                <Button
+                  variant="outlined"
+                  color="primary"
+                  size="large"
+                  fullWidth
+                  onClick={() => navigate('/signup')}
+                  sx={{
+                    py: 2,
+                    fontSize: '1.1rem',
+                    fontWeight: 600,
+                    borderRadius: 2
+                  }}
+                >
+                  {t('pricing.free.ctaButton')}
+                </Button>
+
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  align="center"
+                  sx={{ mt: 2 }}
+                >
+                  {t('pricing.free.ctaInfo')}
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          {/* Community Plan Card */}
+          <Grid item xs={12} md={6}>
+            <Card
+              elevation={8}
+              sx={{
+                borderRadius: 4,
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                overflow: 'visible',
+                position: 'relative',
+                border: `2px solid ${lightTheme.palette.primary.main}`
+              }}
             >
-              {t('pricing.card.trialInfo')}
-            </Typography>
-          </CardContent>
-        </Card>
+              {/* Popular Badge */}
+              <Chip
+                label={t('pricing.community.badge')}
+                color="primary"
+                size="small"
+                sx={{
+                  position: 'absolute',
+                  top: -12,
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  fontWeight: 600,
+                  px: 2
+                }}
+              />
+
+              <CardContent sx={{ p: 4, flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+                {/* Price */}
+                <Box sx={{ textAlign: 'center', mb: 3 }}>
+                  <Typography variant="h6" color="text.secondary" gutterBottom>
+                    {t('pricing.community.planName')}
+                  </Typography>
+                  <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'baseline' }}>
+                    <Typography
+                      variant="h2"
+                      component="span"
+                      fontWeight="bold"
+                      color="primary"
+                    >
+                      {t('pricing.community.price')}
+                    </Typography>
+                    <Typography variant="h6" color="text.secondary" sx={{ ml: 1 }}>
+                      {t('pricing.community.perMonth')}
+                    </Typography>
+                  </Box>
+                  <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                    {t('pricing.community.billing')}
+                  </Typography>
+                </Box>
+
+                <Divider sx={{ my: 2 }} />
+
+                {/* Features List */}
+                <Box sx={{ flexGrow: 1 }}>
+                  {renderFeatureList('community')}
+                </Box>
+
+                <Divider sx={{ my: 2 }} />
+
+                {/* CTA Button */}
+                <Button
+                  variant="contained"
+                  color="primary"
+                  size="large"
+                  fullWidth
+                  onClick={handleSubscribe}
+                  disabled={loading}
+                  sx={{
+                    py: 2,
+                    fontSize: '1.1rem',
+                    fontWeight: 600,
+                    borderRadius: 2
+                  }}
+                >
+                  {loading ? (
+                    <Spinner size={48} color="inherit" />
+                  ) : user ? (
+                    t('pricing.community.subscribeButton')
+                  ) : (
+                    t('pricing.community.ctaButton')
+                  )}
+                </Button>
+
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  align="center"
+                  sx={{ mt: 2 }}
+                >
+                  {t('pricing.community.ctaInfo')}
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
 
         {/* Trust Points */}
         <Grid container spacing={3} sx={{ mt: 6 }} justifyContent="center">
@@ -293,7 +397,7 @@ const PricingPage = () => {
           </Button>
         </Paper>
 
-        {/* FAQ Section - Simplified */}
+        {/* FAQ Section */}
         <Box sx={{ mt: 8 }}>
           <Typography
             variant="h5"

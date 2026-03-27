@@ -2780,30 +2780,51 @@
   },
   "pricing": {
     "header": {
-      "title": "One Simple Plan",
-      "subtitle": "Everything you need to build your private community"
+      "title": "Simple, Transparent Pricing",
+      "subtitle": "Start free. Upgrade when you need more."
     },
-    "card": {
-      "planName": "Community Plan",
+    "free": {
+      "planName": "Free",
+      "price": "€0",
+      "billing": "Free forever • No credit card required",
+      "ctaButton": "Start for Free",
+      "ctaInfo": "No credit card required",
+      "features": {
+        "members": "Up to 100 members",
+        "storage": "2GB storage",
+        "admins": "1 admin account",
+        "socialWall": "Social wall & posts",
+        "newsletter": "Newsletter",
+        "chats": "Private chats",
+        "fileSharing": "File sharing",
+        "wiki": "Wiki & knowledge base",
+        "events": "Events & calendar",
+        "privacy": "Zero tracking by design",
+        "support": "Community support"
+      }
+    },
+    "community": {
+      "planName": "Community",
+      "badge": "Popular",
       "price": "€14",
       "perMonth": "/month",
       "billing": "Billed monthly • Cancel anytime",
       "subscribeButton": "Subscribe Now",
-      "trialButton": "Start Free Trial",
-      "trialInfo": "14-day free trial • No credit card required"
-    },
-    "features": {
-      "members": "Up to 200 members",
-      "storage": "20GB storage",
-      "admins": "2 admin accounts",
-      "socialWall": "Social wall & posts",
-      "newsletter": "Newsletter",
-      "chats": "Private chats",
-      "fileSharing": "File sharing",
-      "wiki": "Wiki & knowledge base",
-      "events": "Events & calendar",
-      "privacy": "Zero tracking by design",
-      "support": "Email support"
+      "ctaButton": "Get Started",
+      "ctaInfo": "Cancel anytime • No long-term commitment",
+      "features": {
+        "members": "Up to 200 members",
+        "storage": "20GB storage",
+        "admins": "2 admin accounts",
+        "socialWall": "Social wall & posts",
+        "newsletter": "Newsletter",
+        "chats": "Private chats",
+        "fileSharing": "File sharing",
+        "wiki": "Wiki & knowledge base",
+        "events": "Events & calendar",
+        "privacy": "Zero tracking by design",
+        "support": "Priority email support"
+      }
     },
     "trust": {
       "privacyFirst": {
@@ -2821,19 +2842,23 @@
     },
     "needMore": {
       "title": "Need more than 200 members?",
-      "description": "We're launching with one plan to keep things simple.",
-      "descriptionLine2": "Contact us for custom solutions for larger communities.",
+      "description": "We offer plans for larger communities.",
+      "descriptionLine2": "Contact us for custom solutions.",
       "button": "Contact Us"
     },
     "faq": {
       "title": "Common Questions",
-      "afterTrial": {
-        "question": "What happens after the free trial?",
-        "answer": "After 14 days, you'll be asked to subscribe to continue. Your data is always safe - we'll never delete it if you decide not to continue."
+      "whatIsFree": {
+        "question": "Is the free plan really free forever?",
+        "answer": "Yes! Communities with under 100 members can use Conclav completely free, with all features included. No trial, no time limit."
+      },
+      "whenUpgrade": {
+        "question": "When should I upgrade?",
+        "answer": "Upgrade to Community when you need more than 100 members, more storage, or additional admin accounts. You can upgrade anytime from your dashboard."
       },
       "cancel": {
         "question": "Can I cancel anytime?",
-        "answer": "Yes, absolutely. Cancel with one click from your dashboard. You'll keep access until the end of your billing period."
+        "answer": "Yes, absolutely. Cancel with one click from your dashboard. You'll keep access until the end of your billing period, then revert to the free plan."
       },
       "privacy": {
         "question": "Is my data private?",
