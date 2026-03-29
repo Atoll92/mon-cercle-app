@@ -14,6 +14,7 @@ export const lazyWithRetry = (componentImport) => {
         error.message.includes('Failed to fetch dynamically imported module') ||
         error.message.includes('error loading dynamically imported module') ||
         error.message.includes('Importing a module script failed') ||
+        error.message.includes('is not a valid JavaScript MIME type') ||
         error.name === 'ChunkLoadError'
       ) {
         // Log the error for monitoring
