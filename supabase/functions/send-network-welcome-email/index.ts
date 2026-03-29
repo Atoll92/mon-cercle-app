@@ -1,9 +1,8 @@
 // Edge function to send welcome emails to admins who just created a network
 // Includes trial information and pricing details
 // Emphasizes privacy-first approach
+// Supports English and French
 /// <reference types="https://esm.sh/@types/node@18/index.d.ts" />
-
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4'
 
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')
 const APP_URL = Deno.env.get('APP_URL') || 'https://conclav.club'
@@ -17,20 +16,89 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }
 
+// Email translations
+const translations = {
+  en: {
+    subject: (networkName: string) => `Welcome to Conclav - ${networkName} has been created!`,
+    title: 'Welcome to Conclav!',
+    greeting: (adminName: string) => `Hi ${adminName},`,
+    thankYou: (networkName: string) => `Thank you for choosing Conclav to create <strong style="color: #1976d2;">${networkName}</strong>.`,
+    welcomeMessage: `We are truly delighted to welcome you to our community of administrators who, like you, have chosen a digital space that respects privacy.`,
+    readyTitle: 'Your network is ready!',
+    readyMessage: (networkName: string) => `Your network <strong>${networkName}</strong> is now operational with the <strong>Free plan</strong>: all features are included for communities with fewer than 100 members. No time limit, no credit card required.`,
+    upgradeTitle: 'Need more? The Community plan at €14/month',
+    upgradeMessage: `If your community exceeds 100 members, you can upgrade to the <strong>Community plan</strong> at <strong>€14 per month</strong> (up to 1,000 members, 20 GB storage, 2 admins). You can upgrade at any time from your dashboard.`,
+    privacyTitle: 'Our commitment: zero compromise on your privacy',
+    privacyIntro: 'At Conclav, we have made a clear and firm choice:',
+    privacyPoints: [
+      '<strong>No advertising</strong> – ever',
+      '<strong>No data selling</strong> – your data belongs to you',
+      '<strong>No tracking</strong> – we don\'t monitor your members',
+      '<strong>No manipulative algorithms</strong> designed to create addiction – we respect your members\' attention'
+    ],
+    transparencyNote: `Conclav is funded by its subscriptions, not by advertising. This allows us to remain independent and never compromise your privacy. If our tool is useful to you, a subscription helps us continue.`,
+    cta: (networkName: string) => `Access ${networkName}`,
+    closing: `If you have any questions at all, don't hesitate to reply directly to this email. We are a small team and we read every message personally.`,
+    signoff: 'See you soon,',
+    teamName: 'The Conclav Team',
+    footerNote: 'You are receiving this email because you just created a network on Conclav.'
+  },
+  fr: {
+    subject: (networkName: string) => `Bienvenue sur Conclav - ${networkName} a été créé !`,
+    title: 'Bienvenue sur Conclav !',
+    greeting: (adminName: string) => `Bonjour ${adminName},`,
+    thankYou: (networkName: string) => `Merci d'avoir choisi Conclav pour créer <strong style="color: #1976d2;">${networkName}</strong>.`,
+    welcomeMessage: `Nous sommes sincèrement ravis de vous accueillir dans notre communauté d'administrateurs qui, comme vous, ont fait le choix d'un espace numérique respectueux de la vie privée.`,
+    readyTitle: 'Votre réseau est prêt !',
+    readyMessage: (networkName: string) => `Votre réseau <strong>${networkName}</strong> est dès maintenant opérationnel avec le <strong>plan Gratuit</strong> : toutes les fonctionnalités sont incluses pour les communautés de moins de 100 membres. Aucune limite de temps, aucune carte bancaire requise.`,
+    upgradeTitle: 'Besoin de plus ? Le forfait Community à 14 € / mois',
+    upgradeMessage: `Si votre communauté dépasse 100 membres, vous pouvez passer au <strong>forfait Community</strong> à <strong>14 € par mois</strong> (jusqu'à 1000 membres, 20 Go de stockage, 2 admins). Vous pouvez upgrader à tout moment depuis votre tableau de bord.`,
+    privacyTitle: 'Notre engagement : zéro compromis sur votre vie privée',
+    privacyIntro: 'Chez Conclav, nous avons fait un choix clair et assumé :',
+    privacyPoints: [
+      '<strong>Aucune publicité</strong> – jamais',
+      '<strong>Aucune vente de données</strong> – vos données vous appartiennent',
+      '<strong>Aucun tracking</strong> – nous ne surveillons pas vos membres',
+      '<strong>Aucun algorithme manipulateur</strong> conçu pour créer de l\'addiction, nous respectons le temps d\'attention de vos membres'
+    ],
+    transparencyNote: `Conclav est financé par ses abonnements, pas par la publicité. Cela nous permet de rester indépendants et de ne jamais compromettre votre vie privée. Si notre outil vous est utile, un abonnement nous aide à continuer.`,
+    cta: (networkName: string) => `Accéder à ${networkName}`,
+    closing: `Si vous avez la moindre question, n'hésitez pas à répondre directement à cet email. Nous sommes une petite équipe et nous lisons tous les messages personnellement.`,
+    signoff: 'À très bientôt,',
+    teamName: 'L\'équipe Conclav',
+    footerNote: 'Vous recevez cet email car vous venez de créer un réseau sur Conclav.'
+  }
+}
+
+type Language = 'en' | 'fr'
+
+function getLanguage(lang?: string): Language {
+  if (!lang) return 'en'
+  if (lang.startsWith('fr')) return 'fr'
+  return 'en'
+}
+
+function getTranslations(lang?: string) {
+  return translations[getLanguage(lang)]
+}
+
 function generateEmailHTML(
   adminName: string,
   networkName: string,
-  networkId: string
+  networkId: string,
+  language?: string
 ): string {
+  const t = getTranslations(language)
+  const lang = getLanguage(language)
   const networkUrl = `${APP_URL}/network/${networkId}`
 
   return `
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="${lang}">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bienvenue sur Conclav - ${networkName}</title>
+  <title>${t.title}</title>
 </head>
 <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5; color: #333;">
   <table role="presentation" style="width: 100%; border-collapse: collapse;">
@@ -69,7 +137,7 @@ function generateEmailHTML(
                 </g>
               </svg>
               <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 600;">
-                Bienvenue sur Conclav !
+                ${t.title}
               </h1>
             </td>
           </tr>
@@ -78,7 +146,7 @@ function generateEmailHTML(
           <tr>
             <td style="padding: 30px 40px 20px;">
               <p style="margin: 0; color: #1a1a1a; font-size: 18px; line-height: 1.6;">
-                Bonjour ${adminName},
+                ${t.greeting(adminName)}
               </p>
             </td>
           </tr>
@@ -87,10 +155,10 @@ function generateEmailHTML(
           <tr>
             <td style="padding: 0 40px 25px;">
               <p style="margin: 0 0 16px; color: #4a4a4a; font-size: 16px; line-height: 1.7;">
-                Merci d'avoir choisi Conclav pour créer <strong style="color: #1976d2;">${networkName}</strong>.
+                ${t.thankYou(networkName)}
               </p>
               <p style="margin: 0; color: #4a4a4a; font-size: 16px; line-height: 1.7;">
-                Nous sommes sincèrement ravis de vous accueillir dans notre communauté d'administrateurs qui, comme vous, ont fait le choix d'un espace numérique respectueux de la vie privée.
+                ${t.welcomeMessage}
               </p>
             </td>
           </tr>
@@ -102,10 +170,10 @@ function generateEmailHTML(
                 <tr>
                   <td style="padding: 20px;">
                     <h3 style="margin: 0 0 12px; color: #1565c0; font-size: 17px; font-weight: 600;">
-                      Votre réseau est prêt !
+                      ${t.readyTitle}
                     </h3>
                     <p style="margin: 0; color: #4a4a4a; font-size: 15px; line-height: 1.6;">
-                      Votre réseau <strong>${networkName}</strong> est dès maintenant opérationnel avec le <strong>plan Gratuit</strong> : toutes les fonctionnalités sont incluses pour les communautés de moins de 100 membres. Aucune limite de temps, aucune carte bancaire requise.
+                      ${t.readyMessage(networkName)}
                     </p>
                   </td>
                 </tr>
@@ -120,10 +188,10 @@ function generateEmailHTML(
                 <tr>
                   <td style="padding: 20px;">
                     <h3 style="margin: 0 0 12px; color: #1a1a1a; font-size: 17px; font-weight: 600;">
-                      Besoin de plus ? Le forfait Community à 14 € / mois
+                      ${t.upgradeTitle}
                     </h3>
                     <p style="margin: 0; color: #4a4a4a; font-size: 15px; line-height: 1.6;">
-                      Si votre communauté dépasse 100 membres, vous pouvez passer au <strong>forfait Community</strong> à <strong>14 € par mois</strong> (jusqu'à 1000 membres, 20 Go de stockage, 2 admins). Vous pouvez upgrader à tout moment depuis votre tableau de bord.
+                      ${t.upgradeMessage}
                     </p>
                   </td>
                 </tr>
@@ -138,16 +206,13 @@ function generateEmailHTML(
                 <tr>
                   <td style="padding: 20px;">
                     <h3 style="margin: 0 0 12px; color: #2e7d32; font-size: 17px; font-weight: 600;">
-                      Notre engagement : zéro compromis sur votre vie privée
+                      ${t.privacyTitle}
                     </h3>
                     <p style="margin: 0 0 12px; color: #4a4a4a; font-size: 15px; line-height: 1.6;">
-                      Chez Conclav, nous avons fait un choix clair et assumé :
+                      ${t.privacyIntro}
                     </p>
                     <ul style="margin: 0; padding-left: 20px; color: #4a4a4a; font-size: 15px; line-height: 1.8;">
-                      <li><strong>Aucune publicité</strong> – jamais</li>
-                      <li><strong>Aucune vente de données</strong> – vos données vous appartiennent</li>
-                      <li><strong>Aucun tracking</strong> – nous ne surveillons pas vos membres</li>
-                      <li><strong>Aucun algorithme manipulateur</strong> conçu pour créer de l'addiction, nous respectons le temps d'attention de vos membres</li>
+                      ${t.privacyPoints.map(point => `<li>${point}</li>`).join('\n                      ')}
                     </ul>
                   </td>
                 </tr>
@@ -159,7 +224,7 @@ function generateEmailHTML(
           <tr>
             <td style="padding: 0 40px 25px;">
               <p style="margin: 0; color: #4a4a4a; font-size: 15px; line-height: 1.7; font-style: italic;">
-                Conclav est financé par ses abonnements, pas par la publicité. Cela nous permet de rester indépendants et de ne jamais compromettre votre vie privée. Si notre outil vous est utile, un abonnement nous aide à continuer.
+                ${t.transparencyNote}
               </p>
             </td>
           </tr>
@@ -169,7 +234,7 @@ function generateEmailHTML(
             <td style="padding: 10px 40px 30px;" align="center">
               <a href="${networkUrl}"
                  style="display: inline-block; background-color: #1976d2; color: #ffffff; text-decoration: none; padding: 16px 36px; border-radius: 8px; font-size: 16px; font-weight: 600; box-shadow: 0 2px 4px rgba(25, 118, 210, 0.3);">
-                Accéder à ${networkName}
+                ${t.cta(networkName)}
               </a>
             </td>
           </tr>
@@ -178,7 +243,7 @@ function generateEmailHTML(
           <tr>
             <td style="padding: 0 40px 15px;">
               <p style="margin: 0; color: #4a4a4a; font-size: 16px; line-height: 1.6;">
-                Si vous avez la moindre question, n'hésitez pas à répondre directement à cet email. Nous sommes une petite équipe et nous lisons tous les messages personnellement.
+                ${t.closing}
               </p>
             </td>
           </tr>
@@ -187,10 +252,10 @@ function generateEmailHTML(
           <tr>
             <td style="padding: 15px 40px 40px;">
               <p style="margin: 0 0 4px; color: #4a4a4a; font-size: 16px; line-height: 1.6;">
-                À très bientôt,
+                ${t.signoff}
               </p>
               <p style="margin: 0; color: #1a1a1a; font-size: 16px; font-weight: 500; line-height: 1.6;">
-                L'équipe Conclav 😊
+                ${t.teamName}
               </p>
             </td>
           </tr>
@@ -199,7 +264,7 @@ function generateEmailHTML(
           <tr>
             <td style="padding: 20px 40px; background-color: #f8f9fa; border-radius: 0 0 12px 12px;">
               <p style="margin: 0; color: #999; font-size: 12px; line-height: 1.5; text-align: center;">
-                Vous recevez cet email car vous venez de créer un réseau sur Conclav.<br>
+                ${t.footerNote}<br>
                 <a href="${APP_URL}" style="color: #1976d2; text-decoration: none;">conclav.club</a>
               </p>
             </td>
@@ -225,11 +290,13 @@ Deno.serve(async (req) => {
       testEmail?: string
       testName?: string
       testNetworkName?: string
+      testLanguage?: string
       // For actual sends
       adminEmail?: string
       adminName?: string
       networkName?: string
       networkId?: string
+      language?: string
     } = {}
 
     try {
@@ -246,10 +313,12 @@ Deno.serve(async (req) => {
       console.log(`Test mode: Sending welcome email to ${body.testEmail}`)
 
       const testName = body.testName || 'Admin'
-      const testNetworkName = body.testNetworkName || 'Mon Réseau Test'
-      const subject = `Bienvenue sur Conclav - ${testNetworkName} a été créé !`
+      const testNetworkName = body.testNetworkName || 'My Test Network'
+      const language = body.testLanguage || 'en'
+      const t = getTranslations(language)
+      const subject = t.subject(testNetworkName)
 
-      const emailHTML = generateEmailHTML(testName, testNetworkName, 'test-network-id')
+      const emailHTML = generateEmailHTML(testName, testNetworkName, 'test-network-id', language)
 
       const resendResponse = await fetch('https://api.resend.com/emails', {
         method: 'POST',
@@ -287,11 +356,13 @@ Deno.serve(async (req) => {
     // PRODUCTION MODE: Send to actual admin
     if (body.adminEmail && body.networkName && body.networkId) {
       const adminName = body.adminName || body.adminEmail.split('@')[0]
-      const subject = `Bienvenue sur Conclav - ${body.networkName} a été créé !`
+      const language = body.language || 'en'
+      const t = getTranslations(language)
+      const subject = t.subject(body.networkName)
 
-      const emailHTML = generateEmailHTML(adminName, body.networkName, body.networkId)
+      const emailHTML = generateEmailHTML(adminName, body.networkName, body.networkId, language)
 
-      console.log(`Sending welcome email to ${body.adminEmail} for network "${body.networkName}"`)
+      console.log(`Sending welcome email to ${body.adminEmail} for network "${body.networkName}" in ${getLanguage(language)}`)
 
       const resendResponse = await fetch('https://api.resend.com/emails', {
         method: 'POST',

@@ -105,7 +105,7 @@ const translations = {
 type Language = 'en' | 'fr'
 
 function getTranslations(lang: string) {
-  return translations[lang as Language] || translations.fr
+  return translations[lang as Language] || translations.en
 }
 
 function generateEmailHTML(
@@ -416,7 +416,7 @@ Deno.serve(async (req) => {
         }
 
         const adminName = adminProfile.full_name || adminEmail.split('@')[0]
-        const language = adminProfile.preferred_language || 'fr'
+        const language = adminProfile.preferred_language || 'en'
         const t = getTranslations(language)
 
         // Generate and send email

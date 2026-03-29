@@ -547,7 +547,8 @@ const NetworkOnboardingWizard = ({ profile }) => {
             adminEmail: user.email,
             adminName: user.user_metadata?.full_name || user.email?.split('@')[0] || 'Admin',
             networkName: network.name,
-            networkId: network.id
+            networkId: network.id,
+            language: navigator.language || 'en'
           })
         }).catch((emailError) => {
           console.error('Welcome email error:', emailError);
