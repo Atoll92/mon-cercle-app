@@ -652,9 +652,10 @@ const MembersTab = ({ members, activeProfile, network, onMembersChange, onNetwor
                       bgcolor: 'background.paper',
                       borderRadius: 1.5,
                       border: `1px solid ${theme.palette.divider}`,
+                      minWidth: 0,
                     }}
                   >
-                    <LinkIcon color="action" fontSize="small" />
+                    <LinkIcon color="action" fontSize="small" sx={{ flexShrink: 0 }} />
                     <Typography
                       variant="body2"
                       sx={{
@@ -663,7 +664,8 @@ const MembersTab = ({ members, activeProfile, network, onMembersChange, onNetwor
                         textOverflow: 'ellipsis',
                         whiteSpace: 'nowrap',
                         fontFamily: 'monospace',
-                        fontSize: '0.85rem',
+                        fontSize: '0.8rem',
+                        minWidth: 0,
                       }}
                     >
                       {publicInviteLink}
@@ -674,7 +676,7 @@ const MembersTab = ({ members, activeProfile, network, onMembersChange, onNetwor
                       color={linkCopied ? 'success' : 'primary'}
                       startIcon={linkCopied ? <CheckIcon /> : <CopyIcon />}
                       onClick={handleCopyLink}
-                      sx={{ whiteSpace: 'nowrap', minWidth: 100 }}
+                      sx={{ whiteSpace: 'nowrap', minWidth: 90, flexShrink: 0 }}
                     >
                       {linkCopied ? t('common.copied', 'Copied!') : t('common.copy', 'Copy')}
                     </Button>

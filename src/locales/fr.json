@@ -56,6 +56,26 @@
         "accepted": "Accepté",
         "pending": "En attente"
       },
+      "batchInviteTitle": "Invitation groupée",
+      "batch": {
+        "dragDrop": "Glisser-déposer ou cliquer pour importer",
+        "supportedFormats": "Formats supportés : CSV, Excel, TXT",
+        "clearFile": "Supprimer le fichier",
+        "processing": "Traitement du fichier...",
+        "enterEmails": "Saisir les adresses email",
+        "emailPlaceholder": "Saisir les adresses email séparées par des virgules, espaces ou retours à la ligne",
+        "emailHelp": "Vous pouvez saisir plusieurs adresses email séparées par des virgules, espaces ou retours à la ligne",
+        "processEmails": "Traiter les emails",
+        "validEmails": "Emails valides",
+        "invalidEmails": "Emails invalides",
+        "uploadFile": "Importer un fichier",
+        "enterManually": "Saisie manuelle",
+        "inviteAsAdmins": "Inviter tous en tant qu'administrateurs",
+        "sending": "Envoi des invitations...",
+        "cancel": "Annuler",
+        "sendingBtn": "Envoi...",
+        "sendInvitations": "Envoyer {{count}} invitation(s)"
+      },
       "quickShare": "Partager le lien d'invitation",
       "quickShareDescription": "Le moyen le plus simple de développer votre réseau. Partagez ce lien n'importe où — quiconque clique peut rejoindre.",
       "linkError": "Impossible de générer le lien d'invitation. Veuillez réessayer.",
@@ -2222,6 +2242,7 @@
       "loading": "Chargement",
       "noResults": "Aucun résultat"
     },
+    "copy": "Copier",
     "copied": "Copié !",
     "copyLink": "Copier le lien"
   },

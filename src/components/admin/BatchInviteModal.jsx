@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from '../../hooks/useTranslation.jsx';
 import {
   Box,
   Button,
@@ -60,6 +61,7 @@ const isValidEmail = (email) => {
 };
 
 const BatchInviteModal = ({ open, onClose, onInvite, network, activeProfile, onSuccess }) => {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState(0);
   const [file, setFile] = useState(null);
   const [manualEmails, setManualEmails] = useState('');
@@ -344,10 +346,10 @@ const BatchInviteModal = ({ open, onClose, onInvite, network, activeProfile, onS
           >
             <CloudUploadIcon sx={{ fontSize: 48, color: 'primary.main', mb: 1 }} />
             <Typography variant="h6" gutterBottom>
-              Drag & Drop or Click to Upload
+              {t('admin.members.batch.dragDrop', 'Drag & Drop or Click to Upload')}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Supported formats: CSV, Excel, TXT
+              {t('admin.members.batch.supportedFormats', 'Supported formats: CSV, Excel, TXT')}
             </Typography>
           </UploadBox>
         </label>
@@ -375,7 +377,7 @@ const BatchInviteModal = ({ open, onClose, onInvite, network, activeProfile, onS
             <IconButton 
               onClick={handleClearFile}
               size="small"
-              aria-label="Clear file"
+              aria-label={t('admin.members.batch.clearFile', 'Clear file')}
             >
               <ClearIcon />
             </IconButton>
@@ -385,7 +387,7 @@ const BatchInviteModal = ({ open, onClose, onInvite, network, activeProfile, onS
             <Box sx={{ mt: 2 }}>
               <LinearProgress />
               <Typography variant="body2" sx={{ mt: 1 }}>
-                Processing file...
+                {t('admin.members.batch.processing', 'Processing file...')}
               </Typography>
             </Box>
           )}
@@ -401,14 +403,14 @@ const BatchInviteModal = ({ open, onClose, onInvite, network, activeProfile, onS
         fullWidth
         multiline
         rows={6}
-        label="Enter email addresses"
-        placeholder="Enter email addresses separated by commas, spaces, or newlines"
+        label={t('admin.members.batch.enterEmails', 'Enter email addresses')}
+        placeholder={t('admin.members.batch.emailPlaceholder', 'Enter email addresses separated by commas, spaces, or newlines')}
         value={manualEmails}
         onChange={(e) => setManualEmails(e.target.value)}
         variant="outlined"
       />
       <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Tooltip title="You can enter multiple email addresses separated by commas, spaces, or newlines">
+        <Tooltip title={t('admin.members.batch.emailHelp', 'You can enter multiple email addresses separated by commas, spaces, or newlines')}>
           <IconButton size="small">
             <HelpIcon fontSize="small" />
           </IconButton>
@@ -418,7 +420,7 @@ const BatchInviteModal = ({ open, onClose, onInvite, network, activeProfile, onS
           onClick={processManualInput}
           disabled={!manualEmails.trim()}
         >
-          Process Emails
+          {t('admin.members.batch.processEmails', 'Process Emails')}
         </Button>
       </Box>
     </Box>
@@ -430,7 +432,7 @@ const BatchInviteModal = ({ open, onClose, onInvite, network, activeProfile, onS
       {extractedEmails.length > 0 && (
         <>
           <Typography variant="subtitle1" gutterBottom>
-            Valid Emails ({extractedEmails.length})
+            {t('admin.members.batch.validEmails', 'Valid Emails')} ({extractedEmails.length})
           </Typography>
           <Paper 
             variant="outlined" 
@@ -455,7 +457,7 @@ const BatchInviteModal = ({ open, onClose, onInvite, network, activeProfile, onS
       {invalidEmails.length > 0 && (
         <>
           <Typography variant="subtitle1" gutterBottom color="error">
-            Invalid Emails ({invalidEmails.length})
+            {t('admin.members.batch.invalidEmails', 'Invalid Emails')} ({invalidEmails.length})
           </Typography>
           <Paper 
             variant="outlined" 
@@ -491,7 +493,7 @@ const BatchInviteModal = ({ open, onClose, onInvite, network, activeProfile, onS
       }}
     >
       <DialogTitle id="batch-invite-dialog-title">
-        Batch Invite Members
+        {t('admin.members.batchInviteTitle', 'Batch Invite Members')}
       </DialogTitle>
       
       <DialogContent>
@@ -513,8 +515,8 @@ const BatchInviteModal = ({ open, onClose, onInvite, network, activeProfile, onS
           aria-label="invitation method tabs"
           centered
         >
-          <Tab label="Upload File" id="tab-0" />
-          <Tab label="Enter Manually" id="tab-1" />
+          <Tab label={t('admin.members.batch.uploadFile', 'Upload File')} id="tab-0" />
+          <Tab label={t('admin.members.batch.enterManually', 'Enter Manually')} id="tab-1" />
         </Tabs>
         
         <Box sx={{ mt: 2 }}>
@@ -530,7 +532,7 @@ const BatchInviteModal = ({ open, onClose, onInvite, network, activeProfile, onS
                     color="primary"
                   />
                 }
-                label="Invite all as Admins"
+                label={t('admin.members.batch.inviteAsAdmins', 'Invite all as Admins')}
               />
               {renderEmailPreview()}
             </Box>
@@ -539,7 +541,7 @@ const BatchInviteModal = ({ open, onClose, onInvite, network, activeProfile, onS
           {isInviting && (
             <Box sx={{ mt: 3 }}>
               <Typography variant="body2" gutterBottom>
-                Sending invitations... ({invitationProgress}%)
+                {t('admin.members.batch.sending', 'Sending invitations...')} ({invitationProgress}%)
               </Typography>
               <LinearProgress 
                 variant="determinate" 
@@ -554,7 +556,7 @@ const BatchInviteModal = ({ open, onClose, onInvite, network, activeProfile, onS
       
       <DialogActions>
         <Button onClick={onClose} disabled={isInviting}>
-          Cancel
+          {t('admin.members.batch.cancel', 'Cancel')}
         </Button>
         <Button
           onClick={handleSendInvitations}
@@ -563,7 +565,7 @@ const BatchInviteModal = ({ open, onClose, onInvite, network, activeProfile, onS
           disabled={extractedEmails.length === 0 || isInviting}
           startIcon={isInviting ? <Spinner size={40} /> : null}
         >
-          {isInviting ? 'Sending...' : `Send ${extractedEmails.length} Invitation${extractedEmails.length !== 1 ? 's' : ''}`}
+          {isInviting ? t('admin.members.batch.sendingBtn') : t('admin.members.batch.sendInvitations', { count: extractedEmails.length })}
         </Button>
       </DialogActions>
     </Dialog>

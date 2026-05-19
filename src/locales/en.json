@@ -56,6 +56,26 @@
         "accepted": "Accepted",
         "pending": "Pending"
       },
+      "batchInviteTitle": "Batch Invite Members",
+      "batch": {
+        "dragDrop": "Drag & Drop or Click to Upload",
+        "supportedFormats": "Supported formats: CSV, Excel, TXT",
+        "clearFile": "Clear file",
+        "processing": "Processing file...",
+        "enterEmails": "Enter email addresses",
+        "emailPlaceholder": "Enter email addresses separated by commas, spaces, or newlines",
+        "emailHelp": "You can enter multiple email addresses separated by commas, spaces, or newlines",
+        "processEmails": "Process Emails",
+        "validEmails": "Valid Emails",
+        "invalidEmails": "Invalid Emails",
+        "uploadFile": "Upload File",
+        "enterManually": "Enter Manually",
+        "inviteAsAdmins": "Invite all as Admins",
+        "sending": "Sending invitations...",
+        "cancel": "Cancel",
+        "sendingBtn": "Sending...",
+        "sendInvitations": "Send {{count}} Invitation(s)"
+      },
       "quickShare": "Share invite link",
       "quickShareDescription": "The easiest way to grow your network. Share this link anywhere — anyone who clicks it can join.",
       "linkError": "Could not generate invite link. Please try again.",
@@ -2286,6 +2306,7 @@
       "loading": "Loading",
       "noResults": "No Results"
     },
+    "copy": "Copy",
     "copied": "Copied!",
     "copyLink": "Copy link"
   },

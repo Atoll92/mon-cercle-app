@@ -632,7 +632,7 @@ const BlogPostsTab = ({ network, activeProfile }) => {
         <DialogTitle>{t('admin.blog.posts.deletePost', 'Delete Post?')}</DialogTitle>
         <DialogContent>
           <Typography>
-            {t('admin.blog.posts.deletePostConfirm', 'Are you sure you want to delete "{{title}}"? This action cannot be undone.', { title: postToDelete?.title || t('admin.blog.posts.noTitle', '(No title)') })}
+            {t('admin.blog.posts.deletePostConfirm', { title: postToDelete?.title || t('admin.blog.posts.noTitle') })}
           </Typography>
         </DialogContent>
         <DialogActions>

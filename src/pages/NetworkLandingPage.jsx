@@ -209,8 +209,8 @@ function NetworkLandingPage() {
     // Use enabledTabs from context, with fallback
     let tabsToUse = enabledTabs && enabledTabs.length > 0 ? enabledTabs : ['news', 'members', 'events', 'chat', 'files', 'wiki', 'social'];
 
-    // Auto-add courses tab if there are published courses and it's not already in the list
-    if (hasPublishedCourses && !tabsToUse.includes('courses')) {
+    // Auto-add courses tab if there are published courses, feature is enabled, and it's not already in the list
+    if (hasPublishedCourses && network?.features_config?.courses !== false && !tabsToUse.includes('courses')) {
       // Insert courses tab after wiki if wiki exists, otherwise at the end
       const wikiIndex = tabsToUse.indexOf('wiki');
       if (wikiIndex !== -1) {
@@ -229,9 +229,9 @@ function NetworkLandingPage() {
         if (tab.id === 'donation') {
           return !!network?.helloasso_url;
         }
-        // Special handling for courses tab - only show if there are published courses
+        // Special handling for courses tab - only show if enabled in features_config and there are published courses
         if (tab.id === 'courses') {
-          return hasPublishedCourses;
+          return hasPublishedCourses && network?.features_config?.courses !== false;
         }
         return true;
       });
@@ -243,7 +243,7 @@ function NetworkLandingPage() {
     }
 
     return orderedTabs.length > 0 ? orderedTabs : allTabs;
-  }, [enabledTabs, allTabs, network?.helloasso_url, hasPublishedCourses]);
+  }, [enabledTabs, allTabs, network?.helloasso_url, network?.features_config?.courses, hasPublishedCourses]);
   
   // Helper function to get tab index from tab id within visible tabs
   const getTabIndexFromId = React.useCallback((tabId) => {

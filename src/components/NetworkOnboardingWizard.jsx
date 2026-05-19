@@ -717,7 +717,7 @@ const NetworkOnboardingWizard = ({ profile }) => {
             <CheckIcon sx={{ fontSize: 32, color: '#fff' }} />
           </Box>
           <Typography variant="h5" sx={{ fontWeight: 600, color: 'success.dark', mb: 1 }}>
-            {t('networkOnboarding.invite.title', '"{{networkName}}" is ready!', { networkName: networkData.name })}
+            {t('networkOnboarding.invite.title', { networkName: networkData.name })}
           </Typography>
           <Typography variant="body1" color="text.secondary">
             {t('networkOnboarding.invite.subtitle', 'Now invite your first members to bring your community to life.')}
@@ -1697,76 +1697,7 @@ const NavigationStep = ({ networkData, setNetworkData }) => {
         )}
       </Paper>
 
-      <Paper 
-        elevation={0} 
-        sx={{ 
-          p: 3, 
-          borderRadius: 2, 
-          border: '1px solid',
-          borderColor: 'divider'
-        }}
-      >
-        <Typography variant="subtitle1" fontWeight="medium" gutterBottom>
-          {t('networkOnboarding.branding.navigation.title')}
-        </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-          {t('networkOnboarding.branding.navigation.description')}
-        </Typography>
-        
-        {/* Enabled Tabs - Sortable */}
-        <Box sx={{ mb: 3 }}>
-          <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 'medium' }}>
-            {t('networkOnboarding.branding.navigation.enabledTabs')}
-          </Typography>
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragEnd={handleDragEnd}
-          >
-            <SortableContext
-              items={networkData.enabledTabs}
-              strategy={verticalListSortingStrategy}
-            >
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                {networkData.enabledTabs
-                  .map(tabId => availableTabs.find(tab => tab.id === tabId))
-                  .filter(tab => tab && isTabAvailable(tab))
-                  .map((tab) => (
-                    <SortableWizardTabChip
-                      key={tab.id}
-                      tab={tab}
-                      isSelected={true}
-                      onToggle={() => handleTabToggle(tab.id)}
-                    />
-                  ))}
-              </Box>
-            </SortableContext>
-          </DndContext>
-        </Box>
-
-        {/* Available Tabs - Not enabled */}
-        <Box>
-          <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 'medium' }}>
-            {t('networkOnboarding.branding.navigation.availableTabs')}
-          </Typography>
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-            {availableTabs
-              .filter(tab => !networkData.enabledTabs.includes(tab.id) && isTabAvailable(tab))
-              .map((tab) => (
-                <Chip
-                  key={tab.id}
-                  icon={tab.icon}
-                  label={tab.label}
-                  clickable
-                  color="default"
-                  variant="outlined"
-                  onClick={() => handleTabToggle(tab.id)}
-                  sx={{ pl: 0.5 }}
-                />
-              ))}
-          </Box>
-        </Box>
-      </Paper>
+      {/* Tab ordering removed from onboarding — available in admin settings after creation */}
       
       <Paper 
         elevation={0} 
@@ -2070,20 +2001,7 @@ const ReviewStep = ({ networkData }) => {
                 ))}
             </Box>
             
-            <Typography variant="subtitle2" color="text.secondary" sx={{ mt: 2, mb: 0.5 }}>
-              {t('networkOnboarding.review.defaultNavTabs')}
-            </Typography>
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-              {networkData.enabledTabs.map((tab) => (
-                <Chip 
-                  key={tab}
-                  label={tab.charAt(0).toUpperCase() + tab.slice(1)}
-                  size="small"
-                  color="secondary"
-                  variant="outlined"
-                />
-              ))}
-            </Box>
+            {/* Nav tabs review removed — configured in admin settings after creation */}
           </Grid>
         </Grid>
       </Paper>

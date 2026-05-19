@@ -369,18 +369,7 @@ const NetworkSettingsTab = ({ network, onNetworkUpdate, darkMode }) => {
       icon: <TimelineIcon fontSize="small" />,
       defaultDescription: defaultTabDescriptions.social
     },
-    {
-      id: 'courses',
-      label: t('admin.networkSettings.tabs.courses'),
-      icon: <CoursesIcon fontSize="small" />,
-      defaultDescription: defaultTabDescriptions.courses
-    },
-    {
-      id: 'marketplace',
-      label: t('admin.networkSettings.tabs.marketplace'),
-      icon: <MarketplaceIcon fontSize="small" />,
-      defaultDescription: defaultTabDescriptions.marketplace
-    },
+    // courses and marketplace tabs hidden — still under development
     {
       id: 'donation',
       label: t('admin.networkSettings.tabs.donation'),
@@ -399,9 +388,7 @@ const NetworkSettingsTab = ({ network, onNetworkUpdate, darkMode }) => {
     { key: 'moodboards', label: t('admin.networkSettings.features.moodboards.label'), icon: <ImageIcon />, description: t('admin.networkSettings.features.moodboards.description') },
     { key: 'reactions', label: t('admin.networkSettings.features.reactions.label'), icon: <ReactionsIcon />, description: t('admin.networkSettings.features.reactions.description') },
     { key: 'activity_feed', label: t('admin.networkSettings.features.activityFeed.label'), icon: <ActivityFeedIcon />, description: t('admin.networkSettings.features.activityFeed.description') },
-    { key: 'courses', label: t('admin.networkSettings.features.courses.label'), icon: <CoursesIcon />, description: t('admin.networkSettings.features.courses.description') },
-    { key: 'marketplace', label: t('admin.networkSettings.features.marketplace.label'), icon: <MarketplaceIcon />, description: t('admin.networkSettings.features.marketplace.description') },
-    { key: 'location', label: t('admin.networkSettings.features.location.label'), icon: <LocationIcon />, description: t('admin.networkSettings.features.location.description') },
+    // courses, marketplace, and location_sharing are hidden — still under development
     { key: 'notifications', label: t('admin.networkSettings.features.notifications.label'), icon: <NotificationsIcon />, description: t('admin.networkSettings.features.notifications.description') }
   ];
 
