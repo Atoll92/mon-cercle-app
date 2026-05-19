@@ -56,7 +56,14 @@
         "accepted": "Accepté",
         "pending": "En attente"
       },
-      "inviteViaEmail": "Inviter des membres par email",
+      "quickShare": "Partager le lien d'invitation",
+      "quickShareDescription": "Le moyen le plus simple de développer votre réseau. Partagez ce lien n'importe où — quiconque clique peut rejoindre.",
+      "linkError": "Impossible de générer le lien d'invitation. Veuillez réessayer.",
+      "emailSectionHint": "Envoyez des invitations personnalisées directement par email, ou importez une liste.",
+      "shareMessage": "Rejoignez {{networkName}} sur Conclav ! {{link}}",
+      "shareEmailSubject": "Rejoignez {{networkName}} sur Conclav",
+      "shareEmailBody": "Je vous invite à rejoindre {{networkName}} sur Conclav.\n\nCliquez ici pour rejoindre : {{link}}",
+      "inviteViaEmail": "Inviter par email",
       "addEmailAddress": "Ajouter une adresse email",
       "emailPlaceholder": "Entrez l'email et appuyez sur Entrée, virgule ou point-virgule pour ajouter",
       "fileImportTooltip": "Inviter plusieurs membres à partir d'un fichier CSV, Excel ou texte",
@@ -928,6 +935,21 @@
       "message": "Votre réseau \"{{networkName}}\" a été créé. Vous pouvez maintenant commencer à inviter des membres et personnaliser votre espace.",
       "redirecting": "Redirection vers votre réseau..."
     },
+    "invite": {
+      "title": "\"{{networkName}}\" est prêt !",
+      "subtitle": "Invitez maintenant vos premiers membres pour donner vie à votre communauté.",
+      "shareLinkTitle": "Partager le lien d'invitation",
+      "qrAlt": "QR Code pour rejoindre le réseau",
+      "emailTitle": "Inviter par email",
+      "emailPlaceholder": "Entrez les adresses email séparées par des virgules\nex. alice@example.com, bob@example.com",
+      "invalidEmails": "Veuillez entrer des adresses email valides",
+      "sendError": "Échec de l'envoi des invitations. Vous pourrez inviter des membres plus tard depuis le panneau d'administration.",
+      "sent": "Invitations envoyées avec succès !",
+      "sending": "Envoi...",
+      "sendInvites": "Envoyer les invitations",
+      "goToDashboard": "Aller à mon réseau",
+      "laterHint": "Vous pouvez toujours inviter plus de membres depuis le panneau d'administration."
+    },
     "errors": {
       "notLoggedIn": "Vous devez être connecté pour créer un réseau",
       "createError": "Une erreur s'est produite lors de la création de votre réseau"
@@ -1058,6 +1080,11 @@
       "settings": "Paramètres",
       "createPost": "Créer une publication",
       "createAnnouncement": "Créer une annonce"
+    },
+    "inviteCta": {
+      "title": "Invitez vos premiers membres !",
+      "description": "Votre réseau est prêt. Partagez votre lien d'invitation ou invitez des membres par email pour lancer votre communauté.",
+      "button": "Inviter des membres"
     },
     "profile": {
       "notSet": "Non défini",

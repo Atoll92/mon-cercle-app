@@ -91,7 +91,7 @@ const translations = {
   europeanAlternativeDesc: "Designed and hosted entirely in Europe. A genuine alternative to Silicon Valley platforms that respect your digital independence.",
 
   readyToOwn: "Ready to own your digital space?",
-  joinThousands: "Join thousands of creators and professionals building authentic, privacy-first communities.",
+  joinThousands: "Join creators and professionals building authentic, privacy-first communities.",
   startYourFreeTrial: "Start for Free",
   finalTrialInfo: "Free forever • Setup under 5 minutes • No credit card required",
 
@@ -180,7 +180,7 @@ const translations = {
   europeanAlternativeDesc: "Développé et hébergé en Europe. Une alternative aux plateformes de la Silicon Valley.",
 
   readyToOwn: "Prêt à développer votre espace numérique ?",
-  joinThousands: "Rejoignez des milliers de créateurs, d'associations et de professionnels qui construisent des communautés authentiques et respectueuses de la vie privée.",
+  joinThousands: "Rejoignez des créateurs, associations et professionnels qui construisent des communautés authentiques et respectueuses de la vie privée.",
   startYourFreeTrial: "Commencez gratuitement",
   finalTrialInfo: "Gratuit pour toujours • Installation en moins de 5 minutes • Aucune carte requise",
 

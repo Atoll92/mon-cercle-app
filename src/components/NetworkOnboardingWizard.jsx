@@ -6,6 +6,9 @@ import { useAuth } from '../context/authcontext';
 import { useProfile } from '../context/profileContext';
 import { useTranslation } from '../hooks/useTranslation';
 import { createProfileForNetwork } from '../api/profiles';
+import { getOrCreatePublicInvitationLink } from '../api/invitations';
+import { inviteUserToNetwork } from '../api/networks';
+import QRCode from 'qrcode';
 import {
   Box,
   Stepper,
@@ -69,6 +72,10 @@ import {
   RssFeed as BlogIcon,
   Comment as CommentIcon,
   Link as LinkIcon,
+  ContentCopy as CopyIcon,
+  PersonAdd as PersonAddIcon,
+  Email as EmailInviteIcon,
+  Send as SendIcon,
 } from '@mui/icons-material';
 import { checkSubdomainAvailability } from '../api/blog';
 import {
@@ -163,6 +170,17 @@ const NetworkOnboardingWizard = ({ profile }) => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
   const [autoSaved, setAutoSaved] = useState(false);
+
+  // Post-creation invite screen state
+  const [createdNetworkId, setCreatedNetworkId] = useState(null);
+  const [createdProfileId, setCreatedProfileId] = useState(null);
+  const [inviteLink, setInviteLink] = useState('');
+  const [inviteQrCode, setInviteQrCode] = useState('');
+  const [inviteCopied, setInviteCopied] = useState(false);
+  const [inviteEmails, setInviteEmails] = useState('');
+  const [inviteSending, setInviteSending] = useState(false);
+  const [inviteSent, setInviteSent] = useState(false);
+  const [inviteError, setInviteError] = useState(null);
 
   // Default network data structure
   const defaultNetworkData = {
@@ -556,8 +574,6 @@ const NetworkOnboardingWizard = ({ profile }) => {
         });
       }
 
-      setSuccess(true);
-
       // Clear the saved form data since network was successfully created
       clearSavedData();
 
@@ -566,18 +582,39 @@ const NetworkOnboardingWizard = ({ profile }) => {
         sessionStorage.setItem(`show_admin_onboarding_${network.id}_${newProfile.id}`, 'true');
       }
 
-      // Redirect based on network type
-      setTimeout(() => {
-        if (isBlogNetwork) {
-          // Redirect to blog admin dashboard using the subdomain
+      if (isBlogNetwork) {
+        // Blogs don't need member invites — redirect directly
+        setSuccess(true);
+        setTimeout(() => {
           console.log('Redirecting to blog admin after blog creation');
           window.location.href = `/blog/${networkData.subdomain.toLowerCase()}/admin`;
-        } else {
-          // Do a hard reload to ensure all contexts are properly refreshed with the new network
-          console.log('Redirecting to dashboard with hard reload after network creation');
-          window.location.href = '/dashboard';
+        }, 2000);
+      } else {
+        // For networks: store IDs and generate invite link before showing success
+        setCreatedNetworkId(network.id);
+        setCreatedProfileId(newProfile?.id);
+
+        // Generate invite link
+        try {
+          const result = await getOrCreatePublicInvitationLink(network.id, newProfile?.id);
+          if (result.success) {
+            const link = `${window.location.origin}/join/${result.invitation.code}`;
+            setInviteLink(link);
+            // Generate QR code
+            const qrUrl = await QRCode.toDataURL(link, {
+              width: 200,
+              margin: 2,
+              color: { dark: '#000000', light: '#ffffff' }
+            });
+            setInviteQrCode(qrUrl);
+          }
+        } catch (invLinkErr) {
+          console.error('Error generating invite link:', invLinkErr);
+          // Non-blocking — user can still proceed
         }
-      }, 2000);
+
+        setSuccess(true);
+      }
       
     } catch (error) {
       console.error("Error creating network:", error);
@@ -587,45 +624,228 @@ const NetworkOnboardingWizard = ({ profile }) => {
     }
   };
 
-  // If creation is complete, show success message
+  // Handle copying invite link
+  const handleCopyInviteLink = () => {
+    if (inviteLink) {
+      navigator.clipboard.writeText(inviteLink);
+      setInviteCopied(true);
+      setTimeout(() => setInviteCopied(false), 2000);
+    }
+  };
+
+  // Handle sending email invitations
+  const handleSendInvites = async () => {
+    if (!inviteEmails.trim() || !createdNetworkId || !createdProfileId) return;
+
+    const emails = inviteEmails
+      .split(/[,;\n]+/)
+      .map(e => e.trim().toLowerCase())
+      .filter(e => e && e.includes('@'));
+
+    if (emails.length === 0) {
+      setInviteError(t('networkOnboarding.invite.invalidEmails', 'Please enter valid email addresses'));
+      return;
+    }
+
+    setInviteSending(true);
+    setInviteError(null);
+
+    try {
+      // Use the same API as the admin panel
+      const results = await Promise.allSettled(
+        emails.map(email => inviteUserToNetwork(email, createdNetworkId, createdProfileId, 'member'))
+      );
+
+      const failures = results.filter(r => r.status === 'rejected' || (r.status === 'fulfilled' && r.value?.error));
+      if (failures.length > 0 && failures.length === emails.length) {
+        throw new Error('All invitations failed');
+      }
+
+      setInviteSent(true);
+      setInviteEmails('');
+    } catch (err) {
+      console.error('Error sending invitations:', err);
+      setInviteError(t('networkOnboarding.invite.sendError', 'Failed to send invitations. You can invite members later from the Admin Panel.'));
+    } finally {
+      setInviteSending(false);
+    }
+  };
+
+  // Handle going to dashboard from invite screen
+  const handleGoToDashboard = () => {
+    window.location.href = '/dashboard';
+  };
+
+  // If creation is complete, show invite screen (or blog redirect spinner)
   if (success) {
+    // For blogs, show a simple redirect spinner
+    if (networkData.networkType === 'blog') {
+      return (
+        <Paper
+          elevation={3}
+          sx={{ p: 4, borderRadius: 2, maxWidth: 600, mx: 'auto', textAlign: 'center', bgcolor: alpha(theme.palette.success.light, 0.1) }}
+        >
+          <Box sx={{ width: 80, height: 80, bgcolor: 'success.main', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 3 }}>
+            <CheckIcon sx={{ fontSize: 40, color: '#fff' }} />
+          </Box>
+          <Typography variant="h5" gutterBottom sx={{ fontWeight: 'medium', color: 'success.dark' }}>
+            {t('networkOnboarding.success.title')}
+          </Typography>
+          <Spinner size={60} sx={{ mt: 2, mb: 3 }} />
+          <Typography variant="body2" color="text.secondary">
+            {t('networkOnboarding.success.redirecting')}
+          </Typography>
+        </Paper>
+      );
+    }
+
+    // For networks: show invite members screen
     return (
-      <Paper 
-        elevation={3} 
-        sx={{ 
-          p: 4, 
-          borderRadius: 2, 
-          maxWidth: 600, 
+      <Paper
+        elevation={3}
+        sx={{
+          p: { xs: 3, sm: 4 },
+          borderRadius: 2,
+          maxWidth: 650,
           mx: 'auto',
-          textAlign: 'center',
-          bgcolor: alpha(theme.palette.success.light, 0.1)
+          bgcolor: alpha(theme.palette.success.light, 0.05)
         }}
       >
-        <Box 
-          sx={{ 
-            width: 80, 
-            height: 80, 
-            bgcolor: 'success.main', 
-            borderRadius: '50%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            mx: 'auto',
-            mb: 3
-          }}
-        >
-          <CheckIcon sx={{ fontSize: 40, color: '#fff' }} />
+        {/* Success header */}
+        <Box sx={{ textAlign: 'center', mb: 4 }}>
+          <Box sx={{ width: 64, height: 64, bgcolor: 'success.main', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 2 }}>
+            <CheckIcon sx={{ fontSize: 32, color: '#fff' }} />
+          </Box>
+          <Typography variant="h5" sx={{ fontWeight: 600, color: 'success.dark', mb: 1 }}>
+            {t('networkOnboarding.invite.title', '"{{networkName}}" is ready!', { networkName: networkData.name })}
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            {t('networkOnboarding.invite.subtitle', 'Now invite your first members to bring your community to life.')}
+          </Typography>
         </Box>
-        <Typography variant="h5" gutterBottom sx={{ fontWeight: 'medium', color: 'success.dark' }}>
-          {t('networkOnboarding.success.title')}
-        </Typography>
-        <Typography variant="body1" paragraph color="text.secondary">
-          {t('networkOnboarding.success.message', { networkName: networkData.name })}
-        </Typography>
-        <Spinner size={60} sx={{ mt: 2, mb: 3 }} />
-        <Typography variant="body2" color="text.secondary">
-          {t('networkOnboarding.success.redirecting')}
-        </Typography>
+
+        <Divider sx={{ mb: 3 }} />
+
+        {/* Invite link section */}
+        {inviteLink && (
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="subtitle1" sx={{ fontWeight: 600, display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+              <LinkIcon fontSize="small" color="primary" />
+              {t('networkOnboarding.invite.shareLinkTitle', 'Share invitation link')}
+            </Typography>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1,
+                p: 1.5,
+                bgcolor: alpha(theme.palette.primary.main, 0.04),
+                borderRadius: 1,
+                border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`
+              }}
+            >
+              <Typography
+                variant="body2"
+                sx={{
+                  flex: 1,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  fontFamily: 'monospace',
+                  fontSize: '0.85rem'
+                }}
+              >
+                {inviteLink}
+              </Typography>
+              <Button
+                variant={inviteCopied ? 'contained' : 'outlined'}
+                size="small"
+                color={inviteCopied ? 'success' : 'primary'}
+                startIcon={inviteCopied ? <CheckIcon /> : <CopyIcon />}
+                onClick={handleCopyInviteLink}
+                sx={{ whiteSpace: 'nowrap' }}
+              >
+                {inviteCopied
+                  ? t('common.copied', 'Copied!')
+                  : t('common.copyLink', 'Copy Link')}
+              </Button>
+            </Box>
+
+            {/* QR Code */}
+            {inviteQrCode && (
+              <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+                <Box sx={{ p: 1.5, bgcolor: 'white', borderRadius: 1, border: 1, borderColor: 'divider' }}>
+                  <img
+                    src={inviteQrCode}
+                    alt={t('networkOnboarding.invite.qrAlt', 'QR Code to join network')}
+                    style={{ width: 140, height: 140, display: 'block' }}
+                  />
+                </Box>
+              </Box>
+            )}
+          </Box>
+        )}
+
+        <Divider sx={{ mb: 3 }} />
+
+        {/* Email invite section */}
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="subtitle1" sx={{ fontWeight: 600, display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+            <EmailInviteIcon fontSize="small" color="primary" />
+            {t('networkOnboarding.invite.emailTitle', 'Invite by email')}
+          </Typography>
+          <TextField
+            fullWidth
+            multiline
+            rows={3}
+            placeholder={t('networkOnboarding.invite.emailPlaceholder', 'Enter email addresses separated by commas\ne.g. alice@example.com, bob@example.com')}
+            value={inviteEmails}
+            onChange={(e) => setInviteEmails(e.target.value)}
+            disabled={inviteSending}
+            sx={{ mb: 1.5 }}
+          />
+          {inviteError && (
+            <Alert severity="error" sx={{ mb: 1.5 }} onClose={() => setInviteError(null)}>
+              {inviteError}
+            </Alert>
+          )}
+          {inviteSent && (
+            <Alert severity="success" sx={{ mb: 1.5 }}>
+              {t('networkOnboarding.invite.sent', 'Invitations sent successfully!')}
+            </Alert>
+          )}
+          <Button
+            variant="contained"
+            startIcon={inviteSending ? <Spinner size={20} sx={{ color: 'white' }} /> : <SendIcon />}
+            onClick={handleSendInvites}
+            disabled={!inviteEmails.trim() || inviteSending}
+          >
+            {inviteSending
+              ? t('networkOnboarding.invite.sending', 'Sending...')
+              : t('networkOnboarding.invite.sendInvites', 'Send Invitations')}
+          </Button>
+        </Box>
+
+        <Divider sx={{ mb: 3 }} />
+
+        {/* Go to dashboard button */}
+        <Box sx={{ textAlign: 'center' }}>
+          <Button
+            variant="contained"
+            size="large"
+            onClick={handleGoToDashboard}
+            endIcon={<ArrowForwardIcon />}
+            sx={{
+              px: 4,
+              background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
+            }}
+          >
+            {t('networkOnboarding.invite.goToDashboard', 'Go to My Network')}
+          </Button>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 1.5 }}>
+            {t('networkOnboarding.invite.laterHint', 'You can always invite more members from the Admin Panel.')}
+          </Typography>
+        </Box>
       </Paper>
     );
   }

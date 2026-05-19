@@ -56,7 +56,14 @@
         "accepted": "Accepted",
         "pending": "Pending"
       },
-      "inviteViaEmail": "Invite Members via Email",
+      "quickShare": "Share invite link",
+      "quickShareDescription": "The easiest way to grow your network. Share this link anywhere — anyone who clicks it can join.",
+      "linkError": "Could not generate invite link. Please try again.",
+      "emailSectionHint": "Send personalized invitations directly to email addresses, or import a list.",
+      "shareMessage": "Join {{networkName}} on Conclav! {{link}}",
+      "shareEmailSubject": "Join {{networkName}} on Conclav",
+      "shareEmailBody": "I'd like to invite you to join {{networkName}} on Conclav.\n\nClick here to join: {{link}}",
+      "inviteViaEmail": "Invite by email",
       "addEmailAddress": "Add Email Address",
       "emailPlaceholder": "Enter email and press Enter, comma, or semicolon to add",
       "fileImportTooltip": "Invite multiple members from a CSV, Excel, or text file",
@@ -928,6 +935,21 @@
       "message": "Your network \"{{networkName}}\" has been created. You can now start inviting members and customizing your space.",
       "redirecting": "Redirecting to your network..."
     },
+    "invite": {
+      "title": "\"{{networkName}}\" is ready!",
+      "subtitle": "Now invite your first members to bring your community to life.",
+      "shareLinkTitle": "Share invitation link",
+      "qrAlt": "QR Code to join network",
+      "emailTitle": "Invite by email",
+      "emailPlaceholder": "Enter email addresses separated by commas\ne.g. alice@example.com, bob@example.com",
+      "invalidEmails": "Please enter valid email addresses",
+      "sendError": "Failed to send invitations. You can invite members later from the Admin Panel.",
+      "sent": "Invitations sent successfully!",
+      "sending": "Sending...",
+      "sendInvites": "Send Invitations",
+      "goToDashboard": "Go to My Network",
+      "laterHint": "You can always invite more members from the Admin Panel."
+    },
     "errors": {
       "notLoggedIn": "You must be logged in to create a network",
       "createError": "An error occurred while creating your network"
@@ -1058,6 +1080,11 @@
       "settings": "Settings",
       "createPost": "Create Post",
       "createAnnouncement": "Create Announcement"
+    },
+    "inviteCta": {
+      "title": "Invite your first members!",
+      "description": "Your network is ready. Share your invitation link or invite members by email to get your community started.",
+      "button": "Invite Members"
     },
     "profile": {
       "notSet": "Not set",

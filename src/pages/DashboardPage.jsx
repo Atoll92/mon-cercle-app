@@ -1416,6 +1416,37 @@ function DashboardPage() {
                 </Box>
               )}
               
+              {/* Invite Members CTA - shown for admin networks with very few members */}
+              {profile?.role === 'admin' && profile.network_id && networkMembers.length <= 2 && (
+                <Card
+                  sx={{
+                    mt: 2,
+                    width: '100%',
+                    background: (theme) => `linear-gradient(135deg, ${theme.palette.primary.main}08, ${theme.palette.primary.main}15)`,
+                    border: (theme) => `1px solid ${theme.palette.primary.main}30`,
+                    borderRadius: 2,
+                  }}
+                >
+                  <CardContent sx={{ textAlign: 'center', py: 3 }}>
+                    <PersonAddIcon sx={{ fontSize: 48, color: 'primary.main', mb: 1 }} />
+                    <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5 }}>
+                      {t('dashboard.inviteCta.title', 'Invite your first members!')}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2, maxWidth: 450, mx: 'auto' }}>
+                      {t('dashboard.inviteCta.description', 'Your network is ready. Share your invitation link or invite members by email to get your community started.')}
+                    </Typography>
+                    <Button
+                      variant="contained"
+                      startIcon={<PersonAddIcon />}
+                      onClick={() => navigate('/admin/?tab=members')}
+                      sx={{ px: 3 }}
+                    >
+                      {t('dashboard.inviteCta.button', 'Invite Members')}
+                    </Button>
+                  </CardContent>
+                </Card>
+              )}
+
               {/* Third Row: Latest News and Latest Posts - Full width for all users */}
               {profile.network_id && (
                 <Box sx={{

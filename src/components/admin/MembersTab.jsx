@@ -31,7 +31,11 @@ import {
   Card,
   CardContent,
   Grid,
-  InputAdornment
+  InputAdornment,
+  alpha,
+  LinearProgress,
+  useTheme,
+  Divider
 } from '@mui/material';
 import {
   PersonAdd as PersonAddIcon,
@@ -47,15 +51,22 @@ import {
   Groups as GroupsIcon2,
   CheckCircle as CheckCircleIcon,
   Close as CloseIcon,
-  Add as AddIcon
+  Add as AddIcon,
+  Share as ShareIcon,
+  Email as EmailIcon,
+  WhatsApp as WhatsAppIcon,
+  EmojiEvents as TrophyIcon,
+  Send as SendIcon
 } from '@mui/icons-material';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
 import { Link } from 'react-router-dom';
 import { inviteUserToNetwork, toggleMemberAdmin, removeMemberFromNetwork, getNetworkPendingInvitations, updateNetworkDetails } from '../../api/networks';
+import { getOrCreatePublicInvitationLink } from '../../api/invitations';
 import BatchInviteModal from './BatchInviteModal';
 import InvitationLinksTab from './InvitationLinksTab';
 import Switch from '@mui/material/Switch';
+import confetti from 'canvas-confetti';
 
 // Helper function to validate emails
 const isValidEmail = (email) => {
@@ -64,6 +75,7 @@ const isValidEmail = (email) => {
 
 const MembersTab = ({ members, activeProfile, network, onMembersChange, onNetworkUpdate, darkMode = false }) => {
   const { t } = useTranslation();
+  const theme = useTheme();
   const [inviteEmail, setInviteEmail] = useState('');
   const [emailList, setEmailList] = useState([]);
   const [inviteAsAdmin, setInviteAsAdmin] = useState(false);
@@ -82,6 +94,12 @@ const MembersTab = ({ members, activeProfile, network, onMembersChange, onNetwor
   const [pendingInvitations, setPendingInvitations] = useState([]);
   const [loadingInvitations, setLoadingInvitations] = useState(false);
   const [invitationLinksRefresh, setInvitationLinksRefresh] = useState(0);
+
+  // Quick Share state
+  const [publicInviteLink, setPublicInviteLink] = useState('');
+  const [linkCopied, setLinkCopied] = useState(false);
+  const [loadingLink, setLoadingLink] = useState(false);
+  const [showEmailSection, setShowEmailSection] = useState(false);
 
   // Sync allowMemberInvites state with network prop
   useEffect(() => {
@@ -109,6 +127,80 @@ const MembersTab = ({ members, activeProfile, network, onMembersChange, onNetwor
       console.log('MembersTab: No network ID, skipping fetch');
     }
   }, [network?.id, members]);
+
+  // Fetch public invite link when switching to invite tab
+  useEffect(() => {
+    const fetchPublicLink = async () => {
+      if (!network?.id || !activeProfile?.id) return;
+      setLoadingLink(true);
+      try {
+        const result = await getOrCreatePublicInvitationLink(network.id, activeProfile.id);
+        if (result.success) {
+          setPublicInviteLink(`${window.location.origin}/join/${result.invitation.code}`);
+        }
+      } catch (err) {
+        console.error('Error fetching public invite link:', err);
+      } finally {
+        setLoadingLink(false);
+      }
+    };
+    if (activeTab === 1) {
+      fetchPublicLink();
+    }
+  }, [activeTab, network?.id, activeProfile?.id]);
+
+  // Quick Share helpers
+  const handleCopyLink = () => {
+    if (publicInviteLink) {
+      navigator.clipboard.writeText(publicInviteLink);
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 2000);
+    }
+  };
+
+  const handleShareWhatsApp = () => {
+    const text = t('admin.members.shareMessage', {
+      networkName: network?.name || 'our network',
+      link: publicInviteLink
+    }) || `Join ${network?.name || 'our network'} on Conclav! ${publicInviteLink}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+  };
+
+  const handleShareEmail = () => {
+    const subject = t('admin.members.shareEmailSubject', {
+      networkName: network?.name || 'our network'
+    }) || `Join ${network?.name} on Conclav`;
+    const body = t('admin.members.shareEmailBody', {
+      networkName: network?.name || 'our network',
+      link: publicInviteLink
+    }) || `I'd like to invite you to join ${network?.name} on Conclav.\n\nClick here to join: ${publicInviteLink}`;
+    window.open(`mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`, '_blank');
+  };
+
+  const triggerInviteCelebration = (count) => {
+    confetti({
+      particleCount: Math.min(count * 30, 150),
+      spread: 70,
+      origin: { y: 0.6 }
+    });
+  };
+
+  // Handle pasting multiple emails
+  const handleEmailPaste = (e) => {
+    const pastedText = e.clipboardData?.getData('text') || '';
+    const emails = pastedText
+      .split(/[,;\n\s]+/)
+      .map(s => s.trim().toLowerCase())
+      .filter(s => isValidEmail(s));
+
+    if (emails.length > 1) {
+      e.preventDefault();
+      const newEmails = emails.filter(em => !emailList.includes(em));
+      setEmailList(prev => [...prev, ...newEmails]);
+      setInviteEmail('');
+      setError(null);
+    }
+  };
 
   // Handle toggle for allowing member invites
   const handleToggleMemberInvites = async (event) => {
@@ -170,6 +262,7 @@ const MembersTab = ({ members, activeProfile, network, onMembersChange, onNetwor
     
     if (result.success) {
       setMessage(result.message);
+      triggerInviteCelebration(1);
       // Refresh members if needed
       if (result.message.includes('added to your network')) {
         onMembersChange();
@@ -233,6 +326,7 @@ const MembersTab = ({ members, activeProfile, network, onMembersChange, onNetwor
         setMessage(t('admin.members.success.invitationsSent', { count: successful }));
         setEmailList([]); // Clear the list on success
         setInviteAsAdmin(false);
+        triggerInviteCelebration(successful);
       } else if (successful === 0) {
         setError(t('admin.members.errors.allInvitationsFailed', { count: failed }));
       } else {
@@ -525,184 +619,282 @@ const MembersTab = ({ members, activeProfile, network, onMembersChange, onNetwor
       {/* Tab Panel 1: Invite Members */}
       {activeTab === 1 && (
         <Box>
-          <Box sx={{ mb: 4 }}>
-            <Typography variant="h5" component="h2" gutterBottom>
-{t('admin.members.inviteViaEmail')}
-            </Typography>
-            
-            {/* Email Collection Interface */}
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <Box sx={{ display: 'flex', gap: 2 }}>
-                <TextField
-                  fullWidth
-label={t('admin.members.addEmailAddress')}
-                  type="email"
-                  value={inviteEmail}
-                  onChange={(e) => setInviteEmail(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  variant="outlined"
-placeholder={t('admin.members.emailPlaceholder')}
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton
-                          onClick={addEmailToList}
-                          disabled={!inviteEmail || !isValidEmail(inviteEmail) || emailList.includes(inviteEmail)}
-                          edge="end"
-                        >
-                          <AddIcon />
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-                <Tooltip title={t('admin.members.fileImportTooltip')}>
-                  <Button
-                    variant="outlined"
-                    color="primary"
-                    startIcon={<GroupAddIcon />}
-                    onClick={() => setBatchInviteOpen(true)}
-                    sx={{ whiteSpace: 'nowrap' }}
-                  >
-{t('admin.members.fileImport')}
-                  </Button>
-                </Tooltip>
+          {/* ===== PRIMARY: Quick Share Section ===== */}
+          <Card
+            sx={{
+              mb: 3,
+              background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.04)} 0%, ${alpha(theme.palette.primary.main, 0.08)} 100%)`,
+              border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
+            }}
+          >
+            <CardContent sx={{ p: 3 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                <ShareIcon color="primary" />
+                <Typography variant="h6" fontWeight={600}>
+                  {t('admin.members.quickShare', 'Share invite link')}
+                </Typography>
               </Box>
-              
-              {/* Email Chips Display */}
-              {emailList.length > 0 && (
-                <Box>
-                  <Typography variant="subtitle2" gutterBottom>
-{t('admin.members.emailsToInvite', { count: emailList.length })}
-                  </Typography>
-                  <Paper 
-                    variant="outlined" 
-                    sx={{ 
-                      p: 2, 
-                      display: 'flex', 
-                      flexWrap: 'wrap', 
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 2.5 }}>
+                {t('admin.members.quickShareDescription', 'The easiest way to grow your network. Share this link anywhere — anyone who clicks it can join.')}
+              </Typography>
+
+              {loadingLink ? (
+                <LinearProgress sx={{ borderRadius: 1 }} />
+              ) : publicInviteLink ? (
+                <Stack spacing={2}>
+                  {/* Invite link display + copy */}
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
                       gap: 1,
-                      maxHeight: 200,
-                      overflow: 'auto'
+                      p: 1.5,
+                      bgcolor: 'background.paper',
+                      borderRadius: 1.5,
+                      border: `1px solid ${theme.palette.divider}`,
                     }}
                   >
-                    {emailList.map((email, index) => (
-                      <Chip
-                        key={index}
-                        label={email}
-                        onDelete={() => removeEmailFromList(email)}
-                        deleteIcon={<CloseIcon />}
+                    <LinkIcon color="action" fontSize="small" />
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        flex: 1,
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        fontFamily: 'monospace',
+                        fontSize: '0.85rem',
+                      }}
+                    >
+                      {publicInviteLink}
+                    </Typography>
+                    <Button
+                      variant={linkCopied ? 'contained' : 'outlined'}
+                      size="small"
+                      color={linkCopied ? 'success' : 'primary'}
+                      startIcon={linkCopied ? <CheckIcon /> : <CopyIcon />}
+                      onClick={handleCopyLink}
+                      sx={{ whiteSpace: 'nowrap', minWidth: 100 }}
+                    >
+                      {linkCopied ? t('common.copied', 'Copied!') : t('common.copy', 'Copy')}
+                    </Button>
+                  </Box>
+
+                  {/* Share buttons */}
+                  <Stack direction="row" spacing={1} flexWrap="wrap">
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      startIcon={<WhatsAppIcon />}
+                      onClick={handleShareWhatsApp}
+                      sx={{ color: '#25D366', borderColor: '#25D366', '&:hover': { borderColor: '#25D366', bgcolor: alpha('#25D366', 0.05) } }}
+                    >
+                      WhatsApp
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      startIcon={<EmailIcon />}
+                      onClick={handleShareEmail}
+                    >
+                      Email
+                    </Button>
+                  </Stack>
+                </Stack>
+              ) : (
+                <Alert severity="warning" variant="outlined">
+                  {t('admin.members.linkError', 'Could not generate invite link. Please try again.')}
+                </Alert>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* ===== SECONDARY: Email Invites ===== */}
+          <Card variant="outlined" sx={{ mb: 3 }}>
+            <CardContent sx={{ p: 3 }}>
+              <Box
+                sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
+                onClick={() => setShowEmailSection(!showEmailSection)}
+              >
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <PersonAddIcon color="action" />
+                  <Typography variant="subtitle1" fontWeight={600}>
+                    {t('admin.members.inviteViaEmail', 'Invite by email')}
+                  </Typography>
+                </Box>
+                <IconButton size="small">
+                  <AddIcon sx={{ transform: showEmailSection ? 'rotate(45deg)' : 'none', transition: 'transform 0.2s' }} />
+                </IconButton>
+              </Box>
+
+              {!showEmailSection && (
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                  {t('admin.members.emailSectionHint', 'Send personalized invitations directly to email addresses, or import a list.')}
+                </Typography>
+              )}
+
+              {showEmailSection && (
+                <Box sx={{ mt: 2 }}>
+                  <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
+                    <TextField
+                      fullWidth
+                      label={t('admin.members.addEmailAddress')}
+                      type="email"
+                      value={inviteEmail}
+                      onChange={(e) => setInviteEmail(e.target.value)}
+                      onKeyPress={handleKeyPress}
+                      onPaste={handleEmailPaste}
+                      variant="outlined"
+                      size="small"
+                      placeholder={t('admin.members.emailPlaceholder')}
+                      InputProps={{
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <IconButton
+                              onClick={addEmailToList}
+                              disabled={!inviteEmail || !isValidEmail(inviteEmail) || emailList.includes(inviteEmail)}
+                              edge="end"
+                              size="small"
+                            >
+                              <AddIcon />
+                            </IconButton>
+                          </InputAdornment>
+                        ),
+                      }}
+                    />
+                    <Tooltip title={t('admin.members.fileImportTooltip')}>
+                      <Button
                         variant="outlined"
-                        color="primary"
                         size="small"
+                        startIcon={<GroupAddIcon />}
+                        onClick={() => setBatchInviteOpen(true)}
+                        sx={{ whiteSpace: 'nowrap' }}
+                      >
+                        {t('admin.members.fileImport')}
+                      </Button>
+                    </Tooltip>
+                  </Box>
+
+                  {/* Email Chips Display */}
+                  {emailList.length > 0 && (
+                    <Box sx={{ mb: 2 }}>
+                      <Typography variant="caption" color="text.secondary" gutterBottom sx={{ display: 'block' }}>
+                        {t('admin.members.emailsToInvite', { count: emailList.length })}
+                      </Typography>
+                      <Paper
+                        variant="outlined"
+                        sx={{ p: 1.5, display: 'flex', flexWrap: 'wrap', gap: 0.5, maxHeight: 150, overflow: 'auto' }}
+                      >
+                        {emailList.map((email, index) => (
+                          <Chip
+                            key={index}
+                            label={email}
+                            onDelete={() => removeEmailFromList(email)}
+                            deleteIcon={<CloseIcon />}
+                            variant="outlined"
+                            color="primary"
+                            size="small"
+                          />
+                        ))}
+                      </Paper>
+                    </Box>
+                  )}
+
+                  {/* Admin checkbox and action buttons */}
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1 }}>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={inviteAsAdmin}
+                          onChange={(e) => setInviteAsAdmin(e.target.checked)}
+                          color="primary"
+                          size="small"
+                        />
+                      }
+                      label={<Typography variant="body2">{t('admin.members.inviteAsAdmin')}</Typography>}
+                    />
+                    {emailList.length > 0 && (
+                      <Box sx={{ display: 'flex', gap: 1 }}>
+                        <Button
+                          variant="text"
+                          size="small"
+                          onClick={() => setEmailList([])}
+                          disabled={batchInviting}
+                        >
+                          {t('admin.members.buttons.clearAll')}
+                        </Button>
+                        <Button
+                          variant="contained"
+                          size="small"
+                          startIcon={<SendIcon />}
+                          onClick={handleBatchInvite}
+                          disabled={batchInviting || emailList.length === 0}
+                        >
+                          {batchInviting
+                            ? t('admin.members.invitingProgress', { progress: invitationProgress })
+                            : t('admin.members.inviteCount', { count: emailList.length, people: emailList.length === 1 ? t('admin.members.person') : t('admin.members.people') })}
+                        </Button>
+                      </Box>
+                    )}
+                  </Box>
+
+                  {/* Progress indicator */}
+                  {batchInviting && (
+                    <Box sx={{ mt: 1.5 }}>
+                      <Typography variant="caption" color="text.secondary">
+                        {t('admin.members.sendingInvitations', { progress: invitationProgress })}
+                      </Typography>
+                      <LinearProgress
+                        variant="determinate"
+                        value={invitationProgress}
+                        sx={{ mt: 0.5, borderRadius: 1 }}
                       />
-                    ))}
-                  </Paper>
+                    </Box>
+                  )}
                 </Box>
               )}
-              
-              {/* Admin checkbox and action buttons */}
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 2 }}>
+            </CardContent>
+          </Card>
+
+          {/* ===== SETTINGS & ADVANCED ===== */}
+          <Card variant="outlined">
+            <CardContent sx={{ p: 3 }}>
+              <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 2 }}>
+                {t('admin.members.invitationLinks')}
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                {t('admin.members.invitationLinksDescription')}
+              </Typography>
+
+              {/* Allow member invites toggle */}
+              <Paper variant="outlined" sx={{ p: 2, mb: 3 }}>
                 <FormControlLabel
                   control={
-                    <Checkbox
-                      checked={inviteAsAdmin}
-                      onChange={(e) => setInviteAsAdmin(e.target.checked)}
+                    <Switch
+                      checked={allowMemberInvites}
+                      onChange={handleToggleMemberInvites}
+                      disabled={updatingMemberInvites}
                       color="primary"
                     />
                   }
-label={t('admin.members.inviteAsAdmin')}
+                  label={
+                    <Box>
+                      <Typography variant="body2" fontWeight={500}>
+                        {t('admin.members.allowMemberInvites')}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {t('admin.members.allowMemberInvitesDescription')}
+                      </Typography>
+                    </Box>
+                  }
+                  sx={{ alignItems: 'flex-start', ml: 0 }}
                 />
-                
-                {emailList.length > 0 && (
-                  <Box sx={{ display: 'flex', gap: 1 }}>
-                    <Button
-                      variant="outlined"
-                      color="secondary"
-                      onClick={() => setEmailList([])}
-                      disabled={batchInviting}
-                      size="small"
-                    >
-{t('admin.members.buttons.clearAll')}
-                    </Button>
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      startIcon={<PersonAddIcon />}
-                      onClick={handleBatchInvite}
-                      disabled={batchInviting || emailList.length === 0}
-                    >
-{batchInviting ? t('admin.members.invitingProgress', { progress: invitationProgress }) : t('admin.members.inviteCount', { count: emailList.length, people: emailList.length === 1 ? t('admin.members.person') : t('admin.members.people') })}
-                    </Button>
-                  </Box>
-                )}
-              </Box>
-              
-              {/* Progress indicator for batch invites */}
-              {batchInviting && (
-                <Box sx={{ mt: 1 }}>
-                  <Typography variant="body2" color="text.secondary" gutterBottom>
-{t('admin.members.sendingInvitations', { progress: invitationProgress })}
-                  </Typography>
-                  <Box 
-                    sx={{ 
-                      width: '100%', 
-                      height: 6, 
-                      backgroundColor: 'grey.300', 
-                      borderRadius: 1,
-                      overflow: 'hidden'
-                    }}
-                  >
-                    <Box 
-                      sx={{ 
-                        width: `${invitationProgress}%`, 
-                        height: '100%', 
-                        backgroundColor: 'primary.main',
-                        transition: 'width 0.3s ease'
-                      }}
-                    />
-                  </Box>
-                </Box>
-              )}
-            </Box>
-          </Box>
+              </Paper>
 
-          <Box sx={{ mt: 4 }}>
-            <Typography variant="h5" component="h2" gutterBottom>
-{t('admin.members.invitationLinks')}
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-{t('admin.members.invitationLinksDescription')}
-            </Typography>
-
-            {/* Allow member invites toggle */}
-            <Paper variant="outlined" sx={{ p: 2, mb: 3 }}>
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={allowMemberInvites}
-                    onChange={handleToggleMemberInvites}
-                    disabled={updatingMemberInvites}
-                    color="primary"
-                  />
-                }
-                label={
-                  <Box>
-                    <Typography variant="body1">
-                      {t('admin.members.allowMemberInvites')}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {t('admin.members.allowMemberInvitesDescription')}
-                    </Typography>
-                  </Box>
-                }
-                sx={{ alignItems: 'flex-start', ml: 0 }}
-              />
-            </Paper>
-
-            {/* Embed the InvitationLinksTab component here */}
-            <InvitationLinksTab networkId={network.id} darkMode={darkMode} refreshTrigger={invitationLinksRefresh} />
-          </Box>
+              {/* Invitation links management */}
+              <InvitationLinksTab networkId={network.id} darkMode={darkMode} refreshTrigger={invitationLinksRefresh} />
+            </CardContent>
+          </Card>
         </Box>
       )}
 
