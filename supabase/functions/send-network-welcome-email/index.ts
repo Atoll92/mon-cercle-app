@@ -6,7 +6,7 @@
 
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')
 const APP_URL = Deno.env.get('APP_URL') || 'https://conclav.club'
-const FROM_EMAIL = Deno.env.get('FROM_EMAIL') || 'Conclav <noreply@conclav.network>'
+const FROM_EMAIL = Deno.env.get('FROM_EMAIL') || 'Conclav <noreply@conclav.club>'
 const BCC_EMAIL = 'arthur.boval@gmail.com'
 const REPLY_TO_EMAIL = 'arthur.boval@gmail.com'
 

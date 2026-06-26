@@ -198,8 +198,8 @@ const ThreeJSBackground = () => {
     };
     
     // Create shapes and connections
-    const shapes = createShapes(600); // was 450
-    const connections = createConnections(shapes, 50000);
+    const shapes = createShapes(200);
+    const connections = createConnections(shapes, 5000);
     
     // Add window resize handler with throttling
     let resizeTimeout;
@@ -226,7 +226,7 @@ const ThreeJSBackground = () => {
     
     // Animation loop with frame rate control
     let lastTime = 0;
-    const targetFPS = 60;
+    const targetFPS = 30;
     const frameInterval = 1000 / targetFPS;
 
     let curRotationX = 0;

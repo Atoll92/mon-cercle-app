@@ -283,7 +283,7 @@ function DirectMessageChat({ conversationId, partner, onBack }) {
             .catch(err => console.error('Error in periodic mark read:', err));
         }
       }
-    }, 5000); // Check every 5 seconds
+    }, 30000); // Check every 30 seconds
   
     return () => {
       clearInterval(markReadInterval);

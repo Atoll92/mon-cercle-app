@@ -38,8 +38,8 @@ const MessageBadge = React.memo(() => {
     
     const intervalId = setInterval(() => {
       refreshConversations();
-    }, 30000); // Check every 30 seconds
-    
+    }, 60000); // Check every 60 seconds
+
     return () => clearInterval(intervalId);
   }, [refreshConversations]);
   

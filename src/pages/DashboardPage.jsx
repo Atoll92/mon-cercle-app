@@ -522,8 +522,8 @@ function DashboardPage() {
       }
     };
 
-    // Set up periodic checking every 10 seconds
-    intervalId = setInterval(checkModerationStatus, 10000);
+    // Set up periodic checking every 30 seconds
+    intervalId = setInterval(checkModerationStatus, 30000);
 
     return () => {
       if (intervalId) clearInterval(intervalId);

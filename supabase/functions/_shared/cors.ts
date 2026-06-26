@@ -4,7 +4,8 @@ const ALLOWED_ORIGINS = [
   'http://localhost:5173',
   'http://localhost:3000',
   'https://mon-cercle-app.vercel.app',
-  // Add your production domains here
+  'https://www.conclav.club',
+  'https://conclav.club',
 ];
 
 export const getCorsHeaders = (request: Request) => {

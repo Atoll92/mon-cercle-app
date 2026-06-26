@@ -51,7 +51,7 @@ const generateICSContent = (eventData: any): string => {
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
     'BEGIN:VEVENT',
-    `UID:event-${id}@conclav.network`,
+    `UID:event-${id}@conclav.club`,
     `DTSTAMP:${formatICSDate(now)}`,
     `DTSTART:${formatICSDate(start)}`,
     `DTEND:${formatICSDate(end)}`,
@@ -64,7 +64,7 @@ const generateICSContent = (eventData: any): string => {
   }
 
   if (organizer) {
-    icsLines.push(`ORGANIZER;CN=${escapeICSText(organizer)}:noreply@conclav.network`)
+    icsLines.push(`ORGANIZER;CN=${escapeICSText(organizer)}:noreply@conclav.club`)
   }
 
   if (url) {
@@ -1409,7 +1409,7 @@ Deno.serve(async (req) => {
                     startDate: eventData.date,
                     location: eventData.location || '',
                     organizer: eventData.profiles?.full_name || 'Event Organizer',
-                    url: `${Deno.env.get('APP_URL') || 'https://conclav.network'}/network/${notification.network_id}/event/${notification.related_item_id}`
+                    url: `${Deno.env.get('APP_URL') || 'https://conclav.club'}/network/${notification.network_id}/event/${notification.related_item_id}`
                   })
                   console.log('📨 Generated ICS attachment:', {
                     filename: icsAttachment.filename,
